@@ -1449,7 +1449,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.projection.createFogTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
+        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);

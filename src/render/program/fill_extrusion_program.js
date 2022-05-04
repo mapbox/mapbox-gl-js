@@ -31,8 +31,7 @@ export type FillExtrusionUniformsType = {|
     'u_inv_rot_matrix': UniformMatrix4f,
     'u_merc_center': Uniform2f,
     'u_up_dir': Uniform3f,
-    'u_height_lift': Uniform1f,
-    'u_denormalize_matrix': UniformMatrix4f
+    'u_height_lift': Uniform1f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -49,7 +48,6 @@ export type FillExtrusionPatternUniformsType = {|
     'u_merc_center': Uniform2f,
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
-    'u_denormalize_matrix': UniformMatrix4f,
     // pattern uniforms:
     'u_texsize': Uniform2f,
     'u_image': Uniform1i,
@@ -73,8 +71,7 @@ const fillExtrusionUniforms = (context: Context, locations: UniformLocations): F
     'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_up_dir': new Uniform3f(context, locations.u_up_dir),
-    'u_height_lift': new Uniform1f(context, locations.u_height_lift),
-    'u_denormalize_matrix': new UniformMatrix4f(context, locations.u_denormalize_matrix)
+    'u_height_lift': new Uniform1f(context, locations.u_height_lift)
 });
 
 const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): FillExtrusionPatternUniformsType => ({
@@ -91,7 +88,6 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_up_dir': new Uniform3f(context, locations.u_up_dir),
     'u_height_lift': new Uniform1f(context, locations.u_height_lift),
-    'u_denormalize_matrix': new UniformMatrix4f(context, locations.u_denormalize_matrix),
     // pattern uniforms
     'u_image': new Uniform1i(context, locations.u_image),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
@@ -113,8 +109,7 @@ const fillExtrusionUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array,
-    denormalizeMatrix: Float64Array
+    invMatrix: Float32Array
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -141,8 +136,7 @@ const fillExtrusionUniformValues = (
         'u_inv_rot_matrix': identityMatrix,
         'u_merc_center': [0, 0],
         'u_up_dir': [0, 0, 0],
-        'u_height_lift': 0,
-        'u_denormalize_matrix': identityMatrix
+        'u_height_lift': 0
     };
 
     if (tr.projection.name === 'globe') {
@@ -152,7 +146,6 @@ const fillExtrusionUniformValues = (
         uniformValues['u_merc_center'] = mercatorCenter;
         uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT): any);
         uniformValues['u_height_lift'] = heightLift;
-        uniformValues['u_denormalize_matrix'] = Float32Array.from(denormalizeMatrix);
     }
 
     return uniformValues;
@@ -169,12 +162,11 @@ const fillExtrusionPatternUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array,
-    denormalizeMatrix: Float64Array
+    invMatrix: Float32Array
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, coord,
-        heightLift, zoomTransition, mercatorCenter, invMatrix, denormalizeMatrix);
+        heightLift, zoomTransition, mercatorCenter, invMatrix);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };

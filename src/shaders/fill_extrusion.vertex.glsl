@@ -12,7 +12,6 @@ attribute vec2 a_centroid_pos;
 attribute vec3 a_pos_3;         // Projected position on the globe
 attribute vec3 a_pos_normal_3;  // Surface normal at the position
 
-uniform mat4 u_denormalize_matrix;
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
 uniform vec3 u_tile_id;
@@ -110,10 +109,6 @@ void main() {
     v_color *= u_opacity;
 
 #ifdef FOG
-#ifdef PROJECTION_GLOBE_VIEW
-    v_fog_pos = fog_position((u_denormalize_matrix * vec4(pos, 1.0)).xyz);
-#else
     v_fog_pos = fog_position(pos);
-#endif
 #endif
 }

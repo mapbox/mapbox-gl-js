@@ -17,6 +17,7 @@ import type {UniformValues, UniformLocations} from '../render/uniform_binding.js
 export type GlobeRasterUniformsType = {|
     'u_proj_matrix': UniformMatrix4f,
     'u_globe_matrix': UniformMatrix4f,
+    'u_normalize_matrix': UniformMatrix4f,
     'u_merc_matrix': UniformMatrix4f,
     'u_zoom_transition': Uniform1f,
     'u_merc_center': Uniform2f,
@@ -53,6 +54,7 @@ export type AtmosphereUniformsType = {|
 const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
     'u_proj_matrix': new UniformMatrix4f(context, locations.u_proj_matrix),
     'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
+    'u_normalize_matrix': new UniformMatrix4f(context, locations.u_normalize_matrix),
     'u_merc_matrix': new UniformMatrix4f(context, locations.u_merc_matrix),
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
@@ -90,6 +92,7 @@ const globeRasterUniformValues = (
     projMatrix: Array<number>,
     globeMatrix: Float32Array,
     globeMercatorMatrix: Float32Array,
+    normalizeMatrix: Float64Array,
     zoomTransition: number,
     mercCenter: [number, number],
     frustumDirTl: [number, number, number],
@@ -103,6 +106,7 @@ const globeRasterUniformValues = (
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
+    'u_normalize_matrix': Float32Array.from(normalizeMatrix),
     'u_merc_matrix': globeMercatorMatrix,
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,

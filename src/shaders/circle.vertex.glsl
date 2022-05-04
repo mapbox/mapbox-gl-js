@@ -22,7 +22,6 @@ uniform vec2 u_merc_center;
 uniform vec3 u_tile_id;
 uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
-uniform mat4 u_denormalize_matrix;
 #endif
 
 varying vec3 v_data;
@@ -184,10 +183,6 @@ void main(void) {
     v_data = vec3(extrude.x, extrude.y, antialiasblur);
 
 #ifdef FOG
-#ifdef PROJECTION_GLOBE_VIEW
-    v_fog_pos = fog_position((u_denormalize_matrix * vec4(world_center.xyz, 1.0)).xyz);
-#else
     v_fog_pos = fog_position(world_center.xyz);
-#endif
 #endif
 }
