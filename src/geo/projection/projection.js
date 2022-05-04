@@ -22,11 +22,7 @@ export type ProjectedPoint = {
 export type ElevationScale = {
     // `metersToTile` converts meters to units used to describe elevation in tile space.
     // Default units in mercator space are x & y: [0, 8192] and z: meters
-    metersToTile: number,
-
-    // `metersToLabelSpace` converts meters to units used for elevation for map aligned
-    // labels. Default unit in mercator space is meter.
-    metersToLabelSpace: number
+    metersToTile: number
 }
 
 const identity = mat4.identity(new Float32Array(16));
@@ -139,6 +135,6 @@ export default class Projection {
     }
 
     upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale { // eslint-disable-line
-        return {metersToTile: 1, metersToLabelSpace: 1};
+        return {metersToTile: 1};
     }
 }

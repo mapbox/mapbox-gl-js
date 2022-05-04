@@ -39,6 +39,7 @@ export type SymbolIconUniformsType = {|
     'u_merc_center': Uniform2f,
     'u_camera_forward': Uniform3f,
     'u_tile_matrix': UniformMatrix4f,
+    'u_up_vector': Uniform3f,
     'u_ecef_origin': Uniform3f,
     'u_texture': Uniform1i
 |};
@@ -67,6 +68,7 @@ export type SymbolSDFUniformsType = {|
     'u_merc_center': Uniform2f,
     'u_camera_forward': Uniform3f,
     'u_tile_matrix': UniformMatrix4f,
+    'u_up_vector': Uniform3f,
     'u_ecef_origin': Uniform3f,
     'u_is_halo': Uniform1i
 |};
@@ -117,6 +119,7 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
     'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
+    'u_up_vector': new Uniform3f(context, locations.u_up_vector),
     'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
     'u_texture': new Uniform1i(context, locations.u_texture)
 });
@@ -145,6 +148,7 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
     'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
+    'u_up_vector': new Uniform3f(context, locations.u_up_vector),
     'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
     'u_is_halo': new Uniform1i(context, locations.u_is_halo)
 });
@@ -188,7 +192,8 @@ const symbolIconUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array
+    invMatrix: Float32Array,
+    upVector: [number, number, number]
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -214,7 +219,8 @@ const symbolIconUniformValues = (
         'u_merc_center': [0, 0],
         'u_camera_forward': [0, 0, 0],
         'u_ecef_origin': [0, 0, 0],
-        'u_tile_matrix': identityMatrix
+        'u_tile_matrix': identityMatrix,
+        'u_up_vector': [0, -1, 0]
     };
 
     if (transform.projection.name === 'globe') {
@@ -225,6 +231,7 @@ const symbolIconUniformValues = (
         values['u_camera_forward'] = ((transform._camera.forward(): any): [number, number, number]);
         values['u_ecef_origin'] = globeECEFOrigin(transform.globeMatrix, coord.toUnwrapped());
         values['u_tile_matrix'] = Float32Array.from(transform.globeMatrix);
+        values['u_up_vector'] = upVector;
     }
 
     return values;
@@ -245,13 +252,14 @@ const symbolSDFUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array
+    invMatrix: Float32Array,
+    upVector: [number, number, number]
 ): UniformValues<SymbolSDFUniformsType> => {
     const {cameraToCenterDistance, _pitch} = painter.transform;
 
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, invMatrix), {
+        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
@@ -272,11 +280,12 @@ const symbolTextAndIconUniformValues = (
     coord: OverscaledTileID,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array
+    invMatrix: Float32Array,
+    upVector: [number, number, number]
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
-        true, coord, zoomTransition, mercatorCenter, invMatrix), {
+        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });

@@ -188,8 +188,7 @@ export default class Globe extends Mercator {
         return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
     }
 
-    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
-        const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
+    upVectorScale(id: CanonicalTileID): ElevationScale {
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id))};
     }
 }

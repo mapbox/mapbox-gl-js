@@ -350,12 +350,15 @@ export function calculateGlobeMatrix(tr: Transform): Float64Array {
 }
 
 export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): Float64Array {
-    const {lng, lat} = tr._center;
+    const {x, y} = tr.point;
+
+    // Map aligned label space for globe view is the non-rotated globe itself in pixel coordinates.
+
     // Camera is moved closer towards the ground near poles as part of
     // compesanting the reprojection. This has to be compensated for the
     // map aligned label space. Whithout this logic map aligned symbols
     // would appear larger than intended.
-    const m = calculateGlobePosMatrix(0, 0, tr.worldSize / tr._projectionScaler, lng, lat);
+    const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._projectionScaler, 0, 0);
     return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
 }
 
