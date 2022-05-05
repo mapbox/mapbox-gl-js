@@ -22,6 +22,7 @@ import {
     globePoleMatrixForTile,
     getGridMatrix,
     globeTileLatLngCorners,
+    globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
@@ -143,8 +144,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
     const tr = painter.transform;
-    const useCustomAntialiasing = !painter.style.map._antialias && !context.extUseCustomGlobeAntiAliasingForceOff &&
-                                  !!context.extStandardDerivative && globeToMercatorTransition(tr.zoom) === 0.0;
+    const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
     const setShaderMode = (mode, isWireframe) => {
         if (programMode === mode) return;

@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
       "test": {
+        "standardDerivatives": true,
         "width": 512,
         "height": 512,
         "operations": [
@@ -21,7 +22,8 @@
       }
     },
     "fog": {
-        "horizon-blend": 0
+        "horizon-blend": 0,
+        "star-intensity": 0
     },
     "layers": [
       {
