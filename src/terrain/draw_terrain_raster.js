@@ -166,7 +166,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const sharedBuffers = painter.globeSharedBuffers;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
     // slightly increase globe radius when antialiasing as it eats some of the globe's edge
-    const globeRadius = useCustomAntialiasing ? tr.globeRadius + 1.5 : tr.globeRadius;
+    const globeRadius = useCustomAntialiasing ? tr.globeRadius + 1.33 : tr.globeRadius;
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
