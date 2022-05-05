@@ -22,6 +22,8 @@ import {
     globePoleMatrixForTile,
     getGridMatrix,
     globeTileLatLngCorners,
+    globeNormalizeECEF,
+    globeTileBounds,
     globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
@@ -202,8 +204,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tileCenterLatitude = (tileCornersLatLng[0][0] + tileCornersLatLng[1][0]) / 2.0;
             const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
+            const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, globeMatrix, globeMercatorMatrix, globeToMercatorTransition(tr.zoom),
+                tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
 
@@ -246,10 +249,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
+                const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter,
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                     tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);
