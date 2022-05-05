@@ -65,9 +65,11 @@ class Context {
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
     extRenderToTextureHalfFloat: any;
+    extStandardDerivatives: any;
     extTimerQuery: any;
 
     extTextureFilterAnisotropicForceOff: boolean;
+    extStandardDerivativesForceOff: boolean;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -114,12 +116,14 @@ class Context {
             this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         }
         this.extTextureFilterAnisotropicForceOff = false;
+        this.extStandardDerivativesForceOff = false;
 
         this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
+        this.extStandardDerivatives = gl.getExtension('OES_standard_derivatives');
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);

@@ -6,7 +6,8 @@ import {
     preludeVertPrecisionQualifiers,
     preludeTerrain,
     preludeFog,
-    preludeCommonSource
+    preludeCommonSource,
+    standardDerivativesExt
 } from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
@@ -86,6 +87,7 @@ class Program<Us: UniformBindings> {
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
         const fragmentSource = defines.concat(
+            context.extStandardDerivatives ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,

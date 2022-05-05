@@ -17,6 +17,7 @@ import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
+import type Painter from '../../render/painter.js';
 
 import type LngLat from '../lng_lat.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
@@ -401,6 +402,14 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng + xOffsetAngle));
 
     return Float32Array.from(poleMatrix);
+}
+
+export function globeUseCustomAntiAliasing(painter: Painter, context: Context, transform: Transform): boolean {
+    const transitionT = globeToMercatorTransition(transform.zoom);
+    const useContextAA = painter.style.map._antialias;
+    const hasStandardDerivatives = !!context.extStandardDerivatives;
+    const disabled = context.extStandardDerivativesForceOff;
+    return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
 }
 
 export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [number, number]], latitudinalLod: number): Array<number> {

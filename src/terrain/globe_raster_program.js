@@ -21,7 +21,14 @@ export type GlobeRasterUniformsType = {|
     'u_zoom_transition': Uniform1f,
     'u_merc_center': Uniform2f,
     'u_image0': Uniform1i,
-    'u_grid_matrix': UniformMatrix3f
+    'u_grid_matrix': UniformMatrix3f,
+    'u_frustum_tl': Uniform3f,
+    'u_frustum_tr': Uniform3f,
+    'u_frustum_br': Uniform3f,
+    'u_frustum_bl': Uniform3f,
+    'u_globe_pos': Uniform3f,
+    'u_globe_radius': Uniform1f,
+    'u_viewport': Uniform2f
 |};
 
 export type AtmosphereUniformsType = {|
@@ -50,7 +57,14 @@ const globeRasterUniforms = (context: Context, locations: UniformLocations): Glo
     'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
     'u_merc_center': new Uniform2f(context, locations.u_merc_center),
     'u_image0': new Uniform1i(context, locations.u_image0),
-    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix)
+    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix),
+    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
+    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
+    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
+    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
+    'u_globe_pos': new Uniform3f(context, locations.u_globe_pos),
+    'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
+    'u_viewport': new Uniform2f(context, locations.u_viewport)
 });
 
 const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
@@ -78,6 +92,13 @@ const globeRasterUniformValues = (
     globeMercatorMatrix: Float32Array,
     zoomTransition: number,
     mercCenter: [number, number],
+    frustumDirTl: [number, number, number],
+    frustumDirTr: [number, number, number],
+    frustumDirBr: [number, number, number],
+    frustumDirBl: [number, number, number],
+    globePosition: [number, number, number],
+    globeRadius: number,
+    viewport: [number, number],
     gridMatrix: ?Array<number>
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
@@ -86,6 +107,13 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
+    'u_frustum_tl': frustumDirTl,
+    'u_frustum_tr': frustumDirTr,
+    'u_frustum_br': frustumDirBr,
+    'u_frustum_bl': frustumDirBl,
+    'u_globe_pos': globePosition,
+    'u_globe_radius': globeRadius,
+    'u_viewport': viewport,
     'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9)
 });
 
@@ -125,4 +153,4 @@ const atmosphereUniformValues = (
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
 
-export type GlobeDefinesType = 'PROJECTION_GLOBE_VIEW' | 'GLOBE_POLES';
+export type GlobeDefinesType = 'PROJECTION_GLOBE_VIEW' | 'GLOBE_POLES' | 'CUSTOM_ANTIALIASING';
