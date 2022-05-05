@@ -47,7 +47,7 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     const useCustomAntialiasing = !painter.style.map._antialias && !context.extUseCustomGlobeAntiAliasingForceOff &&
                                   !!context.extStandardDerivative && transitionT === 0.0;
-    // shrink globe radius to calculate horizonAngle to account for antialiasing eating up some of the pixels
+    // shorten globe radius to hide horizon line since antialiasing eats some of the globe's edge
     let distanceToHorizon;
     if (useCustomAntialiasing && horizonBlend === 0) {
         distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius - 1.5, 2.0));
