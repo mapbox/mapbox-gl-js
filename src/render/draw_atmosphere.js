@@ -40,7 +40,7 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
     // https://www.desmos.com/calculator/oanvvpr36d
-    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
+    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.005, 0.25);
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const globeCenterInViewSpace = (((tr.globeCenterInViewSpace): any): Array<number>);

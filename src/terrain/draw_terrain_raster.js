@@ -165,8 +165,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
-    // slightly increase globe radius when antialiasing as it eats some of the globe's edge
-    const globeRadius = useCustomAntialiasing ? tr.globeRadius + 1.33 : tr.globeRadius;
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -207,7 +205,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
-                tr.frustumCorners.BL, tr.globeCenterInViewSpace, globeRadius, viewport, gridMatrix);
+                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -253,7 +251,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
-                    tr.globeCenterInViewSpace, globeRadius, viewport), "globe_pole_raster", vertexBuffer,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
