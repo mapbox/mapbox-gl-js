@@ -176,7 +176,7 @@ async function runTest(t) {
         // Disable anisotropic filtering on render tests
         map.painter.context.extTextureFilterAnisotropicForceOff = true;
         // Disable globe antialiasing on render tests expect for antialiasing test
-        if (currentTestName.startsWith('render-tests/globe/globe-antialiasing')) {
+        if (currentTestName.includes('globe/globe-antialiasing')) {
             map.painter.context.extUseCustomGlobeAntiAliasingForceOff = true;
         }
 
