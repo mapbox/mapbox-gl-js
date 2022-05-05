@@ -41,19 +41,11 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
     // https://www.desmos.com/calculator/oanvvpr36d
     const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
+
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const globeCenterInViewSpace = (((tr.globeCenterInViewSpace): any): Array<number>);
     const globeCenterDistance = vec3.length(globeCenterInViewSpace);
-
-    const useCustomAntialiasing = !painter.style.map._antialias && !context.extUseCustomGlobeAntiAliasingForceOff &&
-                                  !!context.extStandardDerivative && transitionT === 0.0;
-    // shorten globe radius to hide horizon line since antialiasing eats some of the globe's edge
-    let distanceToHorizon;
-    if (useCustomAntialiasing && horizonBlend === 0) {
-        distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius - 1.5, 2.0));
-    } else {
-        distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius, 2.0));
-    }
+    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius, 2.0));
     const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
 
     const uniforms = atmosphereUniformValues(
