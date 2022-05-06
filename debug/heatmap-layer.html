@@ -43,7 +43,7 @@ document.getElementById('globe').addEventListener('click', (e) => {
     } else {
         e.target.innerHTML = 'switch to globe';
         map.setProjection('mercator');
-    };
+    }
 });
 
 map.on('load', () => {
@@ -52,7 +52,7 @@ map.on('load', () => {
         'type': 'geojson',
         'data': 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
     });
- 
+
     map.addLayer(
         {
             'id': 'earthquakes-heat',
@@ -125,7 +125,7 @@ map.on('load', () => {
         },
         'waterway-label'
     );
-    
+
     map.addLayer(
         {
             'id': 'earthquakes-point',
