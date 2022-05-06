@@ -4,27 +4,27 @@ uniform sampler2D u_shadowmap_0;
 uniform sampler2D u_shadowmap_1;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
-uniform vec3 u_cascade_distances;
+uniform vec2 u_cascade_distances;
 
-
-float unpack_depth(vec4 rgba_depth)
-{
-    const vec4 bit_shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
-    return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+float shadow_sample_1(vec2 uv, float compare) {
+    return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
 }
 
-float shadowOcclusionL1(vec4 pos, float bias) {
-    pos.xyz /= pos.w;
-    pos.xyz = pos.xyz * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999);
-    vec2 uv = pos.xy;
-    return step(unpack_depth(texture2D(u_shadowmap_1, uv)) + bias, fragDepth);
+float shadow_sample_0(vec2 uv, float compare) {
+    return step(unpack_depth(texture2D(u_shadowmap_0, uv)), compare);
 }
 
-float shadowOcclusionL0(vec4 pos, float bias) {
+float shadow_occlusion_1(vec4 pos, float bias) {
     pos.xyz /= pos.w;
-    pos.xyz = pos.xyz * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999);
+    pos.xy = pos.xy * 0.5 + 0.5;
+    float fragDepth = min(pos.z, 0.999) - bias;
+    return shadow_sample_1(pos.xy, fragDepth);
+}
+
+float shadow_occlusion_0(vec4 pos, float bias) {
+    pos.xyz /= pos.w;
+    pos.xy = pos.xy * 0.5 + 0.5;
+    float fragDepth = min(pos.z, 0.999) - bias;
     vec2 uv = pos.xy;
 
     vec2 texel = uv / u_texel_size - vec2(1.5);
@@ -33,7 +33,7 @@ float shadowOcclusionL0(vec4 pos, float bias) {
     float s = u_texel_size;
 
     // brute force sampling
-    vec2 uv00 = (texel - f + 0.5) * u_texel_size;
+    vec2 uv00 = (texel - f + 0.5) * s;
     vec2 uv10 = uv00 + vec2(1.0 * s, 0);
     vec2 uv20 = uv00 + vec2(2.0 * s, 0);
     vec2 uv30 = uv00 + vec2(3.0 * s, 0);
@@ -53,25 +53,25 @@ float shadowOcclusionL0(vec4 pos, float bias) {
     vec2 uv23 = uv03 + vec2(2.0 * s, 0);
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
-    float o00 = step(unpack_depth(texture2D(u_shadowmap_0, uv00)) + bias, fragDepth);
-    float o10 = step(unpack_depth(texture2D(u_shadowmap_0, uv10)) + bias, fragDepth);
-    float o20 = step(unpack_depth(texture2D(u_shadowmap_0, uv20)) + bias, fragDepth);
-    float o30 = step(unpack_depth(texture2D(u_shadowmap_0, uv30)) + bias, fragDepth);
+    float o00 = shadow_sample_0(uv00, fragDepth);
+    float o10 = shadow_sample_0(uv10, fragDepth);
+    float o20 = shadow_sample_0(uv20, fragDepth);
+    float o30 = shadow_sample_0(uv30, fragDepth);
 
-    float o01 = step(unpack_depth(texture2D(u_shadowmap_0, uv01)) + bias, fragDepth);
-    float o11 = step(unpack_depth(texture2D(u_shadowmap_0, uv11)) + bias, fragDepth);
-    float o21 = step(unpack_depth(texture2D(u_shadowmap_0, uv21)) + bias, fragDepth);
-    float o31 = step(unpack_depth(texture2D(u_shadowmap_0, uv31)) + bias, fragDepth);
+    float o01 = shadow_sample_0(uv01, fragDepth);
+    float o11 = shadow_sample_0(uv11, fragDepth);
+    float o21 = shadow_sample_0(uv21, fragDepth);
+    float o31 = shadow_sample_0(uv31, fragDepth);
 
-    float o02 = step(unpack_depth(texture2D(u_shadowmap_0, uv02)) + bias, fragDepth);
-    float o12 = step(unpack_depth(texture2D(u_shadowmap_0, uv12)) + bias, fragDepth);
-    float o22 = step(unpack_depth(texture2D(u_shadowmap_0, uv22)) + bias, fragDepth);
-    float o32 = step(unpack_depth(texture2D(u_shadowmap_0, uv32)) + bias, fragDepth);
+    float o02 = shadow_sample_0(uv02, fragDepth);
+    float o12 = shadow_sample_0(uv12, fragDepth);
+    float o22 = shadow_sample_0(uv22, fragDepth);
+    float o32 = shadow_sample_0(uv32, fragDepth);
 
-    float o03 = step(unpack_depth(texture2D(u_shadowmap_0, uv03)) + bias, fragDepth);
-    float o13 = step(unpack_depth(texture2D(u_shadowmap_0, uv13)) + bias, fragDepth);
-    float o23 = step(unpack_depth(texture2D(u_shadowmap_0, uv23)) + bias, fragDepth);
-    float o33 = step(unpack_depth(texture2D(u_shadowmap_0, uv33)) + bias, fragDepth);
+    float o03 = shadow_sample_0(uv03, fragDepth);
+    float o13 = shadow_sample_0(uv13, fragDepth);
+    float o23 = shadow_sample_0(uv23, fragDepth);
+    float o33 = shadow_sample_0(uv33, fragDepth);
 
     // Edge tap smoothing
     float value = 
@@ -86,6 +86,34 @@ float shadowOcclusionL0(vec4 pos, float bias) {
         o11 + o21 + o12 + o22;
 
     return clamp(value / 9.0, 0.0, 1.0);
+}
+
+vec3 shadowed_color_normal(
+    vec3 color, vec3 N, vec3 L, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
+    float NDotL = clamp(dot(N, L), 0.0, 1.0);
+    float bias = mix(0.02, 0.008, NDotL);
+    float occlusion = 0.0;
+    if (view_depth < u_cascade_distances.x)
+        occlusion = shadow_occlusion_0(light_view_pos0, bias);
+    else if (view_depth < u_cascade_distances.y)
+        occlusion = shadow_occlusion_1(light_view_pos1, bias);
+
+    float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
+    occlusion = mix(occlusion, 1.0, backfacing);
+    color *= mix(1.0, 1.0 - u_shadow_intensity, occlusion);
+    return color;
+}
+
+vec3 shadowed_color(vec3 color, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
+    float bias = 0.002;
+    float occlusion = 0.0;
+    if (view_depth < u_cascade_distances.x)
+        occlusion = shadow_occlusion_0(light_view_pos0, bias);
+    else if (view_depth < u_cascade_distances.y)
+        occlusion = shadow_occlusion_1(light_view_pos1, bias);
+
+    color *= mix(1.0, 1.0 - u_shadow_intensity, occlusion);
+    return color;
 }
 
 #endif

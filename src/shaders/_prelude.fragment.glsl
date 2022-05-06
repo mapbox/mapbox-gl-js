@@ -11,6 +11,12 @@ vec3 dither(vec3 color, highp vec2 seed) {
     return color + rnd / 255.0;
 }
 
+float unpack_depth(vec4 rgba_depth)
+{
+    const vec4 bit_shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
+    return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+}
+
 #ifdef TERRAIN
 
 // Pack depth to RGBA. A piece of code copied in various libraries and WebGL

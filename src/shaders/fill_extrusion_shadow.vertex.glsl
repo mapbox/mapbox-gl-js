@@ -6,6 +6,8 @@ attribute vec2 a_centroid_pos;
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
+varying highp float v_depth;
+
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
@@ -43,4 +45,5 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    v_depth = gl_Position.z / gl_Position.w;
 }
