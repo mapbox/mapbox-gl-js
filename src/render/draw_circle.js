@@ -61,7 +61,6 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const isGlobeProjection = tr.projection.name === 'globe';
-    const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
@@ -128,7 +127,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, cullMode,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id,
             layoutVertexBuffer, indexBuffer, segments,
             layer.paint, tr.zoom, programConfiguration,
