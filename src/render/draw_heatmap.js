@@ -43,7 +43,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const tr = painter.transform;
 
         const isGlobeProjection = tr.projection.name === 'globe';
+
         const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
+        const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
 
         const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
@@ -68,7 +70,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
                 heatmapUniformValues(painter, coord,
                     tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
