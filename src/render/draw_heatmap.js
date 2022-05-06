@@ -43,7 +43,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const tr = painter.transform;
 
         const isGlobeProjection = tr.projection.name === 'globe';
-        
+
         const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
         const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
 
