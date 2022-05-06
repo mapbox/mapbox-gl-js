@@ -44,7 +44,8 @@ const pages = [
     },
     {
         "key": "heatmap-layer",
-        "title": "Add a heatmap layer"
+        "title": "Add a heatmap layer",
+        "url": "./heatmap-layer.html"
     },
     {
         "key": "threejs-antenna",
