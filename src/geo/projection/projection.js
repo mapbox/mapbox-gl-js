@@ -98,6 +98,14 @@ export default class Projection {
         }
     }
 
+    isPointAboveHorizon(tr: Transform, p: Point): boolean {
+        if (tr.elevation) {
+            return !this.pointCoordinate3D(tr, p.x, p.y);
+        }
+        const horizon = tr.horizonLineFromTop();
+        return p.y < horizon;
+    }
+
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array { // eslint-disable-line
         return identity;
     }

@@ -1266,12 +1266,7 @@ class Transform {
      * @private
      */
     isPointAboveHorizon(p: Point): boolean {
-        if (!this.elevation) {
-            const horizon = this.horizonLineFromTop();
-            return p.y < horizon;
-        } else {
-            return !this.projection.pointCoordinate3D(this, p.x, p.y);
-        }
+        return this.projection.isPointAboveHorizon(this, p);
     }
 
     /**
