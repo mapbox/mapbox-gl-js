@@ -178,12 +178,8 @@ map.on('load', () => {
         'waterway-label'
     );
 
-    map.on('click', 'earthquakes-heat', (e) => {
-        console.log(e.features);
-    });
-
-    map.on('click', 'earthquakes-point', (e) => {
-        console.log(e.features);
+    map.on('click', ['earthquakes-heat', 'earthquakes-point'], (e) => {
+        console.log(e);
     });
 
 });
