@@ -3,7 +3,7 @@ import {mat4, vec3, vec4} from 'gl-matrix';
 import {Ray} from '../../util/primitives.js';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
-import {degToRad, radToDeg, getColumn, shortestAngle, clamp, smoothstep} from '../../util/util.js';
+import {degToRad, radToDeg, getColumn, shortestAngle, clamp} from '../../util/util.js';
 import MercatorCoordinate, {
     lngFromMercatorX,
     latFromMercatorY,
@@ -176,7 +176,7 @@ export default class Globe extends Mercator {
             // During transition to mercator we would like to keep
             // the far plane lower to ensure that geometries (e.g. circles) that are far away and are not supposed
             // to be rendered get culled out correctly. see https://github.com/mapbox/mapbox-gl-js/issues/11476
-            // To achieve this we dampen the interpolation. 
+            // To achieve this we dampen the interpolation.
             return interpolate(globePixelDistance, mercatorPixelDistance + padding, Math.pow(t, 10.0));
         }
         return globePixelDistance;
