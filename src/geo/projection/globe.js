@@ -101,12 +101,12 @@ export default class Globe extends Mercator {
     }
 
     pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
-        const coord = globePointCoordinate(tr, x, y, false);
-        return coord == null ? coord : [coord.x, coord.y, coord.z];
+        const coord = this.pointCoordinate(tr, x, y, 0);
+        return [coord.x, coord.y, coord.z];
     }
 
     isPointAboveHorizon(tr: Transform, p: Point): boolean {
-        return !this.pointCoordinate3D(tr, p.x, p.y);
+        return !globePointCoordinate(tr, p.x, p.y, false);
     }
 
     farthestPixelDistance(tr: Transform): number {
