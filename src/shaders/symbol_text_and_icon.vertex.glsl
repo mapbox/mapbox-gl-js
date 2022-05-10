@@ -1,6 +1,5 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_tex_size;
-attribute vec4 a_z_tile_anchor;
 attribute vec4 a_projected_pos;
 attribute float a_fade_opacity;
 #ifdef PROJECTION_GLOBE_VIEW
