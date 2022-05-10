@@ -54,7 +54,8 @@ void main() {
     float idy = u_grid_matrix[1][2];
     float S = u_grid_matrix[2][2];
 
-    vec3 latLng = u_grid_matrix * vec3(a_pos, 1.0);
+    const float epsilon = 0.001;
+    vec3 latLng = u_grid_matrix * vec3(a_pos * (1.0 + epsilon), 1.0);
 
     float mercatorY = mercatorYfromLat(latLng[0]);
     float uvY = mercatorY * tiles - idy;

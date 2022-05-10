@@ -476,7 +476,7 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
     return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
 
-const POLE_RAD = degToRad(85.0);
+const POLE_RAD = degToRad(85.0 - 0.5);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
 
@@ -549,7 +549,7 @@ export class GlobeSharedBuffers {
     _createPoles(context: Context) {
         const poleIndices = new TriangleIndexArray();
         for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
-            poleIndices.emplaceBack(0, i + 1, i + 2);
+            poleIndices.emplaceBack(0, (i * 2) + 1, (i * 2) + 2);
         }
         this._poleIndexBuffer = context.createIndexBuffer(poleIndices, true);
 
@@ -559,25 +559,31 @@ export class GlobeSharedBuffers {
         const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this._poleSegments = [];
 
-        for (let zoom = 0, offset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
+        for (let zoom = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
             const tiles = 1 << zoom;
             const radius = tiles * TILE_SIZE / Math.PI / 2.0;
             const endAngle = 360.0 / tiles;
+
+            const offset = northVertices.length;
 
             northVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 0); // place the tip
             southVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 1);
 
             for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
-                const uvX = i / GLOBE_VERTEX_GRID_SIZE;
-                const angle = interpolate(0, endAngle, uvX);
-                const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, radius);
-                northVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 0);
-                southVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 1);
+                const uvX1 = i / GLOBE_VERTEX_GRID_SIZE;
+                const uvX2 = (i + 1) / GLOBE_VERTEX_GRID_SIZE;
+                const angle1 = interpolate(0, endAngle, uvX1);
+                const angle2 = interpolate(0, endAngle, uvX2);
+                const padding = (angle2 - angle1) * 0.05;
+                const [gx1, gy1, gz1] = csLatLngToECEF(POLE_COS, POLE_SIN, angle1 - padding, radius);
+                const [gx2, gy2, gz2] = csLatLngToECEF(POLE_COS, POLE_SIN, angle2 + padding, radius);
+                northVertices.emplaceBack(gx1, gy1, gz1, 0, 0, uvX1, 0);
+                northVertices.emplaceBack(gx2, gy2, gz2, 0, 0, uvX2, 0);
+                southVertices.emplaceBack(gx1, gy1, gz1, 0, 0, uvX1, 1);
+                southVertices.emplaceBack(gx2, gy2, gz2, 0, 0, uvX2, 1);
             }
 
             this._poleSegments.push(SegmentVector.simpleSegment(offset, 0, poleVertices, polePrimitives));
-
-            offset += poleVertices;
         }
 
         this._poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
