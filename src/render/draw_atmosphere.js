@@ -44,12 +44,13 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
     // https://www.desmos.com/calculator/oanvvpr36d
     // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader
-    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0005, 0.25);
+    const minHorizonBlend = 0.0005;
+    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, minHorizonBlend, 0.25);
 
     // Use a slightly smaller size of the globe to account for custom
     // antialiasing that reduces the size of the globe of two pixels
     // https://www.desmos.com/calculator/xpgmzghc37
-    const globeRadius = globeUseCustomAntiAliasing(painter, context, tr) ?
+    const globeRadius = globeUseCustomAntiAliasing(painter, context, tr) && horizonBlend === minHorizonBlend ?
         tr.worldSize / (2.0 * Math.PI * 1.025) - 1.0 : tr.globeRadius;
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
