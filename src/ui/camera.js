@@ -51,7 +51,7 @@ type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
  * of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
  * Increasing the pitch value is often used to display 3D objects.
  * @property {LngLatLike} around The location serving as the origin for a change in `zoom`, `pitch` and/or `bearing`.
- * If this location is onscreen, it will remain at the same screen point following the transform.
+ * If this location is on screen, it will remain at the same screen point following the transform.
  * `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * @example
