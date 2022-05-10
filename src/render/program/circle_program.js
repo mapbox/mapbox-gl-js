@@ -86,7 +86,7 @@ const circleUniformValues = (
         'u_merc_center': [0, 0],
         'u_tile_id': [0, 0, 0],
         'u_zoom_transition': 0,
-        'u_up_dir': [0, 0, 0],
+        'u_up_dir': [0, 0, 0]
     };
 
     if (isGlobe) {

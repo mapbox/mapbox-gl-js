@@ -141,7 +141,7 @@ class Transform {
     _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
     _centerAltitude: number;
-    _centerAltitudeValidForExaggeration: number;
+    _centerAltitudeValidForExaggeration: ?number;
     _horizonShift: number;
     _projectionScaler: number;
     _nearZ: number;
@@ -177,7 +177,6 @@ class Transform {
         this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
-        this._centerAltitudeValidForExaggeration = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
         this._projectionScaler = 1.0;
@@ -396,7 +395,7 @@ class Transform {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
-            this._centerAltitudeValidForExaggeration = 0;
+            this._centerAltitudeValidForExaggeration = undefined;
             return;
         }
         const elevation: Elevation = this._elevation;
@@ -406,7 +405,7 @@ class Transform {
     }
 
     _updateSeaLevelZoom() {
-        if (this._centerAltitudeValidForExaggeration === 0) {
+        if (this._centerAltitudeValidForExaggeration === undefined) {
             return;
         }
         const height = this.cameraToCenterDistance;
@@ -1450,7 +1449,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.projection.createFogTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
+        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1921,7 +1920,7 @@ class Transform {
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
         if (!this.projection.supportsTerrain) {
-            warnOnce('Terrain is not yet supported with alternate projections. Use mercator to enable terrain.');
+            warnOnce('Terrain is not yet supported with alternate projections. Use mercator or globe to enable terrain.');
             return false;
         }
         return true;

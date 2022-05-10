@@ -147,6 +147,23 @@ test('Globe', (t) => {
             t.end();
         });
 
+        t.test('Highly curved tiles near polar regions', (t) => {
+            tr.zoom = 4.95;
+            tr.pitch = 0;
+            tr.bearing = 0;
+            tr.center = new LngLat(45, 66.55);
+            tr.resize(1024, 1024);
+
+            t.deepEqual(tr.coveringTiles(options), [
+                new OverscaledTileID(4, 0, 4, 10, 3),
+                new OverscaledTileID(4, 0, 4, 9, 3),
+                new OverscaledTileID(4, 0, 4, 10, 4),
+                new OverscaledTileID(4, 0, 4, 9, 4)
+            ]);
+
+            t.end();
+        });
+
         t.end();
     });
 

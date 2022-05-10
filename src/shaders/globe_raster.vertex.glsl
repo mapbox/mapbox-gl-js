@@ -1,4 +1,5 @@
 uniform mat4 u_proj_matrix;
+uniform mat4 u_normalize_matrix;
 uniform mat4 u_globe_matrix;
 uniform mat4 u_merc_matrix;
 uniform float u_zoom_transition;
@@ -93,6 +94,6 @@ void main() {
     gl_Position = u_proj_matrix * vec4(position, 1.0);
 
 #ifdef FOG
-    v_fog_pos = fog_position(globe_pos);
+    v_fog_pos = fog_position((u_normalize_matrix * vec4(globe_pos, 1.0)).xyz);
 #endif
 }

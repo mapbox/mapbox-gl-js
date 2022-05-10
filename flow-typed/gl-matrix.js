@@ -19,6 +19,7 @@ declare module "gl-matrix" {
         fromValues(number, number, number): Float32Array,
         length(Vec3): number,
         len(Vec3): number,
+        distance(Vec3, Vec3): number,
         squaredLength(Vec3): number,
         dot(Vec3, Vec3): number,
         equals(Vec3, Vec3): boolean,

@@ -17,7 +17,9 @@ import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
+import type Painter from '../../render/painter.js';
 
+import type LngLat from '../lng_lat.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type {Vec3, Mat4} from 'gl-matrix';
@@ -25,6 +27,9 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
+
+export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
@@ -181,7 +186,13 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     }
 
     if (bounds.contains(tr.center)) {
+        // Extend the aabb by encapsulating the center point
         cornerMax[2] = 0.0;
+        const point = tr.point;
+        const center = [point.x * scale, point.y * scale, 0];
+        vec3.min(cornerMin, cornerMin, center);
+        vec3.max(cornerMax, cornerMax, center);
+
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -340,12 +351,15 @@ export function calculateGlobeMatrix(tr: Transform): Float64Array {
 }
 
 export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): Float64Array {
-    const {lng, lat} = tr._center;
+    const {x, y} = tr.point;
+
+    // Map aligned label space for globe view is the non-rotated globe itself in pixel coordinates.
+
     // Camera is moved closer towards the ground near poles as part of
     // compesanting the reprojection. This has to be compensated for the
     // map aligned label space. Whithout this logic map aligned symbols
     // would appear larger than intended.
-    const m = calculateGlobePosMatrix(0, 0, tr.worldSize / tr._projectionScaler, lng, lat);
+    const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._projectionScaler, 0, 0);
     return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
 }
 
@@ -364,9 +378,6 @@ export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
 
     return Float32Array.from(posMatrix);
 }
-
-export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
@@ -393,6 +404,14 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
     return Float32Array.from(poleMatrix);
 }
 
+export function globeUseCustomAntiAliasing(painter: Painter, context: Context, transform: Transform): boolean {
+    const transitionT = globeToMercatorTransition(transform.zoom);
+    const useContextAA = painter.style.map._antialias;
+    const hasStandardDerivatives = !!context.extStandardDerivatives;
+    const disabled = context.extStandardDerivativesForceOff;
+    return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
+}
+
 export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [number, number]], latitudinalLod: number): Array<number> {
     const [tl, br] = corners;
     const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
@@ -412,9 +431,13 @@ export function getLatitudinalLod(lat: number): number {
     return lod;
 }
 
-const POLE_RAD = degToRad(85.0);
-const POLE_COS = Math.cos(POLE_RAD);
-const POLE_SIN = Math.sin(POLE_RAD);
+export function globeCenterToScreenPoint(tr: Transform): Point {
+    const pos = [0, 0, 0];
+    const matrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+    vec3.transformMat4(pos, pos, matrix);
+    return new Point(pos[0], pos[1]);
+}
 
 function cameraPositionInECEF(tr: Transform): Array<number> {
     // Here "center" is the center of the globe. We refer to transform._center
@@ -439,23 +462,23 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera at a screen point.
+// Return the angle of the normal vector of the sphere relative to the camera.
 // i.e. how much to tilt map-aligned markers.
-export function globeTiltAtScreenPoint(tr: Transform, point: Point): number {
-    const lngLat = tr.pointLocation(point);
+export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
     const centerToCamera = cameraPositionInECEF(tr);
     const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
     return vec3.angle(pointToCamera, centerToPoint);
 }
 
-export function globeCenterToScreenPoint(tr: Transform): Point {
-    const pos = [0, 0, 0];
-    const matrix = mat4.identity(new Float64Array(16));
-    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
-    vec3.transformMat4(pos, pos, matrix);
-    return new Point(pos[0], pos[1]);
+export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
+    // We consider 1% past the horizon not occluded, this allows popups to be dragged around the globe edge without fading.
+    return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
+
+const POLE_RAD = degToRad(85.0);
+const POLE_COS = Math.cos(POLE_RAD);
+const POLE_SIN = Math.sin(POLE_RAD);
 
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;

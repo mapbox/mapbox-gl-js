@@ -28,7 +28,7 @@
     },
     "places": {
       "type": "geojson",
-      "data": "/test/integration/data/places.geojson"
+      "data": "local://data/places.geojson"
     }
   },
   "layers": [

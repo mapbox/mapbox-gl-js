@@ -6,7 +6,8 @@ import {
     preludeVertPrecisionQualifiers,
     preludeTerrain,
     preludeFog,
-    preludeCommonSource
+    preludeCommonSource,
+    standardDerivativesExt
 } from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
@@ -86,6 +87,7 @@ class Program<Us: UniformBindings> {
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
         const fragmentSource = defines.concat(
+            context.extStandardDerivatives ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,
@@ -198,7 +200,8 @@ class Program<Us: UniformBindings> {
          zoom: ?number,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,
-         dynamicLayoutBuffer2: ?VertexBuffer) {
+         dynamicLayoutBuffer2: ?VertexBuffer,
+         dynamicLayoutBuffer3: ?VertexBuffer) {
 
         const gl = context.gl;
 
@@ -236,7 +239,8 @@ class Program<Us: UniformBindings> {
                 indexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,
-                dynamicLayoutBuffer2
+                dynamicLayoutBuffer2,
+                dynamicLayoutBuffer3
             );
 
             gl.drawElements(

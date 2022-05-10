@@ -14,7 +14,7 @@ uniform mat4 u_rotation_matrix;
 varying highp vec3 v_ray_dir;
 varying highp vec3 v_horizon_dir;
 
-float random(vec3 p) {
+highp float random(highp vec3 p) {
     p = fract(p * vec3(23.2342, 97.1231, 91.2342));
     p += dot(p.zxy, p.yxz + 123.1234);
     return fract(p.x * p.y);
@@ -41,8 +41,10 @@ void main() {
     highp vec3 closest_point_forward = abs(globe_pos_dot_dir) * dir;
     float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
 
-    if (norm_dist_from_center < 1.0) {
-        gl_FragColor = u_color;
+    // Compare against 0.98 instead of 1.0 to give enough room for the custom
+    // antialiasing that might be applied from globe_raster.fragment.glsl
+    if (norm_dist_from_center < 0.98) {
+        discard;
         return;
     }
 #endif
@@ -114,20 +116,22 @@ void main() {
     vec3 D = vec3(uv_remap, 1.0);
 
     // Accumulate star field
-    float star_field = 0.0;
+    highp float star_field = 0.0;
 
-    // Create stars of various scales and offset to improve randomness
-    star_field += stars(D, 1.2, vec2(0.0, 0.0));
-    star_field += stars(D, 1.0, vec2(1.0, 0.0));
-    star_field += stars(D, 0.8, vec2(0.0, 1.0));
-    star_field += stars(D, 0.6, vec2(1.0, 1.0));
+    if (u_star_intensity > 0.0) {
+        // Create stars of various scales and offset to improve randomness
+        star_field += stars(D, 1.2, vec2(0.0, 0.0));
+        star_field += stars(D, 1.0, vec2(1.0, 0.0));
+        star_field += stars(D, 0.8, vec2(0.0, 1.0));
+        star_field += stars(D, 0.6, vec2(1.0, 1.0));
 
-    // Fade stars as they get closer to horizon to
-    // give the feeling of an atmosphere with thickness
-    star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_high_color.a) * 0.75));
+        // Fade stars as they get closer to horizon to
+        // give the feeling of an atmosphere with thickness
+        star_field *= (1.0 - pow(t, 0.25 + (1.0 - u_high_color.a) * 0.75));
 
-    // Additive star field
-    c += star_field * alpha_2;
+        // Additive star field
+        c += star_field * alpha_2;
+    }
 
     // Dither
     c = dither(c, gl_FragCoord.xy + u_temporal_offset);

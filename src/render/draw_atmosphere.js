@@ -4,7 +4,10 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
+import {
+    globeToMercatorTransition,
+    globeUseCustomAntiAliasing
+} from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
 import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
@@ -40,12 +43,19 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
 
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
     // https://www.desmos.com/calculator/oanvvpr36d
-    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0, 0.25);
+    // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader
+    const horizonBlend = mapValue(fog.properties.get('horizon-blend'), 0.0, 1.0, 0.0005, 0.25);
+
+    // Use a slightly smaller size of the globe to account for custom
+    // antialiasing that reduces the size of the globe of two pixels
+    // https://www.desmos.com/calculator/xpgmzghc37
+    const globeRadius = globeUseCustomAntiAliasing(painter, context, tr) ?
+        tr.worldSize / (2.0 * Math.PI * 1.025) - 1.0 : tr.globeRadius;
 
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const globeCenterInViewSpace = (((tr.globeCenterInViewSpace): any): Array<number>);
     const globeCenterDistance = vec3.length(globeCenterInViewSpace);
-    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(tr.globeRadius, 2.0));
+    const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
     const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
 
     const uniforms = atmosphereUniformValues(

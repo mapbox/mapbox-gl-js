@@ -773,6 +773,14 @@ test('transform', (t) => {
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 150);
         t.equal(fixedNum(cameraAltitude()), 155);
+        transform.elevation._exaggeration = 0;
+        transform.updateElevation(false);
+        t.equal(fixedNum(cameraAltitude()), 5);
+        // zoom out to 10 meters and back to 5
+        transform.zoom = transform._zoomFromMercatorZ(altitudeZ * 2);
+        t.equal(fixedNum(cameraAltitude()), 10);
+        transform.zoom = zoom;
+        t.equal(fixedNum(cameraAltitude()), 5);
 
         transform.elevation = null;
         t.ok(cameraAltitude() < 10);
@@ -799,7 +807,7 @@ test('transform', (t) => {
 
         transform.elevation = createCollisionElevationNoData();
 
-        t.equal(transform._centerAltitudeValidForExaggeration, 0);
+        t.equal(transform._centerAltitudeValidForExaggeration, undefined);
 
         const transformBefore = transform.clone();
 
@@ -810,7 +818,7 @@ test('transform', (t) => {
         // Apply zoom
         transform.zoom = zoom;
 
-        t.equal(transform._centerAltitudeValidForExaggeration, 0);
+        t.equal(transform._centerAltitudeValidForExaggeration, undefined);
         t.equal(transform._seaLevelZoom, transformBefore._seaLevelZoom);
 
         t.end();

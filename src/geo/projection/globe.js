@@ -85,10 +85,6 @@ export default class Globe extends Mercator {
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
-    createFogTileMatrix(tr: Transform): Float64Array {
-        return mat4.copy(new Float64Array(16), tr.globeMatrix);
-    }
-
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center} = tr;
         const matrix = mat4.identity(new Float64Array(16));
@@ -176,7 +172,12 @@ export default class Globe extends Mercator {
             const pixelRadius = tr.worldSize / (2.0 * Math.PI);
             const approxTileArcHalfAngle = Math.max(tr.width, tr.height) / tr.worldSize * Math.PI;
             const padding = pixelRadius * (1.0 - Math.cos(approxTileArcHalfAngle));
-            return interpolate(globePixelDistance, mercatorPixelDistance + padding, t);
+
+            // During transition to mercator we would like to keep
+            // the far plane lower to ensure that geometries (e.g. circles) that are far away and are not supposed
+            // to be rendered get culled out correctly. see https://github.com/mapbox/mapbox-gl-js/issues/11476
+            // To achieve this we dampen the interpolation.
+            return interpolate(globePixelDistance, mercatorPixelDistance + padding, Math.pow(t, 10.0));
         }
         return globePixelDistance;
     }
@@ -188,8 +189,7 @@ export default class Globe extends Mercator {
         return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
     }
 
-    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
-        const pixelsPerMeterAtLat = mercatorZfromAltitude(1, latitude) * worldSize;
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id)), metersToLabelSpace: pixelsPerMeterAtLat};
+    upVectorScale(id: CanonicalTileID): ElevationScale {
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id))};
     }
 }

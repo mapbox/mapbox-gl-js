@@ -2345,9 +2345,11 @@ class Map extends Camera {
      * // Add the layer before the existing `cities` layer
      * }, 'cities');
      *
-     * @see [Example: Create and style clusters](https://docs.mapbox.com/mapbox-gl-js/example/cluster/)
-     * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
-     * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
+     * @see [Example: Select features around a clicked point](https://docs.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures-around-point/) (fill layer)
+     * @see [Example: Add a new layer below labels](https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/)
+     * @see [Example: Create and style clusters](https://docs.mapbox.com/mapbox-gl-js/example/cluster/) (circle layer)
+     * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/) (line layer)
+     * @see [Example: Add a WMS layer](https://docs.mapbox.com/mapbox-gl-js/example/wms/) (raster layer)
      */
     addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string): this {
         this._lazyInitEmptyStyle();
@@ -3015,6 +3017,8 @@ class Map extends Camera {
      * @private
      */
     _render(paintStartTimeStamp: number) {
+        const m = PerformanceUtils.beginMeasure('render');
+
         let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
@@ -3022,8 +3026,6 @@ class Map extends Camera {
             gpuTimer = extTimerQuery.createQueryEXT();
             extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
         }
-
-        const m = PerformanceUtils.beginMeasure('render');
 
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
         this.painter.context.setDirty();
@@ -3139,7 +3141,7 @@ class Map extends Camera {
             this.style._releaseSymbolFadeTiles();
         }
 
-        if (this.listens('gpu-timing-frame')) {
+        if (gpuTimer) {
             const renderCPUTime = browser.now() - frameStartTime;
             extTimerQuery.endQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
             setTimeout(() => {
@@ -3149,6 +3151,12 @@ class Map extends Camera {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
                 }));
+                window.performance.mark('frame-gpu', {
+                    startTime: frameStartTime,
+                    detail: {
+                        gpuTime: renderGPUTime
+                    }
+                });
             }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
         }
 
