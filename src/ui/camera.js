@@ -42,15 +42,18 @@ type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
  * camera value for that property will remain unchanged.
  *
  * @typedef {Object} CameraOptions
- * @property {LngLatLike} center The desired center.
+ * @property {LngLatLike} center The location to place at the screen center.
  * @property {number} zoom The desired zoom level.
  * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
  * is "up". For example, `bearing: 90` orients the map so that east is up.
  * @property {number} pitch The desired pitch in degrees. The pitch is the angle towards the horizon
- * measured in degrees with a range between 0 and 60 degrees. For example, pitch: 0 provides the appearance
+ * measured in degrees with a range between 0 and 85 degrees. For example, pitch: 0 provides the appearance
  * of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
  * Increasing the pitch value is often used to display 3D objects.
- * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
+ * @property {LngLatLike} around The location serving as the origin for a change in `zoom`, `pitch` and/or `bearing`.
+ * This location will remain at the same screen position following the transform.
+ * This is useful for drawing attention to a location that is not in the screen center.
+ * `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * @example
  * // set the map's initial perspective with CameraOptions
@@ -434,7 +437,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {number} bearing The desired bearing.
-     * @param {AnimationOptions | null} options Options object.
+     * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
+     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -445,7 +449,7 @@ class Camera extends Evented {
      * // rotateTo with an animation of 2 seconds.
      * map.rotateTo(30, {duration: 2000});
      */
-    rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object): this {
+    rotateTo(bearing: number, options?: EasingOptions, eventData?: Object): this {
         return this.easeTo(extend({
             bearing
         }, options), eventData);
@@ -455,7 +459,8 @@ class Camera extends Evented {
      * Rotates the map so that north is up (0° bearing), with an animated transition.
      *
      * @memberof Map#
-     * @param {AnimationOptions | null} options Options object.
+     * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
+     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -464,7 +469,7 @@ class Camera extends Evented {
      * // resetNorth with an animation of 2 seconds.
      * map.resetNorth({duration: 2000});
      */
-    resetNorth(options?: AnimationOptions, eventData?: Object): this {
+    resetNorth(options?: EasingOptions, eventData?: Object): this {
         this.rotateTo(0, extend({duration: 1000}, options), eventData);
         return this;
     }
@@ -473,7 +478,8 @@ class Camera extends Evented {
      * Rotates and pitches the map so that north is up (0° bearing) and pitch is 0°, with an animated transition.
      *
      * @memberof Map#
-     * @param {AnimationOptions | null} options Options object.
+     * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
+     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -482,7 +488,7 @@ class Camera extends Evented {
      * // resetNorthPitch with an animation of 2 seconds.
      * map.resetNorthPitch({duration: 2000});
      */
-    resetNorthPitch(options?: AnimationOptions, eventData?: Object): this {
+    resetNorthPitch(options?: EasingOptions, eventData?: Object): this {
         this.easeTo(extend({
             bearing: 0,
             pitch: 0,
@@ -496,7 +502,8 @@ class Camera extends Evented {
      * close enough to it (within the `bearingSnap` threshold).
      *
      * @memberof Map#
-     * @param {AnimationOptions | null} options Options object.
+     * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
+     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -505,7 +512,7 @@ class Camera extends Evented {
      * // snapToNorth with an animation of 2 seconds.
      * map.snapToNorth({duration: 2000});
      */
-    snapToNorth(options?: AnimationOptions, eventData?: Object): this {
+    snapToNorth(options?: EasingOptions, eventData?: Object): this {
         if (Math.abs(this.getBearing()) < this._bearingSnap) {
             return this.resetNorth(options, eventData);
         }
