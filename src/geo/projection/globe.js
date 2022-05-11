@@ -106,7 +106,8 @@ export default class Globe extends Mercator {
     }
 
     isPointAboveHorizon(tr: Transform, p: Point): boolean {
-        return !globePointCoordinate(tr, p.x, p.y, false);
+        const raycastOnGlobe = globePointCoordinate(tr, p.x, p.y, false);
+        return !rayCastOnGlobe;
     }
 
     farthestPixelDistance(tr: Transform): number {
