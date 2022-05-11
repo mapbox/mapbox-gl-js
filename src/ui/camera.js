@@ -789,7 +789,7 @@ class Camera extends Evented {
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      * This function will also reset the map's bearing to 0 if bearing is nonzero.
      * If a padding is set on the map, the bounds are fit to the inset.
-     * This API isn't supported with globe projection.
+     * This function isn't supported with globe projection.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
