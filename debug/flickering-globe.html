@@ -15,17 +15,16 @@ body { margin: 0; padding: 0; }
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
-    const map = new mapboxgl.Map({
-        container: 'map',
-        center:  [40.451784, 3.035947],
-        interactive: false,
-        zoom: 0.4,
-        style: 'mapbox://styles/mapbox/satellite-v9',
-        projection: 'globe'
-    });
-    
-map.on('load', async() => {
+const map = new mapboxgl.Map({
+    container: 'map',
+    center:  [40.451784, 3.035947],
+    interactive: false,
+    zoom: 0.4,
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    projection: 'globe'
+});
 
+map.on('load', async() => {
     await map.once('idle');
 
     let lastTime = 0.0;
@@ -36,7 +35,7 @@ map.on('load', async() => {
 
     function frame(time) {
         const elapsedTime = (time - lastTime) / 1000.0;
-        
+
         animationTime = cycleTime < 20.0 ? animationTime + elapsedTime : animationTime - elapsedTime;
         cycleTime += elapsedTime;
 
