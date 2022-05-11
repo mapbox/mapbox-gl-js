@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Flickering Globe</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+    const map = new mapboxgl.Map({
+        container: 'map',
+        center:  [40.451784, 3.035947],
+        interactive: false,
+        zoom: 0.4,
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        projection: 'globe'
+    });
+    
+map.on('load', async() => {
+
+    await map.once('idle');
+
+    let lastTime = 0.0;
+    let animationTime = 0.0;
+    let cycleTime = 0.0;
+
+    const initialZoom = map.getZoom();
+
+    function frame(time) {
+        const elapsedTime = (time - lastTime) / 1000.0;
+        
+        animationTime = cycleTime < 20.0 ? animationTime + elapsedTime : animationTime - elapsedTime;
+        cycleTime += elapsedTime;
+
+        const zoomChange = initialZoom + animationTime * 0.5;
+        map.setZoom(zoomChange % 360);
+
+        lastTime = time;
+        window.requestAnimationFrame(frame);
+    }
+    window.requestAnimationFrame(frame);
+});
+
+</script>
+</body>
+</html>
