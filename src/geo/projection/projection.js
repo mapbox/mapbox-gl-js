@@ -100,7 +100,6 @@ export default class Projection {
 
     isPointAboveHorizon(tr: Transform, p: Point): boolean {
         if (tr.elevation) {
-        if (tr.elevation) {
             const raycastOnTerrain = this.pointCoordinate3D(tr, p.x, p.y);
             return !raycastOnTerrain;
         }
