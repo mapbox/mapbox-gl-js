@@ -66,7 +66,8 @@ const pages = [
     },
     {
         "key": "image-on-a-map",
-        "title": "Image Source"
+        "title": "Image Source",
+        "url": "./image-on-globe.html"
     },
     {
         "key": "extrusion-query",

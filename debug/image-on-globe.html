@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Add a raster image to a map layer</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #globe { 
+            position: absolute;
+            top: 0; left: 0;
+            margin: 15px;
+            font-size: 14px;
+            padding: 8px;
+            background-color: lightblue;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+<button id='globe'>switch to globe</button>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+    const map = new mapboxgl.Map({
+        container: 'map',
+        maxZoom: 7,
+        minZoom: 3,
+        zoom: 5,
+        center: [-75.789, 41.874],
+        style: 'mapbox://styles/mapbox/dark-v10'
+    });
+
+    document.getElementById('globe').addEventListener('click', (e) => {
+        if (e.target.innerHTML === 'switch to globe') {
+            e.target.innerHTML = 'switch to mercator';
+            map.setProjection('globe');
+        } else {
+            e.target.innerHTML = 'switch to globe';
+            map.setProjection('mercator');
+        }
+    });
+
+    map.on('load', () => {
+        map.addSource('radar', {
+                'type': 'image',
+                'url': 'https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif',
+                'coordinates': [
+                [-80.425, 46.437],
+                [-71.516, 46.437],
+                [-71.516, 37.936],
+                [-80.425, 37.936]
+            ]
+        });
+
+        map.addLayer({
+            id: 'radar-layer',
+            'type': 'raster',
+            'source': 'radar',
+            'paint': {
+                'raster-fade-duration': 0
+            }
+        });
+    });
+</script>
+ 
+</body>
+</html>
