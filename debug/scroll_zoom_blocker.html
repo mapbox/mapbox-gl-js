@@ -9,7 +9,7 @@
         html, body {
             margin: 0;
             padding: 0;
-            background-color: gray;
+            background-color: lightgray;
         }
         #map-container {
             width: 500.52px;
@@ -26,7 +26,7 @@
             width: 400px;
             background-color: rgba(255, 255, 255, 0.5);
             position: absolute;
-            top: 0;
+            top: 100px;
             left: 370px;
             font-size: 12px;
             font-family: 'Open Sans', sans-serif;
@@ -41,7 +41,17 @@
             margin-left: 18px;
             font-size: 12px;
         }
-
+        #globe { 
+            position: absolute;
+            top: 0px;
+            left: 370px;
+            margin: 15px;
+            font-size: 14px;
+            padding: 8px;
+            background-color: lightskyblue;
+            color: darkblue;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -49,6 +59,7 @@
 <div id="map-container">
     <div id="map"></div>
 </div>
+<button id="globe">Switch to globe</button>
 <div id="checkboxes">
     <label>Test all gestures below</label>
     <ul>
@@ -85,7 +96,19 @@ if (!mapboxgl.supported()) {
         style: 'mapbox://styles/mapbox/streets-v11',
         cooperativeGestures: true
     });
+
     map.addControl(new mapboxgl.FullscreenControl());
+
+    document.getElementById('globe').addEventListener('click', (e) => {
+        if (e.target.innerHTML === 'Switch to globe') {
+            e.target.innerHTML = 'Switch to mercator';
+            map.setProjection('globe');
+        } else {
+            e.target.innerHTML = 'Switch to globe';
+            map.setProjection('mercator');
+        }
+    });
+
 }
 
 </script>
