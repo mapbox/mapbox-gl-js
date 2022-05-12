@@ -130,12 +130,12 @@
                 itemLink.addEventListener('mouseover', () => {
                     // Highlight corresponding feature on the map
                     popup
-                    .setLngLat(feature.geometry.coordinates)
-                    .setText(label)
-                    .addTo(map);
-                    });
-                    listingEl.appendChild(itemLink);
-                }
+                        .setLngLat(feature.geometry.coordinates)
+                        .setText(label)
+                        .addTo(map);
+                });
+                listingEl.appendChild(itemLink);
+            }
 
             // Show the filter input
             filterEl.parentNode.style.display = 'block';
@@ -200,16 +200,16 @@
         });
 
         map.on('moveend', () => {
-            const features = map.queryRenderedFeatures({ layers: ['airport'] });
-    
+            const features = map.queryRenderedFeatures({layers: ['airport']});
+
             if (features) {
                 const uniqueFeatures = getUniqueFeatures(features, 'iata_code');
                 // Populate features for the listing overlay.
                 renderListings(uniqueFeatures);
-                
+
                 // Clear the input container
                 filterEl.value = '';
-                
+
                 // Store the current features in sn `airports` variable to
                 // later use for filtering on `keyup`.
                 airports = uniqueFeatures;
@@ -219,13 +219,13 @@
         map.on('mousemove', 'airport', (e) => {
             // Change the cursor style as a UI indicator.
             map.getCanvas().style.cursor = 'pointer';
-            
+
             // Populate the popup and set its coordinates based on the feature.
             const feature = e.features[0];
             popup
-            .setLngLat(feature.geometry.coordinates)
-            .setText(`${feature.properties.name} (${feature.properties.abbrev})`)
-            .addTo(map);
+                .setLngLat(feature.geometry.coordinates)
+                .setText(`${feature.properties.name} (${feature.properties.abbrev})`)
+                .addTo(map);
         });
 
         map.on('mouseleave', 'airport', () => {
@@ -255,7 +255,7 @@
                     'match',
                     ['get', 'abbrev'],
                     filtered.map((feature) => {
-                    return feature.properties.abbrev;
+                        return feature.properties.abbrev;
                     }),
                     true,
                     false
