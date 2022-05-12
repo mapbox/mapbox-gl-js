@@ -9,3 +9,5 @@ video.html
 custom-source.html
 heatmap-layer.html
 image-on-globe.html
+atmosphere.html
+animate-point-along-route.html

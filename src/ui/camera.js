@@ -552,6 +552,7 @@ class Camera extends Evented {
      * Returns a {@link CameraOptions} object for the highest zoom level
      * up to and including `Map#getMaxZoom()` that fits the bounds
      * in the viewport at the specified bearing.
+     * This function isn't supported with globe projection.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
@@ -571,6 +572,11 @@ class Camera extends Evented {
      * });
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): ?EasingOptions {
+        if (this.transform.projection.name === 'globe') {
+            warnOnce('Globe projection does not support cameraForBounds API');
+            return;
+        }
+
         bounds = LngLatBounds.convert(bounds);
         const bearing = (options && options.bearing) || 0;
         return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
@@ -790,6 +796,7 @@ class Camera extends Evented {
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      * This function will also reset the map's bearing to 0 if bearing is nonzero.
      * If a padding is set on the map, the bounds are fit to the inset.
+     * This function isn't supported with globe projection.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
@@ -806,7 +813,7 @@ class Camera extends Evented {
      * @fires Map.event:movestart
      * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
-	 * @example
+     * @example
      * const bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
      *     padding: {top: 10, bottom:25, left: 15, right: 5}
@@ -814,6 +821,11 @@ class Camera extends Evented {
      * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: Object): this {
+        if (this.transform.projection.name === 'globe') {
+            warnOnce('Globe projection does not support fitBounds API');
+            return this;
+        }
+
         return this._fitInternal(
             this.cameraForBounds(bounds, options),
             options,
@@ -861,6 +873,7 @@ class Camera extends Evented {
      * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
      * once the map is rotated to the specified bearing. To zoom without rotating,
      * pass in the current map bearing.
+     * This function isn't supported with globe projection.
      *
      * @memberof Map#
      * @param {PointLike} p0 First point on screen, in pixel coordinates.
@@ -878,7 +891,7 @@ class Camera extends Evented {
      * @fires Map.event:movestart
      * @fires Map.event:moveend
      * @returns {Map} Returns itself to allow for method chaining.
-	 * @example
+     * @example
      * const p0 = [220, 400];
      * const p1 = [500, 900];
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
@@ -887,6 +900,11 @@ class Camera extends Evented {
      * @see Used by {@link BoxZoomHandler}
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: EasingOptions, eventData?: Object): this {
+        if (this.transform.projection.name === 'globe') {
+            warnOnce('Globe projection does not support fitScreenCoordinates API');
+            return this;
+        }
+
         let lngLat0, lngLat1, minAltitude, maxAltitude;
         const point0 = Point.convert(p0);
         const point1 = Point.convert(p1);

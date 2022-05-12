@@ -1,5 +1,5 @@
 // @flow
-import {
+import MercatorCoordinate, {
     lngFromMercatorX,
     latFromMercatorY,
     mercatorZfromAltitude,
@@ -9,13 +9,13 @@ import {
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {degToRad, smoothstep, clamp} from '../../util/util.js';
-import {vec3, mat4} from 'gl-matrix';
+import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
+import {vec3, vec4, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
-import {Aabb} from '../../util/primitives.js';
+import {Aabb, Ray} from '../../util/primitives.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 import type Painter from '../../render/painter.js';
 
@@ -51,6 +51,69 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
+
+export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): ?MercatorCoordinate {
+    const point0 = vec3.scale([], tr._camera.position, tr.worldSize);
+    const point1 = [x, y, 1, 1];
+
+    vec4.transformMat4(point1, point1, tr.pixelMatrixInverse);
+    vec4.scale(point1, point1, 1 / point1[3]);
+
+    const p0p1 = vec3.sub([], point1, point0);
+    const dir = vec3.normalize([], p0p1);
+
+    // Find closest point on the sphere to the ray. This is a bit more involving operation
+    // if the ray is not intersecting with the sphere, in which case we "clamp" the ray
+    // to the surface of the sphere, i.e. find a tangent vector that originates from the camera position
+    const m = tr.globeMatrix;
+    const globeCenter = [m[12], m[13], m[14]];
+    const p0toCenter = vec3.sub([], globeCenter, point0);
+    const p0toCenterDist = vec3.length(p0toCenter);
+    const centerDir = vec3.normalize([], p0toCenter);
+    const radius = tr.worldSize / (2.0 * Math.PI);
+    const cosAngle = vec3.dot(centerDir, dir);
+
+    const origoTangentAngle = Math.asin(radius / p0toCenterDist);
+    const origoDirAngle = Math.acos(cosAngle);
+
+    if (origoTangentAngle < origoDirAngle) {
+        if (!clampToHorizon) return null;
+
+        // Find the tangent vector by interpolating between camera-to-globe and camera-to-click vectors.
+        // First we'll find a point P1 on the clicked ray that forms a right-angled triangle with the camera position
+        // and the center of the globe. Angle of the tanget vector is then used as the interpolation factor
+        const clampedP1 = [], origoToP1 = [];
+
+        vec3.scale(clampedP1, dir, p0toCenterDist / cosAngle);
+        vec3.normalize(origoToP1, vec3.sub(origoToP1, clampedP1, p0toCenter));
+        vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1, Math.tan(origoTangentAngle) * p0toCenterDist)));
+    }
+
+    const pointOnGlobe = [];
+    const ray = new Ray(point0, dir);
+
+    ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
+
+    // Transform coordinate axes to find lat & lng of the position
+    const xa = vec3.normalize([], getColumn(m, 0));
+    const ya = vec3.normalize([], getColumn(m, 1));
+    const za = vec3.normalize([], getColumn(m, 2));
+
+    const xp = vec3.dot(xa, pointOnGlobe);
+    const yp = vec3.dot(ya, pointOnGlobe);
+    const zp = vec3.dot(za, pointOnGlobe);
+
+    const lat = radToDeg(Math.asin(-yp / radius));
+    let lng = radToDeg(Math.atan2(xp, zp));
+
+    // Check that the returned longitude angle is not wrapped
+    lng = tr.center.lng + shortestAngle(tr.center.lng, lng);
+
+    const mx = mercatorXfromLng(lng);
+    const my = clamp(mercatorYfromLat(lat), 0, 1);
+
+    return new MercatorCoordinate(mx, my);
+}
 
 export class Arc {
     constructor(p0: Vec3, p1: Vec3, center: Vec3) {
