@@ -108,6 +108,11 @@ const pages = [
         "key": "custom-source",
         "title": "Custom Source",
         "url": "./custom-source.html"
+    },
+    {
+        "key": "atmosphere",
+        "title": "Atmosphere",
+        "url": "./atmosphere.html"
     }
 ];
 

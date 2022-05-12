@@ -8,4 +8,5 @@ threejs-antenna.html
 video.html
 custom-source.html
 heatmap-layer.html
-antimate-point-along-route.html
+atmosphere.html
+animate-point-along-route.html
