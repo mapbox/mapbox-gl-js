@@ -1182,6 +1182,32 @@ test('Globe', (t) => {
     t.end();
 });
 
+test('Markers on globe account for rotation', (t) => {
+    const map = createMap(t);
+    map.setProjection('globe');
+    map._domRenderTaskQueue.run();
+    const markerMap = new Marker({rotationAlignment: 'map', rotation: 45})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const markerView = new Marker({rotation: 45})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const rotationRegex = /rotateZ\(-?([0-9]+)deg\)/;
+
+    t.same(markerView.getElement().style.transform.match(rotationRegex)[1], 45);
+    t.same(markerMap.getElement().style.transform.match(rotationRegex)[1], 45);
+
+    map.setBearing(map.getBearing() + 180);
+    map._domRenderTaskQueue.run();
+
+    t.same(markerView.getElement().style.transform.match(rotationRegex)[1], 45);
+    t.same(markerMap.getElement().style.transform.match(rotationRegex)[1], 135);
+
+    map.remove();
+    t.end();
+});
+
 test('Snap To Pixel', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})
