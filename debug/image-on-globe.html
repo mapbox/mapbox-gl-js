@@ -7,21 +7,35 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #globe { 
+        #controls { 
             position: absolute;
-            top: 0; left: 0;
-            margin: 15px;
-            font-size: 14px;
-            padding: 8px;
+            top: 0;
+            left: 0; 
+            padding:10px;
             background-color: lightblue;
-            font-weight: bold;
+            /* font-weight: bold; */
+            font-family: Arial, Helvetica, sans-serif;
         }
     </style>
 </head>
 
 <body>
 <div id="map"></div>
-<button id='globe'>switch to globe</button>
+<div id='controls'>
+    <div>
+        <label>Projection:</label>
+        <select id="projName">
+            <option value="mercator" selected>Mercator</option>
+            <option value="albers">Albers USA</option>
+            <option value="equalEarth">Equal Earth</option>
+            <option value="equirectangular">Equirectangular</option>
+            <option value="globe">Globe</option>
+            <option value="lambertConformalConic">Lambert Conformal Conic</option>
+            <option value="naturalEarth">Natural Earth</option>
+            <option value="winkelTripel">Winkel Tripel</option>
+        </select>
+    </div>
+</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='access_token_generated.js'></script>
@@ -33,16 +47,6 @@
         zoom: 5,
         center: [-75.789, 41.874],
         style: 'mapbox://styles/mapbox/dark-v10'
-    });
-
-    document.getElementById('globe').addEventListener('click', (e) => {
-        if (e.target.innerHTML === 'switch to globe') {
-            e.target.innerHTML = 'switch to mercator';
-            map.setProjection('globe');
-        } else {
-            e.target.innerHTML = 'switch to globe';
-            map.setProjection('mercator');
-        }
     });
 
     map.on('load', () => {
@@ -66,6 +70,12 @@
             }
         });
     });
+
+    document.getElementById('projName').addEventListener('change', (e) => {
+        const el = document.getElementById('projName');
+        map.setProjection(el.options[el.selectedIndex].value);
+    });
+
 </script>
  
 </body>
