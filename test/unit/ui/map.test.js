@@ -2300,11 +2300,12 @@ test('Map', (t) => {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
-                const output = map.queryRenderedFeatures({filter: ['all']});
+                const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)), {filter: ['all']});
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.ok(args[0]);
+                t.deepEqual(args[0], {x: 100, y: 100});
                 t.deepEqual(args[1], {availableImages: [], filter: ['all']});
+                t.deepEqual(args[2], map.transform);
                 t.deepEqual(output, []);
 
                 t.end();

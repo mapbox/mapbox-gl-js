@@ -1258,7 +1258,7 @@ class Transform {
 
     /**
      * Returns true if a screenspace Point p, is above the horizon.
-     * This approximates the map as an infinite plane and does not account for z0-z3
+     * In non-globe projections, this approximates the map as an infinite plane and does not account for z0-z3
      * wherein the map is small quad with whitespace above the north pole and below the south pole.
      *
      * @param {Point} p
@@ -1266,12 +1266,7 @@ class Transform {
      * @private
      */
     isPointAboveHorizon(p: Point): boolean {
-        if (!this.elevation) {
-            const horizon = this.horizonLineFromTop();
-            return p.y < horizon;
-        } else {
-            return !this.projection.pointCoordinate3D(this, p.x, p.y);
-        }
+        return this.projection.isPointAboveHorizon(this, p);
     }
 
     /**
