@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    -90,
+    0
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "fog": {},
+  "zoom": 1.5,
+  "sources": {
+    "lines": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "properties": {
+            "text": "Invisible line"
+          },
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-135, 0],
+              [-45, 0]
+            ]
+          }
+        }, {
+          "type": "Feature",
+          "properties": {
+            "text": "Visible line"
+          },
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-80, -45],
+              [-80, 45]
+            ]
+          }
+        }]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "symbol",
+      "source": "lines",
+      "layout": {
+        "text-field": "{text}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line-center",
+        "text-pitch-alignment": "map"
+      }
+    }
+  ]
+}

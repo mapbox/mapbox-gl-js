@@ -789,12 +789,17 @@ class Map extends Camera {
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      * If a padding is set on the map, the bounds returned are for the inset.
+     * This function isn't supported with globe projection.
      *
      * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
      * @example
      * const bounds = map.getBounds();
      */
-    getBounds(): LngLatBounds {
+    getBounds(): LngLatBounds | null {
+        if (this.transform.projection.name === 'globe') {
+            warnOnce('Globe projection does not support getBounds API');
+            return null;
+        }
         return this.transform.getBounds();
     }
 

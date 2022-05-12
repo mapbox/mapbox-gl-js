@@ -9,3 +9,4 @@ video.html
 custom-source.html
 heatmap-layer.html
 atmosphere.html
+antimate-point-along-route.html

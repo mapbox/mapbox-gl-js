@@ -7,8 +7,9 @@
 
 const pages = [
     {
-        "key": "animate-point-along-line",
-        "title": "Animate point"
+        "key": "animate-point-along-route",
+        "title": "Animate route",
+        "url": "./animate-point-along-route.html"
     },
     {
         "key": "filter-features-within-map-view",

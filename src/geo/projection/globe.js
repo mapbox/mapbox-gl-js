@@ -1,15 +1,12 @@
 // @flow
-import {mat4, vec3, vec4} from 'gl-matrix';
-import {Ray} from '../../util/primitives.js';
+import {mat4, vec3} from 'gl-matrix';
 import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
-import {degToRad, radToDeg, getColumn, shortestAngle, clamp} from '../../util/util.js';
+import {degToRad} from '../../util/util.js';
 import MercatorCoordinate, {
     lngFromMercatorX,
     latFromMercatorY,
     mercatorZfromAltitude,
-    mercatorXfromLng,
-    mercatorYfromLat
 } from '../mercator_coordinate.js';
 import Mercator from './mercator.js';
 import Point from '@mapbox/point-geometry';
@@ -22,7 +19,8 @@ import {
     globeNormalizeECEF,
     globeDenormalizeECEF,
     globeECEFNormalizationScale,
-    globeToMercatorTransition
+    globeToMercatorTransition,
+    globePointCoordinate
 } from './globe_util.js';
 
 import type Transform from '../transform.js';
@@ -97,69 +95,19 @@ export default class Globe extends Mercator {
     }
 
     pointCoordinate(tr: Transform, x: number, y: number, _: number): MercatorCoordinate {
-        const point0 = vec3.scale([], tr._camera.position, tr.worldSize);
-        const point1 = [x, y, 1, 1];
-
-        vec4.transformMat4(point1, point1, tr.pixelMatrixInverse);
-        vec4.scale(point1, point1, 1 / point1[3]);
-
-        const p0p1 = vec3.sub([], point1, point0);
-        const dir = vec3.normalize([], p0p1);
-
-        // Find closest point on the sphere to the ray. This is a bit more involving operation
-        // if the ray is not intersecting with the sphere. In this scenario we'll "clamp" the ray
-        // to the surface of the sphere, ie. find a tangent vector that originates from the camera position
-        const m = tr.globeMatrix;
-        const globeCenter = [m[12], m[13], m[14]];
-        const p0toCenter = vec3.sub([], globeCenter, point0);
-        const p0toCenterDist = vec3.length(p0toCenter);
-        const centerDir = vec3.normalize([], p0toCenter);
-        const radius = tr.worldSize / (2.0 * Math.PI);
-        const cosAngle = vec3.dot(centerDir, dir);
-
-        const origoTangentAngle = Math.asin(radius / p0toCenterDist);
-        const origoDirAngle = Math.acos(cosAngle);
-
-        if (origoTangentAngle < origoDirAngle) {
-            // Find the tangent vector by interpolating between camera-to-globe and camera-to-click vectors.
-            // First we'll find a point P1 on the clicked ray that forms a right-angled triangle with the camera position
-            // and the center of the globe. Angle of the tanget vector is then used as the interpolation factor
-            const clampedP1 = [], origoToP1 = [];
-
-            vec3.scale(clampedP1, dir, p0toCenterDist / cosAngle);
-            vec3.normalize(origoToP1, vec3.sub(origoToP1, clampedP1, p0toCenter));
-            vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1, Math.tan(origoTangentAngle) * p0toCenterDist)));
-        }
-
-        const pointOnGlobe = [];
-        const ray = new Ray(point0, dir);
-
-        ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
-
-        // Transform coordinate axes to find lat & lng of the position
-        const xa = vec3.normalize([], getColumn(m, 0));
-        const ya = vec3.normalize([], getColumn(m, 1));
-        const za = vec3.normalize([], getColumn(m, 2));
-
-        const xp = vec3.dot(xa, pointOnGlobe);
-        const yp = vec3.dot(ya, pointOnGlobe);
-        const zp = vec3.dot(za, pointOnGlobe);
-
-        const lat = radToDeg(Math.asin(-yp / radius));
-        let lng = radToDeg(Math.atan2(xp, zp));
-
-        // Check that the returned longitude angle is not wrapped
-        lng = tr.center.lng + shortestAngle(tr.center.lng, lng);
-
-        const mx = mercatorXfromLng(lng);
-        const my = clamp(mercatorYfromLat(lat), 0, 1);
-
-        return new MercatorCoordinate(mx, my);
+        const coord = globePointCoordinate(tr, x, y, true);
+        if (!coord) { return new MercatorCoordinate(0, 0); } // This won't happen, is here for Flow
+        return coord;
     }
 
     pointCoordinate3D(tr: Transform, x: number, y: number): ?Vec3 {
-        const mc = this.pointCoordinate(tr, x, y, 0);
-        return [mc.x, mc.y, mc.z];
+        const coord = this.pointCoordinate(tr, x, y, 0);
+        return [coord.x, coord.y, coord.z];
+    }
+
+    isPointAboveHorizon(tr: Transform, p: Point): boolean {
+        const raycastOnGlobe = globePointCoordinate(tr, p.x, p.y, false);
+        return !raycastOnGlobe;
     }
 
     farthestPixelDistance(tr: Transform): number {
