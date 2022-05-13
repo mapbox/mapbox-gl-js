@@ -27,6 +27,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
+import assert from 'assert';
 
 export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
 export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
@@ -339,6 +340,7 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
 }
 
 export function latLngToECEF(lat: number, lng: number, radius?: number): Array<number> {
+    assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
