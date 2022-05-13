@@ -44,7 +44,7 @@ var map = window.map = new mapboxgl.Map({
 });
 
 const spinningMarkers = [];
-['auto', 'map', 'viewport'].forEach((rotationAlignment, i) => {
+['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
     ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
         var bounds = map.getBounds();
         var s = bounds.getSouth();
@@ -52,7 +52,7 @@ const spinningMarkers = [];
         var w = bounds.getWest();
         var e = bounds.getEast();
 
-        var lng = w + (e - w) * ((i + .5) / 3);
+        var lng = w + (e - w) * ((i + .5) / 4);
         var lat = s + (n - s) * ((j + .5) / 3);
 
         var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br>Rotation Alignment: ${rotationAlignment}`);
