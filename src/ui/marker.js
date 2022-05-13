@@ -35,7 +35,6 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 // Zoom levels to transition "horizon" aligned markers in globe view.
 const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
 const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
-const MAX_PITCH = 80; // Ensure that markers with "horizon" pitch alignment doen't disappear completely (as they would at pitch 90)
 
 /**
  * Creates a marker component.
@@ -496,25 +495,13 @@ export default class Marker extends Evented {
                     const pitch = map.getPitch();
                     return pitch ? `rotateX(${pitch}deg)` : '';
                 } // "map" alignment on globe
-                const tilt = radToDeg(globeTiltAtLngLat(map.transform, pos));
+                const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
                 const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
                 const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
                 const yTilt = posFromCenter.x * tiltOverDist;
                 const xTilt = -posFromCenter.y * tiltOverDist;
                 if (!xTilt && !yTilt) { return ''; }
                 return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
-            }
-            if (map._usingGlobe() && alignment === 'horizon') {
-                const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtLngLat(map.transform, this._lngLat)) / 90);
-                let zoomTransition = 1;
-                const zoom = map.getZoom();
-                const centerPoint = globeCenterToScreenPoint(map.transform);
-                if (zoom > ALIGN_TO_HORIZON_BELOW_ZOOM) {
-                    const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, zoom);
-                    centerPoint.y += smooth * map.transform.height;
-                    zoomTransition = 1 - smooth;
-                }
-                return `rotateX(${pitch * zoomTransition}deg)`;
             }
         }
         return ''; // 'horizon' without globe and invalid alignments behave as viewport
