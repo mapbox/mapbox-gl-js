@@ -489,22 +489,20 @@ export default class Marker extends Evented {
         const map = this._map;
         const alignment = this.getPitchAlignment();
 
-        if (map && pos) {
-            if (alignment === 'map') {
-                if (!map._usingGlobe()) { // 'map' alignment on a flat map
-                    const pitch = map.getPitch();
-                    return pitch ? `rotateX(${pitch}deg)` : '';
-                } // "map" alignment on globe
-                const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
-                const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
-                const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
-                const yTilt = posFromCenter.x * tiltOverDist;
-                const xTilt = -posFromCenter.y * tiltOverDist;
-                if (!xTilt && !yTilt) { return ''; }
-                return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
-            }
+        if (map && pos && alignment === 'map') {
+            if (!map._usingGlobe()) { // 'map' alignment on a flat map
+                const pitch = map.getPitch();
+                return pitch ? `rotateX(${pitch}deg)` : '';
+            } // "map" alignment on globe
+            const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
+            const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
+            const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
+            const yTilt = posFromCenter.x * tiltOverDist;
+            const xTilt = -posFromCenter.y * tiltOverDist;
+            if (!xTilt && !yTilt) { return ''; }
+            return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
         }
-        return ''; // 'horizon' without globe and invalid alignments behave as viewport
+        return ''; // invalid alignments behave as viewport
     }
 
     _calculateZTransform(): string {
