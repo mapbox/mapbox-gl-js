@@ -8,7 +8,6 @@
 * Add an option for providing a geolocation adapter to `GeolocateControl`. ([#10400](https://github.com/mapbox/mapbox-gl-js/pull/10400)) (h/t [behnammodi](https://github.com/behnammodi))
 * Add `Map.Title` property to locale options to localise the map `aria-label`. ([#11549](https://github.com/mapbox/mapbox-gl-js/pull/11549)) (h/t [andrewharvey](https://github.com/andrewharvey))
 * Allow duplicated coordinates in tile request URLs. ([#11441](https://github.com/mapbox/mapbox-gl-js/pull/11441)) (h/t [ozero](https://github.com/ozero))
-* Add `source` field requirement to terrain exaggeration in the style specification.  ([#11664](https://github.com/mapbox/mapbox-gl-js/pull/11664))
 
 ### Bug fixes 🐞
 
