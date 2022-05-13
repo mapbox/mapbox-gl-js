@@ -153,6 +153,7 @@ createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt, true);
 // symbol layer specific arrays
 import {
     symbolLayoutAttributes,
+    symbolGlobeExtAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
     collisionBox,
@@ -168,6 +169,7 @@ import {
 } from '../src/data/bucket/symbol_attributes.js';
 
 createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
+createStructArrayType(`symbol_globe_ext`, symbolGlobeExtAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);
 createStructArrayType(`symbol_opacity`, placementOpacityAttributes);
 createStructArrayType('collision_box', collisionBox, true);

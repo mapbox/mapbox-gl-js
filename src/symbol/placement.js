@@ -252,7 +252,7 @@ export class Placement {
         const dynamicFilterNeedsFeature = styleLayer.dynamicFilterNeedsFeature();
         const pixelsToTiles = this.transform.calculatePixelsToTileUnitsMatrix(tile);
 
-        const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
+        const textLabelPlaneMatrix = projection.getLabelPlaneMatrixForPlacement(posMatrix,
                 tile.tileID.canonical,
                 pitchWithMap,
                 rotateWithMap,

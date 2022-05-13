@@ -7,8 +7,9 @@
 
 const pages = [
     {
-        "key": "animate-point-along-line",
-        "title": "Animate point"
+        "key": "animate-point-along-route",
+        "title": "Animate route",
+        "url": "./animate-point-along-route.html"
     },
     {
         "key": "filter-features-within-map-view",
@@ -44,7 +45,8 @@ const pages = [
     },
     {
         "key": "heatmap-layer",
-        "title": "Add a heatmap layer"
+        "title": "Add a heatmap layer",
+        "url": "./heatmap-layer.html"
     },
     {
         "key": "threejs-antenna",
@@ -65,7 +67,8 @@ const pages = [
     },
     {
         "key": "image-on-a-map",
-        "title": "Image Source"
+        "title": "Image Source",
+        "url": "./image-on-globe.html"
     },
     {
         "key": "extrusion-query",
@@ -106,6 +109,11 @@ const pages = [
         "key": "custom-source",
         "title": "Custom Source",
         "url": "./custom-source.html"
+    },
+    {
+        "key": "atmosphere",
+        "title": "Atmosphere",
+        "url": "./atmosphere.html"
     }
 ];
 

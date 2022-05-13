@@ -162,7 +162,8 @@ class CollisionIndex {
         const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
-        const checkOcclusion = this.transform.projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
+        const isGlobe = this.transform.projection.name === 'globe';
+        const checkOcclusion = isGlobe || !!elevation || this.transform.pitch > 0;
         const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, [elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2]], tileID, checkOcclusion);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
@@ -188,7 +189,8 @@ class CollisionIndex {
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation,
             this.transform.projection,
-            tileID
+            tileID,
+            pitchWithMap
         ) : null;
 
         let collisionDetected = false;
@@ -205,7 +207,7 @@ class CollisionIndex {
             const first = firstAndLastGlyph.first;
             const last = firstAndLastGlyph.last;
 
-            let projectedPath = [];
+            let projectedPath: Vec3[] = [];
             for (let i = first.path.length - 1; i >= 1; i--) {
                 projectedPath.push(first.path[i]);
             }
@@ -220,12 +222,13 @@ class CollisionIndex {
             // The path might need to be converted into screen space if a pitched map is used as the label space
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
-                const screenSpacePath = elevation ?
+                const screenSpacePath = (elevation && !isGlobe) ?
                     projectedPath.map((p, index) => {
                         const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
-                        return projection.project(p, labelToScreenMatrix, elevation[2]);
+                        p[2] = elevation[2];
+                        return projection.projectVector((p: any), labelToScreenMatrix);
                     }) :
-                    projectedPath.map(p => projection.project(p, labelToScreenMatrix));
+                    projectedPath.map(p => projection.projectVector((p: any), labelToScreenMatrix));
 
                 // Do not try to place collision circles if even of the points is behind the camera.
                 // This is a plausible scenario with big camera pitch angles
@@ -239,28 +242,32 @@ class CollisionIndex {
             let segments = [];
 
             if (projectedPath.length > 0) {
+                const screenSpacePath = projectedPath.map(p => new Point(p[0], p[1]));
+
                 // Quickly check if the path is fully inside or outside of the padded collision region.
                 // For overlapping paths we'll only create collision circles for the visible segments
-                const minPoint = projectedPath[0].clone();
-                const maxPoint = projectedPath[0].clone();
+                let minx = Infinity;
+                let maxx = -Infinity;
+                let miny = Infinity;
+                let maxy = -Infinity;
 
-                for (let i = 1; i < projectedPath.length; i++) {
-                    minPoint.x = Math.min(minPoint.x, projectedPath[i].x);
-                    minPoint.y = Math.min(minPoint.y, projectedPath[i].y);
-                    maxPoint.x = Math.max(maxPoint.x, projectedPath[i].x);
-                    maxPoint.y = Math.max(maxPoint.y, projectedPath[i].y);
+                for (let i = 0; i < screenSpacePath.length; i++) {
+                    minx = Math.min(minx, screenSpacePath[i].x);
+                    miny = Math.min(miny, screenSpacePath[i].y);
+                    maxx = Math.max(maxx, screenSpacePath[i].x);
+                    maxy = Math.max(maxy, screenSpacePath[i].y);
                 }
 
-                if (minPoint.x >= screenPlaneMin.x && maxPoint.x <= screenPlaneMax.x &&
-                    minPoint.y >= screenPlaneMin.y && maxPoint.y <= screenPlaneMax.y) {
+                if (minx >= screenPlaneMin.x && maxx <= screenPlaneMax.x &&
+                    miny >= screenPlaneMin.y && maxy <= screenPlaneMax.y) {
                     // Quad fully visible
-                    segments = [projectedPath];
-                } else if (maxPoint.x < screenPlaneMin.x || minPoint.x > screenPlaneMax.x ||
-                    maxPoint.y < screenPlaneMin.y || minPoint.y > screenPlaneMax.y) {
+                    segments = [screenSpacePath];
+                } else if (maxx < screenPlaneMin.x || minx > screenPlaneMax.x ||
+                    maxy < screenPlaneMin.y || miny > screenPlaneMax.y) {
                     // Not visible
                     segments = [];
                 } else {
-                    segments = clipLine([projectedPath], screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                    segments = clipLine([screenSpacePath], screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
                 }
             }
 

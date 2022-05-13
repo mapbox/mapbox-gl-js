@@ -8,6 +8,7 @@ import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import {easeCubicInOut} from '../util/util.js';
+import browser from '../util/browser.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -21,6 +22,9 @@ import {
     globePoleMatrixForTile,
     getGridMatrix,
     globeTileLatLngCorners,
+    globeNormalizeECEF,
+    globeTileBounds,
+    globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
@@ -141,14 +145,16 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
     let program, programMode;
     const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
+    const tr = painter.transform;
+    const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
     const setShaderMode = (mode, isWireframe) => {
-        if (programMode === mode)
-            return;
+        if (programMode === mode) return;
         const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
-        if (isWireframe) {
-            defines.push(shaderDefines[showWireframe]);
-        }
+
+        if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
+        if (isWireframe) defines.push(shaderDefines[showWireframe]);
+
         program = painter.useProgram('globeRaster', null, defines);
         programMode = mode;
     };
@@ -156,11 +162,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const colorMode = painter.colorModeForRenderPass();
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
-    const tr = painter.transform;
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
+    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -198,9 +204,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tileCenterLatitude = (tileCornersLatLng[0][0] + tileCornersLatLng[1][0]) / 2.0;
             const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
             const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
+            const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, globeMatrix, globeMercatorMatrix,
-                globeToMercatorTransition(tr.zoom), mercatorCenter, gridMatrix);
+                tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
+                mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
+                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -222,6 +230,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     // Render the poles.
     if (sharedBuffers) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
+
         program = painter.useProgram('globeRaster', null, defines);
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
@@ -239,11 +249,14 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
+                const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, 0.0, mercatorCenter),
-                    "globe_pole_raster", vertexBuffer, indexBuffer, segment);
+                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
+                    tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
+                    indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, {});
 

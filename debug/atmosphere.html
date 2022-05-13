@@ -11,11 +11,21 @@
         .mapboxgl-canvas {
           background-image: url("https://img.favpng.com/9/21/21/royalty-free-photography-illustration-png-favpng-d38x16Mw2kxSFqtUSXG8gT5CQ_t.jpg");
         }
+        #flyTo { 
+            position: absolute;
+            top: 0; left: 0;
+            margin: 15px;
+            font-size: 14px;
+            padding: 8px;
+            background-color: lightblue;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<button id='flyTo'>Fly to</button>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -42,13 +52,34 @@ var guiParams = new GUIParams();
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 10,
+    zoom: 2,
     center: [78.7193, 36.2927],
-    pitch: 75,
-    bearing: -10,
     style: 'mapbox://styles/mapbox/streets-v11',
     hash: true,
     projection: 'globe'
+});
+
+document.getElementById('flyTo').addEventListener('click', (e) => {
+    if (e.target.innerHTML === 'Fly to') {
+        e.target.innerHTML = 'Fly out';
+        map.flyTo({
+            center: [8.11862, 46.58842],
+            zoom: 12.5,
+            bearing: 130,
+            pitch: 75,
+            duration: 12000
+        });
+    } else {
+        e.target.innerHTML = 'Fly to';
+        map.flyTo({
+            center: [78.7193, 36.2927],
+            zoom: 2,
+            pitch: 0,
+            bearing: 0,
+            duration: 12000
+        });
+    }
+
 });
 
 function updatePreset(value) {
@@ -222,6 +253,19 @@ map.on('style.load', function() {
         "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
         "star-intensity": guiParams.starIntensity
     });
+
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.terrain-rgb',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+
+    map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': 1.5
+    });
+
 });
 
 </script>

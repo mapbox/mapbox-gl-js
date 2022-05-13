@@ -6,12 +6,16 @@ import type {StructArrayLayout} from '../../util/struct_array.js';
 export const symbolLayoutAttributes: StructArrayLayout = createLayout([
     {name: 'a_pos_offset',   components: 4, type: 'Int16'},
     {name: 'a_tex_size',     components: 4, type: 'Uint16'},
-    {name: 'a_pixeloffset',  components: 4, type: 'Int16'},
-    {name: 'a_z_tile_anchor', components: 4, type: 'Int16'}
+    {name: 'a_pixeloffset',  components: 4, type: 'Int16'}
+], 4);
+
+export const symbolGlobeExtAttributes: StructArrayLayout = createLayout([
+    {name: 'a_globe_anchor', components: 3, type: 'Int16'},
+    {name: 'a_globe_normal', components: 3, type: 'Float32'},
 ], 4);
 
 export const dynamicLayoutAttributes: StructArrayLayout = createLayout([
-    {name: 'a_projected_pos', components: 3, type: 'Float32'}
+    {name: 'a_projected_pos', components: 4, type: 'Float32'}
 ], 4);
 
 export const placementOpacityAttributes: StructArrayLayout = createLayout([

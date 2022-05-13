@@ -48,3 +48,34 @@ export default function resample(line: Array<Point>, reproject: (Point) => Point
 
     return resampled;
 }
+
+function addResampledPred(resampled: Point[], a: Point, b: Point, reproject, pred) {
+    const split = pred(a, b);
+
+    // if the predicate condition is met, recurse into two halves
+    if (split) {
+        const mid = a.add(b).mult(0.5);
+        reproject(mid);
+
+        addResampledPred(resampled, a, mid, reproject, pred);
+        addResampledPred(resampled, mid, b, reproject, pred);
+
+    } else {
+        resampled.push(b);
+    }
+}
+
+export function resamplePred(line: Point[], reproject: (Point) => Point, predicate: (Point, Point) => boolean): Point[] {
+    let prev = line[0];
+    reproject(prev);
+    const resampled = [prev];
+
+    for (let i = 1; i < line.length; i++) {
+        const point = line[i];
+        reproject(point);
+        addResampledPred(resampled, prev, point, reproject, predicate);
+        prev = point;
+    }
+
+    return resampled;
+}

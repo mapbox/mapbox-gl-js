@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Animate a point along a route</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<style>
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    
+    .overlay button {
+        font: 600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        background-color: #3386c0;
+        color: #fff;
+        display: inline-block;
+        margin: 0;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+ 
+    .overlay button:hover {
+        background-color: #4ea0da;
+    }
+
+</style>
+
+<div id="map"></div>
+<div class="overlay">
+    <button id='replay'>Replay</button>
+    <button id='globe'>Switch to globe</button>
+</div>
+
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+    /* globals turf */
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-96, 37.8],
+        zoom: 2.5
+    });
+
+    // San Francisco
+    const origin = [-122.414, 37.776];
+
+    // Washington DC
+    const destination = [-77.032, 38.913];
+
+    // A simple line from origin to destination.
+    const route = {
+        'type': 'FeatureCollection',
+        'features': [
+            {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': [origin, destination]
+                }
+            }
+        ]
+    };
+
+    // A single point that animates along the route.
+    // Coordinates are initially set to origin.
+    const point = {
+        'type': 'FeatureCollection',
+        'features': [
+            {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': origin
+                }
+            }
+        ]
+    };
+
+    // Calculate the distance in kilometers between route start/end point.
+    const lineDistance = turf.length(route.features[0]);
+
+    const arc = [];
+
+    // Number of steps to use in the arc and animation, more steps means
+    // a smoother arc and animation, but too many steps will result in a
+    // low frame rate
+    const steps = 500;
+
+    // Draw an arc between the `origin` & `destination` of the two points
+    for (let i = 0; i < lineDistance; i += lineDistance / steps) {
+        const segment = turf.along(route.features[0], i);
+        arc.push(segment.geometry.coordinates);
+    }
+
+    // Update the route with calculated arc coordinates
+    route.features[0].geometry.coordinates = arc;
+
+    // Used to increment the value of the point measurement against the route.
+    let counter = 0;
+
+    map.on('load', () => {
+        map.setFog({
+            'horizon-blend': 0.0
+        });
+
+        // Add a source and layer displaying a point which will be animated in a circle.
+        map.addSource('route', {
+            'type': 'geojson',
+            'data': route
+        });
+
+        map.addSource('point', {
+            'type': 'geojson',
+            'data': point
+        });
+
+        map.addLayer({
+            'id': 'route',
+            'source': 'route',
+            'type': 'line',
+            'paint': {
+                'line-width': 2,
+                'line-color': '#007cbf'
+            }
+        });
+
+        map.addLayer({
+            'id': 'point',
+            'source': 'point',
+            'type': 'symbol',
+            'layout': {
+                // This icon is a part of the Mapbox Streets style.
+                // To view all images available in a Mapbox style, open
+                // the style in Mapbox Studio and click the "Images" tab.
+                // To add a new image to the style at runtime see
+                // https://docs.mapbox.com/mapbox-gl-js/example/add-image/
+                'icon-image': 'airport-15',
+                'icon-size': 3,
+                'icon-rotate': ['get', 'bearing'],
+                'icon-rotation-alignment': 'map',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true
+            }
+        });
+
+        function animate() {
+            const start = route.features[0].geometry.coordinates[counter >= steps ? counter - 1 : counter];
+            const end = route.features[0].geometry.coordinates[counter >= steps ? counter : counter + 1];
+            if (!start || !end) return;
+
+            // Update point geometry to a new position based on counter denoting
+            // the index to access the arc
+            point.features[0].geometry.coordinates = route.features[0].geometry.coordinates[counter];
+
+            // Calculate the bearing to ensure the icon is rotated to match the route arc
+            // The bearing is calculated between the current point and the next point, except
+            // at the end of the arc, which uses the previous point and the current point
+            point.features[0].properties.bearing = turf.bearing(turf.point(start), turf.point(end));
+
+            // Update the source with this new data
+            map.getSource('point').setData(point);
+            console.log(map.getSource('point'));
+            // Request the next frame of animation as long as the end has not been reached
+            if (counter < steps) requestAnimationFrame(animate);
+
+            counter = counter + 1;
+        }
+
+        document.getElementById('replay').addEventListener('click', () => {
+            // Set the coordinates of the original point back to origin
+            point.features[0].geometry.coordinates = origin;
+            // Update the source layer
+            map.getSource('point').setData(point);
+            // Reset the counter
+            counter = 0;
+            // Restart the animation
+            animate(counter);
+        });
+
+        document.getElementById('globe').addEventListener('click', (e) => {
+            if (e.target.innerHTML === 'Switch to globe') {
+                e.target.innerHTML = 'Switch to mercator';
+                map.setProjection('globe');
+            } else {
+                e.target.innerHTML = 'Switch to globe';
+                map.setProjection('mercator');
+            }
+        });
+
+        // Start the animation
+        animate(counter);
+    });
+</script>
+
+</body>
+</html>

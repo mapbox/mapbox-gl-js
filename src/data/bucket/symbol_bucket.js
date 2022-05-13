@@ -1,6 +1,7 @@
 // @flow
 
 import {symbolLayoutAttributes,
+    symbolGlobeExtAttributes,
     collisionVertexAttributes,
     collisionVertexAttributesExt,
     collisionBoxLayout,
@@ -8,6 +9,7 @@ import {symbolLayoutAttributes,
 } from './symbol_attributes.js';
 
 import {SymbolLayoutArray,
+    SymbolGlobeExtArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
     CollisionBoxLayoutArray,
@@ -42,7 +44,11 @@ import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Formatted from '../../style-spec/expression/types/formatted.js';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
-import {mat4} from 'gl-matrix';
+import {resamplePred} from '../../geo/projection/resample.js';
+import {lngFromMercatorX, latFromMercatorY} from '../../geo/mercator_coordinate.js';
+import {latLngToECEF} from '../../geo/projection/globe_util.js';
+import {mat4, vec3} from 'gl-matrix';
+import EXTENT from '../extent.js';
 
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
@@ -75,7 +81,7 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
-import type {Mat4} from 'gl-matrix';
+import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
 
 export type CollisionArrays = {
@@ -124,14 +130,14 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
+function addVertex(array, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, isSDF: boolean, pixelOffsetX, pixelOffsetY, minFontScaleX, minFontScaleY) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
 
     array.emplaceBack(
         // a_pos_offset
-        projectedAnchorX,
-        projectedAnchorY,
+        tileAnchorX,
+        tileAnchorY,
         Math.round(ox * 32),
         Math.round(oy * 32),
 
@@ -143,21 +149,37 @@ function addVertex(array, projectedAnchorX, projectedAnchorY, projectedAnchorZ, 
         pixelOffsetX * 16,
         pixelOffsetY * 16,
         minFontScaleX * 256,
-        minFontScaleY * 256,
-
-        // a_posz
-        projectedAnchorZ,
-        tileAnchorX,
-        tileAnchorY,
-        0
+        minFontScaleY * 256
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number) {
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+function addGlobeVertex(array, projAnchorX, projAnchorY, projAnchorZ, normX, normY, normZ) {
+    array.emplaceBack(
+        // a_globe_anchor
+        projAnchorX,
+        projAnchorY,
+        projAnchorZ,
+
+        // a_globe_normal
+        normX,
+        normY,
+        normZ
+    );
+}
+
+function updateGlobeVertexNormal(array: SymbolGlobeExtArray, vertexIdx: number, normX: number, normY: number, normZ: number) {
+    // Modify float32 array directly. 20 bytes per entry, 3xInt16 for position, 3xfloat32 for normal
+    const offset = vertexIdx * 5 + 2;
+    array.float32[offset + 0] = normX;
+    array.float32[offset + 1] = normY;
+    array.float32[offset + 2] = normZ;
+}
+
+function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, x: number, y: number, z: number, angle: number) {
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
+    dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
 }
 
 function containsRTLText(formattedText: Formatted): boolean {
@@ -185,6 +207,9 @@ export class SymbolBuffers {
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
 
+    globeExtVertexArray: SymbolGlobeExtArray;
+    globeExtVertexBuffer: VertexBuffer;
+
     placedSymbolArray: PlacedSymbolArray;
 
     constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
@@ -195,6 +220,7 @@ export class SymbolBuffers {
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
         this.placedSymbolArray = new PlacedSymbolArray();
+        this.globeExtVertexArray = new SymbolGlobeExtArray();
     }
 
     isEmpty(): boolean {
@@ -214,6 +240,9 @@ export class SymbolBuffers {
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
+            if (this.globeExtVertexArray.length > 0) {
+                this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
+            }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
@@ -231,6 +260,9 @@ export class SymbolBuffers {
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
         this.opacityVertexBuffer.destroy();
+        if (this.globeExtVertexBuffer) {
+            this.globeExtVertexBuffer.destroy();
+        }
     }
 }
 
@@ -439,6 +471,7 @@ class SymbolBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const layer = this.layers[0];
         const layout = layer.layout;
+        const isGlobe = this.projection === 'globe';
 
         const textFont = layout.get('text-font');
         const textField = layout.get('text-field');
@@ -475,6 +508,30 @@ class SymbolBucket implements Bucket {
             }
 
             if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
+
+            if (isGlobe && feature.type !== 1 && canonical.z <= 5) {
+                // Resample long lines and polygons in globe view so that their length wont exceed ~0.19 radians (360/32 degrees).
+                // Otherwise lines could clip through the globe as the resolution is not enough to represent curved paths.
+                // The threshold value follows subdivision size used with fill extrusions
+                const geom = evaluationFeature.geometry;
+                const tiles = 1 << canonical.z;
+                const mx = canonical.x;
+                const my = canonical.y;
+
+                // cos(11.25 degrees) = 0.98078528056
+                const cosAngleThreshold = 0.98078528056;
+
+                for (let i = 0; i < geom.length; i++) {
+                    geom[i] = resamplePred(
+                        geom[i],
+                        p => p,
+                        (a, b) => {
+                            const v0 = latLngToECEF(latFromMercatorY((a.y / EXTENT + my) / tiles), lngFromMercatorX((a.x / EXTENT + mx) / tiles), 1);
+                            const v1 = latLngToECEF(latFromMercatorY((b.y / EXTENT + my) / tiles), lngFromMercatorX((b.x / EXTENT + mx) / tiles), 1);
+                            return vec3.dot(v0, v1) < cosAngleThreshold;
+                        });
+                }
+            }
 
             let text: Formatted | void;
             if (hasText) {
@@ -641,7 +698,7 @@ class SymbolBucket implements Bucket {
                alongLine: boolean,
                feature: SymbolFeature,
                writingMode: any,
-               labelAnchor: Anchor,
+               globe: ?{ anchor: Anchor, up: Vec3 },
                tileAnchor: Anchor,
                lineStartIndex: number,
                lineLength: number,
@@ -650,6 +707,7 @@ class SymbolBucket implements Bucket {
                canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
+        const globeExtVertexArray = arrays.globeExtVertexArray;
 
         const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
@@ -664,12 +722,23 @@ class SymbolBucket implements Bucket {
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
-            addDynamicAttributes(arrays.dynamicLayoutVertexArray, labelAnchor, angle);
+            if (globe) {
+                const globeAnchor = globe.anchor;
+                const up = globe.up;
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, angle);
+            } else {
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
+            }
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -684,7 +753,9 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y, labelAnchor.z, tileAnchor.x, tileAnchor.y,
+        const projectedAnchor = globe ? globe.anchor : tileAnchor;
+
+        arrays.placedSymbolArray.emplaceBack(projectedAnchor.x, projectedAnchor.y, projectedAnchor.z, tileAnchor.x, tileAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, (tileAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
@@ -1051,4 +1122,4 @@ SymbolBucket.MAX_GLYPHS = 65535;
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
 export default SymbolBucket;
-export {addDynamicAttributes};
+export {addDynamicAttributes, updateGlobeVertexNormal};

@@ -41,8 +41,10 @@ void main() {
     highp vec3 closest_point_forward = abs(globe_pos_dot_dir) * dir;
     float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
 
-    if (norm_dist_from_center < 1.0) {
-        gl_FragColor = u_color;
+    // Compare against 0.98 instead of 1.0 to give enough room for the custom
+    // antialiasing that might be applied from globe_raster.fragment.glsl
+    if (norm_dist_from_center < 0.98) {
+        discard;
         return;
     }
 #endif
