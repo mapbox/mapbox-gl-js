@@ -2,8 +2,8 @@
 
 ### Features ✨
 
-* Extend atmospheric `fog` with three new style specification properties: `high-color`, `space-color` and `star-intensity` to allow the design of atmosphere around the globe ([#11590](https://github.com/mapbox/mapbox-gl-js/pull/11590))
-* Add a new line layer paint property in the style specification: `{"line-trim-offset", [trim-start, trim-end]}`, the property will only be effective when `line-gradient` property is set. The line part between `[trim-start, trim-end]` will be marked as transparent to make a line gradient a vanishing effect. The line trim-off percentage is based on the whole line range `[0.0, 1.0]`. If either `trim-start` or `trim-end` offset is out of valid range, the default range `[0.0, 0.0]` will be set. ([#11570](https://github.com/mapbox/mapbox-gl-js/pull/11570))
+* Extend atmospheric `fog` with three new style specification properties: `high-color`, `space-color` and `star-intensity` to allow the design of atmosphere around the globe and night skies. ([#11590](https://github.com/mapbox/mapbox-gl-js/pull/11590))
+* Add a new line layer paint property in the style specification: `{"line-trim-offset", [trim-start, trim-end]}`, the property will only be effective when `line-gradient` property is set. The line part between `[trim-start, trim-end]` will be marked as transparent to make a vanishing effect. ([#11570](https://github.com/mapbox/mapbox-gl-js/pull/11570))
 * Add `source` field requirement to terrain exaggeration in the style specification.  ([#11664](https://github.com/mapbox/mapbox-gl-js/pull/11664))
 
 ## 13.24.0
