@@ -490,33 +490,34 @@ export default class Marker extends Evented {
         const map = this._map;
         const alignment = this.getPitchAlignment();
 
-        if (alignment === 'viewport' || !map || !pos) { return ''; }
-        if (alignment === 'map') {
-            if (!map._usingGlobe()) { // 'map' alignment on a flat map
-                const pitch = map.getPitch();
-                return pitch ? `rotateX(${pitch}deg)` : '';
-            } // "map" alignment on globe
-            const tilt = radToDeg(globeTiltAtLngLat(map.transform, pos));
-            const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
-            const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
-            const yTilt = posFromCenter.x * tiltOverDist;
-            const xTilt = -posFromCenter.y * tiltOverDist;
-            if (!xTilt && !yTilt) { return ''; }
-            return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
-        }
-        if (map._usingGlobe()) {         // 'horizon" alignment on globe
-            const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtLngLat(map.transform, this._lngLat)) / 90);
-            let zoomTransition = 1;
-            const zoom = map.getZoom();
-            const centerPoint = globeCenterToScreenPoint(map.transform);
-            if (zoom > ALIGN_TO_HORIZON_BELOW_ZOOM) {
-                const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, zoom);
-                centerPoint.y += smooth * map.transform.height;
-                zoomTransition = 1 - smooth;
+        if (map && pos) {
+            if (alignment === 'map') {
+                if (!map._usingGlobe()) { // 'map' alignment on a flat map
+                    const pitch = map.getPitch();
+                    return pitch ? `rotateX(${pitch}deg)` : '';
+                } // "map" alignment on globe
+                const tilt = radToDeg(globeTiltAtLngLat(map.transform, pos));
+                const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
+                const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
+                const yTilt = posFromCenter.x * tiltOverDist;
+                const xTilt = -posFromCenter.y * tiltOverDist;
+                if (!xTilt && !yTilt) { return ''; }
+                return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
             }
-            return `rotateX(${pitch * zoomTransition}deg)`;
+            if (map._usingGlobe() && alignment === 'horizon') {
+                const pitch = MAX_PITCH * (1 - radToDeg(globeTiltAtLngLat(map.transform, this._lngLat)) / 90);
+                let zoomTransition = 1;
+                const zoom = map.getZoom();
+                const centerPoint = globeCenterToScreenPoint(map.transform);
+                if (zoom > ALIGN_TO_HORIZON_BELOW_ZOOM) {
+                    const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, zoom);
+                    centerPoint.y += smooth * map.transform.height;
+                    zoomTransition = 1 - smooth;
+                }
+                return `rotateX(${pitch * zoomTransition}deg)`;
+            }
         }
-        return ''; // 'horizon' without globe (or at high zooms) behavies as viewport
+        return ''; // 'horizon' without globe and invalid alignments behave as viewport
     }
 
     _calculateZTransform(): string {
