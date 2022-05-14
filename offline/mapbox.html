@@ -43,7 +43,7 @@
         //style: 'mapbox://styles/mapbox/basic-v9',
         //"sprite": "mapbox://sprites/mapbox/streets-v8",
         //"sprite": "http://127.0.0.1/mvt-demo/css/sprite",
-        //"glyphs": "http://127.0.0.1/mvt-demo/css/font/songjian/{fontstack}/{range}.pbf",
+        "glyphs": "http://127.0.0.1/mvt-demo/css/font/{fontstack}/{range}.pbf",
         "sources": {
           "osm-tiles": {
             "type": "raster",
@@ -53,7 +53,33 @@
               ],
             'tileSize': 256
           },
-
+            "points":{
+              "type": "geojson",
+              "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [116.3972282409668, 39.90960456049752]
+                  },
+                  "properties": {
+                    "title": "Mapbox DC 涓浗鏂囧瓧",
+                    "icon": "monument"
+                  }
+                  }, {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [116.5, 40.5]
+                  },
+                  "properties": {
+                    "title": "Mapbox SF",
+                    "icon": "harbor"
+                  }
+                  }]
+              }
+            }
         },
         "layers": [{
           "id": "simple-tiles",
@@ -61,6 +87,18 @@
           "source": "osm-tiles",
           "minzoom": 0,
           "maxzoom": 5
+        },
+        {
+          "id": "points",
+          "type": "symbol",
+          "source": "points",
+          "layout": {
+            "icon-image": "{icon}-15",
+            "text-field": "{title}",
+            "text-font": ["songjian"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+          }
         }]
     };
     var map = window.map = new mapboxgl.Map({
@@ -70,49 +108,6 @@
         style: mapStyle,
         hash: false,
         maxZoom: 10
-    });
-
-    // 添加数据源
-    map.addSource("points", {
-      "type": "geojson",
-      "data": {
-        "type": "FeatureCollection",
-        "features": [{
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [116.3972282409668, 39.90960456049752]
-          },
-          "properties": {
-            "title": "Mapbox DC 中国文字",
-            "icon": "monument"
-          }
-          }, {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [116.5, 40]
-          },
-          "properties": {
-            "title": "Mapbox SF",
-            "icon": "harbor"
-          }
-          }]
-      }
-    });
-
-    // 添加图层，使得上面的数据源里面的数据可视化
-    map.addLayer({
-      "id": "points",
-      "type": "symbol",
-      "source": "points",
-      "layout": {
-        "icon-image": "{icon}-15",
-        "text-field": "{title}",
-        "text-font": ["Open Sans Regular"],
-        "text-offset": [0, 0.6],
-        "text-anchor": "top"
-      }
     });
 
     map.addControl(new mapboxgl.NavigationControl())
