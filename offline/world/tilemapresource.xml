@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <TileMap version="1.0.0" tilemapservice="http://tms.osgeo.org/1.0.0">
+      <Title>world.tif</Title>
+      <Abstract></Abstract>
+      <SRS>EPSG:3857</SRS>
+      <BoundingBox minx="-180.00000000000000" miny="-85.05112877980659" maxx="180.00000000000000" maxy="85.05112877980660"/>
+      <Origin x="-180.00000000000000" y="-85.05112877980659"/>
+      <TileFormat width="256" height="256" mime-type="image/png" extension="png"/>
+      <TileSets profile="mercator">
+        <TileSet href="0" units-per-pixel="156543.03390000000945" order="0"/>
+        <TileSet href="1" units-per-pixel="78271.51695000000473" order="1"/>
+        <TileSet href="2" units-per-pixel="39135.75847500000236" order="2"/>
+      </TileSets>
+    </TileMap>
+    
