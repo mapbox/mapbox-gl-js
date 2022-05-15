@@ -43,13 +43,16 @@
         //style: 'mapbox://styles/mapbox/basic-v9',
         //"sprite": "mapbox://sprites/mapbox/streets-v8",
         //"sprite": "http://127.0.0.1/mvt-demo/css/sprite",
-        "glyphs": "http://127.0.0.1/mvt-demo/css/font/{fontstack}/{range}.pbf",
+        //"glyphs": "http://127.0.0.1/mvt-demo/css/font/{fontstack}/{range}.pbf",
+        //"sprite": "css/sprite", //必须http/https开头的全路径协议，不能写成相对路径，file协议也无效，即使写成./css/sprite也不行
+        "glyphs": "css/font/{fontstack}/{range}.pbf", //只有Chrome浏览器并设置启动参数 -allow-file-access-from-files 才可以使用file://协议访问本地文件，其他浏览器还没有找到设置的地方
         "sources": {
           "osm-tiles": {
             "type": "raster",
             scheme: "tms",
             'tiles': [
-                  "http://127.0.0.1/mvt-demo/world/{z}/{x}/{y}.png"
+                  //"http://127.0.0.1/mvt-demo/world/{z}/{x}/{y}.png"
+                  "world/{z}/{x}/{y}.png" //只有Chrome浏览器并设置启动参数 -allow-file-access-from-files 才可以使用file://协议访问本地文件，其他浏览器还没有找到设置的地方. https://blog.csdn.net/chenmoupeng/article/details/107317247
               ],
             'tileSize': 256
           },
