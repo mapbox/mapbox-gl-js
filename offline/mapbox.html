@@ -44,7 +44,7 @@
         //"sprite": "mapbox://sprites/mapbox/streets-v8",
         //"sprite": "http://127.0.0.1/mvt-demo/css/sprite",
         //"glyphs": "http://127.0.0.1/mvt-demo/css/font/{fontstack}/{range}.pbf",
-        //"sprite": "css/sprite", //必须http/https开头的全路径协议，不能写成相对路径，file协议也无效，即使写成./css/sprite也不行
+        "sprite": "css/sprite", //修改了mapbox.js的normalizeSpriteURL函数，现在也可以写成相对路径了
         "glyphs": "css/font/{fontstack}/{range}.pbf", //只有Chrome浏览器并设置启动参数 -allow-file-access-from-files 才可以使用file://协议访问本地文件，其他浏览器还没有找到设置的地方
         "sources": {
           "osm-tiles": {
@@ -74,7 +74,7 @@
                   "type": "Feature",
                   "geometry": {
                     "type": "Point",
-                    "coordinates": [116.5, 40.5]
+                    "coordinates": [116.5, 30]
                   },
                   "properties": {
                     "title": "Mapbox SF",
