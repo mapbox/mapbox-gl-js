@@ -509,7 +509,7 @@ export default class Marker extends Evented {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
-                return radToDeg(Math.atan2(diff.y, diff.x)) - 90;
+                return this._rotation + radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
             return this._rotation - this._map.getBearing();
         }
