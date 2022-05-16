@@ -12,7 +12,7 @@ attribute vec4 a_data;
 #ifdef RENDER_LINE_GRADIENT
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices
-attribute vec4 a_packed;
+attribute highp vec4 a_packed;
 #endif
 
 #ifdef RENDER_LINE_DASH
@@ -112,8 +112,8 @@ void main() {
 #ifdef RENDER_LINE_GRADIENT
     float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-    float a_clip_start = a_packed[2];
-    float a_clip_end = a_packed[3];
+    highp float a_clip_start = a_packed[2];
+    highp float a_clip_end = a_packed[3];
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
 
