@@ -1,6 +1,6 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
-uniform vec2 u_trim_offset;
+uniform highp vec2 u_trim_offset;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
@@ -55,14 +55,14 @@ void main() {
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
-    vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
-    float start = v_uv[2];
-    float end = v_uv[3];
-    float trim_start = u_trim_offset[0];
-    float trim_end = u_trim_offset[1];
+    highp vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
+    highp float start = v_uv[2];
+    highp float end = v_uv[3];
+    highp float trim_start = u_trim_offset[0];
+    highp float trim_end = u_trim_offset[1];
     // v_uv.x is the relative prorgress based on each clip. Calculate the absolute progress based on
     // the whole line by combining the clip start and end value.
-    float line_progress = (start + (v_uv.x) * (end - start));
+    highp float line_progress = (start + (v_uv.x) * (end - start));
     // Mark the pixel to be transparent when:
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
