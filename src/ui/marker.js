@@ -502,7 +502,7 @@ export default class Marker extends Evented {
             if (!xTilt && !yTilt) { return ''; }
             return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
         }
-        return ''; // invalid alignments behave as viewport
+        return ''; // Invalid alignments behave as viewport
     }
 
     _calculateZTransform(): string {
