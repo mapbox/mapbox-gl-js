@@ -1640,6 +1640,7 @@ test('Map', (t) => {
             options = {name: 'lambertConformalConic', center: [20, 25], parallels: [30, -30]};
             map.setProjection(options);
             t.deepEqual(map.getProjection(), options);
+            t.notOk(map._showingGlobe());
             t.end();
         });
 
@@ -1653,6 +1654,7 @@ test('Map', (t) => {
                     parallels: [29.5, 45.5]
                 });
                 t.deepEqual(map.getProjection(), map.transform.getProjection());
+                t.notOk(map._showingGlobe());
                 t.end();
             });
         });
@@ -1665,6 +1667,7 @@ test('Map', (t) => {
                     center: [0, 0],
                 });
                 t.deepEqual(map.getProjection(), map.transform.getProjection());
+                t.ok(map._showingGlobe());
                 t.end();
             });
 
@@ -1682,6 +1685,7 @@ test('Map', (t) => {
                     name: 'mercator',
                     center: [0, 0],
                 });
+                t.notOk(map._showingGlobe());
                 t.end();
             });
         });
@@ -1693,21 +1697,28 @@ test('Map', (t) => {
                 t.equal(map.painter.clearBackgroundTiles.callCount, 0);
                 t.deepEqual(map.getProjection().name, 'globe');
                 t.deepEqual(map.transform.getProjection().name, `globe`);
+                t.ok(map._showingGlobe());
+
                 map.setZoom(12);
                 map.once('render', () => {
                     t.equal(map.painter.clearBackgroundTiles.callCount, 0);
                     t.deepEqual(map.getProjection().name, 'globe');
                     t.deepEqual(map.transform.getProjection().name, `mercator`);
+                    t.notOk(map._showingGlobe());
+
                     map.setProjection({name: 'mercator'});
                     t.equal(map.painter.clearBackgroundTiles.callCount, 0);
                     t.deepEqual(map.getProjection().name, 'mercator');
                     t.deepEqual(map.transform.getProjection().name, `mercator`);
+                    t.notOk(map._showingGlobe());
+
                     map.setZoom(3);
                     map.once('render', () => {
                         map.setProjection({name: 'globe'});
                         t.equal(map.painter.clearBackgroundTiles.callCount, 1);
                         t.deepEqual(map.getProjection().name, 'globe');
                         t.deepEqual(map.transform.getProjection().name, `globe`);
+                        t.ok(map._showingGlobe());
                         t.end();
                     });
                 });
