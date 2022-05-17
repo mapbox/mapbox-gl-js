@@ -628,7 +628,7 @@ export default class Popup extends Evented {
             });
         }
 
-        if (!this._marker && map._usingGlobe()) {
+        if (!this._marker && map._showingGlobe()) {
             const opacity = isLngLatBehindGlobe(map.transform, this._lngLat) ? 0 : 1;
             this._setOpacity(opacity);
         }
