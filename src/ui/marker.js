@@ -531,7 +531,8 @@ export default class Marker extends Evented {
                 return this._rotation + radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
             return this._rotation - map.getBearing();
-        } else if (this._rotationAlignment === "horizon" && map._showingGlobe()) {
+        }
+        if (alignment === 'horizon') {
             const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
             let zoomTransition = 1;
