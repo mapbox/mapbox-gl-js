@@ -13,7 +13,8 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
+import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe, GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
+import assert from 'assert';
 
 type Options = {
     element?: HTMLElement,
@@ -35,6 +36,9 @@ export const TERRAIN_OCCLUDED_OPACITY = 0.2;
 // Zoom levels to transition 'horizon' aligned markers in globe view.
 const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
 const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
+
+assert(ALIGN_TO_SCREEN_ABOVE_ZOOM <= GLOBE_ZOOM_THRESHOLD_MAX, 'Horizon-oriented marker transition should be complete when globe switches to Mercator');
+assert(ALIGN_TO_HORIZON_BELOW_ZOOM <= ALIGN_TO_SCREEN_ABOVE_ZOOM);
 
 /**
  * Creates a marker component.
@@ -470,18 +474,12 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!pos || !map) { return; }
 
-        const xy = this._calculateXYTransform();
-        const z = this._calculateZTransform();
-        // In globe with `horizon` alignment, we adjust first pitch, then rotation so that the marker
-        // is always compressed vertically and appears to be popping out from the map.
-        // const rotation = this.getPitchAlignment() === 'horizon' ? z + xy : xy + z;
-        const rotation = xy + z;
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
             translate(${pos.x}px,${pos.y}px)
             ${anchorTranslate[this._anchor]}
-            ${rotation}
+            ${this._calculateXYTransform()} ${this._calculateZTransform()}
             translate(${offset.x}px,${offset.y}px)
         `;
     }
