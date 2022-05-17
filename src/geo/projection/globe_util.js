@@ -527,7 +527,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera.
+// Return the angle of the normal vector at a point on the globe relative to the camera.
 // i.e. how much to tilt map-aligned markers.
 export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);

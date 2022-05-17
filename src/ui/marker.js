@@ -32,7 +32,7 @@ const defaultHeight = 41;
 const defaultWidth = 27;
 
 export const TERRAIN_OCCLUDED_OPACITY = 0.2;
-// Zoom levels to transition "horizon" aligned markers in globe view.
+// Zoom levels to transition 'horizon' aligned markers in globe view.
 const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
 const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
 
@@ -440,7 +440,7 @@ export default class Marker extends Evented {
         }
         const mapLocation = map.unproject(pos);
         let opacity;
-        if (map._usingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
+        if (map._showingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
             opacity = 0;
         } else {
             opacity = 1 - map._queryFogOpacity(mapLocation);
@@ -472,13 +472,15 @@ export default class Marker extends Evented {
 
         const xy = this._calculateXYTransform();
         const z = this._calculateZTransform();
-        // In globe `horizon` alignment, we adjust first pitch, then rotation so that the marker
+        // In globe with `horizon` alignment, we adjust first pitch, then rotation so that the marker
         // is always compressed vertically and appears to be popping out from the map.
-        const rotation = this.getPitchAlignment() === 'horizon' ? z + xy : xy + z;
+        // const rotation = this.getPitchAlignment() === 'horizon' ? z + xy : xy + z;
+        const rotation = xy + z;
         const offset = this._offset.mult(this._scale);
 
         this._element.style.transform = `
-            translate(${pos.x}px,${pos.y}px) ${anchorTranslate[this._anchor]}
+            translate(${pos.x}px,${pos.y}px)
+            ${anchorTranslate[this._anchor]}
             ${rotation}
             translate(${offset.x}px,${offset.y}px)
         `;
@@ -489,20 +491,26 @@ export default class Marker extends Evented {
         const map = this._map;
         const alignment = this.getPitchAlignment();
 
-        if (map && pos && alignment === 'map') {
-            if (!map._usingGlobe()) { // 'map' alignment on a flat map
-                const pitch = map.getPitch();
-                return pitch ? `rotateX(${pitch}deg)` : '';
-            } // "map" alignment on globe
-            const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
-            const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
-            const tiltOverDist =  tilt / (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
-            const yTilt = posFromCenter.x * tiltOverDist;
-            const xTilt = -posFromCenter.y * tiltOverDist;
-            if (!xTilt && !yTilt) { return ''; }
-            return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
+        // `viewport', 'auto' and invalid arugments do no pitch transformation.
+        if (!map || !pos || alignment !== 'map') {
+            return ``;
         }
-        return ''; // Invalid alignments behave as viewport
+        // 'map' alignment on a flat map
+        if (!map._showingGlobe()) {
+            const pitch = map.getPitch();
+            return pitch ? `rotateX(${pitch}deg)` : '';
+        }
+        // 'map' alignment on globe
+        const tilt = radToDeg(globeTiltAtLngLat(map.transform, this._lngLat));
+        const posFromCenter = pos.sub(globeCenterToScreenPoint(map.transform));
+        const manhattanDistance = (Math.abs(posFromCenter.x) + Math.abs(posFromCenter.y));
+        if (manhattanDistance === 0) { return ''; }
+
+        const tiltOverDist =  tilt / manhattanDistance;
+        const yTilt = posFromCenter.x * tiltOverDist;
+        const xTilt = -posFromCenter.y * tiltOverDist;
+        return `rotateX(${xTilt}deg) rotateY(${yTilt}deg)`;
+
     }
 
     _calculateZTransform(): string {
@@ -515,15 +523,15 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!map || !pos) { return 0; }
         const alignment = this.getRotationAlignment();
-        if (alignment === "map") {
-            if (map._usingGlobe()) {
+        if (alignment === 'map') {
+            if (map._showingGlobe()) {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
                 return this._rotation + radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             }
             return this._rotation - map.getBearing();
-        } else if (this._rotationAlignment === "horizon" && map._usingGlobe()) {
+        } else if (this._rotationAlignment === "horizon" && map._showingGlobe()) {
             const zoom = map.getZoom();
             const centerPoint = globeCenterToScreenPoint(map.transform);
             let zoomTransition = 1;
@@ -573,7 +581,7 @@ export default class Marker extends Evented {
                 this._updateDOM();
             }
 
-            if ((map._usingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
+            if ((map._showingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
@@ -790,9 +798,11 @@ export default class Marker extends Evented {
      * const alignment = marker.getRotationAlignment();
      */
     getRotationAlignment(): string {
-        return (this._rotationAlignment === `auto` ||
-            (this._map && this._rotationAlignment === 'horizon' && !this._map._usingGlobe())) ?
-            'viewport' : this._rotationAlignment;
+        if (this._rotationAlignment === 'auto')
+            return 'viewport';
+        if (this._rotationAlignment === 'horizon' && this._map && !this._map._showingGlobe())
+            return 'viewport';
+        return this._rotationAlignment;
     }
 
     /**
@@ -817,7 +827,9 @@ export default class Marker extends Evented {
      * const alignment = marker.getPitchAlignment();
      */
     getPitchAlignment(): string {
-        if (this._map && this._pitchAlignment === 'horizon' && !this._map._usingGlobe()) { return 'viewport'; }
-        return this._pitchAlignment === 'auto' ? this.getRotationAlignment() : this._pitchAlignment;
+        if (this._pitchAlignment === 'auto') {
+            return this.getRotationAlignment();
+        }
+        return this._pitchAlignment;
     }
 }
