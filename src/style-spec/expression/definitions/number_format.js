@@ -28,8 +28,9 @@ declare class Intl$NumberFormat {
 }
 
 type NumberFormatOptions = {
-    style?: 'decimal' | 'currency' | 'percent';
+    style?: 'decimal' | 'currency' | 'percent' | 'unit';
     currency?: null | string;
+    unit?: null | string;
     minimumFractionDigits?: null | string;
     maximumFractionDigits?: null | string;
 };
@@ -39,18 +40,21 @@ export default class NumberFormat implements Expression {
     number: Expression;
     locale: Expression | null;   // BCP 47 language tag
     currency: Expression | null; // ISO 4217 currency code, required if style=currency
+    unit: Expression | null;     // Simple units sanctioned for use in ECMAScript, required if style=unit. https://tc39.es/proposal-unified-intl-numberformat/section6/locales-currencies-tz_proposed_out.html#sec-issanctionedsimpleunitidentifier
     minFractionDigits: Expression | null; // Default 0
     maxFractionDigits: Expression | null; // Default 3
 
     constructor(number: Expression,
                 locale: Expression | null,
                 currency: Expression | null,
+                unit: Expression | null,
                 minFractionDigits: Expression | null,
                 maxFractionDigits: Expression | null) {
         this.type = StringType;
         this.number = number;
         this.locale = locale;
         this.currency = currency;
+        this.unit = unit;
         this.minFractionDigits = minFractionDigits;
         this.maxFractionDigits = maxFractionDigits;
     }
@@ -78,6 +82,12 @@ export default class NumberFormat implements Expression {
             if (!currency) return null;
         }
 
+        let unit = null;
+        if (options['unit']) {
+            unit = context.parse(options['unit'], 1, StringType);
+            if (!unit) return null;
+        }
+
         let minFractionDigits = null;
         if (options['min-fraction-digits']) {
             minFractionDigits = context.parse(options['min-fraction-digits'], 1, NumberType);
@@ -90,14 +100,18 @@ export default class NumberFormat implements Expression {
             if (!maxFractionDigits) return null;
         }
 
-        return new NumberFormat(number, locale, currency, minFractionDigits, maxFractionDigits);
+        return new NumberFormat(number, locale, currency, unit, minFractionDigits, maxFractionDigits);
     }
 
     evaluate(ctx: EvaluationContext): string {
         return new Intl.NumberFormat(this.locale ? this.locale.evaluate(ctx) : [],
             {
-                style: this.currency ? "currency" : "decimal",
+                style:
+                    (this.currency && "currency") ||
+                    (this.unit && "unit") ||
+                    "decimal",
                 currency: this.currency ? this.currency.evaluate(ctx) : undefined,
+                unit: this.unit ? this.unit.evaluate(ctx) : undefined,
                 minimumFractionDigits: this.minFractionDigits ? this.minFractionDigits.evaluate(ctx) : undefined,
                 maximumFractionDigits: this.maxFractionDigits ? this.maxFractionDigits.evaluate(ctx) : undefined,
             }).format(this.number.evaluate(ctx));
@@ -110,6 +124,9 @@ export default class NumberFormat implements Expression {
         }
         if (this.currency) {
             fn(this.currency);
+        }
+        if (this.unit) {
+            fn(this.unit);
         }
         if (this.minFractionDigits) {
             fn(this.minFractionDigits);
@@ -130,6 +147,9 @@ export default class NumberFormat implements Expression {
         }
         if (this.currency) {
             options['currency'] = this.currency.serialize();
+        }
+        if (this.unit) {
+            options['unit'] = this.unit.serialize();
         }
         if (this.minFractionDigits) {
             options['min-fraction-digits'] = this.minFractionDigits.serialize();

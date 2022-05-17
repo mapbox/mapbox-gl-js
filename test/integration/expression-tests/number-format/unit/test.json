@@ -1,0 +1,31 @@
+{
+  "expression": [
+    "number-format",
+    123456.789,
+    {
+        "locale": ["get", "locale"],
+        "unit": ["get", "unit"]
+    }
+  ],
+  "inputs": [
+    [{}, {"properties": {"locale": "en-US", "unit": "hectare"}}],
+    [{}, {"properties": {"locale": "en-US", "unit": "acre"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["123,456.789 ha", "123,456.789 ac"],
+    "serialized": [
+      "number-format",
+      123456.789,
+      {
+          "locale": ["string", ["get", "locale"]],
+          "unit": ["string", ["get", "unit"]]
+      }
+    ]
+  }
+}
