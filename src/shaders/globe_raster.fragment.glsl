@@ -2,10 +2,10 @@ uniform sampler2D u_image0;
 varying vec2 v_pos0;
 
 #ifndef FOG
-uniform vec3 u_frustum_tl;
-uniform vec3 u_frustum_tr;
-uniform vec3 u_frustum_br;
-uniform vec3 u_frustum_bl;
+uniform highp vec3 u_frustum_tl;
+uniform highp vec3 u_frustum_tr;
+uniform highp vec3 u_frustum_br;
+uniform highp vec3 u_frustum_bl;
 uniform highp vec3 u_globe_pos;
 uniform highp float u_globe_radius;
 uniform vec2 u_viewport;
@@ -15,7 +15,7 @@ void main() {
 #ifdef CUSTOM_ANTIALIASING
     vec2 uv = gl_FragCoord.xy / u_viewport;
 
-    vec3 ray_dir = mix(
+    highp vec3 ray_dir = mix(
         mix(u_frustum_tl, u_frustum_tr, uv.x),
         mix(u_frustum_bl, u_frustum_br, uv.x),
         1.0 - uv.y);
