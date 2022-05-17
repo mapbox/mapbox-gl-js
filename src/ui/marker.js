@@ -512,35 +512,34 @@ export default class Marker extends Evented {
     }
 
     _calculateZTransform(): string {
-        const spin = this._rotation + this._calculateMapRotation();
-        return spin ? `rotateZ(${spin}deg)` : ``;
-    }
 
-    _calculateMapRotation(): number {
         const pos = this._pos;
         const map = this._map;
-        if (!map || !pos) { return 0; }
+        if (!map || !pos) { return ''; }
+
+        let rotation = 0;
         const alignment = this.getRotationAlignment();
         if (alignment === 'map') {
             if (map._showingGlobe()) {
                 const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
                 const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
                 const diff = south.sub(north);
-                return radToDeg(Math.atan2(diff.y, diff.x)) - 90;
+                rotation = radToDeg(Math.atan2(diff.y, diff.x)) - 90;
+            } else {
+                rotation = -map.getBearing();
             }
-            return -map.getBearing();
-        }
-        if (alignment === 'horizon') {
+        } else if (alignment === 'horizon') {
             const centerPoint = globeCenterToScreenPoint(map.transform);
             const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, map.getZoom());
             centerPoint.y += smooth * map.transform.height;
             const rel = pos.sub(centerPoint);
             const angle = radToDeg(Math.atan2(rel.y, rel.x));
             const up = angle > 90 ? angle - 270 : angle + 90;
-            return up * (1 - smooth);
-
+            rotation = up * (1 - smooth);
         }
-        return 0;
+
+        rotation += this._rotation;
+        return rotation ? `rotateZ(${rotation}deg)` : '';
     }
 
     _update(delaySnap?: boolean) {
