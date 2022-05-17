@@ -14,9 +14,10 @@ import type Tile from '../../source/tile.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Painter from '../painter.js';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
-import type {OverscaledTileID} from '../../source/tile_id.js';
+import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util.js';
+import EXTENT from '../../data/extent.js';
 
 export type HeatmapUniformsType = {|
     'u_extrude_scale': Uniform1f,
@@ -83,7 +84,9 @@ const heatmapUniformValues = (
         values['u_merc_center'] = mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
-        values['u_up_dir'] = (transform.projection.upVector(coord.canonical, mercatorCenter[0], mercatorCenter[1]): any);
+        const x = mercatorCenter[0] * EXTENT;
+        const y = mercatorCenter[1] * EXTENT;
+        values['u_up_dir'] = (transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y): any);
     }
 
     return values;
