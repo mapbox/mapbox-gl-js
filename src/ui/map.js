@@ -1139,11 +1139,11 @@ class Map extends Camera {
      * @private
      * @returns {boolean} Returns `globe-is-active` boolean.
      * @example
-     * if (map._usingGlobe()) {
+     * if (map._showingGlobe()) {
      *     // do globe things here
      * }
      */
-    _usingGlobe(): boolean { return this.transform.projection.name === 'globe'; }
+    _showingGlobe(): boolean { return this.transform.projection.name === 'globe'; }
 
     /**
      * Sets the map's projection. If called with `null` or `undefined`, the map will reset to Mercator.

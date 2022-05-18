@@ -27,6 +27,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
 import Point from '@mapbox/point-geometry';
+import assert from 'assert';
 
 export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
 export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
@@ -339,6 +340,7 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
 }
 
 export function latLngToECEF(lat: number, lng: number, radius?: number): Array<number> {
+    assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
@@ -525,7 +527,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     return vec3.add([], centerToPivot, pivotToCamera);
 }
 
-// Return the angle of the normal vector of the sphere relative to the camera.
+// Return the angle of the normal vector at a point on the globe relative to the camera.
 // i.e. how much to tilt map-aligned markers.
 export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);

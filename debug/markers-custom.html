@@ -9,6 +9,14 @@
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
         #controls { position: absolute; top: 0; left: 0; }
+        .marker {
+            background-image: url('/debug/pin.png');
+            background-size: cover;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -37,15 +45,17 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
+    zoom: 3,
     style: 'mapbox://styles/mapbox/streets-v9',
-    hash: true
+    hash: true,
 });
 
+const rots = ['horizon', 'horizon', 'horizon', 'horizon'];
+const pits = ['auto', 'auto', 'auto'];
+
 const spinningMarkers = [];
-['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
-    ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
+rots.forEach((rotationAlignment, i) => {
+    pits.forEach((pitchAlignment, j) => {
         var bounds = map.getBounds();
         var s = bounds.getSouth();
         var n = bounds.getNorth();
@@ -63,9 +73,12 @@ const spinningMarkers = [];
 
         var sc = Math.random() * 2.5 + 0.5;
 
+        const el = document.createElement('div');
+        el.className = 'marker';
+
         var marker = new mapboxgl.Marker({
-            color: `rgb(${r}, ${g}, ${b})`,
-            scale: sc,
+            element: el,
+            offset: [0, -25],
             draggable: true,
             rotationAlignment,
             pitchAlignment
