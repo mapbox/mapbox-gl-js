@@ -1046,7 +1046,7 @@ test('Globe', (t) => {
         return +Number.parseFloat(transform.match(reg)[1]).toFixed();
     }
 
-    test('Globe with pitchAlignment and rotationAlingment: map, changing longitude', (t) => {
+    test('Globe with pitchAlignment and rotationAlignment: map, changing longitude', (t) => {
         const map = createMap(t);
         map.setProjection('globe');
         const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
@@ -1069,7 +1069,7 @@ test('Globe', (t) => {
         });
     });
 
-    test('Globe with pitchAlignment and rotationAlingment: map, changing lattitude', (t) => {
+    test('Globe with pitchAlignment and rotationAlignment: map, changing lattitude', (t) => {
         const map = createMap(t);
         map.setProjection('globe');
         const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
@@ -1177,6 +1177,172 @@ test('Globe', (t) => {
                 t.end();
             });
         });
+    });
+
+    test('rotationAlignment: horizon rotates at low zoom', (t) => {
+        const map = createMap(t);
+        map.setProjection('globe');
+        const marker = new Marker({rotationAlignment: 'horizon'})
+            .setLngLat([0, 1])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.notMatch(transform(marker), "rotateZ");
+
+        marker.setLngLat([0, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 180);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, 1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 45);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 135);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([-1, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -135);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([-1, 1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -45);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.setBearing(90);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -135);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.remove();
+        t.end();
+    });
+
+    test('rotationAlignment: horizon does not rotate at high zoom', (t) => {
+        const map = createMap(t);
+        map.setProjection('globe');
+        map.setZoom(10);
+        const marker = new Marker({rotationAlignment: 'horizon'})
+            .setLngLat([0, 1])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.notMatch(transform(marker), "rotateZ");
+
+        marker.setLngLat([0, -1]);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, 1]);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.setBearing(90);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.remove();
+        t.end();
+    });
+
+    test('rotationAlignment: horizon rotates partially during transition', (t) => {
+        const map = createMap(t);
+        map.setProjection('globe');
+        map.setZoom(5); // halfway through transition
+        const marker = new Marker({rotationAlignment: 'horizon'})
+            .setLngLat([0, 1])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.same(rotation(marker, "Z"), 0);
+
+        marker.setLngLat([0, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 0);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, 1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 4);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), 6);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([-1, -1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -6);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([-1, 1]);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -4);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.setBearing(90);
+        map._domRenderTaskQueue.run();
+        t.same(rotation(marker, "Z"), -6);
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.remove();
+        t.end();
+    });
+
+    test('rotationAlignment: horizon behaves as viewport in non-globe projections', (t) => {
+        const map = createMap(t);
+        map.setProjection('albers');
+        const marker = new Marker({rotationAlignment: 'horizon'})
+            .setLngLat([0, 1])
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.notMatch(transform(marker), "rotateZ");
+
+        marker.setLngLat([0, -1]);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        marker.setLngLat([1, 1]);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.setBearing(90);
+        map._domRenderTaskQueue.run();
+        t.notMatch(transform(marker), "rotateZ");
+        t.notMatch(transform(marker), "rotateX");
+        t.notMatch(transform(marker), "rotateY");
+
+        map.remove();
+        t.end();
     });
 
     t.end();
