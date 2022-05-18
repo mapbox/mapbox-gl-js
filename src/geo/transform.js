@@ -706,22 +706,22 @@ class Transform {
             isTerrainDEM?: boolean
         }
     ): Array<OverscaledTileID> {
-        let z = this.coveringZoomLevel(options);
-        const actualZ = z;
+        let maxZoom = this.coveringZoomLevel(options);
+        const actualZ = maxZoom;
 
         const useElevationData = this.elevation && !options.isTerrainDEM;
         const isMercator = this.projection.name === 'mercator';
 
-        if (options.minzoom !== undefined && z < options.minzoom) return [];
-        if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
+        if (options.minzoom !== undefined && maxZoom < options.minzoom) return [];
+        if (options.maxzoom !== undefined && maxZoom > options.maxzoom) maxZoom = options.maxzoom;
 
         const centerCoord = this.locationCoordinate(this.center);
         const centerLatitude = this.center.lat;
-        const numTiles = 1 << z;
+        const numTiles = 1 << maxZoom;
         const centerPoint = [numTiles * centerCoord.x, numTiles * centerCoord.y, 0];
         const isGlobe = this.projection.name === 'globe';
         const zInMeters = !isGlobe;
-        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
+        const cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, maxZoom, zInMeters);
         const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
@@ -733,7 +733,7 @@ class Transform {
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
         // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace ? z : 0;
+        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace ? maxZoom : 0;
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
@@ -789,23 +789,22 @@ class Transform {
         // Do a depth-first traversal to find visible tiles and proper levels of detail
         const stack = [];
         let result = [];
-        const maxZoom = z;
-        const overscaledZ = options.reparseOverscaled ? actualZ : z;
+        const overscaledZ = options.reparseOverscaled ? actualZ : maxZoom;
         const square = a => a * a;
         const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 
-        const getAABBFromElevation = (it) => {
+        const getAABBFromElevation = (tile) => {
             assert(this._elevation);
-            if (!this._elevation || !it.tileID || !isMercator) return; // To silence flow.
-            const minmax = this._elevation.getMinMaxForTile(it.tileID);
-            const aabb = it.aabb;
+            if (!this._elevation || !tile.tileID || !isMercator) return; // To silence flow.
+            const minmax = this._elevation.getMinMaxForTile(tile.tileID);
+            const aabb = tile.aabb;
             if (minmax) {
                 aabb.min[2] = minmax.min;
                 aabb.max[2] = minmax.max;
                 aabb.center[2] = (aabb.min[2] + aabb.max[2]) / 2;
             } else {
-                it.shouldSplit = shouldSplit(it);
-                if (!it.shouldSplit) {
+                tile.shouldSplit = shouldSplit(tile);
+                if (!tile.shouldSplit) {
                     // At final zoom level, while corresponding DEM tile is not loaded yet,
                     // assume center elevation. This covers ground to horizon and prevents
                     // loading unnecessary tiles until DEM cover is fully loaded.
@@ -839,50 +838,50 @@ class Transform {
             return r / (1 / acuteAngleThresholdSin + (Math.pow(stretchTile, k + 1) - 1) / (stretchTile - 1) - 1);
         };
 
-        const shouldSplit = (it) => {
-            if (it.zoom < minZoom) {
+        const shouldSplit = (tile) => {
+            if (tile.zoom < minZoom) {
                 return true;
-            } else if (it.zoom === maxZoom) {
+            } else if (tile.zoom === maxZoom) {
                 return false;
             }
-            if (it.shouldSplit != null) {
-                return it.shouldSplit;
+            if (tile.shouldSplit != null) {
+                return tile.shouldSplit;
             }
-            const dx = it.aabb.distanceX(cameraPoint);
-            const dy = it.aabb.distanceY(cameraPoint);
+            const dx = tile.aabb.distanceX(cameraPoint);
+            const dy = tile.aabb.distanceY(cameraPoint);
             let dzSqr = cameraHeightSqr;
 
             let tileScaleAdjustment = 1;
             if (isGlobe) {
-                dzSqr = square(it.aabb.distanceZ(cameraPoint));
+                dzSqr = square(tile.aabb.distanceZ(cameraPoint));
                 // Compensate physical sizes of the tiles when determining which zoom level to use.
                 // In practice tiles closer to poles should use more aggressive LOD as their
                 // physical size is already smaller than size of tiles near the equator.
-                const tilesAtZoom = Math.pow(2, it.zoom);
-                const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
-                const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
+                const tilesAtZoom = Math.pow(2, tile.zoom);
+                const minLat = latFromMercatorY((tile.y + 1) / tilesAtZoom);
+                const maxLat = latFromMercatorY((tile.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
                 const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
                 tileScaleAdjustment = Math.min(scale, 1.0);
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
-                    dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
+                    dzSqr = square(tile.aabb.distanceZ(cameraPoint) * meterToTile);
                 }
                 if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
                     // In other projections, not all tiles are the same size.
                     // Account for the tile size difference by adjusting the distToSplit.
                     // Adjust by the ratio of the area at the tile center to the area at the map center.
                     // Adjustments are only needed at lower zooms where tiles are not similarly sized.
-                    const numTiles = Math.pow(2, it.zoom);
-                    const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((it.x + 0.5) / numTiles, (it.y + 0.5) / numTiles));
+                    const numTiles = Math.pow(2, tile.zoom);
+                    const relativeScale = relativeScaleAtMercatorCoord(new MercatorCoordinate((tile.x + 0.5) / numTiles, (tile.y + 0.5) / numTiles));
                     // Fudge the ratio slightly so that all tiles near the center have the same zoom level.
                     tileScaleAdjustment = relativeScale > 0.85 ? 1 : relativeScale;
                 }
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
+            const distToSplit = (1 << maxZoom - tile.zoom) * zoomSplitDistance * tileScaleAdjustment;
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
 
             return distanceSqr < distToSplitSqr;
@@ -899,14 +898,14 @@ class Transform {
         stack.push(newRootTile(0));
 
         while (stack.length > 0) {
-            const it = stack.pop();
-            const x = it.x;
-            const y = it.y;
-            let fullyVisible = it.fullyVisible;
+            const tile = stack.pop();
+            const x = tile.x;
+            const y = tile.y;
+            let fullyVisible = tile.fullyVisible;
 
             // Visibility of a tile is not required if any of its ancestor is fully inside the frustum
             if (!fullyVisible) {
-                const intersectResult = it.aabb.intersects(cameraFrustum);
+                const intersectResult = tile.aabb.intersects(cameraFrustum);
 
                 if (intersectResult === 0)
                     continue;
@@ -915,16 +914,16 @@ class Transform {
             }
 
             // Have we reached the target depth or is the tile too far away to be any split further?
-            if (it.zoom === maxZoom || !shouldSplit(it)) {
-                const tileZoom = it.zoom === maxZoom ? overscaledZ : it.zoom;
+            if (tile.zoom === maxZoom || !shouldSplit(tile)) {
+                const tileZoom = tile.zoom === maxZoom ? overscaledZ : tile.zoom;
                 if (!!options.minzoom && options.minzoom > tileZoom) {
                     // Not within source tile range.
                     continue;
                 }
 
-                const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));
+                const dx = centerPoint[0] - ((0.5 + x + (tile.wrap << tile.zoom)) * (1 << (maxZoom - tile.zoom)));
                 const dy = centerPoint[1] - 0.5 - y;
-                const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
+                const id = tile.tileID ? tile.tileID : new OverscaledTileID(tileZoom, tile.wrap, tile.zoom, x, y);
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
                 continue;
             }
@@ -933,10 +932,10 @@ class Transform {
                 const childX = (x << 1) + (i % 2);
                 const childY = (y << 1) + (i >> 1);
 
-                const aabb = isMercator ? it.aabb.quadrant(i) : tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
-                const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
+                const aabb = isMercator ? tile.aabb.quadrant(i) : tileAABB(this, numTiles, tile.zoom + 1, childX, childY, tile.wrap, tile.minZ, tile.maxZ, this.projection);
+                const child = {aabb, zoom: tile.zoom + 1, x: childX, y: childY, wrap: tile.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: tile.minZ, maxZ: tile.maxZ};
                 if (useElevationData && !isGlobe) {
-                    child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
+                    child.tileID = new OverscaledTileID(tile.zoom + 1 === maxZoom ? overscaledZ : tile.zoom + 1, tile.wrap, tile.zoom + 1, childX, childY);
                     getAABBFromElevation(child);
                 }
                 stack.push(child);
