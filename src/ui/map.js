@@ -3226,7 +3226,7 @@ class Map extends Camera {
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
             // Following line is billing related code. Do not change. See LICENSE.txt
-            this._authenticate();
+            //this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
     }

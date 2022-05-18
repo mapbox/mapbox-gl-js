@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='js/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='js/mapbox-gl-dev.js'></script>
+<script src='js/turf.min.js'></script>
+<script>
+    const MAPTYPE = {
+        NAVIMG: 'nav_img',
+        NAVLBL: 'nav_lbl',
+        NAVVEC: 'nav_vec'
+    }
+
+    function getNavTileUrls(lyr) {
+        let res = [];
+        const dict = {
+            'nav_img': 'https://webst0${subdomain}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+            'nav_lbl': 'https://webst0${subdomain}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
+            'nav_vec': 'http://webrd0${subdomain}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8'
+        }
+        for(let i = 1; i < 5; i++) {
+            let url = dict[lyr];
+            url = url.split('${subdomain}').join(i);
+            res.push(url)
+        }
+        return res;
+    }
+
+    const mapStyle = {
+        "version": 8,
+        //style: 'mapbox://styles/mapbox/basic-v9',
+        //"sprite": "mapbox://sprites/mapbox/streets-v8",
+        //"sprite": "http://127.0.0.1/mvt-demo/css/sprite",
+        //"glyphs": "http://127.0.0.1/mvt-demo/css/font/{fontstack}/{range}.pbf",
+        "sprite": "css/sprite", //修改了mapbox.js的normalizeSpriteURL函数，现在也可以写成相对路径了
+        "glyphs": "css/font/{fontstack}/{range}.pbf", //只有Chrome浏览器并设置启动参数 -allow-file-access-from-files 才可以使用file://协议访问本地文件，其他浏览器还没有找到设置的地方
+        "sources": {
+          "osm-tiles": {
+            "type": "raster",
+            scheme: "tms",
+            'tiles': [
+                  //"http://127.0.0.1/mvt-demo/world/{z}/{x}/{y}.png"
+                  "world/{z}/{x}/{y}.png" //只有Chrome浏览器并设置启动参数 -allow-file-access-from-files 才可以使用file://协议访问本地文件，其他浏览器还没有找到设置的地方. https://blog.csdn.net/chenmoupeng/article/details/107317247
+              ],
+            'tileSize': 256
+          },
+            "points":{
+              "type": "geojson",
+              "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [116.3972282409668, 39.90960456049752]
+                  },
+                  "properties": {
+                    "title": "Mapbox DC 中国文字",
+                    "icon": "monument"
+                  }
+                  }, {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [116.5, 30]
+                  },
+                  "properties": {
+                    "title": "Mapbox SF",
+                    "icon": "harbor"
+                  }
+                  }]
+              }
+            }
+        },
+        "layers": [{
+          "id": "simple-tiles",
+          "type": "raster",
+          "source": "osm-tiles",
+          "minzoom": 0,
+          "maxzoom": 5
+        },
+        {
+          "id": "points",
+          "type": "symbol",
+          "source": "points",
+          "layout": {
+            "icon-image": "{icon}-15",
+            "text-field": "{title}",
+            "text-font": ["dongti"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+          }
+        }]
+    };
+    var map = window.map = new mapboxgl.Map({
+        container: 'map',
+        zoom: 3,
+        center: [116.61023753726323, 39.63101027697721],
+        style: mapStyle,
+        hash: false,
+        maxZoom: 10
+    });
+
+    map.addControl(new mapboxgl.NavigationControl())
+</script>
+</body>
+</html>
