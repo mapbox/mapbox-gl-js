@@ -29,17 +29,6 @@ type Options = {
     pitchAlignment?: string
 };
 
-const defaultHeight = 41;
-const defaultWidth = 27;
-
-export const TERRAIN_OCCLUDED_OPACITY = 0.2;
-// Zoom levels to transition 'horizon' aligned markers in globe view.
-const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
-const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6; // Can't be larger than GLOBE_ZOOM_THRESHOLD_MAX.
-
-assert(ALIGN_TO_SCREEN_ABOVE_ZOOM <= GLOBE_ZOOM_THRESHOLD_MAX, 'Horizon-oriented marker transition should be complete when globe switches to Mercator');
-assert(ALIGN_TO_HORIZON_BELOW_ZOOM <= ALIGN_TO_SCREEN_ABOVE_ZOOM);
-
 /**
  * Creates a marker component.
  *
@@ -131,11 +120,14 @@ export default class Marker extends Evented {
 
             // create default map marker SVG
 
+            const DEFAULT_HEIGHT = 41;
+            const DEFAULT_WIDTH = 27;
+
             const svg = DOM.createSVG('svg', {
                 display: 'block',
-                height: `${defaultHeight * this._scale}px`,
-                width: `${defaultWidth * this._scale}px`,
-                viewBox: `0 0 ${defaultWidth} ${defaultHeight}`
+                height: `${DEFAULT_HEIGHT * this._scale}px`,
+                width: `${DEFAULT_WIDTH * this._scale}px`,
+                viewBox: `0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}`
             }, this._element);
 
             const gradient = DOM.createSVG('radialGradient', {id: 'shadowGradient'}, DOM.createSVG('defs', {}, svg));
@@ -449,6 +441,7 @@ export default class Marker extends Evented {
         } else {
             opacity = 1 - map._queryFogOpacity(mapLocation);
             if (map.transform._terrainEnabled() && map.getTerrain() && this._behindTerrain()) {
+                const TERRAIN_OCCLUDED_OPACITY = 0.2;
                 opacity *= TERRAIN_OCCLUDED_OPACITY;
             }
         }
@@ -529,8 +522,14 @@ export default class Marker extends Evented {
                 rotation = -map.getBearing();
             }
         } else if (alignment === 'horizon') {
-            const centerPoint = globeCenterToScreenPoint(map.transform);
+            const ALIGN_TO_HORIZON_BELOW_ZOOM = 4;
+            const ALIGN_TO_SCREEN_ABOVE_ZOOM = 6;
+            assert(ALIGN_TO_SCREEN_ABOVE_ZOOM <= GLOBE_ZOOM_THRESHOLD_MAX, 'Horizon-oriented marker transition should be complete when globe switches to Mercator');
+            assert(ALIGN_TO_HORIZON_BELOW_ZOOM <= ALIGN_TO_SCREEN_ABOVE_ZOOM);
+
             const smooth = smoothstep(ALIGN_TO_HORIZON_BELOW_ZOOM, ALIGN_TO_SCREEN_ABOVE_ZOOM, map.getZoom());
+
+            const centerPoint = globeCenterToScreenPoint(map.transform);
             centerPoint.y += smooth * map.transform.height;
             const rel = pos.sub(centerPoint);
             const angle = radToDeg(Math.atan2(rel.y, rel.x));
