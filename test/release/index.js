@@ -13,7 +13,8 @@ const pages = [
     },
     {
         "key": "filter-features-within-map-view",
-        "title": "Filter features within map view"
+        "title": "Filter features within map view",
+        "url": "./filter-features-with-globe.html"
     },
     {
         "key": "custom-style-layer",
