@@ -1200,6 +1200,8 @@ class Map extends Camera {
             }
             this.style.applyProjectionUpdate();
             this._update(true);
+        } else if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
+            this.style.setTerrainForDraping();
         }
 
         return this;
