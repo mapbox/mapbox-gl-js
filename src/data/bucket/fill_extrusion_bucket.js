@@ -620,7 +620,7 @@ function encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, edgeStart) {
     // Encode concavity and edge start/end using the least significant bits.
     // Second least significant bit 1 encodes concavity.
     // The least significant bit 1 marks the edge start, 0 for edge end.
-    let encodedEdgeDistance = isConcaveCorner ? (edgeDistance | 2) : (edgeDistance & ~2);
+    const encodedEdgeDistance = isConcaveCorner ? (edgeDistance | 2) : (edgeDistance & ~2);
     return edgeStart ? (encodedEdgeDistance | 1) : (encodedEdgeDistance & ~1);
 }
 

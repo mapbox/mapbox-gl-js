@@ -29,6 +29,11 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
+#ifdef FAUX_AO
+uniform lowp vec2 u_ao;
+varying vec3 v_ao;
+#endif
+
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
 #pragma mapbox: define lowp vec4 pattern_from
@@ -53,12 +58,14 @@ void main() {
     float fromScale = u_scale.y;
     float toScale = u_scale.z;
 
-    vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
+    vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
-    mediump vec3 top_up_ny = a_pos_normal_ed.xyz - 2.0 * pos_nx;
+    // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
+    mediump vec4 top_up_ny_start = a_pos_normal_ed - 2.0 * pos_nx;
+    mediump vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
@@ -78,12 +85,14 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
+    float ele = 0.0;
+    float h = z;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
-    float ele = elevation(pos_nx.xy);
+    ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
     vec3 p = vec3(pos_nx.xy, h);
 #else
     vec3 p = vec3(pos_nx.xy, z);
@@ -92,6 +101,7 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
     float lift = float((t + base) > 0.0) * u_height_lift;
+    h += lift;
     vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
     vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (p.z + lift));
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, p.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * p.z;
@@ -119,6 +129,24 @@ void main() {
             (1.0 - u_vertical_gradient) +
             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
+
+#ifdef FAUX_AO
+    float concave = pos_nx.w - floor(pos_nx.w * 0.5) * 2.0;
+    float start = top_up_ny_start.w;
+    float y_ground = 1.0 - clamp(t + base, 0.0, 1.0);
+    float top_height = height;
+#ifdef TERRAIN
+    top_height = mix(max(c_ele + height, ele + base + 2.0), ele + height, float(centroid_pos.x == 0.0)) - ele;
+    y_ground = mix(0.0, y_ground + 5.0 / max(3.0, top_height), y_ground);
+#endif
+    v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
+    directional *= mix(1.0, 1.05, (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+
+#ifdef PROJECTION_GLOBE_VIEW
+    top_height += u_height_lift;
+#endif
+    gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
+#endif
 
     v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;

@@ -56,7 +56,8 @@ export type FillExtrusionPatternUniformsType = {|
     'u_pixel_coord_lower': Uniform2f,
     'u_scale': Uniform3f,
     'u_fade': Uniform1f,
-    'u_opacity': Uniform1f
+    'u_opacity': Uniform1f,
+    'u_ao': Uniform2f
 |};
 
 const fillExtrusionUniforms = (context: Context, locations: UniformLocations): FillExtrusionUniformsType => ({
@@ -97,7 +98,8 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
     'u_scale': new Uniform3f(context, locations.u_scale),
     'u_fade': new Uniform1f(context, locations.u_fade),
-    'u_opacity': new Uniform1f(context, locations.u_opacity)
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    'u_ao': new Uniform2f(context, locations.u_ao)
 });
 
 const identityMatrix = mat4.create();

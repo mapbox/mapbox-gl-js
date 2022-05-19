@@ -103,13 +103,13 @@ document.getElementById('buildings-fauxao-slider').oninput = function() {
 document.getElementById('buildings-ao-radius-slider').oninput = function() {
     map.setPaintProperty("country-boundaries", 'fill-extrusion-ambient-occlusion-radius', this.valueAsNumber);
     document.getElementById('ao_radius').innerHTML = this.value;
-}
+};
 
 document.getElementById('buildings-opacity-slider').oninput = function() {
     const opacity = this.value / 100;
     map.setPaintProperty("country-boundaries", 'fill-extrusion-opacity', opacity);
     document.getElementById('opacity').innerHTML = opacity.toPrecision(3);
-}
+};
 </script>
 </body>
 </html>

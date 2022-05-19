@@ -59,8 +59,8 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
-float ele = 0.0;
-float h = 0.0;
+    float ele = 0.0;
+    float h = 0.0;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     ele = elevation(pos_nx.xy);

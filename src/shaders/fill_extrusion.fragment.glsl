@@ -11,7 +11,7 @@ void main() {
     float intensity = 1.0 - sqrt(1.0 - u_ao[0]);
     float h = max(0.0, v_ao.z);
     float h_floors = h / u_ao[1];
-    float y_shade = mix(1.0, 0.2, intensity * min(v_ao.y, 1.0));
+    float y_shade = mix(1.0, 0.1, intensity * min(v_ao.y, 1.0));
     float shade = mix(1.0, 0.92, intensity) * (y_shade + (1.0 - y_shade) * (1.0 - pow(1.0 - min(h_floors / 16.0, 1.0), 16.0))) + 0.08 * intensity * min(h_floors / 160.0, 1.0);
     // concave angle
     float concave = v_ao.x * v_ao.x;
