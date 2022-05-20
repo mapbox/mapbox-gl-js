@@ -158,8 +158,19 @@ class GeolocateControl extends Evented {
         this._noTimeout = false;
     }
 
+    _setButtonTitle(title: string) {
+        if (!this._map) return;
+        const str = this._map._getUIString(`GeolocateControl.${title}`);
+        this._geolocateButton.setAttribute('aria-label', str);
+        if (this._geolocateButton.firstElementChild) this._geolocateButton.firstElementChild.setAttribute('title', str);
+    }
+
     _setLanguage() {
-        this._setupUI(this._supportsGeolocation);
+        if (this._supportsGeolocation === false) {
+            this._setButtonTitle('LocationNotAvailable');
+        } else {
+            this._setButtonTitle('FindMyLocation');
+        }
     }
 
     _checkGeolocationSupport(callback: (supported: boolean) => any) {
@@ -381,9 +392,7 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
                 this._geolocateButton.disabled = true;
-                const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
-                this._geolocateButton.setAttribute('aria-label', title);
-                if (this._geolocateButton.firstElementChild) this._geolocateButton.firstElementChild.setAttribute('title', title);
+                this._setButtonTitle('LocationNotAvailable');
 
                 if (this._geolocationWatchID !== undefined) {
                     this._clearWatch();
@@ -422,14 +431,10 @@ class GeolocateControl extends Evented {
 
         if (supported === false) {
             warnOnce('Geolocation support is not available so the GeolocateControl will be disabled.');
-            const title = this._map._getUIString('GeolocateControl.LocationNotAvailable');
+            this._setButtonTitle('LocationNotAvailable');
             this._geolocateButton.disabled = true;
-            this._geolocateButton.setAttribute('aria-label', title);
-            if (this._geolocateButton.firstElementChild) this._geolocateButton.firstElementChild.setAttribute('title', title);
         } else {
-            const title = this._map._getUIString('GeolocateControl.FindMyLocation');
-            this._geolocateButton.setAttribute('aria-label', title);
-            if (this._geolocateButton.firstElementChild) this._geolocateButton.firstElementChild.setAttribute('title', title);
+            this._setButtonTitle('FindMyLocation');
         }
 
         if (this.options.trackUserLocation) {
