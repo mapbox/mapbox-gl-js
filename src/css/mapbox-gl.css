@@ -518,6 +518,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     padding: 0 5px;
     color: #333;
     box-sizing: border-box;
+    white-space: nowrap;
 }
 
 .mapboxgl-popup {
