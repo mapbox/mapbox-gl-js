@@ -95,6 +95,11 @@ class AttributionControl {
         this._attribHTML = (undefined: any);
     }
 
+    _setLanguage() {
+        this._updateEditLink();
+        this._setElementTitle(this._compactButton, 'ToggleAttribution');
+    }
+
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
         element.setAttribute('aria-label', str);

@@ -150,6 +150,17 @@ class NavigationControl {
         this._map = undefined;
     }
 
+    _setLanguage() {
+        if (this.options.showZoom) {
+            this._setButtonTitle(this._zoomInButton, 'ZoomIn');
+            this._setButtonTitle(this._zoomOutButton, 'ZoomOut');
+        }
+
+        if (this.options.showCompass) {
+            this._setButtonTitle(this._compass, 'ResetBearing');
+        }
+    }
+
     _createButton(className: string, fn: () => mixed): HTMLButtonElement {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';

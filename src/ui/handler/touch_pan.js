@@ -137,8 +137,8 @@ export default class TouchPanHandler {
     _addTouchPanBlocker() {
         if (this._map && !this._alertContainer) {
             this._alertContainer = DOM.create('div', 'mapboxgl-touch-pan-blocker', this._map._container);
-
             this._alertContainer.textContent = this._map._getUIString('TouchPanBlocker.Message');
+            this._alertContainer.dir = 'auto';
 
             // dynamically set the font size of the touch pan blocker alert message
             this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
@@ -157,4 +157,9 @@ export default class TouchPanHandler {
         }, 500);
     }
 
+    _setLanguage() {
+        if (this._alertContainer) {
+            this._alertContainer.textContent = this._map._getUIString('TouchPanBlocker.Message');
+        }
+    }
 }

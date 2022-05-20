@@ -382,15 +382,19 @@ class ScrollZoomHandler {
         this._active = false;
     }
 
+    _getAlertContainerText(): string {
+        if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
+            return this._map._getUIString('ScrollZoomBlocker.CmdMessage');
+        } else {
+            return this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
+        }
+    }
+
     _addScrollZoomBlocker() {
         if (this._map && !this._alertContainer) {
             this._alertContainer = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
-
-            if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
-                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
-            } else {
-                this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');
-            }
+            this._alertContainer.textContent = this._getAlertContainerText();
+            this._alertContainer.dir = 'auto';
 
             // dynamically set the font size of the scroll zoom blocker alert message
             this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
@@ -412,6 +416,11 @@ class ScrollZoomHandler {
         }, 200);
     }
 
+    _setLanguage() {
+        if (this._alertContainer) {
+            this._alertContainer.textContent = this._getAlertContainerText();
+        }
+    }
 }
 
 export default ScrollZoomHandler;

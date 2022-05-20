@@ -158,6 +158,10 @@ class GeolocateControl extends Evented {
         this._noTimeout = false;
     }
 
+    _setLanguage() {
+        this._setupUI(this._supportsGeolocation);
+    }
+
     _checkGeolocationSupport(callback: (supported: boolean) => any) {
         if (this._supportsGeolocation !== undefined) {
             callback(this._supportsGeolocation);

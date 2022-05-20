@@ -28,6 +28,7 @@ import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
+import getUIString from './get_ui_string.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
@@ -51,7 +52,6 @@ import type DragPanHandler, {DragPanOptions} from './handler/shim/drag_pan.js';
 import type KeyboardHandler from './handler/keyboard.js';
 import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom.js';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate.js';
-import defaultLocale from './default_locale.js';
 import type {TaskID} from '../util/task_queue.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {
@@ -496,7 +496,7 @@ class Map extends Camera {
         this._controls = [];
         this._markers = [];
         this._mapId = uniqueId();
-        this._locale = extend({}, defaultLocale, options.locale);
+        this._locale = extend({}, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
         this._containerWidth = 0;
@@ -1088,6 +1088,10 @@ class Map extends Camera {
             }
         }
 
+        this.scrollZoom._setLanguage();
+        this.dragPan._touchPan._setLanguage();
+
+        this._canvas.setAttribute('aria-label', this._getUIString('Map.Title'));
         return this;
     }
 
@@ -1811,7 +1815,7 @@ class Map extends Camera {
     }
 
     _getUIString(key: string): string {
-        const str = this._locale[key];
+        const str = this._locale[key] || getUIString(this._language, key);
         if (str == null) {
             throw new Error(`Missing UI string '${key}'`);
         }

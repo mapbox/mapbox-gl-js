@@ -148,10 +148,14 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v11',
     hash: true,
     language: language.value,
-    worldview: worldview.value
+    worldview: worldview.value,
+    cooperativeGestures: false
 });
 
 map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.GeolocateControl());
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.FullscreenControl());
 mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
 
 map.on('style.load', () => {

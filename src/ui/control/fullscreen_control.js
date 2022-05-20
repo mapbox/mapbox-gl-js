@@ -71,6 +71,10 @@ class FullscreenControl {
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
+    _setLanguage() {
+        this._updateTitle();
+    }
+
     _checkFullscreenSupport(): boolean {
         return !!(
             window.document.fullscreenEnabled ||
