@@ -133,9 +133,10 @@ function setScale(container, maxWidth, maxDistance, language, unit, map) {
     map._requestDomTask(() => {
         container.style.width = `${maxWidth * ratio}px`;
 
-        // Intl.NumberFormat doesn't support nautical-mile as a unit
+        // Intl.NumberFormat doesn't support nautical-mile as a unit,
+        // so we are hardcoding `nm` as a unit symbol for all locales
         if (unit === 'nautical-mile') {
-            container.innerHTML = `${distance}&nbsp;${map._getUIString('ScaleControl.NauticalMiles')}`;
+            container.innerHTML = `${distance}&nbsp;nm`;
             return;
         }
 
