@@ -853,6 +853,13 @@ class Transform {
 
             let tileScaleAdjustment = 1;
             if (isGlobe) {
+                // Split all tile just below the maximum zoom level.
+                // This ensures that all tiles near the camera center are at the same level,
+                // preventing artifacts caused by inconsistent map appearance between zoom levels.
+                if (tile.zoom + 1 === maxZoom) {
+                    console.log("one away!");
+                    return true;
+                }
                 dzSqr = square(tile.aabb.distanceZ(cameraPoint));
                 // Compensate physical sizes of the tiles when determining which zoom level to use.
                 // In practice tiles closer to poles should use more aggressive LOD as their
@@ -914,7 +921,7 @@ class Transform {
             }
 
             // Have we reached the target depth or is the tile too far away to be any split further?
-            if (tile.zoom === maxZoom || !shouldSplit(tile)) {
+            if (!shouldSplit(tile)) {
                 const tileZoom = tile.zoom === maxZoom ? overscaledZ : tile.zoom;
                 if (!!options.minzoom && options.minzoom > tileZoom) {
                     // Not within source tile range.
