@@ -21,7 +21,7 @@
         left: 0;
         padding: 10px;
     }
-        
+
     .map-overlay .map-overlay-inner {
         background-color: #fff;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -29,27 +29,27 @@
         padding: 10px;
         margin-bottom: 10px;
     }
-        
+
     .map-overlay-inner fieldset {
         border: none;
         padding: 0;
         margin: 0 0 10px;
     }
-        
+
     .map-overlay-inner fieldset:last-child {
         margin: 0;
     }
-        
+
     .map-overlay-inner select {
         width: 100%;
     }
-        
+
     .map-overlay-inner label {
         display: block;
         font-weight: bold;
         margin: 0 0 5px;
     }
-        
+
     .map-overlay-inner button {
         display: inline-block;
         width: 36px;
@@ -57,11 +57,11 @@
         border: none;
         cursor: pointer;
     }
-        
+
     .map-overlay-inner button:focus {
         outline: none;
     }
-        
+
     .map-overlay-inner button:hover {
         box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
     }
@@ -132,8 +132,14 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const url = new URL(window.location);
 const language = document.getElementById('language');
+const languageSearchParam = url.searchParams.get('language');
+if (languageSearchParam) language.value = languageSearchParam;
+
 const worldview = document.getElementById('worldview');
+const worldviewSearchParam = url.searchParams.get('worldview');
+if (worldviewSearchParam) worldview.value = worldviewSearchParam;
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -145,7 +151,8 @@ var map = window.map = new mapboxgl.Map({
     worldview: worldview.value
 });
 
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+map.addControl(new mapboxgl.ScaleControl());
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
 
 map.on('style.load', () => {
     map.addSource('mapbox://mapbox.mapbox-streets-v8-i18n', {
@@ -263,11 +270,19 @@ map.on('style.load', () => {
 
 language.addEventListener('change', (e) => {
     map.setLanguage(e.target.value);
+    updateSearchParam('language', e.target.value);
 });
 
 worldview.addEventListener('change', (e) => {
     map.setWorldview(e.target.value);
+    updateSearchParam('worldview', e.target.value);
 });
+
+function updateSearchParam(param, value) {
+    const url = new URL(window.location);
+    url.searchParams.set(param, value);
+    window.history.pushState({}, '', url);
+}
 
 </script>
 </body>
