@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "방위를 북쪽으로 재설정",
     "NavigationControl.ZoomIn": "확대",
     "NavigationControl.ZoomOut": "축소",
-    "ScaleControl.Feet": "피트",
-    "ScaleControl.Meters": "미터",
-    "ScaleControl.Kilometers": "킬로미터",
-    "ScaleControl.Miles": "마일",
-    "ScaleControl.NauticalMiles": "해리",
     "ScrollZoomBlocker.CtrlMessage": "ctrl + 스크롤을 사용하여 지도 확대/축소",
     "ScrollZoomBlocker.CmdMessage": "⌘ + 스크롤을 사용하여 지도 확대/축소",
     "TouchPanBlocker.Message": "두 손가락을 사용하여 지도 이동"

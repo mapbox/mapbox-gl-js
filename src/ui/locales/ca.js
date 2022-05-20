@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Restableix l'orientació cap al nord",
     "NavigationControl.ZoomIn": "Ampliar",
     "NavigationControl.ZoomOut": "Disminuir el zoom",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Utilitzeu ctrl + desplaçament per ampliar el mapa",
     "ScrollZoomBlocker.CmdMessage": "Utilitzeu ⌘ + desplaçament per ampliar el mapa",
     "TouchPanBlocker.Message": "Feu servir dos dits per moure el mapa"

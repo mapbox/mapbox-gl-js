@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Yönü kuzeye sıfırla",
     "NavigationControl.ZoomIn": "Yakınlaştır",
     "NavigationControl.ZoomOut": "Uzaklaştır",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Ctrl + mouse orta tuşlarını kullanarak haritayı yakınlaştırıp uzaklaştırabilirsiniz",
     "ScrollZoomBlocker.CmdMessage": "⌘ + mouse orta tuşlarını kullanarak haritayı yakınlaştırıp uzaklaştırabilirsiniz",
     "TouchPanBlocker.Message": "İki parmağınızı kullanarak haritayı hareket ettirebilirsiniz"

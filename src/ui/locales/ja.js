@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "北向きに変える",
     "NavigationControl.ZoomIn": "ズームイン",
     "NavigationControl.ZoomOut": "ズームアウト",
-    "ScaleControl.Feet": "フィート",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "マイル",
-    "ScaleControl.NauticalMiles": "海里",
     "ScrollZoomBlocker.CtrlMessage": "ctrlキー+スクロールで地図を縮小/拡大",
     "ScrollZoomBlocker.CmdMessage": "⌘+スクロールで地図を縮小/拡大",
     "TouchPanBlocker.Message": "指2本で地図をスクロール"

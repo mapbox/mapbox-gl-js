@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Redefinir orientação para o norte",
     "NavigationControl.ZoomIn": "Aumentar zoom",
     "NavigationControl.ZoomOut": "Diminuir zoom",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi",
-    "ScaleControl.NauticalMiles": "mn",
     "ScrollZoomBlocker.CtrlMessage": "Pressione ctrl + mouse scroll para ampliar o mapa",
     "ScrollZoomBlocker.CmdMessage": "Pressione ⌘ + mouse scroll para ampliar o mapa",
     "TouchPanBlocker.Message": "Use dois dedos para mover o mapa"

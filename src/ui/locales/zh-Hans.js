@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "将方位重置为北",
     "NavigationControl.ZoomIn": "放大",
     "NavigationControl.ZoomOut": "缩小",
-    "ScaleControl.Feet": "英尺",
-    "ScaleControl.Meters": "米",
-    "ScaleControl.Kilometers": "公里",
-    "ScaleControl.Miles": "英里",
-    "ScaleControl.NauticalMiles": "海里",
     "ScrollZoomBlocker.CtrlMessage": "使用 ctrl + 滚动来缩放地图",
     "ScrollZoomBlocker.CmdMessage": "使用 ⌘ + 滚动来缩放地图",
     "TouchPanBlocker.Message": "用两根手指移动地图"

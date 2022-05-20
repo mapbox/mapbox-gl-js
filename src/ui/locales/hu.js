@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Állítsa vissza az irányt északra",
     "NavigationControl.ZoomIn": "Nagyítás",
     "NavigationControl.ZoomOut": "Kicsinyítés",
-    "ScaleControl.Feet": "láb",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "A térkép nagyításához használja a ctrl + görgetést",
     "ScrollZoomBlocker.CmdMessage": "A térkép nagyításához használja a ⌘ + görgetést",
     "TouchPanBlocker.Message": "Két ujjal mozgassa a térképet"

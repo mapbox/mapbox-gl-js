@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Nulstil pejling til nord",
     "NavigationControl.ZoomIn": "Zoom ind",
     "NavigationControl.ZoomOut": "Zoom ud",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mil",
-    "ScaleControl.NauticalMiles": "sømil",
     "ScrollZoomBlocker.CtrlMessage": "Brug ctrl + scroll for at zoome ind på kortet",
     "ScrollZoomBlocker.CmdMessage": "Brug ⌘ + scroll for at zoome ind på kortet",
     "TouchPanBlocker.Message": "Brug to fingre til at flytte kortet"

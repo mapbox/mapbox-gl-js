@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Compass naar het noorden resetten",
     "NavigationControl.ZoomIn": "Inzoomen",
     "NavigationControl.ZoomOut": "Uitzoomen",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mijl",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Gebruik ctrl + scroll om in te zoomen op de kaart",
     "ScrollZoomBlocker.CmdMessage": "Gebruik ⌘ + scroll om in te zoomen op de kaart",
     "TouchPanBlocker.Message": "Gebruik twee vingers om de kaart te verplaatsen"

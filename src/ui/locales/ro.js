@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Resetați rulmentul spre nord",
     "NavigationControl.ZoomIn": "A mări",
     "NavigationControl.ZoomOut": "A micșora",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mi",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Folosiți ctrl + derulați pentru a mări harta",
     "ScrollZoomBlocker.CmdMessage": "Folosiți ⌘ + derulați pentru a mări harta",
     "TouchPanBlocker.Message": "Folosiți două degete pentru a muta harta"

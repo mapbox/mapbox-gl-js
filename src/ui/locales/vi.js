@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Quay về hướng bắc",
     "NavigationControl.ZoomIn": "Phóng to",
     "NavigationControl.ZoomOut": "Thu nhỏ",
-    "ScaleControl.Feet": "bộ",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "dặm",
-    "ScaleControl.NauticalMiles": "hải lý",
     "ScrollZoomBlocker.CtrlMessage": "Sử dụng ctrl + cuộn để thu phóng bản đồ",
     "ScrollZoomBlocker.CmdMessage": "Sử dụng ⌘ + cuộn để thu phóng bản đồ",
     "TouchPanBlocker.Message": "Vuốt bằng hai ngón tay để cuộn bản đồ"

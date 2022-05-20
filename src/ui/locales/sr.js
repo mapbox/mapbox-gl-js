@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Ресетoвати смер на север",
     "NavigationControl.ZoomIn": "Приближити мапу",
     "NavigationControl.ZoomOut": "Удаљити мапу",
-    "ScaleControl.Feet": "фт",
-    "ScaleControl.Meters": "м",
-    "ScaleControl.Kilometers": "км",
-    "ScaleControl.Miles": "ми",
-    "ScaleControl.NauticalMiles": "нм",
     "ScrollZoomBlocker.CtrlMessage": "Користити Ctrl + скрол да бисте зумирали мапу",
     "ScrollZoomBlocker.CmdMessage": "Користити ⌘ (Cmd) + скрол да бисте зумирали мапу",
     "TouchPanBlocker.Message": "Користити два прста да померaте мапу"

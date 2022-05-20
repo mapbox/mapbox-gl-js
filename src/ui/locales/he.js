@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "איפוס את התצוגה לצפון",
     "NavigationControl.ZoomIn": "התמקדות (זום אין)",
     "NavigationControl.ZoomOut": "התרחקות (זום אאוט)",
-    "ScaleControl.Feet": "רגל",
-    "ScaleControl.Meters": "מטרים",
-    "ScaleControl.Kilometers": "ק\"מ",
-    "ScaleControl.Miles": "מ\"ל",
-    "ScaleControl.NauticalMiles": "נ\"מ",
     "ScrollZoomBlocker.CtrlMessage": "השתמש ב-‫ctrl‬ + גלילה כדי להגדיל את המפה",
     "ScrollZoomBlocker.CmdMessage": "השתמש ב-⌘ + גלילה כדי להגדיל את המפה",
     "TouchPanBlocker.Message": "השתמש בשתי אצבעות כדי להזיז את המפה"
