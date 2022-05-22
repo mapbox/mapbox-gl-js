@@ -103,10 +103,14 @@ export class RequestManager {
     }
 
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
-        const urlObject = parseUrl(url);
+        const urlObject = parseUrl2(url);
         if (!isMapboxURL(url)) {
-            urlObject.path += `${format}${extension}`;
-            return formatUrl(urlObject);
+            if(urlObject.protocol === undefined) {
+                return `${url}${format}${extension}`;
+            } else {
+                urlObject.path += `${format}${extension}`;
+                return formatUrl(urlObject);
+            }
         }
         urlObject.path = `/styles/v1${urlObject.path}/sprite${format}${extension}`;
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
@@ -254,6 +258,21 @@ function parseUrl(url: string): UrlObject {
         authority: parts[2],
         path: parts[3] || '/',
         params: parts[4] ? parts[4].split('&') : []
+    };
+}
+
+const urlRe2 = /^((\w+):\/\/)?([^/?]*)(\/[^?]+)?\??(.+)?/;
+
+function parseUrl2(url: string): UrlObject {
+    const parts = url.match(urlRe2);
+    if (!parts) {
+        throw new Error('Unable to parse URL object');
+    }
+    return {
+        protocol: parts[2],
+        authority: parts[3],
+        path: parts[4] || '/',
+        params: parts[5] ? parts[5].split('&') : []
     };
 }
 
