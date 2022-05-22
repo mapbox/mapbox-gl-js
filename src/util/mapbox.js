@@ -105,7 +105,7 @@ export class RequestManager {
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
         const urlObject = parseUrl2(url);
         if (!isMapboxURL(url)) {
-            if(urlObject.protocol === undefined) {
+            if (urlObject.protocol === undefined) {
                 return `${url}${format}${extension}`;
             } else {
                 urlObject.path += `${format}${extension}`;
