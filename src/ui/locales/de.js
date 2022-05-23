@@ -1,7 +1,7 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "Attributierung umschalten",
+    "AttributionControl.ToggleAttribution": "Attribuierung umschalten",
     "AttributionControl.MapFeedback": "Karten-Feedback",
     "FullscreenControl.Enter": "Vollbildmodus aktivieren",
     "FullscreenControl.Exit": "Vollbildmodus beenden",
