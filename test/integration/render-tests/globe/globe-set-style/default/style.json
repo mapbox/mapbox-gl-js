@@ -1,0 +1,103 @@
+{
+  "version": 8,
+  "sources": {},
+  "layers": [],
+  "metadata": {
+    "test": {
+      "operations": [
+        ["setStyle", {
+          "version": 8,
+          "zoom": 2,
+          "projection": {"name": "globe"},
+          "sources": {
+            "composite": {
+              "url": "mapbox://mapbox.mapbox-streets-v8",
+              "type": "vector"
+            }
+          },
+          "sprite": "mapbox://sprites/mapbox/basic-v9",
+          "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+          "layers": [
+            {
+              "id": "bg",
+              "type": "background",
+              "paint": {"background-color": "#000"}
+            },
+            {
+              "id": "labels",
+              "type": "symbol",
+              "source": "composite",
+              "source-layer": "place_label",
+              "filter": ["==", ["geometry-type"], "Point"],
+              "layout": {
+                "text-anchor": "top",
+                "text-radial-offset": 0.5,
+                "text-field": ["get", "name"],
+                "text-font": [
+                  "Roboto Mono Regular",
+                  "Arial Unicode MS Regular"
+                ],
+                "text-size": 10,
+                "text-pitch-alignment": "viewport"
+              },
+              "paint": {
+                "text-color": "hsl(171, 84.21%, 80.99%)",
+                "text-halo-color": "#000",
+                "text-halo-width": 1
+              }
+            }
+          ]
+        }],
+        [
+            "wait"
+        ],
+        ["setStyle", {
+          "version": 8,
+          "zoom": 2,
+          "projection": {"name": "globe"},
+          "sources": {
+            "composite": {
+              "url": "mapbox://mapbox.mapbox-streets-v8",
+              "type": "vector"
+            }
+          },
+          "sprite": "mapbox://sprites/mapbox/basic-v9",
+          "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+          "layers": [
+            {
+              "id": "bg",
+              "type": "background",
+              "paint": {"background-color": "red"}
+            },
+            {
+              "id": "labels",
+              "type": "symbol",
+              "source": "composite",
+              "source-layer": "place_label",
+              "filter": ["==", ["geometry-type"], "Point"],
+              "layout": {
+                "text-anchor": "top",
+                "text-radial-offset": 0.5,
+                "text-field": ["get", "name"],
+                "text-font": [
+                  "Roboto Mono Regular",
+                  "Arial Unicode MS Regular"
+                ],
+                "text-size": 10,
+                "text-pitch-alignment": "viewport"
+              },
+              "paint": {
+                "text-color": "black",
+                "text-halo-color": "hsl(171, 84.21%, 80.99%)",
+                "text-halo-width": 1
+              }
+            }
+          ]
+        }],
+        [
+          "wait"
+        ]
+      ]
+    }
+  }
+}
