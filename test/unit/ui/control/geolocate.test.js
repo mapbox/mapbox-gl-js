@@ -1,6 +1,7 @@
 import {test} from '../../../util/test.js';
 import window from '../../../../src/util/window.js';
 import {createMap} from '../../../util/index.js';
+import getUIString from '../../../../src/ui/get_ui_string.js';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control.js';
 
 let geolocation;
@@ -616,4 +617,22 @@ test('GeolocateControl watching device orientation event', (t) => {
     });
     geolocate._geolocateButton.dispatchEvent(click);
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+});
+
+test('GeolocateControl changes language after setLanguage', (t) => {
+    const selector = '.mapboxgl-ctrl-geolocate';
+
+    const map = createMap(t);
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+    map._domRenderTaskQueue.run();
+
+    let contents = map.getContainer().querySelector(selector).firstChild.title;
+    t.equal(contents, getUIString('en', 'GeolocateControl.LocationNotAvailable'));
+
+    map.setLanguage('fi');
+    map._domRenderTaskQueue.run();
+    contents = map.getContainer().querySelector(selector).firstChild.title;
+    t.equal(contents, getUIString('fi', 'GeolocateControl.LocationNotAvailable'));
+    t.end();
 });

@@ -1,6 +1,7 @@
 import {test} from '../../../util/test.js';
 import window from '../../../../src/util/window.js';
 import {createMap} from '../../../util/index.js';
+import getUIString from '../../../../src/ui/get_ui_string.js';
 import FullscreenControl from '../../../../src/ui/control/fullscreen_control.js';
 
 test('FullscreenControl appears when fullscreen is enabled', (t) => {
@@ -40,5 +41,24 @@ test('FullscreenControl makes optional container element full screen', (t) => {
     control._onClickFullscreen();
 
     t.equal(control._container.tagName, 'BODY');
+    t.end();
+});
+
+test('FullscreenControl changes language after map.setLanguage', (t) => {
+    const selector = '.mapboxgl-ctrl-fullscreen';
+
+    const map = createMap(t);
+    const fullscreen = new FullscreenControl();
+    map.addControl(fullscreen);
+    map._domRenderTaskQueue.run();
+
+    let contents = map.getContainer().querySelector(selector).firstChild.title;
+    t.equal(contents, getUIString('en', 'FullscreenControl.Enter'));
+
+    map.setLanguage('fi');
+    map._domRenderTaskQueue.run();
+
+    contents = map.getContainer().querySelector(selector).firstChild.title;
+    t.equal(contents, getUIString('fi', 'FullscreenControl.Enter'));
     t.end();
 });
