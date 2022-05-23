@@ -12,7 +12,7 @@ const locale = {
     "NavigationControl.ResetBearing": "إعادة تعيين الإتجاة للشمال",
     "NavigationControl.ZoomIn": "تكبير",
     "NavigationControl.ZoomOut": "تصغير",
-    "ScrollZoomBlocker.CtrlMessage": "إستخدم مفتاح التحكم + التمرير لتكبير الخريطة",
+    "ScrollZoomBlocker.CtrlMessage": "استخدم مفتاح ‫ctrl‬ + التمرير لتكبير الخريطة",
     "ScrollZoomBlocker.CmdMessage": "استخدم مفتاح ⌘ + التمرير لتكبير الخريطة",
     "TouchPanBlocker.Message": "استخدم إصبعين لتحريك الخريطة"
 };
