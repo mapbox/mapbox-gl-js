@@ -585,8 +585,9 @@ class Transform {
         const minWorldSize = this.zoomScale(this.minZoom) * this.tileSize;
         const maxWorldSize = this.zoomScale(this.maxZoom) * this.tileSize;
         const distToCenter = this.cameraToCenterDistance;
-
-        position[2] = clamp(position[2], distToCenter / maxWorldSize, distToCenter / minWorldSize);
+        // Camera height calculations take forward into account
+        const dir = this._camera.forward();
+        position[2] = clamp(position[2], (-dir[2] * distToCenter) / maxWorldSize, (-dir[2] * distToCenter) / minWorldSize);
         this._camera.position = position;
     }
 
