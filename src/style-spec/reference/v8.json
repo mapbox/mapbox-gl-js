@@ -5003,7 +5003,6 @@
       "default": [0.0, 0.0],
       "transition": false,
       "requires": [
-          "line-gradient",
           {
               "source": "geojson",
               "has": {
