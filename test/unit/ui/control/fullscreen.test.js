@@ -44,7 +44,7 @@ test('FullscreenControl makes optional container element full screen', (t) => {
     t.end();
 });
 
-test('FullscreenControl changes language after map.setLanguage', (t) => {
+test('FullscreenControl changes language after setLanguage', (t) => {
     const selector = '.mapboxgl-ctrl-fullscreen';
 
     const map = createMap(t);

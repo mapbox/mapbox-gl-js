@@ -38,7 +38,7 @@ test('ScaleControl should change unit of distance after calling setUnit', (t) =>
     t.end();
 });
 
-test('ScaleControl changes language after map.setLanguage', (t) => {
+test('ScaleControl changes language after setLanguage', (t) => {
     const map = createMap(t);
     const scale = new ScaleControl();
     const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
