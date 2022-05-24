@@ -136,8 +136,8 @@ class ImageSource extends Evented implements Source {
         this.options = options;
     }
 
-    load(newCoordinates?: Coordinates) {
-        this._loaded = false;
+    load(newCoordinates?: Coordinates, loaded?: boolean) {
+        this._loaded = loaded || false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
@@ -206,7 +206,7 @@ class ImageSource extends Evented implements Source {
             return this;
         }
         this.options.url = options.url;
-        this.load(options.coordinates);
+        this.load(options.coordinates, this._loaded);
         return this;
     }
 
