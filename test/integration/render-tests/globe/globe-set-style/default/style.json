@@ -1,103 +1,60 @@
 {
   "version": 8,
-  "sources": {},
-  "layers": [],
   "metadata": {
     "test": {
+      "height": 256,
+      "width": 256,
       "operations": [
         ["setStyle", {
           "version": 8,
-          "zoom": 2,
           "projection": {"name": "globe"},
           "sources": {
-            "composite": {
-              "url": "mapbox://mapbox.mapbox-streets-v8",
-              "type": "vector"
+            "mapbox": {
+              "type": "vector",
+              "maxzoom": 14,
+              "tiles": [
+                "local://tiles/{z}-{x}-{y}.mvt"
+              ]
             }
           },
-          "sprite": "mapbox://sprites/mapbox/basic-v9",
-          "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
           "layers": [
             {
-              "id": "bg",
+              "id": "background",
               "type": "background",
-              "paint": {"background-color": "#000"}
-            },
-            {
-              "id": "labels",
-              "type": "symbol",
-              "source": "composite",
-              "source-layer": "place_label",
-              "filter": ["==", ["geometry-type"], "Point"],
-              "layout": {
-                "text-anchor": "top",
-                "text-radial-offset": 0.5,
-                "text-field": ["get", "name"],
-                "text-font": [
-                  "Roboto Mono Regular",
-                  "Arial Unicode MS Regular"
-                ],
-                "text-size": 10,
-                "text-pitch-alignment": "viewport"
-              },
               "paint": {
-                "text-color": "hsl(171, 84.21%, 80.99%)",
-                "text-halo-color": "#000",
-                "text-halo-width": 1
+                "background-color": "rgb(255,89,252)"
               }
             }
           ]
         }],
-        [
-            "wait"
-        ],
+        ["wait"],
         ["setStyle", {
           "version": 8,
-          "zoom": 2,
           "projection": {"name": "globe"},
           "sources": {
-            "composite": {
-              "url": "mapbox://mapbox.mapbox-streets-v8",
-              "type": "vector"
+            "mapbox": {
+              "type": "vector",
+              "maxzoom": 14,
+              "tiles": [
+                "local://tiles/{z}-{x}-{y}.mvt"
+              ]
             }
           },
-          "sprite": "mapbox://sprites/mapbox/basic-v9",
-          "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
           "layers": [
             {
-              "id": "bg",
+              "id": "background",
               "type": "background",
-              "paint": {"background-color": "red"}
-            },
-            {
-              "id": "labels",
-              "type": "symbol",
-              "source": "composite",
-              "source-layer": "place_label",
-              "filter": ["==", ["geometry-type"], "Point"],
-              "layout": {
-                "text-anchor": "top",
-                "text-radial-offset": 0.5,
-                "text-field": ["get", "name"],
-                "text-font": [
-                  "Roboto Mono Regular",
-                  "Arial Unicode MS Regular"
-                ],
-                "text-size": 10,
-                "text-pitch-alignment": "viewport"
-              },
               "paint": {
-                "text-color": "black",
-                "text-halo-color": "hsl(171, 84.21%, 80.99%)",
-                "text-halo-width": 1
+                "background-color": "rgb(17,207,20)"
               }
             }
           ]
         }],
-        [
-          "wait"
-        ]
+        ["wait"]
       ]
     }
-  }
+  },
+  "zoom": 2,
+  "sources": {},
+  "layers": []
 }
