@@ -1056,6 +1056,7 @@ class Map extends Camera {
      * Returns the code for the map's language which is used for translating map labels.
      *
      * @returns {string} Returns the map's language code.
+     * @experimental
      * @example
      * const language = map.getLanguage();
      */
@@ -1068,6 +1069,7 @@ class Map extends Camera {
      *
      * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
      * @returns {Map} Returns itself to allow for method chaining.
+     * @experimental
      * @example
      * map.setLanguage('es');
      */
@@ -1099,6 +1101,7 @@ class Map extends Camera {
      * Returns the code for the map's worldview.
      *
      * @returns {string} Returns the map's worldview code.
+     * @experimental
      * @example
      * const worldview = map.getWorldview();
      */
@@ -1111,6 +1114,7 @@ class Map extends Camera {
      *
      * @param {string} worldview A string representing the desired worldview. `undefined` or `null` will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
+     * @experimental
      * @example
      * map.setWorldView('JP');
      */
