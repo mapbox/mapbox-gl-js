@@ -322,6 +322,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform) {
+        const fauxAO = this.layers[0].layout.get('fill-extrusion-faux-ao');
         const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
@@ -373,6 +374,8 @@ class FillExtrusionBucket implements Bucket {
 
                 let edgeDistance = 0;
                 if (metadata) metadata.startRing(ring[0]);
+                const isFirstCornerConcave = fauxAO && ring.length > 4 && isFauxAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
+                let isPrevCornerConcave = isFirstCornerConcave;
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
@@ -393,13 +396,24 @@ class FillExtrusionBucket implements Bucket {
                             const dist = p2.dist(p1);
                             if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            const isConcaveCorner = fauxAO && ring.length > 4 && (p + 1 != ring.length ? isFauxAOConcaveAngle(p2, p1, ring[p + 1]) : isFirstCornerConcave);
+
+                            // let encodedEdgeDistance = encodeFauxAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
+                            let encodedEdgeDistance = isConcaveCorner ? (edgeDistance | 3) : (edgeDistance & ~2);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                             edgeDistance += dist;
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            // encodedEdgeDistance = encodeFauxAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
+                            encodedEdgeDistance = isPrevCornerConcave ? (edgeDistance | 2) : (edgeDistance & ~2);
+                            if (isPrevCornerConcave) {
+                                encodedEdgeDistance &= ~1; // the least significant bit 0 marks the edge end.
+                            }
+                            isPrevCornerConcave = isConcaveCorner;
+
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                             const bottomRight = segment.vertexLength;
 
@@ -587,6 +601,30 @@ function tileToMeter(canonical: CanonicalTileID) {
     const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
     // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
+}
+
+
+function isFauxAOConcaveAngle(p2, p1, p3) {
+    if (p2.x < 0 || p2.x >= EXTENT || p1.x < 0 || p1.x >= EXTENT || p3.x < 0 || p3.x >= EXTENT) {
+        return false; // angles are not processed for edges that extend over tile borders
+    }
+    const a = p3.sub(p1);
+    const an = a.perp();
+    const b = p1.sub(p2);
+    const ab = a.x * b.x + a.y * b.y;
+    const cosABSquare = ab * ab / ((a.x * a.x + a.y * a.y) * (b.x * b.x + b.y * b.y));
+    const dotProductWithNormal = an.x * b.x + an.y * b.y;
+
+    // Heuristics: don't shade concave angles above 147° (sqrt(arccos(0.7))).
+    return cosABSquare < 0.7 && dotProductWithNormal > 0;
+}
+
+function encodeFauxAOToEdgeDistance(edgeDistance, isConcaveCorner, edgeStart) {
+    // Encode concavity and edge start/end using the least significant bits.
+    // Second least significant bit 1 encodes concavity.
+    // The least significant bit 1 marks the edge start, 0 for edge end.
+    let encodedEdgeDistance = isConcaveCorner ? (edgeDistance | 2) : (edgeDistance & ~2);
+    return edgeStart ? (edgeDistance | 1) : (edgeDistance & ~1);
 }
 
 export function fillExtrusionHeightLift(): number {

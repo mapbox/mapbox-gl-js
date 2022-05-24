@@ -22,6 +22,10 @@ uniform float u_height_lift;
 
 varying vec4 v_color;
 
+#ifdef FAUX_AO
+varying vec3 v_ao;
+#endif
+
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
@@ -32,12 +36,14 @@ void main() {
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
 
-    vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
-    // The least significant bits of a_pos_normal_ed.xy hold:
+    vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
+    // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
     // y is 1 if the normal points up, and 0 if it points to side.
     // z is sign of ny: 1 for positive, 0 for values <= 0.
-    mediump vec3 top_up_ny = a_pos_normal_ed.xyz - 2.0 * pos_nx;
+    // w marks edge's start, 0 is for edge end, edgeDistance increases from start to end.
+    vec4 top_up_ny_start = a_pos_normal_ed - 2.0 * pos_nx;
+    vec3 top_up_ny = top_up_ny_start.xyz;
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
@@ -52,9 +58,10 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
+float ele = 0.0;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
-    float ele = elevation(pos_nx.xy);
+    ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
@@ -101,6 +108,20 @@ void main() {
             (1.0 - u_vertical_gradient) +
             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
     }
+
+#ifdef FAUX_AO
+    float concave = pos_nx.w - floor(pos_nx.w * 0.5) * 2.0;
+    float start = top_up_ny_start.w;
+    gl_Position.z -= (0.0000003 * (min(height, 500.) + 2.0 * min(base, 500.0) + 6.0 * concave + 3.0 * start)) * gl_Position.w;
+    float y_shade_ground = 0.81;
+#ifdef TERRAIN
+    float top_ele = (flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + height) - ele;
+    y_shade_ground = mix(y_shade_ground, 1.0, -5.0 / min(3.0, top_ele));
+#endif
+    float y_shade = clamp(t + base, y_shade_ground, 1.0);
+    v_ao = vec3(mix(concave, -concave, start), y_shade, mix(base, pos.z - ele, t));
+    directional *= mix(1.02, 1.0, top_up_ny.y); // compensate sides faux ao shading contribution
+#endif
 
     // Assign final color based on surface + ambient light color, diffuse light directional, and light color
     // with lower bounds adjusted to hue of light

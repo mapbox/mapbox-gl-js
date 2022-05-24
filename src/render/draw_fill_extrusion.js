@@ -70,6 +70,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
     }
+    if (layer.layout.get('fill-extrusion-faux-ao')) {
+        baseDefines.push('FAUX_AO');
+    }
 
     for (const coord of coords) {
         const tile = source.getTile(coord);

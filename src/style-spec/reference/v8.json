@@ -877,6 +877,19 @@
         }
       },
       "property-type": "constant"
+    },
+    "fill-extrusion-faux-ao": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to apply faux ambient occlusion (Faux-AO) shading to fill extrusion at buildings zoom level. Faux-AO is a low-cost best-effort approach that mimics ambient occlusion shading of areas near ground and concave angles between walls.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.8.3",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      },
+      "property-type": "constant"
     }
   },
   "layout_line": {

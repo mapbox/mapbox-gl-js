@@ -30,6 +30,9 @@
     <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
+    <label><input id='buildings-fauxao-checkbox' type='checkbox'> buildings faux-ao</label><br />
+    <label><input id='buildings-vertical-gradient-checkbox' type='checkbox' checked> buildings vertical-gradient</label><br />
+    <label><input type="range" min="0" max="100" value="26" class="slider" id="light-intensity-slider">light intensity: </label><label id='lintensity'>0.26</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
     <label><input id='circles-checkbox' type='checkbox'> circles</label><br />
     <label><input id='hillshade-checkbox' type='checkbox'> hillshade using terrain</label><br />
@@ -107,7 +110,9 @@ map.on('style.load', function() {
             "visibility": "none"
         }
     });
-
+    map.setLight({
+        intensity: 0.26
+    });
     const buildingExtrusions = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
     if (buildingExtrusions) {
         buildingsLayerId = buildingExtrusions;
@@ -118,11 +123,11 @@ map.on('style.load', function() {
             'source-layer': 'building',
             'filter': ['==', 'extrude', 'true'],
             'type': 'fill-extrusion',
-            'minzoom': 15,
+            'minzoom': 14,
             'paint': {
-                'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+                'fill-extrusion-color': 'white',
                 'fill-extrusion-height': ["get", "height"],
-                'fill-extrusion-opacity': 0.7
+                'fill-extrusion-base': ["get", "min_height"]
             }
         }, 'waterway-label');
     }
@@ -314,6 +319,32 @@ document.getElementById('custom-checkbox').onclick = function() {
     map.setLayoutProperty('highlight', 'visibility', this.checked ? 'visible' : 'none');
 };
 
+document.getElementById('buildings-fauxao-checkbox').onclick = function() {
+    map.setLayoutProperty(buildingsLayerId, 'fill-extrusion-faux-ao', this.checked);
+    const buildingsBlurLayerId = "buildings-ground-blur";
+    if (!map.getLayer(buildingsBlurLayerId)) {
+        map.addLayer({
+            'id': buildingsBlurLayerId,
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'line',
+            'minzoom': 15,
+            'paint': {
+                'line-color': 'rgba(100, 100, 100, 0.4)',
+                'line-width': {"base": 1.3, "stops":[[14, 5], [22, 20]]},
+                'line-blur': {"base": 1.3, "stops":[[14, 5], [22, 20]]},
+                'line-opacity': {"stops":[[14, 1], [22, 0.1]]}
+            }
+        }, buildingsLayerId);
+    }
+    map.setLayoutProperty(buildingsBlurLayerId, 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('buildings-vertical-gradient-checkbox').onclick = function() {
+    map.setPaintProperty(buildingsLayerId, 'fill-extrusion-vertical-gradient', this.checked);
+};
+
 document.getElementById('hillshade-checkbox').onclick = function() {
     if (!map.getLayer(hillshadeId)) {
         // Inject hillshade from terrain layer
@@ -344,6 +375,14 @@ document.getElementById('repaint-checkbox').onclick = function() {
         window.clearInterval(this.fpsTimer);
         document.getElementById('fps').innerHTML = `0`;
     }
+};
+
+document.getElementById('light-intensity-slider').oninput = function() {
+    const lIntensity = this.value / 100.0;
+    map.setLight({
+        intensity: lIntensity
+    });
+    document.getElementById('lintensity').innerHTML = lIntensity.toPrecision(3);
 };
 
 document.getElementById('circles-checkbox').onclick = function() {
