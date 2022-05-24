@@ -12,3 +12,4 @@ image-on-globe.html
 atmosphere.html
 animate-point-along-route.html
 filter-features-with-globe.html
+globe-with-video.html
