@@ -100,7 +100,7 @@ const pages = [
         "key": "globe-with-video",
         "title": "Globe with Video",
         "url": "./globe-with-video.html"
-    }
+    },
     {
         "key": "scroll_zoom_blocker",
         "title": "Gestures",
