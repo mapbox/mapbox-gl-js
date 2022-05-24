@@ -66,7 +66,7 @@ const heatmapUniformValues = (
 ): UniformValues<HeatmapUniformsType> => {
     const transform = painter.transform;
     const isGlobe = transform.projection.name === 'globe';
-    const extrudeScale = isGlobe ? globePixelsToTileUnits(transform.zoom, coord.canonical) : pixelsToTileUnits(tile, 1, zoom);
+    const extrudeScale = isGlobe ? globePixelsToTileUnits(transform.zoom, coord.canonical) * transform._projectionScaler : pixelsToTileUnits(tile, 1, zoom);
 
     const values = {
         'u_matrix': coord.projMatrix,
