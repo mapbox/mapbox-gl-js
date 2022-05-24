@@ -2374,15 +2374,24 @@ test('Map', (t) => {
             });
         });
 
-        t.test('English is the default UI language', (t) => {
+        t.test('window.navigator.language is the default UI language', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {
-                t.equal(map._getUIString('Map.Title'), getUIString('en', 'Map.Title'));
+                const defaultLanguage = window.navigator.language.split('-')[0];
+                t.equal(map._getUIString('Map.Title'), getUIString(defaultLanguage, 'Map.Title'));
                 t.end();
             });
         });
 
-        t.test('can change UI language', (t) => {
+        t.test('can instantiate map UI with language', (t) => {
+            const map = createMap(t, {language: 'uk'});
+            map.on('style.load', () => {
+                t.equal(map._getUIString('Map.Title'), getUIString('uk', 'Map.Title'));
+                t.end();
+            });
+        });
+
+        t.test('can change map UI language', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {
                 t.equal(map._getUIString('Map.Title'), getUIString('en', 'Map.Title'));
