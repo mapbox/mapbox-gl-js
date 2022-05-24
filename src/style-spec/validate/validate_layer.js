@@ -82,7 +82,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
             } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
                        (sourceType !== 'geojson' || !source.lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires a GeoJSON source with \`lineMetrics\` enabled.`));
-            } 
+            }
         }
     }
 
