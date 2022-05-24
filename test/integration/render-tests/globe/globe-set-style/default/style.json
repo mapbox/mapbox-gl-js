@@ -7,7 +7,7 @@
       "operations": [
         ["setStyle", {
           "version": 8,
-          "projection": {"name": "globe"},
+          "projection": {"name": "mercator"},
           "sources": {
             "mapbox": {
               "type": "vector",
@@ -30,7 +30,7 @@
         ["wait"],
         ["setStyle", {
           "version": 8,
-          "projection": {"name": "globe"},
+          "projection": {"name": "mercator"},
           "sources": {
             "mapbox": {
               "type": "vector",
