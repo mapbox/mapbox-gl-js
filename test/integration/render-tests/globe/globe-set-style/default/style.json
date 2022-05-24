@@ -7,7 +7,7 @@
       "operations": [
         ["setStyle", {
           "version": 8,
-          "projection": {"name": "mercator"},
+          "projection": {"name": "globe"},
           "sources": {
             "mapbox": {
               "type": "vector",
@@ -19,7 +19,7 @@
           },
           "layers": [
             {
-              "id": "background",
+              "id": "background1",
               "type": "background",
               "paint": {
                 "background-color": "rgb(255,89,252)"
@@ -30,7 +30,7 @@
         ["wait"],
         ["setStyle", {
           "version": 8,
-          "projection": {"name": "mercator"},
+          "projection": {"name": "globe"},
           "sources": {
             "mapbox": {
               "type": "vector",
@@ -42,7 +42,7 @@
           },
           "layers": [
             {
-              "id": "background",
+              "id": "background2",
               "type": "background",
               "paint": {
                 "background-color": "rgb(17,207,20)"
