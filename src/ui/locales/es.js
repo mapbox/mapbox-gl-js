@@ -13,7 +13,7 @@ const locale = {
     "NavigationControl.ZoomIn": "Ampliar",
     "NavigationControl.ZoomOut": "Disminuir el zoom",
     "ScrollZoomBlocker.CtrlMessage": "Usa ctrl + desplazamiento para hacer zoom en el mapa",
-    "ScrollZoomBlocker.CmdMessage": "Use ⌘ + desplazamiento para hacer zoom en el mapa",
+    "ScrollZoomBlocker.CmdMessage": "Usa ⌘ + desplazamiento para hacer zoom en el mapa",
     "TouchPanBlocker.Message": "Usa dos dedos para mover el mapa"
 };
 
