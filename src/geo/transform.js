@@ -857,7 +857,6 @@ class Transform {
                 // This ensures that all tiles near the camera center are at the same level,
                 // preventing artifacts caused by inconsistent map appearance between zoom levels.
                 if (tile.zoom + 1 === maxZoom) {
-                    console.log("one away!");
                     return true;
                 }
                 dzSqr = square(tile.aabb.distanceZ(cameraPoint));
