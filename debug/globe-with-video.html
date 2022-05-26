@@ -30,7 +30,7 @@
 </style>
 
 <div id="map"></div>
-<div button id="playback">Play/pause</div>
+<div button id="playback">Pause</div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -91,12 +91,14 @@ const map = new mapboxgl.Map({
     projection: 'globe'
 });
 
-let playing = false;
-
 document.getElementById('playback').addEventListener('click', (e) => {
-    playing = !playing;
-    if (playing) map.getSource('video').play();
-    else map.getSource('video').pause();
+    if (e.target.innerHTML === 'Play') {
+        e.target.innerHTML = 'Pause';
+        map.getSource('video').play();
+    } else {
+        e.target.innerHTML = 'Play';
+        map.getSource('video').pause();
+    }
 });
 
 </script>
