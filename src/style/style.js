@@ -662,8 +662,8 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition') {
-                // `transition` is always read directly off of
+            if (op.command === 'setTransition' || op.command === 'setProjection') {
+                // `transition` and `projection` are always read directly from
                 // `this.stylesheet`, which we update below
                 return;
             }
