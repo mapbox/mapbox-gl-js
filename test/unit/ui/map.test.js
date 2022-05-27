@@ -525,13 +525,6 @@ test('Map', (t) => {
 
         t.test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', (t) => {
             const styleWithTerrainExaggeration = {
-                'sources': {
-                    'mapbox-dem': {
-                        'tiles': ['http://example.com/{z}/{x}/{y}.png'],
-                        'type': 'raster-dem',
-                        'tileSize': 512
-                    }
-                },
                 'terrain': {
                     'source': 'mapbox-dem',
                     'exaggeration': 500
@@ -539,13 +532,6 @@ test('Map', (t) => {
             };
 
             const styleWithoutTerrainExaggeration = {
-                'sources': {
-                    'mapbox-dem': {
-                        'tiles': ['http://example.com/{z}/{x}/{y}.png'],
-                        'type': 'raster-dem',
-                        'tileSize': 512
-                    }
-                },
                 'terrain': {
                     'source': 'mapbox-dem'
                 }
