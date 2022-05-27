@@ -435,8 +435,8 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
-                t.ok(style.terrain);
-                t.equal(style.terrain.source, '');
+                // Should not overwrite style: https://github.com/mapbox/mapbox-gl-js/issues/11939
+                t.equal(style.terrain, undefined);
                 map.remove();
 
                 map = new Map({style, container: div, testMode: true});
