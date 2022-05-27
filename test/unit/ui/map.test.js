@@ -551,7 +551,7 @@ test('Map', (t) => {
                 'layers': []
             };
 
-            const map = createMap(t, {style: extend(createStyle(), styleWithTerrainExaggeration)});
+            const map = createMap(t, {style: styleWithTerrainExaggeration});
 
             map.on('style.load', () => {
                 t.equal(map.getTerrain().exaggeration, 500);
@@ -583,7 +583,7 @@ test('Map', (t) => {
                 'layers': []
             };
 
-            const map = createMap(t, {style: extend(createStyle(), styleWithWinkelTripel)});
+            const map = createMap(t, {style: styleWithWinkelTripel});
 
             map.on('style.load', () => {
                 t.equal(map.getProjection().name, 'winkelTripel');
