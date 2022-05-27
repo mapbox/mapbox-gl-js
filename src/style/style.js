@@ -1497,6 +1497,10 @@ class Style extends Evented {
         } else { // Updating
             const terrain = this.terrain;
             const currSpec = terrain.get();
+
+            // Add in terrain default values if it was not set in style
+            if (!terrainOptions.hasOwnProperty('exaggeration')) terrainOptions.exaggeration = 1;
+
             for (const key in terrainOptions) {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
