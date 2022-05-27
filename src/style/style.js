@@ -309,7 +309,7 @@ class Style extends Evented {
         }
 
         this._loaded = true;
-        this.stylesheet = extend({}, json);
+        this.stylesheet = clone(json);
         this._updateMapProjection();
 
         for (const id in json.sources) {
