@@ -1499,7 +1499,7 @@ class Style extends Evented {
             const currSpec = terrain.get();
 
             // Add in terrain default values if it was not set in style
-            if (!terrainOptions.hasOwnProperty('exaggeration') && !!currSpec.hasOwnProperty('exaggeration')) {
+            if (!terrainOptions.hasOwnProperty('exaggeration') && currSpec.hasOwnProperty('exaggeration')) {
                 terrainOptions.exaggeration = 1;
             }
 
