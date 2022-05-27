@@ -504,9 +504,7 @@ test('Map', (t) => {
 
                     styleWithTerrain['sources']["mapbox-dem"] = {
                         "type": "raster-dem",
-                        "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                        "tileSize": 256,
-                        "maxzoom": 14
+                        "tiles": ['http://example.com/{z}/{x}/{y}.png']
                     };
                     styleWithTerrain['terrain'] = {
                         "source": "mapbox-dem"
@@ -525,50 +523,69 @@ test('Map', (t) => {
 
         t.test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', (t) => {
             const styleWithTerrainExaggeration = {
+                'version': 8,
+                'sources': {
+                    'mapbox-dem': {
+                        'type': 'raster-dem',
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
                 'terrain': {
                     'source': 'mapbox-dem',
                     'exaggeration': 500
-                }
+                },
+                'layers': []
             };
 
             const styleWithoutTerrainExaggeration = {
+                'version': 8,
+                'sources': {
+                    'mapbox-dem': {
+                        'type': 'raster-dem',
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
                 'terrain': {
                     'source': 'mapbox-dem'
-                }
+                },
+                'layers': []
             };
 
             const map = createMap(t, {style: extend(createStyle(), styleWithTerrainExaggeration)});
 
-            map.on('load', () => {
-                t.equal(map.style.terrain.properties._values.exaggeration, 500);
+            map.on('style.load', () => {
+                t.equal(map.getTerrain().exaggeration, 500);
 
                 map.setStyle(styleWithoutTerrainExaggeration);
-                t.equal(map.style.terrain.properties._values.exaggeration, 1);
+                t.equal(map.getTerrain().exaggeration, 1);
 
                 map.setStyle(styleWithTerrainExaggeration);
-                t.equal(map.style.terrain.properties._values.exaggeration, 500);
+                t.equal(map.getTerrain().exaggeration, 500);
 
-                t.equal(styleWithoutTerrainExaggeration.sources.terrain.exaggeration, undefined);
-                t.equal(styleWithTerrainExaggeration.sources.terrain.exaggeration, 500);
+                t.equal(styleWithoutTerrainExaggeration.terrain.exaggeration, undefined);
+                t.equal(styleWithTerrainExaggeration.terrain.exaggeration, 500);
                 t.end();
             });
-
-            map.remove();
-            t.end();
         });
 
         t.test('should apply different projections when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11916)', (t) => {
             const styleWithWinkelTripel = {
-                'projection': {'name': 'winkelTripel'}
+                'version': 8,
+                'sources': {},
+                'projection': {'name': 'winkelTripel'},
+                'layers': []
             };
 
             const styleWithGlobe = {
-                'projection': {'name': 'globe'}
+                'version': 8,
+                'sources': {},
+                'projection': {'name': 'globe'},
+                'layers': []
             };
 
             const map = createMap(t, {style: extend(createStyle(), styleWithWinkelTripel)});
 
-            map.on('load', () => {
+            map.on('style.load', () => {
                 t.equal(map.getProjection().name, 'winkelTripel');
 
                 map.setStyle(styleWithGlobe);
@@ -581,9 +598,6 @@ test('Map', (t) => {
                 t.equal(styleWithWinkelTripel.projection.name, 'winkelTripel');
                 t.end();
             });
-
-            map.remove();
-            t.end();
         });
 
         t.test('updating fog results in correct transitions', (t) => {
