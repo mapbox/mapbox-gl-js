@@ -554,17 +554,45 @@ test('Map', (t) => {
             const map = createMap(t, {style: extend(createStyle(), styleWithTerrainExaggeration)});
 
             map.on('load', () => {
-                t.ok(map.style.terrain.properties._values.exaggeration, 500);
+                t.equal(map.style.terrain.properties._values.exaggeration, 500);
 
                 map.setStyle(styleWithoutTerrainExaggeration);
-
                 t.equal(map.style.terrain.properties._values.exaggeration, 1);
+
                 t.equal(styleWithoutTerrainExaggeration.sources.terrain.exaggeration, undefined);
                 t.equal(styleWithTerrainExaggeration.sources.terrain.exaggeration, 500);
 
                 t.end();
             });
 
+            map.remove();
+            t.end();
+        });
+
+        t.test('should apply different projections when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11916)', (t) => {
+            const styleWithWinkelTripel = {
+                'projection': {'name': 'winkelTripel'}
+            };
+
+            const styleWithGlobe = {
+                'projection': {'name': 'globe'}
+            };
+
+            const map = createMap(t, {style: extend(createStyle(), styleWithWinkelTripel)});
+
+            map.on('load', () => {
+                t.equal(map.getProjection().name, 'winkelTripel');
+
+                map.setStyle(styleWithGlobe);
+                t.equal(map.getProjection().name, 'globe');
+
+                t.equal(styleWithGlobe.projection.name, 'globe');
+                t.equal(styleWithWinkelTripel.projection.name, 'winkelTripel');
+
+                t.end();
+            });
+
+            map.remove();
             t.end();
         });
 
