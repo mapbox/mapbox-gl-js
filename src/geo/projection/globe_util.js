@@ -274,8 +274,15 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     let arcCenter = new Array(3);
     let closestArcIdx = 0;
 
-    const dx = center[0] - tileCenter[0];
+    let dx = center[0] - tileCenter[0];
     const dy = center[1] - tileCenter[1];
+
+    // Shortest distance might be across the antimeridian
+    if (dx > .5) {
+        dx -= 1;
+    } else if (dx < -.5) {
+        dx += 1;
+    }
 
     // Here we determine the arc which is closest to the map center point.
     // Horizontal arcs origin = globeCenter.
