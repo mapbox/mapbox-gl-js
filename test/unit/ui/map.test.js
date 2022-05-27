@@ -504,7 +504,9 @@ test('Map', (t) => {
 
                     styleWithTerrain['sources']["mapbox-dem"] = {
                         "type": "raster-dem",
-                        "tiles": ['http://example.com/{z}/{x}/{y}.png']
+                        "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                        "tileSize": 256,
+                        "maxzoom": 14
                     };
                     styleWithTerrain['terrain'] = {
                         "source": "mapbox-dem"
