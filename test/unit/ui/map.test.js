@@ -545,9 +545,11 @@ test('Map', (t) => {
                 map.setStyle(styleWithoutTerrainExaggeration);
                 t.equal(map.style.terrain.properties._values.exaggeration, 1);
 
+                map.setStyle(styleWithTerrainExaggeration);
+                t.equal(map.style.terrain.properties._values.exaggeration, 500);
+
                 t.equal(styleWithoutTerrainExaggeration.sources.terrain.exaggeration, undefined);
                 t.equal(styleWithTerrainExaggeration.sources.terrain.exaggeration, 500);
-
                 t.end();
             });
 
@@ -572,9 +574,11 @@ test('Map', (t) => {
                 map.setStyle(styleWithGlobe);
                 t.equal(map.getProjection().name, 'globe');
 
+                map.setStyle(styleWithWinkelTripel);
+                t.equal(map.getProjection().name, 'winkelTripel');
+
                 t.equal(styleWithGlobe.projection.name, 'globe');
                 t.equal(styleWithWinkelTripel.projection.name, 'winkelTripel');
-
                 t.end();
             });
 
