@@ -523,6 +523,51 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', (t) => {
+            const styleWithTerrainExaggeration = {
+                'sources': {
+                    'mapbox-dem': {
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png'],
+                        'type': 'raster-dem',
+                        'tileSize': 512
+                    }
+                },
+                'terrain': {
+                    'source': 'mapbox-dem',
+                    'exaggeration': 500
+                }
+            };
+
+            const styleWithoutTerrainExaggeration = {
+                'sources': {
+                    'mapbox-dem': {
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png'],
+                        'type': 'raster-dem',
+                        'tileSize': 512
+                    }
+                },
+                'terrain': {
+                    'source': 'mapbox-dem'
+                }
+            };
+
+            const map = createMap(t, {style: extend(createStyle(), styleWithTerrainExaggeration)});
+
+            map.on('load', () => {
+                t.ok(map.style.terrain.properties._values.exaggeration, 500);
+
+                map.setStyle(styleWithoutTerrainExaggeration);
+
+                t.equal(map.style.terrain.properties._values.exaggeration, 1);
+                t.equal(styleWithoutTerrainExaggeration.sources.terrain.exaggeration, undefined);
+                t.equal(styleWithTerrainExaggeration.sources.terrain.exaggeration, 500);
+
+                t.end();
+            });
+
+            t.end();
+        });
+
         t.test('updating fog results in correct transitions', (t) => {
             t.test('sets fog with transition', (t) => {
                 const fog = new Fog({
