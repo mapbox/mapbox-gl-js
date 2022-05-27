@@ -1201,7 +1201,7 @@ class Map extends Camera {
             this.style.applyProjectionUpdate();
             this._update(true);
         } else if (this.transform.projection.requiresDraping && !this.getTerrain() && !this.style.stylesheet.terrain) {
-           this.style.setTerrainForDraping();
+            this.style.setTerrainForDraping();
         }
 
         return this;
