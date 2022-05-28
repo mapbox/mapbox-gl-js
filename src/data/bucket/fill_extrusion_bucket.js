@@ -358,86 +358,76 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
-        for (const clippedPolygon of clippedPolygons) {
-            const polygon = clippedPolygon.polygon;
+        for (const {polygon, bounds} of clippedPolygons) {
             let numVertices = 0;
-            let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
-            for (let i = 0; i < polygon.length; i++) {
-                const ring = polygon[i];
-                if (ring.length === 0) {
-                    continue;
-                }
+            for (const ring of polygon) {
+                if (ring.length === 0) continue;
+
                 numVertices += ring.length;
 
                 let edgeDistance = 0;
                 if (metadata) metadata.startRing(ring[0]);
 
-                for (let p = 0; p < ring.length; p++) {
+                for (let p = 1; p < ring.length; p++) {
                     const p1 = ring[p];
+                    const p2 = ring[p - 1];
 
-                    if (p >= 1) {
-                        const p2 = ring[p - 1];
-                        if (!isBoundaryEdge(p1, p2, clippedPolygon.bounds)) {
-                            if (metadata) metadata.append(p1, p2);
-                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                            }
+                    if (isBoundaryEdge(p1, p2, bounds)) continue;
 
-                            const d = p1.sub(p2)._perp();
-                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                            // This information is sufficient to reconstruct normal vector in vertex shader.
-                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                            const nySign = d.y > 0 ? 1 : 0;
-                            const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 0;
+                    if (metadata) metadata.append(p1, p2);
+                    const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                    const d = p1.sub(p2)._perp();
+                    // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                    // This information is sufficient to reconstruct normal vector in vertex shader.
+                    const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                    const nySign = d.y > 0 ? 1 : 0;
+                    const dist = p2.dist(p1);
+                    if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            edgeDistance += dist;
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
+                    edgeDistance += dist;
 
-                            const bottomRight = segment.vertexLength;
+                    addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
 
-                            // ┌──────┐
-                            // │ 0  1 │ Counter-clockwise winding order.
-                            // │      │ Triangle 1: 0 => 2 => 1
-                            // │ 2  3 │ Triangle 2: 1 => 2 => 3
-                            // └──────┘
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
-                            this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                    const bottomRight = segment.vertexLength;
 
-                            segment.vertexLength += 4;
-                            segment.primitiveLength += 2;
+                    // ┌──────┐
+                    // │ 0  1 │ Counter-clockwise winding order.
+                    // │      │ Triangle 1: 0 => 2 => 1
+                    // │ 2  3 │ Triangle 2: 1 => 2 => 3
+                    // └──────┘
+                    this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
+                    this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
-                            if (isGlobe) {
-                                const array: any = this.layoutVertexExtArray;
+                    segment.vertexLength += 4;
+                    segment.primitiveLength += 2;
 
-                                const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
-                                const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
+                    if (isGlobe) {
+                        const array: any = this.layoutVertexExtArray;
 
-                                const n1 = projection.upVector(canonical, p1.x, p1.y);
-                                const n2 = projection.upVector(canonical, p2.x, p2.y);
+                        const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+                        const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
 
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                            }
-                        }
+                        const n1 = projection.upVector(canonical, p1.x, p1.y);
+                        const n2 = projection.upVector(canonical, p2.x, p2.y);
+
+                        addGlobeExtVertex(array, projectedP1, n1);
+                        addGlobeExtVertex(array, projectedP1, n1);
+                        addGlobeExtVertex(array, projectedP2, n2);
+                        addGlobeExtVertex(array, projectedP2, n2);
                     }
                 }
             }
 
-            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
-            }
+            const segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
 
-            //Only triangulate and draw the area of the feature if it is a polygon
-            //Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
+            // Only triangulate and draw the area of the feature if it is a polygon
+            // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
             if (vectorTileFeatureTypes[feature.type] !== 'Polygon')
                 continue;
 
@@ -445,19 +435,14 @@ class FillExtrusionBucket implements Bucket {
             const holeIndices = [];
             const triangleIndex = segment.vertexLength;
 
-            for (let i = 0; i < polygon.length; i++) {
-                const ring = polygon[i];
-                if (ring.length === 0) {
-                    continue;
-                }
+            for (const ring of polygon) {
+                if (ring.length === 0) continue;
 
                 if (ring !== polygon[0]) {
                     holeIndices.push(flattened.length / 2);
                 }
 
-                for (let i = 0; i < ring.length; i++) {
-                    const p = ring[i];
-
+                for (const p of ring) {
                     addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
 
                     flattened.push(p.x);
