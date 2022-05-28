@@ -373,8 +373,8 @@ class FillExtrusionBucket implements Bucket {
                     const p0 = ring[i - 1];
                     const p1 = ring[i];
 
+                    if (metadata) metadata.currentPolyCount.top++;
                     if (isBoundaryEdge(p1, p0, bounds)) continue;
-
                     if (metadata) metadata.append(p1, p0);
 
                     const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
@@ -442,18 +442,17 @@ class FillExtrusionBucket implements Bucket {
                         holeIndices.push(flattened.length / 2);
                     }
 
-                    for (const p of ring) {
-                        addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
+                    for (let i = 1; i < ring.length; i++) {
+                        const {x, y} = ring[i];
+                        addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
-                        flattened.push(p.x);
-                        flattened.push(p.y);
-                        if (metadata) metadata.currentPolyCount.top++;
+                        flattened.push(x, y);
 
                         if (isGlobe) {
                             const array: any = this.layoutVertexExtArray;
-                            const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
-                            const n = projection.upVector(canonical, p.x, p.y);
+                            const projectedP = projection.projectTilePoint(x, y, canonical);
+                            const n = projection.upVector(canonical, x, y);
                             addGlobeExtVertex(array, projectedP, n);
                         }
                     }
