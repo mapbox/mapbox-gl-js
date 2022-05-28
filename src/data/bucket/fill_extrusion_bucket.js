@@ -362,12 +362,10 @@ class FillExtrusionBucket implements Bucket {
             let numVertices = 0;
 
             for (const ring of polygon) {
-                if (ring.length === 0) continue;
-
                 numVertices += ring.length;
 
                 let edgeDistance = 0;
-                if (metadata) metadata.startRing(ring[0]);
+                if (metadata && ring.length) metadata.startRing(ring[0]);
 
                 for (let i = 1; i < ring.length; i++) {
                     const p0 = ring[i - 1];
@@ -436,9 +434,7 @@ class FillExtrusionBucket implements Bucket {
                 const triangleIndex = segment.vertexLength;
 
                 for (const ring of polygon) {
-                    if (ring.length === 0) continue;
-
-                    if (ring !== polygon[0]) {
+                    if (ring.length && ring !== polygon[0]) {
                         holeIndices.push(flattened.length / 2);
                     }
 
