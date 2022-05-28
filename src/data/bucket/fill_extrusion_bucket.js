@@ -325,6 +325,7 @@ class FillExtrusionBucket implements Bucket {
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
         const metadata = this.enableTerrain && !isGlobe ? new PartMetadata() : null;
+        const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
@@ -371,7 +372,7 @@ class FillExtrusionBucket implements Bucket {
                     const p0 = ring[i - 1];
                     const p1 = ring[i];
 
-                    if (metadata) metadata.currentPolyCount.top++;
+                    if (metadata && isPolygon) metadata.currentPolyCount.top++;
                     if (isBoundaryEdge(p1, p0, bounds)) continue;
                     if (metadata) metadata.append(p1, p0);
 
@@ -428,7 +429,7 @@ class FillExtrusionBucket implements Bucket {
 
             // Only triangulate and draw the area of the feature if it is a polygon
             // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
-            if (vectorTileFeatureTypes[feature.type] === 'Polygon') {
+            if (isPolygon) {
                 const flattened = [];
                 const holeIndices = [];
                 const triangleIndex = segment.vertexLength;
