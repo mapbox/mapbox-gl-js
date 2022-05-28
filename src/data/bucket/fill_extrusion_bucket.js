@@ -368,6 +368,9 @@ class FillExtrusionBucket implements Bucket {
                 let edgeDistance = 0;
                 if (metadata && ring.length) metadata.startRing(ring[0]);
 
+                // make sure the ring closes
+                if (!ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
+
                 for (let i = 1; i < ring.length; i++) {
                     const p0 = ring[i - 1];
                     const p1 = ring[i];
