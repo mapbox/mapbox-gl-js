@@ -390,23 +390,23 @@ class FillExtrusionBucket implements Bucket {
                     const dist = p0.dist(p1);
                     if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, edgeDistance);
 
                     edgeDistance += dist;
 
-                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, edgeDistance);
-                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, edgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
 
                     const bottomRight = segment.vertexLength;
 
                     // ┌──────┐
-                    // │ 0  1 │ Counter-clockwise winding order.
-                    // │      │ Triangle 1: 0 => 2 => 1
-                    // │ 2  3 │ Triangle 2: 1 => 2 => 3
+                    // │ 1  3 │ clockwise winding order.
+                    // │      │ Triangle 1: 0 => 1 => 2
+                    // │ 0  2 │ Triangle 2: 1 => 3 => 2
                     // └──────┘
-                    this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
-                    this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                    this.indexArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                    this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 3, bottomRight + 2);
 
                     segment.vertexLength += 4;
                     segment.primitiveLength += 2;
@@ -415,15 +415,15 @@ class FillExtrusionBucket implements Bucket {
                         const array: any = this.layoutVertexExtArray;
 
                         const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
-                        const projectedP2 = projection.projectTilePoint(p0.x, p0.y, canonical);
+                        const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
 
                         const n1 = projection.upVector(canonical, p1.x, p1.y);
                         const n2 = projection.upVector(canonical, p0.x, p0.y);
 
+                        addGlobeExtVertex(array, projectedP0, n2);
+                        addGlobeExtVertex(array, projectedP0, n2);
                         addGlobeExtVertex(array, projectedP1, n1);
                         addGlobeExtVertex(array, projectedP1, n1);
-                        addGlobeExtVertex(array, projectedP2, n2);
-                        addGlobeExtVertex(array, projectedP2, n2);
                     }
                 }
             }
@@ -462,7 +462,7 @@ class FillExtrusionBucket implements Bucket {
                 assert(indices.length % 3 === 0);
 
                 for (let j = 0; j < indices.length; j += 3) {
-                    // Counter-clockwise winding order.
+                    // clockwise winding order.
                     this.indexArray.emplaceBack(
                         triangleIndex + indices[j],
                         triangleIndex + indices[j + 2],
