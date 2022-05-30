@@ -863,7 +863,13 @@ class Transform {
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
                 const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
-                tileScaleAdjustment = Math.min(scale, 1.0);
+
+                // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
+                // Account for this difference during LOD of loading so that you load the correct size tiles.
+                // Add a threshold to avoid zoom level changes during most panning.
+                const mercatorAdjustment = this._mercatorScaleDifference < 1.3 ? 1 : this._mercatorScaleDifference;
+
+                tileScaleAdjustment = Math.min(scale / mercatorAdjustment, 1);
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
@@ -882,7 +888,17 @@ class Transform {
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
+            let distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
+
+            if (isGlobe && this.zoom < 5) {
+                // LOD loading for globe will load tiles in different zoom levels. In sources where
+                // data changes abruptly between zoom levels, this can be pretty visible. To reduce
+                // this difference, round tiles that are nearly as big as the center tile up so that
+                // they match. This is not exact and does not completely solve the problem.
+                const splitAdjustmentThreshold = 0.9;
+                distToSplit = Math.max(distToSplit, (2 * zoomSplitDistance * tileScaleAdjustment) / splitAdjustmentThreshold);
+            }
+
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
 
             return distanceSqr < distToSplitSqr;
@@ -1661,7 +1677,17 @@ class Transform {
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
 
-        this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+        if (this.projection.name !== 'globe') {
+            this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+        } else {
+            const refScale = mercatorZfromAltitude(1, 45) * this.worldSize;
+            const centerScale = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+            const combinedScale = interpolate(refScale, centerScale, clamp((this.zoom - 3) / 2, 0, 1));
+            this._projectionScaler = pixelsPerMeter / combinedScale;
+
+            const b = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+            this._mercatorScaleDifference = this._projectionScaler / b;
+        }
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
 
         this._updateCameraState();
