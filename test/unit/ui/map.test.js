@@ -449,7 +449,8 @@ test('Map', (t) => {
 
         t.test('https://github.com/mapbox/mapbox-gl-js/issues/11367', (t) => {
             const style1 = createStyle();
-            const map = createMap(t, {style1});
+            const map = createMap(t, {style: style1});
+            map.setZoom(3);
             map.on('style.load', () => {
                 map.setProjection('globe');
                 t.equal(map.getProjection().name, 'globe');
