@@ -163,5 +163,23 @@ test('ImageSource', (t) => {
         t.end();
     });
 
+    t.test('reloading image retains loaded status', (t) => {
+        const source = createSource({url : '/image.png'});
+        const map = new StubMap();
+        const coordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
+        source.onAdd(map);
+        t.ok(!source.loaded());
+        respond();
+        t.ok(source.loaded());
+        source.updateImage({url: '/image2.png', coordinates});
+        respond();
+        t.ok(source.loaded());
+        source.updateImage({url: '/image.png', coordinates});
+        respond();
+        t.ok(source.loaded());
+        source.updateImage({url: '/image2.png', coordinates});
+        t.end();
+    });
+
     t.end();
 });
