@@ -8,7 +8,7 @@
   },
   "zoom": 2,
   "sources": {
-    "gradient": {
+    "geojson": {
       "type": "geojson",
       "data": {
         "type": "Feature",
@@ -58,7 +58,7 @@
     {
       "id": "line",
       "type": "line",
-      "source": "gradient",
+      "source": "geojson",
       "layout": {
         "line-cap": "round",
         "line-join": "round"

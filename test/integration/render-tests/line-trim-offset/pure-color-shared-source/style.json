@@ -65,7 +65,7 @@
       },
       "paint": {
         "line-width": 10,
-        "line-gradient": "royalblue"
+        "line-color": "royalblue"
       }
     },
     {
@@ -78,20 +78,20 @@
       },
       "paint": {
         "line-width": 7,
-        "line-gradient": "yellow"
+        "line-color": "yellow"
       }
     },
     {
       "id": "line2",
       "type": "line",
-      "source": "gradient",
+      "source": "geojson",
       "layout": {
         "line-cap": "round",
         "line-join": "round"
       },
       "paint": {
         "line-width": 4,
-        "line-gradient": "red",
+        "line-color": "red",
         "line-trim-offset": [0.3, 0.5]
       }
     }

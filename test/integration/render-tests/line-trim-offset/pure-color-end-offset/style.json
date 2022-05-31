@@ -65,7 +65,7 @@
       },
       "paint": {
         "line-width": 10,
-        "line-gradient": "blue",
+        "line-color": "blue",
         "line-trim-offset": [0.8, 1.0]
       }
     }
