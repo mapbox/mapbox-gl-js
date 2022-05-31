@@ -81,10 +81,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        let curTrimOffset = layer.paint.get('line-trim-offset');
+        let [trimStart, trimEnd] = layer.paint.get('line-trim-offset');
         // Either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.
-        if (curTrimOffset[0] < 0.0 || curTrimOffset[0] > 1.0) {
-            curTrimOffset = [0.0, 0.0];
+        if (trimStart < 0.0 || trimEnd > 1.0) {
+            trimStart = 0.0;
+            trimEnd = 0.0;
             warnOnce("line-trim-offset is out of valid range, fall back to default range [0.0, 0.0].");
         }
         // When line cap is 'round' or 'square', the whole line progress will beyond 1.0 or less than 0.0.
@@ -95,12 +96,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             // Fake the percentage so that it will cover the round/square cap that is beyond whole line
             const fakeOffsetShift = 1.0;
             // To make sure that the trim offset range is effecive
-            if (curTrimOffset[0] !== curTrimOffset[1]) {
-                if (curTrimOffset[0] === 0.0) {
-                    curTrimOffset[0] -= fakeOffsetShift;
+            if (trimStart !== trimEnd) {
+                if (trimStart === 0.0) {
+                    trimStart -= fakeOffsetShift;
                 }
-                if (curTrimOffset[1] === 1.0) {
-                    curTrimOffset[1] += fakeOffsetShift;
+                if (trimEnd === 1.0) {
+                    trimEnd += fakeOffsetShift;
                 }
             }
         }
@@ -108,7 +109,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ?
             linePatternUniformValues(painter, tile, layer, crossfade, matrix, pixelRatio) :
-            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, curTrimOffset);
+            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
