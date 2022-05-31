@@ -126,12 +126,14 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
+        const dynamicBuffers = [];
+        if (painter.terrain) dynamicBuffers.push(bucket.centroidVertexBuffer);
+        if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
+
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
-            programConfiguration,
-            painter.terrain ? bucket.centroidVertexBuffer : null,
-            isGlobeProjection ? bucket.layoutVertexExtBuffer : null);
+            programConfiguration, dynamicBuffers);
     }
 }
 

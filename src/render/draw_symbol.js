@@ -462,9 +462,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 function drawSymbolElements(buffers, segments, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues) {
     const context = painter.context;
     const gl = context.gl;
+    const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer];
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,
-        painter.transform.zoom, buffers.programConfigurations.get(layer.id),
-        buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer);
+        painter.transform.zoom, buffers.programConfigurations.get(layer.id), dynamicBuffers);
 }

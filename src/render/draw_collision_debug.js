@@ -80,8 +80,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
                 tile),
             layer.id, buffers.layoutVertexBuffer, buffers.indexBuffer,
             buffers.segments, null, painter.transform.zoom, null,
-            buffers.collisionVertexBuffer,
-            buffers.collisionVertexBufferExt);
+            [buffers.collisionVertexBuffer, buffers.collisionVertexBufferExt]);
     }
 
     if (!isText || !tileBatches.length) {
@@ -141,10 +140,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
             indexBuffer,
             SegmentVector.simpleSegment(0, batch.circleOffset * 2, batch.circleArray.length, batch.circleArray.length / 2),
             null,
-            painter.transform.zoom,
-            null,
-            null,
-            null);
+            painter.transform.zoom);
     }
 
     vertexBuffer.destroy();
