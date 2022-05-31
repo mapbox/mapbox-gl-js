@@ -91,6 +91,17 @@ const map = new mapboxgl.Map({
     projection: 'globe'
 });
 
+map.on('load', () => {
+    map.setFog({
+        'range': [0.8, 8],
+        'color': 'rgba(13, 13, 13, 1)',
+        'horizon-blend': 0.05,
+        'high-color': 'rgba(255, 255, 255, 0.5)',
+        'space-color': 'rgba(50, 50, 50, 1)',
+        'star-intensity': 0.1
+    });
+});
+
 document.getElementById('playback').addEventListener('click', (e) => {
     if (e.target.innerHTML === 'Play') {
         e.target.innerHTML = 'Pause';
