@@ -17,7 +17,6 @@ varying vec2 v_tex_b;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
-// varying highp vec4 v_uv;
 #endif
 
 #pragma mapbox: define highp vec4 color

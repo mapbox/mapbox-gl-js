@@ -17,7 +17,7 @@ import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import type LineBucket from '../data/bucket/line_bucket.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
-import {clamp, nextPowerOfTwo} from '../util/util.js';
+import {warnOnce, clamp, nextPowerOfTwo} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../data/extent.js';
 
@@ -81,7 +81,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
         }
 
-        const curTrimOffset = layer.paint.get('line-trim-offset');
+        let curTrimOffset = layer.paint.get('line-trim-offset');
+        // Either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.
+        if (curTrimOffset[0] < 0.0 || curTrimOffset[0] > 1.0) {
+            curTrimOffset = [0.0, 0.0];
+            warnOnce("line-trim-offset is out of valid range, fall back to default range [0.0, 0.0].");
+        }
         // When line cap is 'round' or 'square', the whole line progress will beyond 1.0 or less than 0.0.
         // If trim_offset begin is line begin (0.0), or trim_offset end is line end (1.0), adjust the trim
         // offset with fake offset shift so that the line_progress < 0.0 or line_progress > 1.0 part will be
