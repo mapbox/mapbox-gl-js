@@ -360,79 +360,13 @@ class FillExtrusionBucket implements Bucket {
         }
 
         for (const {polygon, bounds} of clippedPolygons) {
-            let numVertices = 0;
-
-            for (const ring of polygon) {
-                numVertices += ring.length;
-
-                let edgeDistance = 0;
-                if (metadata && ring.length) metadata.startRing(ring[0]);
-
-                // make sure the ring closes
-                if (!ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
-
-                for (let i = 1; i < ring.length; i++) {
-                    const p0 = ring[i - 1];
-                    const p1 = ring[i];
-
-                    if (metadata && isPolygon) metadata.currentPolyCount.top++;
-                    if (isBoundaryEdge(p1, p0, bounds)) continue;
-                    if (metadata) metadata.append(p1, p0);
-
-                    const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-
-                    const d = p1.sub(p0)._perp();
-                    // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                    // This information is sufficient to reconstruct normal vector in vertex shader.
-                    const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                    const nySign = d.y > 0 ? 1 : 0;
-
-                    const dist = p0.dist(p1);
-                    if (edgeDistance + dist > 32768) edgeDistance = 0;
-
-                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, edgeDistance);
-                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, edgeDistance);
-
-                    edgeDistance += dist;
-
-                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
-
-                    const bottomRight = segment.vertexLength;
-
-                    // ┌──────┐
-                    // │ 1  3 │ clockwise winding order.
-                    // │      │ Triangle 1: 0 => 1 => 2
-                    // │ 0  2 │ Triangle 2: 1 => 3 => 2
-                    // └──────┘
-                    this.indexArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                    this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 3, bottomRight + 2);
-
-                    segment.vertexLength += 4;
-                    segment.primitiveLength += 2;
-
-                    if (isGlobe) {
-                        const array: any = this.layoutVertexExtArray;
-
-                        const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
-                        const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
-
-                        const n1 = projection.upVector(canonical, p1.x, p1.y);
-                        const n2 = projection.upVector(canonical, p0.x, p0.y);
-
-                        addGlobeExtVertex(array, projectedP0, n2);
-                        addGlobeExtVertex(array, projectedP0, n2);
-                        addGlobeExtVertex(array, projectedP1, n1);
-                        addGlobeExtVertex(array, projectedP1, n1);
-                    }
-                }
-            }
-
-            const segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
-
             // Only triangulate and draw the area of the feature if it is a polygon
             // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
             if (isPolygon) {
+                let numVertices = 0;
+                for (const ring of polygon) numVertices += ring.length;
+                const segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
+
                 const flattened = [];
                 const holeIndices = [];
                 const triangleIndex = segment.vertexLength;
@@ -468,6 +402,69 @@ class FillExtrusionBucket implements Bucket {
                         triangleIndex + indices[j + 2],
                         triangleIndex + indices[j + 1]);
                     segment.primitiveLength++;
+                }
+            }
+
+            for (const ring of polygon) {
+                if (metadata && ring.length) metadata.startRing(ring[0]);
+
+                // make sure the ring closes
+                if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
+
+                for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
+                    const p0 = ring[i - 1];
+                    const p1 = ring[i];
+
+                    if (metadata && isPolygon) metadata.currentPolyCount.top++;
+                    if (isBoundaryEdge(p1, p0, bounds)) continue;
+                    if (metadata) metadata.append(p1, p0);
+
+                    const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+
+                    const d = p1.sub(p0)._perp();
+                    // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                    // This information is sufficient to reconstruct normal vector in vertex shader.
+                    const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                    const nySign = d.y > 0 ? 1 : 0;
+
+                    const dist = p0.dist(p1);
+                    if (edgeDistance + dist > 32768) edgeDistance = 0;
+
+                    const k = segment.vertexLength;
+
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, edgeDistance);
+
+                    edgeDistance += dist;
+
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+
+                    // ┌──────┐
+                    // │ 1  3 │ clockwise winding order.
+                    // │      │ Triangle 1: 0 => 1 => 2
+                    // │ 0  2 │ Triangle 2: 1 => 3 => 2
+                    // └──────┘
+                    this.indexArray.emplaceBack(k + 0, k + 1, k + 2);
+                    this.indexArray.emplaceBack(k + 1, k + 3, k + 2);
+
+                    segment.vertexLength += 4;
+                    segment.primitiveLength += 2;
+
+                    if (isGlobe) {
+                        const array: any = this.layoutVertexExtArray;
+
+                        const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
+                        const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+
+                        const n0 = projection.upVector(canonical, p0.x, p0.y);
+                        const n1 = projection.upVector(canonical, p1.x, p1.y);
+
+                        addGlobeExtVertex(array, projectedP0, n0);
+                        addGlobeExtVertex(array, projectedP0, n0);
+                        addGlobeExtVertex(array, projectedP1, n1);
+                        addGlobeExtVertex(array, projectedP1, n1);
+                    }
                 }
             }
         }
@@ -533,11 +530,11 @@ class FillExtrusionBucket implements Bucket {
             if (append) {
                 this.centroidVertexArray.resize(this.centroidVertexArray.length + polyInfo.edges * 4 + polyInfo.top);
             }
-            for (let i = 0; i < polyInfo.edges * 2; i++) {
-                this.centroidVertexArray.emplace(offset++, 0, y);
+            for (let i = 0; i < polyInfo.top; i++) {
                 this.centroidVertexArray.emplace(offset++, x, y);
             }
-            for (let i = 0; i < polyInfo.top; i++) {
+            for (let i = 0; i < polyInfo.edges * 2; i++) {
+                this.centroidVertexArray.emplace(offset++, 0, y);
                 this.centroidVertexArray.emplace(offset++, x, y);
             }
         }
