@@ -1,0 +1,26 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 16
+    }
+  },
+  "center": [
+    -179,
+    -30
+  ],
+  "projection": {"name": "globe"},
+  "zoom": 5.5,
+  "pitch": 0.0,
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "blue"
+      }
+    }
+  ]
+}
