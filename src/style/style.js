@@ -1500,7 +1500,7 @@ class Style extends Evented {
 
             for (const name of Object.keys(styleSpec.terrain)) {
                 // Fallback to use default style specification when the properties wasn't set
-                if (!terrainOptions.hasOwnProperty(name) && styleSpec.terrain[name].default) {
+                if (!terrainOptions.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
                     terrainOptions[name] = styleSpec.terrain[name].default;
                 }
             }
