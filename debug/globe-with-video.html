@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Globe with Video</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+</head>
+<body>
+<style>
+    body { margin: 0; padding: 0; }
+    html, body, #map { height: 100%; }
+    #playback {
+        position: absolute;
+        top: 0;
+        left: 0;
+        font: 600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        background-color: #3386c0;
+        color: #fff;
+        display: inline-block;
+        margin: 30px;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    #playback:hover {
+        background-color: #4ea0da;
+    }
+</style>
+
+<div id="map"></div>
+<div button id="playback">Pause</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var videoStyle = {
+    "version": 8,
+    "sources": {
+        "video": {
+            "type": "video",
+            "urls": [ "ozone.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/ozone.mp4"],
+            "coordinates": [
+                [-180.0, 85.0511287798066],
+                [180.0, 85.0511287798066],
+                [180.0, -85.0511287798066],
+                [-180.0, -85.0511287798066]
+            ]
+        },
+        "mapbox-vector": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "video",
+        "type": "raster",
+        "source": "video"
+    },
+    {
+        "id": "mapbox-vector",
+        "type": "line",
+        "source": "mapbox-vector",
+        'source-layer': 'water',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#FFFFFF',
+            'line-width': 1
+        }
+    }
+    ]
+};
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 0,
+    center: [0, 0],
+    style: videoStyle,
+    hash: false,
+    projection: 'globe'
+});
+
+map.on('load', () => {
+    map.setFog({
+        'range': [0.8, 8],
+        'color': 'rgba(13, 13, 13, 1)',
+        'horizon-blend': 0.05,
+        'high-color': 'rgba(255, 255, 255, 0.5)',
+        'space-color': 'rgba(50, 50, 50, 1)',
+        'star-intensity': 0.1
+    });
+});
+
+document.getElementById('playback').addEventListener('click', (e) => {
+    if (e.target.innerHTML === 'Play') {
+        e.target.innerHTML = 'Pause';
+        map.getSource('video').play();
+    } else {
+        e.target.innerHTML = 'Play';
+        map.getSource('video').pause();
+    }
+});
+
+</script>
+</body>
+</html>
