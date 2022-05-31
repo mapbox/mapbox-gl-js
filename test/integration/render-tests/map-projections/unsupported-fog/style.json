@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "projection": {
+    "name": "albers"
+  },
+  "pitch": 70,
+  "center": [-82.414, 37.776],
+  "sources": {},
+  "fog": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}
