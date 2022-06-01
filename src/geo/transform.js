@@ -869,7 +869,6 @@ class Transform {
                 }
 
                 tileScaleAdjustment = Math.min(relativeTileScale, 1.0);
-                // tileScaleAdjustment = 1;
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
@@ -1009,6 +1008,10 @@ class Transform {
         }
 
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
+
+        console.log("tiles cover with length", cover.length);
+        console.log(cover.map(a => [a.canonical.z, a.canonical.x, a.canonical.y]));
+
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
         assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ || !isMercator);
