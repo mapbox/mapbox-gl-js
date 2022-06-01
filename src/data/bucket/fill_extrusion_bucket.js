@@ -376,6 +376,9 @@ class FillExtrusionBucket implements Bucket {
                         holeIndices.push(flattened.length / 2);
                     }
 
+                    // make sure the ring closes
+                    if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
+
                     for (let i = 1; i < ring.length; i++) {
                         const {x, y} = ring[i];
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
@@ -407,9 +410,6 @@ class FillExtrusionBucket implements Bucket {
 
             for (const ring of polygon) {
                 if (metadata && ring.length) metadata.startRing(ring[0]);
-
-                // make sure the ring closes
-                if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
 
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
                     const p0 = ring[i - 1];
