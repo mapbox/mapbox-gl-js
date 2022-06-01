@@ -853,12 +853,6 @@ class Transform {
 
             let tileScaleAdjustment = 1;
             if (isGlobe) {
-                // Split all tile just below the maximum zoom level.
-                // This ensures that all tiles near the camera center are at the same level,
-                // preventing artifacts caused by inconsistent map appearance between zoom levels.
-                if (tile.zoom + 1 === maxZoom) {
-                    return true;
-                }
                 dzSqr = square(tile.aabb.distanceZ(cameraPoint));
                 // Compensate physical sizes of the tiles when determining which zoom level to use.
                 // In practice tiles closer to poles should use more aggressive LOD as their
@@ -867,8 +861,15 @@ class Transform {
                 const minLat = latFromMercatorY((tile.y + 1) / tilesAtZoom);
                 const maxLat = latFromMercatorY((tile.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
-                const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
-                tileScaleAdjustment = Math.min(scale, 1.0);
+                const relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+
+                // Ensure that all tiles near the center have the same zoom level.
+                if (tile.zoom === maxZoom - 1 && relativeTileScale > .85) {
+                    return true;
+                }
+
+                tileScaleAdjustment = Math.min(relativeTileScale, 1.0);
+                // tileScaleAdjustment = 1;
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
