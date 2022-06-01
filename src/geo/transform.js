@@ -14,7 +14,7 @@ import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
@@ -146,6 +146,7 @@ class Transform {
     _projectionScaler: number;
     _nearZ: number;
     _farZ: number;
+    _mercatorScaleDifference: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -866,10 +867,19 @@ class Transform {
 
                 // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
                 // Account for this difference during LOD of loading so that you load the correct size tiles.
-                // Add a threshold to avoid zoom level changes during most panning.
-                const mercatorAdjustment = this._mercatorScaleDifference < 1.3 ? 1 : this._mercatorScaleDifference;
-
-                tileScaleAdjustment = Math.min(scale / mercatorAdjustment, 1);
+                // We try to compromise between two conflicting requirements:
+                // - loading tiles at the camera's zoom level (for visual and styling consistency)
+                // - loading correct size tiles (to reduce the number of tiles loaded)
+                // These are arbitrarily balanced:
+                if (closestLat === centerLatitude) {
+                    // For tiles that are in the middle of the viewport, prioritize matching the camera
+                    // zoom and allow divergence from the true scale.
+                    const maxDivergence = 0.3;
+                    tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleDifference - maxDivergence);
+                } else {
+                    // For other tiles, use the real scale to reduce tile counts near poles.
+                    tileScaleAdjustment = Math.min(1, scale / this._mercatorScaleDifference);
+                }
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
@@ -891,12 +901,13 @@ class Transform {
             let distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
 
             if (isGlobe && this.zoom < 5) {
-                // LOD loading for globe will load tiles in different zoom levels. In sources where
-                // data changes abruptly between zoom levels, this can be pretty visible. To reduce
-                // this difference, round tiles that are nearly as big as the center tile up so that
-                // they match. This is not exact and does not completely solve the problem.
+                // With LOD tile loading, tile zoom levels can change when scale slightly changes.
+                // These differences can be pretty different in globe view. Work around this by
+                // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
+                // round up. This is not a complete solution.
                 const splitAdjustmentThreshold = 0.9;
-                distToSplit = Math.max(distToSplit, (2 * zoomSplitDistance * tileScaleAdjustment) / splitAdjustmentThreshold);
+                const maxZoomSplitDistance =  2 * zoomSplitDistance * tileScaleAdjustment;
+                distToSplit = Math.max(distToSplit, maxZoomSplitDistance / splitAdjustmentThreshold);
             }
 
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
@@ -1682,11 +1693,10 @@ class Transform {
         } else {
             const refScale = mercatorZfromAltitude(1, 45) * this.worldSize;
             const centerScale = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
-            const combinedScale = interpolate(refScale, centerScale, clamp((this.zoom - 3) / 2, 0, 1));
+            const t = getProjectionInterpolationT(this, 1024);
+            const combinedScale = interpolate(refScale, centerScale, t);
             this._projectionScaler = pixelsPerMeter / combinedScale;
-
-            const b = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
-            this._mercatorScaleDifference = this._projectionScaler / b;
+            this._mercatorScaleDifference = centerScale / refScale;
         }
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
 
