@@ -863,7 +863,8 @@ class Transform {
                 const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
-                const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+
+                let relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
 
                 // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
                 // Account for this difference during LOD of loading so that you load the correct size tiles.
@@ -878,7 +879,16 @@ class Transform {
                     tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleDifference - maxDivergence);
                 } else {
                     // For other tiles, use the real scale to reduce tile counts near poles.
-                    tileScaleAdjustment = Math.min(1, scale / this._mercatorScaleDifference);
+                    tileScaleAdjustment = Math.min(1, relativeTileScale / this._mercatorScaleDifference);
+                }
+
+                // Ensure that all tiles near the center have the same zoom level.
+                // With LOD tile loading, tile zoom levels can change when scale slightly changes.
+                // These differences can be pretty different in globe view. Work around this by
+                // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
+                // round up.
+                if (this.zoom <= 5 && it.zoom === maxZoom - 1 && relativeTileScale >= 0.9) {
+                    return true;
                 }
             } else {
                 assert(zInMeters);
@@ -898,18 +908,7 @@ class Transform {
             }
 
             const distanceSqr = dx * dx + dy * dy + dzSqr;
-            let distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
-
-            if (isGlobe && this.zoom < 5) {
-                // With LOD tile loading, tile zoom levels can change when scale slightly changes.
-                // These differences can be pretty different in globe view. Work around this by
-                // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
-                // round up. This is not a complete solution.
-                const splitAdjustmentThreshold = 0.9;
-                const maxZoomSplitDistance =  2 * zoomSplitDistance * tileScaleAdjustment;
-                distToSplit = Math.max(distToSplit, maxZoomSplitDistance / splitAdjustmentThreshold);
-            }
-
+            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
             const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
 
             return distanceSqr < distToSplitSqr;
