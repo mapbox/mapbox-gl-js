@@ -10,7 +10,6 @@
   "projection": {
     "name": "globe"
   },
-  "zoom": 1,
   "sources": {},
   "fog": {
     "color": "rgba(0, 0, 0, 0)",
