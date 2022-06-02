@@ -193,7 +193,8 @@ const symbolIconUniformValues = (
     zoomTransition: number,
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
-    upVector: [number, number, number]
+    upVector: [number, number, number],
+    projection: string
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -223,7 +224,7 @@ const symbolIconUniformValues = (
         'u_up_vector': [0, -1, 0]
     };
 
-    if (transform.projection.name === 'globe') {
+    if (projection === 'globe') {
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = invMatrix;
@@ -253,13 +254,14 @@ const symbolSDFUniformValues = (
     zoomTransition: number,
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
-    upVector: [number, number, number]
+    upVector: [number, number, number],
+    projection: string
 ): UniformValues<SymbolSDFUniformsType> => {
     const {cameraToCenterDistance, _pitch} = painter.transform;
 
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector), {
+        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
@@ -281,11 +283,12 @@ const symbolTextAndIconUniformValues = (
     zoomTransition: number,
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
-    upVector: [number, number, number]
+    upVector: [number, number, number],
+    projection: string
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
-        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector), {
+        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });

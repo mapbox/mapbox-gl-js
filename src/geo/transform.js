@@ -103,6 +103,8 @@ class Transform {
 
     inverseAdjustmentMatrix: Array<number>;
 
+    mercatorFromTransition: boolean;
+
     minLng: number;
     maxLng: number;
     minLat: number;
@@ -237,20 +239,20 @@ class Transform {
         return (pick(this.projection, ['name', 'center', 'parallels']): ProjectionSpecification);
     }
 
-    // Returns the new projection if the projection changes, or null if no change.
-    setProjection(projection?: ?ProjectionSpecification): ProjectionSpecification | null {
-        if (projection === undefined || projection === null) projection = {name: 'mercator'};
-        this.projectionOptions = projection;
+    // Returns whether the projection changes
+    setProjection(projection?: ?ProjectionSpecification): boolean {
+        this.projectionOptions = projection || {name: 'mercator'};
 
         const oldProjection = this.projection ? this.getProjection() : undefined;
-        this.projection = getProjection(projection);
+        this.projection = getProjection(this.projectionOptions);
         const newProjection = this.getProjection();
 
-        if (deepEqual(oldProjection, newProjection)) {
-            return null;
+        const projectionHasChanged = !deepEqual(oldProjection, newProjection);
+        if (projectionHasChanged) {
+            this._calcMatrices();
         }
-        this._calcMatrices();
-        return newProjection;
+
+        return projectionHasChanged;
     }
 
     get minZoom(): number { return this._minZoom; }
@@ -1808,7 +1810,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        if (this.projection.name === 'globe') {
+        if (this.projection.name === 'globe' || this.mercatorFromTransition) {
             this.globeMatrix = calculateGlobeMatrix(this);
 
             const globeCenter = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
