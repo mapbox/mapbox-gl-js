@@ -22,6 +22,25 @@ import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-s
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
 
+// Tileset metadata is available via the TileJSON endpoint.
+export type LocalizedSourceSpecification = {
+    /**
+     * A tileset supports language localization if the response contains a language_options object in the response.
+     */
+    languageOptions: ?{[string]: string};
+    /**
+     * A tileset supports different worldviews if the response contains a worldview_options object in the repsonse as well as a worldview_default key.
+     */
+    worldviewOptions: ?{[string]: string};
+    worldview_default: ?string;
+    /**
+     * If the request includes the language and/or worldview query parameters, the response object will include dynamic language and/or worldview keys
+     * that intend to provide information about the resolution of your requests. Use these objects to ask whether a language/worldview is supported of a tileset or not.
+     */
+    language: ?string;
+    worldview: ?string;
+};
+
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
  * See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.
@@ -72,9 +91,11 @@ class VectorTileSource extends Evented implements Source {
     _tileWorkers: {[string]: Actor};
     _deduped: DedupedRequest;
     language: ?string;
+    languageOptions: ?{[string]: string};
     worldview: ?string;
+    worldviewOptions: ?{[string]: string};
 
-    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & LocalizedSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -88,7 +109,7 @@ class VectorTileSource extends Evented implements Source {
         this.isTileClipped = true;
         this._loaded = false;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId', 'language', 'languageOptions', 'worldview', 'worldviewOptions']));
         this._options = extend({type: 'vector'}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -209,6 +230,12 @@ class VectorTileSource extends Evented implements Source {
     }
 
     _setLanguage(language?: ?string): this {
+        if (language === this.language) return this;
+        if (this.languageOptions && language && !this.languageOptions[language]) {
+            console.warn(`Vector tile source "${this.id}" does not support language "${language}".`);
+            return this;
+        }
+
         this.setSourceProperty(() => {
             this.language = language;
         });
@@ -217,6 +244,12 @@ class VectorTileSource extends Evented implements Source {
     }
 
     _setWorldview(worldview?: ?string): this {
+        if (worldview === this.worldview) return this;
+        if (this.worldviewOptions && worldview && !this.worldviewOptions[worldview]) {
+            console.warn(`Vector tile source "${this.id}" does not support worldview "${worldview}".`);
+            return this;
+        }
+
         this.setSourceProperty(() => {
             this.worldview = worldview;
         });
