@@ -864,7 +864,7 @@ class Transform {
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
 
-                let relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+                const relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
 
                 // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
                 // Account for this difference during LOD of loading so that you load the correct size tiles.
