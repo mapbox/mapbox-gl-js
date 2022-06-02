@@ -17,7 +17,7 @@
   "fog": {
     "star-intensity": 0
   },
-  "zoom": 2.0,
+  "zoom": 1.0,
   "sources": {
     "satellite": {
       "type": "raster",

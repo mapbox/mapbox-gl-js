@@ -95,7 +95,7 @@
   },
   "pitch": 60,
   "bearing": -20,
-  "zoom": 3,
+  "zoom": 2.5,
   "layers": [
     {
       "id": "background",
