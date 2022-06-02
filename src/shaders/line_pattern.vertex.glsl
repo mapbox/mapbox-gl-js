@@ -14,6 +14,7 @@ uniform mat4 u_matrix;
 uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
 uniform lowp float u_device_pixel_ratio;
+uniform highp float u_camera_to_center_distance;
 
 varying vec2 v_normal;
 varying vec2 v_width2;

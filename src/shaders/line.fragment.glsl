@@ -1,4 +1,5 @@
 uniform lowp float u_device_pixel_ratio;
+//uniform highp float u_camera_to_center_distance;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 
@@ -6,6 +7,8 @@ varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 varying highp vec4 v_uv;
+varying float v_point_vs_center_distance;
+
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
 
@@ -40,7 +43,10 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
-    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+//    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float blur3 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float lineBlurPx = clamp((v_point_vs_center_distance - 2.0), blur3, 100.0);
+    float blur2 = (lineBlurPx + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
 #ifdef RENDER_LINE_DASH
@@ -96,4 +102,9 @@ void main() {
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
+
+//    gl_FragColor = vec4(clamp(v_point_vs_center_distance - 1.0, 0.0, 1.0), 0.0, 0.0, 1.0);
+//    gl_FragColor = vec4(1, 0, 0, 1);
+//    if (gl_FragCoord.z < 0.9)
+//       gl_FragColor = vec4(0,1,0,1);
 }

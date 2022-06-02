@@ -23,11 +23,13 @@ uniform mat4 u_matrix;
 uniform mat2 u_pixels_to_tile_units;
 uniform vec2 u_units_to_pixels;
 uniform lowp float u_device_pixel_ratio;
+uniform highp float u_camera_to_center_distance;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
 varying highp vec4 v_uv;
+varying float v_point_vs_center_distance;
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
@@ -64,6 +66,7 @@ void main() {
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
+//    float ANTIALIASING = 10.0 / u_device_pixel_ratio / 2.0;
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
@@ -85,6 +88,9 @@ void main() {
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
 
+//    float inset = gapwidth + (gapwidth > 0.0 ? 0.5 : 0.0);
+//    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : 1.);
+
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     mediump vec2 dist = outset * a_extrude * EXTRUDE_SCALE;
@@ -99,6 +105,10 @@ void main() {
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
+
+    highp float camera_to_point_distance = gl_Position.w;
+    v_point_vs_center_distance = camera_to_point_distance / u_camera_to_center_distance ;
+//    v_point_vs_center_distance = 2.0;
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
