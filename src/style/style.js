@@ -1499,16 +1499,7 @@ class Style extends Evented {
                     terrainOptions[name] = styleSpec.terrain[name].default;
                 }
             }
-
-            for (const key in terrainOptions) {
-                if (!deepEqual(terrainOptions[key], currSpec[key])) {
-                    terrain.set(terrainOptions);
-                    this.stylesheet.terrain = terrainOptions;
-                    const parameters = this._setTransitionParameters({duration: 0});
-                    terrain.updateTransitions(parameters);
-                    break;
-                }
-            }
+            this._updateStyleSpec('terrain', terrainOptions, currSpec);
         }
 
         this._updateDrapeFirstLayers();
@@ -1555,19 +1546,30 @@ class Style extends Evented {
             // Updating fog
             const fog = this.fog;
             const currSpec = fog.get();
-
-            for (const key in fogOptions) {
-                if (!deepEqual(fogOptions[key], currSpec[key])) {
-                    fog.set(fogOptions, currSpec);
-                    this.stylesheet.fog = fogOptions;
-                    const parameters = this._setTransitionParameters({duration: 0});
-                    fog.updateTransitions(parameters);
-                    break;
-                }
-            }
+            this._updateStyleSpec('fog', fogOptions, currSpec);
         }
 
         this._markersNeedUpdate = true;
+    }
+
+    _setTransitionParameters(transitionOptions: Object): TransitionParameters {
+        return {
+            now: browser.now(),
+            transition: extend(
+                transitionOptions,
+                this.stylesheet.transition)
+        };
+    }
+
+    _updateStyleSpec(property: Object, newSpec: Object, currSpec: Object) {
+        for (const name in newSpec) {
+            if (!deepEqual(newSpec[name], currSpec[name])) {
+                property.set(newSpec, currSpec);
+                this.stylesheet[property] = newSpec;
+                const parameters = this._setTransitionParameters({duration: 0});
+                property.updateTransitions(parameters);
+            }
+        }
     }
 
     _updateDrapeFirstLayers() {
@@ -1594,15 +1596,6 @@ class Style extends Evented {
         this._force3DLayerUpdate();
         const parameters = this._setTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
-    }
-
-    _setTransitionParameters(transitionOptions: Object): TransitionParameters {
-        return {
-            now: browser.now(),
-            transition: extend(
-                transitionOptions,
-                this.stylesheet.transition)
-        };
     }
 
     _force3DLayerUpdate() {
