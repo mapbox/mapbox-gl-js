@@ -22,25 +22,6 @@ import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-s
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
 
-// Tileset metadata is available via the TileJSON endpoint.
-export type LocalizedSourceSpecification = {
-    /**
-     * A tileset supports language localization if the response contains a language_options object in the response.
-     */
-    languageOptions: ?{[string]: string};
-    /**
-     * A tileset supports different worldviews if the response contains a worldview_options object in the repsonse as well as a worldview_default key.
-     */
-    worldviewOptions: ?{[string]: string};
-    worldview_default: ?string;
-    /**
-     * If the request includes the language and/or worldview query parameters, the response object will include dynamic language and/or worldview keys
-     * that intend to provide information about the resolution of your requests. Use these objects to ask whether a language/worldview is supported of a tileset or not.
-     */
-    language: ?string;
-    worldview: ?string;
-};
-
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
  * See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector) for detailed documentation of options.
@@ -95,7 +76,7 @@ class VectorTileSource extends Evented implements Source {
     worldview: ?string;
     worldviewOptions: ?{[string]: string};
 
-    constructor(id: string, options: VectorSourceSpecification & LocalizedSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
