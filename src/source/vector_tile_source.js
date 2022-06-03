@@ -90,7 +90,7 @@ class VectorTileSource extends Evented implements Source {
         this.isTileClipped = true;
         this._loaded = false;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId', 'language', 'languageOptions', 'worldview', 'worldviewOptions']));
+        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = extend({type: 'vector'}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
