@@ -1440,13 +1440,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = {
-            now: browser.now(),
-            transition: extend({
-                duration: 300,
-                delay: 0
-            }, this.stylesheet.transition)
-        };
+        const parameters = this._setTransitionParameters(300);
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
@@ -1509,13 +1503,7 @@ class Style extends Evented {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
                     this.stylesheet.terrain = terrainOptions;
-                    const parameters = {
-                        now: browser.now(),
-                        transition: extend({
-                            duration: 0
-                        }, this.stylesheet.transition)
-                    };
-
+                    const parameters = this._setTransitionParameters();
                     terrain.updateTransitions(parameters);
                     break;
                 }
@@ -1529,13 +1517,7 @@ class Style extends Evented {
     _createFog(fogOptions: FogSpecification) {
         const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
-        const parameters = {
-            now: browser.now(),
-            transition: extend({
-                duration: 0
-            }, this.stylesheet.transition)
-        };
-
+        const parameters = this._setTransitionParameters();
         fog.updateTransitions(parameters);
     }
 
@@ -1576,12 +1558,7 @@ class Style extends Evented {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
                     fog.set(fogOptions, currSpec);
                     this.stylesheet.fog = fogOptions;
-                    const parameters = {
-                        now: browser.now(),
-                        transition: extend({
-                            duration: 0
-                        }, this.stylesheet.transition)
-                    };
+                    const parameters = this._setTransitionParameters();
 
                     fog.updateTransitions(parameters);
                     break;
@@ -1614,14 +1591,18 @@ class Style extends Evented {
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
-        const parameters = {
+        const parameters = this._setTransitionParameters();
+        terrain.updateTransitions(parameters);
+    }
+
+    _setTransitionParameters(duration: number = 0, delay: number = 0) {
+        return {
             now: browser.now(),
             transition: extend({
-                duration: 0
+                duration,
+                delay
             }, this.stylesheet.transition)
         };
-
-        terrain.updateTransitions(parameters);
     }
 
     _force3DLayerUpdate() {
