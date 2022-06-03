@@ -75,8 +75,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
                     tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
-                programConfiguration,
-                isGlobeProjection ? bucket.globeExtVertexBuffer : null);
+                programConfiguration, isGlobeProjection ? [bucket.globeExtVertexBuffer] : null);
         }
 
         context.viewport.set([0, 0, painter.width, painter.height]);

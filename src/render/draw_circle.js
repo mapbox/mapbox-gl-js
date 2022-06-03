@@ -128,9 +128,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-            uniformValues, layer.id,
-            layoutVertexBuffer, indexBuffer, segments,
-            layer.paint, tr.zoom, programConfiguration,
-            isGlobeProjection ? globeExtVertexBuffer : null);
+            uniformValues, layer.id, layoutVertexBuffer, indexBuffer, segments,
+            layer.paint, tr.zoom, programConfiguration, [globeExtVertexBuffer]);
     }
 }
