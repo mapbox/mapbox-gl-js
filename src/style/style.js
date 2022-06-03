@@ -1441,7 +1441,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = this._setTransitionParameters({duration: 0, delay: 300});
+        const parameters = this._setTransitionParameters({duration: 300, delay: 0});
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
