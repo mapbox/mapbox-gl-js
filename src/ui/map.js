@@ -490,7 +490,7 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
-        this._language = options.language || window.navigator.language;
+        this._language = options.language === 'auto' ? window.navigator.language : options.language;
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
