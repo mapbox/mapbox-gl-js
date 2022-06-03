@@ -261,12 +261,15 @@ function computeGlobeCameraUp(transform: Transform): [number, number, number] {
     const viewToEcef = mat4.multiply([], viewMatrix, transform.globeMatrix);
     mat4.invert(viewToEcef, viewToEcef);
 
+    const cameraUpVector = [0, 0, 0];
     const up = [0, 1, 0, 0];
+    vec4.transformMat4(up, up,  viewToEcef);
+    cameraUpVector[0] = up[0];
+    cameraUpVector[1] = up[1];
+    cameraUpVector[2] = up[2];
+    vec3.normalize(cameraUpVector, cameraUpVector);
 
-    vec4.transformMat4(up, up, viewToEcef);
-    vec3.normalize(up, up);
-
-    return [up[0], up[1], up[2]];
+    return cameraUpVector;
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
@@ -299,7 +302,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const mercatorCameraUp = [0, -1, 0];
 
     let globeCameraUp = mercatorCameraUp;
-    if (isGlobeProjection || tr.mercatorFromTransition) {
+    if ((isGlobeProjection || tr.mercatorFromTransition) && !rotateWithMap) {
         // Each symbol rotating with the viewport requires per-instance information about
         // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
         // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
