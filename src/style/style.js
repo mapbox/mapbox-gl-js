@@ -86,6 +86,7 @@ import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {Source} from '../source/source.js';
+import type {TransitionParameters} from './properties.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -1440,7 +1441,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = this._setTransitionParameters(300);
+        const parameters = this._setTransitionParameters({duration: 0, delay: 300});
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
@@ -1503,7 +1504,7 @@ class Style extends Evented {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
                     this.stylesheet.terrain = terrainOptions;
-                    const parameters = this._setTransitionParameters();
+                    const parameters = this._setTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
                     break;
                 }
@@ -1517,7 +1518,7 @@ class Style extends Evented {
     _createFog(fogOptions: FogSpecification) {
         const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
-        const parameters = this._setTransitionParameters();
+        const parameters = this._setTransitionParameters({duration: 0});
         fog.updateTransitions(parameters);
     }
 
@@ -1554,12 +1555,12 @@ class Style extends Evented {
             // Updating fog
             const fog = this.fog;
             const currSpec = fog.get();
+
             for (const key in fogOptions) {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
                     fog.set(fogOptions, currSpec);
                     this.stylesheet.fog = fogOptions;
-                    const parameters = this._setTransitionParameters();
-
+                    const parameters = this._setTransitionParameters({duration: 0});
                     fog.updateTransitions(parameters);
                     break;
                 }
@@ -1591,17 +1592,16 @@ class Style extends Evented {
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
-        const parameters = this._setTransitionParameters();
+        const parameters = this._setTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
     }
 
-    _setTransitionParameters(duration: number = 0, delay: number = 0) {
+    _setTransitionParameters(transitionOptions: Object): TransitionParameters {
         return {
             now: browser.now(),
-            transition: extend({
-                duration,
-                delay
-            }, this.stylesheet.transition)
+            transition: extend(
+                transitionOptions,
+                this.stylesheet.transition)
         };
     }
 
