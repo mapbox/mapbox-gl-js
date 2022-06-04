@@ -86,6 +86,7 @@ import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {Source} from '../source/source.js';
+import type {TransitionParameters} from './properties.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -309,7 +310,7 @@ class Style extends Evented {
         }
 
         this._loaded = true;
-        this.stylesheet = json;
+        this.stylesheet = clone(json);
         this._updateMapProjection();
 
         for (const id in json.sources) {
@@ -1440,13 +1441,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = {
-            now: browser.now(),
-            transition: extend({
-                duration: 300,
-                delay: 0
-            }, this.stylesheet.transition)
-        };
+        const parameters = this._setTransitionParameters({duration: 300, delay: 0});
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
@@ -1497,17 +1492,18 @@ class Style extends Evented {
         } else { // Updating
             const terrain = this.terrain;
             const currSpec = terrain.get();
+
+            for (const name of Object.keys(styleSpec.terrain)) {
+                // Fallback to use default style specification when the properties wasn't set
+                if (!terrainOptions.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
+                    terrainOptions[name] = styleSpec.terrain[name].default;
+                }
+            }
             for (const key in terrainOptions) {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
                     this.stylesheet.terrain = terrainOptions;
-                    const parameters = {
-                        now: browser.now(),
-                        transition: extend({
-                            duration: 0
-                        }, this.stylesheet.transition)
-                    };
-
+                    const parameters = this._setTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
                     break;
                 }
@@ -1521,13 +1517,7 @@ class Style extends Evented {
     _createFog(fogOptions: FogSpecification) {
         const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
-        const parameters = {
-            now: browser.now(),
-            transition: extend({
-                duration: 0
-            }, this.stylesheet.transition)
-        };
-
+        const parameters = this._setTransitionParameters({duration: 0});
         fog.updateTransitions(parameters);
     }
 
@@ -1568,13 +1558,7 @@ class Style extends Evented {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
                     fog.set(fogOptions, currSpec);
                     this.stylesheet.fog = fogOptions;
-                    const parameters = {
-                        now: browser.now(),
-                        transition: extend({
-                            duration: 0
-                        }, this.stylesheet.transition)
-                    };
-
+                    const parameters = this._setTransitionParameters({duration: 0});
                     fog.updateTransitions(parameters);
                     break;
                 }
@@ -1582,6 +1566,15 @@ class Style extends Evented {
         }
 
         this._markersNeedUpdate = true;
+    }
+
+    _setTransitionParameters(transitionOptions: Object): TransitionParameters {
+        return {
+            now: browser.now(),
+            transition: extend(
+                transitionOptions,
+                this.stylesheet.transition)
+        };
     }
 
     _updateDrapeFirstLayers() {
@@ -1606,13 +1599,7 @@ class Style extends Evented {
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
-        const parameters = {
-            now: browser.now(),
-            transition: extend({
-                duration: 0
-            }, this.stylesheet.transition)
-        };
-
+        const parameters = this._setTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
     }
 
