@@ -23,6 +23,7 @@ uniform float u_height_lift;
 varying vec4 v_color;
 
 #ifdef FAUX_AO
+uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
@@ -59,22 +60,25 @@ void main() {
 #endif
 
 float ele = 0.0;
+float h = 0.0;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
     vec3 pos = vec3(pos_nx.xy, h);
 #else
-    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
+    h = t > 0.0 ? height : base;
+    vec3 pos = vec3(pos_nx.xy, h);
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
     // If t > 0 (top) we always add the lift, otherwise (ground) we only add it if base height is > 0
     float lift = float((t + base) > 0.0) * u_height_lift;
+    h += lift;
     vec3 globe_normal = normalize(mix(a_pos_normal_3 / 16384.0, u_up_dir, u_zoom_transition));
-    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * (pos.z + lift));
+    vec3 globe_pos = a_pos_3 + globe_normal * (u_tile_up_scale * h);
     vec3 merc_pos = mercator_tile_position(u_inv_rot_matrix, pos.xy, u_tile_id, u_merc_center) + u_up_dir * u_tile_up_scale * pos.z;
     pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
@@ -112,15 +116,19 @@ float ele = 0.0;
 #ifdef FAUX_AO
     float concave = pos_nx.w - floor(pos_nx.w * 0.5) * 2.0;
     float start = top_up_ny_start.w;
-    gl_Position.z -= (0.0000003 * (min(height, 500.) + 2.0 * min(base, 500.0) + 6.0 * concave + 3.0 * start)) * gl_Position.w;
-    float y_shade_ground = 0.81;
+    float y_ground = 1.0 - clamp(t + base, 0.0, 1.0);
+    float top_height = height;
 #ifdef TERRAIN
-    float top_ele = (flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + height) - ele;
-    y_shade_ground = mix(y_shade_ground, 1.0, -5.0 / min(3.0, top_ele));
+    top_height = mix(max(c_ele + height, ele + base + 2.0), ele + height, float(centroid_pos.x == 0.0)) - ele;
+    y_ground = mix(0.0, y_ground + 5.0 / max(3.0, top_height), y_ground);
 #endif
-    float y_shade = clamp(t + base, y_shade_ground, 1.0);
-    v_ao = vec3(mix(concave, -concave, start), y_shade, mix(base, pos.z - ele, t));
-    directional *= mix(1.02, 1.0, top_up_ny.y); // compensate sides faux ao shading contribution
+    v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
+    directional *= mix(1.0, 1.05, (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+
+#ifdef PROJECTION_GLOBE_VIEW
+    top_height += u_height_lift;
+#endif
+    gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
     // Assign final color based on surface + ambient light color, diffuse light directional, and light color

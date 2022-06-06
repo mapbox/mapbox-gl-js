@@ -877,19 +877,6 @@
         }
       },
       "property-type": "constant"
-    },
-    "fill-extrusion-faux-ao": {
-      "type": "boolean",
-      "default": false,
-      "doc": "Whether to apply faux ambient occlusion (Faux-AO) shading to fill extrusion at buildings zoom level. Faux-AO is a low-cost best-effort approach that mimics ambient occlusion shading of areas near ground and concave angles between walls.",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "2.8.3",
-          "android": "10.7.0",
-          "ios": "10.7.0"
-        }
-      },
-      "property-type": "constant"
     }
   },
   "layout_line": {
@@ -4668,6 +4655,50 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "fill-extrusion-ambient-occlusion-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.5 provide the most plausible results for buildings.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.8.3",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      }
+    },
+    "fill-extrusion-ambient-occlusion-radius": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 3.0,
+      "minimum": 0,
+      "maximum": 1000000,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The radius of ambient occlusion (AO) shading, in meters. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to hight of one floor and brings the most plausible results for buildings.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.8.3",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      }
     }
   },
   "paint_line": {

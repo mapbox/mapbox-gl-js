@@ -52,6 +52,13 @@ var Demo3D = function() {
     this.sunHaloColor = [ 255, 255, 255 ];
     this.skyColor = [ 255, 255, 255 ];
     this.sunIntensity = 30.0;
+    this.verticalGradient = false;
+    this.lightIntensity = 0.26;
+    this.aoIntensity = 0.5;
+    this.aoRadius = 3;
+    this.aoGroundLine = true;
+    this.buildingColor = [ 255, 255, 255 ];
+    this.buildingOpacity = 1;
 };
 
 var demo3d = new Demo3D();
@@ -78,9 +85,9 @@ window.onload = function() {
     var terrain = gui.addFolder('Terrain');
     var enableTerrain = terrain.add(demo3d, 'enableTerrain');
     enableTerrain.onFinishChange((value) => {
-        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": demo3d.terrainExaggeration} : null);
     });
-    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0.5, 2000);
+    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0, 2);
     terrainExaggeration.onFinishChange((value) => {
         if (demo3d.enableTerrain) {
             map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
@@ -94,11 +101,11 @@ window.onload = function() {
     sky.add(demo3d, 'animateSky');
     var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
     sunAltitude.onFinishChange((value) => {
-        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map'});
+        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map', intensity: this.lightIntensity});
     });
     var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
     sunAzimuth.onFinishChange((value) => {
-        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map'});
+        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map', intensity: this.lightIntensity});
     });
     var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
     sunIntensity.onFinishChange((value) => {
@@ -123,6 +130,43 @@ window.onload = function() {
     skyColor.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-color',
             'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunAtmosphereIntensity + ')');
+    });
+
+    var buildings = gui.addFolder('Buildings');
+    var verticalGradient = buildings.add(demo3d, 'verticalGradient');
+    verticalGradient.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-vertical-gradient', value);
+    });
+    var buildingsAO = buildings.add(demo3d, 'aoIntensity', 0.0, 1.0);
+    buildingsAO.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', value);
+        map.setPaintProperty('footprint-blur5', 'line-opacity', value);
+        map.setPaintProperty('footprint-blur2', 'line-opacity', value);
+    });
+    var aoRadius = buildings.add(demo3d, 'aoRadius', 0.0, 50.0);
+    aoRadius.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', value);
+    });
+    var aoGroundLine = buildings.add(demo3d, 'aoGroundLine');
+    aoGroundLine.onFinishChange((value) => {
+        const visible = value ? 'visible' : 'none';
+        map.setLayoutProperty('footprint-blur2', 'visibility', visible);
+        map.setLayoutProperty('footprint-blur5', 'visibility', visible);
+    });
+    var buildingColor = buildings.addColor(demo3d, 'buildingColor');
+    buildingColor.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-color',
+            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
+    });
+    var buildingOpacity = buildings.add(demo3d, 'buildingOpacity', 0.0, 1.0);
+    buildingOpacity.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-opacity', value);
+    });
+    var lightIntensity = buildings.add(demo3d, 'lightIntensity', 0.0, 1.0);
+    lightIntensity.onFinishChange((value) => {
+        let light = map.getLight();
+        light['intensity'] = value;
+        map.setLight(light);
     });
 };
 
@@ -159,13 +203,48 @@ map.on('style.load', function() {
         'source-layer': 'building',
         'filter': ['==', 'extrude', 'true'],
         'type': 'fill-extrusion',
-        'minzoom': 15,
+        'minzoom': 13,
         'paint': {
-            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-color': 'rgb(' + demo3d.buildingColor[0] + ', ' + demo3d.buildingColor[1] + ', ' + demo3d.buildingColor[2] + ')',
             'fill-extrusion-height': ["get", "height"],
-            'fill-extrusion-opacity': 0.7
+            'fill-extrusion-base': ["get", "min_height"],
+            'fill-extrusion-opacity': demo3d.buildingOpacity,
+            'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
+            'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity
         }
     }, 'waterway-label');
+
+    // Buildings AO lines
+    let buildingsBlurLayerId = "footprint-blur5";
+    if (!map.getLayer(buildingsBlurLayerId)) {
+        map.addLayer({
+            'id': buildingsBlurLayerId,
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['all', ['==', ['get', 'min_height'], 0], ['==', ['get', 'extrude'], 'true']],
+            'type': 'line',
+            'paint': {
+                'line-color': 'rgba(100, 100, 100, 0.3)',
+                'line-width': {"base": 1.3, "stops":[[14, 10], [22, 20]]},
+                'line-opacity': 0.5
+            }
+        }, "extrusion");
+    }
+    buildingsBlurLayerId = "footprint-blur2";
+    if (!map.getLayer(buildingsBlurLayerId)) {
+        map.addLayer({
+            'id': buildingsBlurLayerId,
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['all', ['==', ['get', 'min_height'], 0], ['==', ['get', 'extrude'], 'true']],
+            'type': 'line',
+            'paint': {
+                'line-color': 'rgba(100, 100, 100, 0.4)',
+                'line-width': 3,
+                'line-opacity': 0.5
+            }
+        }, "extrusion");
+    }
 
     map.addLayer({
         'id': 'sky',
@@ -184,6 +263,7 @@ map.on('style.load', function() {
         }
     });
     map.setFog({});
+    map.setLight({intensity: demo3d.lightIntensity});
     var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
         const elevation = map.queryTerrainElevation(map.unproject(e.point));

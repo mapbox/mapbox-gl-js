@@ -62,6 +62,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const image = patternProperty.constantOr((1: any));
     const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
+    const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), layer.paint.get('fill-extrusion-ambient-occlusion-radius')];
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
@@ -70,7 +71,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
     }
-    if (layer.layout.get('fill-extrusion-faux-ao')) {
+    if (ao[0] > 0) { // intensity
         baseDefines.push('FAUX_AO');
     }
 
@@ -120,9 +121,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, coord,
                 crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, coord,
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

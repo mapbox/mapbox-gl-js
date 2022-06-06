@@ -23,6 +23,9 @@
 
 <div id='checkboxes'>
     <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    <label><input type="range" min="0" max="100" value="100" class="slider" id="buildings-fauxao-slider"> AO intensity: </label><label id='ao_intensity'>1.00</label><br />
+    <label><input type="range" min="0" max="400000" value="140000" class="slider" id="buildings-ao-radius-slider"> AO radius: </label><label id='ao_radius'>140000</label><br />
+    <label><input type="range" min="0" max="100" value="100" class="slider" id="buildings-opacity-slider"> opacity: </label><label id='opacity'>1.0</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -47,14 +50,66 @@ map.on('style.load', function() {
     });
 
     map.setFog({});
+    map.setLight({
+        intensity: 0.3
+    });
 
     document.getElementById('terrain-checkbox').onclick();
+    document.getElementById('buildings-fauxao-slider').oninput();
+    document.getElementById('buildings-ao-radius-slider').oninput();
+    document.getElementById('buildings-opacity-slider').oninput();
 });
 
 document.getElementById('terrain-checkbox').onclick = function() {
     map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
 };
 
+document.getElementById('buildings-fauxao-slider').oninput = function() {
+    const aoIntensity = this.value / 100.0;
+    map.setPaintProperty("country-boundaries", 'fill-extrusion-ambient-occlusion-intensity', aoIntensity);
+    document.getElementById('ao_intensity').innerHTML = aoIntensity.toPrecision(3);
+    const buildingsBlurLayerId = "country_boundaries";
+    const buildingsBlurLayerId1 = "country_boundaries1";
+    if (!map.getLayer(buildingsBlurLayerId)) {
+        // Workaround #10000 (line-blur artefacts) is to use multiple lines.
+        map.addLayer({
+            'id': buildingsBlurLayerId,
+            'source': 'composite',
+            'source-layer': 'country_boundaries',
+            'type': 'line',
+            'paint': {
+                'line-color': 'rgba(100, 100, 100, 0.5)',
+                'line-width': {"base": 1.3, "stops":[[0, 10], [22, 30]]},
+                'line-opacity': {"stops":[[0, aoIntensity / 2], [22, 0.2 * aoIntensity]]}
+            }
+        }, "country-boundaries");
+        map.addLayer({
+            'id': buildingsBlurLayerId1,
+            'source': 'composite',
+            'source-layer': 'country_boundaries',
+            'type': 'line',
+            'paint': {
+                'line-color': 'rgba(100, 100, 100, 0.5)',
+                'line-width': {"base": 1.3, "stops":[[0, 5], [22, 15]]},
+                'line-opacity': {"stops":[[0, aoIntensity / 2], [22, 0.2 * aoIntensity]]}
+            }
+        }, "country-boundaries");
+    }
+    [buildingsBlurLayerId, buildingsBlurLayerId1].forEach((layer) => {
+        map.setPaintProperty(layer, 'line-opacity', {"stops":[[0, aoIntensity], [22, 0.2]]});
+    });
+};
+
+document.getElementById('buildings-ao-radius-slider').oninput = function() {
+    map.setPaintProperty("country-boundaries", 'fill-extrusion-ambient-occlusion-radius', this.valueAsNumber);
+    document.getElementById('ao_radius').innerHTML = this.value;
+}
+
+document.getElementById('buildings-opacity-slider').oninput = function() {
+    const opacity = this.value / 100;
+    map.setPaintProperty("country-boundaries", 'fill-extrusion-opacity', opacity);
+    document.getElementById('opacity').innerHTML = opacity.toPrecision(3);
+}
 </script>
 </body>
 </html>

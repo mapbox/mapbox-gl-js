@@ -367,8 +367,7 @@ export type FillExtrusionLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none",
-        "fill-extrusion-faux-ao"?: boolean
+        "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
         "fill-extrusion-opacity"?: PropertyValueSpecification<number>,
@@ -378,7 +377,9 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "fill-extrusion-height"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>
+        "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>,
+        "fill-extrusion-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
+        "fill-extrusion-ambient-occlusion-radius"?: PropertyValueSpecification<number>
     |}
 |}
 
