@@ -146,7 +146,7 @@ class Transform {
     _projectionScaler: number;
     _nearZ: number;
     _farZ: number;
-    _mercatorScaleDifference: number;
+    _mercatorScaleRatio: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -876,10 +876,10 @@ class Transform {
                     // For tiles that are in the middle of the viewport, prioritize matching the camera
                     // zoom and allow divergence from the true scale.
                     const maxDivergence = 0.3;
-                    tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleDifference - maxDivergence);
+                    tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleRatio - maxDivergence);
                 } else {
                     // For other tiles, use the real scale to reduce tile counts near poles.
-                    tileScaleAdjustment = Math.min(1, relativeTileScale / this._mercatorScaleDifference);
+                    tileScaleAdjustment = Math.min(1, relativeTileScale / this._mercatorScaleRatio);
                 }
 
                 // Ensure that all tiles near the center have the same zoom level.
@@ -1695,7 +1695,7 @@ class Transform {
             const t = getProjectionInterpolationT(this, 1024);
             const combinedScale = interpolate(refScale, centerScale, t);
             this._projectionScaler = pixelsPerMeter / combinedScale;
-            this._mercatorScaleDifference = centerScale / refScale;
+            this._mercatorScaleRatio = centerScale / refScale;
         }
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
 
