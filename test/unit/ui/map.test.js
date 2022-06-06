@@ -2157,7 +2157,7 @@ test('Map', (t) => {
         t.test('In Globe', (t) => {
             map.setProjection('globe');
             t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
-            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 53.61718415, y: 53.61718415});
+            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 38.86205343, y: 38.86205343});
             t.end();
         });
         t.test('In Natural Earth', (t) => {
@@ -2185,7 +2185,7 @@ test('Map', (t) => {
         t.test('In Globe', (t) => {
             map.setProjection('globe');
             t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
-            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng:  -72.817409474, lat: 43.692434709});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -67.77848443, lat: 42.791315106});
             t.end();
         });
         t.test('In Natural Earth', (t) => {
