@@ -359,9 +359,12 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
+        const edgeRadius = isPolygon ? 10 : 0;
+
         for (const {polygon, bounds} of clippedPolygons) {
             // Only triangulate and draw the area of the feature if it is a polygon
             // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
+            let topIndex = 0;
             if (isPolygon) {
                 let numVertices = 0;
                 for (const ring of polygon) numVertices += ring.length;
@@ -369,7 +372,7 @@ class FillExtrusionBucket implements Bucket {
 
                 const flattened = [];
                 const holeIndices = [];
-                const triangleIndex = segment.vertexLength;
+                topIndex = segment.vertexLength;
 
                 for (const ring of polygon) {
                     if (ring.length && ring !== polygon[0]) {
@@ -380,7 +383,22 @@ class FillExtrusionBucket implements Bucket {
                     if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
 
                     for (let i = 1; i < ring.length; i++) {
-                        const {x, y} = ring[i];
+                        const p0 = ring[i - 1];
+                        const p1 = ring[i];
+                        const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
+
+                        // WIP optimize
+                        const na = p1.sub(p0)._perp()._unit();
+                        const nb = p2.sub(p1)._perp()._unit();
+                        const nm = na.add(nb)._unit();
+
+                        const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+                        // const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
+                        const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
+
+                        const x = p1.x + offset * nm.x;
+                        const y = p1.y + offset * nm.y;
+
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
@@ -401,9 +419,9 @@ class FillExtrusionBucket implements Bucket {
                 for (let j = 0; j < indices.length; j += 3) {
                     // clockwise winding order.
                     this.indexArray.emplaceBack(
-                        triangleIndex + indices[j],
-                        triangleIndex + indices[j + 2],
-                        triangleIndex + indices[j + 1]);
+                        topIndex + indices[j],
+                        topIndex + indices[j + 2],
+                        topIndex + indices[j + 1]);
                     segment.primitiveLength++;
                 }
             }
@@ -411,9 +429,14 @@ class FillExtrusionBucket implements Bucket {
             for (const ring of polygon) {
                 if (metadata && ring.length) metadata.startRing(ring[0]);
 
+                let offsetPrev = getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius);
+
+                let kPrev, kFirst;
+
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
-                    const p0 = ring[i - 1];
-                    const p1 = ring[i];
+                    let p0 = ring[i - 1];
+                    let p1 = ring[i];
+                    const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                     if (metadata && isPolygon) metadata.currentPolyCount.top++;
                     if (isBoundaryEdge(p1, p0, bounds)) continue;
@@ -430,6 +453,15 @@ class FillExtrusionBucket implements Bucket {
                     const dist = p0.dist(p1);
                     if (edgeDistance + dist > 32768) edgeDistance = 0;
 
+                    // WIP optimize - too many duplicate calculations across corners
+                    if (edgeRadius) {
+                        const offsetNext = getRoundedEdgeOffset(p0, p1, p2, edgeRadius);
+                        const nEdge = p1.sub(p0)._unit();
+                        p0 = p0.add(nEdge.mult(offsetPrev));
+                        p1 = p1.add(nEdge.mult(-offsetNext));
+                        offsetPrev = offsetNext;
+                    }
+
                     const k = segment.vertexLength;
 
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, edgeDistance);
@@ -440,6 +472,8 @@ class FillExtrusionBucket implements Bucket {
                     addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
                     addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
 
+                    segment.vertexLength += 4;
+
                     // ┌──────┐
                     // │ 1  3 │ clockwise winding order.
                     // │      │ Triangle 1: 0 => 1 => 2
@@ -447,9 +481,32 @@ class FillExtrusionBucket implements Bucket {
                     // └──────┘
                     this.indexArray.emplaceBack(k + 0, k + 1, k + 2);
                     this.indexArray.emplaceBack(k + 1, k + 3, k + 2);
-
-                    segment.vertexLength += 4;
                     segment.primitiveLength += 2;
+
+                    // WIP fix handling for holes
+                    if (edgeRadius && ring === polygon[0]) {
+                        const t0 = topIndex + (i === 1 ? ring.length - 2 : i - 2);
+                        const t1 = i === 1 ? topIndex : t0 + 1;
+
+                        // top chamfer along the side
+                        this.indexArray.emplaceBack(k + 1, t0, k + 3);
+                        this.indexArray.emplaceBack(t0, t1, k + 3);
+                        segment.primitiveLength += 2;
+
+                        if (kPrev !== undefined) {
+                            // vertical side chamfer
+                            this.indexArray.emplaceBack(kPrev, kPrev + 1, k + 0);
+                            this.indexArray.emplaceBack(kPrev + 1, k + 1, k + 0);
+
+                            // top corner where the top and two sides meet
+                            this.indexArray.emplaceBack(kPrev + 1, t0, k + 1);
+
+                            segment.primitiveLength += 3;
+                        } else {
+                            kFirst = k;
+                        }
+                        kPrev = k + 2;
+                    }
 
                     if (isGlobe) {
                         const array: any = this.layoutVertexExtArray;
@@ -465,6 +522,16 @@ class FillExtrusionBucket implements Bucket {
                         addGlobeExtVertex(array, projectedP1, n1);
                         addGlobeExtVertex(array, projectedP1, n1);
                     }
+                }
+
+                // close the loop on vertical side chamfer
+                // WIP fix handling for holes
+                if (edgeRadius && ring === polygon[0]) {
+                    const segment = this.segments.prepareSegment(0, this.layoutVertexArray, this.indexArray);
+                    this.indexArray.emplaceBack(kPrev, kPrev + 1, kFirst + 0);
+                    this.indexArray.emplaceBack(kPrev + 1, kFirst + 1, kFirst + 0);
+                    this.indexArray.emplaceBack(kPrev + 1, topIndex + ring.length - 2, kFirst + 1);
+                    segment.primitiveLength += 3;
                 }
             }
         }
@@ -539,6 +606,16 @@ class FillExtrusionBucket implements Bucket {
             }
         }
     }
+}
+
+function getRoundedEdgeOffset(p0, p1, p2, edgeRadius) {
+    const na = p1.sub(p0)._perp()._unit();
+    const nb = p2.sub(p1)._perp()._unit();
+    const nm = na.add(nb)._unit();
+
+    const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+    const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
+    return Math.min(p0.dist(p1) / 3, p1.dist(p2) / 3, edgeRadius * sinHalfAngle / cosHalfAngle);
 }
 
 register(FillExtrusionBucket, 'FillExtrusionBucket', {omit: ['layers', 'features']});

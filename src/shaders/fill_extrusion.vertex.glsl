@@ -43,7 +43,10 @@ void main() {
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
 
     base = max(0.0, base);
-    height = max(0.0, height);
+
+    // WIP set edge_radius with a uniform
+    float edge_radius = 0.5;
+    height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - edge_radius : height);
 
     float t = top_up_ny.x;
 
