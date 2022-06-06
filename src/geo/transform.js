@@ -1516,7 +1516,7 @@ class Transform {
 
     recenterOnTerrain() {
 
-        if (!this._elevation)
+        if (!this._elevation || this.projection.name === 'globe')
             return;
 
         const elevation: Elevation = this._elevation;
