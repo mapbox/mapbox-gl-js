@@ -17,7 +17,7 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -886,8 +886,8 @@ class Transform {
                 // With LOD tile loading, tile zoom levels can change when scale slightly changes.
                 // These differences can be pretty different in globe view. Work around this by
                 // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
-                // round up.
-                if (this.zoom <= 5 && it.zoom === maxZoom - 1 && relativeTileScale >= 0.9) {
+                // round up. Only apply this adjustment before the transition to mercator rendering has started.
+                if (this.zoom <= GLOBE_ZOOM_THRESHOLD_MIN && it.zoom === maxZoom - 1 && relativeTileScale >= 0.9) {
                     return true;
                 }
             } else {
