@@ -17,7 +17,7 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -1690,7 +1690,14 @@ class Transform {
         if (this.projection.name !== 'globe') {
             this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
         } else {
-            const refScale = mercatorZfromAltitude(1, 45) * this.worldSize;
+            // Using only the center latitude to determine scale causes the globe to rapidly change
+            // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
+            // This is because zoom levels are based on mercator.
+            //
+            // Instead, use a fixed reference latitude at lower zoom levels. And transition between
+            // this latitude and the center's latitude as you zoom in. This is a compromise that
+            // makes globe view more usable with existing camera parameters, styles and data.
+            const refScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * this.worldSize;
             const centerScale = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
             const t = getProjectionInterpolationT(this, 1024);
             const combinedScale = interpolate(refScale, centerScale, t);
