@@ -118,7 +118,7 @@ const ciTestemConfig = {
     "tap_quiet_logs": true,
     "browser_args": {
         "Chrome": {
-            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist" ]
+            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-gl=egl" ]
         }
     }
 };
@@ -128,7 +128,7 @@ const testemConfig = process.env.CI ? Object.assign({}, defaultTestemConfig, ciT
 module.exports = testemConfig;
 
 // helper method that builds test artifacts when in CI mode.
-// Retuns a promise that resolves when all artifacts are built
+// Retuns a promise that resolves when all artifacts are buil
 function buildArtifactsCi() {
     //1. Compile fixture data into a json file, so it can be bundled
     generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
