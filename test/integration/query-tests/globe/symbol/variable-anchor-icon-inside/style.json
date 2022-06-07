@@ -29,7 +29,7 @@
               "type": "Point",
               "coordinates": [
                 0,
-                -10
+                -7
               ]
             }
           },
@@ -42,7 +42,7 @@
               "type": "Point",
               "coordinates": [
                 0,
-                10
+                7
               ]
             }
           }

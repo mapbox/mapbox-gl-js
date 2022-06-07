@@ -1,15 +1,15 @@
 [
-    {
-      "geometry": {
-        "coordinates": [
-          -49.998779296875,
-          -50.00067775723633
-        ],
-        "type": "Point"
-      },
-      "properties": {},
-      "source": "point",
-      "state": {},
-      "type": "Feature"
-    }
-  ]
+  {
+    "geometry": {
+      "coordinates": [
+        -50.009765625,
+        -49.993615462541115
+      ],
+      "type": "Point"
+    },
+    "properties": {},
+    "source": "point",
+    "state": {},
+    "type": "Feature"
+  }
+]

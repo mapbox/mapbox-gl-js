@@ -11,7 +11,7 @@
     "name": "globe"
   },
   "center": [ 0, 0 ],
-  "zoom": 2.00,
+  "zoom": 1.5,
   "sources": {
     "point": {
       "type": "geojson",
