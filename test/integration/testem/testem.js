@@ -128,7 +128,7 @@ const testemConfig = process.env.CI ? Object.assign({}, defaultTestemConfig, ciT
 module.exports = testemConfig;
 
 // helper method that builds test artifacts when in CI mode.
-// Retuns a promise that resolves when all artifacts are buil
+// Retuns a promise that resolves when all artifacts are built
 function buildArtifactsCi() {
     //1. Compile fixture data into a json file, so it can be bundled
     generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
