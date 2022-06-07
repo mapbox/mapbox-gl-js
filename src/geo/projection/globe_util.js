@@ -32,6 +32,21 @@ import assert from 'assert';
 export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
 export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 
+// At low zoom levels the globe gets rendered so that the scale at this
+// latitude matches it's scale in a mercator map. The choice of latitude is
+// a bit arbitrary. Different choices will match mercator more closely in different
+// views. 45 is a good enough choice because:
+// - it's half way from the pole to the equator
+// - matches most middle latitudes reasonably well
+// - biases towards increasing size rather than decreasing
+// - makes the globe slightly larger at very low zoom levels, where it already
+//   covers less pixels than mercator (due to the curved surface)
+//
+//   Changing this value will change how large a globe is rendered and could affect
+//   end users. This should only be done of the tradeoffs between change and improvement
+//   are carefully considered.
+export const GLOBE_SCALE_MATCH_LATITUDE = 45;
+
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
 const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
