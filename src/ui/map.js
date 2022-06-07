@@ -79,7 +79,7 @@ type IControl = {
     onRemove(map: Map): void;
 
     +getDefaultPosition?: () => ControlPosition;
-    +_setLanguage?: (language: string) => void;
+    +_setLanguage?: (language: ?string) => void;
 }
 /* eslint-enable no-use-before-define */
 
@@ -256,10 +256,11 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {string} [options.language] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {string} [options.language=null] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
- *   By default, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
+ *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
  *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
  * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
      * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
@@ -384,7 +385,7 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: string;
+    _language: ?string;
     _worldview: ?string;
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
@@ -489,7 +490,7 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
-        this._language = options.language || window.navigator.language;
+        this._language = options.language === 'auto' ? window.navigator.language : options.language;
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
@@ -1070,13 +1071,17 @@ class Map extends Camera {
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
+     *
+     * @example
+     * map.setLanguage('auto');
      */
     setLanguage(language?: ?string): this {
-        this._language = language || window.navigator.language;
+        this._language = language === 'auto' ? window.navigator.language : language;
+
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.language && source.language !== this._language && source._setLanguage) {
+                if (source._setLanguage) {
                     source._setLanguage(this._language);
                 }
             }
@@ -1115,7 +1120,7 @@ class Map extends Camera {
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.worldview && source.worldview !== worldview && source._setWorldview) {
+                if (source._setWorldview) {
                     source._setWorldview(worldview);
                 }
             }
