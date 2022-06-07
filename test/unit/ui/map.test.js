@@ -70,7 +70,7 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
-        t.equal(map._language, window.navigator.language);
+        t.notok(map._language);
         t.notok(map._worldview);
         t.throws(() => {
             new Map({
@@ -2433,6 +2433,14 @@ test('Map', (t) => {
             });
         });
 
+        t.test('can instantiate map with the preferred language of the user', (t) => {
+            const map = createMap(t, {language: 'auto'});
+            map.on('style.load', () => {
+                t.equal(map.getLanguage(), window.navigator.language);
+                t.end();
+            });
+        });
+
         t.test('sets and gets language property', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {
@@ -2447,8 +2455,10 @@ test('Map', (t) => {
             map.on('style.load', () => {
                 map.setLanguage('es');
                 t.equal(map.getLanguage(), 'es');
-                map.setLanguage();
+                map.setLanguage('auto');
                 t.equal(map.getLanguage(), window.navigator.language);
+                map.setLanguage();
+                t.equal(map.getLanguage(), undefined);
                 t.end();
             });
         });
