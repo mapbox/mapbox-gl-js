@@ -13,7 +13,8 @@ const pages = [
     },
     {
         "key": "filter-features-within-map-view",
-        "title": "Filter features within map view"
+        "title": "Filter features within map view",
+        "url": "./filter-features-with-globe.html"
     },
     {
         "key": "custom-style-layer",
@@ -94,6 +95,11 @@ const pages = [
         "key": "video",
         "title": "Video",
         "url": "./video.html"
+    },
+    {
+        "key": "globe-with-video",
+        "title": "Globe with Video",
+        "url": "./globe-with-video.html"
     },
     {
         "key": "scroll_zoom_blocker",

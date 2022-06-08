@@ -14,10 +14,10 @@ import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -146,6 +146,7 @@ class Transform {
     _projectionScaler: number;
     _nearZ: number;
     _farZ: number;
+    _mercatorScaleRatio: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -862,8 +863,33 @@ class Transform {
                 const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
-                const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
-                tileScaleAdjustment = Math.min(scale, 1.0);
+
+                const relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+
+                // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
+                // Account for this difference during LOD of loading so that you load the correct size tiles.
+                // We try to compromise between two conflicting requirements:
+                // - loading tiles at the camera's zoom level (for visual and styling consistency)
+                // - loading correct size tiles (to reduce the number of tiles loaded)
+                // These are arbitrarily balanced:
+                if (closestLat === centerLatitude) {
+                    // For tiles that are in the middle of the viewport, prioritize matching the camera
+                    // zoom and allow divergence from the true scale.
+                    const maxDivergence = 0.3;
+                    tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleRatio - maxDivergence);
+                } else {
+                    // For other tiles, use the real scale to reduce tile counts near poles.
+                    tileScaleAdjustment = Math.min(1, relativeTileScale / this._mercatorScaleRatio);
+                }
+
+                // Ensure that all tiles near the center have the same zoom level.
+                // With LOD tile loading, tile zoom levels can change when scale slightly changes.
+                // These differences can be pretty different in globe view. Work around this by
+                // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
+                // round up. Only apply this adjustment before the transition to mercator rendering has started.
+                if (this.zoom <= GLOBE_ZOOM_THRESHOLD_MIN && it.zoom === maxZoom - 1 && relativeTileScale >= 0.9) {
+                    return true;
+                }
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
@@ -1490,7 +1516,7 @@ class Transform {
 
     recenterOnTerrain() {
 
-        if (!this._elevation)
+        if (!this._elevation || this.projection.name === 'globe')
             return;
 
         const elevation: Elevation = this._elevation;
@@ -1661,7 +1687,23 @@ class Transform {
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
 
-        this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+        if (this.projection.name !== 'globe') {
+            this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+        } else {
+            // Using only the center latitude to determine scale causes the globe to rapidly change
+            // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
+            // This is because zoom levels are based on mercator.
+            //
+            // Instead, use a fixed reference latitude at lower zoom levels. And transition between
+            // this latitude and the center's latitude as you zoom in. This is a compromise that
+            // makes globe view more usable with existing camera parameters, styles and data.
+            const refScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * this.worldSize;
+            const centerScale = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
+            const t = getProjectionInterpolationT(this, 1024);
+            const combinedScale = interpolate(refScale, centerScale, t);
+            this._projectionScaler = pixelsPerMeter / combinedScale;
+            this._mercatorScaleRatio = centerScale / refScale;
+        }
         this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
 
         this._updateCameraState();

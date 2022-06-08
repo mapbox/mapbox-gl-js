@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        ["setFog", {"color": "red"}],
+        ["wait"],
+        ["setFog", {}]
+      ]
+    }
+
+  },
+  "pitch": 80,
+  "zoom": 12,
+  "fog": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background"
+    }
+  ],
+  "sources": {}
+}

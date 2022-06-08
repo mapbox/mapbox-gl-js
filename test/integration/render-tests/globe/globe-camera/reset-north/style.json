@@ -13,7 +13,7 @@
   "center": [ -90, 15 ],
   "bearing": 165,
   "pitch": 45,
-  "zoom": 2.00,
+  "zoom": 1.5,
   "projection": {
     "name": "globe"
   },

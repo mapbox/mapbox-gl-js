@@ -4,13 +4,13 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0009
+      "allowed": 0.0015
     }
   },
   "projection": {
     "name": "globe"
   },
-  "zoom": 1,
+  "zoom": 0,
   "sources": {},
   "fog": {
     "color": "white",

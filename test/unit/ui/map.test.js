@@ -70,7 +70,7 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
-        t.equal(map._language, window.navigator.language);
+        t.notok(map._language);
         t.notok(map._worldview);
         t.throws(() => {
             new Map({
@@ -435,8 +435,8 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
-                t.ok(style.terrain);
-                t.equal(style.terrain.source, '');
+                // Should not overwrite style: https://github.com/mapbox/mapbox-gl-js/issues/11939
+                t.equal(style.terrain, undefined);
                 map.remove();
 
                 map = new Map({style, container: div, testMode: true});
@@ -521,6 +521,85 @@ test('Map', (t) => {
             });
 
             t.end();
+        });
+
+        t.test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', (t) => {
+            const styleWithTerrainExaggeration = {
+                'version': 8,
+                'sources': {
+                    'mapbox-dem': {
+                        'type': 'raster-dem',
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                'terrain': {
+                    'source': 'mapbox-dem',
+                    'exaggeration': 500
+                },
+                'layers': []
+            };
+
+            const styleWithoutTerrainExaggeration = {
+                'version': 8,
+                'sources': {
+                    'mapbox-dem': {
+                        'type': 'raster-dem',
+                        'tiles': ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                'terrain': {
+                    'source': 'mapbox-dem'
+                },
+                'layers': []
+            };
+
+            const map = createMap(t, {style: styleWithTerrainExaggeration});
+
+            map.on('style.load', () => {
+                t.equal(map.getTerrain().exaggeration, 500);
+
+                map.setStyle(styleWithoutTerrainExaggeration);
+                t.equal(map.getTerrain().exaggeration, 1);
+
+                map.setStyle(styleWithTerrainExaggeration);
+                t.equal(map.getTerrain().exaggeration, 500);
+
+                t.equal(styleWithoutTerrainExaggeration.terrain.exaggeration, undefined);
+                t.equal(styleWithTerrainExaggeration.terrain.exaggeration, 500);
+                t.end();
+            });
+        });
+
+        t.test('should apply different projections when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11916)', (t) => {
+            const styleWithWinkelTripel = {
+                'version': 8,
+                'sources': {},
+                'projection': {'name': 'winkelTripel'},
+                'layers': []
+            };
+
+            const styleWithGlobe = {
+                'version': 8,
+                'sources': {},
+                'projection': {'name': 'globe'},
+                'layers': []
+            };
+
+            const map = createMap(t, {style: styleWithWinkelTripel});
+
+            map.on('style.load', () => {
+                t.equal(map.getProjection().name, 'winkelTripel');
+
+                map.setStyle(styleWithGlobe);
+                t.equal(map.getProjection().name, 'globe');
+
+                map.setStyle(styleWithWinkelTripel);
+                t.equal(map.getProjection().name, 'winkelTripel');
+
+                t.equal(styleWithGlobe.projection.name, 'globe');
+                t.equal(styleWithWinkelTripel.projection.name, 'winkelTripel');
+                t.end();
+            });
         });
 
         t.test('updating fog results in correct transitions', (t) => {
@@ -2066,7 +2145,7 @@ test('Map', (t) => {
         t.test('In Globe', (t) => {
             map.setProjection('globe');
             t.deepEqual(pointToFixed(map.project({lng: 0, lat: 0})), {x: 100, y: 100});
-            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 53.61718415, y: 53.61718415});
+            t.deepEqual(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709})), {x: 38.86205343, y: 38.86205343});
             t.end();
         });
         t.test('In Natural Earth', (t) => {
@@ -2094,7 +2173,7 @@ test('Map', (t) => {
         t.test('In Globe', (t) => {
             map.setProjection('globe');
             t.deepEqual(fixedLngLat(map.unproject([100, 100])), {lng: 0, lat: 0});
-            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng:  -72.817409474, lat: 43.692434709});
+            t.deepEqual(fixedLngLat(map.unproject([0, 0])), {lng: -67.77848443, lat: 42.791315106});
             t.end();
         });
         t.test('In Natural Earth', (t) => {
@@ -2342,6 +2421,14 @@ test('Map', (t) => {
             });
         });
 
+        t.test('can instantiate map with the preferred language of the user', (t) => {
+            const map = createMap(t, {language: 'auto'});
+            map.on('style.load', () => {
+                t.equal(map.getLanguage(), window.navigator.language);
+                t.end();
+            });
+        });
+
         t.test('sets and gets language property', (t) => {
             const map = createMap(t);
             map.on('style.load', () => {
@@ -2356,8 +2443,10 @@ test('Map', (t) => {
             map.on('style.load', () => {
                 map.setLanguage('es');
                 t.equal(map.getLanguage(), 'es');
-                map.setLanguage();
+                map.setLanguage('auto');
                 t.equal(map.getLanguage(), window.navigator.language);
+                map.setLanguage();
+                t.equal(map.getLanguage(), undefined);
                 t.end();
             });
         });

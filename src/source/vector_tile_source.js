@@ -72,7 +72,9 @@ class VectorTileSource extends Evented implements Source {
     _tileWorkers: {[string]: Actor};
     _deduped: DedupedRequest;
     language: ?string;
+    languageOptions: ?{[string]: string};
     worldview: ?string;
+    worldviewOptions: ?{[string]: string};
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -209,6 +211,12 @@ class VectorTileSource extends Evented implements Source {
     }
 
     _setLanguage(language?: ?string): this {
+        if (language === this.language) return this;
+        if (this.languageOptions && language && !this.languageOptions[language]) {
+            console.warn(`Vector tile source "${this.id}" does not support language "${language}".`);
+            return this;
+        }
+
         this.setSourceProperty(() => {
             this.language = language;
         });
@@ -217,6 +225,12 @@ class VectorTileSource extends Evented implements Source {
     }
 
     _setWorldview(worldview?: ?string): this {
+        if (worldview === this.worldview) return this;
+        if (this.worldviewOptions && worldview && !this.worldviewOptions[worldview]) {
+            console.warn(`Vector tile source "${this.id}" does not support worldview "${worldview}".`);
+            return this;
+        }
+
         this.setSourceProperty(() => {
             this.worldview = worldview;
         });
