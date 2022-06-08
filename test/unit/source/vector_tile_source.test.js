@@ -19,16 +19,17 @@ const mockDispatcher = wrapDispatcher({
     send () {}
 });
 
-function createSource(options, transformCallback) {
+function createSource(options, {transformCallback, customAccessToken} = {}) {
     const source = new VectorTileSource('id', options, mockDispatcher, options.eventedParent);
+    const sourceCache = {clearTiles: () => {}};
+
     source.onAdd({
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
-        _requestManager: new RequestManager(transformCallback),
+        _requestManager: new RequestManager(transformCallback, customAccessToken),
+        _sourceCaches: [sourceCache],
         style: {
-            _getSourceCaches: () => {
-                return [{clearTiles: () => {}}];
-            }
+            _getSourceCaches: () => [sourceCache]
         }
     });
 
@@ -93,7 +94,7 @@ test('VectorTileSource', (t) => {
             return {url};
         });
 
-        createSource({url: "/source.json"}, transformSpy);
+        createSource({url: "/source.json"}, {transformCallback: transformSpy});
         window.server.respond();
         t.equal(transformSpy.getCall(0).args[0], '/source.json');
         t.equal(transformSpy.getCall(0).args[1], 'Source');
@@ -390,6 +391,33 @@ test('VectorTileSource', (t) => {
         t.end();
     });
 
+    t.test('supports property updates', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+        const source = createSource({url: '/source.json'});
+        window.server.respond();
+
+        const loadSpy = t.spy(source, 'load');
+        const clearTilesSpy = t.spy(source.map._sourceCaches[0], 'clearTiles');
+
+        const responseSpy = t.spy((xhr) =>
+            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify(sourceFixture)));
+
+        window.server.respondWith('/source.json', responseSpy);
+
+        source.setSourceProperty(() => {
+            source.attribution = 'OpenStreetMap';
+        });
+
+        window.server.respond();
+
+        t.ok(loadSpy.calledOnce);
+        t.ok(responseSpy.calledOnce);
+        t.ok(clearTilesSpy.calledOnce);
+        t.ok(responseSpy.calledBefore(clearTilesSpy), 'Tiles should be cleared after TileJSON is loaded');
+
+        t.end();
+    });
+
     t.test('supports url property updates', (t) => {
         const source = createSource({
             url: "http://localhost:2900/source.json"
@@ -418,6 +446,93 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example2.com/{z}/{x}/{y}.png"]
         });
         t.end();
+    });
+
+    t.test('supports i18n tilesets', (t) => {
+        /* eslint camelcase: ["error", {allow: ["language_options", "worldview_options", "worldview_default"]}] */
+        const source = createSource({url: 'mapbox://user.map'}, {customAccessToken: 'key'});
+
+        const manager = source.map._requestManager;
+        const transformSpy = t.spy(manager, 'transformRequest');
+
+        // Response for initial request
+        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map'), JSON.stringify({
+            id: 'id',
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: 'Mapbox',
+            language_options: {en: 'English', es: 'Spanish'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key'],
+        }));
+
+        // Response for i18n request
+        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map', null, 'es', 'CN'), JSON.stringify({
+            id: 'id',
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: 'Mapbox',
+            language: {id: 'es'},
+            language_options: {en: 'English', es: 'Spanish'},
+            worldview: {id: 'CN'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key&language=es&worldview=CN'],
+        }));
+
+        let initialMetadataEvent = true;
+
+        source.on('data', (e) => {
+            if (e.sourceDataType !== 'metadata') return;
+
+            if (initialMetadataEvent) {
+                initialMetadataEvent = false;
+
+                // Initial language and worldview
+                t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png']);
+                t.deepEqual(source.minzoom, 1);
+                t.deepEqual(source.maxzoom, 10);
+                t.deepEqual(source.attribution, 'Mapbox');
+                t.deepEqual(source.language, undefined);
+                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
+                t.deepEqual(source.worldview, 'US');
+                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+
+                source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                }, () => {});
+
+                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${manager._skuToken}&access_token=key`);
+
+                // Update source language and worldview
+                source._setLanguage('es');
+                source._setWorldview('CN');
+                window.server.respond();
+
+                return;
+            }
+
+            // Updated language and worldview
+            t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png?language=es&worldview=CN']);
+            t.deepEqual(source.minzoom, 1);
+            t.deepEqual(source.maxzoom, 10);
+            t.deepEqual(source.attribution, 'Mapbox');
+            t.deepEqual(source.language, 'es');
+            t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
+            t.deepEqual(source.worldview, 'CN');
+            t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+
+            source.loadTile({
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+            }, () => {});
+
+            t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?language=es&worldview=CN&sku=${manager._skuToken}&access_token=key`);
+
+            t.end();
+        });
+
+        window.server.respond();
     });
 
     t.end();

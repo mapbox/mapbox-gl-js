@@ -105,11 +105,11 @@ class VectorTileSource extends Evented implements Source {
         this._deduped = new DedupedRequest();
     }
 
-    load() {
+    load(callback?: Callback<void>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        const language = this.map._language;
-        const worldview = this.map._worldview;
+        const language = this.language || this.map._language;
+        const worldview = this.worldview || this.map._worldview;
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
@@ -129,6 +129,8 @@ class VectorTileSource extends Evented implements Source {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
+
+            if (callback) callback(err);
         });
     }
 
@@ -152,11 +154,13 @@ class VectorTileSource extends Evented implements Source {
 
         callback();
 
-        const sourceCaches = this.map.style._getSourceCaches(this.id);
-        for (const sourceCache of sourceCaches) {
-            sourceCache.clearTiles();
-        }
-        this.load();
+        // Reload current tiles after TileJSON is loaded
+        this.load(() => {
+            const sourceCaches = this.map.style._getSourceCaches(this.id);
+            for (const sourceCache of sourceCaches) {
+                sourceCache.clearTiles();
+            }
+        });
     }
 
     /**
@@ -212,10 +216,6 @@ class VectorTileSource extends Evented implements Source {
 
     _setLanguage(language?: ?string): this {
         if (language === this.language) return this;
-        if (this.languageOptions && language && !this.languageOptions[language]) {
-            console.warn(`Vector tile source "${this.id}" does not support language "${language}".`);
-            return this;
-        }
 
         this.setSourceProperty(() => {
             this.language = language;
