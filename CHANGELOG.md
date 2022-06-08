@@ -1,4 +1,4 @@
-## 2.9.0-beta.1
+## 2.9.0-beta.2
 
 ### Features ✨
 
@@ -14,6 +14,7 @@
 * Fix an issue which causes line layers to occasionally flicker. ([#11848](https://github.com/mapbox/mapbox-gl-js/pull/11848))
 * Fix markers in fog sometimes becoming more visible when behind terrain. ([#11658](https://github.com/mapbox/mapbox-gl-js/pull/11658))
 * Fix an issue where setting terrain exageration to 0 could prevent the zoom to be resolved. ([#11830](https://github.com/mapbox/mapbox-gl-js/pull/11830))
+* Copy stylesheet to allow toggling different styles using setStyle without overwriting some of the properties. ([#11942](https://github.com/mapbox/mapbox-gl-js/pull/11942))
 
 ## 2.8.2
 
