@@ -216,10 +216,6 @@ class VectorTileSource extends Evented implements Source {
 
     _setLanguage(language?: ?string): this {
         if (language === this.language) return this;
-        if (this.languageOptions && language && !this.languageOptions[language]) {
-            console.warn(`Vector tile source "${this.id}" does not support language "${language}".`);
-            return this;
-        }
 
         this.setSourceProperty(() => {
             this.language = language;
