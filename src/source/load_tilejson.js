@@ -16,8 +16,8 @@ export default function(options: any, requestManager: RequestManager, language: 
             return callback(err);
         } else if (tileJSON) {
             const result: any = pick(
-                // explicit source options take precedence over TileJSON
-                extend(tileJSON, options),
+                // explicit source options take precedence over TileJSON, except for language and worldview
+                extend(tileJSON, extend({}, options, pick(tileJSON, ['language', 'worldview']))),
                 ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
             );
 
@@ -34,7 +34,7 @@ export default function(options: any, requestManager: RequestManager, language: 
                 result.languageOptions = tileJSON.language_options;
             }
 
-            if (tileJSON.language && tileJSON.language[tileJSON.id]) {
+            if (tileJSON.language && tileJSON.id && tileJSON.language[tileJSON.id]) {
                 result.language = tileJSON.language[tileJSON.id];
             }
 
@@ -46,7 +46,7 @@ export default function(options: any, requestManager: RequestManager, language: 
                 result.worldviewOptions = tileJSON.worldview_options;
             }
 
-            if (tileJSON.worldview) {
+            if (tileJSON.worldview && tileJSON.id && tileJSON.worldview[tileJSON.id]) {
                 result.worldview = tileJSON.worldview[tileJSON.id];
             } else if (tileJSON.worldview_default) {
                 result.worldview = tileJSON.worldview_default;

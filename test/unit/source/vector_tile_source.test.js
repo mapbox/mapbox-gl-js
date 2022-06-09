@@ -243,12 +243,12 @@ test('VectorTileSource', (t) => {
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
-            tiles: ["https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key"]
+            tiles: ["https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key"]
         });
         const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tiles, ["mapbox://tiles/user.map/{z}/{x}/{y}.png?access_token=key"]);
+                t.deepEqual(source.tiles, ["mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key"]);
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
@@ -257,7 +257,7 @@ test('VectorTileSource', (t) => {
                 };
                 source.loadTile(tile, () => {});
                 t.ok(transformSpy.calledOnce);
-                t.equal(transformSpy.getCall(0).args[0], `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`);
+                t.equal(transformSpy.getCall(0).args[0], `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`);
                 t.equal(transformSpy.getCall(0).args[1], 'Tile');
                 t.end();
             }
@@ -448,54 +448,217 @@ test('VectorTileSource', (t) => {
         t.end();
     });
 
-    t.test('supports i18n tilesets', (t) => {
-        /* eslint camelcase: ["error", {allow: ["language_options", "worldview_options", "worldview_default"]}] */
-        const source = createSource({url: 'mapbox://user.map'}, {customAccessToken: 'key'});
+    /* eslint camelcase: ["error", {allow: ["language_options", "worldview_options", "worldview_default"]}] */
+    // Tests source instance state after requesting a TileJSON with i18n support
+    function testI18nTileJson(description, url, language, worldview, tileJsonResponse, expectedSource) {
+        t.test(description, (t) => {
+            const source = createSource({url, language, worldview}, {customAccessToken: 'key'});
+
+            const manager = source.map._requestManager;
+            const transformSpy = t.spy(manager, 'transformRequest');
+
+            const tileJsonUrl = manager.normalizeSourceURL(url, null, language, worldview);
+            window.server.respondWith(tileJsonUrl, JSON.stringify(tileJsonResponse));
+
+            source.on('data', (e) => {
+                if (e.sourceDataType !== 'metadata') return;
+
+                t.deepEqual(source.tiles, expectedSource.tiles, 'tiles don\'t match');
+                t.deepEqual(source.language, expectedSource.language, 'languages don\'t match');
+                t.deepEqual(source.worldview, expectedSource.worldview, 'worldviews don\'t match');
+                t.deepEqual(source.languageOptions, expectedSource.languageOptions);
+                t.deepEqual(source.worldviewOptions, expectedSource.worldviewOptions);
+
+                source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                }, () => {});
+
+                const tileRequestUrl = new URL(transformSpy.lastCall.firstArg);
+                t.equal(tileRequestUrl.searchParams.get('language'), source.language);
+
+                // Worldview must be present in the tile request only if it's explicitly set
+                if (worldview) t.equal(tileRequestUrl.searchParams.get('worldview'), source.worldview, 'worldviews don\'t match');
+
+                t.end();
+            });
+
+            window.server.respond();
+        });
+    }
+
+    testI18nTileJson('Supports i18n TileJSON with no language and no worldview',
+        'mapbox://mapbox.mapbox-streets-v8',
+        null,
+        null,
+        {
+            id: 'id',
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key'],
+        },
+        {
+            language: undefined,
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'US',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png'],
+        }
+    );
+
+    testI18nTileJson('Supports i18n TileJSON with English language and US worldview',
+        'mapbox://mapbox.mapbox-streets-v8',
+        'en',
+        'US',
+        {
+            id: 'id',
+            language: {id: 'en'},
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: {id: 'US'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=en&worldview=US'],
+        },
+        {
+            language: 'en',
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'US',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=en&worldview=US'],
+        }
+    );
+
+    testI18nTileJson('Supports i18n TileJSON with Simplified Chinese and China worldview',
+        'mapbox://mapbox.mapbox-streets-v8',
+        'zh-Hans',
+        'CN',
+        {
+            id: 'id',
+            language: {id: 'zh-Hans'},
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: {id: 'CN'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=zh-Hans&worldview=CN'],
+        },
+        {
+            language: 'zh-Hans',
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'CN',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=zh-Hans&worldview=CN'],
+        }
+    );
+
+    testI18nTileJson('Supports i18n TileJSON with Canadian French (with extended subtag) and no worldview',
+        'mapbox://mapbox.mapbox-streets-v8',
+        'fr-CA',
+        null,
+        {
+            id: 'id',
+            language: {id: 'fr'},
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=fr'],
+        },
+        {
+            language: 'fr',
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'US',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=fr'],
+        }
+    );
+
+    testI18nTileJson('Supports i18n TileJSON with no language and China worldview',
+        'mapbox://mapbox.mapbox-streets-v8',
+        null,
+        'CN',
+        {
+            id: 'id',
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: {id: 'CN'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&worldview=CN'],
+        },
+        {
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'CN',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?worldview=CN'],
+        }
+    );
+
+    testI18nTileJson('Supports i18n TileJSON with Composite Sources',
+        'mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2',
+        'zh-Hans',
+        'CN',
+        {
+            id: undefined,
+            language: {'mapbox.mapbox-streets-v8': 'zh-Hans'},
+            language_options: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: {'mapbox.mapbox-streets-v8': 'CN'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=zh-Hans&worldview=CN'],
+        },
+        {
+            language: 'zh-Hans',
+            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
+            worldview: 'CN',
+            worldviewOptions: {CN: 'China', US: 'United States'},
+            tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=zh-Hans&worldview=CN'],
+        }
+    );
+
+    t.test('supports i18n tileset updates', (t) => {
+        const source = createSource({url: 'mapbox://mapbox.mapbox-streets-v8'}, {customAccessToken: 'key'});
 
         const manager = source.map._requestManager;
         const transformSpy = t.spy(manager, 'transformRequest');
 
-        // Response for initial request
-        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map'), JSON.stringify({
+        // 1. Response for request with no language, no worldview
+        window.server.respondWith(manager.normalizeSourceURL('mapbox://mapbox.mapbox-streets-v8'), JSON.stringify({
             id: 'id',
-            minzoom: 1,
-            maxzoom: 10,
-            attribution: 'Mapbox',
-            language_options: {en: 'English', es: 'Spanish'},
+            language_options: {en: 'English', es: 'Spanish', fr: 'French'},
             worldview_default: 'US',
             worldview_options: {CN: 'China', US: 'United States'},
-            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key'],
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key'],
         }));
 
-        // Response for i18n request
-        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map', null, 'es', 'CN'), JSON.stringify({
+        // 2. Response for request with Spanish language and China worldview
+        window.server.respondWith(manager.normalizeSourceURL('mapbox://mapbox.mapbox-streets-v8', null, 'es', 'CN'), JSON.stringify({
             id: 'id',
-            minzoom: 1,
-            maxzoom: 10,
-            attribution: 'Mapbox',
             language: {id: 'es'},
-            language_options: {en: 'English', es: 'Spanish'},
+            language_options: {en: 'English', es: 'Spanish', fr: 'French'},
             worldview: {id: 'CN'},
             worldview_default: 'US',
             worldview_options: {CN: 'China', US: 'United States'},
-            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key&language=es&worldview=CN'],
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=es&worldview=CN'],
         }));
 
-        let initialMetadataEvent = true;
+        // 3. Response for request with Canadian French language and China worldview
+        window.server.respondWith(manager.normalizeSourceURL('mapbox://mapbox.mapbox-streets-v8', null, 'fr-CA', 'CN'), JSON.stringify({
+            id: 'id',
+            language: {id: 'fr'},
+            language_options: {en: 'English', es: 'Spanish', fr: 'French'},
+            worldview: {id: 'CN'},
+            worldview_default: 'US',
+            worldview_options: {CN: 'China', US: 'United States'},
+            tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&language=fr&worldview=CN'],
+        }));
 
+        let step = 0;
         source.on('data', (e) => {
             if (e.sourceDataType !== 'metadata') return;
 
-            if (initialMetadataEvent) {
-                initialMetadataEvent = false;
-
-                // Initial language and worldview
-                t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png']);
-                t.deepEqual(source.minzoom, 1);
-                t.deepEqual(source.maxzoom, 10);
-                t.deepEqual(source.attribution, 'Mapbox');
+            // No language, no worldview
+            if (step === 0) {
+                t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
                 t.deepEqual(source.language, undefined);
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
+                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
                 t.deepEqual(source.worldview, 'US');
                 t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
@@ -503,9 +666,10 @@ test('VectorTileSource', (t) => {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 }, () => {});
 
-                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${manager._skuToken}&access_token=key`);
+                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/10/5/5.png?sku=${manager._skuToken}&access_token=key`);
 
-                // Update source language and worldview
+                // Set Spanish language and China worldview
+                step++;
                 source._setLanguage('es');
                 source._setWorldview('CN');
                 window.server.respond();
@@ -513,21 +677,66 @@ test('VectorTileSource', (t) => {
                 return;
             }
 
-            // Updated language and worldview
-            t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png?language=es&worldview=CN']);
-            t.deepEqual(source.minzoom, 1);
-            t.deepEqual(source.maxzoom, 10);
-            t.deepEqual(source.attribution, 'Mapbox');
-            t.deepEqual(source.language, 'es');
-            t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
-            t.deepEqual(source.worldview, 'CN');
-            t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+            // Spanish language, China worldview
+            if (step === 1) {
+                t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=es&worldview=CN']);
+                t.deepEqual(source.language, 'es');
+                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
+                t.deepEqual(source.worldview, 'CN');
+                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
-            source.loadTile({
-                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-            }, () => {});
+                source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                }, () => {});
 
-            t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?language=es&worldview=CN&sku=${manager._skuToken}&access_token=key`);
+                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/10/5/5.png?language=es&worldview=CN&sku=${manager._skuToken}&access_token=key`);
+
+                // Set Canadian French (with extended subtag) and no worldview
+                step++;
+                source._setLanguage('fr-CA');
+                source._setWorldview('CN');
+                window.server.respond();
+
+                return;
+            }
+
+            // Canadian French (with extended subtag), China worldview
+            if (step === 2) {
+                t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=fr&worldview=CN']);
+                t.deepEqual(source.language, 'fr');
+                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
+                t.deepEqual(source.worldview, 'CN');
+                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+
+                source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                }, () => {});
+
+                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/10/5/5.png?language=fr&worldview=CN&sku=${manager._skuToken}&access_token=key`);
+
+                // Set no language and no worldview
+                step++;
+                source._setLanguage();
+                source._setWorldview();
+                window.server.respond();
+
+                return;
+            }
+
+            // No language, no worldview
+            if (step === 3) {
+                t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
+                t.deepEqual(source.language, undefined, 'Can reset the language to default');
+                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
+                t.deepEqual(source.worldview, 'US', 'Can reset the worldview to default');
+                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+
+                source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                }, () => {});
+
+                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/10/5/5.png?sku=${manager._skuToken}&access_token=key`);
+            }
 
             t.end();
         });
