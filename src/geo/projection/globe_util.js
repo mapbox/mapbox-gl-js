@@ -495,7 +495,7 @@ export function globeUseCustomAntiAliasing(painter: Painter, context: Context, t
     const transitionT = globeToMercatorTransition(transform.zoom);
     const useContextAA = painter.style.map._antialias;
     const hasStandardDerivatives = !!context.extStandardDerivatives;
-    const disabled = context.extStandardDerivativesForceOff;
+    const disabled = context.extStandardDerivativesForceOff || (painter.terrain && painter.terrain.exaggeration() > 0.0);
     return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
 }
 
