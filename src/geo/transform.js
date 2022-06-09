@@ -1690,7 +1690,7 @@ class Transform {
         const pixelsPerMeter = this.pixelsPerMeter;
 
         if (this.projection.name !== 'globe') {
-            this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
+            this._projectionScaler = 1.0;
         } else {
             // Using only the center latitude to determine scale causes the globe to rapidly change
             // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
