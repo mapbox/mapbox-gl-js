@@ -500,7 +500,7 @@ test('VectorTileSource', (t) => {
         {
             language: undefined,
             languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
-            worldview: 'US',
+            worldview: undefined,
             worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png'],
         }
@@ -565,7 +565,7 @@ test('VectorTileSource', (t) => {
         {
             language: 'fr',
             languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
-            worldview: 'US',
+            worldview: undefined,
             worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=fr'],
         }
@@ -659,7 +659,7 @@ test('VectorTileSource', (t) => {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
                 t.deepEqual(source.language, undefined);
                 t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
-                t.deepEqual(source.worldview, 'US');
+                t.deepEqual(source.worldview, undefined);
                 t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({
@@ -728,7 +728,7 @@ test('VectorTileSource', (t) => {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
                 t.deepEqual(source.language, undefined, 'Can reset the language to default');
                 t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
-                t.deepEqual(source.worldview, 'US', 'Can reset the worldview to default');
+                t.deepEqual(source.worldview, undefined, 'Can reset the worldview to default');
                 t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({

@@ -48,8 +48,6 @@ export default function(options: any, requestManager: RequestManager, language: 
 
             if (tileJSON.worldview && tileJSON.id && tileJSON.worldview[tileJSON.id]) {
                 result.worldview = tileJSON.worldview[tileJSON.id];
-            } else if (tileJSON.worldview_default) {
-                result.worldview = tileJSON.worldview_default;
             }
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);
