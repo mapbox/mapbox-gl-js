@@ -466,8 +466,6 @@ test('VectorTileSource', (t) => {
                 t.deepEqual(source.tiles, expectedSource.tiles, 'tiles don\'t match');
                 t.deepEqual(source.language, expectedSource.language, 'languages don\'t match');
                 t.deepEqual(source.worldview, expectedSource.worldview, 'worldviews don\'t match');
-                t.deepEqual(source.languageOptions, expectedSource.languageOptions);
-                t.deepEqual(source.worldviewOptions, expectedSource.worldviewOptions);
 
                 source.loadTile({
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
@@ -499,9 +497,7 @@ test('VectorTileSource', (t) => {
         },
         {
             language: undefined,
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: undefined,
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png'],
         }
     );
@@ -521,9 +517,7 @@ test('VectorTileSource', (t) => {
         },
         {
             language: 'en',
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: 'US',
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=en&worldview=US'],
         }
     );
@@ -543,9 +537,7 @@ test('VectorTileSource', (t) => {
         },
         {
             language: 'zh-Hans',
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: 'CN',
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=zh-Hans&worldview=CN'],
         }
     );
@@ -564,9 +556,7 @@ test('VectorTileSource', (t) => {
         },
         {
             language: 'fr',
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: undefined,
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=fr'],
         }
     );
@@ -584,9 +574,7 @@ test('VectorTileSource', (t) => {
             tiles: ['https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?access_token=key&worldview=CN'],
         },
         {
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: 'CN',
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?worldview=CN'],
         }
     );
@@ -606,9 +594,7 @@ test('VectorTileSource', (t) => {
         },
         {
             language: 'zh-Hans',
-            languageOptions: {en: 'English', fr: 'French', 'zh-Hans': 'Simplified Chinese'},
             worldview: 'CN',
-            worldviewOptions: {CN: 'China', US: 'United States'},
             tiles: ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=zh-Hans&worldview=CN'],
         }
     );
@@ -658,9 +644,7 @@ test('VectorTileSource', (t) => {
             if (step === 0) {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
                 t.deepEqual(source.language, undefined);
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
                 t.deepEqual(source.worldview, undefined);
-                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
@@ -681,9 +665,7 @@ test('VectorTileSource', (t) => {
             if (step === 1) {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=es&worldview=CN']);
                 t.deepEqual(source.language, 'es');
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
                 t.deepEqual(source.worldview, 'CN');
-                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
@@ -704,9 +686,7 @@ test('VectorTileSource', (t) => {
             if (step === 2) {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png?language=fr&worldview=CN']);
                 t.deepEqual(source.language, 'fr');
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
                 t.deepEqual(source.worldview, 'CN');
-                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
@@ -727,9 +707,7 @@ test('VectorTileSource', (t) => {
             if (step === 3) {
                 t.deepEqual(source.tiles, ['mapbox://tiles/mapbox.mapbox-streets-v8/{z}/{x}/{y}.png']);
                 t.deepEqual(source.language, undefined, 'Can reset the language to default');
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish', fr: 'French'});
                 t.deepEqual(source.worldview, undefined, 'Can reset the worldview to default');
-                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
 
                 source.loadTile({
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),

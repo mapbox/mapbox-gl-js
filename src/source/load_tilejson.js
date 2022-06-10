@@ -26,24 +26,8 @@ export default function(options: any, requestManager: RequestManager, language: 
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
             }
 
-            /**
-             * A tileset supports language localization if the TileJSON contains
-             * a `language_options` object in the response.
-             */
-            if (tileJSON.language_options) {
-                result.languageOptions = tileJSON.language_options;
-            }
-
             if (tileJSON.language && tileJSON.id && tileJSON.language[tileJSON.id]) {
                 result.language = tileJSON.language[tileJSON.id];
-            }
-
-            /**
-             * A tileset supports different worldviews if the TileJSON contains
-             * a `worldview_options` object in the repsonse as well as a `worldview_default` key.
-             */
-            if (tileJSON.worldview_options) {
-                result.worldviewOptions = tileJSON.worldview_options;
             }
 
             if (tileJSON.worldview && tileJSON.id && tileJSON.worldview[tileJSON.id]) {
