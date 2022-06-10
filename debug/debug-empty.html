@@ -21,8 +21,8 @@
 
 <div id='map'></div>
 <div id='checkboxes'>
-    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
-    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox' checked> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox' checked> collision debug</label><br />
     <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
 </div>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -47,8 +47,13 @@ var map = window.map = new mapboxgl.Map({
     center: [0, 0],
     pitch: 0,
     bearing: 0,
-    zoom: 0
+    zoom: 0,
+    hash: true,
+    projection: 'globe'
 });
+
+map.showCollisionBoxes = true;
+map.showTileBoundaries = true;
 
 map.repaint = true;
 map.on('load', function () {
@@ -61,65 +66,66 @@ map.on('load', function () {
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [ 0, 0 ]
+                        "coordinates": [ 30, 50 ]
                     }
                 }
+                //,
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 5, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 15, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 20, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 35, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 40, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 45, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 50, 0 ]
+                //     }
+                // },
+                // {
+                //     "type": "Feature",
+                //     "geometry": {
+                //         "type": "Point",
+                //         "coordinates": [ 55, 0 ]
+                //     }
+                // }
             ]
         }
     });
@@ -129,24 +135,7 @@ map.on('load', function () {
         "source": "geojson",
         "layout": {
             "text-field": "x",
-            "text-size": 20,
-            "text-justify": "auto",
-            "text-variable-anchor": [
-                "center",
-                "top",
-                "bottom",
-                "left",
-                "right",
-                "top-left",
-                "top-right",
-                "bottom-left",
-                "bottom-right"
-            ],
-            "text-offset": [2, 1.5],
-            "text-font": [
-                "Open Sans Semibold",
-                "Arial Unicode MS Bold"
-            ]
+            "text-size": 60,
         }
     });
 });

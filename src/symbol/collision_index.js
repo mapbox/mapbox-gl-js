@@ -14,7 +14,9 @@ import {OverscaledTileID} from '../source/tile_id.js';
 
 import * as projection from '../symbol/projection.js';
 import type Transform from '../geo/transform.js';
-import type {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
+import type Projection from '../geo/projection/projection.js';
+import {getProjection} from '../geo/projection/index.js';
+import type {SymbolBucket, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {
     GlyphOffsetArray,
     SymbolLineVertexArray
@@ -90,27 +92,29 @@ class CollisionIndex {
         this.fogState = fogState;
     }
 
-    placeCollisionBox(scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): PlacedCollisionBox {
+    placeCollisionBox(bucket: SymbolBucket, scale: number, collisionBox: SingleCollisionBox, shift: Point, allowOverlap: boolean, textPixelRatio: number, posMatrix: Mat4, collisionGroupPredicate?: any): PlacedCollisionBox {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
 
         let anchorX = collisionBox.projectedAnchorX;
         let anchorY = collisionBox.projectedAnchorY;
         let anchorZ = collisionBox.projectedAnchorZ;
 
+        const bucketProjection = getProjection((({name: bucket.projection}: any): ProjectionSpecification));
+
         // Apply elevation vector to the anchor point
         const elevation = collisionBox.elevation;
         const tileID = collisionBox.tileID;
         if (elevation && tileID) {
-            const up = this.transform.projection.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
-            const upScale = this.transform.projection.upVectorScale(tileID.canonical, this.transform.center.lat, this.transform.worldSize).metersToTile;
+            const up = bucketProjection.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const upScale = bucketProjection.upVectorScale(tileID.canonical, this.transform.center.lat, this.transform.worldSize).metersToTile;
 
             anchorX += up[0] * elevation * upScale;
             anchorY += up[1] * elevation * upScale;
             anchorZ += up[2] * elevation * upScale;
         }
 
-        const checkOcclusion = this.transform.projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, [anchorX, anchorY, anchorZ], collisionBox.tileID, checkOcclusion);
+        const checkOcclusion = bucketProjection.name === 'globe' || !!elevation || this.transform.pitch > 0;
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, [anchorX, anchorY, anchorZ], collisionBox.tileID, checkOcclusion, bucketProjection);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
@@ -141,7 +145,8 @@ class CollisionIndex {
         };
     }
 
-    placeCollisionCircles(allowOverlap: boolean,
+    placeCollisionCircles(bucket: SymbolBucket,
+                          allowOverlap: boolean,
                           symbol: any,
                           lineVertexArray: SymbolLineVertexArray,
                           glyphOffsetArray: GlyphOffsetArray,
@@ -157,14 +162,15 @@ class CollisionIndex {
                           tileID: OverscaledTileID): PlacedCollisionCircles {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
-        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, this.transform.projection) : (_ => [0, 0, 0]);
+        const bucketProjection = getProjection((({name: bucket.projection}: any): ProjectionSpecification));
+        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, bucketProjection) : (_ => [0, 0, 0]);
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        const projectedAnchor = this.transform.projection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
+        const projectedAnchor = bucketProjection.projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
         const anchorElevation = getElevation(tileUnitAnchorPoint);
         const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
-        const isGlobe = this.transform.projection.name === 'globe';
+        const isGlobe = bucketProjection.name === 'globe';
         const checkOcclusion = isGlobe || !!elevation || this.transform.pitch > 0;
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, [elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2]], tileID, checkOcclusion);
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, [elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2]], tileID, checkOcclusion, bucketProjection);
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
@@ -188,7 +194,7 @@ class CollisionIndex {
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation,
-            this.transform.projection,
+            bucketProjection,
             tileID,
             pitchWithMap
         ) : null;
@@ -412,13 +418,13 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean): ScreenAnchorPoint {
+    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean, bucketProjection: Projection): ScreenAnchorPoint {
         const p = [point[0], point[1], point[2], 1];
         let behindFog = false;
         if (point[2] || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
             // Do not perform symbol occlusion on globe due to fog fixed range
-            const isGlobe = this.transform.projection.name === 'globe';
+            const isGlobe = bucketProjection.name === 'globe';
             if (this.fogState && tileID && !isGlobe) {
                 const fogOpacity = getFogOpacityAtTileCoord(this.fogState, point[0], point[1], point[2], tileID.toUnwrapped(), this.transform);
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
@@ -436,7 +442,7 @@ class CollisionIndex {
             // See perspective ratio comment in symbol_sdf.vertex
             // We're doing collision detection in viewport space so we need
             // to scale down boxes in the distance
-            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]), 1.5),
+            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.getCameraToCenterDistance(bucketProjection) / p[3]), 1.5),
             signedDistanceFromCamera: p[3],
             occluded: (checkOcclusion && p[2] > p[3]) || behindFog // Occluded by the far plane
         };

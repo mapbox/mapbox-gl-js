@@ -23,8 +23,11 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-122.4194, 37.7749],
     style: 'mapbox://styles/mapbox/streets-v11',
-    hash: true
+    hash: true,
+    projection: 'globe'
 });
+
+// map.showCollisionBoxes = true;
 
 </script>
 </body>

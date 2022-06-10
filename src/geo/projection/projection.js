@@ -78,6 +78,10 @@ export default class Projection {
         return mercatorZfromAltitude(1, lat) * worldSize;
     }
 
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number { // eslint-disable-line
+        return 1.0;
+    }
+
     farthestPixelDistance(tr: Transform): number {
         return farthestPixelDistanceOnPlane(tr, tr.pixelsPerMeter);
     }

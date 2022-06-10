@@ -17,6 +17,7 @@ import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bu
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
 import type FeatureIndex from '../data/feature_index.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import {getProjection} from '../geo/projection/index.js';
 import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Mat4} from 'gl-matrix';
@@ -241,7 +242,19 @@ export class Placement {
         const textPixelRatio = tile.tileSize / EXTENT;
         const unwrappedTileID = tile.tileID.toUnwrapped();
 
-        const posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
+        let posMatrix;
+        const bucketProjection = getProjection((({name: symbolBucket.projection}: any): ProjectionSpecification));
+        if (symbolBucket.projection !== this.transform.projection.name) {
+            // Bucket being rendered is built for different map projection
+            // than is currently being used. Reconstruct correct matrices.
+            const tileMatrix = bucketProjection.createTileMatrix(this.transform, this.transform.worldSize, unwrappedTileID);
+            posMatrix = mat4.multiply(new Float32Array(16), this.transform.projMatrix, tileMatrix);
+        } else {
+            posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
+        }
+        this.transform = this.transform.clone();
+        this.transform.setProjection((({name: symbolBucket.projection}: any): ProjectionSpecification));
+        this.collisionIndex.transform = this.transform;
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
@@ -257,7 +270,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                this.transform.projection,
+                bucketProjection,
                 pixelsToTiles);
 
         let labelToScreenMatrix = null;
@@ -269,7 +282,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                this.transform.projection,
+                bucketProjection,
                 pixelsToTiles);
 
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
@@ -337,12 +350,12 @@ export class Placement {
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
-            textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
+            bucket, textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
 
         if (iconBox) {
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
-                bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
+                bucket, bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
                 iconBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
                 textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
             if (placedIconBoxes.box.length === 0) return;
@@ -537,7 +550,7 @@ export class Placement {
                 if (!layout.get('text-variable-anchor')) {
                     const placeBox = (collisionTextBox, orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
-                        const placedFeature = this.collisionIndex.placeCollisionBox(textScale, collisionTextBox,
+                        const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox,
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
@@ -660,7 +673,9 @@ export class Placement {
                 // Convert circle collision height into pixels
                 const circlePixelDiameter = symbolInstance.collisionCircleDiameter * fontSize / ONE_EM;
 
-                placedGlyphCircles = this.collisionIndex.placeCollisionCircles(textAllowOverlap,
+                placedGlyphCircles = this.collisionIndex.placeCollisionCircles(
+                        bucket,
+                        textAllowOverlap,
                         placedSymbol,
                         bucket.lineVertexArray,
                         bucket.glyphOffsetArray,
@@ -697,7 +712,7 @@ export class Placement {
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
-                    return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
+                    return this.collisionIndex.placeCollisionBox(bucket, iconScale, iconBox, shiftPoint,
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 
@@ -766,7 +781,7 @@ export class Placement {
             assert(symbolInstance.crossTileID !== 0);
             assert(bucket.bucketInstanceId !== 0);
 
-            const notGlobe = this.transform.projection.name !== 'globe';
+            const notGlobe = bucket.projection !== 'globe';
             alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);
             alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 

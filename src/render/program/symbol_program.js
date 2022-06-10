@@ -15,6 +15,7 @@ import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import {globeECEFOrigin} from '../../geo/projection/globe_util.js';
+import type Projection from '../../geo/projection/projection.js';
 
 import type {InterpolatedSize} from '../../symbol/symbol_size.js';
 
@@ -194,7 +195,7 @@ const symbolIconUniformValues = (
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
-    projection: string
+    projection: Projection
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -224,7 +225,7 @@ const symbolIconUniformValues = (
         'u_up_vector': [0, -1, 0]
     };
 
-    if (projection === 'globe') {
+    if (projection.name === 'globe') {
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = invMatrix;
@@ -255,14 +256,12 @@ const symbolSDFUniformValues = (
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
-    projection: string
+    projection: Projection
 ): UniformValues<SymbolSDFUniformsType> => {
-    const {cameraToCenterDistance, _pitch} = painter.transform;
-
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
         texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
-        'u_gamma_scale': pitchWithMap ? cameraToCenterDistance * Math.cos(painter.terrain ? 0 : _pitch) : 1,
+        'u_gamma_scale': pitchWithMap ? painter.transform.cameraToCenterDistance * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
     });
@@ -284,7 +283,7 @@ const symbolTextAndIconUniformValues = (
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
-    projection: string
+    projection: Projection
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,

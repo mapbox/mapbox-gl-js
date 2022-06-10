@@ -17,6 +17,7 @@ import ONE_EM from '../symbol/one_em.js';
 import {evaluateVariableOffset} from '../symbol/symbol_layout.js';
 import Tile from '../source/tile.js';
 import {getProjection} from '../geo/projection/index.js';
+import type Projection from '../geo/projection/projection.js';
 import type Transform from '../geo/transform.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import {
@@ -110,6 +111,35 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     }
 }
 
+function computeGlobeCameraUp(transform: Transform): [number, number, number] {
+    const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1);
+    const viewToEcef = mat4.multiply([], viewMatrix, transform.globeMatrix);
+    mat4.invert(viewToEcef, viewToEcef);
+
+    const cameraUpVector = [0, 0, 0];
+    const up = [0, 1, 0, 0];
+    vec4.transformMat4(up, up,  viewToEcef);
+    cameraUpVector[0] = up[0];
+    cameraUpVector[1] = up[1];
+    cameraUpVector[2] = up[2];
+    vec3.normalize(cameraUpVector, cameraUpVector);
+
+    return cameraUpVector;
+}
+
+function getTileProjectionMatrix(coord: OverscaledTileID, projection: Projection, transform: Transform): Float32Array {
+    let tileMatrix;
+    if (projection.name !== transform.projection.name) {
+        // Bucket being rendered is built for different map projection
+        // than is currently being used. Reconstruct correct matrices.
+        const posMatrix = projection.createTileMatrix(transform, transform.worldSize, coord.toUnwrapped());
+        tileMatrix = mat4.multiply(new Float32Array(16), transform.projMatrix, posMatrix);
+    } else {
+        tileMatrix = coord.projMatrix;
+    }
+    return tileMatrix;
+}
+
 function calculateVariableRenderShift(anchor, width, height, textOffset, textScale, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
@@ -135,15 +165,17 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
 
         const sizeData = bucket.textSizeData;
         const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+        const bucketProjection = getProjection((({name: bucket.projection}: any): ProjectionSpecification));
+        const tileMatrix = getTileProjectionMatrix(coord, bucketProjection, tr);
 
-        const pixelsToTileUnits = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrixForRendering(coord.projMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, tr.projection, pixelsToTileUnits);
+        const pixelsToTileUnits = tr.calculatePixelsToTileUnitsMatrix(tile);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucketProjection, pixelsToTileUnits);
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
 
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                                  tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, tr.projection);
+                                  tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon, bucketProjection);
         }
     }
 }
@@ -154,7 +186,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
     const placedTextShifts = {};
-    const projMatrix = coord.projMatrix;
+    const tileMatrix = getTileProjectionMatrix(coord, projection, transform);
     const elevation = transform.elevation;
     const upVectorScale = projection.upVectorScale(coord.canonical, transform.center.lat, transform.worldSize);
 
@@ -178,8 +210,8 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                 symbol.projectedAnchorZ + anchorElevation * upDir[2] * upVectorScale.metersToTile
             ];
 
-            const projectedAnchor = symbolProjection.projectVector(reprojectedAnchor, pitchWithMap ? projMatrix : labelPlaneMatrix);
-            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.cameraToCenterDistance, projectedAnchor.signedDistanceFromCamera);
+            const projectedAnchor = symbolProjection.projectVector(reprojectedAnchor, pitchWithMap ? tileMatrix : labelPlaneMatrix);
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), projectedAnchor.signedDistanceFromCamera);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
@@ -254,22 +286,6 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
     } else {
         return 'symbolIcon';
     }
-}
-
-function computeGlobeCameraUp(transform: Transform): [number, number, number] {
-    const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1);
-    const viewToEcef = mat4.multiply([], viewMatrix, transform.globeMatrix);
-    mat4.invert(viewToEcef, viewToEcef);
-
-    const cameraUpVector = [0, 0, 0];
-    const up = [0, 1, 0, 0];
-    vec4.transformMat4(up, up,  viewToEcef);
-    cameraUpVector[0] = up[0];
-    cameraUpVector[1] = up[1];
-    cameraUpVector[2] = up[2];
-    vec3.normalize(cameraUpVector, cameraUpVector);
-
-    return cameraUpVector;
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
@@ -359,22 +375,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
         const globeToMercator =  bucketIsGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
         const bucketProjection = getProjection((({name: bucket.projection}: any): ProjectionSpecification));
+        const tileMatrix = getTileProjectionMatrix(coord, bucketProjection, tr);
 
-        let tileMatrix;
-        if (bucket.projection !== tr.projection.name) {
-            // Bucket being rendered is built for different map projection
-            // than is currently being used. Reconstruct correct matrices.
-            const posMatrix = bucketProjection.createTileMatrix(tr, tr.worldSize, coord.toUnwrapped());
-            tileMatrix = mat4.multiply(new Float32Array(16), tr.projMatrix, posMatrix);
-        } else {
-            tileMatrix = coord.projMatrix;
-        }
-
-        const s = painter.transform.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, bucketProjection, s);
+        const s = tr.calculatePixelsToTileUnitsMatrix(tile);
+        const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucketProjection, s);
         // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
         const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, bucketProjection, s);
+        const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucketProjection, s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
@@ -384,7 +391,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (alongLine) {
             const elevation = tr.elevation;
             const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucketProjection) : (_ => [0, 0, 0]);
-            const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, painter.transform, bucketProjection, s);
+            const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucketProjection, s);
 
             symbolProjection.updateLineLabels(bucket, tileMatrix, painter, isText, labelPlaneMatrixPlacement, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
         }
@@ -399,7 +406,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (painter.terrain && pitchWithMap) {
             baseDefines.push('PITCH_WITH_MAP_TERRAIN');
         }
-        if (bucket.projection === 'globe') {
+        if (bucketProjection.name === 'globe') {
             baseDefines.push('PROJECTION_GLOBE_VIEW');
         }
         if (projectedPosOnLabelSpace) {
@@ -412,14 +419,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (isSDF) {
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.projection);
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucketProjection);
             } else {
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.projection);
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucketProjection);
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.projection);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucketProjection);
         }
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, baseDefines);

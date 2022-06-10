@@ -37,9 +37,11 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
+    hash: true,
+    projection: 'globe'
 });
 
+map.showCollisionBoxes = true;
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl({
     positionOptions: {

@@ -1683,30 +1683,21 @@ class Transform {
     _calcMatrices() {
         if (!this.height) return;
 
-        const halfFov = this._fov / 2;
         const offset = this.centerOffset;
 
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
 
-        if (this.projection.name !== 'globe') {
-            this._projectionScaler = 1.0;
-        } else {
-            // Using only the center latitude to determine scale causes the globe to rapidly change
-            // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
-            // This is because zoom levels are based on mercator.
-            //
-            // Instead, use a fixed reference latitude at lower zoom levels. And transition between
-            // this latitude and the center's latitude as you zoom in. This is a compromise that
-            // makes globe view more usable with existing camera parameters, styles and data.
-            const refScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * this.worldSize;
+        if (this.projection.name === 'globe') {
             const centerScale = mercatorZfromAltitude(1, this.center.lat) * this.worldSize;
-            const t = getProjectionInterpolationT(this, 1024);
-            const combinedScale = interpolate(refScale, centerScale, t);
-            this._projectionScaler = pixelsPerMeter / combinedScale;
+            const refScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * this.worldSize;
             this._mercatorScaleRatio = centerScale / refScale;
         }
-        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
+
+        const projectionT = getProjectionInterpolationT(this.projection, this.zoom, this.width, this.height, 1024);
+        this._projectionScaler = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT);
+
+        this.cameraToCenterDistance = this.getCameraToCenterDistance(this.projection);
 
         this._updateCameraState();
 
@@ -2060,6 +2051,12 @@ class Transform {
             const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
             return this.centerPoint.add(new Point(0, yOffset));
         }
+    }
+
+    getCameraToCenterDistance(projection: Projection): number {
+        const t = getProjectionInterpolationT(projection, this.zoom, this.width, this.height, 1024);
+        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
+        return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
     }
 }
 
