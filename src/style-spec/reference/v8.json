@@ -4669,7 +4669,7 @@
         ]
       },
       "transition": true,
-      "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.5 provide the most plausible results for buildings.",
+      "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
       "sdk-support": {
         "basic functionality": {
           "js": "2.8.3",
@@ -4683,7 +4683,6 @@
       "type": "number",
       "default": 3.0,
       "minimum": 0,
-      "maximum": 1000000,
       "expression": {
         "interpolated": true,
         "parameters": [

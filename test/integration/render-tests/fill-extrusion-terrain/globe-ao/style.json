@@ -1,0 +1,93 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Verifies fix for bug https://github.com/mapbox/mapbox-gl-js/issues/11516",
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "country-boundaries": {
+      "type": "vector",
+      "maxzoom": 2,
+      "tiles": [
+        "local://tiles/mapbox.country-boundaries-v1/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": ["interpolate",["linear"],["zoom"],0,50,11,1,12,0]
+  },
+  "zoom": 2.22,
+  "center": [
+    -100,
+    19
+  ],
+  "light": {
+    "intensity": 0.2
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightblue"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          "hsl(0, 87%, 68%)",
+          6,
+          "hsl(43, 88%, 58%)"
+        ],
+        "fill-extrusion-height": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          3000000,
+          6,
+          300000
+        ],
+        "fill-extrusion-opacity": 0.9,
+        "fill-extrusion-ambient-occlusion-intensity": 0.9,
+        "fill-extrusion-ambient-occlusion-radius": 600000
+      },
+      "source": "country-boundaries",
+      "source-layer": "country_boundaries"
+    }
+  ]
+}

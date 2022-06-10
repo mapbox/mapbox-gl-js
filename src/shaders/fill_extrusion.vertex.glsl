@@ -120,10 +120,10 @@ void main() {
     float top_height = height;
 #ifdef TERRAIN
     top_height = mix(max(c_ele + height, ele + base + 2.0), ele + height, float(centroid_pos.x == 0.0)) - ele;
-    y_ground = mix(0.0, y_ground + 5.0 / max(3.0, top_height), y_ground);
+    y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
     v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
-    directional *= mix(1.0, 1.05, (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    directional *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
