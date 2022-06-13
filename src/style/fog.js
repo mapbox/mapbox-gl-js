@@ -74,16 +74,9 @@ class Fog extends Evented {
         return (this._transitionable.serialize(): any);
     }
 
-    set(fog?: FogSpecification, old?: FogSpecification, options: StyleSetterOptions = {}) {
+    set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
         if (this._validate(validateFog, fog, options)) {
             return;
-        }
-
-        for (const name of Object.keys(styleSpec.fog)) {
-            // Fallback to use default style specification when the properties wasn't set
-            if (fog && fog[name] === undefined && (!old || (old && old[name] === undefined))) {
-                fog[name] = styleSpec.fog[name].default;
-            }
         }
 
         for (const name in fog) {

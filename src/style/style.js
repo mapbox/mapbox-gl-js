@@ -1555,7 +1555,7 @@ class Style extends Evented {
 
             for (const key in fogOptions) {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
-                    fog.set(fogOptions, currSpec);
+                    fog.set(fogOptions);
                     this.stylesheet.fog = fogOptions;
                     const parameters = this._setTransitionParameters({duration: 0});
                     fog.updateTransitions(parameters);
