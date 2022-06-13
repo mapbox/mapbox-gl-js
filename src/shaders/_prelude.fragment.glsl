@@ -13,11 +13,9 @@ vec3 dither(vec3 color, highp vec2 seed) {
 
 float unpack_depth(vec4 rgba_depth)
 {
-    const vec4 bit_shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
+    const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
     return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
 }
-
-#ifdef TERRAIN
 
 // Pack depth to RGBA. A piece of code copied in various libraries and WebGL
 // shadow mapping examples.
@@ -30,5 +28,3 @@ highp vec4 pack_depth(highp float ndc_z) {
     res -= res.xxyz * bit_mask;
     return res;
 }
-
-#endif

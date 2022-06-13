@@ -37,7 +37,7 @@ void main() {
     float ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base);
     vec3 pos = vec3(pos_nx.xy, h);
 #else
     vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
