@@ -460,14 +460,11 @@ export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): F
 }
 
 export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
-    const worldSize = tr.worldSize;
-    const point = tr.point;
-
     const zScale = tr.pixelsPerMeter;
-    const ws = worldSize * tr._pixelsPerMercatorPixel;
+    const ws = tr.worldSize * tr._pixelsPerMercatorPixel;
 
     const posMatrix = mat4.identity(new Float64Array(16));
-    mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
+    mat4.translate(posMatrix, posMatrix, [tr.point.x, tr.point.y, 0.0]);
     mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
     return Float32Array.from(posMatrix);
