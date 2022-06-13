@@ -1567,7 +1567,7 @@ class Style extends Evented {
         this._markersNeedUpdate = true;
     }
 
-    _setDefaultStyleSpecValues (newSpec, styleSpec) {
+    _setDefaultStyleSpecValues (newSpec: Object, styleSpec: Object) {
         for (const name of Object.keys(styleSpec)) {
             // Fallback to use default style specification when the properties wasn't set
             if (!newSpec.hasOwnProperty(name) && !!styleSpec[name].default) {
