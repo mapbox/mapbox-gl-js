@@ -4998,12 +4998,13 @@
     "line-trim-offset": {
       "type": "array",
       "value": "number",
-      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line gradient range [0.0, 1.0]. If either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.",
+      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line range [0.0, 1.0].",
       "length": 2,
       "default": [0.0, 0.0],
+      "minimum": [0.0, 0.0],
+      "maximum": [1.0, 1.0],
       "transition": false,
       "requires": [
-          "line-gradient",
           {
               "source": "geojson",
               "has": {
@@ -5013,7 +5014,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0",
+          "js": "2.9.0",
           "android": "10.5.0",
           "ios": "10.5.0",
           "macos": "10.5.0"
