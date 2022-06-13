@@ -20,16 +20,17 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
+varying vec4 v_color;
+
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
-#endif
 
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
-varying vec4 v_color;
 varying vec3 v_normal;
 varying float v_depth;
+#endif
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;

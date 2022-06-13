@@ -1,7 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#endif
-
 #ifndef TERRAIN // This is provided by terrain prelude, but we also need it when terrain is not in use
 // Pack depth to RGBA. A piece of code copied in various libraries and WebGL
 // shadow mapping examples.
