@@ -74,7 +74,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
-        if (!bucket || bucket.projection !== tr.projection.name) continue;
+        if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);

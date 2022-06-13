@@ -42,8 +42,10 @@ export default class Projection {
     range: ?[number, number];
     parallels: ?[number, number];
     unsupportedLayers: Array<string>;
+    spec: ProjectionSpecification;
 
     constructor(options: ProjectionSpecification) {
+        this.spec = options;
         this.name = options.name;
         this.wrap = false;
         this.requiresDraping = false;

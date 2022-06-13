@@ -8,7 +8,6 @@ import * as projection from './projection.js';
 import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout.js';
 import {getAnchorAlignment, WritingMode} from './shaping.js';
 import {mat4} from 'gl-matrix';
-import type {ProjectionSpecification} from '../style-spec/types.js';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import type Transform from '../geo/transform.js';
@@ -17,8 +16,8 @@ import type Tile from '../source/tile.js';
 import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
 import type FeatureIndex from '../data/feature_index.js';
+import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
-import {getProjection} from '../geo/projection/index.js';
 import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Mat4} from 'gl-matrix';
@@ -191,6 +190,7 @@ export type BucketPart = {
 export type CrossTileID = string | number;
 
 export class Placement {
+    projection: string;
     transform: Transform;
     collisionIndex: CollisionIndex;
     placements: { [_: CrossTileID]: JointPlacement };
@@ -210,6 +210,7 @@ export class Placement {
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState: ?FogState) {
         this.transform = transform.clone();
+        this.projection = transform.projection.name;
         this.collisionIndex = new CollisionIndex(this.transform, fogState);
         this.placements = {};
         this.opacities = {};
@@ -229,6 +230,11 @@ export class Placement {
         this.placedOrientations = {};
     }
 
+    _updateTransformProjection(bucket: SymbolBucket) {
+        this.transform.setProjection(bucket.projection);
+        this.collisionIndex.transform.setProjection(bucket.projection);
+    }
+
     getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
         const bucketFeatureIndex = tile.latestFeatureIndex;
@@ -242,20 +248,9 @@ export class Placement {
         const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
         const textPixelRatio = tile.tileSize / EXTENT;
         const unwrappedTileID = tile.tileID.toUnwrapped();
+        const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, symbolBucket.getProjection(), this.transform, this.projection);
 
-        let posMatrix;
-        const bucketProjection = getProjection((({name: symbolBucket.projection}: any): ProjectionSpecification));
-        if (symbolBucket.projection !== this.transform.projection.name) {
-            // Bucket being rendered is built for different map projection
-            // than is currently being used. Reconstruct correct matrices.
-            const tileMatrix = bucketProjection.createTileMatrix(this.transform, this.transform.worldSize, unwrappedTileID);
-            posMatrix = mat4.multiply(new Float32Array(16), this.transform.projMatrix, tileMatrix);
-        } else {
-            posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
-        }
-        this.transform = this.transform.clone();
-        this.transform.setProjection((({name: symbolBucket.projection}: any): ProjectionSpecification));
-        this.collisionIndex.transform = this.transform;
+        this._updateTransformProjection(symbolBucket);
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
@@ -271,7 +266,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                bucketProjection,
+                symbolBucket.getProjection(),
                 pixelsToTiles);
 
         let labelToScreenMatrix = null;
@@ -283,7 +278,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
-                bucketProjection,
+                symbolBucket.getProjection(),
                 pixelsToTiles);
 
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
@@ -417,6 +412,8 @@ export class Placement {
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
+
+        this._updateTransformProjection(bucket);
 
         // This logic is similar to the "defaultOpacityState" logic below in updateBucketOpacities
         // If we know a symbol is always supposed to show, force it to be marked visible even if
@@ -782,7 +779,7 @@ export class Placement {
             assert(symbolInstance.crossTileID !== 0);
             assert(bucket.bucketInstanceId !== 0);
 
-            const notGlobe = bucket.projection !== 'globe';
+            const notGlobe = bucket.projection.name !== 'globe';
             alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);
             alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 

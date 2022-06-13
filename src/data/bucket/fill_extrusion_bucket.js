@@ -39,6 +39,7 @@ import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import {earthRadius} from '../../geo/lng_lat.js';
 
@@ -205,7 +206,7 @@ class FillExtrusionBucket implements Bucket {
     borderDoneWithNeighborZ: Array<number>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
-    projection: string;
+    projection: ProjectionSpecification;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;

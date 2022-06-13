@@ -9,14 +9,12 @@ import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {collisionUniformValues, collisionCircleUniformValues} from './program/collision_program.js';
-import {getProjection} from '../geo/projection/index.js';
-import type Projection from '../geo/projection/projection.js';
 import {QuadTriangleArray, CollisionCircleLayoutArray} from '../data/array_types.js';
 import {collisionCircleLayout} from '../data/bucket/symbol_attributes.js';
-import type {ProjectionSpecification} from '../style-spec/types.js';
-import type Transform from '../geo/transform.js';
 import SegmentVector from '../data/segment.js';
 import {mat4} from 'gl-matrix';
+import type Projection from '../geo/projection/projection.js';
+import {getCollisionDebugTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import VertexBuffer from '../gl/vertex_buffer.js';
 import IndexBuffer from '../gl/index_buffer.js';
 
@@ -31,21 +29,6 @@ type TileBatch = {
 };
 
 let quadTriangles: ?QuadTriangleArray;
-
-function getTileProjectionMatrix(coord: OverscaledTileID, projection: Projection, transform: Transform): Float32Array {
-    let tileMatrix;
-    if (projection.name !== transform.projection.name) {
-        const globeTransform = transform.clone();
-        globeTransform.setProjection((({name: projection.name}: any): ProjectionSpecification));
-        // Bucket being rendered is built for different map projection
-        // than is currently being used. Reconstruct correct matrices.
-        const posMatrix = projection.createTileMatrix(globeTransform, globeTransform.worldSize, coord.toUnwrapped());
-        tileMatrix = mat4.multiply(new Float32Array(16), globeTransform.projMatrix, posMatrix);
-    } else {
-        tileMatrix = coord.projMatrix;
-    }
-    return tileMatrix;
-}
 
 function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
     const context = painter.context;
@@ -62,8 +45,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
-        const projection = getProjection((({name: bucket.projection}: any): ProjectionSpecification));
-        const tileMatrix = getTileProjectionMatrix(coord, projection, tr);
+        const tileMatrix = getCollisionDebugTileProjectionMatrix(coord, bucket, tr);
 
         let posMatrix = tileMatrix;
         if (translate[0] !== 0 || translate[1] !== 0) {
@@ -87,7 +69,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
                 circleOffset,
                 transform,
                 invTransform,
-                projection
+                projection: bucket.getProjection()
             });
 
             circleCount += circleArray.length / 4;  // 4 values per circle
@@ -99,7 +81,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
             CullFaceMode.disabled,
-            collisionUniformValues(posMatrix, tr, tile, projection),
+            collisionUniformValues(posMatrix, tr, tile, bucket.getProjection()),
             layer.id, buffers.layoutVertexBuffer, buffers.indexBuffer,
             buffers.segments, null, tr.zoom, null,
             [buffers.collisionVertexBuffer, buffers.collisionVertexBufferExt]);

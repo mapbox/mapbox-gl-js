@@ -29,6 +29,7 @@ import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
 import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
@@ -75,7 +76,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
-    projection: string;
+    projection: ProjectionSpecification;
 
     constructor(options: BucketParameters<Layer>) {
         this.zoom = options.zoom;

@@ -31,6 +31,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 
 class FillBucket implements Bucket {
@@ -57,7 +58,7 @@ class FillBucket implements Bucket {
     segments: SegmentVector;
     segments2: SegmentVector;
     uploaded: boolean;
-    projection: string;
+    projection: ProjectionSpecification;
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
