@@ -1493,12 +1493,8 @@ class Style extends Evented {
             const terrain = this.terrain;
             const currSpec = terrain.get();
 
-            for (const name of Object.keys(styleSpec.terrain)) {
-                // Fallback to use default style specification when the properties wasn't set
-                if (!terrainOptions.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
-                    terrainOptions[name] = styleSpec.terrain[name].default;
-                }
-            }
+            this._setDefaultStyleSpecValues(terrainOptions, styleSpec.terrain);
+
             for (const key in terrainOptions) {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
@@ -1554,6 +1550,9 @@ class Style extends Evented {
             // Updating fog
             const fog = this.fog;
             const currSpec = fog.get();
+
+            this._setDefaultStyleSpecValues(fogOptions, styleSpec.fog);
+
             for (const key in fogOptions) {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
                     fog.set(fogOptions, currSpec);
@@ -1566,6 +1565,15 @@ class Style extends Evented {
         }
 
         this._markersNeedUpdate = true;
+    }
+
+    _setDefaultStyleSpecValues (newSpec, styleSpec) {
+        for (const name of Object.keys(styleSpec)) {
+            // Fallback to use default style specification when the properties wasn't set
+            if (!newSpec.hasOwnProperty(name) && !!styleSpec[name].default) {
+                newSpec[name] = styleSpec[name].default;
+            }
+        }
     }
 
     _setTransitionParameters(transitionOptions: Object): TransitionParameters {
