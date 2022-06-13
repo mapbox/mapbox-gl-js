@@ -11,12 +11,12 @@ import ONE_EM from '../symbol/one_em.js';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
 import {OverscaledTileID} from '../source/tile_id.js';
-
+import type {ProjectionSpecification} from '../style-spec/types.js';
 import * as projection from '../symbol/projection.js';
 import type Transform from '../geo/transform.js';
 import type Projection from '../geo/projection/projection.js';
 import {getProjection} from '../geo/projection/index.js';
-import type {SymbolBucket, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
+import type SymbolBucket, {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {
     GlyphOffsetArray,
     SymbolLineVertexArray

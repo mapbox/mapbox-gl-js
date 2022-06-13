@@ -8,6 +8,7 @@ import * as projection from './projection.js';
 import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout.js';
 import {getAnchorAlignment, WritingMode} from './shaping.js';
 import {mat4} from 'gl-matrix';
+import type {ProjectionSpecification} from '../style-spec/types.js';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import type Transform from '../geo/transform.js';

@@ -13,6 +13,8 @@ import {getProjection} from '../geo/projection/index.js';
 import type Projection from '../geo/projection/projection.js';
 import {QuadTriangleArray, CollisionCircleLayoutArray} from '../data/array_types.js';
 import {collisionCircleLayout} from '../data/bucket/symbol_attributes.js';
+import type {ProjectionSpecification} from '../style-spec/types.js';
+import type Transform from '../geo/transform.js';
 import SegmentVector from '../data/segment.js';
 import {mat4} from 'gl-matrix';
 import VertexBuffer from '../gl/vertex_buffer.js';
@@ -33,12 +35,12 @@ let quadTriangles: ?QuadTriangleArray;
 function getTileProjectionMatrix(coord: OverscaledTileID, projection: Projection, transform: Transform): Float32Array {
     let tileMatrix;
     if (projection.name !== transform.projection.name) {
-        const tr = transform.clone();
-        tr.setProjection({name: projection.name});
+        const globeTransform = transform.clone();
+        globeTransform.setProjection((({name: projection.name}: any): ProjectionSpecification));
         // Bucket being rendered is built for different map projection
         // than is currently being used. Reconstruct correct matrices.
-        const posMatrix = projection.createTileMatrix(tr, tr.worldSize, coord.toUnwrapped());
-        tileMatrix = mat4.multiply(new Float32Array(16), tr.projMatrix, posMatrix);
+        const posMatrix = projection.createTileMatrix(globeTransform, globeTransform.worldSize, coord.toUnwrapped());
+        tileMatrix = mat4.multiply(new Float32Array(16), globeTransform.projMatrix, posMatrix);
     } else {
         tileMatrix = coord.projMatrix;
     }
