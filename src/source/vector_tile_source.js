@@ -118,6 +118,11 @@ class VectorTileSource extends Evented implements Source {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 extend(this, tileJSON);
+
+                // Reset i18n properties to null, if the source is not localizable
+                if (!tileJSON.language) this.language = null;
+                if (!tileJSON.worldview) this.worldview = null;
+
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 

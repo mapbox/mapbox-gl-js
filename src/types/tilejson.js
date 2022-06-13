@@ -1,7 +1,7 @@
 // @flow
 
 export type TileJSON = {|
-    tilejson: '2.2.0' | '2.1.0' | '2.0.1' | '2.0.0' | '1.0.0',
+    tilejson: '3.0.0' | '2.2.0' | '2.1.0' | '2.0.1' | '2.0.0' | '1.0.0',
     name?: string,
     description?: string,
     version?: string,
@@ -14,4 +14,9 @@ export type TileJSON = {|
     maxzoom?: number,
     bounds?: [number, number, number, number],
     center?: [number, number, number]
+|};
+
+export type I18nTileJSON = TileJSON & {|
+    language?: ?string,
+    worldview?: ?string
 |};

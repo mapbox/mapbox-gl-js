@@ -7,10 +7,10 @@ import browser from '../util/browser.js';
 
 import type {RequestManager} from '../util/mapbox.js';
 import type {Callback} from '../types/callback.js';
-import type {TileJSON} from '../types/tilejson.js';
+import type {I18nTileJSON} from '../types/tilejson.js';
 import type {Cancelable} from '../types/cancelable.js';
 
-export default function(options: any, requestManager: RequestManager, language: ?string, worldview: ?string, callback: Callback<TileJSON>): Cancelable {
+export default function(options: any, requestManager: RequestManager, language: ?string, worldview: ?string, callback: Callback<I18nTileJSON>): Cancelable {
     const loaded = function(err: ?Error, tileJSON: ?Object) {
         if (err) {
             return callback(err);
@@ -26,12 +26,14 @@ export default function(options: any, requestManager: RequestManager, language: 
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
             }
 
-            if (tileJSON.language && tileJSON.id && tileJSON.language[tileJSON.id]) {
-                result.language = tileJSON.language[tileJSON.id];
+            if (tileJSON.language && typeof tileJSON.language === 'object' && !Array.isArray(tileJSON.language)) {
+                const [language] = Object.values(tileJSON.language);
+                result.language = language;
             }
 
-            if (tileJSON.worldview && tileJSON.id && tileJSON.worldview[tileJSON.id]) {
-                result.worldview = tileJSON.worldview[tileJSON.id];
+            if (tileJSON.worldview && typeof tileJSON.worldview === 'object' && !Array.isArray(tileJSON.worldview)) {
+                const [worldview] = Object.values(tileJSON.worldview);
+                result.worldview = worldview;
             }
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);
