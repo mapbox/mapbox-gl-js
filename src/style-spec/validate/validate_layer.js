@@ -79,11 +79,9 @@ export default function validateLayer(options: Options): Array<ValidationError> 
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" must specify a "source-layer"`));
             } else if (sourceType === 'raster-dem' && type !== 'hillshade') {
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
-            } else if (type === 'line' && layer.paint && layer.paint['line-gradient'] &&
+            } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
                        (sourceType !== 'geojson' || !source.lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires a GeoJSON source with \`lineMetrics\` enabled.`));
-            } else if (type === 'line' && layer.paint && layer.paint['line-trim-offset'] && !layer.paint['line-gradient']) {
-                errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-trim-offset, which requires line-gradient enabled.`));
             }
         }
     }
