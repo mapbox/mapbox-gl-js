@@ -1205,6 +1205,8 @@ class Map extends Camera {
                 this.transform.getProjection());
         }
 
+        this.style.applyProjectionUpdate();
+
         if (newProjection) {
             // If a zoom transition on globe
             if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
@@ -1217,7 +1219,6 @@ class Map extends Camera {
             }
             this._update(true);
         }
-        this.style.applyProjectionUpdate();
 
         return this;
     }
