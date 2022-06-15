@@ -1079,15 +1079,12 @@ class Map extends Camera {
      * map.setLanguage('auto');
      */
     setLanguage(language?: ?string): this {
-        this._language = language === 'auto' ? window.navigator.language : language;
+        const newLanguage = language === 'auto' ? window.navigator.language : language;
+        if (!this.style || newLanguage === this._language) return this;
+        this._language = newLanguage;
 
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setLanguage) {
-                    source._setLanguage(this._language);
-                }
-            }
+        for (const source of this.style._getSources()) {
+            if (source.onAdd) source.onAdd(this);
         }
 
         for (const control of this._controls) {
@@ -1121,15 +1118,13 @@ class Map extends Camera {
      * map.setWorldView('JP');
      */
     setWorldview(worldview?: ?string): this {
+        if (!this.style || worldview === this._worldview) return this;
+
         this._worldview = worldview;
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setWorldview) {
-                    source._setWorldview(worldview);
-                }
-            }
+        for (const source of this.style._getSources()) {
+            if (source.onAdd) source.onAdd(this);
         }
+
         return this;
     }
 
