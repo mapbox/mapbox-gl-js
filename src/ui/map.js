@@ -2654,9 +2654,12 @@ class Map extends Camera {
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setFog({
-     *     "range": [1.0, 12.0],
-     *     "color": 'white',
-     *     "horizon-blend": 0.1
+     *     "range": [0.8, 8],
+     *     "color": "#dc9f9f",
+     *     "horizon-blend": 0.5,
+     *     "high-color": "#245bde",
+     *     "space-color": "#000000",
+     *     "star-intensity": 0.15
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
