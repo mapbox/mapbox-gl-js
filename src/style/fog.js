@@ -16,7 +16,6 @@ import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
-import { collisionCircleLayout } from '../data/bucket/symbol_attributes.js';
 
 type Props = {|
     "range": DataConstantProperty<[number, number]>,
@@ -75,7 +74,7 @@ class Fog extends Evented {
         return (this._transitionable.serialize(): any);
     }
 
-    set(fog?: FogSpecification, old, options: StyleSetterOptions = {}) {
+    set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
         if (this._validate(validateFog, fog, options)) {
             return;
         }
@@ -84,11 +83,11 @@ class Fog extends Evented {
             // Fallback to use default style specification when the properties wasn't set
             if (fog && fog[name] === undefined) {
                 fog[name] = styleSpec.fog[name].default;
+            }
         }
 
         for (const name in fog) {
             const value = fog[name];
-
             if (endsWith(name, TRANSITION_SUFFIX)) {
                 this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
@@ -96,7 +95,6 @@ class Fog extends Evented {
             }
         }
     }
-}
 
     getOpacity(pitch: number): number {
         if (!this._transform.projection.supportsFog) return 0;
