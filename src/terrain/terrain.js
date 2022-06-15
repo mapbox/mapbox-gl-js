@@ -933,7 +933,10 @@ export class Terrain extends Elevation {
         const isTransitioning = id => {
             const layer = this._style._layers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            return layer.type !== 'custom' && !isHidden && layer.hasTransition();
+            if (layer.type === 'custom') {
+                return !isHidden && layer.shouldRedrape();
+            }
+            return !isHidden && layer.hasTransition();
         };
         return this._style.order.some(isTransitioning);
     }
