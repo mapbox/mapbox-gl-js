@@ -493,6 +493,7 @@ class Style extends Evented {
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
+        if (layer.isLayerDraped) return layer.isLayerDraped();
         return drapedLayers[layer.type];
     }
 

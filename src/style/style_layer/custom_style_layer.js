@@ -154,7 +154,9 @@ export type CustomLayerInterface = {
     renderingMode: "2d" | "3d",
     render: CustomRenderMethod,
     prerender: ?CustomRenderMethod,
-    onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,
+    renderToTile: ?(gl: WebGLRenderingContext, tileId: MercatorCoordinate) => void,
+    shouldRerenderTiles: ?() => boolean,
+    onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,  
     onRemove: ?(map: Map, gl: WebGLRenderingContext) => void
 }
 
@@ -200,6 +202,14 @@ class CustomStyleLayer extends StyleLayer {
 
     hasOffscreenPass(): boolean {
         return this.implementation.prerender !== undefined;
+    }
+
+    isLayerDraped(): boolean {
+        return this.implementation.renderToTile !== undefined;
+    }
+
+    shouldRedrape(): boolean {
+        return this.implementation.shouldRerenderTiles !== undefined && this.implementation.shouldRerenderTiles();
     }
 
     recalculate() {}

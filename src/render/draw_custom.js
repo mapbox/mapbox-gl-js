@@ -7,15 +7,19 @@ import StencilMode from '../gl/stencil_mode.js';
 import {warnOnce} from '../util/util.js';
 
 import type Painter from './painter.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 import type SourceCache from '../source/source_cache.js';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
+import assert from 'assert';
 
-function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer) {
+function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer, coords: Array<OverscaledTileID>) {
 
     const context = painter.context;
     const implementation = layer.implementation;
 
-    if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom")) {
+    if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom")
+        && !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isLayerDraped())) {
         warnOnce('Custom layers are not yet supported with non-mercator projections. Use mercator to enable custom layers.');
         return;
     }
@@ -34,6 +38,25 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         }
 
     } else if (painter.renderPass === 'translucent') {
+
+        if (painter.terrain && painter.terrain.renderingToTexture) {
+            assert(implementation.renderToTile);
+            assert(coords.length === 1);
+            const renderToTile = implementation.renderToTile;
+            if (renderToTile) {
+                const c = coords[0].canonical;
+                const unwrapped = new MercatorCoordinate(c.x + coords[0].wrap * (1 << c.z), c.y, c.z);
+                
+                context.setDepthMode(DepthMode.disabled);
+                context.setColorMode(painter.colorModeForRenderPass());
+                painter.setCustomLayerDefaults();
+        
+                renderToTile.call(implementation, context.gl, unwrapped);
+                context.setDirty();
+                painter.setBaseState();
+            }
+            return;
+        }
 
         painter.setCustomLayerDefaults();
 

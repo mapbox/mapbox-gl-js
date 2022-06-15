@@ -926,10 +926,13 @@ export class Terrain extends Elevation {
         const fadingOrTransitioning = id => {
             const layer = this._style._layers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
+            if (layer.type === 'custom') {
+                return !isHidden && layer.shouldRedrape();
+            }
             const crossFade = layer.getCrossfadeParameters();
             const isFading = !!crossFade && crossFade.t !== 1;
             const isTransitioning = layer.hasTransition();
-            return layer.type !== 'custom' && !isHidden && (isFading || isTransitioning);
+            return !isHidden && (isFading || isTransitioning);
         };
         return this._style.order.some(fadingOrTransitioning);
     }
