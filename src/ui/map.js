@@ -295,6 +295,8 @@ const defaultOptions = {
  *  * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
  *  * [Equal Earth](https://en.wikipedia.org/wiki/Equal_Earth_projection) equal-area pseudocylindrical projection as `equalEarth`
  *  * [Equirectangular](https://en.wikipedia.org/wiki/Equirectangular_projection) (Plate Carrée/WGS84) as `equirectangular`
+ *  * Globe, a 3D spherical projection, as `globe`
+ *  * [Lambert Conformal Conic](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection) as `lambertConformalConic`
  *  * [Lambert Conformal Conic](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection) as `lambertConformalConic`
  *  * [Mercator](https://en.wikipedia.org/wiki/Mercator_projection) cylindrical map projection as `mercator`
  *  * [Natural Earth](https://en.wikipedia.org/wiki/Natural_Earth_projection) pseudocylindrical map projection as `naturalEarth`
