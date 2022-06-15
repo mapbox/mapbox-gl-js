@@ -69,6 +69,7 @@ export interface Source {
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
     +prepareTile?: (tile: Tile) => ?any;
+    +reload?: () => void;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.

@@ -139,6 +139,11 @@ class VectorTileSource extends Evented implements Source {
     }
 
     onAdd(map: Map) {
+        this.map = map;
+        this.load();
+    }
+
+    reload() {
         this.cancelTileJSONRequest();
 
         const clearTiles = () => {
@@ -148,13 +153,12 @@ class VectorTileSource extends Evented implements Source {
             }
         };
 
-        this.map = map;
-        this.load(this.loaded() ? clearTiles : undefined);
+        this.load(clearTiles);
     }
 
     setSourceProperty(callback: Function) {
         callback();
-        this.onAdd(this.map);
+        this.reload();
     }
 
     /**
@@ -177,7 +181,7 @@ class VectorTileSource extends Evented implements Source {
      */
     setTiles(tiles: Array<string>): this {
         this._options.tiles = tiles;
-        this.onAdd(this.map);
+        this.reload();
 
         return this;
     }
@@ -201,7 +205,7 @@ class VectorTileSource extends Evented implements Source {
     setUrl(url: string): this {
         this.url = url;
         this._options.url = url;
-        this.onAdd(this.map);
+        this.reload();
 
         return this;
     }
