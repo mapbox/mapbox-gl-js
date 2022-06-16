@@ -17,6 +17,7 @@ import type Tile from '../../source/tile.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Painter from '../painter.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
+import StyleLayerIndex from '../../style/style_layer_index.js';
 
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -45,7 +46,7 @@ export type LinePatternUniformsType = {|
     'u_alpha_discard_threshold': Uniform1f
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_METRICS_ENABLED';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_TRIM_OFFSET';
 
 const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
@@ -157,6 +158,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const values = [];
     if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
+    if (layer.paint.get('line-trim-offset')) values.push('RENDER_LINE_TRIM_OFFSET');
 
     const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
     const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;

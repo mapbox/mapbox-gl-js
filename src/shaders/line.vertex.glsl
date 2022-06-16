@@ -10,7 +10,7 @@ attribute vec2 a_pos_normal;
 attribute vec4 a_data;
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices
-#ifdef RENDER_LINE_METRICS_ENABLED
+#ifdef RENDER_LINE_TRIM_OFFSET
 attribute highp vec4 a_packed;
 #endif
 
@@ -108,7 +108,7 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
 
-#ifdef RENDER_LINE_METRICS_ENABLED
+#ifdef RENDER_LINE_TRIM_OFFSET
     float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
     highp float a_clip_start = a_packed[2];
@@ -122,7 +122,7 @@ void main() {
 #else
     v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
 #endif // #ifdef RENDER_LINE_GRADIENT
-#endif // #ifdef RENDER_LINE_METRICS_ENABLED
+#endif // #ifdef RENDER_LINE_TRIM_OFFSET
 
 #ifdef RENDER_LINE_DASH
     float tileZoomRatio = u_scale.x;
