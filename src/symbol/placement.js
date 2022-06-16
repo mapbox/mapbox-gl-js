@@ -230,11 +230,6 @@ export class Placement {
         this.placedOrientations = {};
     }
 
-    _updateTransformProjection(bucket: SymbolBucket) {
-        this.transform.setProjection(bucket.projection);
-        this.collisionIndex.transform.setProjection(bucket.projection);
-    }
-
     getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
         const bucketFeatureIndex = tile.latestFeatureIndex;
@@ -248,9 +243,10 @@ export class Placement {
         const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
         const textPixelRatio = tile.tileSize / EXTENT;
         const unwrappedTileID = tile.tileID.toUnwrapped();
-        const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, symbolBucket.getProjection(), this.transform, this.projection);
 
-        this._updateTransformProjection(symbolBucket);
+        this.transform.setProjection(symbolBucket.projection);
+
+        const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, symbolBucket.getProjection(), this.transform, this.projection);
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
@@ -413,7 +409,7 @@ export class Placement {
         const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
 
-        this._updateTransformProjection(bucket);
+        this.transform.setProjection(bucket.projection);
 
         // This logic is similar to the "defaultOpacityState" logic below in updateBucketOpacities
         // If we know a symbol is always supposed to show, force it to be marked visible even if

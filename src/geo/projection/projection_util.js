@@ -36,5 +36,6 @@ export function getSymbolPlacementTileProjectionMatrix(coord: OverscaledTileID, 
     if (bucketProjection.name === runtimeProjection) {
         return transform.calculateProjMatrix(coord.toUnwrapped());
     }
+    assert(transform.projection.name === bucketProjection.name);
     return reconstructTileMatrix(transform, bucketProjection, coord);
 }
