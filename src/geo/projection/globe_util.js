@@ -8,7 +8,7 @@ import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
@@ -311,23 +311,36 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     const arcB = corners[(closestArcIdx + 1) % 4];
 
     const closestArc = new Arc(arcA, arcB, arcCenter);
-    const arcBounds = [(localExtremum(closestArc, 0) || arcA[0]),
+    let arcExtremum = [(localExtremum(closestArc, 0) || arcA[0]),
         (localExtremum(closestArc, 1) || arcA[1]),
         (localExtremum(closestArc, 2) || arcA[2])];
+
+    // Interpolate the four corners towards their world space location in mercator projection during transition.
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase > 0.0 && phase < 1.0) {
+        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, center);
+        for (let i = 0; i < corners.length; i++) {
+            corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
+        }
+
+        // // Interpolate arc extremum toward the edge midpoint in Mercator
+        const mercatorExtremum = interpolateArray(mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4], .5);
+        arcExtremum = interpolateArray(arcExtremum, mercatorExtremum, phase);
+    }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
     // of tiles farther away from the center as they would otherwise intersect with far end
     // of the view frustum
     cornerMin[2] = Math.min(arcA[2], arcB[2]);
 
-    vec3.min(cornerMin, cornerMin, arcBounds);
-    vec3.max(cornerMax, cornerMax, arcBounds);
+    vec3.min(cornerMin, cornerMin, arcExtremum);
+    vec3.max(cornerMax, cornerMax, arcExtremum);
 
     return new Aabb(cornerMin, cornerMax);
 }
 
-function tileCornersInMercator(tileId: CanonicalTileID, numTiles: number = 1): [number, number, number, number] {
-    const tileScale = numTiles / (1 << tileId.z);
+function tileCornersInMercator(tileId: CanonicalTileID): [number, number, number, number] {
+    const tileScale = 1 / (1 << tileId.z);
 
     const west = tileId.x * tileScale;
     const east = west + tileScale;
@@ -344,6 +357,34 @@ export function tileCornersInLatLng(tileId: CanonicalTileID): [[number, number],
     const latLngSE = [ latFromMercatorY(south), lngFromMercatorX(east) ];
 
     return [latLngNW, latLngSE];
+}
+
+function mercatorTileCornersInCameraSpace(tileId: CanonicalTileID, numTiles: number, mercatorScale: number, cameraCenter: [number, number]): $ReadOnlyArray<Array<number>> {
+
+    let [n, w, s, e] = tileCornersInMercator(tileId);
+
+    // Ensure that the tile viewed is the nearest when across the antimeridian
+    let wrap = 0;
+    const tileCenterXFromCamera = (w + e) / 2  - cameraCenter[0];
+    if (tileCenterXFromCamera > .5) {
+        wrap = -1;
+    } else if (tileCenterXFromCamera < -.5) {
+        wrap = 1;
+    }
+
+    const cameraX = cameraCenter[0] * mercatorScale;
+    const cameraY = cameraCenter[1] * mercatorScale;
+
+    // Transform position in Mercator to points on the plane tangent to the globe at cameraCenter.
+    w  = ((w + wrap) * numTiles - cameraX) * mercatorScale + cameraX;
+    e  = ((e + wrap) * numTiles - cameraX) * mercatorScale + cameraX;
+    n  = (n * numTiles - cameraY) * mercatorScale + cameraY;
+    s  = (s * numTiles - cameraY) * mercatorScale + cameraY;
+
+    return [[w, s, 0],
+        [e, s, 0],
+        [w, n, 0],
+        [e, n, 0]];
 }
 
 function rectLatLngToECEF(n, w, s, e) {
