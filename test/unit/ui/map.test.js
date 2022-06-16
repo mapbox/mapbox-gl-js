@@ -1216,17 +1216,6 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('no-op with globe', (t) => {
-            t.stub(console, 'warn');
-            const map = createMap(t, {zoom: 0, skipCSSStub: true});
-            map.setProjection('globe');
-            const bounds = map.getBounds();
-
-            t.equal(bounds, null);
-            t.ok(console.warn.calledOnce);
-            t.end();
-        });
-
         t.test('padded bounds', (t) => {
             const map = createMap(t, {zoom: 1, bearing: 45, skipCSSStub: true});
 
