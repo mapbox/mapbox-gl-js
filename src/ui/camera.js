@@ -574,7 +574,6 @@ class Camera extends Evented {
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): ?EasingOptions {
         if (this.transform.projection.name === 'globe') {
             warnOnce('Globe projection does not support cameraForBounds API');
-            return;
         }
 
         bounds = LngLatBounds.convert(bounds);
@@ -823,7 +822,6 @@ class Camera extends Evented {
     fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: Object): this {
         if (this.transform.projection.name === 'globe') {
             warnOnce('Globe projection does not support fitBounds API');
-            return this;
         }
 
         return this._fitInternal(
@@ -902,7 +900,6 @@ class Camera extends Evented {
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: EasingOptions, eventData?: Object): this {
         if (this.transform.projection.name === 'globe') {
             warnOnce('Globe projection does not support fitScreenCoordinates API');
-            return this;
         }
 
         let lngLat0, lngLat1, minAltitude, maxAltitude;

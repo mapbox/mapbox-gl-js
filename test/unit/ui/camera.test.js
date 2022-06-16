@@ -2028,17 +2028,6 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('no-op with globe', (t) => {
-            t.stub(console, 'warn');
-            const camera = createCamera({projection: {name: 'globe'}});
-            const bb = [[-133, 16], [-68, 50]];
-
-            const transform = camera.cameraForBounds(bb);
-            t.equal(transform, undefined);
-            t.ok(console.warn.calledOnce);
-            t.end();
-        });
-
         t.test('bearing positive number', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -2148,26 +2137,6 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('no-op with globe', (t) => {
-            t.stub(console, 'warn');
-            const camera = createCamera({projection: {name: 'globe'}});
-            const bb = [[-133, 16], [-68, 50]];
-
-            const prevBearing = camera.getBearing();
-            const prevPitch = camera.getPitch();
-            const prevZoom = camera.getZoom();
-            const prevCenter = camera.getCenter();
-
-            const this_ = camera.fitBounds(bb, {duration:0});
-            t.equal(this_, camera);
-            t.ok(console.warn.calledOnce);
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), prevCenter);
-            t.equal(fixedNum(camera.getZoom(), 3), prevZoom);
-            t.equal(camera.getBearing(), prevBearing);
-            t.equal(camera.getPitch(), prevPitch);
-            t.end();
-        });
-
         t.test('padding number', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -2227,29 +2196,6 @@ test('camera', (t) => {
             t.equal(fixedNum(camera.getZoom(), 3), 0.915); // 0.915 ~= log2(4*sqrt(2)/3)
             t.equal(camera.getBearing(), -135);
             t.equal(camera.getPitch(), 0);
-            t.end();
-        });
-
-        t.test('no-op with globe', (t) => {
-            t.stub(console, 'warn');
-            const camera = createCamera({projection: {name: 'globe'}});
-            const p0 = [128, 128];
-            const p1 = [256, 384];
-            const bearing = 225;
-
-            const prevBearing = camera.getBearing();
-            const prevPitch = camera.getPitch();
-            const prevZoom = camera.getZoom();
-            const prevCenter = camera.getCenter();
-
-            const this_ = camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
-
-            t.equal(this_, camera);
-            t.ok(console.warn.calledOnce);
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), prevCenter);
-            t.equal(fixedNum(camera.getZoom(), 3), prevZoom);
-            t.equal(camera.getBearing(), prevBearing);
-            t.equal(camera.getPitch(), prevPitch);
             t.end();
         });
 
