@@ -17,7 +17,6 @@ import type Tile from '../../source/tile.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Painter from '../painter.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
-import StyleLayerIndex from '../../style/style_layer_index.js';
 
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
