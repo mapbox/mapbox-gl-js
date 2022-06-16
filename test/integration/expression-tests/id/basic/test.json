@@ -1,6 +1,11 @@
 {
   "expression": ["id"],
-  "inputs": [[{}, {}], [{}, {"id": 1}], [{}, {"id": "one"}]],
+  "inputs": [
+    [{}, {}],
+    [{}, {"id": 1}],
+    [{}, {"id": "one"}],
+    [{}, {"id": 0}]
+  ],
   "expected": {
     "compiled": {
       "result": "success",
@@ -8,7 +13,7 @@
       "isZoomConstant": true,
       "type": "value"
     },
-    "outputs": [null, 1, "one"],
+    "outputs": [null, 1, "one", 0],
     "serialized": ["id"]
   }
 }
