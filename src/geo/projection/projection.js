@@ -80,6 +80,13 @@ export default class Projection {
         return mercatorZfromAltitude(1, lat) * worldSize;
     }
 
+    // pixels-per-meter is used to describe relation between real world and pixel distances.
+    // `pixelSpaceConversion` can be used to convert the ratio from mercator projection to
+    // the currently active projection.
+    //
+    // `pixelSpaceConversion` is useful for converting between pixel spaces where some logic
+    // expects mercator pixels, such as raycasting where the scale is expected to be in
+    // mercator pixels.
     pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number { // eslint-disable-line
         return 1.0;
     }
