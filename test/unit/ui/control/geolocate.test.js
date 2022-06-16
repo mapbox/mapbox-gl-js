@@ -440,6 +440,31 @@ test('GeolocateControl switches to BACKGROUND state on map manipulation', (t) =>
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
 });
 
+test('GeolocateControl accuracy circle radius is accurate with Globe projection', (t) => {
+    t.stub(console, 'warn');
+    const map = createMap(t, {projection: 'globe'});
+    const geolocate = new GeolocateControl({
+        trackUserLocation: true,
+        showUserLocation: true,
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.once('geolocate', () => {
+        t.ok(geolocate._accuracyCircleMarker._map, 'userLocation accuracy circle marker on map');
+        t.equal(geolocate._accuracy, 2000);
+        map.once('zoomend', () => {
+            t.equal(geolocate._circleElement.style.width, '1px'); // 2000m = 1px at zoom 0
+            t.end();
+        });
+        map.zoomTo(0, {duration: 0});
+    });
+
+    geolocate._geolocateButton.dispatchEvent(click);
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 2000});
+});
+
 test('GeolocateControl accuracy circle not shown if showAccuracyCircle = false', (t) => {
     const map = createMap(t);
     const geolocate = new GeolocateControl({
