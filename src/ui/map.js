@@ -1215,7 +1215,7 @@ class Map extends Camera {
 
         this.style.applyProjectionUpdate();
 
-        if (newProjection) {
+        if (projectionHasChanged) {
             // If a zoom transition on globe
             if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
