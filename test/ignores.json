@@ -6,6 +6,7 @@
   "render-tests/debug/tile-overscaled": "skip - inconsistent text rendering with canvas on different platforms",
   "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards",
   "render-tests/fill-extrusion-pattern/multiple-layers-flat": "skip - mapbox-gl-js-internal#223",
+  "render-tests/fill-extrusion-pattern/opacity-terrain": "skip - deferred for globe-view",
   "render-tests/fill-extrusion-pattern/opacity-terrain-flat-on-border": "skip - mapbox-gl-js-internal#223",
   "render-tests/fill-extrusion-pattern/tile-buffer": "skip - not rendering correctly on CI",
   "render-tests/fill-pattern/update-feature-state": "https://github.com/mapbox/mapbox-gl-js/issues/7207",
