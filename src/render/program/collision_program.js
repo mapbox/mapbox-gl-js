@@ -10,6 +10,7 @@ import type Context from '../../gl/context.js';
 import type {UniformValues, UniformLocations} from '../uniform_binding.js';
 import type Transform from '../../geo/transform.js';
 import type Tile from '../../source/tile.js';
+import type Projection from '../../geo/projection/projection.js';
 
 export type CollisionUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -40,13 +41,14 @@ const collisionCircleUniforms = (context: Context, locations: UniformLocations):
 const collisionUniformValues = (
     matrix: Float32Array,
     transform: Transform,
-    tile: Tile
+    tile: Tile,
+    projection: Projection
 ): UniformValues<CollisionUniformsType> => {
     const pixelRatio = EXTENT / tile.tileSize;
 
     return {
         'u_matrix': matrix,
-        'u_camera_to_center_distance': transform.cameraToCenterDistance,
+        'u_camera_to_center_distance': transform.getCameraToCenterDistance(projection),
         'u_extrude_scale': [transform.pixelsToGLUnits[0] / pixelRatio,
             transform.pixelsToGLUnits[1] / pixelRatio]
     };
@@ -55,12 +57,13 @@ const collisionUniformValues = (
 const collisionCircleUniformValues = (
     matrix: Float32Array,
     invMatrix: Float32Array,
-    transform: Transform
+    transform: Transform,
+    projection: Projection
 ): UniformValues<CollisionCircleUniformsType> => {
     return {
         'u_matrix': matrix,
         'u_inv_matrix': invMatrix,
-        'u_camera_to_center_distance': transform.cameraToCenterDistance,
+        'u_camera_to_center_distance': transform.getCameraToCenterDistance(projection),
         'u_viewport_size': [transform.width, transform.height]
     };
 };

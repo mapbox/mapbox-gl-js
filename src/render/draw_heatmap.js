@@ -59,7 +59,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             const tile = sourceCache.getTile(coord);
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
-            if (!bucket || bucket.projection !== tr.projection.name) continue;
+            if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration, definesValues);

@@ -8,6 +8,7 @@ import assert from 'assert';
 import Marker from '../marker.js';
 import LngLat from '../../geo/lng_lat.js';
 import throttle from '../../util/throttle.js';
+import {mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
 
 import type Map from '../map.js';
 import type {AnimationOptions, CameraOptions} from '../camera.js';
@@ -331,11 +332,13 @@ class GeolocateControl extends Evented {
 
     _updateCircleRadius() {
         assert(this._circleElement);
-        const y = this._map._containerHeight / 2;
-        const a = this._map.unproject([0, y]);
-        const b = this._map.unproject([100, y]);
-        const metersPerPixel = a.distanceTo(b) / 100;
-        const circleDiameter = Math.ceil(2.0 * this._accuracy / metersPerPixel);
+        const map = this._map;
+        const tr = map.transform;
+
+        const pixelsPerMeter = mercatorZfromAltitude(1.0, tr._center.lat) * tr.worldSize;
+        assert(pixelsPerMeter !== 0.0);
+        const circleDiameter = Math.ceil(2.0 * this._accuracy * pixelsPerMeter);
+
         this._circleElement.style.width = `${circleDiameter}px`;
         this._circleElement.style.height = `${circleDiameter}px`;
     }
