@@ -323,7 +323,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
             corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
         }
 
-        // // Interpolate arc extremum toward the edge midpoint in Mercator
+        // Interpolate arc extremum toward the edge midpoint in Mercator
         const mercatorExtremum = interpolateArray(mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4], .5);
         arcExtremum = interpolateArray(arcExtremum, mercatorExtremum, phase);
     }
