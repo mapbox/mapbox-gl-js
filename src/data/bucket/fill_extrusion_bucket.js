@@ -607,13 +607,13 @@ function isAOConcaveAngle(p2, p1, p3) {
     }
     const a = p3.sub(p1);
     const an = a.perp();
-    const b = p1.sub(p2);
+    const b = p2.sub(p1);
     const ab = a.x * b.x + a.y * b.y;
-    const cosABSquare = ab * ab / ((a.x * a.x + a.y * a.y) * (b.x * b.x + b.y * b.y));
+    const cosAB = ab / Math.sqrt(((a.x * a.x + a.y * a.y) * (b.x * b.x + b.y * b.y)));
     const dotProductWithNormal = an.x * b.x + an.y * b.y;
 
-    // Heuristics: don't shade concave angles above 147° (sqrt(arccos(0.7))).
-    return cosABSquare < 0.7 && dotProductWithNormal > 0;
+    // Heuristics: don't shade concave angles above 150° (arccos(-0.866)).
+    return cosAB > -0.866 && dotProductWithNormal < 0;
 }
 
 function encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, edgeStart) {
