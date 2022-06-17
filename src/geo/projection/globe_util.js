@@ -326,8 +326,8 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-function tileCornersInMercator(tileId: CanonicalTileID, numTiles: number = 1): [number, number, number, number] {
-    const tileScale = numTiles / (1 << tileId.z);
+function tileCornersInMercator(tileId: CanonicalTileID): [number, number, number, number] {
+    const tileScale = 1.0 / (1 << tileId.z);
 
     const west = tileId.x * tileScale;
     const east = west + tileScale;
