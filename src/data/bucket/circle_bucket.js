@@ -32,7 +32,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
-import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
@@ -40,12 +39,11 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
         (y * 2) + ((extrudeY + 1) / 2));
 }
 
-function addGlobeExtVertex(vertexArray: CircleGlobeExtArray, pos: {x: number, y: number, z: number}, normal: Vec3, scale: number) {
+function addGlobeExtVertex(vertexArray: CircleGlobeExtArray, pos: {x: number, y: number, z: number}, normal: Vec3) {
     const encode = 1 << 14;
     vertexArray.emplaceBack(
         pos.x, pos.y, pos.z,
-        normal[0] * encode, normal[1] * encode, normal[2] * encode,
-        scale);
+        normal[0] * encode, normal[1] * encode, normal[2] * encode);
 }
 
 /**
@@ -211,17 +209,12 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 if (projection) {
                     const projectedPoint = projection.projectTilePoint(x, y, canonical);
                     const normal = projection.upVector(canonical, x, y);
-
-                    // Apply extra scaling to cover different pixelPerMeter ratios at different latitudes
-                    // scale = projection.ppm(lat) / mercator.ppm(lat)
-                    const lat = latFromMercatorY((y / EXTENT + canonical.y) / (1 << canonical.z));
-                    const scale = projection.pixelsPerMeter(lat, 1) / mercatorZfromAltitude(1, lat);
                     const array: any = this.globeExtVertexArray;
 
-                    addGlobeExtVertex(array, projectedPoint, normal, scale);
-                    addGlobeExtVertex(array, projectedPoint, normal, scale);
-                    addGlobeExtVertex(array, projectedPoint, normal, scale);
-                    addGlobeExtVertex(array, projectedPoint, normal, scale);
+                    addGlobeExtVertex(array, projectedPoint, normal);
+                    addGlobeExtVertex(array, projectedPoint, normal);
+                    addGlobeExtVertex(array, projectedPoint, normal);
+                    addGlobeExtVertex(array, projectedPoint, normal);
                 }
                 const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray, feature.sortKey);
                 const index = segment.vertexLength;

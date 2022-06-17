@@ -101,11 +101,10 @@ void main(void) {
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
     // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
-    vec2 scaled_extrude = extrude * a_scale;
     vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
     mat3 surface_vectors = globe_mercator_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
 
-    vec3 surface_extrusion = scaled_extrude.x * surface_vectors[0] + scaled_extrude.y * surface_vectors[1];
+    vec3 surface_extrusion = extrude.x * surface_vectors[0] + extrude.y * surface_vectors[1];
     vec3 globe_elevation = elevationVector(circle_center) * circle_elevation(circle_center);
     vec3 globe_pos = a_pos_3 + surface_extrusion + globe_elevation;
     vec3 mercator_elevation = u_up_dir * u_tile_up_scale * circle_elevation(circle_center);
@@ -137,9 +136,6 @@ void main(void) {
         #else
             view_scale = projected_center.w;
         #endif
-    #endif
-    #if defined(SCALE_WITH_MAP) && defined(PROJECTION_GLOBE_VIEW)
-        view_scale *= a_scale;
     #endif
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale, surface_vectors);
 

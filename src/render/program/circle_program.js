@@ -61,7 +61,7 @@ const circleUniformValues = (
     let extrudeScale;
     if (layer.paint.get('circle-pitch-alignment') === 'map') {
         if (isGlobe) {
-            const s = globePixelsToTileUnits(transform.zoom, coord.canonical);
+            const s = globePixelsToTileUnits(transform.zoom, coord.canonical) * transform._projectionScaler;
             extrudeScale = Float32Array.from([s, 0, 0, s]);
         } else {
             extrudeScale = transform.calculatePixelsToTileUnitsMatrix(tile);
