@@ -261,7 +261,7 @@ export class QueryGeometry {
             vec3.normalize(dir, dir);
             return new Ray(tilespaceCameraPosition, dir);
         });
-        const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom);
+        const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom) * transform._projectionScaler;
 
         return {
             queryGeometry: this,
