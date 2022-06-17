@@ -603,6 +603,44 @@ test('Map', (t) => {
             });
         });
 
+        t.test('should apply fog default values when toggling different fog styles with setStyle', (t) => {
+            const styleA = {
+                'version': 8,
+                'sources': {},
+                'fog': {'color': 'red'},
+                'layers': []
+            };
+
+            const styleB = {
+                'version': 8,
+                'sources': {},
+                'fog':  {
+                    'color': '#0F2127',
+                    'high-color': '#000',
+                    'horizon-blend': 0.5,
+                    'space-color': '#000'
+                },
+                'layers': []
+            };
+
+            const map = createMap(t, {style: styleA});
+
+            map.on('style.load', () => {
+                t.equal(map.getFog()['color'], 'red');
+                t.equal(map.getFog()['high-color'], '#245cdf');
+
+                map.setStyle(styleB);
+                t.equal(map.getFog()['color'], '#0F2127');
+                t.equal(map.getFog()['high-color'], '#000');
+
+                map.setStyle(styleA);
+                t.equal(map.getFog()['color'], 'red');
+                t.equal(map.getFog()['high-color'], '#245cdf');
+
+                t.end();
+            });
+        });
+
         t.test('updating fog results in correct transitions', (t) => {
             t.test('sets fog with transition', (t) => {
                 const fog = new Fog({
@@ -673,7 +711,7 @@ test('Map', (t) => {
                 const fog = new Fog({});
                 const fogSpy = t.spy(fog, '_validate');
 
-                fog.set({color: [444]}, {}, {validate: false});
+                fog.set({color: [444]}, {validate: false});
                 fog.updateTransitions({transition: false}, {});
                 fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
 
