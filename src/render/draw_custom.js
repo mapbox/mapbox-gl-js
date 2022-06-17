@@ -69,7 +69,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         context.setDepthMode(depthMode);
 
-        implementation.render(context.gl, painter.transform.customLayerMatrix());
+        implementation.render(context.gl, painter.transform.projMatrix.slice(), [].slice.call(painter.transform.globeMatrix));
 
         context.setDirty();
         painter.setBaseState();

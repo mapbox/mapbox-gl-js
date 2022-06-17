@@ -5,7 +5,7 @@ import type Map from '../../ui/map.js';
 import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
 
-type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
+type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, globeMatrix?: Array<number>) => void;
 
 /**
  * Interface for custom style layers. This is a specification for
