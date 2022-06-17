@@ -1024,47 +1024,6 @@ class StructArrayLayout2f8 extends StructArray {
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register(StructArrayLayout2f8, 'StructArrayLayout2f8');
 
-/**
- * Implementation of the StructArray layout:
- * [0]: Int16[6]
- * [12]: Float32[1]
- *
- * @private
- */
-class StructArrayLayout6i1f16 extends StructArray {
-    uint8: Uint8Array;
-    int16: Int16Array;
-    float32: Float32Array;
-
-    _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.int16 = new Int16Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
-    }
-
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6);
-    }
-
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
-        const o2 = i * 8;
-        const o4 = i * 4;
-        this.int16[o2 + 0] = v0;
-        this.int16[o2 + 1] = v1;
-        this.int16[o2 + 2] = v2;
-        this.int16[o2 + 3] = v3;
-        this.int16[o2 + 4] = v4;
-        this.int16[o2 + 5] = v5;
-        this.float32[o4 + 3] = v6;
-        return i;
-    }
-}
-
-StructArrayLayout6i1f16.prototype.bytesPerElement = 16;
-register(StructArrayLayout6i1f16, 'StructArrayLayout6i1f16');
-
 class FillExtrusionExtStruct extends Struct {
     _structArray: FillExtrusionExtArray;
     get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1324,17 +1283,16 @@ class CircleGlobeExtStruct extends Struct {
     get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
     get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
     get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
-    get a_scale(): number { return this._structArray.float32[this._pos4 + 3]; }
 }
 
-CircleGlobeExtStruct.prototype.size = 16;
+CircleGlobeExtStruct.prototype.size = 12;
 
 export type CircleGlobeExt = CircleGlobeExtStruct;
 
 /**
  * @private
  */
-export class CircleGlobeExtArray extends StructArrayLayout6i1f16 {
+export class CircleGlobeExtArray extends StructArrayLayout6i12 {
     /**
      * Return the CircleGlobeExtStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -1375,7 +1333,6 @@ export {
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,
     StructArrayLayout2f8,
-    StructArrayLayout6i1f16,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout4i8 as RasterBoundsArray,

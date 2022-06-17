@@ -8,11 +8,11 @@
 
 attribute vec2 a_pos_normal;
 attribute vec4 a_data;
-
-#ifdef RENDER_LINE_GRADIENT
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
-// to reduce attribute count on older devices
-attribute vec4 a_packed;
+// to reduce attribute count on older devices.
+// Only line-gradient and line-trim-offset will requires a_packed info.
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
+attribute highp vec4 a_packed;
 #endif
 
 #ifdef RENDER_LINE_DASH
@@ -27,6 +27,7 @@ uniform lowp float u_device_pixel_ratio;
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
+varying highp vec4 v_uv;
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
@@ -37,7 +38,6 @@ varying vec2 v_tex_b;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform float u_image_height;
-varying highp vec4 v_uv;
 #endif
 
 #pragma mapbox: define highp vec4 color
@@ -109,15 +109,19 @@ void main() {
     v_gamma_scale = 1.0;
 #endif
 
-#ifdef RENDER_LINE_GRADIENT
+#if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
     float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-    float a_clip_start = a_packed[2];
-    float a_clip_end = a_packed[3];
+    highp float a_clip_start = a_packed[2];
+    highp float a_clip_end = a_packed[3];
+#ifdef RENDER_LINE_GRADIENT
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
 
     v_uv = vec4(a_uv_x, a_split_index * texel_height - half_texel_height, a_clip_start, a_clip_end);
+#else
+    v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
+#endif
 #endif
 
 #ifdef RENDER_LINE_DASH

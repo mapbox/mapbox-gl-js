@@ -290,11 +290,12 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see [`src/ui/default_locale.js`](https://github.com/mapbox/mapbox-gl-js/blob/main/src/ui/default_locale.js) for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/help/glossary/projection/) the map should be rendered in.
+ * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  *  * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
  *  * [Equal Earth](https://en.wikipedia.org/wiki/Equal_Earth_projection) equal-area pseudocylindrical projection as `equalEarth`
  *  * [Equirectangular](https://en.wikipedia.org/wiki/Equirectangular_projection) (Plate Carrée/WGS84) as `equirectangular`
+ *  * 3d Globe as `globe`
  *  * [Lambert Conformal Conic](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection) as `lambertConformalConic`
  *  * [Mercator](https://en.wikipedia.org/wiki/Mercator_projection) cylindrical map projection as `mercator`
  *  * [Natural Earth](https://en.wikipedia.org/wiki/Natural_Earth_projection) pseudocylindrical map projection as `naturalEarth`
@@ -799,8 +800,7 @@ class Map extends Camera {
      */
     getBounds(): LngLatBounds | null {
         if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support getBounds API');
-            return null;
+            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly."');
         }
         return this.transform.getBounds();
     }
@@ -1190,13 +1190,20 @@ class Map extends Camera {
 
     _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
         const prevProjection = this.getProjection();
-        if (explicitProjection === null) { this._explicitProjection = null; }
+        if (explicitProjection === null) {
+            this._explicitProjection = null;
+        }
         const projection = explicitProjection || this.getProjection();
 
+        let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
-        const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
-            {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
-            projection);
+        if (projection && projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            projectionHasChanged = this.transform.setProjection({name: 'mercator'});
+            this.transform.mercatorFromTransition = true;
+        } else {
+            projectionHasChanged = this.transform.setProjection(projection);
+            this.transform.mercatorFromTransition = false;
+        }
 
         // When called through setProjection, update _explicitProjection
         if (explicitProjection) {
@@ -1205,20 +1212,20 @@ class Map extends Camera {
                 this.transform.getProjection());
         }
 
-        if (newProjection) {
+        this.style.applyProjectionUpdate();
+
+        if (projectionHasChanged) {
             // If a zoom transition on globe
             if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different projections
+            } else {
+                // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.applyProjectionUpdate();
             this._update(true);
-        } else if (this.transform.projection.requiresDraping && !this.getTerrain() && !this.style.stylesheet.terrain) {
-            this.style.setTerrainForDraping();
         }
 
         return this;
@@ -2652,9 +2659,12 @@ class Map extends Camera {
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setFog({
-     *     "range": [1.0, 12.0],
-     *     "color": 'white',
-     *     "horizon-blend": 0.1
+     *     "range": [0.8, 8],
+     *     "color": "#dc9f9f",
+     *     "horizon-blend": 0.5,
+     *     "high-color": "#245bde",
+     *     "space-color": "#000000",
+     *     "star-intensity": 0.15
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */

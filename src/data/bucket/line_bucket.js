@@ -15,7 +15,7 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
-
+import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
@@ -109,7 +109,7 @@ class LineBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
-    projection: string;
+    projection: ProjectionSpecification;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;

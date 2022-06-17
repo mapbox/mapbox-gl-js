@@ -9,7 +9,6 @@ attribute vec2 a_pos;
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;         // Projected position on the globe
 attribute vec3 a_pos_normal_3;  // Surface normal at the position
-attribute float a_scale;
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;
@@ -66,7 +65,6 @@ void main(void) {
 #ifdef PROJECTION_GLOBE_VIEW
     // Compute positions on both globe and mercator plane to support transition between the two modes
     // Apply extra scaling to extrusion to cover different pixel space ratios (which is dependant on the latitude)
-    extrude *= a_scale;
     vec3 pos_normal_3 = a_pos_normal_3 / 16384.0;
     mat3 surface_vectors = globe_mercator_surface_vectors(pos_normal_3, u_up_dir, u_zoom_transition);
     vec3 surface_extrusion = extrude.x * surface_vectors[0] + extrude.y * surface_vectors[1];

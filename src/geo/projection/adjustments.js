@@ -9,7 +9,7 @@ import type Projection from './projection.js';
 import type Transform from '../transform.js';
 
 export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean): Array<number> {
-    const interpT = getProjectionInterpolationT(transform);
+    const interpT = getProjectionInterpolationT(transform.projection, transform.zoom, transform.width, transform.height);
     const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT, withoutRotation);
 
     const scaleAdjustment = getScaleAdjustment(transform);
@@ -20,7 +20,7 @@ export default function getProjectionAdjustments(transform: Transform, withoutRo
 
 export function getScaleAdjustment(transform: Transform): number {
     const projection = transform.projection;
-    const interpT = getProjectionInterpolationT(transform);
+    const interpT = getProjectionInterpolationT(transform.projection, transform.zoom, transform.width, transform.height);
     const zoomAdjustment = getZoomAdjustment(projection, transform.center);
     const zoomAdjustmentOrigin = getZoomAdjustment(projection, LngLat.convert(projection.center));
     const scaleAdjustment = Math.pow(2, zoomAdjustment * interpT + (1 - interpT) * zoomAdjustmentOrigin);
@@ -34,18 +34,18 @@ export function getProjectionAdjustmentInverted(transform: Transform): Array<num
         m[4], m[5]]);
 }
 
-export function getProjectionInterpolationT(transform: Transform, maxSize: number = Infinity): number {
-    const range = transform.projection.range;
+export function getProjectionInterpolationT(projection: Projection, zoom: number, width: number, height: number, maxSize: number = Infinity): number {
+    const range = projection.range;
     if (!range) return 0;
 
-    const size = Math.min(maxSize, Math.max(transform.width, transform.height));
+    const size = Math.min(maxSize, Math.max(width, height));
     // The interpolation ranges are manually defined based on what makes
     // sense in a 1024px wide map. Adjust the ranges to the current size
     // of the map. The smaller the map, the earlier you can start unskewing.
     const rangeAdjustment = Math.log(size / 1024) / Math.LN2;
     const zoomA = range[0] + rangeAdjustment;
     const zoomB = range[1] + rangeAdjustment;
-    const t = smoothstep(zoomA, zoomB, transform.zoom);
+    const t = smoothstep(zoomA, zoomB, zoom);
     return t;
 }
 
