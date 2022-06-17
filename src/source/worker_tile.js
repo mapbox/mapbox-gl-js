@@ -163,7 +163,7 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source,
                     enableTerrain: this.enableTerrain,
-                    projection: this.projection.name,
+                    projection: this.projection.spec,
                     availableImages
                 });
 

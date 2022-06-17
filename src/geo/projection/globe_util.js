@@ -48,7 +48,7 @@ export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 export const GLOBE_SCALE_MATCH_LATITUDE = 45;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
-const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
+export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;

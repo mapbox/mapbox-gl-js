@@ -98,11 +98,12 @@ function getLabelPlaneMatrixForRendering(posMatrix: Float32Array,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
+                             projection: Projection,
                              pixelsToTileUnits: Float32Array): Float32Array {
     const m = mat4.create();
 
     if (pitchWithMap) {
-        if (transform.projection.name === 'globe') {
+        if (projection.name === 'globe') {
             const lm = calculateGlobeLabelMatrix(transform, tileID);
             mat4.multiply(m, m, lm);
         } else {
@@ -134,12 +135,13 @@ function getLabelPlaneMatrixForPlacement(posMatrix: Float32Array,
                              pitchWithMap: boolean,
                              rotateWithMap: boolean,
                              transform: Transform,
+                             projection: Projection,
                              pixelsToTileUnits: Float32Array): Float32Array {
-    const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+    const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, projection, pixelsToTileUnits);
 
     // Symbol placement logic is performed in 2D in most scenarios.
     // For this reason project all coordinates to the xy-plane by discarding the z-component
-    if (transform.projection.name !== 'globe' || !pitchWithMap) {
+    if (projection.name !== 'globe' || !pitchWithMap) {
         // Pre-multiply by scaling z to 0
         m[2] = m[6] = m[10] = m[14] = 0;
     }
@@ -155,10 +157,11 @@ function getGlCoordMatrix(posMatrix: Float32Array,
                           pitchWithMap: boolean,
                           rotateWithMap: boolean,
                           transform: Transform,
+                          projection: Projection,
                           pixelsToTileUnits: Float32Array): Float32Array {
     if (pitchWithMap) {
-        if (transform.projection.name === 'globe') {
-            const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits);
+        if (projection.name === 'globe') {
+            const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, projection, pixelsToTileUnits);
             mat4.invert(m, m);
             mat4.multiply(m, posMatrix, m);
             return m;

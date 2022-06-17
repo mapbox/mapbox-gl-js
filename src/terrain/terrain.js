@@ -40,7 +40,7 @@ import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 import {RGBAImage} from '../util/image.js';
-import {GLOBE_METERS_TO_ECEF} from '../geo/projection/globe.js';
+import {GLOBE_METERS_TO_ECEF} from '../geo/projection/globe_util.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
