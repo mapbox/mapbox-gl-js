@@ -16,15 +16,179 @@
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
+<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 
-var map = window.map = new mapboxgl.Map({
+const DEG_TO_RAD = Math.PI / 180;
+const GLOBE_RADIUS = 8192 / Math.PI / 2.0;
+
+function degToRad(a) {
+    return a * DEG_TO_RAD;
+}
+
+function csLatLngToECEF(cosLat, sinLat, lng, radius = GLOBE_RADIUS) {
+    lng = degToRad(lng);
+
+    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
+    const sx = cosLat * Math.sin(lng) * radius;
+    const sy = -sinLat * radius;
+    const sz = cosLat * Math.cos(lng) * radius;
+
+    return [sx, sy, sz];
+}
+
+function latLngToECEF(lat, lng, radius) {
+    // assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
+    return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
+}
+
+const map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v11',
-    hash: true,
+    style: 'mapbox://styles/mapbox/light-v10',
+    center: [0, 0],
+    antialias: true, // create the gl context with MSAA antialiasing, so custom layers are antialiased
+    hash:true,
     projection: 'globe'
+});
+
+// parameters to ensure the model is georeferenced correctly on the map
+const modelOrigin = [0, 0];
+const modelAltitude = 0;
+const modelRotate = [Math.PI / 2, 0, 0];
+
+const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+    modelOrigin,
+    modelAltitude
+);
+
+const modelInEcef = latLngToECEF(modelOrigin[1], modelOrigin[0]);
+
+// transformation parameters to position, rotate and scale the 3D model onto the map
+const modelTransform = {
+    translateX: modelAsMercatorCoordinate.x,
+    translateY: modelAsMercatorCoordinate.y,
+    translateZ: modelAsMercatorCoordinate.z,
+    rotateX: modelRotate[0],
+    rotateY: modelRotate[1],
+    rotateZ: modelRotate[2],
+    /* Since the 3D model is in real world meters, a scale transform needs to be
+        * applied since the CustomLayerInterface expects units in MercatorCoordinates.
+        */
+    scale: 10000 * modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
+};
+
+const modelTransformEcef = {
+    translateX: modelInEcef[0],
+    translateY: modelInEcef[1],
+    translateZ: modelInEcef[2],
+    rotateX: modelRotate[0],
+    rotateY: modelRotate[1],
+    rotateZ: modelRotate[2],
+    /* Since the 3D model is in real world meters, a scale transform needs to be
+        * applied since the CustomLayerInterface expects units in MercatorCoordinates.
+        */
+    scale: 10000 * modelAsMercatorCoordinate.meterInMercatorCoordinateUnits() * 8192
+};
+
+const THREE = window.THREE;
+
+// configuration of the custom layer for a 3D model per the CustomLayerInterface
+const customLayer = {
+    id: '3d-model',
+    type: 'custom',
+    renderingMode: '3d',
+    onAdd: function (map, gl) {
+        this.camera = new THREE.Camera();
+        this.scene = new THREE.Scene();
+
+        // create two three.js lights to illuminate the model
+        const directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(0, -70, 100).normalize();
+        this.scene.add(directionalLight);
+
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff);
+        directionalLight2.position.set(0, 70, 100).normalize();
+        this.scene.add(directionalLight2);
+
+        // use the three.js GLTF loader to add the 3D model to the three.js scene
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+            // 'https://github.khronos.org/glTF-Sample-Viewer-Release/assets/models/2.0/Box/glTF/Box.gltf',
+            'https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/34M_17.gltf',
+            (gltf) => {
+                this.scene.add(gltf.scene);
+            }
+        );
+        this.map = map;
+
+        // use the Mapbox GL JS map canvas for three.js
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: map.getCanvas(),
+            context: gl,
+            antialias: true
+        });
+
+        this.renderer.autoClear = false;
+    },
+    render: function (gl, matrix, globeMatrix) {
+
+        const rotationX = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(1, 0, 0),
+            modelTransform.rotateX
+        );
+        const rotationY = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(0, 1, 0),
+            modelTransform.rotateY
+        );
+        const rotationZ = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(0, 0, 1),
+            modelTransform.rotateZ
+        );
+
+        const m = new THREE.Matrix4().fromArray(matrix);
+        const g = new THREE.Matrix4().fromArray(globeMatrix);
+        const l = new THREE.Matrix4()
+            .makeTranslation(
+                modelTransformEcef.translateX,
+                modelTransformEcef.translateY,
+                modelTransformEcef.translateZ
+            )
+            .scale(
+                new THREE.Vector3(
+                    modelTransformEcef.scale,
+                    -modelTransformEcef.scale,
+                    modelTransformEcef.scale
+                )
+            );
+        THREE.Matrix4()
+        const l2 = new THREE.Matrix4()
+            .makeTranslation(
+                modelTransform.translateX,
+                modelTransform.translateY,
+                modelTransform.translateZ
+            )
+            .scale(
+                new THREE.Vector3(
+                    modelTransform.scale,
+                    -modelTransform.scale,
+                    modelTransform.scale
+                )
+            )
+            .multiply(rotationX)
+            .multiply(rotationY)
+            .multiply(rotationZ);    
+
+        this.camera.projectionMatrix = m.multiply(g).multiply(l);
+        // this.camera.projectionMatrix = new THREE.Matrix4().identity();
+        this.renderer.resetState();
+        this.renderer.render(this.scene, this.camera);
+        this.map.triggerRepaint();
+    }
+};
+
+map.on('style.load', () => {
+    map.addLayer(customLayer, 'waterway-label');
 });
 
 </script>
