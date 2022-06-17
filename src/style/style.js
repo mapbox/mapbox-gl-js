@@ -1555,12 +1555,8 @@ class Style extends Evented {
             const fog = this.fog;
             const currSpec = fog.get();
 
-            for (const name of Object.keys(styleSpec.fog)) {
-                // Fallback to use default style specification when the properties wasn't set
-                if (fogOptions && fogOptions[name] === undefined) {
-                    fogOptions[name] = styleSpec.fog[name].default;
-                }
-            }
+            // empty object should pass through to set default values
+            if (Object.keys(fogOptions).length === 0) fog.set(fogOptions);
 
             for (const key in fogOptions) {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
