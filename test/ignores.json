@@ -6,12 +6,10 @@
   "render-tests/debug/tile-overscaled": "skip - inconsistent text rendering with canvas on different platforms",
   "render-tests/fill-extrusion-pattern/1.5x-on-1x-add-image": "skip - non-deterministic on AMD graphics cards",
   "render-tests/fill-extrusion-pattern/multiple-layers-flat": "skip - mapbox-gl-js-internal#223",
-  "render-tests/fill-extrusion-pattern/opacity-terrain": "skip - deferred for globe-view",
   "render-tests/fill-extrusion-pattern/opacity-terrain-flat-on-border": "skip - mapbox-gl-js-internal#223",
   "render-tests/fill-extrusion-pattern/tile-buffer": "skip - not rendering correctly on CI",
   "render-tests/fill-pattern/update-feature-state": "https://github.com/mapbox/mapbox-gl-js/issues/7207",
   "render-tests/geojson/inline-linestring-fill": "skip - current behavior is arbitrary",
-  "render-tests/globe/globe-transition/horizon-during-transition": "skip - pending globe-view implementation",
   "render-tests/icon-image/icon-sdf-non-sdf-one-layer": "skip - render sdf icon and normal icon in one layer",
   "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode": "skip - mapbox-gl-js does not support tile-mode",
   "render-tests/map-mode/static": "https://github.com/mapbox/mapbox-gl-js/issues/5649",
@@ -39,5 +37,7 @@
   "render-tests/terrain/symbol-draping/style.json": "skip - https://github.com/mapbox/mapbox-gl-js/issues/10365",
   "render-tests/text-variable-anchor/pitched": "skip - non-deterministic symbol placement on tile boundaries",
   "render-tests/video/projected": "https://github.com/mapbox/mapbox-gl-js/issues/11234",
-  "query-tests/terrain/draped/lines/slope-occlusion-box-query": "skip - non-deterministic"
+  "query-tests/terrain/draped/lines/slope-occlusion-box-query": "skip - non-deterministic",
+  "render-tests/fill-extrusion-pattern/opacity-terrain": "skip - deferred for globe-view",
+  "render-tests/globe/globe-transition/horizon-during-transition": "skip - pending globe-view implementation"
 }

@@ -59,6 +59,7 @@ void main() {
     vec4 out_color = color;
 #endif
 
+#ifdef RENDER_LINE_TRIM_OFFSET
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     highp float start = v_uv[2];
     highp float end = v_uv[3];
@@ -73,6 +74,7 @@ void main() {
     if (trim_end > trim_start && (line_progress <= trim_end && line_progress >= trim_start)) {
         out_color = vec4(0, 0, 0, 0);
     }
+#endif
 
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
