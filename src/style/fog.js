@@ -49,6 +49,7 @@ class Fog extends Evented {
     constructor(fogOptions?: FogSpecification, transform: Transform) {
         super();
         this._transitionable = new Transitionable(fogProperties);
+        this._initialSet = true;
         this.set(fogOptions);
         this._transitioning = this._transitionable.untransitioned();
         this._transform = transform;
@@ -79,11 +80,14 @@ class Fog extends Evented {
             return;
         }
 
-        for (const name of Object.keys(styleSpec.fog)) {
-            // Fallback to use default style specification when the properties wasn't set
-            if (fog && fog[name] === undefined) {
-                fog[name] = styleSpec.fog[name].default;
+        if (this._initialSet) {
+            for (const name of Object.keys(styleSpec.fog)) {
+                // Fallback to use default style specification when the properties wasn't set
+                if (fog && fog[name] === undefined) {
+                    fog[name] = styleSpec.fog[name].default;
+                }
             }
+            this._initialSet = false;
         }
 
         for (const name in fog) {

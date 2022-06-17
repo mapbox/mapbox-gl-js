@@ -343,6 +343,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
 
     let commands = [];
 
+    console.log(after.fog)
     try {
         // Handle changes to top-level properties
         if (!isEqual(before.version, after.version)) {
@@ -372,7 +373,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         if (!isEqual(before.light, after.light)) {
             commands.push({command: operations.setLight, args: [after.light]});
         }
-        if (!isEqual(before.fog, after.fog)) {
+        if (after.fog !== undefined && !isEqual(before.fog, after.fog)) {
             commands.push({command: operations.setFog, args: [after.fog]});
         }
         if (!isEqual(before.projection, after.projection)) {
