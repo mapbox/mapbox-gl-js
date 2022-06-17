@@ -372,7 +372,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         if (!isEqual(before.light, after.light)) {
             commands.push({command: operations.setLight, args: [after.light]});
         }
-        if (!isEqual(before.fog, after.fog && after.fog !== undefined)) {
+        if (!isEqual(before.fog, after.fog)) {
             commands.push({command: operations.setFog, args: [after.fog]});
         }
         if (!isEqual(before.projection, after.projection)) {
