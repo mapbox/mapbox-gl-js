@@ -5,15 +5,14 @@
         "width": 512,
         "height": 512,
         "operations": [
-          ["wait"],
           ["setFog", {
             "color": "rgb(15, 33, 33)",
-            "high-color": "rgb(0, 255, 0",
+            "high-color": "rgb(0, 255, 0)",
             "horizon-blend": 0.5,
-            "space-color": "rgb(0, 255, 0"
+            "space-color": "rgb(0, 255, 0)"
           }],
-          ["setFog", {}],
-          ["wait"]
+          ["wait"],
+          ["setFog", {}]
         ],
         "center": [0, 0],
         "zoom": 0,
