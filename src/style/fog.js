@@ -45,6 +45,7 @@ class Fog extends Evented {
     // Alternate projections do not yet support fog.
     // Hold on to transform so that we know whether a projection is set.
     _transform: Transform;
+    _initialSet: boolean;
 
     constructor(fogOptions?: FogSpecification, transform: Transform) {
         super();

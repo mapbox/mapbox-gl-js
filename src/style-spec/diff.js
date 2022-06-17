@@ -343,7 +343,6 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
 
     let commands = [];
 
-    console.log(after.fog)
     try {
         // Handle changes to top-level properties
         if (!isEqual(before.version, after.version)) {
