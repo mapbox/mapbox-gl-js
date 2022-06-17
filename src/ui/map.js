@@ -1190,13 +1190,20 @@ class Map extends Camera {
 
     _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
         const prevProjection = this.getProjection();
-        if (explicitProjection === null) { this._explicitProjection = null; }
+        if (explicitProjection === null) {
+            this._explicitProjection = null;
+        }
         const projection = explicitProjection || this.getProjection();
 
+        let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
-        const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
-            {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
-            projection);
+        if (projection && projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            projectionHasChanged = this.transform.setProjection({name: 'mercator'});
+            this.transform.mercatorFromTransition = true;
+        } else {
+            projectionHasChanged = this.transform.setProjection(projection);
+            this.transform.mercatorFromTransition = false;
+        }
 
         // When called through setProjection, update _explicitProjection
         if (explicitProjection) {
@@ -1207,11 +1214,12 @@ class Map extends Camera {
 
         this.style.applyProjectionUpdate();
 
-        if (newProjection) {
+        if (projectionHasChanged) {
             // If a zoom transition on globe
             if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different projections
+            } else {
+                // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();

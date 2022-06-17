@@ -47,6 +47,9 @@ import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../sourc
 import {resamplePred} from '../../geo/projection/resample.js';
 import {lngFromMercatorX, latFromMercatorY} from '../../geo/mercator_coordinate.js';
 import {latLngToECEF} from '../../geo/projection/globe_util.js';
+import type {ProjectionSpecification} from '../../style-spec/types.js';
+import {getProjection} from '../../geo/projection/index.js';
+import type Projection from '../../geo/projection/projection.js';
 import {mat4, vec3} from 'gl-matrix';
 import EXTENT from '../extent.js';
 
@@ -401,7 +404,8 @@ class SymbolBucket implements Bucket {
     writingModes: Array<number>;
     allowVerticalPlacement: boolean;
     hasRTLText: boolean;
-    projection: string;
+    projection: ProjectionSpecification;
+    projectionInstance: ?Projection;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -471,7 +475,7 @@ class SymbolBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         const layer = this.layers[0];
         const layout = layer.layout;
-        const isGlobe = this.projection === 'globe';
+        const isGlobe = this.projection.name === 'globe';
 
         const textFont = layout.get('text-font');
         const textField = layout.get('text-field');
@@ -650,6 +654,13 @@ class SymbolBucket implements Bucket {
     destroyDebugData() {
         this.textCollisionBox.destroy();
         this.iconCollisionBox.destroy();
+    }
+
+    getProjection(): Projection {
+        if (!this.projectionInstance) {
+            this.projectionInstance = getProjection(this.projection);
+        }
+        return this.projectionInstance;
     }
 
     destroy() {
