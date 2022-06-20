@@ -1,31 +1,23 @@
 {
   "version": 8,
   "metadata": {
-    "description": "Flat roof centroid attribute array is uploaded after terrain gets enabled.",
     "test": {
-      "height": 256,
+      "height": 512,
       "operations": [
         ["wait"],
-        ["setTerrain", {
-          "source": "rgbterrain",
-          "exaggeration": 0.05
-        }],
+        ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],
+        ["setPaintProperty", "extrusion-pattern", "fill-extrusion-ambient-occlusion-intensity", 0.001],
         ["wait"]
       ]
     }
   },
+  "transition": {
+    "duration": 0
+  },
+  "center": [0.0005, 0.0005],
   "sources": {
-    "rgbterrain": {
-      "type": "raster-dem",
-      "tiles": [
-        "local://tiles/12-759-1609.terrain.png"
-      ],
-      "maxzoom": 11,
-      "tileSize": 256
-    },
     "geojson": {
       "type": "geojson",
-      "buffer": 0,
       "data": {
         "type": "FeatureCollection",
         "features": [
@@ -33,41 +25,8 @@
             "type": "Feature",
             "properties": {
               "type": "building",
-              "height": 20
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0004,
-                    -0.0002
-                  ],
-                  [
-                    -0.0002,
-                    0
-                  ],
-                  [
-                    0,
-                    -0.0002
-                  ],
-                  [
-                    -0.0002,
-                    -0.0004
-                  ],
-                  [
-                    -0.0004,
-                    -0.0002
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "type": "building",
-              "height": 20
+              "height": 15,
+              "min_height": 5
             },
             "geometry": {
               "type": "Polygon",
@@ -79,14 +38,48 @@
                   ],
                   [
                     0.0001,
-                    0.0005
+                    0.0007
                   ],
                   [
-                    0.0004,
-                    0.0005
+                    0.0007,
+                    0.0007
                   ],
                   [
-                    0.0004,
+                    0.0007,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0001
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 45
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0001,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
                     0.0001
                   ],
                   [
@@ -101,20 +94,33 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
   "pitch": 66,
-  "bearing": -60,
   "zoom": 18,
+  "bearing": 80,
+  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "extrusion",
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-color": ["interpolate", ["linear"], ["get", "height"], 0, "red", 50, "yellow"],
         "fill-extrusion-opacity": 0.5,
-        "fill-extrusion-height": 10,
-        "fill-extrusion-ambient-occlusion-intensity": 0.6
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-translate": [0, 150]
+      }
+    },
+    {
+      "id": "extrusion-pattern",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": ["case", ["<=", ["get", "height"], 20], "generic_icon", "hospital_icon"],
+        "fill-extrusion-translate": [0, -150],
+        "fill-extrusion-translate-anchor": "map",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.5
       }
     }
   ]

@@ -107,7 +107,9 @@ map.on('style.load', function() {
             "visibility": "none"
         }
     });
-
+    map.setLight({
+        intensity: 0.26
+    });
     const buildingExtrusions = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
     if (buildingExtrusions) {
         buildingsLayerId = buildingExtrusions;
@@ -118,11 +120,11 @@ map.on('style.load', function() {
             'source-layer': 'building',
             'filter': ['==', 'extrude', 'true'],
             'type': 'fill-extrusion',
-            'minzoom': 15,
+            'minzoom': 14,
             'paint': {
-                'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+                'fill-extrusion-color': 'white',
                 'fill-extrusion-height': ["get", "height"],
-                'fill-extrusion-opacity': 0.7
+                'fill-extrusion-base': ["get", "min_height"]
             }
         }, 'waterway-label');
     }

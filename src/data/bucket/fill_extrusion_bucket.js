@@ -373,13 +373,15 @@ class FillExtrusionBucket implements Bucket {
 
                 let edgeDistance = 0;
                 if (metadata) metadata.startRing(ring[0]);
+                const isFirstCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
+                let isPrevCornerConcave = isFirstCornerConcave;
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
-                        if (!isBoundaryEdge(p1, p2, clippedPolygon.bounds)) {
+                        if (!isEdgeOutsideBounds(p1, p2, clippedPolygon.bounds)) {
                             if (metadata) metadata.append(p1, p2);
                             if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
@@ -393,13 +395,19 @@ class FillExtrusionBucket implements Bucket {
                             const dist = p2.dist(p1);
                             if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            const isConcaveCorner = ring.length > 4 && (p + 1 !== ring.length ? isAOConcaveAngle(p2, p1, ring[p + 1]) : isFirstCornerConcave);
+
+                            let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                             edgeDistance += dist;
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, edgeDistance);
+                            encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
+                            isPrevCornerConcave = isConcaveCorner;
+
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                             const bottomRight = segment.vertexLength;
 
@@ -566,9 +574,15 @@ register(PartMetadata, 'PartMetadata');
 
 export default FillExtrusionBucket;
 
-function isBoundaryEdge(p1, p2, bounds) {
-    return (p1.x === p2.x && (p1.x < bounds[0].x || p1.x > bounds[1].x)) ||
-           (p1.y === p2.y && (p1.y < bounds[0].y || p1.y > bounds[1].y));
+// Edges that are outside tile bounds are defined in tile across the border.
+// Rendering them twice often results with Z-fighting.
+// In case of globe and axis aligned bounds, it is also useful to
+// discard edges that have the both endpoints outside the same bound.
+function isEdgeOutsideBounds(p1, p2, bounds) {
+    return (p1.x < bounds[0].x && p2.x < bounds[0].x) ||
+           (p1.x > bounds[1].x && p2.x > bounds[1].x) ||
+           (p1.y < bounds[0].y && p2.y < bounds[0].y) ||
+           (p1.y > bounds[1].y && p2.y > bounds[1].y);
 }
 
 function isEntirelyOutside(ring) {
@@ -587,6 +601,29 @@ function tileToMeter(canonical: CanonicalTileID) {
     const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
     // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
+}
+
+function isAOConcaveAngle(p2, p1, p3) {
+    if (p2.x < 0 || p2.x >= EXTENT || p1.x < 0 || p1.x >= EXTENT || p3.x < 0 || p3.x >= EXTENT) {
+        return false; // angles are not processed for edges that extend over tile borders
+    }
+    const a = p3.sub(p1);
+    const an = a.perp();
+    const b = p2.sub(p1);
+    const ab = a.x * b.x + a.y * b.y;
+    const cosAB = ab / Math.sqrt(((a.x * a.x + a.y * a.y) * (b.x * b.x + b.y * b.y)));
+    const dotProductWithNormal = an.x * b.x + an.y * b.y;
+
+    // Heuristics: don't shade concave angles above 150° (arccos(-0.866)).
+    return cosAB > -0.866 && dotProductWithNormal < 0;
+}
+
+function encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, edgeStart) {
+    // Encode concavity and edge start/end using the least significant bits.
+    // Second least significant bit 1 encodes concavity.
+    // The least significant bit 1 marks the edge start, 0 for edge end.
+    const encodedEdgeDistance = isConcaveCorner ? (edgeDistance | 2) : (edgeDistance & ~2);
+    return edgeStart ? (encodedEdgeDistance | 1) : (encodedEdgeDistance & ~1);
 }
 
 export function fillExtrusionHeightLift(): number {
