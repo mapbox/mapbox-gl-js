@@ -35,15 +35,15 @@ const tileSize = 256;
 const colors = ['#74a9cf', '#3690c0', '#0570b0', '#045a8d'];
 let currentColor = colors[0];
 
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = tileSize;
+const context = canvas.getContext('2d', {willReadFrequently: true});
+
 map.on('load', () => {
     map.addSource('custom-source', {
         type: 'custom',
         tileSize,
         async loadTile({z, x, y}) {
-            const tileSize = 256;
-            const canvas = document.createElement('canvas');
-            canvas.width = canvas.height = tileSize;
-            const context = canvas.getContext('2d');
             context.fillStyle = 'red';
             context.fillRect(0, 0, tileSize, tileSize);
 
@@ -51,15 +51,9 @@ map.on('load', () => {
             context.fillStyle = 'white';
             context.textAlign = 'center';
             context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
-
-            const imageData = context.getImageData(0, 0, tileSize, tileSize);
-            return imageData;
+            return canvas;
         },
         prepareTile({z, x, y}) {
-            const tileSize = 256;
-            const canvas = document.createElement('canvas');
-            canvas.width = canvas.height = tileSize;
-            const context = canvas.getContext('2d');
             context.fillStyle = currentColor;
             context.fillRect(0, 0, tileSize, tileSize);
 
@@ -67,9 +61,7 @@ map.on('load', () => {
             context.fillStyle = 'white';
             context.textAlign = 'center';
             context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
-
-            const imageData = context.getImageData(0, 0, tileSize, tileSize);
-            return imageData;
+            return canvas;
         },
         hasTile({z, x, y}) {
             return (x + y) % 2 === 0;
