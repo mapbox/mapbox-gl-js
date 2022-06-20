@@ -159,7 +159,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
 
     const trimOffset = layer.paint.get('line-trim-offset');
-    if (trimOffset[0] !== 0 && trimOffset[1] !== 0) {
+    if (trimOffset[0] !== 0 || trimOffset[1] !== 0) {
         values.push('RENDER_LINE_TRIM_OFFSET');
     }
 
