@@ -574,8 +574,10 @@ register(PartMetadata, 'PartMetadata');
 
 export default FillExtrusionBucket;
 
-// Edges that are outside bounds are defined in tile across the border.
+// Edges that are outside tile bounds are defined in tile across the border.
 // Rendering them twice often results with Z-fighting.
+// In case of globe and axis aligned bounds, it is also useful to
+// discard edges that have the both endpoints outside the same bound.
 function isEdgeOutsideBounds(p1, p2, bounds) {
     return (p1.x < bounds[0].x && p2.x < bounds[0].x) ||
            (p1.x > bounds[1].x && p2.x > bounds[1].x) ||

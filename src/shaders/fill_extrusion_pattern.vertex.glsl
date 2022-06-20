@@ -131,6 +131,7 @@ void main() {
     }
 
 #ifdef FAUX_AO
+    // Documented at https://github.com/mapbox/mapbox-gl-js/pull/11926#discussion_r898496259
     float concave = pos_nx.w - floor(pos_nx.w * 0.5) * 2.0;
     float start = top_up_ny_start.w;
     float y_ground = 1.0 - clamp(t + base, 0.0, 1.0);
