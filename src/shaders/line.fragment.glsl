@@ -71,8 +71,13 @@ void main() {
     // Mark the pixel to be transparent when:
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
-    if (trim_end > trim_start && (line_progress <= trim_end && line_progress >= trim_start)) {
-        out_color = vec4(0, 0, 0, 0);
+
+    // Nested conditionals fixes the issue
+    // https://github.com/mapbox/mapbox-gl-js/issues/12013
+    if (trim_end > trim_start) {
+        if (line_progress <= trim_end && line_progress >= trim_start) {
+            out_color = vec4(0, 0, 0, 0);
+        }
     }
 #endif
 
