@@ -14,7 +14,6 @@ attribute vec2 a_pos;
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;         // Projected position on the globe
 attribute vec3 a_pos_normal_3;  // Surface normal at the position
-attribute float a_scale;
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;
