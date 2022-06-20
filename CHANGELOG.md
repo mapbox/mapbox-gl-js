@@ -2,7 +2,7 @@
 
 ### Bug fixes 🐞
 
-* Fix missing lines on some Windows devices. (#[12017](https://github.com/mapbox/mapbox-gl-js/pull/12017))
+* Fix missing lines on some Windows devices. ([#12017](https://github.com/mapbox/mapbox-gl-js/pull/12017))
 
 ## 2.9.0
 
