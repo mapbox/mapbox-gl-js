@@ -1,5 +1,7 @@
 #ifdef RENDER_SHADOWS
 
+precision highp float;
+
 uniform sampler2D u_shadowmap_0;
 uniform sampler2D u_shadowmap_1;
 uniform float u_shadow_intensity;
@@ -17,14 +19,14 @@ float shadow_sample_0(vec2 uv, float compare) {
 float shadow_occlusion_1(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999) - bias;
+    float fragDepth = pos.z - bias;
     return shadow_sample_1(pos.xy, fragDepth);
 }
 
 float shadow_occlusion_0(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999) - bias;
+    float fragDepth = pos.z - bias;
     vec2 uv = pos.xy;
 
     vec2 texel = uv / u_texel_size - vec2(1.5);
@@ -54,7 +56,7 @@ float shadow_occlusion_0(vec4 pos, float bias) {
     vec2 uv23 = uv03 + vec2(2.0 * s, 0);
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
-    float o00 = shadow_sample_0(uv00, fragDepth);
+    highp float o00 = shadow_sample_0(uv00, fragDepth);
     float o10 = shadow_sample_0(uv10, fragDepth);
     float o20 = shadow_sample_0(uv20, fragDepth);
     float o30 = shadow_sample_0(uv30, fragDepth);
