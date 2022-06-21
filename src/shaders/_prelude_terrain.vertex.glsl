@@ -113,9 +113,9 @@ float elevation(vec2 apos) {
 // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
 // shadow mapping examples.
 // https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
-float unpack_depth(vec4 rgba_depth)
+highp float unpack_depth(highp vec4 rgba_depth)
 {
-    const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+    const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
     return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
 }
 
