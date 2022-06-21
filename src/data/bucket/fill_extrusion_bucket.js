@@ -376,66 +376,63 @@ class FillExtrusionBucket implements Bucket {
                 const isFirstCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
                 let isPrevCornerConcave = isFirstCornerConcave;
 
-                for (let p = 0; p < ring.length; p++) {
-                    const p1 = ring[p];
+                for (let j = 1; j < ring.length; j++) {
+                    const p0 = ring[j - 1];
+                    const p1 = ring[j];
+                    if (!isEdgeOutsideBounds(p1, p0, clippedPolygon.bounds)) {
+                        if (metadata) metadata.append(p1, p0);
+                        if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+                            segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                        }
 
-                    if (p >= 1) {
-                        const p2 = ring[p - 1];
-                        if (!isEdgeOutsideBounds(p1, p2, clippedPolygon.bounds)) {
-                            if (metadata) metadata.append(p1, p2);
-                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                            }
+                        const d = p1.sub(p0)._perp();
+                        // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                        // This information is sufficient to reconstruct normal vector in vertex shader.
+                        const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                        const nySign = d.y > 0 ? 1 : 0;
+                        const dist = p0.dist(p1);
+                        if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                            const d = p1.sub(p2)._perp();
-                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                            // This information is sufficient to reconstruct normal vector in vertex shader.
-                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                            const nySign = d.y > 0 ? 1 : 0;
-                            const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 0;
+                        const isConcaveCorner = ring.length > 4 && (j + 1 !== ring.length ? isAOConcaveAngle(p0, p1, ring[j + 1]) : isFirstCornerConcave);
 
-                            const isConcaveCorner = ring.length > 4 && (p + 1 !== ring.length ? isAOConcaveAngle(p2, p1, ring[p + 1]) : isFirstCornerConcave);
+                        let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
+                        addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                        addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
-                            let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
+                        edgeDistance += dist;
 
-                            edgeDistance += dist;
+                        encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
+                        isPrevCornerConcave = isConcaveCorner;
 
-                            encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
-                            isPrevCornerConcave = isConcaveCorner;
+                        addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                        addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
+                        const bottomRight = segment.vertexLength;
 
-                            const bottomRight = segment.vertexLength;
+                        // ┌──────┐
+                        // │ 0  1 │ Counter-clockwise winding order.
+                        // │      │ Triangle 1: 0 => 2 => 1
+                        // │ 2  3 │ Triangle 2: 1 => 2 => 3
+                        // └──────┘
+                        this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
+                        this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
-                            // ┌──────┐
-                            // │ 0  1 │ Counter-clockwise winding order.
-                            // │      │ Triangle 1: 0 => 2 => 1
-                            // │ 2  3 │ Triangle 2: 1 => 2 => 3
-                            // └──────┘
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
-                            this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                        segment.vertexLength += 4;
+                        segment.primitiveLength += 2;
 
-                            segment.vertexLength += 4;
-                            segment.primitiveLength += 2;
+                        if (isGlobe) {
+                            const array: any = this.layoutVertexExtArray;
 
-                            if (isGlobe) {
-                                const array: any = this.layoutVertexExtArray;
+                            const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+                            const projectedP2 = projection.projectTilePoint(p0.x, p0.y, canonical);
 
-                                const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
-                                const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
+                            const n1 = projection.upVector(canonical, p1.x, p1.y);
+                            const n2 = projection.upVector(canonical, p0.x, p0.y);
 
-                                const n1 = projection.upVector(canonical, p1.x, p1.y);
-                                const n2 = projection.upVector(canonical, p2.x, p2.y);
-
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                            }
+                            addGlobeExtVertex(array, projectedP1, n1);
+                            addGlobeExtVertex(array, projectedP1, n1);
+                            addGlobeExtVertex(array, projectedP2, n2);
+                            addGlobeExtVertex(array, projectedP2, n2);
                         }
                     }
                 }
