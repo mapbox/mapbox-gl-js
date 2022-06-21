@@ -836,7 +836,7 @@ export class Terrain extends Elevation {
         // and use this information to sort them from closest to furthest.
         const preparedTiles = this._visibleDemTiles.filter(tile => tile.dem).map(tile => {
             const id = tile.tileID;
-            const tiles = Math.pow(2.0, id.overscaledZ);
+            const tiles = 1 << id.overscaledZ;
             const {x, y} = id.canonical;
 
             // Compute tile boundaries in mercator coordinates

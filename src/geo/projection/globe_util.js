@@ -183,14 +183,8 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
 
     // After zoom 1 surface function is monotonic for all tile patches
     // => it is enough to project corner points
-    const [min, max] = globeTileLatLngCorners(id);
-
-    const corners = [
-        latLngToECEF(min[0], min[1]),
-        latLngToECEF(min[0], max[1]),
-        latLngToECEF(max[0], min[1]),
-        latLngToECEF(max[0], max[1])
-    ];
+    const [[n, w], [s, e]] = tileCornersInLatLng(id);
+    const corners = rectLatLngToECEF(n, w, s, e);
 
     const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
     const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
@@ -245,17 +239,12 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // Simplified aabb is computed by first encapsulating 4 transformed corner points of the tile.
     // The resulting aabb is not complete yet as curved edges of the tile might span outside of the boundaries.
     // It is enough to extend the aabb to contain only the edge that's closest to the center point.
-    const [nw, se] = globeTileLatLngCorners(tileId);
-    const bounds = new LngLatBounds();
-    bounds.setSouthWest([nw[1], se[0]]);
-    bounds.setNorthEast([se[1], nw[0]]);
+    const [[n, w], [s, e]] = tileCornersInLatLng(tileId);
+    const corners = rectLatLngToECEF(n, w, s, e);
 
-    const corners = [
-        latLngToECEF(bounds.getSouth(), bounds.getWest()),
-        latLngToECEF(bounds.getSouth(), bounds.getEast()),
-        latLngToECEF(bounds.getNorth(), bounds.getEast()),
-        latLngToECEF(bounds.getNorth(), bounds.getWest())
-    ];
+    const bounds = new LngLatBounds();
+    bounds.setSouthWest([w, s]);
+    bounds.setNorthEast([e, n]);
 
     // Note that here we're transforming the corners to world space while finding the min/max values.
     for (let i = 0; i < corners.length; i++) {
@@ -337,17 +326,37 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-export function globeTileLatLngCorners(id: CanonicalTileID): [[number, number], [number, number]] {
-    const tileScale = 1 << id.z;
-    const left = id.x / tileScale;
-    const right = (id.x + 1) / tileScale;
-    const top = id.y / tileScale;
-    const bottom = (id.y + 1) / tileScale;
+function tileCornersInMercator(tileId: CanonicalTileID): [number, number, number, number] {
+    const tileScale = 1.0 / (1 << tileId.z);
 
-    const latLngTL = [ latFromMercatorY(top), lngFromMercatorX(left) ];
-    const latLngBR = [ latFromMercatorY(bottom), lngFromMercatorX(right) ];
+    const west = tileId.x * tileScale;
+    const east = west + tileScale;
+    const north = tileId.y * tileScale;
+    const south = north + tileScale;
 
-    return [latLngTL, latLngBR];
+    return [north, west, south, east];
+}
+
+export function tileCornersInLatLng(tileId: CanonicalTileID): [[number, number], [number, number]] {
+    const [north, west, south, east] = tileCornersInMercator(tileId);
+
+    const latLngNW = [ latFromMercatorY(north), lngFromMercatorX(west) ];
+    const latLngSE = [ latFromMercatorY(south), lngFromMercatorX(east) ];
+
+    return [latLngNW, latLngSE];
+}
+
+function rectLatLngToECEF(n, w, s, e) {
+    const cosN = Math.cos(degToRad(n));
+    const cosS = Math.cos(degToRad(s));
+    const sinN = Math.sin(degToRad(n));
+    const sinS = Math.sin(degToRad(s));
+    return [
+        csLatLngToECEF(cosS, sinS, w),
+        csLatLngToECEF(cosS, sinS, e),
+        csLatLngToECEF(cosN, sinN, e),
+        csLatLngToECEF(cosN, sinN, w)
+    ];
 }
 
 function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): Array<number> {
@@ -367,7 +376,7 @@ export function latLngToECEF(lat: number, lng: number, radius?: number): Array<n
 }
 
 export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID): Array<number> {
-    const tiles = Math.pow(2.0, id.z);
+    const tiles = 1 << id.z;
     const mx = (x / EXTENT + id.x) / tiles;
     const my = (y / EXTENT + id.y) / tiles;
     const lat = latFromMercatorY(my);
@@ -446,21 +455,16 @@ export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): F
     // compesanting the reprojection. This has to be compensated for the
     // map aligned label space. Whithout this logic map aligned symbols
     // would appear larger than intended.
-    const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._projectionScaler, 0, 0);
+    const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._pixelsPerMercatorPixel, 0, 0);
     return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
 }
 
 export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
-    const worldSize = tr.worldSize;
-    const point = tr.point;
-
-    const mercatorZ = mercatorZfromAltitude(1, tr.center.lat) * worldSize;
-    const projectionScaler = mercatorZ / tr.pixelsPerMeter;
     const zScale = tr.pixelsPerMeter;
-    const ws = worldSize / projectionScaler;
+    const ws = zScale / mercatorZfromAltitude(1, tr.center.lat);
 
     const posMatrix = mat4.identity(new Float64Array(16));
-    mat4.translate(posMatrix, posMatrix, [point.x, point.y, 0.0]);
+    mat4.translate(posMatrix, posMatrix, [tr.point.x, tr.point.y, 0.0]);
     mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
     return Float32Array.from(posMatrix);
@@ -500,13 +504,13 @@ export function globeUseCustomAntiAliasing(painter: Painter, context: Context, t
 }
 
 export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [number, number]], latitudinalLod: number): Array<number> {
-    const [tl, br] = corners;
+    const [[n, w], [s, e]] = corners;
     const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
-    const x = (br[1] - tl[1]) * S;
+    const x = (e - w) * S;
     const latitudinalSubdivs = GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
-    const y = (br[0] - tl[0]) / latitudinalSubdivs;
+    const y = (s - n) / latitudinalSubdivs;
     const tileZoom = 1 << id.z;
-    return [0, x, tileZoom, y, 0, id.y, tl[0], tl[1], S];
+    return [0, x, tileZoom, y, 0, id.y, n, w, S];
 }
 
 export function getLatitudinalLod(lat: number): number {

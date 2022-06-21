@@ -43,9 +43,9 @@ export default class Globe extends Mercator {
     }
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
-        const tiles = Math.pow(2.0, id.z);
-        const mx = (x / EXTENT + id.x) / tiles;
-        const my = (y / EXTENT + id.y) / tiles;
+        const tileCount = 1 << id.z;
+        const mx = (x / EXTENT + id.x) / tileCount;
+        const my = (y / EXTENT + id.y) / tileCount;
         const lat = latFromMercatorY(my);
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
@@ -104,7 +104,7 @@ export default class Globe extends Mercator {
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        mat4.scale(matrix, matrix, [tr._projectionScaler, tr._projectionScaler, 1.0]);
+        mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
         return Float32Array.from(matrix);
     }
 

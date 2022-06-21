@@ -233,11 +233,11 @@ export class QueryGeometry {
      */
     containsTile(tile: Tile, transform: Transform, use3D: boolean, cameraWrap: number = 0): ?TilespaceQueryGeometry {
         // The buffer around the query geometry is applied in screen-space.
-        // transform._projectionScaler is used to compensate any extra scaling applied from the currently active projection.
+        // transform._pixelsPerMercatorPixel is used to compensate any extra scaling applied from the currently active projection.
         // Floating point errors when projecting into tilespace could leave a feature
         // outside the query volume even if it looks like it overlaps visually, a 1px bias value overcomes that.
         const bias = 1;
-        const padding = tile.queryPadding / transform._projectionScaler + bias;
+        const padding = tile.queryPadding / transform._pixelsPerMercatorPixel + bias;
 
         const cachedQuery = use3D ?
             this._bufferedCameraMercator(padding, transform) :
@@ -261,7 +261,7 @@ export class QueryGeometry {
             vec3.normalize(dir, dir);
             return new Ray(tilespaceCameraPosition, dir);
         });
-        const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom) * transform._projectionScaler;
+        const pixelToTileUnitsFactor = pixelsToTileUnits(tile, 1, transform.zoom) * transform._pixelsPerMercatorPixel;
 
         return {
             queryGeometry: this,
