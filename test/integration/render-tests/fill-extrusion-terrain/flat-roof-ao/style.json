@@ -1,7 +1,6 @@
 {
   "version": 8,
   "metadata": {
-    "description": "Verifies there is no assert mapbox-gl-js-internal#134",
     "test": {
       "height": 256,
       "operations": [
@@ -26,6 +25,9 @@
         "local://tiles/{z}-{x}-{y}.mvt"
       ]
     }
+  },
+  "transition": {
+    "duration": 0
   },
   "terrain": {
     "source": "rgbterrain"
