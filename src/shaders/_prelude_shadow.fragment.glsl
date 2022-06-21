@@ -17,14 +17,14 @@ float shadow_sample_0(vec2 uv, float compare) {
 float shadow_occlusion_1(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999) - bias;
+    float fragDepth = pos.z - bias;
     return shadow_sample_1(pos.xy, fragDepth);
 }
 
 float shadow_occlusion_0(vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = min(pos.z, 0.999) - bias;
+    float fragDepth = pos.z - bias;
     vec2 uv = pos.xy;
 
     vec2 texel = uv / u_texel_size - vec2(1.5);
@@ -32,7 +32,8 @@ float shadow_occlusion_0(vec4 pos, float bias) {
 
     float s = u_texel_size;
 
-    // brute force sampling
+    // Perform brute force percentage-closer filtering with a 4x4 sample grid.
+    // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel, i.e. `weight = clamp(kernel, texel.bounds).area / texel.area`
     vec2 uv00 = (texel - f + 0.5) * s;
     vec2 uv10 = uv00 + vec2(1.0 * s, 0);
     vec2 uv20 = uv00 + vec2(2.0 * s, 0);
@@ -90,7 +91,11 @@ float shadow_occlusion_0(vec4 pos, float bias) {
 
 vec3 shadowed_color_normal(
     vec3 color, vec3 N, vec3 L, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
-    float NDotL = clamp(dot(N, L), 0.0, 1.0);
+    float NDotL = dot(N, L);
+    if (NDotL < 0.0)
+        return color * (1.0 - u_shadow_intensity);
+
+    NDotL = clamp(NDotL, 0.0, 1.0);
     float bias = mix(0.02, 0.008, NDotL);
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x)
