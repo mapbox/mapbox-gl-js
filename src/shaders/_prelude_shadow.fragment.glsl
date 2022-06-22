@@ -6,11 +6,11 @@ uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
 
-highp float shadow_sample_1(vec2 uv, highp float compare) {
+highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
 }
 
-highp float shadow_sample_0(vec2 uv, highp float compare) {
+highp float shadow_sample_0(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_0, uv)), compare);
 }
 
@@ -25,34 +25,34 @@ highp float shadow_occlusion_0(highp vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
     highp float fragDepth = min(pos.z, 0.999) - bias;
-    vec2 uv = pos.xy;
+    highp vec2 uv = pos.xy;
 
-    vec2 texel = uv / u_texel_size - vec2(1.5);
-    vec2 f = fract(texel);
+    highp vec2 texel = uv / u_texel_size - vec2(1.5);
+    highp vec2 f = fract(texel);
 
-    float s = u_texel_size;
+    highp float s = u_texel_size;
 
     // Perform brute force percentage-closer filtering with a 4x4 sample grid.
     // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel, i.e. `weight = clamp(kernel, texel.bounds).area / texel.area`
-    vec2 uv00 = (texel - f + 0.5) * s;
-    vec2 uv10 = uv00 + vec2(1.0 * s, 0);
-    vec2 uv20 = uv00 + vec2(2.0 * s, 0);
-    vec2 uv30 = uv00 + vec2(3.0 * s, 0);
+    highp vec2 uv00 = (texel - f + 0.5) * s;
+    highp vec2 uv10 = uv00 + vec2(1.0 * s, 0);
+    highp vec2 uv20 = uv00 + vec2(2.0 * s, 0);
+    highp vec2 uv30 = uv00 + vec2(3.0 * s, 0);
 
-    vec2 uv01 = uv00 + vec2(0.0, 1.0 * s);
-    vec2 uv11 = uv01 + vec2(1.0 * s, 0);
-    vec2 uv21 = uv01 + vec2(2.0 * s, 0);
-    vec2 uv31 = uv01 + vec2(3.0 * s, 0);
+    highp vec2 uv01 = uv00 + vec2(0.0, 1.0 * s);
+    highp vec2 uv11 = uv01 + vec2(1.0 * s, 0);
+    highp vec2 uv21 = uv01 + vec2(2.0 * s, 0);
+    highp vec2 uv31 = uv01 + vec2(3.0 * s, 0);
 
-    vec2 uv02 = uv01 + vec2(0.0, 1.0 * s);
-    vec2 uv12 = uv02 + vec2(1.0 * s, 0);
-    vec2 uv22 = uv02 + vec2(2.0 * s, 0);
-    vec2 uv32 = uv02 + vec2(3.0 * s, 0);
+    highp vec2 uv02 = uv01 + vec2(0.0, 1.0 * s);
+    highp vec2 uv12 = uv02 + vec2(1.0 * s, 0);
+    highp vec2 uv22 = uv02 + vec2(2.0 * s, 0);
+    highp vec2 uv32 = uv02 + vec2(3.0 * s, 0);
 
-    vec2 uv03 = uv02 + vec2(0.0, 1.0 * s);
-    vec2 uv13 = uv03 + vec2(1.0 * s, 0);
-    vec2 uv23 = uv03 + vec2(2.0 * s, 0);
-    vec2 uv33 = uv03 + vec2(3.0 * s, 0);
+    highp vec2 uv03 = uv02 + vec2(0.0, 1.0 * s);
+    highp vec2 uv13 = uv03 + vec2(1.0 * s, 0);
+    highp vec2 uv23 = uv03 + vec2(2.0 * s, 0);
+    highp vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
     highp float o00 = shadow_sample_0(uv00, fragDepth);
     highp float o10 = shadow_sample_0(uv10, fragDepth);
