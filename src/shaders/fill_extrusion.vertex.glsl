@@ -22,6 +22,16 @@ uniform float u_height_lift;
 
 varying vec4 v_color;
 
+#ifdef RENDER_SHADOWS
+uniform mat4 u_light_matrix_0;
+uniform mat4 u_light_matrix_1;
+
+varying vec4 v_pos_light_view_0;
+varying vec4 v_pos_light_view_1;
+varying vec3 v_normal;
+varying float v_depth;
+#endif
+
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
 varying vec3 v_ao;
@@ -85,6 +95,13 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+
+#ifdef RENDER_SHADOWS
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(pos, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(pos, 1);
+    v_normal = normal;
+    v_depth = gl_Position.w;
+#endif
 
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;

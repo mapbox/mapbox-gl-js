@@ -73,6 +73,7 @@ export let preludeFog = {};
 
 preludeTerrain = compile('', preludeTerrainVert, true);
 preludeFog = compile(preludeFogFrag, preludeFogVert, true);
+// Shadow prelude is not compiled until GL-JS implements shadows
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
@@ -150,7 +151,7 @@ export default {
 };
 
 // Expand #pragmas to #ifdefs.
-function compile(fragmentSource, vertexSource, isGlobalPrelude) {
+export function compile(fragmentSource, vertexSource, isGlobalPrelude) {
     const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
     const uniformRegex = /uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g;
     const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
