@@ -1,32 +1,30 @@
 #ifdef RENDER_SHADOWS
 
-precision highp float;
-
 uniform sampler2D u_shadowmap_0;
 uniform sampler2D u_shadowmap_1;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
 
-float shadow_sample_1(vec2 uv, float compare) {
+highp float shadow_sample_1(vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
 }
 
-float shadow_sample_0(vec2 uv, float compare) {
+highp float shadow_sample_0(vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_0, uv)), compare);
 }
 
-float shadow_occlusion_1(vec4 pos, float bias) {
+highp float shadow_occlusion_1(highp vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = pos.z - bias;
+    highp float fragDepth = min(pos.z, 0.999) - bias;
     return shadow_sample_1(pos.xy, fragDepth);
 }
 
-float shadow_occlusion_0(vec4 pos, float bias) {
+highp float shadow_occlusion_0(highp vec4 pos, float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    float fragDepth = pos.z - bias;
+    highp float fragDepth = min(pos.z, 0.999) - bias;
     vec2 uv = pos.xy;
 
     vec2 texel = uv / u_texel_size - vec2(1.5);
@@ -57,27 +55,27 @@ float shadow_occlusion_0(vec4 pos, float bias) {
     vec2 uv33 = uv03 + vec2(3.0 * s, 0);
 
     highp float o00 = shadow_sample_0(uv00, fragDepth);
-    float o10 = shadow_sample_0(uv10, fragDepth);
-    float o20 = shadow_sample_0(uv20, fragDepth);
-    float o30 = shadow_sample_0(uv30, fragDepth);
+    highp float o10 = shadow_sample_0(uv10, fragDepth);
+    highp float o20 = shadow_sample_0(uv20, fragDepth);
+    highp float o30 = shadow_sample_0(uv30, fragDepth);
 
-    float o01 = shadow_sample_0(uv01, fragDepth);
-    float o11 = shadow_sample_0(uv11, fragDepth);
-    float o21 = shadow_sample_0(uv21, fragDepth);
-    float o31 = shadow_sample_0(uv31, fragDepth);
+    highp float o01 = shadow_sample_0(uv01, fragDepth);
+    highp float o11 = shadow_sample_0(uv11, fragDepth);
+    highp float o21 = shadow_sample_0(uv21, fragDepth);
+    highp float o31 = shadow_sample_0(uv31, fragDepth);
 
-    float o02 = shadow_sample_0(uv02, fragDepth);
-    float o12 = shadow_sample_0(uv12, fragDepth);
-    float o22 = shadow_sample_0(uv22, fragDepth);
-    float o32 = shadow_sample_0(uv32, fragDepth);
+    highp float o02 = shadow_sample_0(uv02, fragDepth);
+    highp float o12 = shadow_sample_0(uv12, fragDepth);
+    highp float o22 = shadow_sample_0(uv22, fragDepth);
+    highp float o32 = shadow_sample_0(uv32, fragDepth);
 
-    float o03 = shadow_sample_0(uv03, fragDepth);
-    float o13 = shadow_sample_0(uv13, fragDepth);
-    float o23 = shadow_sample_0(uv23, fragDepth);
-    float o33 = shadow_sample_0(uv33, fragDepth);
+    highp float o03 = shadow_sample_0(uv03, fragDepth);
+    highp float o13 = shadow_sample_0(uv13, fragDepth);
+    highp float o23 = shadow_sample_0(uv23, fragDepth);
+    highp float o33 = shadow_sample_0(uv33, fragDepth);
 
     // Edge tap smoothing
-    float value = 
+    highp float value = 
         (1.0 - f.x) * (1.0 - f.y) * o00 +
         (1.0 - f.y) * (o10 + o20) +
         f.x * (1.0 - f.y) * o30 +
@@ -94,9 +92,6 @@ float shadow_occlusion_0(vec4 pos, float bias) {
 vec3 shadowed_color_normal(
     vec3 color, vec3 N, vec3 L, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
     float NDotL = dot(N, L);
-    if (NDotL < 0.0)
-        return color * (1.0 - u_shadow_intensity);
-
     NDotL = clamp(NDotL, 0.0, 1.0);
     float bias = mix(0.02, 0.008, NDotL);
     float occlusion = 0.0;
