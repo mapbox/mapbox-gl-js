@@ -104,7 +104,7 @@ const lineUniformValues = (
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset
     };
-    if (hasDash(layer)) {
+    if (layer.hasDash()) {
         const tileZoomRatio = calculateTileRatio(tile, painter.transform);
         values['u_texsize'] = tile.lineAtlasTexture.size;
         values['u_scale'] = [tileZoomRatio, crossfade.fromScale, crossfade.toScale];
@@ -153,33 +153,9 @@ function calculateMatrix(painter, tile, layer, matrix) {
     );
 }
 
-const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
-    const values = [];
-    if (hasDash(layer)) values.push('RENDER_LINE_DASH');
-    if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
-
-    const trimOffset = layer.paint.get('line-trim-offset');
-    if (trimOffset[0] !== 0 || trimOffset[1] !== 0) {
-        values.push('RENDER_LINE_TRIM_OFFSET');
-    }
-
-    const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
-    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
-    if (!hasPattern && hasOpacity) {
-        values.push('RENDER_LINE_ALPHA_DISCARD');
-    }
-    return values;
-};
-
-function hasDash(layer) {
-    const dashPropertyValue = layer.paint.get('line-dasharray').value;
-    return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
-}
-
 export {
     lineUniforms,
     linePatternUniforms,
     lineUniformValues,
-    linePatternUniformValues,
-    lineDefinesValues
+    linePatternUniformValues
 };

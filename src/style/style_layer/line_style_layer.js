@@ -92,6 +92,29 @@ class LineStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
+    getProgramFixedDefines() {
+        const values = [];
+        if (this.hasDash()) values.push('RENDER_LINE_DASH');
+        if (this.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
+
+        const trimOffset = this.paint.get('line-trim-offset');
+        if (trimOffset[0] !== 0 || trimOffset[1] !== 0) {
+            values.push('RENDER_LINE_TRIM_OFFSET');
+        }
+
+        const hasPattern = this.paint.get('line-pattern').constantOr((1: any));
+        const hasOpacity = this.paint.get('line-opacity').constantOr(1.0) !== 1.0;
+        if (!hasPattern && hasOpacity) {
+            values.push('RENDER_LINE_ALPHA_DISCARD');
+        }
+        return values;
+    }
+
+    hasDash() {
+        const dashPropertyValue = this.paint.get('line-dasharray').value;
+        return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
+    }
+
     queryRadius(bucket: Bucket): number {
         const lineBucket: LineBucket = (bucket: any);
         const width = getLineWidth(

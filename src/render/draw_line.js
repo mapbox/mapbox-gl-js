@@ -6,8 +6,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import Texture from './texture.js';
 import {
     lineUniformValues,
-    linePatternUniformValues,
-    lineDefinesValues
+    linePatternUniformValues
 } from './program/line_program.js';
 import browser from '../util/browser.js';
 
@@ -46,7 +45,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
-    const definesValues = lineDefinesValues(layer);
+    const definesValues = layer.getProgramFixedDefines();
     let useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
     if (painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;

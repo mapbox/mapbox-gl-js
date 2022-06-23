@@ -225,7 +225,10 @@ class Painter {
     }
 
     get terrain(): ?Terrain {
-        return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
+        const supportsTerrain = this.transform._terrainEnabled();
+        const styleHasTerrain = !!this.style.terrain;
+        const isEnabled = this._terrain && this._terrain.enabled;
+        return supportsTerrain && styleHasTerrain && isEnabled ? this._terrain : null;
     }
 
     /*
@@ -854,7 +857,8 @@ class Painter {
      * @private
      */
     currentGlobalDefines(): string[] {
-        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
+        // Enables elevation sampling in vertex shader.
+        const terrain = this.terrain && !this.terrain.renderingToTexture;
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
         const defines = [];
@@ -879,7 +883,31 @@ class Painter {
         const key = Program.cacheKey(name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
+            console.log('Cache miss shader program ', key);
             this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);
+
+            // TODO: Differentiate root property define vs PROJECTED_POS_ON_VIEWPORT type of define
+
+            // Reuse cache miss information to precompile some shaders
+            this.precompileProgram(name, programConfiguration, []);
+            this.precompileProgram(name, programConfiguration, [...defines]);
+            this.precompileProgram(name, programConfiguration, [...defines, 'TERRAIN']);
+            // painter.precompileProgram(name, programConfiguration, [...defines, 'FOG']);
+            // painter.precompileProgram(name, programConfiguration, [...defines, 'FOG', 'TERRAIN']);
+            this.precompileProgram(name, programConfiguration, [...defines, 'RENDER_TO_TEXTURE']);
+            this.precompileProgram(name, programConfiguration, [...defines, 'TERRAIN', 'PROJECTION_GLOBE_VIEW']);
+        }
+        return this.cache[key];
+    }
+
+    precompileProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
+        this.cache = this.cache || {};
+        const defines = (((fixedDefines || []): any): string[]);
+        const key = Program.cacheKey(name, defines, programConfiguration);
+
+        if (!this.cache[key]) {
+            // console.log('Precompiling shader program ', key);
+            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], defines);
         }
         return this.cache[key];
     }

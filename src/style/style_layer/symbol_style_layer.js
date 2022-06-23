@@ -192,6 +192,10 @@ class SymbolStyleLayer extends StyleLayer {
     getProgramConfiguration(zoom: number): ProgramConfiguration {
         return new ProgramConfiguration(this, zoom);
     }
+
+    // getProgramIds(): Array<string> {
+    //     return ['symbolSDF', 'symbolIcon'];
+    // }
 }
 
 export default SymbolStyleLayer;

@@ -566,11 +566,22 @@ class Style extends Evented {
                 if (!programIds) continue;
 
                 const programConfiguration = layer.getProgramConfiguration(parameters.zoom);
+                const programFixedDefines = layer.getProgramFixedDefines() || [];
 
                 for (const programId of programIds) {
-                    painter.useProgram(programId, programConfiguration);
+                    painter.precompileProgram(programId, programConfiguration, [...programFixedDefines]);
+                    painter.precompileProgram(programId, programConfiguration, [...programFixedDefines, 'TERRAIN']);
+                    // painter.precompileProgram(programId, programConfiguration, [...programFixedDefines, 'FOG']);
+                    // painter.precompileProgram(programId, programConfiguration, [...programFixedDefines, 'FOG', 'TERRAIN']);
+                    painter.precompileProgram(programId, programConfiguration, [...programFixedDefines, 'RENDER_TO_TEXTURE']);
+                    painter.precompileProgram(programId, programConfiguration, [...programFixedDefines, 'TERRAIN', 'PROJECTION_GLOBE_VIEW']);
                 }
             }
+
+            // TODO: Precompile some global terrain shaders (globeRaster, poles...)
+
+            // TODO: Custom antialiasing, switch to a boolean to prevent shader switching and recompilation
+            // TODO: GLOBE_POLES, switch to uniform?
         }
 
         for (const sourceId in sourcesUsedBefore) {
