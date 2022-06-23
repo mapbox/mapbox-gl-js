@@ -14,10 +14,10 @@ import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
-import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment} from './projection/adjustments.js';
+import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -103,6 +103,8 @@ class Transform {
 
     inverseAdjustmentMatrix: Array<number>;
 
+    mercatorFromTransition: boolean;
+
     minLng: number;
     maxLng: number;
     minLat: number;
@@ -143,9 +145,10 @@ class Transform {
     _centerAltitude: number;
     _centerAltitudeValidForExaggeration: ?number;
     _horizonShift: number;
-    _projectionScaler: number;
+    _pixelsPerMercatorPixel: number;
     _nearZ: number;
     _farZ: number;
+    _mercatorScaleRatio: number;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -179,7 +182,7 @@ class Transform {
         this._centerAltitude = 0;
         this._averageElevation = 0;
         this.cameraElevationReference = "ground";
-        this._projectionScaler = 1.0;
+        this._pixelsPerMercatorPixel = 1.0;
         this.globeRadius = 0;
         this.globeCenterInViewSpace = [0, 0, 0];
 
@@ -236,20 +239,20 @@ class Transform {
         return (pick(this.projection, ['name', 'center', 'parallels']): ProjectionSpecification);
     }
 
-    // Returns the new projection if the projection changes, or null if no change.
-    setProjection(projection?: ?ProjectionSpecification): ProjectionSpecification | null {
-        if (projection === undefined || projection === null) projection = {name: 'mercator'};
-        this.projectionOptions = projection;
+    // Returns whether the projection changes
+    setProjection(projection?: ?ProjectionSpecification): boolean {
+        this.projectionOptions = projection || {name: 'mercator'};
 
         const oldProjection = this.projection ? this.getProjection() : undefined;
-        this.projection = getProjection(projection);
+        this.projection = getProjection(this.projectionOptions);
         const newProjection = this.getProjection();
 
-        if (deepEqual(oldProjection, newProjection)) {
-            return null;
+        const projectionHasChanged = !deepEqual(oldProjection, newProjection);
+        if (projectionHasChanged) {
+            this._calcMatrices();
         }
-        this._calcMatrices();
-        return newProjection;
+
+        return projectionHasChanged;
     }
 
     get minZoom(): number { return this._minZoom; }
@@ -301,6 +304,11 @@ class Transform {
         const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
+
+    // `pixelsPerMeter` is used to describe relation between real world and pixel distances.
+    // In mercator projection it is dependant on latitude value meaning that one meter covers
+    // less pixels at the equator than near polar regions. Globe projection in other hand uses
+    // fixed ratio everywhere.
 
     get pixelsPerMeter(): number {
         return this.projection.pixelsPerMeter(this.center.lat, this.worldSize);
@@ -862,8 +870,33 @@ class Transform {
                 const minLat = latFromMercatorY((it.y + 1) / tilesAtZoom);
                 const maxLat = latFromMercatorY((it.y) / tilesAtZoom);
                 const closestLat = Math.min(Math.max(centerLatitude, minLat), maxLat);
-                const scale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
-                tileScaleAdjustment = Math.min(scale, 1.0);
+
+                const relativeTileScale = circumferenceAtLatitude(closestLat) / circumferenceAtLatitude(centerLatitude);
+
+                // With globe, the rendered scale does not exactly match the mercator scale at low zoom levels.
+                // Account for this difference during LOD of loading so that you load the correct size tiles.
+                // We try to compromise between two conflicting requirements:
+                // - loading tiles at the camera's zoom level (for visual and styling consistency)
+                // - loading correct size tiles (to reduce the number of tiles loaded)
+                // These are arbitrarily balanced:
+                if (closestLat === centerLatitude) {
+                    // For tiles that are in the middle of the viewport, prioritize matching the camera
+                    // zoom and allow divergence from the true scale.
+                    const maxDivergence = 0.3;
+                    tileScaleAdjustment = 1 / Math.max(1, this._mercatorScaleRatio - maxDivergence);
+                } else {
+                    // For other tiles, use the real scale to reduce tile counts near poles.
+                    tileScaleAdjustment = Math.min(1, relativeTileScale / this._mercatorScaleRatio);
+                }
+
+                // Ensure that all tiles near the center have the same zoom level.
+                // With LOD tile loading, tile zoom levels can change when scale slightly changes.
+                // These differences can be pretty different in globe view. Work around this by
+                // making more tiles match the center tile's zoom level. If the tiles are nearly big enough,
+                // round up. Only apply this adjustment before the transition to mercator rendering has started.
+                if (this.zoom <= GLOBE_ZOOM_THRESHOLD_MIN && it.zoom === maxZoom - 1 && relativeTileScale >= 0.9) {
+                    return true;
+                }
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
@@ -1003,6 +1036,7 @@ class Transform {
         }
 
         const cover = result.sort((a, b) => a.distanceSq - b.distanceSq).map(a => a.tileID);
+
         // Relax the assertion on terrain, on high zoom we use distance to center of tile
         // while camera might be closer to selected center of map.
         assert(!cover.length || this.elevation || cover[0].overscaledZ === overscaledZ || !isMercator);
@@ -1490,7 +1524,7 @@ class Transform {
 
     recenterOnTerrain() {
 
-        if (!this._elevation)
+        if (!this._elevation || this.projection.name === 'globe')
             return;
 
         const elevation: Elevation = this._elevation;
@@ -1516,7 +1550,7 @@ class Transform {
             const newCenter = new MercatorCoordinate(point[0], point[1], mercatorZfromAltitude(point[2], latFromMercatorY(point[1])));
 
             const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
-            const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._projectionScaler;
+            const maxAltitude = (newCenter.z + vec3.length(camToNew)) * this._pixelsPerMercatorPixel;
             this._seaLevelZoom = this._zoomFromMercatorZ(maxAltitude);
 
             // Camera zoom has to be updated as the orbit distance might have changed
@@ -1552,14 +1586,14 @@ class Transform {
 
             // Adjust the camera vector so that the camera is placed above the terrain.
             // Distance between the camera and the center point is kept constant.
-            cameraToCenter[2] -= (minHeight - cameraHeight) / this._projectionScaler;
+            cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
 
             const newDistToCamera = vec3.length(cameraToCenter);
             if (newDistToCamera === 0)
                 return;
 
-            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._projectionScaler);
-            this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._projectionScaler - cameraToCenter[2]];
+            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
+            this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
 
             this._camera.orientation = orientationFromFrame(cameraToCenter, this._camera.up());
             this._updateStateFromCamera();
@@ -1655,14 +1689,23 @@ class Transform {
     _calcMatrices() {
         if (!this.height) return;
 
-        const halfFov = this._fov / 2;
         const offset = this.centerOffset;
 
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
 
-        this._projectionScaler = pixelsPerMeter / (mercatorZfromAltitude(1, this.center.lat) * this.worldSize);
-        this.cameraToCenterDistance = 0.5 / Math.tan(halfFov) * this.height * this._projectionScaler;
+        if (this.projection.name === 'globe') {
+            this._mercatorScaleRatio = mercatorZfromAltitude(1, this.center.lat) / mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE);
+        }
+
+        const projectionT = getProjectionInterpolationT(this.projection, this.zoom, this.width, this.height, 1024);
+
+        // 'this._pixelsPerMercatorPixel' is the ratio between pixelsPerMeter in the current projection relative to Mercator.
+        // This is useful for converting e.g. camera position between pixel spaces as some logic
+        // such as raycasting expects the scale to be in mercator pixels
+        this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT);
+
+        this.cameraToCenterDistance = this.getCameraToCenterDistance(this.projection);
 
         this._updateCameraState();
 
@@ -1766,7 +1809,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        if (this.projection.name === 'globe') {
+        if (this.projection.name === 'globe' || this.mercatorFromTransition) {
             this.globeMatrix = calculateGlobeMatrix(this);
 
             const globeCenter = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
@@ -1795,7 +1838,7 @@ class Transform {
         // - p = p - cameraOrigin
         // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
-        const windowScaleFactor = 1 / this.height / this._projectionScaler;
+        const windowScaleFactor = 1 / this.height / this._pixelsPerMercatorPixel;
         const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);
@@ -1871,7 +1914,7 @@ class Transform {
         const {pitch, bearing} = this._camera.getPitchBearing();
 
         // Compute zoom from the distance between camera and terrain
-        const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._projectionScaler;
+        const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._pixelsPerMercatorPixel;
         const minHeight = this._mercatorZfromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
         const height = Math.max((position[2] - centerAltitude) / Math.cos(pitch), minHeight);
         const zoom = this._zoomFromMercatorZ(height);
@@ -2016,6 +2059,12 @@ class Transform {
             const yOffset = Math.tan(pitch) * (this.cameraToCenterDistance || 1);
             return this.centerPoint.add(new Point(0, yOffset));
         }
+    }
+
+    getCameraToCenterDistance(projection: Projection): number {
+        const t = getProjectionInterpolationT(projection, this.zoom, this.width, this.height, 1024);
+        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
+        return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
     }
 }
 

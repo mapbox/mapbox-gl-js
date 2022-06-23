@@ -199,9 +199,7 @@ class Program<Us: UniformBindings> {
          currentProperties: any,
          zoom: ?number,
          configuration: ?ProgramConfiguration,
-         dynamicLayoutBuffer: ?VertexBuffer,
-         dynamicLayoutBuffer2: ?VertexBuffer,
-         dynamicLayoutBuffer3: ?VertexBuffer) {
+         dynamicLayoutBuffers: ?Array<?VertexBuffer>) {
 
         const gl = context.gl;
 
@@ -238,9 +236,7 @@ class Program<Us: UniformBindings> {
                 configuration ? configuration.getPaintVertexBuffers() : [],
                 indexBuffer,
                 segment.vertexOffset,
-                dynamicLayoutBuffer,
-                dynamicLayoutBuffer2,
-                dynamicLayoutBuffer3
+                dynamicLayoutBuffers ? dynamicLayoutBuffers : []
             );
 
             gl.drawElements(

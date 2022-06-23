@@ -79,7 +79,7 @@ type IControl = {
     onRemove(map: Map): void;
 
     +getDefaultPosition?: () => ControlPosition;
-    +_setLanguage?: (language: string) => void;
+    +_setLanguage?: (language: ?string) => void;
 }
 /* eslint-enable no-use-before-define */
 
@@ -256,10 +256,11 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {string} [options.language] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {string} [options.language=null] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
- *   By default, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
+ *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
  *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
  * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
      * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
@@ -289,11 +290,12 @@ const defaultOptions = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  *  see [`src/ui/default_locale.js`](https://github.com/mapbox/mapbox-gl-js/blob/main/src/ui/default_locale.js) for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/help/glossary/projection/) the map should be rendered in.
+ * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  *  * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
  *  * [Equal Earth](https://en.wikipedia.org/wiki/Equal_Earth_projection) equal-area pseudocylindrical projection as `equalEarth`
  *  * [Equirectangular](https://en.wikipedia.org/wiki/Equirectangular_projection) (Plate Carrée/WGS84) as `equirectangular`
+ *  * 3d Globe as `globe`
  *  * [Lambert Conformal Conic](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection) as `lambertConformalConic`
  *  * [Mercator](https://en.wikipedia.org/wiki/Mercator_projection) cylindrical map projection as `mercator`
  *  * [Natural Earth](https://en.wikipedia.org/wiki/Natural_Earth_projection) pseudocylindrical map projection as `naturalEarth`
@@ -384,7 +386,7 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: string;
+    _language: ?string;
     _worldview: ?string;
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
@@ -489,7 +491,7 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
-        this._language = options.language || window.navigator.language;
+        this._language = options.language === 'auto' ? window.navigator.language : options.language;
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
@@ -798,8 +800,7 @@ class Map extends Camera {
      */
     getBounds(): LngLatBounds | null {
         if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support getBounds API');
-            return null;
+            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly."');
         }
         return this.transform.getBounds();
     }
@@ -1055,6 +1056,7 @@ class Map extends Camera {
     /**
      * Returns the code for the map's language which is used for translating map labels.
      *
+     * @private
      * @returns {string} Returns the map's language code.
      * @example
      * const language = map.getLanguage();
@@ -1066,17 +1068,22 @@ class Map extends Camera {
     /**
      * Sets the map's language.
      *
+     * @private
      * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
+     *
+     * @example
+     * map.setLanguage('auto');
      */
     setLanguage(language?: ?string): this {
-        this._language = language || window.navigator.language;
+        this._language = language === 'auto' ? window.navigator.language : language;
+
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.language && source.language !== this._language && source._setLanguage) {
+                if (source._setLanguage) {
                     source._setLanguage(this._language);
                 }
             }
@@ -1094,6 +1101,7 @@ class Map extends Camera {
     /**
      * Returns the code for the map's worldview.
      *
+     * @private
      * @returns {string} Returns the map's worldview code.
      * @example
      * const worldview = map.getWorldview();
@@ -1105,6 +1113,7 @@ class Map extends Camera {
     /**
      * Sets the map's worldview.
      *
+     * @private
      * @param {string} worldview A string representing the desired worldview. `undefined` or `null` will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -1115,7 +1124,7 @@ class Map extends Camera {
         if (this.style) {
             for (const id in this.style._sourceCaches) {
                 const source = this.style._sourceCaches[id]._source;
-                if (source.worldview && source.worldview !== worldview && source._setWorldview) {
+                if (source._setWorldview) {
                     source._setWorldview(worldview);
                 }
             }
@@ -1181,13 +1190,20 @@ class Map extends Camera {
 
     _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
         const prevProjection = this.getProjection();
-        if (explicitProjection === null) { this._explicitProjection = null; }
+        if (explicitProjection === null) {
+            this._explicitProjection = null;
+        }
         const projection = explicitProjection || this.getProjection();
 
+        let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
-        const newProjection = this.transform.setProjection(projection && projection.name === 'globe' ?
-            {name: (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX ? 'mercator' : 'globe')} :
-            projection);
+        if (projection && projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            projectionHasChanged = this.transform.setProjection({name: 'mercator'});
+            this.transform.mercatorFromTransition = true;
+        } else {
+            projectionHasChanged = this.transform.setProjection(projection);
+            this.transform.mercatorFromTransition = false;
+        }
 
         // When called through setProjection, update _explicitProjection
         if (explicitProjection) {
@@ -1196,17 +1212,19 @@ class Map extends Camera {
                 this.transform.getProjection());
         }
 
-        if (newProjection) {
+        this.style.applyProjectionUpdate();
+
+        if (projectionHasChanged) {
             // If a zoom transition on globe
             if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
-            } else { // If a switch between different projections
+            } else {
+                // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
             }
-            this.style.applyProjectionUpdate();
             this._update(true);
         }
 
@@ -2641,9 +2659,12 @@ class Map extends Camera {
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setFog({
-     *     "range": [1.0, 12.0],
-     *     "color": 'white',
-     *     "horizon-blend": 0.1
+     *     "range": [0.8, 8],
+     *     "color": "#dc9f9f",
+     *     "horizon-blend": 0.5,
+     *     "high-color": "#245bde",
+     *     "space-color": "#000000",
+     *     "star-intensity": 0.15
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */

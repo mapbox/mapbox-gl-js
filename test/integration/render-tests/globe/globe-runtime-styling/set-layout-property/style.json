@@ -20,7 +20,7 @@
   "projection": {
     "name": "globe"
   },
-  "zoom": 1.5,
+  "zoom": 0.9,
   "transition": {
     "duration": 0
   },

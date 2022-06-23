@@ -126,7 +126,7 @@ export function queryIntersectsCircle(queryGeometry: TilespaceQueryGeometry,
                 size *= transform.cameraToCenterDistance / projectedCenter[3];
             }
 
-            if (!scaleWithMap && alignWithMap) {
+            if (alignWithMap) {
                 // Apply extra scaling to cover different pixelPerMeter ratios at different latitudes
                 const lat = latFromMercatorY((point.y / EXTENT + tileId.y) / (1 << tileId.z));
                 const scale = transform.projection.pixelsPerMeter(lat, 1) / mercatorZfromAltitude(1, lat);

@@ -44,7 +44,8 @@ var map = window.map = new mapboxgl.Map({
         'ScrollZoomBlocker.CtrlMessage': 'X Use ctrl + scroll to zoom the map',
         'ScrollZoomBlocker.CmdMessage': 'X Use ⌘ + scroll to zoom the map',
         'TouchPanBlocker.Message': 'X Use two fingers to move the map'
-    }
+    },
+    projection: 'globe'
 });
 
 map.addControl(new mapboxgl.NavigationControl());

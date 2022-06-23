@@ -16,7 +16,7 @@
     0
   ],
   "fog": {},
-  "zoom": 0.5,
+  "zoom": 0.25,
   "sources": {
     "geojson": {
       "type": "geojson",

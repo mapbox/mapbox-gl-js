@@ -13,7 +13,8 @@ import Point from '@mapbox/point-geometry';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {
-    GLOBE_RADIUS,
+    GLOBE_METERS_TO_ECEF,
+    GLOBE_SCALE_MATCH_LATITUDE,
     latLngToECEF,
     globeTileBounds,
     globeNormalizeECEF,
@@ -29,8 +30,6 @@ import type {Vec3} from 'gl-matrix';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 
-export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
-
 export default class Globe extends Mercator {
 
     constructor(options: ProjectionSpecification) {
@@ -40,12 +39,13 @@ export default class Globe extends Mercator {
         this.supportsFog = true;
         this.zAxisUnit = "pixels";
         this.unsupportedLayers = ['debug', 'custom'];
+        this.range = [3, 5];
     }
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
-        const tiles = Math.pow(2.0, id.z);
-        const mx = (x / EXTENT + id.x) / tiles;
-        const my = (y / EXTENT + id.y) / tiles;
+        const tileCount = 1 << id.z;
+        const mx = (x / EXTENT + id.x) / tileCount;
+        const my = (y / EXTENT + id.y) / tileCount;
         const lat = latFromMercatorY(my);
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
@@ -78,6 +78,20 @@ export default class Globe extends Mercator {
         return mercatorZfromAltitude(1, 0) * worldSize;
     }
 
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
+        // Using only the center latitude to determine scale causes the globe to rapidly change
+        // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
+        // This is because zoom levels are based on mercator.
+        //
+        // Instead, use a fixed reference latitude at lower zoom levels. And transition between
+        // this latitude and the center's latitude as you zoom in. This is a compromise that
+        // makes globe view more usable with existing camera parameters, styles and data.
+        const referenceScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * worldSize;
+        const centerScale = mercatorZfromAltitude(1, lat) * worldSize;
+        const combinedScale = interpolate(referenceScale, centerScale, interpolationT);
+        return this.pixelsPerMeter(lat, worldSize) / combinedScale;
+    }
+
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
@@ -90,7 +104,7 @@ export default class Globe extends Mercator {
         mat4.multiply(matrix, matrix, encode);
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        mat4.scale(matrix, matrix, [tr._projectionScaler, tr._projectionScaler, 1.0]);
+        mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
         return Float32Array.from(matrix);
     }
 

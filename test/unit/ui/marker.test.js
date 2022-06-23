@@ -1005,14 +1005,14 @@ test('Globe', (t) => {
     test('Marker is positioned on globe edge', (t) => {
         const map = createMap(t);
         const marker = new Marker()
-            .setLngLat([85, 0])
+            .setLngLat([82, 0])
             .addTo(map);
         map._domRenderTaskQueue.run();
 
-        t.match(marker.getElement().style.transform, " translate(377px,256px)");
+        t.match(marker.getElement().style.transform, " translate(373px,256px)");
         map.setProjection('globe');
         map.once('render', () => {
-            t.match(marker.getElement().style.transform, "translate(330px,256px)");
+            t.match(marker.getElement().style.transform, "translate(357px,256px)");
             t.same(marker.getElement().style.opacity, 1.0);
             t.same(marker.getElement().style.pointerEvents, 'auto');
             map.remove();
@@ -1058,11 +1058,11 @@ test('Globe', (t) => {
         t.notMatch(transform(marker), "rotateX");
         t.notMatch(transform(marker), "rotateZ");
 
-        marker.setLngLat([84, 0]);
+        marker.setLngLat([82, 0]);
         map.once('render', () => {
-            t.match(transform(marker), "translate(330px,256px)");
+            t.match(transform(marker), "translate(357px,256px)");
             t.same(rotation(marker, "X"), 0);
-            t.same(rotation(marker, "Y"), 90);
+            t.same(rotation(marker, "Y"), 89);
             t.same(marker.getElement().style.opacity, 1.0);
             map.remove();
             t.end();
@@ -1073,20 +1073,20 @@ test('Globe', (t) => {
         const map = createMap(t);
         map.setProjection('globe');
         const marker = new Marker({rotationAlignment: 'map', pitchAlignment: 'map'})
-            .setLngLat([0, 84])
+            .setLngLat([0, 82])
             .addTo(map);
         map._domRenderTaskQueue.run();
 
-        t.match(transform(marker), "translate(256px,182px)");
-        t.same(rotation(marker, "X"), 90);
+        t.match(transform(marker), "translate(256px,155px)");
+        t.same(rotation(marker, "X"), 89);
         t.same(rotation(marker, "Y"), 0);
 
         marker.setLngLat([-45, 45]);
         map.on('render', () => {
-            t.match(transform(marker), "translate(217px,201px)");
-            t.same(rotation(marker, "X"), 38);
-            t.same(rotation(marker, "Y"), -27);
-            t.same(rotation(marker, "Z"), 38);
+            t.match(transform(marker), "translate(202px,180px)");
+            t.same(rotation(marker, "X"), 39);
+            t.same(rotation(marker, "Y"), -28);
+            t.same(rotation(marker, "Z"), 39);
             map.remove();
             t.end();
         });
@@ -1114,20 +1114,20 @@ test('Globe', (t) => {
         t.notMatch(transform(m1), "rotateY");
         t.notMatch(transform(m1), "rotateZ");
 
-        t.match(transform(m2), "translate(256px,200px)");
-        t.same(rotation(m2, "X"), 49);
+        t.match(transform(m2), "translate(256px,178px)");
+        t.same(rotation(m2, "X"), 51);
         t.same(rotation(m2, "Y"), 0);
         t.notMatch(transform(m1), "rotateZ");
 
-        t.match(transform(m3), "translate(256px,296px)");
-        t.same(rotation(m3, "X"), -33);
+        t.match(transform(m3), "translate(256px,312px)");
+        t.same(rotation(m3, "X"), -34);
         t.same(rotation(m3, "Y"), 0);
         t.notMatch(transform(m1), "rotateZ");
 
-        t.match(transform(m4), "translate(295px,311px)");
-        t.same(rotation(m4, "X"), -38);
-        t.same(rotation(m4, "Y"), 27);
-        t.same(rotation(m4, "Z"), 38);
+        t.match(transform(m4), "translate(310px,332px)");
+        t.same(rotation(m4, "X"), -39);
+        t.same(rotation(m4, "Y"), 28);
+        t.same(rotation(m4, "Z"), 39);
 
         map.setPitch(45);
         map.once('render', () => {
@@ -1136,20 +1136,20 @@ test('Globe', (t) => {
             t.same(rotation(m1, "Y"), 0);
             t.notMatch(transform(m1), "rotateZ");
 
-            t.match(transform(m2), "translate(256px,234px)");
+            t.match(transform(m2), "translate(256px,225px)");
             t.same(rotation(m2, "X"), 92);
             t.same(rotation(m2, "Y"), 0);
             t.notMatch(transform(m1), "rotateZ");
 
-            t.match(transform(m3), "translate(256px,294px)");
-            t.same(rotation(m3, "X"), 12);
+            t.match(transform(m3), "translate(256px,310px)");
+            t.same(rotation(m3, "X"), 11);
             t.same(rotation(m3, "Y"), 0);
             t.notMatch(transform(m1), "rotateZ");
 
-            t.match(transform(m4), "translate(297px,327px)");
-            t.same(rotation(m4, "X"), -11);
-            t.same(rotation(m4, "Y"), 25);
-            t.same(rotation(m4, "Z"), 30);
+            t.match(transform(m4), "translate(315px,357px)");
+            t.same(rotation(m4, "X"), -12);
+            t.same(rotation(m4, "Y"), 26);
+            t.same(rotation(m4, "Z"), 29);
 
             map.setPitch(30);
             map.once('render', () => {
@@ -1158,19 +1158,19 @@ test('Globe', (t) => {
                 t.same(rotation(m1, "Y"), 0);
                 t.notMatch(transform(m1), "rotateZ");
 
-                t.match(transform(m2), "translate(256px,220px)");
-                t.same(rotation(m2, "X"), 78);
+                t.match(transform(m2), "translate(256px,207px)");
+                t.same(rotation(m2, "X"), 79);
                 t.same(rotation(m2, "Y"), 0);
                 t.notMatch(transform(m1), "rotateZ");
 
-                t.match(transform(m3), "translate(256px,297px)");
-                t.same(rotation(m3, "X"), -3);
+                t.match(transform(m3), "translate(256px,315px)");
+                t.same(rotation(m3, "X"), -4);
                 t.same(rotation(m3, "Y"), 0);
                 t.notMatch(transform(m1), "rotateZ");
 
-                t.match(transform(m4), "translate(296px,326px)");
-                t.same(rotation(m4, "X"), -20);
-                t.same(rotation(m4, "Y"), 24);
+                t.match(transform(m4), "translate(313px,354px)");
+                t.same(rotation(m4, "X"), -21);
+                t.same(rotation(m4, "Y"), 25);
                 t.same(rotation(m4, "Z"), 31);
 
                 map.remove();

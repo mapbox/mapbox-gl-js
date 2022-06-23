@@ -51,13 +51,16 @@
   },
   "pitch": 70,
   "zoom": 17,
+  "bearing": 30,
   "layers": [
     {
       "id": "extrusion",
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-height": 10
+        "fill-extrusion-height": 10,
+        "fill-extrusion-color": "gray",
+        "fill-extrusion-ambient-occlusion-intensity": 0.7
       }
     }
   ],

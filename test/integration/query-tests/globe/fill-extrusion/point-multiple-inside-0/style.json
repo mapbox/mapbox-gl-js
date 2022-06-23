@@ -123,7 +123,7 @@
   },
   "pitch": 70,
   "bearing": -30,
-  "zoom": 2,
+  "zoom": 1.5,
   "center": [0, 0],
   "layers": [
     {

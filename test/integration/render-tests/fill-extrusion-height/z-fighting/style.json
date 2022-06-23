@@ -1,0 +1,127 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "operations": [
+        ["wait"],
+        ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],
+        ["setPaintProperty", "extrusion-pattern", "fill-extrusion-ambient-occlusion-intensity", 0.001],
+        ["wait"]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "center": [0.0005, 0.0005],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 15,
+              "min_height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0001,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0001
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 45
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0001,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
+                    0.0007
+                  ],
+                  [
+                    0.0007,
+                    0.0001
+                  ],
+                  [
+                    0.0001,
+                    0.0001
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 66,
+  "zoom": 18,
+  "bearing": 80,
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": ["interpolate", ["linear"], ["get", "height"], 0, "red", 50, "yellow"],
+        "fill-extrusion-opacity": 0.5,
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-translate": [0, 150]
+      }
+    },
+    {
+      "id": "extrusion-pattern",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": ["case", ["<=", ["get", "height"], 20], "generic_icon", "hospital_icon"],
+        "fill-extrusion-translate": [0, -150],
+        "fill-extrusion-translate-anchor": "map",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.5
+      }
+    }
+  ]
+}

@@ -5,9 +5,10 @@ uniform highp vec2 u_trim_offset;
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
-
+varying highp vec4 v_uv;
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
+
 uniform float u_mix;
 uniform vec3 u_scale;
 varying vec2 v_tex_a;
@@ -16,7 +17,6 @@ varying vec2 v_tex_b;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
-varying highp vec4 v_uv;
 #endif
 
 #pragma mapbox: define highp vec4 color
@@ -54,8 +54,13 @@ void main() {
 
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
-    // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     highp vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
+#else
+    vec4 out_color = color;
+#endif
+
+#ifdef RENDER_LINE_TRIM_OFFSET
+    // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     highp float start = v_uv[2];
     highp float end = v_uv[3];
     highp float trim_start = u_trim_offset[0];
@@ -66,11 +71,14 @@ void main() {
     // Mark the pixel to be transparent when:
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
-    if (trim_end > trim_start && (line_progress <= trim_end && line_progress >= trim_start)) {
-        out_color = vec4(0, 0, 0, 0);
+
+    // Nested conditionals fixes the issue
+    // https://github.com/mapbox/mapbox-gl-js/issues/12013
+    if (trim_end > trim_start) {
+        if (line_progress <= trim_end && line_progress >= trim_start) {
+            out_color = vec4(0, 0, 0, 0);
+        }
     }
-#else
-    vec4 out_color = color;
 #endif
 
 #ifdef FOG

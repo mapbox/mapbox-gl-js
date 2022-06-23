@@ -96,7 +96,7 @@
     },
     "projection": {
       "type": "projection",
-      "doc": "The projection the map should be rendered in. Supported projections are Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Mercator, Natural Earth, Globe, and Winkel Tripel. Terrain, fog, sky and CustomLayerInterface are not supported for projections other than mercator.",
+      "doc": "The projection the map should be rendered in. Supported projections are Mercator, Globe, Albers, Equal Earth, Equirectangular (WGS84), Lambert conformal conic, Natural Earth, and Winkel Tripel. Terrain, sky and fog are supported by only Mercator and globe. CustomLayerInterface is not supported outside of Mercator.",
       "example": {
         "name": "albers",
         "center": [-154, 50],
@@ -4655,6 +4655,49 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "fill-extrusion-ambient-occlusion-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.8.3",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      }
+    },
+    "fill-extrusion-ambient-occlusion-radius": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 3.0,
+      "minimum": 0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The radius of ambient occlusion (AO) shading, in meters. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to hight of one floor and brings the most plausible results for buildings.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.8.3",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      }
     }
   },
   "paint_line": {
@@ -4998,12 +5041,13 @@
     "line-trim-offset": {
       "type": "array",
       "value": "number",
-      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line gradient range [0.0, 1.0]. If either 'trim-start' or 'trim-end' offset is out of valid range, the default range will be set.",
+      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line range [0.0, 1.0].",
       "length": 2,
       "default": [0.0, 0.0],
+      "minimum": [0.0, 0.0],
+      "maximum": [1.0, 1.0],
       "transition": false,
       "requires": [
-          "line-gradient",
           {
               "source": "geojson",
               "has": {
@@ -5013,7 +5057,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0",
+          "js": "2.9.0",
           "android": "10.5.0",
           "ios": "10.5.0",
           "macos": "10.5.0"

@@ -587,7 +587,7 @@ class Painter {
             }
         }
 
-        if (this.style.fog) {
+        if (this.style.fog && this.transform.projection.supportsFog) {
             drawAtmosphere(this, this.style.fog);
         }
 

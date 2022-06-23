@@ -155,7 +155,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.red), id,
         debugBuffer, debugIndexBuffer, debugSegments,
-        null, null, null, tile._globeTileDebugBorderBuffer);
+        null, null, null, [tile._globeTileDebugBorderBuffer]);
 
     const tileRawData = tile.latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
@@ -176,7 +176,7 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegments,
-        null, null, null, tile._globeTileDebugTextBuffer);
+        null, null, null, [tile._globeTileDebugTextBuffer]);
 }
 
 function drawTextToOverlay(painter: Painter, text: string) {

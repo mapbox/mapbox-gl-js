@@ -97,6 +97,11 @@ const pages = [
         "url": "./video.html"
     },
     {
+        "key": "globe-with-video",
+        "title": "Globe with Video",
+        "url": "./globe-with-video.html"
+    },
+    {
         "key": "scroll_zoom_blocker",
         "title": "Gestures",
         "url": "./scroll_zoom_blocker.html"

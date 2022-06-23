@@ -11,6 +11,7 @@ import type LineAtlas from '../render/line_atlas.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type Point from '@mapbox/point-geometry';
+import type {ProjectionSpecification} from '../style-spec/types.js';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -23,7 +24,7 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     sourceLayerIndex: number,
     sourceID: string,
     enableTerrain: boolean,
-    projection: string
+    projection: ProjectionSpecification
 }
 
 export type PopulateParameters = {

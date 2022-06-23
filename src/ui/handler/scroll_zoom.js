@@ -297,7 +297,7 @@ class ScrollZoomHandler {
             // function we're using to smooth out the zooming between wheel
             // events
             if (this._type === 'wheel') {
-                this._startZoom = startingZoom();
+                this._startZoom = startZoom;
                 this._easing = this._smoothOutEasing(200);
             }
 

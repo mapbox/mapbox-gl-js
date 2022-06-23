@@ -35,7 +35,7 @@ class EvaluationContext {
     }
 
     id(): number | null {
-        return this.feature && 'id' in this.feature && this.feature.id ? this.feature.id : null;
+        return this.feature && this.feature.id !== undefined ? this.feature.id : null;
     }
 
     geometryType(): null | string {

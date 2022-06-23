@@ -16,6 +16,7 @@ import type Tile from '../source/tile.js';
 import type SymbolBucket, {CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
 import type FeatureIndex from '../data/feature_index.js';
+import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
@@ -189,6 +190,7 @@ export type BucketPart = {
 export type CrossTileID = string | number;
 
 export class Placement {
+    projection: string;
     transform: Transform;
     collisionIndex: CollisionIndex;
     placements: { [_: CrossTileID]: JointPlacement };
@@ -208,6 +210,7 @@ export class Placement {
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState: ?FogState) {
         this.transform = transform.clone();
+        this.projection = transform.projection.name;
         this.collisionIndex = new CollisionIndex(this.transform, fogState);
         this.placements = {};
         this.opacities = {};
@@ -241,7 +244,9 @@ export class Placement {
         const textPixelRatio = tile.tileSize / EXTENT;
         const unwrappedTileID = tile.tileID.toUnwrapped();
 
-        const posMatrix = this.transform.calculateProjMatrix(unwrappedTileID);
+        this.transform.setProjection(symbolBucket.projection);
+
+        const posMatrix = getSymbolPlacementTileProjectionMatrix(tile.tileID, symbolBucket.getProjection(), this.transform, this.projection);
 
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
@@ -257,6 +262,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
+                symbolBucket.getProjection(),
                 pixelsToTiles);
 
         let labelToScreenMatrix = null;
@@ -268,6 +274,7 @@ export class Placement {
                 pitchWithMap,
                 rotateWithMap,
                 this.transform,
+                symbolBucket.getProjection(),
                 pixelsToTiles);
 
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
@@ -335,12 +342,12 @@ export class Placement {
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
-            textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
+            bucket, textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
 
         if (iconBox) {
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
-                bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
+                bucket, bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolIndex),
                 iconBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
                 textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
             if (placedIconBoxes.box.length === 0) return;
@@ -401,6 +408,8 @@ export class Placement {
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
+
+        this.transform.setProjection(bucket.projection);
 
         // This logic is similar to the "defaultOpacityState" logic below in updateBucketOpacities
         // If we know a symbol is always supposed to show, force it to be marked visible even if
@@ -535,7 +544,7 @@ export class Placement {
                 if (!layout.get('text-variable-anchor')) {
                     const placeBox = (collisionTextBox, orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, symbolIndex);
-                        const placedFeature = this.collisionIndex.placeCollisionBox(textScale, collisionTextBox,
+                        const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox,
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
@@ -658,7 +667,9 @@ export class Placement {
                 // Convert circle collision height into pixels
                 const circlePixelDiameter = symbolInstance.collisionCircleDiameter * fontSize / ONE_EM;
 
-                placedGlyphCircles = this.collisionIndex.placeCollisionCircles(textAllowOverlap,
+                placedGlyphCircles = this.collisionIndex.placeCollisionCircles(
+                        bucket,
+                        textAllowOverlap,
                         placedSymbol,
                         bucket.lineVertexArray,
                         bucket.glyphOffsetArray,
@@ -695,7 +706,7 @@ export class Placement {
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolIndex);
-                    return this.collisionIndex.placeCollisionBox(iconScale, iconBox, shiftPoint,
+                    return this.collisionIndex.placeCollisionBox(bucket, iconScale, iconBox, shiftPoint,
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 
@@ -764,7 +775,7 @@ export class Placement {
             assert(symbolInstance.crossTileID !== 0);
             assert(bucket.bucketInstanceId !== 0);
 
-            const notGlobe = this.transform.projection.name !== 'globe';
+            const notGlobe = bucket.projection.name !== 'globe';
             alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);
             alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 
