@@ -15,8 +15,7 @@ import {
     Uniform,
     Uniform1f,
     UniformColor,
-    Uniform4f,
-    type UniformLocations
+    Uniform4f
 } from '../render/uniform_binding.js';
 
 import type {CanonicalTileID} from '../source/tile_id.js';
@@ -88,8 +87,8 @@ interface AttributeBinder {
 
 interface UniformBinder {
     uniformNames: Array<string>;
-    setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
-    getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<*>>;
+    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
+    getBinding(context: Context, name: string): $Shape<Uniform<*>>;
 }
 
 class ConstantBinder implements UniformBinder {
@@ -103,14 +102,14 @@ class ConstantBinder implements UniformBinder {
         this.type = type;
     }
 
-    setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>): void {
-        uniform.set(currentValue.constantOr(this.value));
+    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string): void {
+        uniform.set(program, uniformName, currentValue.constantOr(this.value));
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation, _: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, _: string): $Shape<Uniform<any>> {
         return (this.type === 'color') ?
-            new UniformColor(context, location) :
-            new Uniform1f(context, location);
+            new UniformColor(context) :
+            new Uniform1f(context);
     }
 }
 
@@ -136,19 +135,19 @@ class CrossFadedConstantBinder implements UniformBinder {
         this.patternTo = posTo.tl.concat(posTo.br);
     }
 
-    setUniform(uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
+    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
             uniformName === 'u_pattern_to' || uniformName === 'u_dash_to' ? this.patternTo :
             uniformName === 'u_pattern_from' || uniformName === 'u_dash_from' ? this.patternFrom :
             uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo :
             uniformName === 'u_pixel_ratio_from' ? this.pixelRatioFrom : null;
-        if (pos) uniform.set(pos);
+        if (pos) uniform.set(program, uniformName, pos);
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation, name: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, name: string): $Shape<Uniform<any>> {
         return name === 'u_pattern_from' || name === 'u_pattern_to' || name === 'u_dash_from' || name === 'u_dash_to' ?
-            new Uniform4f(context, location) :
-            new Uniform1f(context, location);
+            new Uniform4f(context) :
+            new Uniform1f(context);
     }
 }
 
@@ -291,14 +290,14 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         }
     }
 
-    setUniform(uniform: Uniform<*>, globals: GlobalProperties): void {
+    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, _: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void {
         const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
         const factor = clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
-        uniform.set(factor);
+        uniform.set(program, uniformName, factor);
     }
 
-    getBinding(context: Context, location: WebGLUniformLocation, _: string): Uniform1f {
-        return new Uniform1f(context, location);
+    getBinding(context: Context, _: string): Uniform1f {
+        return new Uniform1f(context);
     }
 }
 
@@ -536,27 +535,24 @@ export default class ProgramConfiguration {
         return this._buffers;
     }
 
-    getUniforms(context: Context, locations: UniformLocations): Array<BinderUniform> {
+    getUniforms(context: Context): Array<BinderUniform> {
         const uniforms = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof CrossFadedConstantBinder || binder instanceof CompositeExpressionBinder) {
                 for (const name of binder.uniformNames) {
-                    if (locations[name]) {
-                        const binding = binder.getBinding(context, locations[name], name);
-                        uniforms.push({name, property, binding});
-                    }
+                    uniforms.push({name, property, binding: binder.getBinding(context, name)});
                 }
             }
         }
         return uniforms;
     }
 
-    setUniforms<Properties: Object>(context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(program: WebGLProgram, context: Context, binderUniforms: Array<BinderUniform>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
-            (this.binders[property]: any).setUniform(binding, globals, properties.get(property), name);
+            (this.binders[property]: any).setUniform(program, binding, globals, properties.get(property), name);
         }
     }
 

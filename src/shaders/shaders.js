@@ -71,8 +71,8 @@ import atmosphereVert from './atmosphere.vertex.glsl';
 export let preludeTerrain = {};
 export let preludeFog = {};
 
-preludeTerrain = compile('', preludeTerrainVert, true);
-preludeFog = compile(preludeFogFrag, preludeFogVert, true);
+preludeTerrain = compile('', preludeTerrainVert);
+preludeFog = compile(preludeFogFrag, preludeFogVert);
 // Shadow prelude is not compiled until GL-JS implements shadows
 
 export const prelude = compile(preludeFrag, preludeVert);
@@ -151,31 +151,11 @@ export default {
 };
 
 // Expand #pragmas to #ifdefs.
-export function compile(fragmentSource, vertexSource, isGlobalPrelude) {
+export function compile(fragmentSource, vertexSource) {
     const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
-    const uniformRegex = /uniform (highp |mediump |lowp )?([\w]+) ([\w]+)([\s]*)([\w]*)/g;
     const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
 
     const staticAttributes = vertexSource.match(attributeRegex);
-    const fragmentUniforms = fragmentSource.match(uniformRegex);
-    const vertexUniforms = vertexSource.match(uniformRegex);
-    const commonUniforms = preludeCommon.match(uniformRegex);
-
-    let staticUniforms = vertexUniforms ? vertexUniforms.concat(fragmentUniforms) : fragmentUniforms;
-
-    if (!isGlobalPrelude) {
-        if (preludeTerrain.staticUniforms) {
-            staticUniforms = preludeTerrain.staticUniforms.concat(staticUniforms);
-        }
-        if (preludeFog.staticUniforms) {
-            staticUniforms = preludeFog.staticUniforms.concat(staticUniforms);
-        }
-    }
-
-    if (staticUniforms) {
-        staticUniforms = staticUniforms.concat(commonUniforms);
-    }
-
     const fragmentPragmas = {};
 
     fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
@@ -265,5 +245,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource, staticAttributes, staticUniforms};
+    return {fragmentSource, vertexSource, staticAttributes};
 }
