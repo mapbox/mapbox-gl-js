@@ -471,13 +471,13 @@ class FillExtrusionBucket implements Bucket {
                     const k = segment.vertexLength;
 
                     const isConcaveCorner = ring.length > 4 && isAOConcaveAngle(p0, p1, p2);
-                    let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
+                    let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, true);
 
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                     edgeDistance += dist;
-                    encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
+                    encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, false);
                     isPrevCornerConcave = isConcaveCorner;
 
                     addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
