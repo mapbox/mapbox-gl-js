@@ -11,14 +11,17 @@ class Uniform<T> {
     gl: WebGLRenderingContext;
     location: ?WebGLUniformLocation;
     current: T;
+    initialized: boolean;
 
     constructor(context: Context) {
         this.gl = context.gl;
+        this.initialized = false;
     }
 
     fetchUniformLocation(program: WebGLProgram, name: string): boolean {
-        if (!this.location) {
+        if (!this.location && !this.initialized) {
             this.location = this.gl.getUniformLocation(program, name);
+            this.initialized = true;
         }
         return !!this.location;
     }
