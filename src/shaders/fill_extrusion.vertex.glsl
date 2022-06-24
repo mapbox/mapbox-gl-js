@@ -4,6 +4,7 @@ uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
+uniform float u_edge_radius;
 
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
@@ -61,9 +62,7 @@ void main() {
 
     base = max(0.0, base);
 
-    // WIP set edge_radius with a uniform
-    float edge_radius = 0.5;
-    height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - edge_radius : height);
+    height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);
 
     float t = top_up_ny.x;
 

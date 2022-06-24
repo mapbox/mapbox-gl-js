@@ -236,7 +236,7 @@ class FillExtrusionBucket implements Bucket {
         this.borders = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
-        this.edgeRadius = (this.layers[0].layout: any).get('fill-extrusion-edge-radius') / this.tileToMeter;
+        this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -463,8 +463,8 @@ class FillExtrusionBucket implements Bucket {
                         let offsetNext = getRoundedEdgeOffset(p0, p1, p2, edgeRadius);
                         if (isNaN(offsetNext)) offsetNext = 0;
                         const nEdge = p1.sub(p0)._unit();
-                        p0 = p0.add(nEdge.mult(offsetPrev));
-                        p1 = p1.add(nEdge.mult(-offsetNext));
+                        p0 = p0.add(nEdge.mult(offsetPrev))._round();
+                        p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
                     }
 
