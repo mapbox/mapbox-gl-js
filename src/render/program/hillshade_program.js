@@ -14,7 +14,7 @@ import EXTENT from '../../data/extent.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 import type Context from '../../gl/context.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type Tile from '../../source/tile.js';
 import type Painter from '../painter.js';
 import type HillshadeStyleLayer from '../../style/style_layer/hillshade_style_layer.js';
@@ -39,22 +39,22 @@ export type HillshadePrepareUniformsType = {|
     'u_unpack': Uniform4f
 |};
 
-const hillshadeUniforms = (context: Context, locations: UniformLocations): HillshadeUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_latrange': new Uniform2f(context, locations.u_latrange),
-    'u_light': new Uniform2f(context, locations.u_light),
-    'u_shadow': new UniformColor(context, locations.u_shadow),
-    'u_highlight': new UniformColor(context, locations.u_highlight),
-    'u_accent': new UniformColor(context, locations.u_accent)
+const hillshadeUniforms = (context: Context): HillshadeUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_image': new Uniform1i(context),
+    'u_latrange': new Uniform2f(context),
+    'u_light': new Uniform2f(context),
+    'u_shadow': new UniformColor(context),
+    'u_highlight': new UniformColor(context),
+    'u_accent': new UniformColor(context)
 });
 
-const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): HillshadePrepareUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_dimension': new Uniform2f(context, locations.u_dimension),
-    'u_zoom': new Uniform1f(context, locations.u_zoom),
-    'u_unpack': new Uniform4f(context, locations.u_unpack)
+const hillshadePrepareUniforms = (context: Context): HillshadePrepareUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_image': new Uniform1i(context),
+    'u_dimension': new Uniform2f(context),
+    'u_zoom': new Uniform1f(context),
+    'u_unpack': new Uniform4f(context)
 });
 
 const hillshadeUniformValues = (

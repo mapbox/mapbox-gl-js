@@ -25,7 +25,7 @@ import type DepthMode from '../gl/depth_mode.js';
 import type StencilMode from '../gl/stencil_mode.js';
 import type ColorMode from '../gl/color_mode.js';
 import type CullFaceMode from '../gl/cull_face_mode.js';
-import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding.js';
+import type {UniformBindings, UniformValues} from './uniform_binding.js';
 import type {BinderUniform} from '../data/program_configuration.js';
 
 export type DrawMode =
@@ -33,7 +33,7 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
     | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
-function getTokenizedAttributesAndUniforms (array: Array<string>): Array<string> {
+function getTokenizedAttributes(array: Array<string>): Array<string> {
     const result = [];
 
     for (let i = 0; i < array.length; i++) {
@@ -63,25 +63,16 @@ class Program<Us: UniformBindings> {
 
     constructor(context: Context,
                 name: string,
-                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
+                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>},
                 configuration: ?ProgramConfiguration,
-                fixedUniforms: (Context, UniformLocations) => Us,
+                fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
-        const staticAttrInfo = getTokenizedAttributesAndUniforms(source.staticAttributes);
+        const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
         const allAttrInfo = staticAttrInfo.concat(dynamicAttrInfo);
-
-        const staticUniformsInfo = source.staticUniforms ? getTokenizedAttributesAndUniforms(source.staticUniforms) : [];
-        const dynamicUniformsInfo = configuration ? configuration.getBinderUniforms() : [];
-        // remove duplicate uniforms
-        const uniformList = staticUniformsInfo.concat(dynamicUniformsInfo);
-        const allUniformsInfo = [];
-        for (const uniform of uniformList) {
-            if (allUniformsInfo.indexOf(uniform) < 0) allUniformsInfo.push(uniform);
-        }
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
@@ -121,7 +112,6 @@ class Program<Us: UniformBindings> {
         gl.attachShader(this.program, vertexShader);
 
         this.attributes = {};
-        const uniformLocations = {};
 
         this.numAttributes = allAttrInfo.length;
 
@@ -138,23 +128,13 @@ class Program<Us: UniformBindings> {
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
-        for (let it = 0; it < allUniformsInfo.length; it++) {
-            const uniform = allUniformsInfo[it];
-            if (uniform && !uniformLocations[uniform]) {
-                const uniformLocation = gl.getUniformLocation(this.program, uniform);
-                if (uniformLocation) {
-                    uniformLocations[uniform] = uniformLocation;
-                }
-            }
-        }
-
-        this.fixedUniforms = fixedUniforms(context, uniformLocations);
-        this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
+        this.fixedUniforms = fixedUniforms(context);
+        this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
         if (fixedDefines.indexOf('TERRAIN') !== -1) {
-            this.terrainUniforms = terrainUniforms(context, uniformLocations);
+            this.terrainUniforms = terrainUniforms(context);
         }
         if (fixedDefines.indexOf('FOG') !== -1) {
-            this.fogUniforms = fogUniforms(context, uniformLocations);
+            this.fogUniforms = fogUniforms(context);
         }
     }
 
@@ -166,7 +146,7 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in terrainUniformValues) {
-            uniforms[name].set(terrainUniformValues[name]);
+            uniforms[name].set(this.program, name, terrainUniformValues[name]);
         }
     }
 
@@ -178,9 +158,7 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in fogUniformsValues) {
-            if (uniforms[name].location) {
-                uniforms[name].set(fogUniformsValues[name]);
-            }
+            uniforms[name].set(this.program, name, fogUniformsValues[name]);
         }
     }
 
@@ -212,11 +190,11 @@ class Program<Us: UniformBindings> {
         context.setCullFace(cullFaceMode);
 
         for (const name of Object.keys(this.fixedUniforms)) {
-            this.fixedUniforms[name].set(uniformValues[name]);
+            this.fixedUniforms[name].set(this.program, name, uniformValues[name]);
         }
 
         if (configuration) {
-            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
         }
 
         const primitiveSize = {
