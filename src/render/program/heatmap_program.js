@@ -11,7 +11,7 @@ import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
 import type Context from '../../gl/context.js';
 import type Tile from '../../source/tile.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type Painter from '../painter.js';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
@@ -36,21 +36,21 @@ export type HeatmapTextureUniformsType = {|
     'u_opacity': Uniform1f
 |};
 
-const heatmapUniforms = (context: Context, locations: UniformLocations): HeatmapUniformsType => ({
-    'u_extrude_scale': new Uniform1f(context, locations.u_extrude_scale),
-    'u_intensity': new Uniform1f(context, locations.u_intensity),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_up_dir': new Uniform3f(context, locations.u_up_dir)
+const heatmapUniforms = (context: Context): HeatmapUniformsType => ({
+    'u_extrude_scale': new Uniform1f(context),
+    'u_intensity': new Uniform1f(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_up_dir': new Uniform3f(context)
 });
 
-const heatmapTextureUniforms = (context: Context, locations: UniformLocations): HeatmapTextureUniformsType => ({
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_color_ramp': new Uniform1i(context, locations.u_color_ramp),
-    'u_opacity': new Uniform1f(context, locations.u_opacity)
+const heatmapTextureUniforms = (context: Context): HeatmapTextureUniformsType => ({
+    'u_image': new Uniform1i(context),
+    'u_color_ramp': new Uniform1i(context),
+    'u_opacity': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create();

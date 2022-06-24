@@ -13,7 +13,7 @@ import browser from '../../util/browser.js';
 import {OverscaledTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import {globeECEFOrigin} from '../../geo/projection/globe_util.js';
 import type Projection from '../../geo/projection/projection.js';
 
@@ -99,82 +99,82 @@ export type symbolTextAndIconUniformsType = {|
 
 export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
 
-const symbolIconUniforms = (context: Context, locations: UniformLocations): SymbolIconUniformsType => ({
-    'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
-    'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
-    'u_size_t': new Uniform1f(context, locations.u_size_t),
-    'u_size': new Uniform1f(context, locations.u_size),
-    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_rotate_symbol': new Uniform1i(context, locations.u_rotate_symbol),
-    'u_aspect_ratio': new Uniform1f(context, locations.u_aspect_ratio),
-    'u_fade_change': new Uniform1f(context, locations.u_fade_change),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
-    'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1i(context, locations.u_is_text),
-    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
-    'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
-    'u_up_vector': new Uniform3f(context, locations.u_up_vector),
-    'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
-    'u_texture': new Uniform1i(context, locations.u_texture)
+const symbolIconUniforms = (context: Context): SymbolIconUniformsType => ({
+    'u_is_size_zoom_constant': new Uniform1i(context),
+    'u_is_size_feature_constant': new Uniform1i(context),
+    'u_size_t': new Uniform1f(context),
+    'u_size': new Uniform1f(context),
+    'u_camera_to_center_distance': new Uniform1f(context),
+    'u_rotate_symbol': new Uniform1i(context),
+    'u_aspect_ratio': new Uniform1f(context),
+    'u_fade_change': new Uniform1f(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_label_plane_matrix': new UniformMatrix4f(context),
+    'u_coord_matrix': new UniformMatrix4f(context),
+    'u_is_text': new Uniform1i(context),
+    'u_pitch_with_map': new Uniform1i(context),
+    'u_texsize': new Uniform2f(context),
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_camera_forward': new Uniform3f(context),
+    'u_tile_matrix': new UniformMatrix4f(context),
+    'u_up_vector': new Uniform3f(context),
+    'u_ecef_origin': new Uniform3f(context),
+    'u_texture': new Uniform1i(context)
 });
 
-const symbolSDFUniforms = (context: Context, locations: UniformLocations): SymbolSDFUniformsType => ({
-    'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
-    'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
-    'u_size_t': new Uniform1f(context, locations.u_size_t),
-    'u_size': new Uniform1f(context, locations.u_size),
-    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_rotate_symbol': new Uniform1i(context, locations.u_rotate_symbol),
-    'u_aspect_ratio': new Uniform1f(context, locations.u_aspect_ratio),
-    'u_fade_change': new Uniform1f(context, locations.u_fade_change),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
-    'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1i(context, locations.u_is_text),
-    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_texture': new Uniform1i(context, locations.u_texture),
-    'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
-    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_camera_forward': new Uniform3f(context, locations.u_camera_forward),
-    'u_tile_matrix': new UniformMatrix4f(context, locations.u_tile_matrix),
-    'u_up_vector': new Uniform3f(context, locations.u_up_vector),
-    'u_ecef_origin': new Uniform3f(context, locations.u_ecef_origin),
-    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
+const symbolSDFUniforms = (context: Context): SymbolSDFUniformsType => ({
+    'u_is_size_zoom_constant': new Uniform1i(context),
+    'u_is_size_feature_constant': new Uniform1i(context),
+    'u_size_t': new Uniform1f(context),
+    'u_size': new Uniform1f(context),
+    'u_camera_to_center_distance': new Uniform1f(context),
+    'u_rotate_symbol': new Uniform1i(context),
+    'u_aspect_ratio': new Uniform1f(context),
+    'u_fade_change': new Uniform1f(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_label_plane_matrix': new UniformMatrix4f(context),
+    'u_coord_matrix': new UniformMatrix4f(context),
+    'u_is_text': new Uniform1i(context),
+    'u_pitch_with_map': new Uniform1i(context),
+    'u_texsize': new Uniform2f(context),
+    'u_texture': new Uniform1i(context),
+    'u_gamma_scale': new Uniform1f(context),
+    'u_device_pixel_ratio': new Uniform1f(context),
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_camera_forward': new Uniform3f(context),
+    'u_tile_matrix': new UniformMatrix4f(context),
+    'u_up_vector': new Uniform3f(context),
+    'u_ecef_origin': new Uniform3f(context),
+    'u_is_halo': new Uniform1i(context)
 });
 
-const symbolTextAndIconUniforms = (context: Context, locations: UniformLocations): symbolTextAndIconUniformsType => ({
-    'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
-    'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
-    'u_size_t': new Uniform1f(context, locations.u_size_t),
-    'u_size': new Uniform1f(context, locations.u_size),
-    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_rotate_symbol': new Uniform1i(context, locations.u_rotate_symbol),
-    'u_aspect_ratio': new Uniform1f(context, locations.u_aspect_ratio),
-    'u_fade_change': new Uniform1f(context, locations.u_fade_change),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
-    'u_coord_matrix': new UniformMatrix4f(context, locations.u_coord_matrix),
-    'u_is_text': new Uniform1i(context, locations.u_is_text),
-    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_texsize_icon': new Uniform2f(context, locations.u_texsize_icon),
-    'u_texture': new Uniform1i(context, locations.u_texture),
-    'u_texture_icon': new Uniform1i(context, locations.u_texture_icon),
-    'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
-    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_is_halo': new Uniform1i(context, locations.u_is_halo)
+const symbolTextAndIconUniforms = (context: Context): symbolTextAndIconUniformsType => ({
+    'u_is_size_zoom_constant': new Uniform1i(context),
+    'u_is_size_feature_constant': new Uniform1i(context),
+    'u_size_t': new Uniform1f(context),
+    'u_size': new Uniform1f(context),
+    'u_camera_to_center_distance': new Uniform1f(context),
+    'u_rotate_symbol': new Uniform1i(context),
+    'u_aspect_ratio': new Uniform1f(context),
+    'u_fade_change': new Uniform1f(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_label_plane_matrix': new UniformMatrix4f(context),
+    'u_coord_matrix': new UniformMatrix4f(context),
+    'u_is_text': new Uniform1i(context),
+    'u_pitch_with_map': new Uniform1i(context),
+    'u_texsize': new Uniform2f(context),
+    'u_texsize_icon': new Uniform2f(context),
+    'u_texture': new Uniform1i(context),
+    'u_texture_icon': new Uniform1i(context),
+    'u_gamma_scale': new Uniform1f(context),
+    'u_device_pixel_ratio': new Uniform1f(context),
+    'u_is_halo': new Uniform1i(context)
 });
 
 const identityMatrix = mat4.create();
