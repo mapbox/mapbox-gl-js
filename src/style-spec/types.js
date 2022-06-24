@@ -367,7 +367,8 @@ export type FillExtrusionLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: "visible" | "none",
+        "fill-extrusion-edge-radius"?: number
     |},
     "paint"?: {|
         "fill-extrusion-opacity"?: PropertyValueSpecification<number>,

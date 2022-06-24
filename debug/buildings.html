@@ -61,11 +61,14 @@ map.on('load', () => {
         'filter': ['==', 'extrude', 'true'],
         'type': 'fill-extrusion',
         'minzoom': 15,
+        'layout': {
+            'fill-extrusion-edge-radius': 0.2
+        },
         'paint': {
             'fill-extrusion-color': '#bbb',
             'fill-extrusion-height': ['get', 'height'],
             'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 1,
+            'fill-extrusion-opacity': 1
             // "fill-extrusion-pattern": "aquarium-15"
         }
     });

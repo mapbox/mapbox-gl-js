@@ -195,6 +195,7 @@ class FillExtrusionBucket implements Bucket {
     indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
+    edgeRadius: number;
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
@@ -216,6 +217,7 @@ class FillExtrusionBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.edgeRadius = 0;
         this.projection = options.projection;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
@@ -234,6 +236,7 @@ class FillExtrusionBucket implements Bucket {
         this.borders = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
+        this.edgeRadius = (this.layers[0].layout: any).get('fill-extrusion-edge-radius') / this.tileToMeter;
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -360,7 +363,7 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
-        const edgeRadius = isPolygon ? 10 : 0;
+        const edgeRadius = isPolygon ? this.edgeRadius : 0;
 
         for (const {polygon, bounds} of clippedPolygons) {
             // Only triangulate and draw the area of the feature if it is a polygon
@@ -388,17 +391,20 @@ class FillExtrusionBucket implements Bucket {
                         const p1 = ring[i];
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
-                        // WIP optimize
-                        const na = p1.sub(p0)._perp()._unit();
-                        const nb = p2.sub(p1)._perp()._unit();
-                        const nm = na.add(nb)._unit();
+                        let {x, y} = p1;
+                        if (edgeRadius) {
+                            // WIP optimize
+                            const na = p1.sub(p0)._perp()._unit();
+                            const nb = p2.sub(p1)._perp()._unit();
+                            const nm = na.add(nb)._unit();
 
-                        const cosHalfAngle = na.x * nm.x + na.y * nm.y;
-                        // const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
-                        const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
+                            const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+                            // const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
+                            const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
 
-                        const x = p1.x + offset * nm.x;
-                        const y = p1.y + offset * nm.y;
+                            x += offset * nm.x;
+                            y += offset * nm.y;
+                        }
 
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
@@ -430,8 +436,7 @@ class FillExtrusionBucket implements Bucket {
             for (const ring of polygon) {
                 if (metadata && ring.length) metadata.startRing(ring[0]);
                 let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
-
-                let offsetPrev = getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius);
+                let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
 
                 let kPrev, kFirst;
 
@@ -489,7 +494,6 @@ class FillExtrusionBucket implements Bucket {
                     this.indexArray.emplaceBack(k + 1, k + 3, k + 2);
                     segment.primitiveLength += 2;
 
-                    // WIP fix handling for holes
                     if (edgeRadius) {
                         const t0 = topIndex + (i === 1 ? ring.length - 2 : i - 2);
                         const t1 = i === 1 ? topIndex : t0 + 1;
@@ -532,15 +536,11 @@ class FillExtrusionBucket implements Bucket {
                 }
 
                 // close the loop on vertical side chamfer
-                // WIP fix handling for holes
-                if (edgeRadius) {
-                    assert(kPrev !== undefined && kFirst  !== undefined);
-                    if (kPrev !== undefined && kFirst !== undefined) {
-                        this.indexArray.emplaceBack(kPrev, kPrev + 1, kFirst + 0);
-                        this.indexArray.emplaceBack(kPrev + 1, kFirst + 1, kFirst + 0);
-                        this.indexArray.emplaceBack(kPrev + 1, topIndex + ring.length - 2, kFirst + 1);
-                        segment.primitiveLength += 3;
-                    }
+                if (edgeRadius && kPrev !== undefined && kFirst !== undefined) {
+                    this.indexArray.emplaceBack(kPrev, kPrev + 1, kFirst + 0);
+                    this.indexArray.emplaceBack(kPrev + 1, kFirst + 1, kFirst + 0);
+                    this.indexArray.emplaceBack(kPrev + 1, topIndex + ring.length - 2, kFirst + 1);
+                    segment.primitiveLength += 3;
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
             }
