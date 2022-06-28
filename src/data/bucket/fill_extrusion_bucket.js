@@ -409,7 +409,8 @@ class FillExtrusionBucket implements Bucket {
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
-                        flattened.push(x, y);
+                        // triangulate as if vertices were not offset to ensure correct triangulation
+                        flattened.push(p1.x, p1.y);
 
                         if (isGlobe) {
                             const array: any = this.layoutVertexExtArray;
