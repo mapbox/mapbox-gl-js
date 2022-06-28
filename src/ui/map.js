@@ -1188,7 +1188,7 @@ class Map extends Camera {
         return this._updateProjection(projection);
     }
 
-    _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
+    _updateProjection(prevState: StyleSpecification = null, explicitProjection?: ProjectionSpecification | null): this {
         const prevProjection = this.getProjection();
         if (explicitProjection === null) {
             this._explicitProjection = null;
@@ -1216,7 +1216,7 @@ class Map extends Camera {
 
         if (projectionHasChanged) {
             // If a zoom transition on globe
-            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
+            if (this.style._prevStyleSheet && this.style._prevStyleSheet.projection.name === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
             } else {
                 // If a switch between different projections
