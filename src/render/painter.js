@@ -876,7 +876,7 @@ class Painter {
 
         const globalDefines = this.currentGlobalDefines();
         const allDefines = globalDefines.concat(defines);
-        const key = Program.cacheKey(name, allDefines, programConfiguration);
+        const key = Program.cacheKey(shaders[name], name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
             this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);
