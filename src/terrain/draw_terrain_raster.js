@@ -21,7 +21,7 @@ import {
     globeToMercatorTransition,
     globePoleMatrixForTile,
     getGridMatrix,
-    tileCornersInLatLng,
+    tileCornersToBounds,
     globeNormalizeECEF,
     globeTileBounds,
     globeUseCustomAntiAliasing,
@@ -200,10 +200,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             }
 
             const globeMatrix = Float32Array.from(tr.globeMatrix);
-            const tileCornersLatLng = tileCornersInLatLng(coord.canonical);
-            const tileCenterLatitude = (tileCornersLatLng[0][0] + tileCornersLatLng[1][0]) / 2.0;
-            const latitudinalLod = getLatitudinalLod(tileCenterLatitude);
-            const gridMatrix = getGridMatrix(coord.canonical, tileCornersLatLng, latitudinalLod);
+            const tileBounds = tileCornersToBounds(coord.canonical);
+            const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
+            const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
