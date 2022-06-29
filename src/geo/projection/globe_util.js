@@ -202,28 +202,28 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
+function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
+    for (const corner of corners) {
+        vec3.transformMat4(corner, corner, globeMatrix);
+        vec3.scale(corner, corner, scale);
+        vec3.min(cornerMin, cornerMin, corner);
+        vec3.max(cornerMax, cornerMax, corner);
+    }
+}
+
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
 
     const mx = Number.MAX_VALUE;
     const cornerMax = [-mx, -mx, -mx];
     const cornerMin = [mx, mx, mx];
-    const m = mat4.identity(new Float64Array(16));
-    mat4.scale(m, m, [scale, scale, scale]);
-    mat4.multiply(m, m, tr.globeMatrix);
+    const m = tr.globeMatrix;
 
     if (tileId.z <= 1) {
         // Compute minimum bounding box that fully encapsulates
         // transformed corners of the local aabb
         const aabb = globeTileBounds(tileId);
-        const corners = aabb.getCorners();
-
-        for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], m);
-            vec3.min(cornerMin, cornerMin, corners[i]);
-            vec3.max(cornerMax, cornerMax, corners[i]);
-        }
-
+        updateCorners(cornerMin, cornerMax, aabb.getCorners(), m, scale);
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -247,11 +247,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     bounds.setNorthEast([e, n]);
 
     // Note that here we're transforming the corners to world space while finding the min/max values.
-    for (let i = 0; i < corners.length; i++) {
-        vec3.transformMat4(corners[i], corners[i], m);
-        vec3.min(cornerMin, cornerMin, corners[i]);
-        vec3.max(cornerMax, cornerMax, corners[i]);
-    }
+    updateCorners(cornerMin, cornerMax, corners, m, scale);
 
     if (bounds.contains(tr.center)) {
         // Extend the aabb by encapsulating the center point
@@ -266,7 +262,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
 
     // Compute parameters describing edges of the tile (i.e. arcs) on the globe surface.
     // Vertical edges revolves around the globe origin whereas horizontal edges revolves around the y-axis.
-    const globeCenter = [m[12], m[13], m[14]];
+    const globeCenter = [m[12] * scale, m[13] * scale, m[14] * scale];
 
     const centerLng = tr.center.lng;
     const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
@@ -297,7 +293,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         arcCenter = globeCenter;
     } else {
         closestArcIdx = dy >= 0 ? 0 : 2;
-        const yAxis = [m[4], m[5], m[6]];
+        const yAxis = [m[4] * scale, m[5] * scale, m[6] * scale];
         let shift: number;
         if (dy >= 0) {
             shift = -Math.sin(degToRad(bounds.getSouth())) * GLOBE_RADIUS;
