@@ -167,7 +167,6 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
-    _prevStyleSheet: StyleSpecification;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -671,7 +670,7 @@ class Style extends Evented {
             (this: any)[op.command].apply(this, op.args);
         });
 
-        this._prevStyleSheet = clone(this.stylesheet);
+        if (this.map) this.map._prevProjection = this.stylesheet.projection ? this.stylesheet.projection.name : undefined;
         this.stylesheet = nextState;
         this._updateMapProjection();
 

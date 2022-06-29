@@ -388,6 +388,7 @@ class Map extends Camera {
     _containerHeight: number;
     _language: ?string;
     _worldview: ?string;
+    _prevProjection: ?string;
 
     // `_explicitProjection represents projection as set by a call to map.setProjection()
     // For the actual projection displayed, use `transform.projection`.
@@ -1180,16 +1181,18 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
+        this._prevProjection = this.getProjection() ?  this.getProjection().name : undefined;
+
         if (!projection) {
             projection = null;
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
+
         return this._updateProjection(projection);
     }
 
     _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
-        const prevProjection = this.getProjection();
         if (explicitProjection === null) {
             this._explicitProjection = null;
         }
@@ -1216,7 +1219,7 @@ class Map extends Camera {
 
         if (projectionHasChanged) {
             // If a zoom transition on globe
-            if (this.style._prevStyleSheet && this.style._prevStyleSheet.projection.name === 'globe' && this.getProjection().name === 'globe') {
+            if ((!this._prevProjection || this._prevProjection === 'globe') && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
             } else {
                 // If a switch between different projections
