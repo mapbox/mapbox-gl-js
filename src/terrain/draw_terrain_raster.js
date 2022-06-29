@@ -167,6 +167,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const batches = showWireframe ? [false, true] : [false];
     const sharedBuffers = painter.globeSharedBuffers;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
+    const globeMatrix = Float32Array.from(tr.globeMatrix);
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -199,7 +200,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
-            const globeMatrix = Float32Array.from(tr.globeMatrix);
             const tileBounds = tileCornersToBounds(coord.canonical);
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod);
