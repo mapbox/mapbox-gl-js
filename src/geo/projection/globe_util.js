@@ -367,9 +367,8 @@ export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number,
     return origin;
 }
 
-export function globeECEFNormalizationScale(bounds: Aabb): number {
-    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
-    return GLOBE_NORMALIZATION_MASK / maxExt;
+export function globeECEFNormalizationScale({min, max}: Aabb): number {
+    return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
 }
 
 export function globeNormalizeECEF(bounds: Aabb): Float64Array {
