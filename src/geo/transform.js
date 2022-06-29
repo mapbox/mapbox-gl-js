@@ -149,6 +149,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
     _mercatorScaleRatio: number;
+    mercatorCenter: [number, number];
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -166,6 +167,7 @@ class Transform {
         this.width = 0;
         this.height = 0;
         this._center = new LngLat(0, 0);
+        this.mercatorCenter = [mercatorXfromLng(this._center.lng), mercatorYfromLat(this._center.lat)];
         this.zoom = 0;
         this.angle = 0;
         this._fov = 0.6435011087932844;
@@ -466,7 +468,7 @@ class Transform {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
 
         this._unmodified = false;
-        this._center = center;
+        this._updateCenter(center);
         if (this._terrainEnabled()) {
             if (this.cameraElevationReference === "ground") {
                 this._updateCameraOnTerrain();
@@ -476,6 +478,12 @@ class Transform {
         }
         this._constrain();
         this._calcMatrices();
+    }
+
+    _updateCenter(center: LngLat) {
+        this._center = center;
+        this.mercatorCenter[0] = mercatorXfromLng(center.lng);
+        this.mercatorCenter[1] = mercatorYfromLat(center.lat);
     }
 
     _updateZoomFromElevation() {
@@ -1555,7 +1563,7 @@ class Transform {
 
             // Camera zoom has to be updated as the orbit distance might have changed
             this._centerAltitude = newCenter.toAltitude();
-            this._center = this.coordinateLocation(newCenter);
+            this._updateCenter(this.coordinateLocation(newCenter));
             this._updateZoomFromElevation();
             this._constrain();
             this._calcMatrices();
@@ -1927,7 +1935,7 @@ class Transform {
         this._setZoom(clamp(zoom, this._minZoom, this._maxZoom));
         this._updateSeaLevelZoom();
 
-        this._center = this.coordinateLocation(new MercatorCoordinate(position[0], position[1], position[2]));
+        this._updateCenter(this.coordinateLocation(new MercatorCoordinate(position[0], position[1], position[2])));
         this._unmodified = false;
         this._constrain();
         this._calcMatrices();

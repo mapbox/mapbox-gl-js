@@ -13,7 +13,6 @@ import {
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
-import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 import type Painter from './painter.js';
@@ -66,7 +65,6 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
@@ -122,9 +120,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, coord,
-                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+                crossfade, tile, heightLift, globeToMercator, invMatrix) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, coord,
-                heightLift, globeToMercator, mercatorCenter, invMatrix);
+                heightLift, globeToMercator, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 

@@ -113,7 +113,6 @@ const fillExtrusionUniformValues = (
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
-    mercatorCenter: [number, number],
     invMatrix: Float32Array
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
@@ -149,8 +148,8 @@ const fillExtrusionUniformValues = (
         uniformValues['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         uniformValues['u_zoom_transition'] = zoomTransition;
         uniformValues['u_inv_rot_matrix'] = invMatrix;
-        uniformValues['u_merc_center'] = mercatorCenter;
-        uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT): any);
+        uniformValues['u_merc_center'] = tr.mercatorCenter;
+        uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), tr.mercatorCenter[0] * EXTENT, tr.mercatorCenter[1] * EXTENT): any);
         uniformValues['u_height_lift'] = heightLift;
     }
 
@@ -168,12 +167,11 @@ const fillExtrusionPatternUniformValues = (
     tile: Tile,
     heightLift: number,
     zoomTransition: number,
-    mercatorCenter: [number, number],
     invMatrix: Float32Array
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, coord,
-        heightLift, zoomTransition, mercatorCenter, invMatrix);
+        heightLift, zoomTransition, invMatrix);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };

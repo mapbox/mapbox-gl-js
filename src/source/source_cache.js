@@ -10,7 +10,6 @@ import browser from '../util/browser.js';
 import {OverscaledTileID, CanonicalTileID} from './tile_id.js';
 import assert from 'assert';
 import SourceFeatureState from './source_state.js';
-import {mercatorXfromLng} from '../geo/mercator_coordinate.js';
 
 import type {Source} from './source.js';
 import type {SourceSpecification} from '../style-spec/types.js';
@@ -878,7 +877,7 @@ class SourceCache extends Evented {
         if (!transform) return tileResults;
 
         const isGlobe = transform.projection.name === 'globe';
-        const centerX = mercatorXfromLng(transform.center.lng);
+        const centerX = transform.mercatorCenter[0];
 
         for (const tileID in this._tiles) {
             const tile = this._tiles[tileID];

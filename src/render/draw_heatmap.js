@@ -10,7 +10,6 @@ import {
     heatmapUniformValues,
     heatmapTextureUniformValues
 } from './program/heatmap_program.js';
-import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -47,8 +46,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
         const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
 
-        const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
-
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
@@ -72,7 +69,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
                 heatmapUniformValues(painter, coord,
-                    tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
+                    tile, invMatrix, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
                 programConfiguration, isGlobeProjection ? [bucket.globeExtVertexBuffer] : null);

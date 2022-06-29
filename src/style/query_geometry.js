@@ -10,7 +10,7 @@ import type Tile from '../source/tile.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
-import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.js';
+import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
@@ -385,7 +385,7 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {polygon: P
         }
     }
 
-    const cameraX = mercatorXfromLng(tr.center.lng);
+    const cameraX = tr.mercatorCenter[0];
     if (unwrapped && cameraX < Math.abs(cameraX - 1)) {
         polygon.forEach(p => { p.x -= 1; });
     }

@@ -192,7 +192,6 @@ const symbolIconUniformValues = (
     texSize: [number, number],
     coord: OverscaledTileID,
     zoomTransition: number,
-    mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection
@@ -229,7 +228,7 @@ const symbolIconUniformValues = (
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = zoomTransition;
         values['u_inv_rot_matrix'] = invMatrix;
-        values['u_merc_center'] = mercatorCenter;
+        values['u_merc_center'] = transform.mercatorCenter;
         values['u_camera_forward'] = ((transform._camera.forward(): any): [number, number, number]);
         values['u_ecef_origin'] = globeECEFOrigin(transform.globeMatrix, coord.toUnwrapped());
         values['u_tile_matrix'] = Float32Array.from(transform.globeMatrix);
@@ -253,14 +252,13 @@ const symbolSDFUniformValues = (
     isHalo: boolean,
     coord: OverscaledTileID,
     zoomTransition: number,
-    mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection
 ): UniformValues<SymbolSDFUniformsType> => {
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
+        texSize, coord, zoomTransition, invMatrix, upVector, projection), {
         'u_gamma_scale': pitchWithMap ? painter.transform.cameraToCenterDistance * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo
@@ -280,14 +278,13 @@ const symbolTextAndIconUniformValues = (
     texSizeIcon: [number, number],
     coord: OverscaledTileID,
     zoomTransition: number,
-    mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection
 ): UniformValues<SymbolIconUniformsType> => {
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
-        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
+        true, coord, zoomTransition, invMatrix, upVector, projection), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });

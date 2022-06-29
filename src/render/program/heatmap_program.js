@@ -60,7 +60,6 @@ const heatmapUniformValues = (
     coord: OverscaledTileID,
     tile: Tile,
     invMatrix: Float32Array,
-    mercatorCenter: [number, number],
     zoom: number,
     intensity: number
 ): UniformValues<HeatmapUniformsType> => {
@@ -81,11 +80,11 @@ const heatmapUniformValues = (
 
     if (isGlobe) {
         values['u_inv_rot_matrix'] = invMatrix;
-        values['u_merc_center'] = mercatorCenter;
+        values['u_merc_center'] = transform.mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
-        const x = mercatorCenter[0] * EXTENT;
-        const y = mercatorCenter[1] * EXTENT;
+        const x = transform.mercatorCenter[0] * EXTENT;
+        const y = transform.mercatorCenter[1] * EXTENT;
         values['u_up_dir'] = (transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y): any);
     }
 

@@ -7,7 +7,6 @@ import Program from './program.js';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program.js';
 import SegmentVector from '../data/segment.js';
 import {OverscaledTileID} from '../source/tile_id.js';
-import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -61,7 +60,6 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const isGlobeProjection = tr.projection.name === 'globe';
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -82,7 +80,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-        const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
+        const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, layer);
 
         const state: TileRenderState = {
             programConfiguration,
