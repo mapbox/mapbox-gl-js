@@ -16,10 +16,10 @@ import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.j
 import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb, Ray} from '../../util/primitives.js';
+import LngLat from '../lng_lat.js';
 import LngLatBounds from '../lng_lat_bounds.js';
-import type Painter from '../../render/painter.js';
 
-import type LngLat from '../lng_lat.js';
+import type Painter from '../../render/painter.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type Context from '../../gl/context.js';
 import type {Vec3, Mat4} from 'gl-matrix';
@@ -48,7 +48,7 @@ export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 export const GLOBE_SCALE_MATCH_LATITUDE = 45;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
-const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
+export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -183,8 +183,8 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
 
     // After zoom 1 surface function is monotonic for all tile patches
     // => it is enough to project corner points
-    const [[n, w], [s, e]] = tileCornersInLatLng(id);
-    const corners = rectLatLngToECEF(n, w, s, e);
+    const bounds = tileCornersToBounds(id);
+    const corners = boundsToECEF(bounds);
 
     const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
     const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
@@ -202,28 +202,28 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
+function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
+    for (const corner of corners) {
+        vec3.transformMat4(corner, corner, globeMatrix);
+        vec3.scale(corner, corner, scale);
+        vec3.min(cornerMin, cornerMin, corner);
+        vec3.max(cornerMax, cornerMax, corner);
+    }
+}
+
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
 
     const mx = Number.MAX_VALUE;
     const cornerMax = [-mx, -mx, -mx];
     const cornerMin = [mx, mx, mx];
-    const m = mat4.identity(new Float64Array(16));
-    mat4.scale(m, m, [scale, scale, scale]);
-    mat4.multiply(m, m, tr.globeMatrix);
+    const m = tr.globeMatrix;
 
     if (tileId.z <= 1) {
         // Compute minimum bounding box that fully encapsulates
         // transformed corners of the local aabb
         const aabb = globeTileBounds(tileId);
-        const corners = aabb.getCorners();
-
-        for (let i = 0; i < corners.length; i++) {
-            vec3.transformMat4(corners[i], corners[i], m);
-            vec3.min(cornerMin, cornerMin, corners[i]);
-            vec3.max(cornerMax, cornerMax, corners[i]);
-        }
-
+        updateCorners(cornerMin, cornerMax, aabb.getCorners(), m, scale);
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -239,19 +239,11 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // Simplified aabb is computed by first encapsulating 4 transformed corner points of the tile.
     // The resulting aabb is not complete yet as curved edges of the tile might span outside of the boundaries.
     // It is enough to extend the aabb to contain only the edge that's closest to the center point.
-    const [[n, w], [s, e]] = tileCornersInLatLng(tileId);
-    const corners = rectLatLngToECEF(n, w, s, e);
-
-    const bounds = new LngLatBounds();
-    bounds.setSouthWest([w, s]);
-    bounds.setNorthEast([e, n]);
+    const bounds = tileCornersToBounds(tileId);
+    const corners = boundsToECEF(bounds);
 
     // Note that here we're transforming the corners to world space while finding the min/max values.
-    for (let i = 0; i < corners.length; i++) {
-        vec3.transformMat4(corners[i], corners[i], m);
-        vec3.min(cornerMin, cornerMin, corners[i]);
-        vec3.max(cornerMax, cornerMax, corners[i]);
-    }
+    updateCorners(cornerMin, cornerMax, corners, m, scale);
 
     if (bounds.contains(tr.center)) {
         // Extend the aabb by encapsulating the center point
@@ -266,20 +258,14 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
 
     // Compute parameters describing edges of the tile (i.e. arcs) on the globe surface.
     // Vertical edges revolves around the globe origin whereas horizontal edges revolves around the y-axis.
-    const globeCenter = [m[12], m[13], m[14]];
+    const arcCenter = [m[12] * scale, m[13] * scale, m[14] * scale];
 
-    const centerLng = tr.center.lng;
+    const tileCenter = bounds.getCenter();
     const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
-    const center = [mercatorXfromLng(centerLng), mercatorYfromLat(centerLat)];
+    const tileCenterLat = clamp(tileCenter.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
-    const tileCenterLng = bounds.getCenter().lng;
-    const tileCenterLat = clamp(bounds.getCenter().lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
-    const tileCenter = [mercatorXfromLng(tileCenterLng), mercatorYfromLat(tileCenterLat)];
-    let arcCenter = new Array(3);
-    let closestArcIdx = 0;
-
-    let dx = center[0] - tileCenter[0];
-    const dy = center[1] - tileCenter[1];
+    let dx = mercatorXfromLng(tr.center.lng) - mercatorXfromLng(tileCenter.lng);
+    const dy = mercatorYfromLat(centerLat) - mercatorYfromLat(tileCenterLat);
 
     // Shortest distance might be across the antimeridian
     if (dx > .5) {
@@ -289,35 +275,32 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     }
 
     // Here we determine the arc which is closest to the map center point.
-    // Horizontal arcs origin = globeCenter.
-    // Vertical arcs origin = globeCenter + yAxis * shift.
+    // Horizontal arcs origin = arcCenter.
+    // Vertical arcs origin = arcCenter + yAxis * shift.
     // Where `shift` is determined by latitude.
+    let closestArcIdx = 0;
     if (Math.abs(dx) > Math.abs(dy)) {
         closestArcIdx = dx >= 0 ? 1 : 3;
-        arcCenter = globeCenter;
     } else {
         closestArcIdx = dy >= 0 ? 0 : 2;
-        const yAxis = [m[4], m[5], m[6]];
-        let shift: number;
-        if (dy >= 0) {
-            shift = -Math.sin(degToRad(bounds.getSouth())) * GLOBE_RADIUS;
-        } else {
-            shift = -Math.sin(degToRad(bounds.getNorth())) * GLOBE_RADIUS;
-        }
-        arcCenter = vec3.scaleAndAdd(arcCenter, globeCenter, yAxis, shift);
+        const yAxis = [m[4] * scale, m[5] * scale, m[6] * scale];
+        const shift = -Math.sin(degToRad(dy >= 0 ? bounds.getSouth() : bounds.getNorth())) * GLOBE_RADIUS;
+        vec3.scaleAndAdd(arcCenter, arcCenter, yAxis, shift);
     }
 
     const arcA = corners[closestArcIdx];
     const arcB = corners[(closestArcIdx + 1) % 4];
 
     const closestArc = new Arc(arcA, arcB, arcCenter);
-    let arcExtremum = [(localExtremum(closestArc, 0) || arcA[0]),
+    let arcBounds = [
+        (localExtremum(closestArc, 0) || arcA[0]),
         (localExtremum(closestArc, 1) || arcA[1]),
         (localExtremum(closestArc, 2) || arcA[2])];
 
     // Interpolate the four corners towards their world space location in mercator projection during transition.
     const phase = globeToMercatorTransition(tr.zoom);
     if (phase > 0.0 && phase < 1.0) {
+        const center = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(centerLat)];
         const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, center);
         for (let i = 0; i < corners.length; i++) {
             corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
@@ -325,7 +308,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
 
         // Interpolate arc extremum toward the edge midpoint in Mercator
         const mercatorExtremum = interpolateArray(mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4], .5);
-        arcExtremum = interpolateArray(arcExtremum, mercatorExtremum, phase);
+        arcBounds = interpolateArray(arcBounds, mercatorExtremum, phase);
     }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
@@ -333,35 +316,31 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // of the view frustum
     cornerMin[2] = Math.min(arcA[2], arcB[2]);
 
-    vec3.min(cornerMin, cornerMin, arcExtremum);
-    vec3.max(cornerMax, cornerMax, arcExtremum);
+    vec3.min(cornerMin, cornerMin, arcBounds);
+    vec3.max(cornerMax, cornerMax, arcBounds);
 
     return new Aabb(cornerMin, cornerMax);
 }
 
-function tileCornersInMercator(tileId: CanonicalTileID): [number, number, number, number] {
-    const tileScale = 1 / (1 << tileId.z);
-
-    const west = tileId.x * tileScale;
+function tileCornersInMercator({x, y, z}: CanonicalTileID): [number, number, number, number] {
+    const tileScale = 1.0 / (1 << z);
+    const west = x * tileScale;
     const east = west + tileScale;
-    const north = tileId.y * tileScale;
+    const north = y * tileScale;
     const south = north + tileScale;
-
-    return [north, west, south, east];
+    return [south, west, north, east];
 }
 
-export function tileCornersInLatLng(tileId: CanonicalTileID): [[number, number], [number, number]] {
-    const [north, west, south, east] = tileCornersInMercator(tileId);
-
-    const latLngNW = [ latFromMercatorY(north), lngFromMercatorX(west) ];
-    const latLngSE = [ latFromMercatorY(south), lngFromMercatorX(east) ];
-
-    return [latLngNW, latLngSE];
+export function tileCornersToBounds(tileId: CanonicalTileID): LngLatBounds {
+    const [south, west, north, east] = tileCornersInMercator(tileId);
+    const sw = new LngLat(lngFromMercatorX(west), latFromMercatorY(south));
+    const ne = new LngLat(lngFromMercatorX(east), latFromMercatorY(north));
+    return new LngLatBounds(sw, ne);
 }
 
 function mercatorTileCornersInCameraSpace(tileId: CanonicalTileID, numTiles: number, mercatorScale: number, cameraCenter: [number, number]): $ReadOnlyArray<Array<number>> {
 
-    let [n, w, s, e] = tileCornersInMercator(tileId);
+    let [s, w, n, e] = tileCornersInMercator(tileId);
 
     // Ensure that the tile viewed is the nearest when across the antimeridian
     let wrap = 0;
@@ -387,11 +366,15 @@ function mercatorTileCornersInCameraSpace(tileId: CanonicalTileID, numTiles: num
         [e, n, 0]];
 }
 
-function rectLatLngToECEF(n, w, s, e) {
-    const cosN = Math.cos(degToRad(n));
-    const cosS = Math.cos(degToRad(s));
-    const sinN = Math.sin(degToRad(n));
-    const sinS = Math.sin(degToRad(s));
+function boundsToECEF(bounds: LngLatBounds) {
+    const ny = degToRad(bounds.getNorth());
+    const sy = degToRad(bounds.getSouth());
+    const cosN = Math.cos(ny);
+    const cosS = Math.cos(sy);
+    const sinN = Math.sin(ny);
+    const sinS = Math.sin(sy);
+    const w = bounds.getWest();
+    const e = bounds.getEast();
     return [
         csLatLngToECEF(cosS, sinS, w),
         csLatLngToECEF(cosS, sinS, e),
@@ -435,9 +418,8 @@ export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number,
     return origin;
 }
 
-export function globeECEFNormalizationScale(bounds: Aabb): number {
-    const maxExt = Math.max(...vec3.sub([], bounds.max, bounds.min));
-    return GLOBE_NORMALIZATION_MASK / maxExt;
+export function globeECEFNormalizationScale({min, max}: Aabb): number {
+    return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
 }
 
 export function globeNormalizeECEF(bounds: Aabb): Float64Array {
@@ -544,8 +526,11 @@ export function globeUseCustomAntiAliasing(painter: Painter, context: Context, t
     return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
 }
 
-export function getGridMatrix(id: CanonicalTileID, corners: [[number, number], [number, number]], latitudinalLod: number): Array<number> {
-    const [[n, w], [s, e]] = corners;
+export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number): Array<number> {
+    const n = bounds.getNorth();
+    const s = bounds.getSouth();
+    const w = bounds.getWest();
+    const e = bounds.getEast();
     const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
     const x = (e - w) * S;
     const latitudinalSubdivs = GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];

@@ -113,7 +113,8 @@
       "paint": {
         "fill-extrusion-pattern": "generic_icon",
         "fill-extrusion-opacity": 0.5,
-        "fill-extrusion-height": 10
+        "fill-extrusion-height": 10,
+        "fill-extrusion-ambient-occlusion-intensity": 0.6
       }
     }
   ]

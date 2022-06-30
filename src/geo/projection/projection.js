@@ -42,8 +42,10 @@ export default class Projection {
     range: ?[number, number];
     parallels: ?[number, number];
     unsupportedLayers: Array<string>;
+    spec: ProjectionSpecification;
 
     constructor(options: ProjectionSpecification) {
+        this.spec = options;
         this.name = options.name;
         this.wrap = false;
         this.requiresDraping = false;
@@ -76,6 +78,17 @@ export default class Projection {
 
     pixelsPerMeter(lat: number, worldSize: number): number {
         return mercatorZfromAltitude(1, lat) * worldSize;
+    }
+
+    // pixels-per-meter is used to describe relation between real world and pixel distances.
+    // `pixelSpaceConversion` can be used to convert the ratio from mercator projection to
+    // the currently active projection.
+    //
+    // `pixelSpaceConversion` is useful for converting between pixel spaces where some logic
+    // expects mercator pixels, such as raycasting where the scale is expected to be in
+    // mercator pixels.
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number { // eslint-disable-line
+        return 1.0;
     }
 
     farthestPixelDistance(tr: Transform): number {
