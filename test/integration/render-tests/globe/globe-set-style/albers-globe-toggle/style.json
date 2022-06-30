@@ -1,0 +1,67 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "height": 256,
+        "width": 256,
+        "allowed": 0.0005,
+        "operations": [
+          ["setStyle", {
+            "version": 8,
+            "projection": {"name": "albers"},
+            "sources": {
+              "satellite": {
+                  "type": "raster",
+                  "tiles": [
+                    "local://tiles/{z}-{x}-{y}.satellite.png"
+                  ],
+                  "maxzoom": 17,
+                  "tileSize": 256
+                }
+              },
+            "layers": [{
+                  "id": "bg",
+                  "type": "background",
+                  "paint": {
+                      "background-color": "pink"
+              }
+              }, {
+                  "id": "raster",
+                  "type": "raster",
+                  "source": "satellite"
+              }]
+          }],
+          ["wait"],
+          ["setStyle", {
+              "version": 8,
+              "projection": {"name": "globe"},
+              "sources": {
+                "satellite": {
+                    "type": "raster",
+                    "tiles": [
+                      "local://tiles/{z}-{x}-{y}.satellite.png"
+                    ],
+                    "maxzoom": 17,
+                    "tileSize": 256
+                  }
+                },
+              "layers": [{
+                    "id": "bg",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "pink"
+                }
+                }, {
+                    "id": "raster",
+                    "type": "raster",
+                    "source": "satellite"
+                }]
+            }],
+          ["wait"]
+        ]
+      }
+    },
+    "zoom": 0.5,
+    "sources": {},
+    "layers": []
+  }
