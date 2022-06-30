@@ -1228,7 +1228,7 @@ class Map extends Camera {
             this._update(true);
         }
 
-        this._prevProjection = projection.name;
+        this._prevProjection = this.getProjection().name;
 
         return this;
     }
