@@ -1181,7 +1181,7 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
-        this._prevProjection = this.getProjection() ?  this.getProjection().name : undefined;
+        this._prevProjection = this.getProjection().name;
 
         if (!projection) {
             projection = null;
