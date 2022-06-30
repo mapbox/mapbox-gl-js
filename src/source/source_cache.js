@@ -121,6 +121,9 @@ class SourceCache extends Evented {
         if (this._sourceErrored) { return true; }
         if (!this._sourceLoaded) { return false; }
         if (!this._source.loaded()) { return false; }
+        // if tiles haven't started loading yet this._tiles would be empty
+        if (Object.keys(this._tiles).length === 0) { return false; }
+
         for (const t in this._tiles) {
             const tile = this._tiles[t];
             if (tile.state !== 'loaded' && tile.state !== 'errored')
