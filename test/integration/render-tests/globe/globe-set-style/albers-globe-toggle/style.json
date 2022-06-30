@@ -55,7 +55,8 @@
                     "id": "raster",
                     "type": "raster",
                     "source": "satellite"
-                }]
+                }],
+              "fog": {}
             }],
           ["wait"]
         ]
