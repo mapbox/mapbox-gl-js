@@ -1181,7 +1181,6 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
-        //this._prevProjection = this.getProjection().name;
 
         if (!projection) {
             projection = null;
@@ -1201,7 +1200,6 @@ class Map extends Camera {
         let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
         if (projection && projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            //this._prevProjection = projection.name;
             projectionHasChanged = this.transform.setProjection({name: 'mercator'});
             this.transform.mercatorFromTransition = true;
         } else {
