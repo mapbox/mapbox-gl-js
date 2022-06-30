@@ -1220,7 +1220,7 @@ class Map extends Camera {
 
         if (projectionHasChanged) {
             // If a zoom transition on globe
-            if ((!this._prevProjection || this._prevProjection === 'globe') && this.getProjection().name === 'globe') {
+            if (this._prevProjection === 'globe' && this.getProjection().name === 'globe') {
                 this.style._forceSymbolLayerUpdate();
             } else {
                 // If a switch between different projections

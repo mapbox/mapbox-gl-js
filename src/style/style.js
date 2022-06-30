@@ -311,6 +311,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
+        this.map._prevProjection = this.stylesheet.projection ? this.stylesheet.projection.name : undefined;
         this._updateMapProjection();
 
         for (const id in json.sources) {
@@ -670,7 +671,7 @@ class Style extends Evented {
             (this: any)[op.command].apply(this, op.args);
         });
 
-        if (this.map) this.map._prevProjection = this.stylesheet.projection ? this.stylesheet.projection.name : undefined;
+        this.map._prevProjection = this.stylesheet.projection ? this.stylesheet.projection.name : undefined;
         this.stylesheet = nextState;
         this._updateMapProjection();
 
