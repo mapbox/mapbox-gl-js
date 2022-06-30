@@ -57,7 +57,8 @@ class Uniform2f extends Uniform<[number, number]> {
 
     set(v: [number, number]): void {
         if (v[0] !== this.current[0] || v[1] !== this.current[1]) {
-            this.current = v;
+            this.current[0] = v[0];
+            this.current[1] = v[1];
             this.gl.uniform2f(this.location, v[0], v[1]);
         }
     }
@@ -71,7 +72,9 @@ class Uniform3f extends Uniform<[number, number, number]> {
 
     set(v: [number, number, number]): void {
         if (v[0] !== this.current[0] || v[1] !== this.current[1] || v[2] !== this.current[2]) {
-            this.current = v;
+            this.current[0] = v[0];
+            this.current[1] = v[1];
+            this.current[2] = v[2];
             this.gl.uniform3f(this.location, v[0], v[1], v[2]);
         }
     }
@@ -86,7 +89,10 @@ class Uniform4f extends Uniform<[number, number, number, number]> {
     set(v: [number, number, number, number]): void {
         if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
             v[2] !== this.current[2] || v[3] !== this.current[3]) {
-            this.current = v;
+            this.current[0] = v[0];
+            this.current[1] = v[1];
+            this.current[2] = v[2];
+            this.current[3] = v[3];
             this.gl.uniform4f(this.location, v[0], v[1], v[2], v[3]);
         }
     }
@@ -95,23 +101,25 @@ class Uniform4f extends Uniform<[number, number, number, number]> {
 class UniformColor extends Uniform<Color> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
-        this.current = Color.transparent;
+        this.current = new Color(0, 0, 0, 0);
     }
 
     set(v: Color): void {
         if (v.r !== this.current.r || v.g !== this.current.g ||
             v.b !== this.current.b || v.a !== this.current.a) {
-            this.current = v;
+            this.current.r = v.r;
+            this.current.g = v.g;
+            this.current.b = v.b;
+            this.current.a = v.a;
             this.gl.uniform4f(this.location, v.r, v.g, v.b, v.a);
         }
     }
 }
 
-const emptyMat4 = new Float32Array(16);
 class UniformMatrix4f extends Uniform<Float32Array> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
-        this.current = emptyMat4;
+        this.current = new Float32Array(16);
     }
 
     set(v: Float32Array): void {
@@ -119,13 +127,13 @@ class UniformMatrix4f extends Uniform<Float32Array> {
         // happen at i=12 or i=0, so we check those first to avoid lots of
         // unnecessary iteration:
         if (v[12] !== this.current[12] || v[0] !== this.current[0]) {
-            this.current = v;
+            this.current.set(v);
             this.gl.uniformMatrix4fv(this.location, false, v);
             return;
         }
         for (let i = 1; i < 16; i++) {
             if (v[i] !== this.current[i]) {
-                this.current = v;
+                this.current.set(v);
                 this.gl.uniformMatrix4fv(this.location, false, v);
                 break;
             }
@@ -133,17 +141,16 @@ class UniformMatrix4f extends Uniform<Float32Array> {
     }
 }
 
-const emptyMat3 = new Float32Array(9);
 class UniformMatrix3f extends Uniform<Float32Array> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
-        this.current = emptyMat3;
+        this.current = new Float32Array(9);
     }
 
     set(v: Float32Array): void {
         for (let i = 0; i < 9; i++) {
             if (v[i] !== this.current[i]) {
-                this.current = v;
+                this.current.set(v);
                 this.gl.uniformMatrix3fv(this.location, false, v);
                 break;
             }
@@ -151,17 +158,16 @@ class UniformMatrix3f extends Uniform<Float32Array> {
     }
 }
 
-const emptyMat2 = new Float32Array(4);
 class UniformMatrix2f extends Uniform<Float32Array> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
-        this.current = emptyMat2;
+        this.current = new Float32Array(4);
     }
 
     set(v: Float32Array): void {
         for (let i = 0; i < 4; i++) {
             if (v[i] !== this.current[i]) {
-                this.current = v;
+                this.current.set(v);
                 this.gl.uniformMatrix2fv(this.location, false, v);
                 break;
             }
