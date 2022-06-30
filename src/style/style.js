@@ -314,7 +314,6 @@ class Style extends Evented {
 
         // store initial style projection as prevProjection for checking clearing background tiles in `map.updateProjection`
         if (this.stylesheet.projection) this.map._prevProjection = this.stylesheet.projection.name;
-
         this._updateMapProjection();
 
         for (const id in json.sources) {
@@ -666,7 +665,7 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition' || op.command === 'setProjection') {
+            if (op.command === 'setTransition') {
                 // `transition` is always read directly off of
                 // `this.stylesheet`, which we update below
                 return;
