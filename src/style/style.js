@@ -312,8 +312,8 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = clone(json);
 
-        // store initial style projection as prevProjection for checking clearing background tiles in `map.updateProjection`
-        if (this.stylesheet.projection) this.map._prevProjection = this.stylesheet.projection.name;
+        // store initial projection as prevProjection for checking clearing background tiles in `map.updateProjection`
+        this.map._prevProjection = this.map.getProjection().name;
         this._updateMapProjection();
 
         for (const id in json.sources) {
