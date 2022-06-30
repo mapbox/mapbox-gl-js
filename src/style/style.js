@@ -313,7 +313,7 @@ class Style extends Evented {
         this.stylesheet = clone(json);
 
         // store initial projection as prevProjection for checking clearing background tiles in `map.updateProjection`
-        this.map._prevProjection = this.map.getProjection().name;
+        if (this.map) this.map._prevProjection = this.map.getProjection();
         this._updateMapProjection();
 
         for (const id in json.sources) {
