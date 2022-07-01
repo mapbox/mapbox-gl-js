@@ -365,14 +365,12 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        if (!this.map._explicitProjection) {
-            this.map._updateProjection({globeZoomTransition: false});
-        }
+        this.__updateMapProjection();
     }
 
     _updateMapProjection() {
         if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection({globeZoomTransition: false});
+            this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
             this.applyProjectionUpdate();
         }
@@ -662,7 +660,7 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition') {
+            if (op.command === 'setTransition' || op.command === 'setProjection') {
                 // `transition` is always read directly off of
                 // `this.stylesheet`, which we update below
                 return;

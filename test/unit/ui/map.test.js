@@ -1900,7 +1900,7 @@ test('Map', (t) => {
                 // Defaults to style projection
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 1); //switched style from default mercator to globe
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
 
                 // Runtime api overrides stylesheet projection
                 map.setProjection('albers');
