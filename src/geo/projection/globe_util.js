@@ -8,7 +8,7 @@ import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
@@ -263,9 +263,11 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     const tileCenter = bounds.getCenter();
     const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const tileCenterLat = clamp(tileCenter.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    const camX = mercatorXfromLng(tr.center.lng);
+    const camY = mercatorYfromLat(centerLat);
 
-    let dx = mercatorXfromLng(tr.center.lng) - mercatorXfromLng(tileCenter.lng);
-    const dy = mercatorYfromLat(centerLat) - mercatorYfromLat(tileCenterLat);
+    let dx = camX - mercatorXfromLng(tileCenter.lng);
+    const dy = camY - mercatorYfromLat(tileCenterLat);
 
     // Shortest distance might be across the antimeridian
     if (dx > .5) {
@@ -292,10 +294,23 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     const arcB = corners[(closestArcIdx + 1) % 4];
 
     const closestArc = new Arc(arcA, arcB, arcCenter);
-    const arcBounds = [
+    let arcBounds = [
         (localExtremum(closestArc, 0) || arcA[0]),
         (localExtremum(closestArc, 1) || arcA[1]),
         (localExtremum(closestArc, 2) || arcA[2])];
+
+    // Interpolate the four corners towards their world space location in mercator projection during transition.
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase > 0.0 && phase < 1.0) {
+        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
+        for (let i = 0; i < corners.length; i++) {
+            corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
+        }
+
+        // Interpolate arc extremum toward the edge midpoint in Mercator
+        const mercatorExtremum = interpolateArray(mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4], .5);
+        arcBounds = interpolateArray(arcBounds, mercatorExtremum, phase);
+    }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
     // of tiles farther away from the center as they would otherwise intersect with far end
@@ -313,6 +328,38 @@ export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
     const sw = new LngLat(lngFromMercatorX(x * s), latFromMercatorY((y + 1) * s));
     const ne = new LngLat(lngFromMercatorX((x + 1) * s), latFromMercatorY(y * s));
     return new LngLatBounds(sw, ne);
+}
+
+function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, camX, camY): $ReadOnlyArray<Array<number>> {
+
+    const tileScale = 1.0 / (1 << z);
+    let w = x * tileScale;
+    let e = w + tileScale;
+    let n = y * tileScale;
+    let s = n + tileScale;
+
+    // Ensure that the tile viewed is the nearest when across the antimeridian
+    let wrap = 0;
+    const tileCenterXFromCamera = (w + e) / 2  - camX;
+    if (tileCenterXFromCamera > .5) {
+        wrap = -1;
+    } else if (tileCenterXFromCamera < -.5) {
+        wrap = 1;
+    }
+
+    camX *= mercatorScale;
+    camY *= mercatorScale;
+
+    // Transform position in Mercator to points on the plane tangent to the globe at cameraCenter.
+    w  = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
+    e  = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
+    n  = (n * numTiles - camY) * mercatorScale + camY;
+    s  = (s * numTiles - camY) * mercatorScale + camY;
+
+    return [[w, s, 0],
+        [e, s, 0],
+        [w, n, 0],
+        [e, n, 0]];
 }
 
 function boundsToECEF(bounds: LngLatBounds) {

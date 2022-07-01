@@ -1705,7 +1705,7 @@ class Transform {
         // such as raycasting expects the scale to be in mercator pixels
         this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT);
 
-        this.cameraToCenterDistance = this.getCameraToCenterDistance(this.projection);
+        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov * 0.5) * this.height * this._pixelsPerMercatorPixel;
 
         this._updateCameraState();
 
