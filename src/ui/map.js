@@ -1214,10 +1214,11 @@ class Map extends Camera {
         this.style.applyProjectionUpdate();
         if (projectionHasChanged) {
             if (this.transform._globeZoomTransition) {
+                // if a globe zoom transition occurred
                 this.transform._globeZoomTransition = false;
                 this.style._forceSymbolLayerUpdate();
             } else {
-                // If a switch between different projections with a non-mercator projection
+                // If a switch between different projections
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
