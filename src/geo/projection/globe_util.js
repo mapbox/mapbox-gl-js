@@ -322,25 +322,20 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-function tileCornersInMercator({x, y, z}: CanonicalTileID): [number, number, number, number] {
-    const tileScale = 1.0 / (1 << z);
-    const west = x * tileScale;
-    const east = west + tileScale;
-    const north = y * tileScale;
-    const south = north + tileScale;
-    return [south, west, north, east];
-}
-
-export function tileCornersToBounds(tileId: CanonicalTileID): LngLatBounds {
-    const [south, west, north, east] = tileCornersInMercator(tileId);
-    const sw = new LngLat(lngFromMercatorX(west), latFromMercatorY(south));
-    const ne = new LngLat(lngFromMercatorX(east), latFromMercatorY(north));
+export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
+    const s = 1.0 / (1 << z);
+    const sw = new LngLat(lngFromMercatorX(x * s), latFromMercatorY((y + 1) * s));
+    const ne = new LngLat(lngFromMercatorX((x + 1) * s), latFromMercatorY(y * s));
     return new LngLatBounds(sw, ne);
 }
 
-function mercatorTileCornersInCameraSpace(tileId: CanonicalTileID, numTiles: number, mercatorScale: number, cameraCenter: [number, number]): $ReadOnlyArray<Array<number>> {
+function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, cameraCenter: [number, number]): $ReadOnlyArray<Array<number>> {
 
-    let [s, w, n, e] = tileCornersInMercator(tileId);
+    const tileScale = 1.0 / (1 << z);
+    let w = x * tileScale;
+    let e = w + tileScale;
+    let n = y * tileScale;
+    let s = n + tileScale;
 
     // Ensure that the tile viewed is the nearest when across the antimeridian
     let wrap = 0;
