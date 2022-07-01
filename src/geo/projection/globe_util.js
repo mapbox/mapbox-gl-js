@@ -263,9 +263,11 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     const tileCenter = bounds.getCenter();
     const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
     const tileCenterLat = clamp(tileCenter.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
+    const camX = mercatorXfromLng(tr.center.lng);
+    const camY = mercatorYfromLat(centerLat);
 
-    let dx = mercatorXfromLng(tr.center.lng) - mercatorXfromLng(tileCenter.lng);
-    const dy = mercatorYfromLat(centerLat) - mercatorYfromLat(tileCenterLat);
+    let dx = camX - mercatorXfromLng(tileCenter.lng);
+    const dy = camY - mercatorYfromLat(tileCenterLat);
 
     // Shortest distance might be across the antimeridian
     if (dx > .5) {
@@ -300,8 +302,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // Interpolate the four corners towards their world space location in mercator projection during transition.
     const phase = globeToMercatorTransition(tr.zoom);
     if (phase > 0.0 && phase < 1.0) {
-        const center = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(centerLat)];
-        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, center);
+        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
         for (let i = 0; i < corners.length; i++) {
             corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
         }
@@ -329,7 +330,7 @@ export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
     return new LngLatBounds(sw, ne);
 }
 
-function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, cameraCenter: [number, number]): $ReadOnlyArray<Array<number>> {
+function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, camX, camY): $ReadOnlyArray<Array<number>> {
 
     const tileScale = 1.0 / (1 << z);
     let w = x * tileScale;
@@ -339,21 +340,21 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
 
     // Ensure that the tile viewed is the nearest when across the antimeridian
     let wrap = 0;
-    const tileCenterXFromCamera = (w + e) / 2  - cameraCenter[0];
+    const tileCenterXFromCamera = (w + e) / 2  - camX;
     if (tileCenterXFromCamera > .5) {
         wrap = -1;
     } else if (tileCenterXFromCamera < -.5) {
         wrap = 1;
     }
 
-    const cameraX = cameraCenter[0] * mercatorScale;
-    const cameraY = cameraCenter[1] * mercatorScale;
+    camX *= mercatorScale;
+    camY *= mercatorScale;
 
     // Transform position in Mercator to points on the plane tangent to the globe at cameraCenter.
-    w  = ((w + wrap) * numTiles - cameraX) * mercatorScale + cameraX;
-    e  = ((e + wrap) * numTiles - cameraX) * mercatorScale + cameraX;
-    n  = (n * numTiles - cameraY) * mercatorScale + cameraY;
-    s  = (s * numTiles - cameraY) * mercatorScale + cameraY;
+    w  = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
+    e  = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
+    n  = (n * numTiles - camY) * mercatorScale + camY;
+    s  = (s * numTiles - camY) * mercatorScale + camY;
 
     return [[w, s, 0],
         [e, s, 0],
