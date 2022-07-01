@@ -1193,7 +1193,6 @@ class Map extends Camera {
             this._explicitProjection = null;
         }
         const projection = explicitProjection || this.getProjection();
-        const prevProjection = this.transform.projection;
 
         let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
