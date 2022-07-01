@@ -1185,14 +1185,15 @@ class Map extends Camera {
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        return this._updateProjection(false, projection);
+        return this._updateProjection(projection);
     }
 
-    _updateProjection(forceSymbolLayerUpdate: boolean, explicitProjection?: ProjectionSpecification | null): this {
+    _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
         if (explicitProjection === null) {
             this._explicitProjection = null;
         }
         const projection = explicitProjection || this.getProjection();
+        const prevProjection = this.transform.projection;
 
         let projectionHasChanged;
         // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
@@ -1212,17 +1213,16 @@ class Map extends Camera {
         }
 
         this.style.applyProjectionUpdate();
-
         if (projectionHasChanged) {
-            // If a zoom transition on globe
-            if (forceSymbolLayerUpdate && this.getProjection().name === 'globe') {
-                this.style._forceSymbolLayerUpdate();
-            } else {
-                // If a switch between different projections
+            if (this.transform.projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace) {
+                // If a switch between different projections with a non-mercator projection
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
+            // If a zoom transition on globe or a switch between globe and mercator projections
+            } else {
+                this.style._forceSymbolLayerUpdate();
             }
             this._update(true);
         }
@@ -3073,10 +3073,10 @@ class Map extends Camera {
         if (this.getProjection().name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this.transform.projection.name === 'globe') {
-                    this._updateProjection(true);
+                    this._updateProjection();
                 }
             } else if (this.transform.projection.name === 'mercator') {
-                this._updateProjection(true);
+                this._updateProjection();
             }
         }
 

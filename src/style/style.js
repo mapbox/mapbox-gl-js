@@ -311,7 +311,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        this._updateMapProjection(true);
+        this._updateMapProjection();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -366,13 +366,13 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._explicitProjection) {
-            this.map._updateProjection(false);
+            this.map._updateProjection();
         }
     }
 
-    _updateMapProjection(forceSymbolLayerUpdate: boolean) {
+    _updateMapProjection() {
         if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection(forceSymbolLayerUpdate);
+            this.map._updateProjection();
         } else { // Ensure that style is consistent with current projection on style load
             this.applyProjectionUpdate();
         }
@@ -662,7 +662,7 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition') {
+            if (op.command === 'setTransition' || op.command === 'setProjection') {
                 // `transition` is always read directly off of
                 // `this.stylesheet`, which we update below
                 return;
@@ -671,7 +671,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateMapProjection(false);
+        this._updateMapProjection();
 
         return true;
     }
