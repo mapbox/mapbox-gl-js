@@ -1822,7 +1822,7 @@ test('Map', (t) => {
                     map.setZoom(3);
                     map.once('render', () => {
                         map.setProjection({name: 'globe'});
-                        t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+                        t.equal(map.painter.clearBackgroundTiles.callCount, 0);
                         t.deepEqual(map.getProjection().name, 'globe');
                         t.deepEqual(map.transform.getProjection().name, `globe`);
                         t.ok(map._showingGlobe());
