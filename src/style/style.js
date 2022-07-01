@@ -312,9 +312,7 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = clone(json);
 
-        // store initial projection as prevProjection for checking clearing background tiles in `map.updateProjection`
-        this.map._prevProjection = this.map.getProjection();
-        this._updateMapProjection();
+        this._updateMapProjection(true);
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -369,13 +367,13 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._explicitProjection) {
-            this.map._updateProjection();
+            this.map._updateProjection(false);
         }
     }
 
-    _updateMapProjection() {
+    _updateMapProjection(forceSymbolLayerUpdate: boolean) {
         if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection();
+            this.map._updateProjection(forceSymbolLayerUpdate);
         } else { // Ensure that style is consistent with current projection on style load
             this.applyProjectionUpdate();
         }
@@ -665,7 +663,7 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition') {
+            if (op.command === 'setTransition' || op.command === 'setProjection') {
                 // `transition` is always read directly off of
                 // `this.stylesheet`, which we update below
                 return;
@@ -674,7 +672,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateMapProjection();
+        this._updateMapProjection(false);
 
         return true;
     }

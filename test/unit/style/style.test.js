@@ -52,7 +52,6 @@ class StubMap extends Evented {
         this._requestManager = new RequestManager();
         this._markers = [];
         this._updateProjection = () => {};
-        this.getProjection = () => {};
     }
 
     _getMapId() {
