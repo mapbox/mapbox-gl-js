@@ -3077,7 +3077,7 @@ class Map extends Camera {
                     this._updateProjection();
                 }
             } else if (this.transform.projection.name === 'mercator') {
-                this.transform._globeZoomTransition = true
+                this.transform._globeZoomTransition = true;
                 this._updateProjection();
             }
         }
