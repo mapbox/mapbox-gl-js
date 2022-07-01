@@ -1227,6 +1227,7 @@ class Map extends Camera {
             }
             this._update(true);
         }
+
         return this;
     }
 
