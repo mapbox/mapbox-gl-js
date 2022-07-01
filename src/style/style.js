@@ -1619,7 +1619,7 @@ class Style extends Evented {
     _forceSymbolLayerUpdate() {
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
-            if (layer.type === 'symbol') {
+            if (layer.type === 'symbol' || layer.type === 'circle' || layer.type === 'heatmap') {
                 this._updateLayer(layer);
             }
         }
