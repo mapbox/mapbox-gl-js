@@ -3,7 +3,7 @@
 import assert from 'assert';
 import * as DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
@@ -76,7 +76,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_isFullscreen'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert'], this);
 
     }
 
@@ -112,7 +112,7 @@ class ScrollZoomHandler {
      * const isScrollZoomEnabled = map.scrollZoom.isEnabled();
      */
     isEnabled(): boolean {
-        return !!this._enabled;
+        return this._enabled;
     }
 
     /*
@@ -121,11 +121,11 @@ class ScrollZoomHandler {
     * progress.
     */
     isActive(): boolean {
-        return !!this._active || this._finishTimeout !== undefined;
+        return this._active || this._finishTimeout !== undefined;
     }
 
     isZooming(): boolean {
-        return !!this._zooming;
+        return this._zooming;
     }
 
     /**
@@ -165,7 +165,7 @@ class ScrollZoomHandler {
         if (!this.isEnabled()) return;
 
         if (this._map._cooperativeGestures) {
-            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !isFullscreen()) {
                 this._showBlockerAlert();
                 return;
             } else if (this._alertContainer.style.visibility !== 'hidden') {
@@ -395,10 +395,6 @@ class ScrollZoomHandler {
             // dynamically set the font size of the scroll zoom blocker alert message
             this._alertContainer.style.fontSize = `${Math.max(10, Math.min(24, Math.floor(this._el.clientWidth * 0.05)))}px`;
         }
-    }
-
-    _isFullscreen(): boolean {
-        return !!window.document.fullscreenElement || !!window.document.webkitFullscreenElement;
     }
 
     _showBlockerAlert() {
