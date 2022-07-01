@@ -149,6 +149,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
     _mercatorScaleRatio: number;
+    _globeZoomTransition: boolean;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -188,6 +189,8 @@ class Transform {
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
+        // Indicates a globe zoom transition that crosses the GLOBE_ZOOM_THRESHOLD_MAX to force a symbol layer update in `map.updateProjection()`
+        this._globeZoomTransition = false;
     }
 
     clone(): Transform {

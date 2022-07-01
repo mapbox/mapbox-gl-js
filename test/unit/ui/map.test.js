@@ -1822,7 +1822,7 @@ test('Map', (t) => {
                     map.setZoom(3);
                     map.once('render', () => {
                         map.setProjection({name: 'globe'});
-                        t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                        t.equal(map.painter.clearBackgroundTiles.callCount, 1);
                         t.deepEqual(map.getProjection().name, 'globe');
                         t.deepEqual(map.transform.getProjection().name, `globe`);
                         t.ok(map._showingGlobe());
@@ -1900,20 +1900,20 @@ test('Map', (t) => {
                 // Defaults to style projection
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1); //switched style from default mercator to globe
 
                 // Runtime api overrides stylesheet projection
                 map.setProjection('albers');
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'albers');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
                 t.equal(map.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 3);
 
                 t.end();
             });

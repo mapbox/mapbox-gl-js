@@ -1214,15 +1214,15 @@ class Map extends Camera {
 
         this.style.applyProjectionUpdate();
         if (projectionHasChanged) {
-            if (this.transform.projection.isReprojectedInTileSpace || prevProjection.isReprojectedInTileSpace) {
+            if (this.transform._globeZoomTransition) {
+                this.transform._globeZoomTransition = false;
+                this.style._forceSymbolLayerUpdate();
+            } else {
                 // If a switch between different projections with a non-mercator projection
                 this.painter.clearBackgroundTiles();
                 for (const id in this.style._sourceCaches) {
                     this.style._sourceCaches[id].clearTiles();
                 }
-            // If a zoom transition on globe or a switch between globe and mercator projections
-            } else {
-                this.style._forceSymbolLayerUpdate();
             }
             this._update(true);
         }
@@ -3073,9 +3073,11 @@ class Map extends Camera {
         if (this.getProjection().name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this.transform.projection.name === 'globe') {
+                    this.transform._globeZoomTransition = true;
                     this._updateProjection();
                 }
             } else if (this.transform.projection.name === 'mercator') {
+                this.transform._globeZoomTransition = true
                 this._updateProjection();
             }
         }
