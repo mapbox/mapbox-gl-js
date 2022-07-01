@@ -5,6 +5,7 @@ uniform sampler2D u_shadowmap_1;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
+uniform vec3 u_shadow_direction;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
@@ -90,8 +91,8 @@ highp float shadow_occlusion_0(highp vec4 pos, float bias) {
 }
 
 vec3 shadowed_color_normal(
-    vec3 color, vec3 N, vec3 L, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
-    float NDotL = dot(N, L);
+    vec3 color, vec3 N, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
+    float NDotL = dot(N, u_shadow_direction);
     if (NDotL < 0.0)
         return color * (1.0 - u_shadow_intensity);
 

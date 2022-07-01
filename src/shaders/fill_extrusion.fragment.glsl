@@ -31,8 +31,7 @@ void main() {
 #endif
 
 #ifdef RENDER_SHADOWS
-    color.xyz = shadowed_color_normal(color.xyz, normalize(v_normal), normalize(u_lightpos),
-        v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.xyz = shadowed_color_normal(color.xyz, normalize(v_normal), v_pos_light_view_0, v_pos_light_view_1, v_depth);
 #endif
 
 #ifdef FOG
