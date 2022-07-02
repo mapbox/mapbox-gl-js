@@ -1185,10 +1185,10 @@ class Map extends Camera {
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        return this._updateProjection(projection);
+        return this._updateProjection({globeZoomTransition: false}, projection);
     }
 
-    _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
+    _updateProjection(options: Object, explicitProjection?: ProjectionSpecification | null): this {
         if (explicitProjection === null) {
             this._explicitProjection = null;
         }
@@ -1213,9 +1213,8 @@ class Map extends Camera {
 
         this.style.applyProjectionUpdate();
         if (projectionHasChanged) {
-            if (this.transform._globeZoomTransition) {
+            if (options.globeZoomTransition) {
                 // if a globe zoom transition occurred
-                this.transform._globeZoomTransition = false;
                 this.style._forceSymbolLayerUpdate();
             } else {
                 // If a switch between different projections
@@ -3073,12 +3072,10 @@ class Map extends Camera {
         if (this.getProjection().name === 'globe') {
             if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
                 if (this.transform.projection.name === 'globe') {
-                    this.transform._globeZoomTransition = true;
-                    this._updateProjection();
+                    this._updateProjection({globeZoomTransition: true});
                 }
             } else if (this.transform.projection.name === 'mercator') {
-                this.transform._globeZoomTransition = true;
-                this._updateProjection();
+                this._updateProjection({globeZoomTransition: true});
             }
         }
 
