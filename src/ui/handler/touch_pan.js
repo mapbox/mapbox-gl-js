@@ -146,14 +146,15 @@ export default class TouchPanHandler {
     }
 
     _showTouchPanBlockerAlert() {
-        if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
-
+        this._alertContainer.style.visibility = 'visible';
         this._alertContainer.classList.add('mapboxgl-touch-pan-blocker-show');
+        this._alertContainer.setAttribute("role", "alert");
 
         clearTimeout(this._alertTimer);
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-touch-pan-blocker-show');
+            this._alertContainer.setAttribute("role", "null");
         }, 500);
     }
 

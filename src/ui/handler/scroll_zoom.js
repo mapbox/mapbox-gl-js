@@ -398,13 +398,15 @@ class ScrollZoomHandler {
     }
 
     _showBlockerAlert() {
-        if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
+        this._alertContainer.style.visibility = 'visible';
         this._alertContainer.classList.add('mapboxgl-scroll-zoom-blocker-show');
+        this._alertContainer.setAttribute("role", "alert");
 
         clearTimeout(this._alertTimer);
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
+            this._alertContainer.setAttribute("role", "null");
         }, 200);
     }
 
