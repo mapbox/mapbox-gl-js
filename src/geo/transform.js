@@ -256,11 +256,10 @@ class Transform {
         return projectionHasChanged;
     }
 
-    setMercatorFromTransition(): boolean {
+    setMercatorFromTransition() {
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
         this.projection = getProjection({name: 'mercator'});
-        return true;
     }
 
     get minZoom(): number { return this._minZoom; }
