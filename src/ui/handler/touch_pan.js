@@ -127,11 +127,11 @@ export default class TouchPanHandler {
     }
 
     isEnabled(): boolean {
-        return this._enabled;
+        return !!this._enabled;
     }
 
     isActive(): boolean {
-        return this._active;
+        return !!this._active;
     }
 
     _addTouchPanBlocker() {

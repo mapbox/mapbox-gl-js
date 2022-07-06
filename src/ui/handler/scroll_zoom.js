@@ -112,7 +112,7 @@ class ScrollZoomHandler {
      * const isScrollZoomEnabled = map.scrollZoom.isEnabled();
      */
     isEnabled(): boolean {
-        return this._enabled;
+        return !!this._enabled;
     }
 
     /*
@@ -125,7 +125,7 @@ class ScrollZoomHandler {
     }
 
     isZooming(): boolean {
-        return this._zooming;
+        return !!this._zooming;
     }
 
     /**
