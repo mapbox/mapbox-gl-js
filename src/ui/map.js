@@ -1142,7 +1142,7 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection(): ProjectionSpecification {
-        if (this._explicitProjection !== null) {
+        if (this._explicitProjection) {
             if (this.transform.mercatorFromTransition) {
                 return {name: "globe", center: [0, 0]};
             }
