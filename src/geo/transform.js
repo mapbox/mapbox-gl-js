@@ -259,7 +259,7 @@ class Transform {
     setMercatorFromTransition() {
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
-        this.projection = getProjection({name: 'mercator'});
+        this.projection = getProjection(this.projectionOptions);
     }
 
     get minZoom(): number { return this._minZoom; }
