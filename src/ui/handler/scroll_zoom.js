@@ -3,7 +3,7 @@
 import assert from 'assert';
 import * as DOM from '../../util/dom.js';
 
-import {ease as _ease, bindAll, bezier} from '../../util/util.js';
+import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util.js';
 import browser from '../../util/browser.js';
 import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
@@ -76,7 +76,7 @@ class ScrollZoomHandler {
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
 
-        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert', '_isFullscreen'], this);
+        bindAll(['_onTimeout', '_addScrollZoomBlocker', '_showBlockerAlert'], this);
 
     }
 
@@ -121,7 +121,7 @@ class ScrollZoomHandler {
     * progress.
     */
     isActive(): boolean {
-        return !!this._active || this._finishTimeout !== undefined;
+        return this._active || this._finishTimeout !== undefined;
     }
 
     isZooming(): boolean {
@@ -165,7 +165,7 @@ class ScrollZoomHandler {
         if (!this.isEnabled()) return;
 
         if (this._map._cooperativeGestures) {
-            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !this._isFullscreen()) {
+            if (!e.ctrlKey && !e.metaKey && !this.isZooming() && !isFullscreen()) {
                 this._showBlockerAlert();
                 return;
             } else if (this._alertContainer.style.visibility !== 'hidden') {
@@ -397,18 +397,16 @@ class ScrollZoomHandler {
         }
     }
 
-    _isFullscreen(): boolean {
-        return !!window.document.fullscreenElement || !!window.document.webkitFullscreenElement;
-    }
-
     _showBlockerAlert() {
-        if (this._alertContainer.style.visibility === 'hidden') this._alertContainer.style.visibility = 'visible';
+        this._alertContainer.style.visibility = 'visible';
         this._alertContainer.classList.add('mapboxgl-scroll-zoom-blocker-show');
+        this._alertContainer.setAttribute("role", "alert");
 
         clearTimeout(this._alertTimer);
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
+            this._alertContainer.setAttribute("role", "null");
         }, 200);
     }
 
