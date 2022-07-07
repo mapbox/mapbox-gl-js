@@ -45,16 +45,14 @@ class ScaleControl {
 
         // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style.
         // This is a workaround to display the scale without proper internationalization support.
-        try {
-            // $FlowIgnore
-            new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'narrow', unit: 'meter'});
-        } catch {
+        if (!isNumberFormatSupported()) {
             // $FlowIgnore[cannot-write]
             this._setScale = legacySetScale.bind(this);
         }
 
         bindAll([
             '_update',
+            '_setScale',
             'setUnit'
         ], this);
     }
@@ -151,6 +149,16 @@ class ScaleControl {
 }
 
 export default ScaleControl;
+
+function isNumberFormatSupported() {
+    try {
+        // $FlowIgnore
+        new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'narrow', unit: 'meter'});
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
 
 function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
     const distance = getRoundNum(maxDistance);
