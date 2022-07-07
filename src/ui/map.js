@@ -1187,8 +1187,9 @@ class Map extends Camera {
 
         this._explicitProjection = projection;
         const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
+        const prioritizedProjection = selectProjectionByPriority(this._explicitProjection, stylesheetProjection);
 
-        return this._updateProjection(selectProjectionByPriority(this._explicitProjection, stylesheetProjection));
+        return this._updateProjection(prioritizedProjection);
     }
 
     _updateProjectionTransition() {

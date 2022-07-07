@@ -312,7 +312,9 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
+
+        const prioritizedProjection = selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection);
+        this.map._updateProjection(prioritizedProjection);
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -367,7 +369,8 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._explicitProjection) {
-            this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
+            const prioritizedProjection = selectProjectionByPriority(null, this.stylesheet.projection);
+            this.map._updateProjection(prioritizedProjection);
         }
     }
 
@@ -664,7 +667,9 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
+
+        const prioritizedProjection = selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection);
+        this.map._updateProjection(prioritizedProjection);
 
         return true;
     }
