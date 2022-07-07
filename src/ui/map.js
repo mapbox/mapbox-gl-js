@@ -1202,8 +1202,8 @@ class Map extends Camera {
         let projectionHasChanged;
 
         if (projection === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            tr.setMercatorFromTransition();
-            projectionHasChanged = true;
+            projectionHasChanged = tr.setMercatorFromTransition();
+
         } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
             projectionHasChanged = tr.setProjection({name: 'globe'});
         }
@@ -1218,8 +1218,7 @@ class Map extends Camera {
         let projectionHasChanged;
 
         if (projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            this.transform.setMercatorFromTransition();
-            projectionHasChanged = true;
+            projectionHasChanged = this.transform.setMercatorFromTransition();
         } else {
             projectionHasChanged = this.transform.setProjection(projection);
         }

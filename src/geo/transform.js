@@ -256,7 +256,7 @@ class Transform {
         return projectionHasChanged;
     }
 
-    setMercatorFromTransition() {
+    setMercatorFromTransition(): boolean {
         const oldProjection = this.projection ? this.getProjection() : undefined;
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};

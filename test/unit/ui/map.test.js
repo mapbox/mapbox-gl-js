@@ -1,5 +1,5 @@
 import {test} from '../../util/test.js';
-import {extend} from '../../../src/util/util.js';
+import {extend, mapObject} from '../../../src/util/util.js';
 import window from '../../../src/util/window.js';
 import Map from '../../../src/ui/map.js';
 import {createMap} from '../../util/index.js';
@@ -416,6 +416,24 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
                 t.deepEqual(map.getTerrain(), style['terrain']);
+
+                t.end();
+            });
+        });
+
+        t.test('Toggling globe and mercator projections at high zoom levels returns expected `map.getProjection()` result', (t) =>{
+            const style = createStyle();
+            const map = createMap(t, {style});
+
+            map.on('load', () => {
+                map.setZoom(7);
+                t.equal(map.getProjection().name, 'mercator');
+
+                map.setProjection('globe')
+                t.equal(map.getProjection().name, 'globe');
+
+                map.setZoom(4);
+                t.equal(map.getProjection().name, 'globe');
 
                 t.end();
             });
