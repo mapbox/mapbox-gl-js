@@ -164,17 +164,17 @@ function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
 
-    const localizedUnit = {
-        kilometer: this._map._getUIString('ScaleControl.Kilometers'),
-        meter: this._map._getUIString('ScaleControl.Meters'),
-        mile: this._map._getUIString('ScaleControl.Miles'),
-        foot: this._map._getUIString('ScaleControl.Feet'),
-        'nautical-mile': this._map._getUIString('ScaleControl.NauticalMiles'),
+    const unitAbbr = {
+        kilometer: 'km',
+        meter: 'm',
+        mile: 'mi',
+        foot: 'ft',
+        'nautical-mile': 'nm',
     }[unit];
 
     this._map._requestDomTask(() => {
         this._container.style.width = `${maxWidth * ratio}px`;
-        this._container.innerHTML = `${distance}&nbsp;${localizedUnit}`;
+        this._container.innerHTML = `${distance}&nbsp;${unitAbbr}`;
     });
 }
 
