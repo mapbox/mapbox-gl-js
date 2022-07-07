@@ -257,9 +257,11 @@ class Transform {
     }
 
     setMercatorFromTransition() {
+        const oldProjection = this.projection ? this.getProjection() : undefined;
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
         this.projection = getProjection(this.projectionOptions);
+        return oldProjection.name !== this.projection.name;
     }
 
     get minZoom(): number { return this._minZoom; }
