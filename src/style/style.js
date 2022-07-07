@@ -312,8 +312,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        //this._updateMapProjection();
-        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -367,16 +366,8 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
     }
-
-    // _updateMapProjection() {
-    //     if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-
-    //     } else { // Ensure that style is consistent with current projection on style load
-    //         this.applyProjectionUpdate();
-    //     }
-    // }
 
     applyProjectionUpdate() {
         if (!this._loaded) return;
@@ -671,7 +662,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
 
         return true;
     }

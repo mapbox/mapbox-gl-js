@@ -1184,13 +1184,17 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
+
         if (!projection) {
             projection = null;
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
+
         this._explicitProjection = projection;
-        return this._updateProjection(selectProjectionByPriority(this._explicitProjection, this.style.stylesheet ? this.style.stylesheet.projection : null));
+        const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
+
+        return this._updateProjection(selectProjectionByPriority(this._explicitProjection, stylesheetProjection));
     }
 
     _updateProjectionTransition() {
