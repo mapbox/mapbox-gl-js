@@ -112,36 +112,27 @@ function updateScale(map, container, language, options) {
         const maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
             const maxMiles = maxFeet / 5280;
-            setScale(container, maxWidth, maxMiles, language, 'mile', map);
+            setScale(container, maxWidth, maxMiles, map._getUIString('ScaleControl.Miles'), map);
         } else {
-            setScale(container, maxWidth, maxFeet, language, 'foot', map);
+            setScale(container, maxWidth, maxFeet, map._getUIString('ScaleControl.Feet'), map);
         }
     } else if (options && options.unit === 'nautical') {
         const maxNauticals = maxMeters / 1852;
-        setScale(container, maxWidth, maxNauticals, language, 'nautical-mile', map);
+        setScale(container, maxWidth, maxNauticals, map._getUIString('ScaleControl.NauticalMiles'), map);
     } else if (maxMeters >= 1000) {
-        setScale(container, maxWidth, maxMeters / 1000, language, 'kilometer', map);
+        setScale(container, maxWidth, maxMeters / 1000, map._getUIString('ScaleControl.Kilometers'), map);
     } else {
-        setScale(container, maxWidth, maxMeters, language, 'meter', map);
+        setScale(container, maxWidth, maxMeters, map._getUIString('ScaleControl.Meters'), map);
     }
 }
 
-function setScale(container, maxWidth, maxDistance, language, unit, map) {
+function setScale(container, maxWidth, maxDistance, unit, map) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
 
     map._requestDomTask(() => {
         container.style.width = `${maxWidth * ratio}px`;
-
-        // Intl.NumberFormat doesn't support nautical-mile as a unit,
-        // so we are hardcoding `nm` as a unit symbol for all locales
-        if (unit === 'nautical-mile') {
-            container.innerHTML = `${distance}&nbsp;nm`;
-            return;
-        }
-
-        // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
-        container.innerHTML = new Intl.NumberFormat(language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+        container.innerHTML = `${distance}&nbsp;${unit}`;
     });
 }
 
