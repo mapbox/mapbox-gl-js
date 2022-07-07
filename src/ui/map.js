@@ -1227,7 +1227,6 @@ class Map extends Camera {
         this.style.applyProjectionUpdate();
 
         if (projectionHasChanged) {
-            // If a switch between different projections
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
