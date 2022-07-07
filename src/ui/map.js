@@ -1203,7 +1203,8 @@ class Map extends Camera {
         let projectionHasChanged;
 
         if (projection === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            projectionHasChanged = tr.setMercatorFromTransition();
+            tr.setMercatorFromTransition();
+            projectionHasChanged = true;
 
         } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
             tr.setProjection({name: 'globe'});
