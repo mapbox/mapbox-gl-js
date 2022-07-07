@@ -366,9 +366,8 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-
         if (!this.map._explicitProjection) {
-            this.map._updateProjection(this.stylesheet.projection);
+            this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
         }
     }
 
