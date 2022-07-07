@@ -1205,7 +1205,8 @@ class Map extends Camera {
             projectionHasChanged = tr.setMercatorFromTransition();
 
         } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
-            projectionHasChanged = tr.setProjection({name: 'globe'});
+            tr.setProjection({name: 'globe'});
+            projectionHasChanged = true;
         }
 
         if (projectionHasChanged) {
