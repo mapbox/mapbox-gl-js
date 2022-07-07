@@ -39,6 +39,7 @@ import styleSpec from '../style-spec/reference/latest.js';
 import getWorkerPool from '../util/global_worker_pool.js';
 import deref from '../style-spec/deref.js';
 import emptyStyle from '../style-spec/empty.js';
+import {selectProjectionByPriority} from '../geo/projection/index.js';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff.js';
 import {
     registerForPluginStateChange,
@@ -311,7 +312,7 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        this._updateMapProjection();
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -365,15 +366,7 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this._updateMapProjection();
-    }
-
-    _updateMapProjection() {
-        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection();
-        } else { // Ensure that style is consistent with current projection on style load
-            this.applyProjectionUpdate();
-        }
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
     }
 
     applyProjectionUpdate() {
@@ -669,7 +662,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateMapProjection();
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection));
 
         return true;
     }

@@ -31,7 +31,7 @@ import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
-
+import {selectProjectionByPriority} from '../geo/projection/index.js';
 import {setCacheLimits} from '../util/tile_request_cache.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
@@ -1142,18 +1142,10 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection(): ProjectionSpecification {
-        if (this._explicitProjection) {
-            if (this.transform.mercatorFromTransition) {
-                return {name: "globe", center: [0, 0]};
-            }
-            return this.transform.getProjection();
+        if (this.transform.mercatorFromTransition) {
+            return {name: "globe", center: [0, 0]};
         }
-
-        if (this.style && this.style.stylesheet && this.style.stylesheet.projection) {
-            return this.style.stylesheet.projection;
-        }
-
-        return {name: "mercator", center:[0, 0]};
+        return this.transform.getProjection();
     }
 
     /**
@@ -1190,8 +1182,12 @@ class Map extends Camera {
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
+        let stylesheetProjection;
+        if (this.style && this.style.stylesheet) {
+            stylesheetProjection = this.style.stylesheet.projection;
+        }
         this._explicitProjection = projection;
-        return this._updateProjection();
+        return this._updateProjection(selectProjectionByPriority(projection, stylesheetProjection));
     }
 
     _updateProjectionTransition() {
@@ -1217,11 +1213,8 @@ class Map extends Camera {
         }
     }
 
-    _updateProjection(): this {
-        // Check explicit projection separately as transform.projection hasn't been updated yet
-        const projection = this._explicitProjection || this.getProjection();
+    _updateProjection(projection: ProjectionSpecification): this {
         let projectionHasChanged;
-
         if (projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
             this.transform.setMercatorFromTransition();
             projectionHasChanged = true;
@@ -1232,7 +1225,6 @@ class Map extends Camera {
         this.style.applyProjectionUpdate();
 
         if (projectionHasChanged) {
-            // If a switch between different projections
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
