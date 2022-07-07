@@ -12,6 +12,7 @@ import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
 import LineAtlas from '../render/line_atlas.js';
+import {selectProjectionByPriority} from '../geo/projection/index.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
@@ -311,7 +312,8 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        this._updateMapProjection();
+        //this._updateMapProjection();
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -365,16 +367,16 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        this._updateMapProjection();
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
     }
 
-    _updateMapProjection() {
-        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection();
-        } else { // Ensure that style is consistent with current projection on style load
-            this.applyProjectionUpdate();
-        }
-    }
+    // _updateMapProjection() {
+    //     if (!this.map._explicitProjection) { // Update the visible projection if map's is null
+
+    //     } else { // Ensure that style is consistent with current projection on style load
+    //         this.applyProjectionUpdate();
+    //     }
+    // }
 
     applyProjectionUpdate() {
         if (!this._loaded) return;
@@ -669,7 +671,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-        this._updateMapProjection();
+        this.map._updateProjection(selectProjectionByPriority(this.map._explicitProjection, this.stylesheet ? this.stylesheet.projection : null));
 
         return true;
     }

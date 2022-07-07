@@ -38,6 +38,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import {selectProjectionByPriority} from '../geo/projection/index.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
@@ -1142,18 +1143,16 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection(): ProjectionSpecification {
-        if (this._explicitProjection) {
-            if (this.transform.mercatorFromTransition) {
-                return {name: "globe", center: [0, 0]};
-            }
-            return this.transform.getProjection();
+        // if (this._explicitProjection) {
+        if (this.transform.mercatorFromTransition) {
+            return {name: "globe", center: [0, 0]};
         }
+        return this.transform.getProjection();
+        //}
 
-        if (this.style && this.style.stylesheet && this.style.stylesheet.projection) {
-            return this.style.stylesheet.projection;
-        }
+        //
 
-        return {name: "mercator", center:[0, 0]};
+        // return {name: "mercator", center:[0, 0]};
     }
 
     /**
@@ -1191,7 +1190,7 @@ class Map extends Camera {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
         this._explicitProjection = projection;
-        return this._updateProjection();
+        return this._updateProjection(selectProjectionByPriority(this._explicitProjection, this.style.stylesheet ? this.style.stylesheet.projection : null));
     }
 
     _updateProjectionTransition() {
@@ -1217,9 +1216,7 @@ class Map extends Camera {
         }
     }
 
-    _updateProjection(): this {
-        // Check explicit projection separately as transform.projection hasn't been updated yet
-        const projection = this._explicitProjection || this.getProjection();
+    _updateProjection(projection: ProjectionSpecification): this {
         let projectionHasChanged;
 
         if (projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
