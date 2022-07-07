@@ -375,35 +375,41 @@ class FillExtrusionBucket implements Bucket {
                 if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
                 numVertices += (isPolygon ? (ring.length - 1) : ring.length);
             }
+            // We use "(isPolygon ? 5 : 4) * numVertices" as an estimate to ensure whether additional segments are needed or not (see SegmentVector.MAX_VERTEX_ARRAY_LENGTH).
             const segment = this.segments.prepareSegment((isPolygon ? 5 : 4) * numVertices, this.layoutVertexArray, this.indexArray);
             if (isPolygon) {
                 const flattened = [];
                 const holeIndices = [];
                 topIndex = segment.vertexLength;
 
+                // First we offset (inset) the top vertices (i.e the vertices that make up the roof).
                 for (const ring of polygon) {
                     if (ring.length && ring !== polygon[0]) {
                         holeIndices.push(flattened.length / 2);
                     }
 
+                    let na, nb;
+                    {
+                        const p0 = ring[0];
+                        const p1 = ring[1];
+                        na = p1.sub(p0)._perp()._unit();
+                    }
                     for (let i = 1; i < ring.length; i++) {
-                        const p0 = ring[i - 1];
                         const p1 = ring[i];
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                         let {x, y} = p1;
                         if (edgeRadius) {
-                            // WIP optimize
-                            const na = p1.sub(p0)._perp()._unit();
-                            const nb = p2.sub(p1)._perp()._unit();
+                            nb = p2.sub(p1)._perp()._unit();
                             const nm = na.add(nb)._unit();
 
                             const cosHalfAngle = na.x * nm.x + na.y * nm.y;
-                            // const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
 
                             x += offset * nm.x;
                             y += offset * nm.y;
+
+                            na = nb;
                         }
 
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
@@ -459,7 +465,23 @@ class FillExtrusionBucket implements Bucket {
                     const dist = p0.dist(p1);
                     if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                    // WIP optimize - too many duplicate calculations across corners
+                    // Next offset the vertices along the edges and create a chamfer space between them:
+                    // So if we have the following (where 'x' denotes a vertex)
+                    // x──────x
+                    // |      |
+                    // |      |
+                    // |      |
+                    // |      |
+                    // x──────x
+                    // we end up with:
+                    //  x────x
+                    // x      x
+                    // |      |
+                    // |      |
+                    // x      x
+                    //  x────x
+                    // (drawing isn't exact but hopefully gets the point across).
+
                     if (edgeRadius) {
                         let offsetNext = getRoundedEdgeOffset(p0, p1, p2, edgeRadius);
                         if (isNaN(offsetNext)) offsetNext = 0;
@@ -496,21 +518,22 @@ class FillExtrusionBucket implements Bucket {
                     segment.primitiveLength += 2;
 
                     if (edgeRadius) {
+                        // Note that in the previous for-loop we start from index 1 to add the top vertices which explains the next line.
                         const t0 = topIndex + (i === 1 ? ring.length - 2 : i - 2);
                         const t1 = i === 1 ? topIndex : t0 + 1;
 
-                        // top chamfer along the side
+                        // top chamfer along the side (i.e. the space between the wall and the roof).
                         this.indexArray.emplaceBack(k + 1, t0, k + 3);
                         this.indexArray.emplaceBack(t0, t1, k + 3);
                         segment.primitiveLength += 2;
 
                         if (kPrev !== undefined) {
                             const prev = kPrev;
-                            // vertical side chamfer
+                            // vertical side chamfer i.e. the space between consecutive walls.
                             this.indexArray.emplaceBack(prev, prev + 1, k + 0);
                             this.indexArray.emplaceBack(prev + 1, k + 1, k + 0);
 
-                            // top corner where the top and two sides meet
+                            // top corner where the top(roof) and two sides(walls) meet.
                             this.indexArray.emplaceBack(prev + 1, t0, k + 1);
 
                             segment.primitiveLength += 3;
