@@ -43,6 +43,16 @@ class ScaleControl {
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
+        // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style.
+        // This is a workaround to display the scale without proper internationalization support.
+        try {
+            // $FlowIgnore
+            new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'narrow', unit: 'meter'});
+        } catch {
+            // $FlowIgnore[cannot-write]
+            this._setScale = legacySetScale.bind(this);
+        }
+
         bindAll([
             '_update',
             'setUnit'
@@ -54,7 +64,56 @@ class ScaleControl {
     }
 
     _update() {
-        updateScale(this._map, this._container, this._language, this.options);
+        // A horizontal scale is imagined to be present at center of the map
+        // container with maximum length (Default) as 100px.
+        // Using spherical law of cosines approximation, the real distance is
+        // found between the two coordinates.
+        const maxWidth = this.options.maxWidth || 100;
+
+        const map = this._map;
+        const y = map._containerHeight / 2;
+        const x = (map._containerWidth / 2) - maxWidth / 2;
+        const left = map.unproject([x, y]);
+        const right = map.unproject([x + maxWidth, y]);
+        const maxMeters = left.distanceTo(right);
+        // The real distance corresponding to 100px scale length is rounded off to
+        // near pretty number and the scale length for the same is found out.
+        // Default unit of the scale is based on User's locale.
+        if (this.options.unit === 'imperial') {
+            const maxFeet = 3.2808 * maxMeters;
+            if (maxFeet > 5280) {
+                const maxMiles = maxFeet / 5280;
+                this._setScale(maxWidth, maxMiles, 'mile');
+            } else {
+                this._setScale(maxWidth, maxFeet, 'foot');
+            }
+        } else if (this.options.unit === 'nautical') {
+            const maxNauticals = maxMeters / 1852;
+            this._setScale(maxWidth, maxNauticals, 'nautical-mile');
+        } else if (maxMeters >= 1000) {
+            this._setScale(maxWidth, maxMeters / 1000, 'kilometer');
+        } else {
+            this._setScale(maxWidth, maxMeters, 'meter');
+        }
+    }
+
+    _setScale(maxWidth: number, maxDistance: number, unit: string) {
+        const distance = getRoundNum(maxDistance);
+        const ratio = distance / maxDistance;
+
+        this._map._requestDomTask(() => {
+            this._container.style.width = `${maxWidth * ratio}px`;
+
+            // Intl.NumberFormat doesn't support nautical-mile as a unit,
+            // so we are hardcoding `nm` as a unit symbol for all locales
+            if (unit === 'nautical-mile') {
+                this._container.innerHTML = `${distance}&nbsp;nm`;
+                return;
+            }
+
+            // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
+            this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+        });
     }
 
     onAdd(map: Map): HTMLElement {
@@ -93,46 +152,21 @@ class ScaleControl {
 
 export default ScaleControl;
 
-function updateScale(map, container, language, options) {
-    // A horizontal scale is imagined to be present at center of the map
-    // container with maximum length (Default) as 100px.
-    // Using spherical law of cosines approximation, the real distance is
-    // found between the two coordinates.
-    const maxWidth = (options && options.maxWidth) || 100;
-
-    const y = map._containerHeight / 2;
-    const x = (map._containerWidth / 2) - maxWidth / 2;
-    const left = map.unproject([x, y]);
-    const right = map.unproject([x + maxWidth, y]);
-    const maxMeters = left.distanceTo(right);
-    // The real distance corresponding to 100px scale length is rounded off to
-    // near pretty number and the scale length for the same is found out.
-    // Default unit of the scale is based on User's locale.
-    if (options && options.unit === 'imperial') {
-        const maxFeet = 3.2808 * maxMeters;
-        if (maxFeet > 5280) {
-            const maxMiles = maxFeet / 5280;
-            setScale(container, maxWidth, maxMiles, map._getUIString('ScaleControl.Miles'), map);
-        } else {
-            setScale(container, maxWidth, maxFeet, map._getUIString('ScaleControl.Feet'), map);
-        }
-    } else if (options && options.unit === 'nautical') {
-        const maxNauticals = maxMeters / 1852;
-        setScale(container, maxWidth, maxNauticals, map._getUIString('ScaleControl.NauticalMiles'), map);
-    } else if (maxMeters >= 1000) {
-        setScale(container, maxWidth, maxMeters / 1000, map._getUIString('ScaleControl.Kilometers'), map);
-    } else {
-        setScale(container, maxWidth, maxMeters, map._getUIString('ScaleControl.Meters'), map);
-    }
-}
-
-function setScale(container, maxWidth, maxDistance, unit, map) {
+function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
 
-    map._requestDomTask(() => {
-        container.style.width = `${maxWidth * ratio}px`;
-        container.innerHTML = `${distance}&nbsp;${unit}`;
+    const localizedUnit = {
+        kilometer: this._map._getUIString('ScaleControl.Kilometers'),
+        meter: this._map._getUIString('ScaleControl.Meters'),
+        mile: this._map._getUIString('ScaleControl.Miles'),
+        foot: this._map._getUIString('ScaleControl.Feet'),
+        'nautical-mile': this._map._getUIString('ScaleControl.NauticalMiles'),
+    }[unit];
+
+    this._map._requestDomTask(() => {
+        this._container.style.width = `${maxWidth * ratio}px`;
+        this._container.innerHTML = `${distance}&nbsp;${localizedUnit}`;
     });
 }
 
