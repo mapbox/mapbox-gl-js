@@ -6,6 +6,7 @@ uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
 uniform vec3 u_shadow_direction;
+uniform vec3 u_shadow_bias;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
@@ -97,7 +98,9 @@ vec3 shadowed_color_normal(
         return color * (1.0 - u_shadow_intensity);
 
     NDotL = clamp(NDotL, 0.0, 1.0);
-    float bias = mix(0.02, 0.008, NDotL);
+
+    // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+    float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x)
         occlusion = shadow_occlusion_0(light_view_pos0, bias);
