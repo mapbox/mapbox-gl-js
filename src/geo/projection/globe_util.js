@@ -277,8 +277,8 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     }
 
     // Here we determine the arc which is closest to the map center point.
-    // Horizontal arcs origin = arcCenter.
-    // Vertical arcs origin = arcCenter + yAxis * shift.
+    // Horizontal arcs origin = globe center
+    // Vertical arcs origin = globe center + yAxis * shift.
     // Where `shift` is determined by latitude.
     let closestArcIdx = 0;
     if (Math.abs(dx) > Math.abs(dy)) {
@@ -290,14 +290,14 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         vec3.scaleAndAdd(arcCenter, arcCenter, yAxis, shift);
     }
 
-    const arcA = corners[closestArcIdx];
-    const arcB = corners[(closestArcIdx + 1) % 4];
+    const arcStart = corners[closestArcIdx];
+    const arcEnd = corners[(closestArcIdx + 1) % 4];
 
-    const closestArc = new Arc(arcA, arcB, arcCenter);
-    let arcBounds = [
-        (localExtremum(closestArc, 0) || arcA[0]),
-        (localExtremum(closestArc, 1) || arcA[1]),
-        (localExtremum(closestArc, 2) || arcA[2])];
+    const closestArc = new Arc(arcStart, arcEnd, arcCenter);
+    const arcExtremum = [
+        (localExtremum(closestArc, 0) || arcStart[0]),
+        (localExtremum(closestArc, 1) || arcStart[1]),
+        (localExtremum(closestArc, 2) || arcStart[2])];
 
     // Interpolate the four corners towards their world space location in mercator projection during transition.
     const phase = globeToMercatorTransition(tr.zoom);
@@ -307,18 +307,19 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
             corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
         }
 
-        // Interpolate arc extremum toward the edge midpoint in Mercator
-        const mercatorExtremum = interpolateArray(mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4], .5);
-        arcBounds = interpolateArray(arcBounds, mercatorExtremum, phase);
+        // Consider the midpoint of the closest edge in Mercator as a potential extremum during transition
+        const mercatorClosestMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
+        vec3.scale(mercatorClosestMidpoint, mercatorClosestMidpoint, .5);
+        vec3.max(arcExtremum, arcExtremum, mercatorClosestMidpoint);
     }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
     // of tiles farther away from the center as they would otherwise intersect with far end
     // of the view frustum
-    cornerMin[2] = Math.min(arcA[2], arcB[2]);
+    cornerMin[2] = Math.min(arcStart[2], arcEnd[2]);
 
-    vec3.min(cornerMin, cornerMin, arcBounds);
-    vec3.max(cornerMax, cornerMax, arcBounds);
+    vec3.min(cornerMin, cornerMin, arcExtremum);
+    vec3.max(cornerMax, cornerMax, arcExtremum);
 
     return new Aabb(cornerMin, cornerMax);
 }
