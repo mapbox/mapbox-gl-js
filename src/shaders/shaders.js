@@ -150,6 +150,32 @@ export default {
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
+function parsePreprocessorDefines(source, defines) {
+    const lines = source.replace(/\s*\/\/[^\n]*\n/g, '\n').split('\n');
+    for (let line of lines) {
+        if (line.includes('#') && (line.includes('ifdef') || line.includes('elif') || line.includes('ifndef'))) {
+            line = line.replace('#', '')
+                .replace(/\s+/g, ' ').trim()
+                .replace('ifdef', '')
+                .replace('ifndef', '')
+                .replace('elif', '')
+                .replace('defined', '')
+                .replace('(', '')
+                .replace(')', '')
+                .replace('||', '')
+                .replace('&&', '')
+                .replace('!', '');
+
+            const newDefines = line.trim().split(' ');
+            for (const define of newDefines) {
+                if (!defines.includes(define)) {
+                    defines.push(define);
+                }
+            }
+        }
+    }
+}
+
 // Expand #pragmas to #ifdefs.
 export function compile(fragmentSource, vertexSource) {
     const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
@@ -157,6 +183,10 @@ export function compile(fragmentSource, vertexSource) {
 
     const staticAttributes = vertexSource.match(attributeRegex);
     const fragmentPragmas = {};
+
+    const defines = [];
+    parsePreprocessorDefines(fragmentSource, defines);
+    parsePreprocessorDefines(vertexSource, defines);
 
     fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         fragmentPragmas[name] = true;
@@ -245,5 +275,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource, staticAttributes};
+    return {fragmentSource, vertexSource, staticAttributes, defines};
 }
