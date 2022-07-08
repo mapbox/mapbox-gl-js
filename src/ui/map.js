@@ -389,7 +389,7 @@ class Map extends Camera {
     _language: ?string;
     _worldview: ?string;
 
-    // `_useExplicitProjection indicates that a projection is set by a call to map.setProjection()
+    // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
 
     /** @section {Interaction handlers} */
