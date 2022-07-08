@@ -424,6 +424,7 @@ test('Map', (t) => {
         t.test('Toggling globe and mercator projections at high zoom levels returns expected `map.getProjection()` result', (t) => {
             const style = createStyle();
             const map = createMap(t, {style});
+            t.spy(map.painter, 'clearBackgroundTiles');
 
             map.on('load', () => {
                 map.setZoom(7);
@@ -434,6 +435,7 @@ test('Map', (t) => {
 
                 map.setZoom(4);
                 t.equal(map.getProjection().name, 'globe');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
 
                 t.end();
             });
