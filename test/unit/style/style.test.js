@@ -51,7 +51,7 @@ class StubMap extends Evented {
         this.transform = new Transform();
         this._requestManager = new RequestManager();
         this._markers = [];
-        this._updateProjection = () => {};
+        this._prioritizeAndUpdateProjection = () => {};
     }
 
     _getMapId() {
@@ -2447,6 +2447,9 @@ test('Style#setProjection', (t) => {
         style.map._update = () => {};
         style.map.setProjection = (projection) => {
             style.map._explicitProjection = projection;
+            style.map._prioritizeAndUpdateProjection();
+        };
+        style.map._prioritizeAndUpdateProjection = () => {
             style.map._updateProjection();
         };
         style.map._updateProjection = () => {
