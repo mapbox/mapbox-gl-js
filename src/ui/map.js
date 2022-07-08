@@ -1214,12 +1214,12 @@ class Map extends Camera {
         }
     }
 
-    _prioritizeAndUpdateProjection(projection: ?ProjectionSpecification, styleProjection: ?ProjectionSpecification): this {
+    _prioritizeAndUpdateProjection(explicitProjection: ?ProjectionSpecification, styleProjection: ?ProjectionSpecification): this {
         // Given a stylesheet and eventual runtime projection, in order of priority, we select:
         //  1. the explicit projection
         //  2. the stylesheet projection
         //  3. mercator (fallback)
-        const prioritizedProjection = projection || styleProjection || {name: "mercator"};
+        const prioritizedProjection = explicitProjection || styleProjection || {name: "mercator"};
 
         return this._updateProjection(prioritizedProjection);
     }
