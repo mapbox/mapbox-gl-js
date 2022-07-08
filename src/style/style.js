@@ -366,8 +366,10 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        if (!this.map._explicitProjection) {
+        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
             this.map._prioritizeAndUpdateProjection(null, this.stylesheet.projection);
+        } else { // Ensure that style is consistent with current projection on style load
+            this.applyProjectionUpdate();
         }
     }
 
