@@ -38,7 +38,6 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
-import {selectProjectionByPriority} from '../geo/projection/index.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';
 import type {MapEvent, MapDataEvent} from './events.js';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer.js';
@@ -1187,9 +1186,7 @@ class Map extends Camera {
 
         this._explicitProjection = projection;
         const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
-        const prioritizedProjection = selectProjectionByPriority(this._explicitProjection, stylesheetProjection);
-
-        return this._updateProjection(prioritizedProjection);
+        return this._prioritizeAndUpdateProjection(this._explicitProjection, stylesheetProjection);
     }
 
     _updateProjectionTransition() {
@@ -1215,6 +1212,16 @@ class Map extends Camera {
             this.style.applyProjectionUpdate();
             this.style._forceSymbolLayerUpdate();
         }
+    }
+
+    _prioritizeAndUpdateProjection(projection: ?ProjectionSpecification, styleProjection: ?ProjectionSpecification): this {
+        // Given a stylesheet and eventual runtime projection, in order of priority, we select:
+        //  1. the explicit projection
+        //  2. the stylesheet projection
+        //  3. mercator (fallback)
+        const prioritizedProjection = projection || styleProjection || {name: "mercator"};
+
+        return this._updateProjection(prioritizedProjection);
     }
 
     _updateProjection(projection: ProjectionSpecification): this {

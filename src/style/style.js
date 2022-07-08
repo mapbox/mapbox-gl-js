@@ -12,7 +12,6 @@ import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
 import LineAtlas from '../render/line_atlas.js';
-import {selectProjectionByPriority} from '../geo/projection/index.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
@@ -313,8 +312,7 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = clone(json);
 
-        const prioritizedProjection = selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection);
-        this.map._updateProjection(prioritizedProjection);
+        this.map._prioritizeAndUpdateProjection(this.map._explicitProjection, this.stylesheet.projection);
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -369,8 +367,7 @@ class Style extends Evented {
             delete this.stylesheet.projection;
         }
         if (!this.map._explicitProjection) {
-            const prioritizedProjection = selectProjectionByPriority(null, this.stylesheet.projection);
-            this.map._updateProjection(prioritizedProjection);
+            this.map._prioritizeAndUpdateProjection(null, this.stylesheet.projection);
         }
     }
 
@@ -667,9 +664,7 @@ class Style extends Evented {
         });
 
         this.stylesheet = nextState;
-
-        const prioritizedProjection = selectProjectionByPriority(this.map._explicitProjection, this.stylesheet.projection);
-        this.map._updateProjection(prioritizedProjection);
+        this.map._prioritizeAndUpdateProjection(this.map._explicitProjection, this.stylesheet.projection);
 
         return true;
     }

@@ -38,11 +38,3 @@ export function getProjection(config: ProjectionSpecification): Projection {
 
     throw new Error(`Invalid projection name: ${config.name}`);
 }
-
-export function selectProjectionByPriority(projection: ?ProjectionSpecification, styleProjection: ?ProjectionSpecification): ProjectionSpecification {
-    // Given a stylesheet and eventual runtime projection, in order of priority, we select:
-    //  1. the explicit projection
-    //  2. the stylesheet projection
-    //  3. mercator (fallback)
-    return projection || styleProjection || {name: "mercator"};
-}
