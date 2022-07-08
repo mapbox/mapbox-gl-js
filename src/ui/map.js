@@ -1177,14 +1177,11 @@ class Map extends Camera {
 
         if (!projection) {
             projection = null;
-            this._useExplicitProjection = false;
-
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
-            this._useExplicitProjection = true;
-
         }
 
+        this._useExplicitProjection = !!projection;
         const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
         return this._prioritizeAndUpdateProjection(projection, stylesheetProjection);
     }
