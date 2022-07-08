@@ -33,6 +33,13 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
     | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
+type ShaderSource = {
+    fragmentSource: string,
+    vertexSource: string,
+    staticAttributes: Array<string>,
+    usedDefines: Array<string>
+};
+
 function getTokenizedAttributes(array: Array<string>): Array<string> {
     const result = [];
 
@@ -54,10 +61,10 @@ class Program<Us: UniformBindings> {
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
 
-    static cacheKey(source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, defines: Array<string>}, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
+    static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
         for (const define of defines) {
-            if (source.defines.includes(define)) {
+            if (source.usedDefines.includes(define)) {
                 key += `/${define}`;
             }
         }
@@ -66,7 +73,7 @@ class Program<Us: UniformBindings> {
 
     constructor(context: Context,
                 name: string,
-                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, defines: Array<string>},
+                source: ShaderSource,
                 configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {

@@ -150,7 +150,7 @@ export default {
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
-function parsePreprocessorDefines(source, defines) {
+function parseUsedPreprocessorDefines(source, defines) {
     const lines = source.replace(/\s*\/\/[^\n]*\n/g, '\n').split('\n');
     for (let line of lines) {
         if (line.includes('#') && (line.includes('ifdef') || line.includes('elif') || line.includes('ifndef'))) {
@@ -184,9 +184,9 @@ export function compile(fragmentSource, vertexSource) {
     const staticAttributes = vertexSource.match(attributeRegex);
     const fragmentPragmas = {};
 
-    const defines = [];
-    parsePreprocessorDefines(fragmentSource, defines);
-    parsePreprocessorDefines(vertexSource, defines);
+    const usedDefines = [];
+    parseUsedPreprocessorDefines(fragmentSource, usedDefines);
+    parseUsedPreprocessorDefines(vertexSource, usedDefines);
 
     fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         fragmentPragmas[name] = true;
@@ -275,5 +275,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource, staticAttributes, defines};
+    return {fragmentSource, vertexSource, staticAttributes, usedDefines};
 }
