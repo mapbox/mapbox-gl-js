@@ -33,6 +33,13 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
     | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
+type ShaderSource = {
+    fragmentSource: string,
+    vertexSource: string,
+    staticAttributes: Array<string>,
+    usedDefines: Array<string>
+};
+
 function getTokenizedAttributes(array: Array<string>): Array<string> {
     const result = [];
 
@@ -42,19 +49,6 @@ function getTokenizedAttributes(array: Array<string>): Array<string> {
         result.push(token.pop());
     }
     return result;
-}
-
-function isDefineUsed(source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>}, define: string): boolean {
-    if (!define) {
-        return false;
-    }
-    if (source.fragmentSource.includes(define)) {
-        return true;
-    }
-    if (source.vertexSource.includes(define)) {
-        return true;
-    }
-    return false;
 }
 
 class Program<Us: UniformBindings> {
@@ -67,10 +61,10 @@ class Program<Us: UniformBindings> {
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
 
-    static cacheKey(source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>}, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
+    static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
         for (const define of defines) {
-            if (isDefineUsed(source, define)) {
+            if (source.usedDefines.includes(define)) {
                 key += `/${define}`;
             }
         }
@@ -79,7 +73,7 @@ class Program<Us: UniformBindings> {
 
     constructor(context: Context,
                 name: string,
-                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>},
+                source: ShaderSource,
                 configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {
@@ -115,7 +109,7 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
-        // assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
+        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -125,7 +119,7 @@ class Program<Us: UniformBindings> {
         }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
-        // assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
+        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
         gl.attachShader(this.program, vertexShader);
 
         this.attributes = {};
@@ -140,7 +134,7 @@ class Program<Us: UniformBindings> {
         }
 
         gl.linkProgram(this.program);
-        // assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
+        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program): any));
 
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);

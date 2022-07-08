@@ -71,6 +71,12 @@ import atmosphereVert from './atmosphere.vertex.glsl';
 export let preludeTerrain = {};
 export let preludeFog = {};
 
+const commonDefines = [];
+parseUsedPreprocessorDefines(preludeCommon, commonDefines);
+parseUsedPreprocessorDefines(preludeTerrainVert, commonDefines);
+parseUsedPreprocessorDefines(preludeFogVert, commonDefines);
+parseUsedPreprocessorDefines(preludeFogFrag, commonDefines);
+
 preludeTerrain = compile('', preludeTerrainVert);
 preludeFog = compile(preludeFogFrag, preludeFogVert);
 // Shadow prelude is not compiled until GL-JS implements shadows
@@ -150,6 +156,28 @@ export default {
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
+function parseUsedPreprocessorDefines(source, defines) {
+    const lines = source.replace(/\s*\/\/[^\n]*\n/g, '\n').split('\n');
+    for (let line of lines) {
+        line = line.trim();
+        if (line[0] === '#') {
+            if (line.includes('if') && !line.includes('endif')) {
+                line = line.replace('#', '')
+                    .replace(/ifdef|ifndef|elif|if/g, '')
+                    .replace(/!|defined|\(|\)|\|\||&&/g, '')
+                    .replace(/\s+/g, ' ').trim();
+
+                const newDefines = line.split(' ');
+                for (const define of newDefines) {
+                    if (!defines.includes(define)) {
+                        defines.push(define);
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Expand #pragmas to #ifdefs.
 export function compile(fragmentSource, vertexSource) {
     const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
@@ -157,6 +185,10 @@ export function compile(fragmentSource, vertexSource) {
 
     const staticAttributes = vertexSource.match(attributeRegex);
     const fragmentPragmas = {};
+
+    const usedDefines = [...commonDefines];
+    parseUsedPreprocessorDefines(fragmentSource, usedDefines);
+    parseUsedPreprocessorDefines(vertexSource, usedDefines);
 
     fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         fragmentPragmas[name] = true;
@@ -245,5 +277,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource, staticAttributes};
+    return {fragmentSource, vertexSource, staticAttributes, usedDefines};
 }
