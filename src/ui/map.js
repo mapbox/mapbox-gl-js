@@ -389,11 +389,8 @@ class Map extends Camera {
     _language: ?string;
     _worldview: ?string;
 
-    // `_explicitProjection represents projection as set by a call to map.setProjection()
-    // For the actual projection displayed, use `transform.projection`.
-    // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
-    // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
-    _explicitProjection: ProjectionSpecification | null;
+    // `_useExplicitProjection indicates that a projection is set by a call to map.setProjection()
+    _useExplicitProjection: boolean;
 
     /** @section {Interaction handlers} */
 
@@ -508,7 +505,7 @@ class Map extends Camera {
         this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
 
-        this._explicitProjection = null; // Fallback to stylesheet by default
+        this._useExplicitProjection = false; // Fallback to stylesheet by default
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -1180,13 +1177,16 @@ class Map extends Camera {
 
         if (!projection) {
             projection = null;
+            this._useExplicitProjection = false;
+
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
+            this._useExplicitProjection = true;
+
         }
 
-        this._explicitProjection = projection;
         const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
-        return this._prioritizeAndUpdateProjection(this._explicitProjection, stylesheetProjection);
+        return this._prioritizeAndUpdateProjection(projection, stylesheetProjection);
     }
 
     _updateProjectionTransition() {

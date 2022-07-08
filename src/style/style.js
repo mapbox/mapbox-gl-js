@@ -383,8 +383,8 @@ class Style extends Evented {
     }
 
     _updateMapProjection() {
-        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._prioritizeAndUpdateProjection(this.map._explicitProjection, this.stylesheet.projection);
+        if (!this.map._useExplicitProjection) { // Update the visible projection if map's is null
+            this.map._prioritizeAndUpdateProjection(null, this.stylesheet.projection);
         } else { // Ensure that style is consistent with current projection on style load
             this.applyProjectionUpdate();
         }
