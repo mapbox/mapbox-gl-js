@@ -94,8 +94,9 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
 vec3 shadowed_color_normal(
     vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     highp float NDotL = dot(N, u_shadow_direction);
+    // early return if the fragment is backfacing
     if (NDotL < 0.0)
-        return color * (1.0 - u_shadow_intensity);
+        return color;
 
     NDotL = clamp(NDotL, 0.0, 1.0);
 
@@ -107,8 +108,6 @@ vec3 shadowed_color_normal(
     else if (view_depth < u_cascade_distances.y)
         occlusion = shadow_occlusion_1(light_view_pos1, bias);
 
-    float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
-    occlusion = mix(occlusion, 1.0, backfacing);
     color *= 1.0 - (u_shadow_intensity * occlusion);
     return color;
 }
