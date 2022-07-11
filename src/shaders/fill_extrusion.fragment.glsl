@@ -4,10 +4,10 @@ uniform lowp vec3 u_lightpos;
 varying vec4 v_color;
 
 #ifdef RENDER_SHADOWS
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
+varying highp vec4 v_pos_light_view_0;
+varying highp vec4 v_pos_light_view_1;
 varying float v_depth;
-varying vec3 v_normal;
+varying highp vec3 v_normal;
 #endif
 
 #ifdef FAUX_AO

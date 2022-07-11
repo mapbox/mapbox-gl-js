@@ -5,8 +5,8 @@ uniform sampler2D u_shadowmap_1;
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
-uniform vec3 u_shadow_direction;
-uniform vec3 u_shadow_bias;
+uniform highp vec3 u_shadow_direction;
+uniform highp vec3 u_shadow_bias;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
@@ -16,14 +16,14 @@ highp float shadow_sample_0(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_0, uv)), compare);
 }
 
-highp float shadow_occlusion_1(highp vec4 pos, float bias) {
+highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
     highp float fragDepth = min(pos.z, 0.999) - bias;
     return shadow_sample_1(pos.xy, fragDepth);
 }
 
-highp float shadow_occlusion_0(highp vec4 pos, float bias) {
+highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
     highp float fragDepth = min(pos.z, 0.999) - bias;
@@ -92,15 +92,15 @@ highp float shadow_occlusion_0(highp vec4 pos, float bias) {
 }
 
 vec3 shadowed_color_normal(
-    vec3 color, vec3 N, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
-    float NDotL = dot(N, u_shadow_direction);
+    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    highp float NDotL = dot(N, u_shadow_direction);
     if (NDotL < 0.0)
         return color * (1.0 - u_shadow_intensity);
 
     NDotL = clamp(NDotL, 0.0, 1.0);
 
     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-    float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
+    highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x)
         occlusion = shadow_occlusion_0(light_view_pos0, bias);
@@ -113,7 +113,7 @@ vec3 shadowed_color_normal(
     return color;
 }
 
-vec3 shadowed_color(vec3 color, vec4 light_view_pos0, vec4 light_view_pos1, float view_depth) {
+vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x)
