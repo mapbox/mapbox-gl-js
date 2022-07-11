@@ -388,6 +388,7 @@ class FillExtrusionBucket implements Bucket {
                         holeIndices.push(flattened.length / 2);
                     }
 
+                    // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
                     let na, nb;
                     {
                         const p0 = ring[0];
@@ -447,12 +448,12 @@ class FillExtrusionBucket implements Bucket {
 
                 let kPrev, kFirst;
 
-                let a, b, na, nb;
+                // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
+                let na, nb;
                 {
                     const p0 = ring[0];
                     const p1 = ring[1];
-                    a = p1.sub(p0);
-                    na = a.perp()._unit();
+                    na = p1.sub(p0)._perp()._unit();
                 }
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
                     let p0 = ring[i - 1];
@@ -461,8 +462,7 @@ class FillExtrusionBucket implements Bucket {
 
                     if (metadata && isPolygon) metadata.currentPolyCount.top++;
                     if (isEdgeOutsideBounds(p1, p0, bounds)) {
-                        a = p2.sub(p1);
-                        na = a.perp()._unit();
+                        na = p2.sub(p1)._perp()._unit();
                         continue;
                     }
                     if (metadata) metadata.append(p1, p0);
@@ -494,19 +494,17 @@ class FillExtrusionBucket implements Bucket {
                     // (drawing isn't exact but hopefully gets the point across).
 
                     if (edgeRadius) {
-                        b = p2.sub(p1);
-                        nb = b.perp()._unit();
+                        nb = p2.sub(p1)._perp()._unit();
 
                         const cosHalfAngle = getCosHalfAngle(na, nb);
                         let offsetNext = _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
 
                         if (isNaN(offsetNext)) offsetNext = 0;
-                        const nEdge = a._unit();
+                        const nEdge = p1.sub(p0)._unit();
                         p0 = p0.add(nEdge.mult(offsetPrev))._round();
                         p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
 
-                        a = b;
                         na = nb;
                     }
 
