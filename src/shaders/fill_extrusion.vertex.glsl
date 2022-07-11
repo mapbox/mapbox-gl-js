@@ -1,3 +1,4 @@
+
 uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -26,9 +27,9 @@ varying vec4 v_color;
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
-varying vec3 v_normal;
+varying highp vec4 v_pos_light_view_0;
+varying highp vec4 v_pos_light_view_1;
+varying highp vec3 v_normal;
 varying float v_depth;
 #endif
 
