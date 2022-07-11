@@ -246,7 +246,8 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     updateCorners(cornerMin, cornerMax, corners, m, scale);
 
     if (bounds.contains(tr.center)) {
-        // Extend the aabb by encapsulating the center point
+        // Extend the aabb by including the center point. There are some corner cases where center point is inside the
+        // tile but due to curvature aabb computed from corner points does not cover the curved area.
         cornerMax[2] = 0.0;
         const point = tr.point;
         const center = [point.x * scale, point.y * scale, 0];
@@ -305,12 +306,13 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
         for (let i = 0; i < corners.length; i++) {
             corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
+            vec3.min(cornerMin, cornerMin, corners[i]);
+            vec3.max(cornerMax, cornerMax, corners[i]);
         }
 
-        // Consider the midpoint of the closest edge in Mercator as a potential extremum during transition
+        // Interpolate arc extremum toward the edge midpoint in Mercator
         const mercatorClosestMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
         vec3.scale(mercatorClosestMidpoint, mercatorClosestMidpoint, .5);
-        vec3.max(arcExtremum, arcExtremum, mercatorClosestMidpoint);
     }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
