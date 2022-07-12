@@ -846,6 +846,11 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
+    terrainRenderModeElevated(): boolean {
+        // Whether elevation sampling should be enabled in the vertex shader.
+        return this.style && this.style.getTerrain() && this.terrain && !this.terrain.renderingToTexture;
+    }
+
     /**
      * Returns #defines that would need to be injected into every Program
      * based on the current state of Painter.
@@ -854,12 +859,11 @@ class Painter {
      * @private
      */
     currentGlobalDefines(): string[] {
-        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
         const defines = [];
 
-        if (terrain) defines.push('TERRAIN');
+        if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
