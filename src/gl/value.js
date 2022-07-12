@@ -29,12 +29,14 @@ export interface Value<T> {
 }
 
 class BaseValue<T> implements Value<T> {
+    context: Context;
     gl: WebGLRenderingContext;
     current: T;
     default: T;
     dirty: boolean;
 
     constructor(context: Context) {
+        this.context = context;
         this.gl = context.gl;
         this.default = this.getDefault();
         this.current = this.default;
@@ -338,9 +340,10 @@ export class ActiveTextureUnit extends BaseValue<TextureUnitType> {
     }
     set(v: TextureUnitType) {
         if (v === this.current && !this.dirty) return;
-        this.gl.activeTexture(v);
         this.current = v;
-        this.dirty = false;
+    }
+    setDefault() {
+        this.gl.activeTexture(this.getDefault());
     }
 }
 
@@ -385,15 +388,27 @@ export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
 }
 
 export class BindTexture extends BaseValue<?WebGLTexture> {
+    slots: Array<?WebGLTexture>;
+    constructor(context: Context) {
+        super(context);
+        this.slots = [];
+    }
     getDefault(): WebGLTexture {
         return null;
     }
     set(v: ?WebGLTexture) {
-        if (v === this.current && !this.dirty) return;
-        const gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, v);
-        this.current = v;
+        const textureUnit = this.context.activeTexture;
+        const slotIndex = textureUnit.current - this.gl.TEXTURE0;
+        if (this.slots[slotIndex] === v && !this.dirty && !textureUnit.dirty) return;
+        this.gl.activeTexture(textureUnit.current);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, v);
+        this.slots[slotIndex] = v;
         this.dirty = false;
+        textureUnit.dirty = false;
+    }
+    get(): ?WebGLTexture {
+        // Do not use, caching is done per texture unit slot, not globally
+        return null;
     }
 }
 

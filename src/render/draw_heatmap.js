@@ -100,7 +100,7 @@ function bindFramebuffer(context, painter, layer, scaling) {
         if (fbo) { fbo.destroy(); }
 
         const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        context.bindTexture.set(texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -111,7 +111,7 @@ function bindFramebuffer(context, painter, layer, scaling) {
         bindTextureToFramebuffer(context, painter, texture, fbo, width, height);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+        context.bindTexture.set(fbo.colorAttachment.get());
         context.bindFramebuffer.set(fbo.framebuffer);
     }
 }
@@ -135,7 +135,7 @@ function renderTextureToMap(painter, layer) {
     const fbo = layer.heatmapFbo;
     if (!fbo) return;
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    context.bindTexture.set(fbo.colorAttachment.get());
 
     context.activeTexture.set(gl.TEXTURE1);
     let colorRampTexture = layer.colorRampTexture;

@@ -55,8 +55,7 @@ class Texture {
         const {gl} = context;
         const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
+        context.bindTexture.set(this.texture);
         context.pixelStoreUnpackFlipY.set(false);
         context.pixelStoreUnpack.set(1);
         context.pixelStoreUnpackPremultiplyAlpha.set(this.format === gl.RGBA && (!options || options.premultiply !== false));
@@ -90,7 +89,9 @@ class Texture {
     bind(filter: TextureFilter, wrap: TextureWrap) {
         const {context} = this;
         const {gl} = context;
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        context.bindTexture.dirty = filter !== this.filter || wrap !== this.wrap;
+        context.bindTexture.set(this.texture);
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
