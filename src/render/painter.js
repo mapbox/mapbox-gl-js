@@ -988,7 +988,8 @@ class Painter {
     canvasCopy(): ?WebGLTexture {
         const gl = this.context.gl;
         const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        this.context.activeTexture.set(gl.TEXTURE0);
+        this.context.bindTexture.set(texture);
         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, 0);
         return texture;
     }

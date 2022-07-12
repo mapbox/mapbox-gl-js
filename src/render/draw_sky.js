@@ -97,8 +97,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     const transform = painter.transform;
     const program = painter.useProgram('skybox');
 
-    context.activeTexture.set(gl.TEXTURE0);
-
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
@@ -144,6 +143,9 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
         layer.skyboxGeometry = new SkyboxGeometry(context);
         layer.skyboxTexture = context.gl.createTexture();
 
+        context.activeTexture.dirty = true;
+
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

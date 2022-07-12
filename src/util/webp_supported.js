@@ -50,6 +50,8 @@ function testWebpTextureUpload(gl: WebGLRenderingContext) {
     // Test support for this before allowing WebP images.
     // https://github.com/mapbox/mapbox-gl-js/issues/7671
     const texture = gl.createTexture();
+
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     try {

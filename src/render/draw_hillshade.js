@@ -59,7 +59,7 @@ function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, co
     const program = painter.useProgram('hillshade');
 
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    context.bindTexture.set(fbo.colorAttachment.get());
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.projMatrix : null);
 
