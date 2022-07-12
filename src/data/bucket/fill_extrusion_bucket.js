@@ -388,6 +388,7 @@ class FillExtrusionBucket implements Bucket {
                         holeIndices.push(flattened.length / 2);
                     }
 
+                    // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
                     let na, nb;
                     {
                         const p0 = ring[0];
@@ -447,13 +448,23 @@ class FillExtrusionBucket implements Bucket {
 
                 let kPrev, kFirst;
 
+                // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
+                let na, nb;
+                {
+                    const p0 = ring[0];
+                    const p1 = ring[1];
+                    na = p1.sub(p0)._perp()._unit();
+                }
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
                     let p0 = ring[i - 1];
                     let p1 = ring[i];
                     const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                     if (metadata && isPolygon) metadata.currentPolyCount.top++;
-                    if (isEdgeOutsideBounds(p1, p0, bounds)) continue;
+                    if (isEdgeOutsideBounds(p1, p0, bounds)) {
+                        na = p2.sub(p1)._perp()._unit();
+                        continue;
+                    }
                     if (metadata) metadata.append(p1, p0);
 
                     const d = p1.sub(p0)._perp();
@@ -483,12 +494,18 @@ class FillExtrusionBucket implements Bucket {
                     // (drawing isn't exact but hopefully gets the point across).
 
                     if (edgeRadius) {
-                        let offsetNext = getRoundedEdgeOffset(p0, p1, p2, edgeRadius);
+                        nb = p2.sub(p1)._perp()._unit();
+
+                        const cosHalfAngle = getCosHalfAngle(na, nb);
+                        let offsetNext = _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
+
                         if (isNaN(offsetNext)) offsetNext = 0;
                         const nEdge = p1.sub(p0)._unit();
                         p0 = p0.add(nEdge.mult(offsetPrev))._round();
                         p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
+
+                        na = nb;
                     }
 
                     const k = segment.vertexLength;
@@ -642,12 +659,20 @@ class FillExtrusionBucket implements Bucket {
     }
 }
 
+function getCosHalfAngle(na, nb) {
+    const nm = na.add(nb)._unit();
+    const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+    return cosHalfAngle;
+}
+
 function getRoundedEdgeOffset(p0, p1, p2, edgeRadius) {
     const na = p1.sub(p0)._perp()._unit();
     const nb = p2.sub(p1)._perp()._unit();
-    const nm = na.add(nb)._unit();
+    const cosHalfAngle = getCosHalfAngle(na, nb);
+    return _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
+}
 
-    const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+function _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius) {
     const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
     return Math.min(p0.dist(p1) / 3, p1.dist(p2) / 3, edgeRadius * sinHalfAngle / cosHalfAngle);
 }
