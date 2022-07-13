@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Setel ulang bantalan ke utara",
     "NavigationControl.ZoomIn": "Perbesar",
     "NavigationControl.ZoomOut": "Perkecil",
-    "ScaleControl.Feet": "kaki",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "Saya",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Gunakan ctrl + gulir untuk memperbesar peta",
     "ScrollZoomBlocker.CmdMessage": "Gunakan + gulir untuk memperbesar peta",
     "TouchPanBlocker.Message": "Gunakan dua jari untuk memindahkan peta"
