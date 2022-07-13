@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Επαναφορά ρουλεμάν προς βορρά",
     "NavigationControl.ZoomIn": "Μεγέθυνση",
     "NavigationControl.ZoomOut": "Σμίκρυνση",
-    "ScaleControl.Feet": "πόδια",
-    "ScaleControl.Meters": "Μ",
-    "ScaleControl.Kilometers": "χλμ",
-    "ScaleControl.Miles": "μου",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Χρησιμοποιήστε τα πλήκτρα ctrl + scroll για να μεγεθύνετε τον χάρτη",
     "ScrollZoomBlocker.CmdMessage": "Χρησιμοποιήστε ⌘ + κύλιση για μεγέθυνση του χάρτη",
     "TouchPanBlocker.Message": "Χρησιμοποιήστε δύο δάχτυλα για να μετακινήσετε τον χάρτη"
