@@ -525,8 +525,8 @@ class SymbolBucket implements Bucket {
                         geom[i],
                         p => p,
                         (a, b) => {
-                            const v0 = tileCoordToECEF(a.x, a.y, canonical);
-                            const v1 = tileCoordToECEF(b.x, b.y, canonical);
+                            const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
+                            const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
                             return vec3.dot(v0, v1) < cosAngleThreshold;
                         });
                 }

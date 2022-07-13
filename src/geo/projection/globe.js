@@ -138,7 +138,7 @@ export default class Globe extends Mercator {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
-        return tileCoordToECEF(x, y, id);
+        return tileCoordToECEF(x, y, id, 1);
     }
 
     upVectorScale(id: CanonicalTileID): ElevationScale {
