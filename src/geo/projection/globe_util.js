@@ -396,11 +396,11 @@ export function latLngToECEF(lat: number, lng: number, radius?: number): Array<n
 }
 
 export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID): Array<number> {
-    const tiles = 1 << id.z;
-    const mx = (x / EXTENT + id.x) / tiles;
-    const my = (y / EXTENT + id.y) / tiles;
-    const lat = latFromMercatorY(my);
-    const lng = lngFromMercatorX(mx);
+    const tileCount = 1 << id.z;
+    const mercatorX = (x / EXTENT + id.x) / tileCount;
+    const mercatorY = (y / EXTENT + id.y) / tileCount;
+    const lat = latFromMercatorY(mercatorY);
+    const lng = lngFromMercatorX(mercatorX);
     const pos = latLngToECEF(lat, lng);
     return pos;
 }

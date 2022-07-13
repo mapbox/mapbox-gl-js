@@ -4,8 +4,6 @@ import EXTENT from '../../data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad} from '../../util/util.js';
 import MercatorCoordinate, {
-    lngFromMercatorX,
-    latFromMercatorY,
     mercatorZfromAltitude,
 } from '../mercator_coordinate.js';
 import Mercator from './mercator.js';
@@ -21,7 +19,8 @@ import {
     globeDenormalizeECEF,
     globeECEFNormalizationScale,
     globeToMercatorTransition,
-    globePointCoordinate
+    globePointCoordinate,
+    tileCoordToECEF
 } from './globe_util.js';
 
 import type Transform from '../transform.js';
@@ -43,13 +42,7 @@ export default class Globe extends Mercator {
     }
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
-        const tileCount = 1 << id.z;
-        const mx = (x / EXTENT + id.x) / tileCount;
-        const my = (y / EXTENT + id.y) / tileCount;
-        const lat = latFromMercatorY(my);
-        const lng = lngFromMercatorX(mx);
-        const pos = latLngToECEF(lat, lng);
-
+        const pos = tileCoordToECEF(x, y, id);
         const bounds = globeTileBounds(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
         vec3.transformMat4(pos, pos, normalizationMatrix);
@@ -145,10 +138,7 @@ export default class Globe extends Mercator {
     }
 
     upVector(id: CanonicalTileID, x: number, y: number): Vec3 {
-        const tiles = 1 << id.z;
-        const mercX = (x / EXTENT + id.x) / tiles;
-        const mercY = (y / EXTENT + id.y) / tiles;
-        return latLngToECEF(latFromMercatorY(mercY), lngFromMercatorX(mercX), 1.0);
+        return tileCoordToECEF(x, y, id);
     }
 
     upVectorScale(id: CanonicalTileID): ElevationScale {

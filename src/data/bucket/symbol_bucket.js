@@ -45,13 +45,11 @@ import Formatted from '../../style-spec/expression/types/formatted.js';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
 import {resamplePred} from '../../geo/projection/resample.js';
-import {lngFromMercatorX, latFromMercatorY} from '../../geo/mercator_coordinate.js';
-import {latLngToECEF} from '../../geo/projection/globe_util.js';
+import {tileCoordToECEF} from '../../geo/projection/globe_util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import {getProjection} from '../../geo/projection/index.js';
 import type Projection from '../../geo/projection/projection.js';
 import {mat4, vec3} from 'gl-matrix';
-import EXTENT from '../extent.js';
 
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
@@ -518,9 +516,6 @@ class SymbolBucket implements Bucket {
                 // Otherwise lines could clip through the globe as the resolution is not enough to represent curved paths.
                 // The threshold value follows subdivision size used with fill extrusions
                 const geom = evaluationFeature.geometry;
-                const tiles = 1 << canonical.z;
-                const mx = canonical.x;
-                const my = canonical.y;
 
                 // cos(11.25 degrees) = 0.98078528056
                 const cosAngleThreshold = 0.98078528056;
@@ -530,8 +525,8 @@ class SymbolBucket implements Bucket {
                         geom[i],
                         p => p,
                         (a, b) => {
-                            const v0 = latLngToECEF(latFromMercatorY((a.y / EXTENT + my) / tiles), lngFromMercatorX((a.x / EXTENT + mx) / tiles), 1);
-                            const v1 = latLngToECEF(latFromMercatorY((b.y / EXTENT + my) / tiles), lngFromMercatorX((b.x / EXTENT + mx) / tiles), 1);
+                            const v0 = tileCoordToECEF(a.x, a.y, canonical);
+                            const v1 = tileCoordToECEF(b.x, b.y, canonical);
                             return vec3.dot(v0, v1) < cosAngleThreshold;
                         });
                 }
