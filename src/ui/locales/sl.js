@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Ponastavite smer proti severu",
     "NavigationControl.ZoomIn": "Približaj",
     "NavigationControl.ZoomOut": "Pomanjšanje",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "jaz",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Uporabite ctrl + drsenje za povečavo zemljevida",
     "ScrollZoomBlocker.CmdMessage": "Uporabite ⌘ + pomikanje, da povečate zemljevid",
     "TouchPanBlocker.Message": "Uporabite dva prsta za premikanje zemljevida"
