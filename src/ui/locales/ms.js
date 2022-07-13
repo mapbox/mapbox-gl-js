@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Tetapkan semula galas ke utara",
     "NavigationControl.ZoomIn": "Mengezum masuk",
     "NavigationControl.ZoomOut": "Zum keluar",
-    "ScaleControl.Feet": "kaki",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "saya",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Gunakan ctrl + tatal untuk mengezum peta",
     "ScrollZoomBlocker.CmdMessage": "Gunakan ⌘ + tatal untuk mengezum peta",
     "TouchPanBlocker.Message": "Gunakan dua jari untuk mengalihkan peta"
