@@ -68,5 +68,24 @@ test('parseUsedPreprocessorDefines', (t) => {
     `, defines);
     t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
+    defines = [];
+    parseUsedPreprocessorDefines(`
+    if (SHADER_VARIABLE) {
+    }
+    `, defines);
+    t.deepEqual(defines, []);
+
+    defines = [];
+    parseUsedPreprocessorDefines(`
+    #endif // SHADER_DEFINE
+    `, defines);
+    t.deepEqual(defines, []);
+
+    defines = [];
+    parseUsedPreprocessorDefines(`
+    #define SHADER_DEFINE
+    `, defines);
+    t.deepEqual(defines, []);
+
     t.end();
 });
