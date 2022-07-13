@@ -7,6 +7,8 @@ uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
 uniform highp vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
+uniform mat4 u_light_matrix_0;
+uniform mat4 u_light_matrix_1;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
@@ -91,23 +93,42 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     return clamp(value / 9.0, 0.0, 1.0);
 }
 
-vec3 shadowed_color_normal(
-    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
-    // early return if the fragment is backfacing
+
+
+//-------------------------------------------------------------------------------------------------
+// Calculates the offset to use for sampling the shadow map, based on the surface normal
+//-------------------------------------------------------------------------------------------------
+vec3 get_shadow_normal_offset(float nDotL, vec3 normal)
+{
+    float texelSize = u_texel_size;
+    float nmlOffsetScale = clamp(1.0 - nDotL, 0.0, 1.0);
+    return texelSize * 0.4 * nmlOffsetScale * normal;
+}
+
+
+vec3 shadowed_color_normal(vec3 color, highp vec3 N, highp vec3 pos, float view_depth) {
+
+    highp float NDotL = dot(N, normalize(u_shadow_direction));
     if (NDotL < 0.0)
         return color;
 
-    NDotL = clamp(NDotL, 0.0, 1.0);
-
     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
     highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
+
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x)
-        occlusion = shadow_occlusion_0(light_view_pos0, bias);
-    else if (view_depth < u_cascade_distances.y)
-        occlusion = shadow_occlusion_1(light_view_pos1, bias);
-
+    {
+        highp vec3 offset = get_shadow_normal_offset(NDotL, N) / u_cascade_distances.x;
+        highp vec4 samplePos = vec4(pos + offset, 1.);
+        samplePos = u_light_matrix_0 * samplePos;
+        occlusion = shadow_occlusion_0(samplePos, 0.0);
+    }
+    else if (view_depth < u_cascade_distances.y){
+        highp vec3 offset = get_shadow_normal_offset(NDotL, N) / u_cascade_distances.y;
+        highp vec4 samplePos = vec4(pos + offset, 1.);
+        samplePos = u_light_matrix_1 * samplePos;
+        occlusion = shadow_occlusion_1(samplePos, 0.0);
+    }
     color *= 1.0 - (u_shadow_intensity * occlusion);
     return color;
 }

@@ -4,10 +4,10 @@ uniform lowp vec3 u_lightpos;
 varying vec4 v_color;
 
 #ifdef RENDER_SHADOWS
-varying highp vec4 v_pos_light_view_0;
-varying highp vec4 v_pos_light_view_1;
+varying highp vec3 v_pos;
 varying float v_depth;
 varying highp vec3 v_normal;
+uniform highp mat4 u_normal_matrix;
 #endif
 
 #ifdef FAUX_AO
@@ -31,7 +31,8 @@ void main() {
 #endif
 
 #ifdef RENDER_SHADOWS
-    color.xyz = shadowed_color_normal(color.xyz, normalize(v_normal), v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    highp vec4 ws_normal = u_normal_matrix * vec4(v_normal, 1.0);
+    color.xyz = shadowed_color_normal(color.xyz, normalize(ws_normal.xyz), v_pos, v_depth);
 #endif
 
 #ifdef FOG
