@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "รีเซ็ตแบริ่งไปทางทิศเหนือ",
     "NavigationControl.ZoomIn": "ขยายเข้า",
     "NavigationControl.ZoomOut": "ซูมออก",
-    "ScaleControl.Feet": "ฟุต",
-    "ScaleControl.Meters": "ม",
-    "ScaleControl.Kilometers": "กม.",
-    "ScaleControl.Miles": "ฉัน",
-    "ScaleControl.NauticalMiles": "นาโนเมตร",
     "ScrollZoomBlocker.CtrlMessage": "ใช้ ctrl + เลื่อนเพื่อซูมแผนที่",
     "ScrollZoomBlocker.CmdMessage": "ใช้ ⌘ + เลื่อนเพื่อซูมแผนที่",
     "TouchPanBlocker.Message": "ใช้สองนิ้วเพื่อเลื่อนแผนที่"
