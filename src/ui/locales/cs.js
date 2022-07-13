@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "Resetujte azimut na sever",
     "NavigationControl.ZoomIn": "Přiblížit",
     "NavigationControl.ZoomOut": "Oddálit",
-    "ScaleControl.Feet": "ft",
-    "ScaleControl.Meters": "m",
-    "ScaleControl.Kilometers": "km",
-    "ScaleControl.Miles": "mě",
-    "ScaleControl.NauticalMiles": "nm",
     "ScrollZoomBlocker.CtrlMessage": "Pro přiblížení mapy použijte ctrl + scroll",
     "ScrollZoomBlocker.CmdMessage": "Pomocí ⌘ + posouvání mapu přiblížíte",
     "TouchPanBlocker.Message": "Pomocí dvou prstů posuňte mapu"
