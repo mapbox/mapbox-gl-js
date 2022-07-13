@@ -12,11 +12,6 @@ const locale = {
     "NavigationControl.ResetBearing": "ტარების გადატვირთვა ჩრდილოეთით",
     "NavigationControl.ZoomIn": "Მიახლოება",
     "NavigationControl.ZoomOut": "მასშტაბირება",
-    "ScaleControl.Feet": "ფუტი",
-    "ScaleControl.Meters": "მ",
-    "ScaleControl.Kilometers": "კმ",
-    "ScaleControl.Miles": "მე",
-    "ScaleControl.NauticalMiles": "ნმ",
     "ScrollZoomBlocker.CtrlMessage": "გამოიყენეთ ctrl + გადახვევა რუკის გასადიდებლად",
     "ScrollZoomBlocker.CmdMessage": "გამოიყენეთ ⌘ + გადახვევა რუკის გასადიდებლად",
     "TouchPanBlocker.Message": "გამოიყენეთ ორი თითი რუკის გადასატანად"
