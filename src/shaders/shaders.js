@@ -156,7 +156,7 @@ export default {
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
 };
 
-function parseUsedPreprocessorDefines(source, defines) {
+export function parseUsedPreprocessorDefines(source, defines) {
     const lines = source.replace(/\s*\/\/[^\n]*\n/g, '\n').split('\n');
     for (let line of lines) {
         line = line.trim();
