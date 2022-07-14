@@ -395,13 +395,13 @@ export function latLngToECEF(lat: number, lng: number, radius?: number): Array<n
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
-export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID): Array<number> {
-    const tiles = 1 << id.z;
-    const mx = (x / EXTENT + id.x) / tiles;
-    const my = (y / EXTENT + id.y) / tiles;
-    const lat = latFromMercatorY(my);
-    const lng = lngFromMercatorX(mx);
-    const pos = latLngToECEF(lat, lng);
+export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): Array<number> {
+    const tileCount = 1 << id.z;
+    const mercatorX = (x / EXTENT + id.x) / tileCount;
+    const mercatorY = (y / EXTENT + id.y) / tileCount;
+    const lat = latFromMercatorY(mercatorY);
+    const lng = lngFromMercatorX(mercatorX);
+    const pos = latLngToECEF(lat, lng, radius);
     return pos;
 }
 
