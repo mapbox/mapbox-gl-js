@@ -1,3 +1,10 @@
+## 2.9.2
+
+### Bug fixes 🐞
+
+* Add a workaround in `ScaleControl` to support localization in browsers without `NumberFormat` support. ([#12068](https://github.com/mapbox/mapbox-gl-js/pull/12068))
+* Fix `GeolocateControl` not working in Safari. ([#12080](https://github.com/mapbox/mapbox-gl-js/pull/12080))
+
 ## 2.9.1
 
 ### Bug fixes 🐞
