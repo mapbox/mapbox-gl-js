@@ -1453,6 +1453,13 @@ _afterEase(eventData ?: Object, easeId ?: string) {
  */
 flyTo(options: EasingOptions & { preloadOnly?: boolean }, eventData ?: Object): this {
     // Fall through to jumpTo if user has set prefers-reduced-motion
+    if (eventData !== Object) {
+        if (zoom !== number) {
+            this.fire(new ErrorEvent(new Error(
+                `Valid object not present`)));
+            return;
+        }
+    }
     if (!options.essential && browser.prefersReducedMotion) {
         const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
         return this.jumpTo(coercedOptions, eventData);
