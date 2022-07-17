@@ -318,15 +318,15 @@ setZoom(zoom: number, eventData ?: Object): this {
  * });
  */
 zoomTo(zoom: number, options: ?AnimationOptions, eventData ?: Object): this {
-    if (zoom !== number) [
+    if (zoom !== number) {
         this.fire(new ErrorEvent(new Error(
             `Enter a Valid Number`)));
-            return;
-}
-return this.easeTo(extend({
-    zoom
-}, options), eventData);
+        return;
     }
+    return this.easeTo(extend({
+        zoom
+    }, options), eventData);
+}
 
 /**
  * Increases the map's zoom level by 1.
