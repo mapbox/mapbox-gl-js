@@ -12,7 +12,7 @@ import {
 import browser from '../util/browser.js';
 
 import type Context from '../gl/context.js';
-import type {UniformValues, UniformLocations} from '../render/uniform_binding.js';
+import type {UniformValues} from '../render/uniform_binding.js';
 
 export type GlobeRasterUniformsType = {|
     'u_proj_matrix': UniformMatrix4f,
@@ -51,41 +51,41 @@ export type AtmosphereUniformsType = {|
     'u_rotation_matrix': UniformMatrix4f
 |};
 
-const globeRasterUniforms = (context: Context, locations: UniformLocations): GlobeRasterUniformsType => ({
-    'u_proj_matrix': new UniformMatrix4f(context, locations.u_proj_matrix),
-    'u_globe_matrix': new UniformMatrix4f(context, locations.u_globe_matrix),
-    'u_normalize_matrix': new UniformMatrix4f(context, locations.u_normalize_matrix),
-    'u_merc_matrix': new UniformMatrix4f(context, locations.u_merc_matrix),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_image0': new Uniform1i(context, locations.u_image0),
-    'u_grid_matrix': new UniformMatrix3f(context, locations.u_grid_matrix),
-    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
-    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
-    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
-    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
-    'u_globe_pos': new Uniform3f(context, locations.u_globe_pos),
-    'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
-    'u_viewport': new Uniform2f(context, locations.u_viewport)
+const globeRasterUniforms = (context: Context): GlobeRasterUniformsType => ({
+    'u_proj_matrix': new UniformMatrix4f(context),
+    'u_globe_matrix': new UniformMatrix4f(context),
+    'u_normalize_matrix': new UniformMatrix4f(context),
+    'u_merc_matrix': new UniformMatrix4f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_image0': new Uniform1i(context),
+    'u_grid_matrix': new UniformMatrix3f(context),
+    'u_frustum_tl': new Uniform3f(context),
+    'u_frustum_tr': new Uniform3f(context),
+    'u_frustum_br': new Uniform3f(context),
+    'u_frustum_bl': new Uniform3f(context),
+    'u_globe_pos': new Uniform3f(context),
+    'u_globe_radius': new Uniform1f(context),
+    'u_viewport': new Uniform2f(context)
 });
 
-const atmosphereUniforms = (context: Context, locations: UniformLocations): AtmosphereUniformsType => ({
-    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
-    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
-    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
-    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
-    'u_horizon': new Uniform1f(context, locations.u_horizon),
-    'u_transition': new Uniform1f(context, locations.u_transition),
-    'u_fadeout_range': new Uniform1f(context, locations.u_fadeout_range),
-    'u_color': new Uniform4f(context, locations.u_color),
-    'u_high_color': new Uniform4f(context, locations.u_high_color),
-    'u_space_color': new Uniform4f(context, locations.u_space_color),
-    'u_star_intensity': new Uniform1f(context, locations.u_star_intensity),
-    'u_star_density': new Uniform1f(context, locations.u_star_density),
-    'u_star_size': new Uniform1f(context, locations.u_star_size),
-    'u_temporal_offset': new Uniform1f(context, locations.u_temporal_offset),
-    'u_horizon_angle': new Uniform1f(context, locations.u_horizon_angle),
-    'u_rotation_matrix': new UniformMatrix4f(context, locations.u_rotation_matrix)
+const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
+    'u_frustum_tl': new Uniform3f(context),
+    'u_frustum_tr': new Uniform3f(context),
+    'u_frustum_br': new Uniform3f(context),
+    'u_frustum_bl': new Uniform3f(context),
+    'u_horizon': new Uniform1f(context),
+    'u_transition': new Uniform1f(context),
+    'u_fadeout_range': new Uniform1f(context),
+    'u_color': new Uniform4f(context),
+    'u_high_color': new Uniform4f(context),
+    'u_space_color': new Uniform4f(context),
+    'u_star_intensity': new Uniform1f(context),
+    'u_star_density': new Uniform1f(context),
+    'u_star_size': new Uniform1f(context),
+    'u_temporal_offset': new Uniform1f(context),
+    'u_horizon_angle': new Uniform1f(context),
+    'u_rotation_matrix': new UniformMatrix4f(context)
 });
 
 const globeRasterUniformValues = (

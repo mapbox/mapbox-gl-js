@@ -49,7 +49,7 @@ import type StyleLayer from '../style/style_layer.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type Context from '../gl/context.js';
-import type {UniformLocations, UniformValues} from '../render/uniform_binding.js';
+import type {UniformValues} from '../render/uniform_binding.js';
 import type Transform from '../geo/transform.js';
 import type {DEMEncoding} from '../data/dem_data.js';
 import type {Vec3, Vec4} from 'gl-matrix';
@@ -1591,26 +1591,26 @@ export type TerrainUniformsType = {|
     'u_tile_up_scale': Uniform1f
 |};
 
-export const terrainUniforms = (context: Context, locations: UniformLocations): TerrainUniformsType => ({
-    'u_dem': new Uniform1i(context, locations.u_dem),
-    'u_dem_prev': new Uniform1i(context, locations.u_dem_prev),
-    'u_dem_unpack': new Uniform4f(context, locations.u_dem_unpack),
-    'u_dem_tl': new Uniform2f(context, locations.u_dem_tl),
-    'u_dem_scale': new Uniform1f(context, locations.u_dem_scale),
-    'u_dem_tl_prev': new Uniform2f(context, locations.u_dem_tl_prev),
-    'u_dem_scale_prev': new Uniform1f(context, locations.u_dem_scale_prev),
-    'u_dem_size': new Uniform1f(context, locations.u_dem_size),
-    'u_dem_lerp': new Uniform1f(context, locations.u_dem_lerp),
-    'u_exaggeration': new Uniform1f(context, locations.u_exaggeration),
-    'u_depth': new Uniform1i(context, locations.u_depth),
-    'u_depth_size_inv': new Uniform2f(context, locations.u_depth_size_inv),
-    'u_meter_to_dem': new Uniform1f(context, locations.u_meter_to_dem),
-    'u_label_plane_matrix_inv': new UniformMatrix4f(context, locations.u_label_plane_matrix_inv),
-    'u_tile_tl_up': new Uniform3f(context, locations.u_tile_tl_up),
-    'u_tile_tr_up': new Uniform3f(context, locations.u_tile_tr_up),
-    'u_tile_br_up': new Uniform3f(context, locations.u_tile_br_up),
-    'u_tile_bl_up': new Uniform3f(context, locations.u_tile_bl_up),
-    'u_tile_up_scale': new Uniform1f(context, locations.u_tile_up_scale)
+export const terrainUniforms = (context: Context): TerrainUniformsType => ({
+    'u_dem': new Uniform1i(context),
+    'u_dem_prev': new Uniform1i(context),
+    'u_dem_unpack': new Uniform4f(context),
+    'u_dem_tl': new Uniform2f(context),
+    'u_dem_scale': new Uniform1f(context),
+    'u_dem_tl_prev': new Uniform2f(context),
+    'u_dem_scale_prev': new Uniform1f(context),
+    'u_dem_size': new Uniform1f(context),
+    'u_dem_lerp': new Uniform1f(context),
+    'u_exaggeration': new Uniform1f(context),
+    'u_depth': new Uniform1i(context),
+    'u_depth_size_inv': new Uniform2f(context),
+    'u_meter_to_dem': new Uniform1f(context),
+    'u_label_plane_matrix_inv': new UniformMatrix4f(context),
+    'u_tile_tl_up': new Uniform3f(context),
+    'u_tile_tr_up': new Uniform3f(context),
+    'u_tile_br_up': new Uniform3f(context),
+    'u_tile_bl_up': new Uniform3f(context),
+    'u_tile_up_scale': new Uniform1f(context)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
