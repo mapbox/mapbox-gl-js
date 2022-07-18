@@ -21,7 +21,6 @@ class Uniform<T> {
         if (!this.location && !this.initialized) {
             this.location = this.gl.getUniformLocation(program, name);
             this.initialized = true;
-            this.program = program;
         }
         return !!this.location;
     }
