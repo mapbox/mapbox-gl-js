@@ -118,7 +118,7 @@ const ciTestemConfig = {
     "tap_quiet_logs": true,
     "browser_args": {
         "Chrome": {
-            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist" ]
+            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-angle=gl"]
         }
     }
 };
