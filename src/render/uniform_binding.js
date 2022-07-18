@@ -1,7 +1,6 @@
 // @flow
 
 import Color from '../style-spec/util/color.js';
-import assert from 'assert';
 import type Context from '../gl/context.js';
 
 export type UniformValues<Us: Object>
@@ -12,8 +11,6 @@ class Uniform<T> {
     location: ?WebGLUniformLocation;
     current: T;
     initialized: boolean;
-    // Only for debugging
-    program: WebGLProgram;
 
     constructor(context: Context) {
         this.gl = context.gl;
@@ -26,7 +23,6 @@ class Uniform<T> {
             this.initialized = true;
             this.program = program;
         }
-        assert(this.program === program);
         return !!this.location;
     }
 
