@@ -80,7 +80,29 @@ test('CustomSource', (t) => {
         source.onAdd(eventedParent);
     });
 
-    t.test('loadTile returns ImageData', (t) => {
+    t.test('loadTile throws', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const loadTile = t.spy(async () => {
+            throw new Error('Error loading tile');
+        });
+
+        const {source, sourceCache, eventedParent} = createSource(t, {loadTile});
+        source.loadTileData.callsFake(() => {});
+
+        eventedParent.on('error', (err) => {
+            t.equal(err.error.message, 'Error loading tile');
+            t.ok(loadTile.calledOnce, 'loadTile must be called');
+            t.equal(source.loadTileData.callCount, 0, 'loadTileData must not be called if loadTile throws');
+            t.equal(sourceCache._tiles[tileID.key].state, 'errored', 'tile must be in the `errored` state if `loadTile` throws');
+            t.end();
+        });
+
+        sourceCache.onAdd();
+        sourceCache._addTile(tileID);
+    });
+
+    t.test('loadTile resolves to ImageData', (t) => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         const expectedData = new window.ImageData(512, 512);
 
@@ -100,7 +122,8 @@ test('CustomSource', (t) => {
         eventedParent.on('data', (e) => {
             if (e.dataType === 'source' && e.tile) {
                 t.ok(loadTile.calledOnce, 'loadTile must be called');
-                t.equal(source.loadTileData.callCount, 1);
+                t.equal(source.loadTileData.callCount, 1, 'loadTileData must be called if loadTile resolves to ImageData');
+                t.equal(sourceCache._tiles[tileID.key].state, 'loaded', 'tile must be in the `loaded` state if `loadTile` resolves to ImageData');
                 t.end();
             }
         });
@@ -109,27 +132,21 @@ test('CustomSource', (t) => {
         sourceCache._addTile(tileID);
     });
 
-    t.test('loadTile returns null', (t) => {
+    t.test('loadTile resolves to undefined', (t) => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
-        const loadTile = t.spy((tile, {signal}) => {
-            const {x, y, z} = tileID.canonical;
-            t.deepEqual(tile, {x, y, z});
-            t.ok(signal, 'AbortSignal is present in loadTile');
-            return null;
+        const loadTile = t.spy(async () => {
+            return undefined;
         });
 
         const {source, sourceCache, eventedParent} = createSource(t, {loadTile});
-
-        source.loadTileData.callsFake((tile, actualData) => {
-            const expectedData = {width: source.tileSize, height: source.tileSize, data: null};
-            t.deepEqual(actualData, expectedData, 'loadTileData must be called with the empty image if loadTile returns null');
-        });
+        source.loadTileData.callsFake(() => {});
 
         eventedParent.on('data', (e) => {
             if (e.dataType === 'source' && e.tile) {
                 t.ok(loadTile.calledOnce, 'loadTile must be called');
-                t.equal(source.loadTileData.callCount, 1);
+                t.equal(source.loadTileData.callCount, 0, 'loadTileData must not be called if loadTile resolves to undefined');
+                t.equal(sourceCache._tiles[tileID.key].state, 'errored', 'tile must be in the `errored` state if `loadTile` resolves to undefined');
                 t.end();
             }
         });
@@ -149,22 +166,40 @@ test('CustomSource', (t) => {
         });
 
         const {source, sourceCache, eventedParent} = createSource(t, {loadTile});
-
         source.loadTileData.callsFake((tile, actualData) => {
             const expectedData = {width: source.tileSize, height: source.tileSize, data: null};
-            t.deepEqual(actualData, expectedData, 'loadTileData must be called with the empty image if loadTile resolves to null');
+            t.deepEqual(actualData, expectedData, 'loadTileData must be called with an empty tile data if `loadTile` resolves to null');
         });
 
         eventedParent.on('data', (e) => {
             if (e.dataType === 'source' && e.tile) {
                 t.ok(loadTile.calledOnce, 'loadTile must be called');
-                t.equal(source.loadTileData.callCount, 1);
+                t.equal(source.loadTileData.callCount, 1, 'loadTileData must be called if loadTile resolves to null');
+                t.equal(sourceCache._tiles[tileID.key].state, 'loaded', 'tile must be in the `loaded` state if `loadTile` resolves to null');
                 t.end();
             }
         });
 
         sourceCache.onAdd();
         sourceCache._addTile(tileID);
+    });
+
+    t.test('loadTile aborts', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const loadTile = t.spy(async (tile, {signal}) => {
+            t.ok(signal, 'AbortSignal is present in loadTile');
+            signal.addEventListener('abort', () => {
+                t.pass('AbortSignal was aborted');
+                t.end();
+            });
+        });
+
+        const {sourceCache} = createSource(t, {loadTile});
+
+        sourceCache.onAdd();
+        const tile = sourceCache._addTile(tileID);
+        sourceCache._abortTile(tile);
     });
 
     t.test('prepareTile does not change the tile data if it returns undefined', (t) => {
@@ -218,7 +253,7 @@ test('CustomSource', (t) => {
         sourceCache._addTile(tileID);
 
         t.ok(prepareTile.calledOnce, 'prepareTile must be called');
-        t.notOk(loadTile.calledOnce, 'loadTile must not be called');
+        t.notOk(loadTile.calledOnce, 'loadTile must be called');
         t.equal(sourceCache._tiles[tileID.key].state, 'loaded', 'tile must be in the loaded state');
         t.end();
     });
@@ -273,7 +308,7 @@ test('CustomSource', (t) => {
         const prepareTile = t.stub()
             // Do nothing on first call
             .onFirstCall().returns(undefined)
-            // Return original image on third call
+            // Return original image on second call
             .onSecondCall().returns(originalData);
 
         const {source, sourceCache, eventedParent} = createSource(t, {loadTile, prepareTile});

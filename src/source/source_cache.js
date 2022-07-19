@@ -1065,7 +1065,7 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
 }
 
 function isRasterType(type): boolean {
-    return type === 'raster' || type === 'image' || type === 'video';
+    return type === 'raster' || type === 'image' || type === 'video' || type === 'custom';
 }
 
 function tileBoundsX(id: CanonicalTileID, wrap: number): [number, number] {
