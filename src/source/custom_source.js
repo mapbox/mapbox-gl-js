@@ -124,7 +124,8 @@ function isRaster(data: any): boolean {
  * @instance
  * @name prepareTile
  * @param {{ z: number, x: number, y: number }} tile Tile name to prepare in the XYZ scheme format.
- * @returns {TextureImage} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
+ * @returns {TextureImage | undefined | null} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
+ *  If `prepareTile` returns `undefined`, a map will render a previous version of the tile in the tile’s space if there was any. If `prepareTile` resolves to `null`, a map will render nothing in the tile’s space.
  */
 
 /**
@@ -326,14 +327,12 @@ class CustomSource<T> extends Evented implements Source {
         const {x, y, z} = tile.tileID.canonical;
         const data = this._implementation.prepareTile({x, y, z});
 
-        // If the implementation returned `undefined` as tile data,
-        // return immideatly to indicate that we have no data for it.
-        // A SourceCache will trigger the tile loading.
-        // A map will render an overscaled parent tile in the tile’s space.
+        // If the implementation returned `undefined` as tile data, return immideatly to indicate that we have no new data for the tile.
+        // A map will render a previous version of the tile in the tile’s space if there was any.
         if (data === undefined) return null;
 
         // If the implementation returned `null` as tile data, mark the tile as `loading`.
-        // A map will render nothing in the tile’s space.
+        // A SourceCache will trigger the tile loading. A map will render nothing in the tile’s space.
         if (data === null) {
             tile.state = 'loading';
             return null;
