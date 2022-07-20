@@ -1426,6 +1426,9 @@ export class Terrain extends Elevation {
     }
 
     findDEMTileFor(tileID: OverscaledTileID): ?Tile {
+        if (this._mockSourceCache) {
+            return null;
+        }
         return this.enabled ? this._findTileCoveringTileID(tileID, this.sourceCache) : null;
     }
 

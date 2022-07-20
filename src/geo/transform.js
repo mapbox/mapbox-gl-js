@@ -1846,6 +1846,7 @@ class Transform {
         }
 
         this._projMatrixCache = {};
+        this._globeMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._pixelsToTileUnitsCache = {};
     }
