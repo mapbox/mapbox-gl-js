@@ -30,6 +30,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
 import type {Vec3} from 'gl-matrix';
+import { zoom } from 'd3';
 
 /**
  * A helper type: converts all Object type values to non-maybe types.
@@ -319,7 +320,7 @@ class Camera extends Evented {
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object): this {
         if (typeof zoom !== 'number'){
             this.fire(new ErrorEvent(new Error(
-                `Enter a Valid Number`)));
+                `zoom requires a number not ${zoom}`)));
             return;
         }
             
