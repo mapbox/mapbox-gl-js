@@ -1455,7 +1455,7 @@ class Camera extends Evented {
     flyTo(options: EasingOptions & {preloadOnly?: boolean}, eventData?: Object): this {
         if (eventData !== Object) {
             this.fire(new ErrorEvent(new Error(
-                `map.flyTo requires object datatype, not ${eventData}`)));
+                `map.flyTo requires object in first argument, ${typeof eventData} provided`)));
             return;
         }
         // Fall through to jumpTo if user has set prefers-reduced-motion
