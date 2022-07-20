@@ -1453,7 +1453,7 @@ class Camera extends Evented {
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo(options: EasingOptions & {preloadOnly?: boolean}, eventData?: Object): this {
-        if (eventData !== Object) {
+        if (typeof eventData !== 'object') {
             this.fire(new ErrorEvent(new Error(
                 `map.flyTo requires object in first argument, ${typeof eventData} provided`)));
             return;
