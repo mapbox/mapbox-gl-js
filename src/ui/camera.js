@@ -320,7 +320,7 @@ setZoom(zoom: number, eventData ?: Object): this {
 zoomTo(zoom: number, options: ?AnimationOptions, eventData ?: Object): this {
     if (zoom !== number) {
         this.fire(new ErrorEvent(new Error(
-            `Enter a Valid Number`)));
+            `Datatype of zoom in map.zoomTo should be a number, not ${zoom}`)));
         return;
     }
     return this.easeTo(extend({
@@ -1455,7 +1455,7 @@ flyTo(options: EasingOptions & { preloadOnly?: boolean }, eventData ?: Object): 
 
     if (eventData !== Object) {
         this.fire(new ErrorEvent(new Error(
-            `Valid object not present`)));
+            `map.flyTo requires object datatype, not ${eventData}`)));
         return;
     }
 
