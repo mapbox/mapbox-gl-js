@@ -92,9 +92,7 @@ export default class Globe extends Mercator {
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center} = tr;
-        const matrix = mat4.identity(new Float64Array(16));
-        const encode = globeNormalizeECEF(globeTileBounds(id));
-        mat4.multiply(matrix, matrix, encode);
+        const matrix = globeNormalizeECEF(globeTileBounds(id));
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
         mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
