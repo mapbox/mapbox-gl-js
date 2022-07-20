@@ -466,20 +466,20 @@ export function globeECEFNormalizationScale({min, max}: Aabb): number {
     return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
 }
 
+// avoid redundant allocations by sharing the same typed array for normalization/denormalization matrices;
+// we never use multiple instances of these at the same time, but this might change, so let's be careful here!
+const tempMatrix = new Float64Array(16);
+
 export function globeNormalizeECEF(bounds: Aabb): Float64Array {
-    const m = mat4.identity(new Float64Array(16));
     const scale = globeECEFNormalizationScale(bounds);
-    mat4.scale(m, m, [scale, scale, scale]);
-    mat4.translate(m, m, vec3.negate([], bounds.min));
-    return m;
+    const m = mat4.fromScaling(tempMatrix, [scale, scale, scale]);
+    return mat4.translate(m, m, vec3.negate([], bounds.min));
 }
 
 export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
-    const m = mat4.identity(new Float64Array(16));
+    const m = mat4.fromTranslation(tempMatrix, bounds.min);
     const scale = 1.0 / globeECEFNormalizationScale(bounds);
-    mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, [scale, scale, scale]);
-    return m;
+    return mat4.scale(m, m, [scale, scale, scale]);
 }
 
 export function globeECEFUnitsToPixelScale(worldSize: number): number {
