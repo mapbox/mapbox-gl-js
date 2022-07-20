@@ -317,7 +317,7 @@ class Camera extends Evented {
      * });
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object): this {
-        if (zoom !== number){
+        if (typeof zoom !== 'number'){
             this.fire(new ErrorEvent(new Error(
                 `Enter a Valid Number`)));
             return;
