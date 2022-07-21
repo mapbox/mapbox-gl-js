@@ -218,7 +218,7 @@ export function clearTileCache(callback?: (err: ?Error) => void) {
     const caches = getCaches();
     const promises = [];
     for (const cache in sharedCaches) {
-        promises.push(caches.delete(cache));
+        if (caches) promises.push(caches.delete(cache));
         delete sharedCaches[cache];
     }
 
