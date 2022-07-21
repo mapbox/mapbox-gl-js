@@ -110,20 +110,25 @@ const defaultTestemConfig = {
     }
 };
 
-const ciTestemConfig = {
+const launchTestemConfig = {
     "launch_in_ci": [ "Chrome" ],
     "reporter": "xunit",
     "report_file": ciOutputFile,
     "xunit_intermediate_output": true,
-    "tap_quiet_logs": true,
+    "tap_quiet_logs": true
+};
+
+const ciTestemConfig = {
     "browser_args": {
         "Chrome": {
-            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-angle=gl"]
+            "ci": [ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-gl=desktop" ]
         }
     }
 };
 
-const testemConfig = process.env.CI ? Object.assign({}, defaultTestemConfig, ciTestemConfig) : defaultTestemConfig;
+const testemConfig = Object.assign({}, defaultTestemConfig);
+if (process.env.LAUNCH) Object.assign(testemConfig, launchTestemConfig);
+if (process.env.CI) Object.assign(testemConfig, ciTestemConfig);
 
 module.exports = testemConfig;
 
