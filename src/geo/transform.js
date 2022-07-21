@@ -137,6 +137,7 @@ class Transform {
     _edgeInsets: EdgeInsets;
     _constraining: boolean;
     _projMatrixCache: {[_: number]: Float32Array};
+    _globeMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _pixelsToTileUnitsCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
