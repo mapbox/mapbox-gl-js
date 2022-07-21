@@ -262,7 +262,9 @@ jobs:
       - run:
           environment:
             CI: ${CI}
-          command: yarn run test-render
+          command: |
+            echo $CI
+            yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
