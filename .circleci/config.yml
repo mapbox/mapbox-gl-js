@@ -55,7 +55,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-ci:
+      - test-render:
           requires:
             - prepare
           filters:
@@ -119,7 +119,7 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render-ci
+            - test-render
             - test-render-prod
             - test-query
             - test-expressions
@@ -137,7 +137,7 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render-ci
+            - test-render
             - test-render-prod
             - test-query
             - test-expressions
@@ -253,7 +253,7 @@ jobs:
           at: ~/
       - run: yarn run test-unit
 
-  test-render-ci:
+  test-render:
     <<: *defaults
     steps:
       - attach_workspace:
