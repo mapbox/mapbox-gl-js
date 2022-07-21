@@ -259,7 +259,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      - run: yarn run test-render-ci
+      - run: yarn run test-render
+          environment:
+            CI: ${CI}
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -272,6 +274,8 @@ jobs:
           at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-prod
+          environment:
+            CI: ${CI}
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -284,6 +288,8 @@ jobs:
           at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-csp
+          environment:
+            CI: ${CI}
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -296,6 +302,8 @@ jobs:
           at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-query
+          environment:
+            CI: ${CI}
       - store_test_results:
           path: test/integration/query-tests
       - store_artifacts:
