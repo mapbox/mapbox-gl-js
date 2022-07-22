@@ -8,7 +8,7 @@ import {
 } from '../uniform_binding.js';
 
 import type Context from '../../gl/context.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type Color from '../../style-spec/util/color.js';
 
 export type DebugUniformsType = {|
@@ -18,11 +18,11 @@ export type DebugUniformsType = {|
     'u_overlay_scale': Uniform1f
 |};
 
-const debugUniforms = (context: Context, locations: UniformLocations): DebugUniformsType => ({
-    'u_color': new UniformColor(context, locations.u_color),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_overlay': new Uniform1i(context, locations.u_overlay),
-    'u_overlay_scale':  new Uniform1f(context, locations.u_overlay_scale),
+const debugUniforms = (context: Context): DebugUniformsType => ({
+    'u_color': new UniformColor(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_overlay': new Uniform1i(context),
+    'u_overlay_scale':  new Uniform1f(context),
 });
 
 const debugUniformValues = (matrix: Float32Array, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({

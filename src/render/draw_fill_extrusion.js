@@ -71,6 +71,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
+        if (painter.style.terrainSetForDrapingOnly()) {
+            baseDefines.push('TERRAIN');
+        }
     }
     if (ao[0] > 0) { // intensity
         baseDefines.push('FAUX_AO');

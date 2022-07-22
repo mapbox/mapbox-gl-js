@@ -11,7 +11,7 @@ import {
 import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
 import type Context from '../../gl/context.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type Transform from '../../geo/transform.js';
 import type Tile from '../../source/tile.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
@@ -47,31 +47,31 @@ export type LinePatternUniformsType = {|
 
 export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_TRIM_OFFSET';
 
-const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
-    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
-    'u_dash_image': new Uniform1i(context, locations.u_dash_image),
-    'u_gradient_image': new Uniform1i(context, locations.u_gradient_image),
-    'u_image_height': new Uniform1f(context, locations.u_image_height),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_scale': new Uniform3f(context, locations.u_scale),
-    'u_mix': new Uniform1f(context, locations.u_mix),
-    'u_alpha_discard_threshold': new Uniform1f(context, locations.u_alpha_discard_threshold),
-    'u_trim_offset': new Uniform2f(context, locations.u_trim_offset)
+const lineUniforms = (context: Context): LineUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_pixels_to_tile_units': new UniformMatrix2f(context),
+    'u_device_pixel_ratio': new Uniform1f(context),
+    'u_units_to_pixels': new Uniform2f(context),
+    'u_dash_image': new Uniform1i(context),
+    'u_gradient_image': new Uniform1i(context),
+    'u_image_height': new Uniform1f(context),
+    'u_texsize': new Uniform2f(context),
+    'u_scale': new Uniform3f(context),
+    'u_mix': new Uniform1f(context),
+    'u_alpha_discard_threshold': new Uniform1f(context),
+    'u_trim_offset': new Uniform2f(context)
 });
 
-const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_pixels_to_tile_units': new UniformMatrix2f(context, locations.u_pixels_to_tile_units),
-    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_units_to_pixels': new Uniform2f(context, locations.u_units_to_pixels),
-    'u_scale': new Uniform3f(context, locations.u_scale),
-    'u_fade': new Uniform1f(context, locations.u_fade),
-    'u_alpha_discard_threshold': new Uniform1f(context, locations.u_alpha_discard_threshold)
+const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_texsize': new Uniform2f(context),
+    'u_pixels_to_tile_units': new UniformMatrix2f(context),
+    'u_device_pixel_ratio': new Uniform1f(context),
+    'u_image': new Uniform1i(context),
+    'u_units_to_pixels': new Uniform2f(context),
+    'u_scale': new Uniform3f(context),
+    'u_fade': new Uniform1f(context),
+    'u_alpha_discard_threshold': new Uniform1f(context)
 });
 
 const lineUniformValues = (

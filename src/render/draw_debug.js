@@ -12,13 +12,17 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 
-export default drawDebug;
-
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
 const leftColor = new Color(0, 0, 1, 1);
 const rightColor = new Color(1, 0, 1, 1);
 const centerColor = new Color(0, 1, 1, 1);
+
+export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
+    for (let i = 0; i < coords.length; i++) {
+        drawDebugTile(painter, sourceCache, coords[i]);
+    }
+}
 
 export function drawDebugPadding(painter: Painter) {
     const padding = painter.transform.padding;
@@ -42,86 +46,7 @@ export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCach
     }
 }
 
-function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {
-    const size = 20;
-    const lineWidth = 2;
-    //Vertical line
-    drawDebugSSRect(painter, x - lineWidth / 2, y - size / 2, lineWidth, size, color);
-    //Horizontal line
-    drawDebugSSRect(painter, x - size / 2, y - lineWidth / 2, size, lineWidth, color);
-}
-
-function drawHorizontalLine(painter: Painter, y: number, lineWidth: number, color: Color) {
-    drawDebugSSRect(painter, 0, y  + lineWidth / 2, painter.transform.width,  lineWidth, color);
-}
-
-function drawVerticalLine(painter: Painter, x: number, lineWidth: number, color: Color) {
-    drawDebugSSRect(painter, x - lineWidth / 2, 0, lineWidth,  painter.transform.height, color);
-}
-
-function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
-    const context = painter.context;
-    const gl = context.gl;
-
-    gl.enable(gl.SCISSOR_TEST);
-    gl.scissor(x * browser.devicePixelRatio, y * browser.devicePixelRatio, width * browser.devicePixelRatio, height * browser.devicePixelRatio);
-    context.clear({color});
-    gl.disable(gl.SCISSOR_TEST);
-}
-
-function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
-    for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
-    }
-}
-
-function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
-    const context = painter.context;
-    const gl = context.gl;
-
-    const posMatrix = coord.projMatrix;
-    const program = painter.useProgram('debug');
-    const tile = sourceCache.getTileByID(coord.key);
-    if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
-
-    const depthMode = DepthMode.disabled;
-    const stencilMode = StencilMode.disabled;
-    const colorMode = painter.colorModeForRenderPass();
-    const id = '$debug';
-
-    context.activeTexture.set(gl.TEXTURE0);
-    // Bind the empty texture for drawing outlines
-    painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-    const queryViz = tile.queryGeometryDebugViz;
-    const boundsViz = tile.queryBoundsDebugViz;
-
-    if (queryViz && queryViz.vertices.length > 0) {
-        queryViz.lazyUpload(context);
-        const vertexBuffer = queryViz.vertexBuffer;
-        const indexBuffer = queryViz.indexBuffer;
-        const segments = queryViz.segments;
-        if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                debugUniformValues(posMatrix, queryViz.color), id,
-                vertexBuffer, indexBuffer, segments);
-        }
-    }
-
-    if (boundsViz && boundsViz.vertices.length > 0) {
-        boundsViz.lazyUpload(context);
-        const vertexBuffer = boundsViz.vertexBuffer;
-        const indexBuffer = boundsViz.indexBuffer;
-        const segments = boundsViz.segments;
-        if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                debugUniformValues(posMatrix, boundsViz.color), id,
-                vertexBuffer, indexBuffer, segments);
-        }
-    }
-}
-
-function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
+function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -177,6 +102,79 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegments,
         null, null, null, [tile._globeTileDebugTextBuffer]);
+}
+
+function drawCrosshair(painter: Painter, x: number, y: number, color: Color) {
+    const size = 20;
+    const lineWidth = 2;
+    //Vertical line
+    drawDebugSSRect(painter, x - lineWidth / 2, y - size / 2, lineWidth, size, color);
+    //Horizontal line
+    drawDebugSSRect(painter, x - size / 2, y - lineWidth / 2, size, lineWidth, color);
+}
+
+function drawHorizontalLine(painter: Painter, y: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, 0, y  + lineWidth / 2, painter.transform.width,  lineWidth, color);
+}
+
+function drawVerticalLine(painter: Painter, x: number, lineWidth: number, color: Color) {
+    drawDebugSSRect(painter, x - lineWidth / 2, 0, lineWidth,  painter.transform.height, color);
+}
+
+function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, height: number, color: Color) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(x * browser.devicePixelRatio, y * browser.devicePixelRatio, width * browser.devicePixelRatio, height * browser.devicePixelRatio);
+    context.clear({color});
+    gl.disable(gl.SCISSOR_TEST);
+}
+
+function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    const posMatrix = coord.projMatrix;
+    const program = painter.useProgram('debug');
+    const tile = sourceCache.getTileByID(coord.key);
+    if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
+
+    const depthMode = DepthMode.disabled;
+    const stencilMode = StencilMode.disabled;
+    const colorMode = painter.colorModeForRenderPass();
+    const id = '$debug';
+
+    context.activeTexture.set(gl.TEXTURE0);
+    // Bind the empty texture for drawing outlines
+    painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+    const queryViz = tile.queryGeometryDebugViz;
+    const boundsViz = tile.queryBoundsDebugViz;
+
+    if (queryViz && queryViz.vertices.length > 0) {
+        queryViz.lazyUpload(context);
+        const vertexBuffer = queryViz.vertexBuffer;
+        const indexBuffer = queryViz.indexBuffer;
+        const segments = queryViz.segments;
+        if (vertexBuffer != null && indexBuffer != null && segments != null) {
+            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                debugUniformValues(posMatrix, queryViz.color), id,
+                vertexBuffer, indexBuffer, segments);
+        }
+    }
+
+    if (boundsViz && boundsViz.vertices.length > 0) {
+        boundsViz.lazyUpload(context);
+        const vertexBuffer = boundsViz.vertexBuffer;
+        const indexBuffer = boundsViz.indexBuffer;
+        const segments = boundsViz.segments;
+        if (vertexBuffer != null && indexBuffer != null && segments != null) {
+            program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+                debugUniformValues(posMatrix, boundsViz.color), id,
+                vertexBuffer, indexBuffer, segments);
+        }
+    }
 }
 
 function drawTextToOverlay(painter: Painter, text: string) {

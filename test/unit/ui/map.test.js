@@ -421,6 +421,26 @@ test('Map', (t) => {
             });
         });
 
+        t.test('Toggling globe and mercator projections at high zoom levels returns expected `map.getProjection()` result', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            t.spy(map.painter, 'clearBackgroundTiles');
+
+            map.on('load', () => {
+                map.setZoom(7);
+                t.equal(map.getProjection().name, 'mercator');
+
+                map.setProjection('globe');
+                t.equal(map.getProjection().name, 'globe');
+
+                map.setZoom(4);
+                t.equal(map.getProjection().name, 'globe');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+
+                t.end();
+            });
+        });
+
         t.test('https://github.com/mapbox/mapbox-gl-js/issues/11352', (t) => {
             const styleSheet = new window.CSSStyleSheet();
             styleSheet.insertRule('.mapboxgl-canary { background-color: rgb(250, 128, 114); }', 0);
@@ -1900,20 +1920,20 @@ test('Map', (t) => {
                 // Defaults to style projection
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
 
                 // Runtime api overrides stylesheet projection
                 map.setProjection('albers');
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'albers');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
                 t.equal(map.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 3);
 
                 t.end();
             });

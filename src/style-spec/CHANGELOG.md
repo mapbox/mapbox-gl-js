@@ -1,4 +1,16 @@
+## 13.25.0
+
+### Features ✨
+
+* Extend atmospheric `fog` with three new style specification properties: `high-color`, `space-color` and `star-intensity` to allow the design of atmosphere around the globe and night skies. ([#11590](https://github.com/mapbox/mapbox-gl-js/pull/11590))
+* Add a new line layer paint property in the style specification: `line-trim-offset` that can be used to create a custom fade out with improved update performance over `line-gradient`. ([#11570](https://github.com/mapbox/mapbox-gl-js/pull/11570))
+
+### 🐞 Bug fixes
+
+* Add `source` field requirement to terrain exaggeration in the style specification.  ([#11664](https://github.com/mapbox/mapbox-gl-js/pull/11664))
+
 ## 13.24.0
+
 ### 🐞 Bug fixes
 
 * Fix error on `gl-style-validate` script. ([#11538](https://github.com/mapbox/mapbox-gl-js/pull/11538))
@@ -6,6 +18,7 @@
 * Fix error on some valid `filter` expressions. ([#11475](https://github.com/mapbox/mapbox-gl-js/pull/11475))
 
 ## 13.23.1
+
 ### ✨ Features and improvements
 
 * Improve `coalesce` expressions to return a `ResolvedImage` when images are missing. ([#11371](https://github.com/mapbox/mapbox-gl-js/pull/11371))

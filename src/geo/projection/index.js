@@ -38,4 +38,3 @@ export function getProjection(config: ProjectionSpecification): Projection {
 
     throw new Error(`Invalid projection name: ${config.name}`);
 }
-
