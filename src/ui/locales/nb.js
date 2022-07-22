@@ -11,7 +11,7 @@ const locale = {
     "Map.Title": "Kart",
     "NavigationControl.ResetBearing": "Tilbakestill peiling mot nord",
     "NavigationControl.ZoomIn": "Zoom inn",
-    "NavigationControl.ZoomOut": "Zoome ut",
+    "NavigationControl.ZoomOut": "Zoom ut",
     "ScrollZoomBlocker.CtrlMessage": "Bruk ctrl + rull for å zoome kartet",
     "ScrollZoomBlocker.CmdMessage": "Bruk ⌘ + rull for å zoome kartet",
     "TouchPanBlocker.Message": "Bruk to fingre for å flytte kartet"
