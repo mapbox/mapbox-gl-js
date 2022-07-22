@@ -3736,7 +3736,9 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
-            "android": "6.6.0"
+            "android": "6.6.0",
+            "ios": "4.1.0",
+            "macos": "0.8.0"
           }
         }
       },
