@@ -462,7 +462,9 @@ class FillExtrusionBucket implements Bucket {
 
                     if (metadata && isPolygon) metadata.currentPolyCount.top++;
                     if (isEdgeOutsideBounds(p1, p0, bounds)) {
-                        na = p2.sub(p1)._perp()._unit();
+                        if (edgeRadius) {
+                            na = p2.sub(p1)._perp()._unit();
+                        }
                         continue;
                     }
                     if (metadata) metadata.append(p1, p0);
