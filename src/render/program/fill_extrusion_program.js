@@ -62,7 +62,6 @@ export type FillExtrusionPatternUniformsType = {|
     'u_opacity': Uniform1f
 |};
 
-
 const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_lightpos': new Uniform3f(context),
