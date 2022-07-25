@@ -416,7 +416,7 @@ class HandlerManager {
         this._changes = [];
     }
 
-    _eventEnded(type) {
+    _eventEnded(type: string): boolean {
         const event = this._eventsInProgress[type];
         return event && !this._handlersById[event.handlerName].isActive();
     }
