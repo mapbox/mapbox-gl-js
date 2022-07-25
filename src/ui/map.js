@@ -1196,11 +1196,10 @@ class Map extends Camera {
         const projection = tr.projection.name;
         let projectionHasChanged;
 
-        if (projection.name === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+        if (projection === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
             tr.setMercatorFromTransition();
             projectionHasChanged = true;
-
-        } else if (projection.name === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
+        } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
             tr.setProjection({name: 'globe'});
             projectionHasChanged = true;
         }

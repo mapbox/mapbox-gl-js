@@ -258,14 +258,13 @@ class Transform {
 
     setMercatorFromTransition(): boolean {
         const oldProjection = this.projection.name;
-
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
         this.projection = getProjection({name: 'mercator'});
-
         const projectionHasChanged = oldProjection !== 'mercator';
-        if (projectionHasChanged) this._calcMatrices();
-
+        if (projectionHasChanged) {
+            this._calcMatrices();
+        }
         return projectionHasChanged;
     }
 
