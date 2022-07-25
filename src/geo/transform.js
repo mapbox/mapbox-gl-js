@@ -261,7 +261,7 @@ class Transform {
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
         this.projection = getProjection({name: 'mercator'});
-        const projectionHasChanged = oldProjection !== 'mercator';
+        const projectionHasChanged = oldProjection !== this.projection.name;
         if (projectionHasChanged) {
             this._calcMatrices();
         }
