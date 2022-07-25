@@ -1828,9 +1828,9 @@ test('Map', (t) => {
                     t.equal(map.transform.mercatorFromTransition, true);
                     t.equal(map.transform._calcMatrices.callCount, 3);
                     t.end();
-                })
-            })
-        })
+                });
+            });
+        });
 
         t.test('Changing zoom on globe does not clear tiles', (t) => {
             const map = createMap(t, {projection: 'globe'});
