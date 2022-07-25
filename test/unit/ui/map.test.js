@@ -1819,15 +1819,24 @@ test('Map', (t) => {
 
         t.test('Crossing globe-to-mercator zoom threshold sets mercator transition and calculates matrices', (t) => {
             const map = createMap(t, {projection: 'globe'});
+
             map.on('load', () => {
+
                 t.spy(map.transform, 'setMercatorFromTransition');
                 t.spy(map.transform, '_calcMatrices');
+
+                t.equal(map.transform.setMercatorFromTransition.callCount, 0);
+                t.equal(map.transform.mercatorFromTransition, false);
+                t.equal(map.transform._calcMatrices.callCount, 0);
+
                 map.setZoom(7);
+
                 map.once('render', () => {
                     t.equal(map.transform.setMercatorFromTransition.callCount, 1);
                     t.equal(map.transform.mercatorFromTransition, true);
                     t.equal(map.transform._calcMatrices.callCount, 3);
                     t.end();
+
                 });
             });
         });
