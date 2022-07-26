@@ -721,17 +721,14 @@ class Painter {
     colorForLayerPoint(layerId: string, point: PointLike) {
 
         const layer = this.style._layers[layerId];
-        const sourceCache = this.style._getLayerSourceCache(layer);
+        if (layer.type !== 'raster') { return }
 
-        const layerIds = [layerId];
+        const sourceCache = this.style._getLayerSourceCache(layer);
 
         sourceCache.prepare(this.context);
 
         const coordsAscending: Array<OverscaledTileID> = sourceCache.getVisibleCoordinates();
         const coordsDescending: Array<OverscaledTileID> = coordsAscending.slice().reverse();
-        const coordsDescendingSymbol: Array<OverscaledTileID> = sourceCache
-                .getVisibleCoordinates(true)
-                .reverse();
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
         // this.context.bindFramebuffer.set(null);
@@ -747,14 +744,11 @@ class Painter {
 
         this.renderPass = "translucent";
 
-
         // For symbol layers in the translucent pass, we add extra tiles to the renderable set
         // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
         // separate clipping masks
         const coords = sourceCache
-            ? (layer.type === "symbol"
-                  ? coordsDescendingSymbol
-                  : coordsDescending)
+            ? coordsDescending
             : undefined;
 
         this._renderTileClippingMasks(
@@ -767,8 +761,8 @@ class Painter {
         const gl = this.context.gl;
         var pixel = new Uint8Array(4);
         gl.readPixels(
-            point.x,
-            this.height - point.y,
+            point.x * window.devicePixelRatio,
+            this.height - point.y * window.devicePixelRatio,
             1,
             1,
             gl.RGBA,
