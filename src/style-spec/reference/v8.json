@@ -886,7 +886,7 @@
       "doc": "Radius of a fill extrusion edge in meters. If not zero, rounds extrusion edges for a smoother appearance.",
       "sdk-support": {
         "basic functionality": {
-          "js": "v1.9.0"
+          "js": "v2.10.0"
         }
       },
       "property-type": "constant"
@@ -4687,7 +4687,7 @@
       "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.8.3",
+          "js": "2.10.0",
           "android": "10.7.0",
           "ios": "10.7.0"
         }
