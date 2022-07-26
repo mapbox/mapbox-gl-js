@@ -14,7 +14,7 @@ import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type {BucketParameters} from '../../data/bucket.js';
-import type {PaintProps} from './fill_extrusion_style_layer_properties.js';
+import type {PaintProps, LayoutProps} from './fill_extrusion_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
@@ -25,6 +25,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
+    layout: PossiblyEvaluated<LayoutProps>;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
