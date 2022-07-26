@@ -68,7 +68,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     if (isGlobeProjection) {
-        tile._makeGlobeTileDebugBuffers(painter.context, painter.transform.projection);
+        tile._makeGlobeTileDebugBuffers(painter.context, painter.transform);
     } else {
         tile._makeDebugTileBoundsBuffers(painter.context, painter.transform.projection);
     }
