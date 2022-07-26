@@ -44,9 +44,20 @@ function getCacheName(url: string) {
     return cacheName;
 }
 
+function getCaches() {
+    try {
+        return window.caches;
+    } catch (e) {
+        // <iframe sandbox> triggers exceptions when trying to access window.caches
+        // Chrome: DOMException, Safari: SecurityError, Firefox: NS_ERROR_FAILURE
+        // Seems more robust to catch all exceptions instead of trying to match only these.
+    }
+}
+
 function cacheOpen(cacheName: string) {
-    if (window.caches && !sharedCaches[cacheName]) {
-        sharedCaches[cacheName] = window.caches.open(cacheName);
+    const caches = getCaches();
+    if (caches && !sharedCaches[cacheName]) {
+        sharedCaches[cacheName] = caches.open(cacheName);
     }
 }
 
@@ -204,9 +215,10 @@ export function enforceCacheSizeLimit(limit: number) {
 }
 
 export function clearTileCache(callback?: (err: ?Error) => void) {
+    const caches = getCaches();
     const promises = [];
     for (const cache in sharedCaches) {
-        promises.push(window.caches.delete(cache));
+        if (caches) promises.push(caches.delete(cache));
         delete sharedCaches[cache];
     }
 
