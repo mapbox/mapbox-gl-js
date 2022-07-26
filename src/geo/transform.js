@@ -260,8 +260,12 @@ class Transform {
         const oldProjection = this.projection.name;
         this.mercatorFromTransition = true;
         this.projectionOptions = {name: 'mercator'};
-        this.projection = getProjection(this.projectionOptions);
-        return (oldProjection !== 'mercator');
+        this.projection = getProjection({name: 'mercator'});
+        const projectionHasChanged = oldProjection !== this.projection.name;
+        if (projectionHasChanged) {
+            this._calcMatrices();
+        }
+        return projectionHasChanged;
     }
 
     get minZoom(): number { return this._minZoom; }
