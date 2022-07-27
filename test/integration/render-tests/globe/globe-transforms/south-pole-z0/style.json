@@ -3,14 +3,11 @@
   "metadata": {
     "test": {
       "allowed": 0.001,
-      "width": 512,
-      "height": 512,
-      "operations": [
-        ["setProjection", "globe"],
-        ["wait"]
-      ]
+      "width": 256,
+      "height": 256
     }
   },
+  "projection": {"name": "globe"},
   "center": [
     0,
     -90.0
