@@ -23,7 +23,7 @@ import {
     getGridMatrix,
     tileCornersToBounds,
     globeNormalizeECEF,
-    globeTileBounds,
+    tileAABBinECEF,
     globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
@@ -203,7 +203,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const tileBounds = tileCornersToBounds(coord.canonical);
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod);
-            const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
+            const normalizeMatrix = globeNormalizeECEF(tileAABBinECEF(coord.canonical));
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
@@ -248,7 +248,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
-                const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
+                const normalizeMatrix = globeNormalizeECEF(tileAABBinECEF(coord.canonical));
 
                 const drawPole = (program, vertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,

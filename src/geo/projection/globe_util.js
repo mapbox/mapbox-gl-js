@@ -176,29 +176,56 @@ export function localExtremum(arc: Arc, dim: number): ?number {
     return slerp(arc.a[dim], arc.b[dim], arc.angle, clamp(t, 0.0, 1.0)) + arc.center[dim];
 }
 
-export function globeTileBounds(id: CanonicalTileID): Aabb {
+// Return an AABB in ECEF from a tile. Does not take into account the Mercator transiton.
+export function tileAABBinECEF(id: CanonicalTileID): Aabb {
     if (id.z <= 1) {
         return GLOBE_LOW_ZOOM_TILE_AABBS[id.z + id.y * 2 + id.x];
     }
 
-    // After zoom 1 surface function is monotonic for all tile patches
-    // => it is enough to project corner points
-    const bounds = tileCornersToBounds(id);
-    const corners = boundsToECEF(bounds);
+    // eslint-disable-next-line no-warning-comments
+    // TODO: consider a lookup table / caching for trigonometric results
 
-    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
-    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
-
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
-
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
+    // returns distance from the equator in radians, with positive values to the south.
+    function angleFromMercatorY(y: number) {
+        return Math.PI / 2 - 2 * Math.atan(Math.exp((1 - y * 2) * Math.PI));
     }
 
+    const scale = 1.0 / (1 << id.z);
+    const northAngle = angleFromMercatorY(id.y * scale);
+    const southAngle = angleFromMercatorY((id.y + 1) * scale);
+    const northExtreme = GLOBE_RADIUS * Math.sin(northAngle);
+    const southExtreme = GLOBE_RADIUS * Math.sin(southAngle);
+
+    const westMercator = id.x * scale;
+    const westAngle = westMercator * Math.PI * 2;
+    const eastAngle = (id.x + 1) * scale * Math.PI * 2;
+
+    // Radii of the lattitude lines at tile top and bottom
+    const northRadius = Math.cos(northAngle);
+    const southRadius = Math.cos(southAngle);
+
+    // Each corner defines an extreme in one dimension. Which extreme depends on the quadrant the tile is in.
+    let xExtremes, zExtremes;
+    let alternatingQuadrant = westMercator >= .75 || (westMercator >= .25 && westMercator < .5);
+    if (id.y * scale >= .5) {
+        alternatingQuadrant = !alternatingQuadrant;
+    }
+    if (alternatingQuadrant) {
+        xExtremes = [-Math.sin(eastAngle) * northRadius, -Math.sin(westAngle) * southRadius];
+        zExtremes = [-Math.cos(westAngle) * northRadius, -Math.cos(eastAngle) * southRadius];
+    } else {
+        xExtremes = [-Math.sin(eastAngle) * southRadius, -Math.sin(westAngle) * northRadius];
+        zExtremes = [-Math.cos(westAngle) * southRadius, -Math.cos(eastAngle) * northRadius];
+    }
+    if (xExtremes[0] > xExtremes[1]) {
+        xExtremes.reverse();
+    }
+    if (zExtremes[0] > zExtremes[1]) {
+        zExtremes.reverse();
+    }
+
+    const bMin = [xExtremes[0] * GLOBE_RADIUS, northExtreme, zExtremes[0] * GLOBE_RADIUS];
+    const bMax = [xExtremes[1] * GLOBE_RADIUS, southExtreme, zExtremes[1] * GLOBE_RADIUS];
     return new Aabb(bMin, bMax);
 }
 
@@ -211,6 +238,7 @@ function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
     }
 }
 
+// Compute the tile AABB in world space. We render the tile if AABB intersects with the camera frusutum.
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
 
@@ -222,7 +250,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     if (tileId.z <= 1) {
         // Compute minimum bounding box that fully encapsulates
         // transformed corners of the local aabb
-        const aabb = globeTileBounds(tileId);
+        const aabb = tileAABBinECEF(tileId);
         updateCorners(cornerMin, cornerMax, aabb.getCorners(), m, scale);
         return new Aabb(cornerMin, cornerMax);
     }
@@ -407,7 +435,7 @@ export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radiu
 
 export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number, number, number] {
     const origin = [0, 0, 0];
-    const bounds = globeTileBounds(id.canonical);
+    const bounds = tileAABBinECEF(id.canonical);
     const normalizationMatrix = globeNormalizeECEF(bounds);
     vec3.transformMat4(origin, origin, normalizationMatrix);
     vec3.transformMat4(origin, origin, tileMatrix);
@@ -442,7 +470,7 @@ export function globeECEFUnitsToPixelScale(worldSize: number): number {
 
 export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID): number {
     const ecefPerPixel = EXTENT / (TILE_SIZE * Math.pow(2, zoom));
-    const normCoeff = globeECEFNormalizationScale(globeTileBounds(id));
+    const normCoeff = globeECEFNormalizationScale(tileAABBinECEF(id));
 
     return ecefPerPixel * normCoeff;
 }
@@ -475,9 +503,11 @@ export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): F
     // map aligned label space. Whithout this logic map aligned symbols
     // would appear larger than intended.
     const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._pixelsPerMercatorPixel, 0, 0);
-    return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
+    return mat4.multiply(m, m, globeDenormalizeECEF(tileAABBinECEF(id)));
 }
 
+// Create a matrix that converts from Mercator position (with z 0) to world/pixel space
+// This is needed for interpolating during globe to Mercator transition.
 export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
     const zScale = tr.pixelsPerMeter;
     const ws = zScale / mercatorZfromAltitude(1, tr.center.lat);
@@ -491,11 +521,6 @@ export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
-}
-
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
-    const decode = globeDenormalizeECEF(globeTileBounds(id));
-    return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
 export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Float32Array {

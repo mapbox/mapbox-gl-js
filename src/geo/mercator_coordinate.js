@@ -32,8 +32,7 @@ export function lngFromMercatorX(x: number): number {
 }
 
 export function latFromMercatorY(y: number): number {
-    const y2 = 180 - y * 360;
-    return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
+    return 360 / Math.PI * Math.atan(Math.exp((1 - y * 2) * Math.PI)) - 90;
 }
 
 export function altitudeFromMercatorZ(z: number, y: number): number {

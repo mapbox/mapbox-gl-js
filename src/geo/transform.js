@@ -95,7 +95,7 @@ class Transform {
     // Inverse of glCoordMatrix, from NDC to screen coordinates, [-1, 1] x [-1, 1] --> [0, w] x [h, 0]
     labelPlaneMatrix: Float32Array;
 
-    // globe coordinate transformation matrix
+    // Transform from ECEF to world/pixel coordinates
     globeMatrix: Float64Array;
 
     globeCenterInViewSpace: [number, number, number];

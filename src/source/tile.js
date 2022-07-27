@@ -56,7 +56,7 @@ import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
-import {globeTileBounds,  globeNormalizeECEF, tileCoordToECEF} from '../geo/projection/globe_util.js';
+import {tileAABBinECEF,  globeNormalizeECEF, tileCoordToECEF} from '../geo/projection/globe_util.js';
 import {vec3} from 'gl-matrix';
 import type {TextureImage} from '../render/texture.js';
 
@@ -698,7 +698,7 @@ class Tile {
         if (this._globeTileDebugBorderBuffer || this._globeTileDebugTextBuffer || !projection || projection.name !== 'globe') return;
 
         const id = this.tileID.canonical;
-        const bounds = globeTileBounds(id);
+        const bounds = tileAABBinECEF(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
 
         this._makeGlobeTileDebugBorderBuffer(context, id, normalizationMatrix);

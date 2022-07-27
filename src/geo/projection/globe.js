@@ -14,7 +14,7 @@ import {
     GLOBE_METERS_TO_ECEF,
     GLOBE_SCALE_MATCH_LATITUDE,
     latLngToECEF,
-    globeTileBounds,
+    tileAABBinECEF,
     globeNormalizeECEF,
     globeDenormalizeECEF,
     globeECEFNormalizationScale,
@@ -43,7 +43,7 @@ export default class Globe extends Mercator {
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x: number, y: number, z: number} {
         const pos = tileCoordToECEF(x, y, id);
-        const bounds = globeTileBounds(id);
+        const bounds = tileAABBinECEF(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
@@ -86,13 +86,13 @@ export default class Globe extends Mercator {
     }
 
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
-        const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
+        const decode = globeDenormalizeECEF(tileAABBinECEF(id.canonical));
         return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
     createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center} = tr;
-        const matrix = globeNormalizeECEF(globeTileBounds(id));
+        const matrix = globeNormalizeECEF(tileAABBinECEF(id));
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
         mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
@@ -140,6 +140,6 @@ export default class Globe extends Mercator {
     }
 
     upVectorScale(id: CanonicalTileID): ElevationScale {
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id))};
+        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(tileAABBinECEF(id))};
     }
 }
