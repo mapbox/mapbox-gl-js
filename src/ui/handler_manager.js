@@ -23,7 +23,7 @@ import window from '../util/window.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
-import MercatorCoordinate, {latFromMercatorY, mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate.js';
 
 import type {Vec3} from 'gl-matrix';
 
@@ -522,28 +522,31 @@ class HandlerManager {
         // Compute Mercator 3D camera offset based on screenspace panDelta
         const panVec = [0, 0, 0];
         if (panDelta) {
-            assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
+            if (tr.projection.name === 'mercator') {
+                assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
+                const startPoint = this._trackingEllipsoid.projectRay(tr.screenPointToMercatorRay(around).dir);
+                const endPoint = this._trackingEllipsoid.projectRay(tr.screenPointToMercatorRay(around.sub(panDelta)).dir);
+                panVec[0] = endPoint[0] - startPoint[0];
+                panVec[1] = endPoint[1] - startPoint[1];
 
-            const startPoint = tr.pointCoordinate(around);
-            if (tr.projection.name === 'globe') {
-                const startLat = latFromMercatorY(startPoint.y);
-                const centerLat = tr.center.lat;
-
-                // Compute pan vector directly in pixel coordinates for the globe.
-                // Rotate the globe a bit faster when dragging near poles to compensate
-                // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
-                const scale = Math.min(mercatorZfromAltitude(1, startLat) / mercatorZfromAltitude(1, centerLat), 2);
-
-                panDelta = panDelta.rotate(-tr.angle);
-
-                panVec[0] = -panDelta.x / tr.worldSize * scale;
-                panVec[1] = -panDelta.y / tr.worldSize * scale;
             } else {
-                const endPoint = tr.pointCoordinate(around.sub(panDelta));
+                const startPoint = tr.pointCoordinate(around);
+                if (tr.projection.name === 'globe') {
+                    // Compute pan vector directly in pixel coordinates for the globe.
+                    // Rotate the globe a bit faster when dragging near poles to compensate
+                    // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
+                    panDelta = panDelta.rotate(-tr.angle);
+                    const scale = tr._pixelsPerMercatorPixel / tr.worldSize;
+                    panVec[0] = -panDelta.x * mercatorScale(latFromMercatorY(startPoint.y)) * scale;
+                    panVec[1] = -panDelta.y * mercatorScale(tr.center.lat) * scale;
 
-                if (startPoint && endPoint) {
-                    panVec[0] = endPoint.x - startPoint.x;
-                    panVec[1] = endPoint.y - startPoint.y;
+                } else {
+                    const endPoint = tr.pointCoordinate(around.sub(panDelta));
+
+                    if (startPoint && endPoint) {
+                        panVec[0] = endPoint.x - startPoint.x;
+                        panVec[1] = endPoint.y - startPoint.y;
+                    }
                 }
             }
         }
