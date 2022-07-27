@@ -101,11 +101,11 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / tr.zoom)) * 0.5;
-    let tileIdText = coord.canonical.toString();
+    let tileLabel = coord.canonical.toString();
     if (coord.overscaledZ !== coord.canonical.z) {
-        tileIdText += ` => ${coord.overscaledZ}`;
+        tileLabel += ` => ${coord.overscaledZ}`;
     }
-    const tileLabel = `${tileIdText} ${tileSizeKb}kb`;
+    tileLabel += ` ${tileSizeKb}kb`;
     drawTextToOverlay(painter, tileLabel);
 
     const debugTextBuffer = tile._tileDebugTextBuffer || painter.debugBuffer;
