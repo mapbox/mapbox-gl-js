@@ -3,8 +3,8 @@
   "metadata": {
     "test": {
       "allowed": 0.001,
-      "width": 512,
-      "height": 512,
+      "width": 256,
+      "height": 256,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
@@ -13,9 +13,9 @@
   },
   "center": [
     0,
-    80.0
+    90.0
   ],
-  "zoom": 0.8,
+  "zoom": 0,
   "pitch": 0.0,
   "sources": {
     "satellite": {
