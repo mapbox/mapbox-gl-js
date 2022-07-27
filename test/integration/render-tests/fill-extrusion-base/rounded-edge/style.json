@@ -6,28 +6,6 @@
     }
   },
   "sources": {
-    "rect": {
-      "type": "geojson",
-      "data": {
-        "type": "FeatureCollection",
-        "features": [
-          {
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [[
-                [ -0.0004, -0.0004 ],
-                [ -0.0004, 0.0000 ],
-                [ 0.0004, 0.0004 ],
-                [ 0.0004, -0.0000 ],
-                [ -0.0004, -0.0004 ]
-              ]]
-            }
-          }
-        ]
-      }
-    },
     "geojson": {
       "type": "geojson",
       "data": {
@@ -65,72 +43,6 @@
                 ]
               ]
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "property": 20
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0002,
-                    0
-                  ],
-                  [
-                    0,
-                    0.0002
-                  ],
-                  [
-                    0.0002,
-                    0
-                  ],
-                  [
-                    0,
-                    -0.0002
-                  ],
-                  [
-                    -0.0002,
-                    0
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "property": 10
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0001,
-                    -0.0001
-                  ],
-                  [
-                    -0.0001,
-                    0.0001
-                  ],
-                  [
-                    0.0001,
-                    0.0001
-                  ],
-                  [
-                    0.0001,
-                    -0.0001
-                  ],
-                  [
-                    -0.0001,
-                    -0.0001
-                  ]
-                ]
-              ]
-            }
           }
         ]
       }
@@ -140,14 +52,6 @@
   "bearing": 45,
   "zoom": 18,
   "layers": [
-    {
-      "id": "rect",
-      "type": "fill",
-      "source": "rect",
-      "paint": {
-        "fill-color": "rgba(127,127,127,1)"
-      }
-    },
     {
       "id": "extrusion",
       "type": "fill-extrusion",
