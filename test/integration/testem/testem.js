@@ -142,7 +142,6 @@ if (process.env.CI) {
     // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
     const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
     Object.assign(testemConfig, angleTestemConfig);
-s
 }
 
 module.exports = testemConfig;
