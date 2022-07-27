@@ -138,10 +138,11 @@ if (process.env.CI) {
     Object.assign(testemConfig, ciTestemConfig);
 
 } else if (process.env.RENDER && process.env.USE_ANGLE && ['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE)) {
-    // Allow setting chrome flag `--use-angle` for local development on render/query tests.
+    // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
     // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
     const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
     Object.assign(testemConfig, angleTestemConfig);
+s
 }
 
 module.exports = testemConfig;
