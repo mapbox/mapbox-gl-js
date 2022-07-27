@@ -11,6 +11,8 @@ import browser from '../util/browser.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
+import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {mat4} from 'gl-matrix';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
@@ -48,12 +50,24 @@ export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCach
 
 function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID) {
     const context = painter.context;
+    const tr = painter.transform;
     const gl = context.gl;
 
-    const isGlobeProjection = painter.transform.projection.name === 'globe';
+    const isGlobeProjection = tr.projection.name === 'globe';
     const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
 
-    const posMatrix = coord.projMatrix;
+    let posMatrix = coord.projMatrix;
+
+    if (isGlobeProjection && globeToMercatorTransition(tr.zoom) > 0) {
+        // We use a custom tile matrix here in order to handle the globe-to-mercator transition
+        // the following is equivalent to transform.calculatePosMatrix,
+        // except we use transitionTileAABBinECEF instead of globeTileBounds to account for the transition.
+        const bounds = transitionTileAABBinECEF(coord.canonical, tr);
+        const decode = globeDenormalizeECEF(bounds);
+        posMatrix = mat4.multiply(new Float32Array(16), tr.globeMatrix, decode);
+        mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
+    }
+
     const program = painter.useProgram('debug', null, definesValues);
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
@@ -68,9 +82,9 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     if (isGlobeProjection) {
-        tile._makeGlobeTileDebugBuffers(painter.context, painter.transform);
+        tile._makeGlobeTileDebugBuffers(painter.context, tr);
     } else {
-        tile._makeDebugTileBoundsBuffers(painter.context, painter.transform.projection);
+        tile._makeDebugTileBoundsBuffers(painter.context, tr.projection);
     }
 
     const debugBuffer = tile._tileDebugBuffer || painter.debugBuffer;
@@ -86,7 +100,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
     const tileSizeKb = Math.floor(tileByteLength / 1024);
     const tileSize = sourceCache.getTile(coord).tileSize;
-    const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / painter.transform.zoom)) * 0.5;
+    const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / tr.zoom)) * 0.5;
     let tileIdText = coord.canonical.toString();
     if (coord.overscaledZ !== coord.canonical.z) {
         tileIdText += ` => ${coord.overscaledZ}`;

@@ -58,7 +58,7 @@ import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
-import {globeTileBounds, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {transitionTileAABBinECEF, globeTileBounds, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import {vec3, mat4} from 'gl-matrix';
 import type {TextureImage} from '../render/texture.js';
 
@@ -700,13 +700,10 @@ class Tile {
 
         const projection = transform.projection;
 
-        // if (this._globeTileDebugBorderBuffer || this._globeTileDebugTextBuffer || !projection || projection.name !== 'globe') return;
         if (!projection || projection.name !== 'globe' || transform.freezeTileCoverage) return;
 
         const id = this.tileID.canonical;
-        const bounds = globeTileBounds(id);
-        // console.log("bounds scale is", globeECEFNormalizationScale(bounds));
-        // console.log("tileAABBinECEF bounds scale is", globeECEFNormalizationScale(tileAABBinECEF(id, transform)));
+        const bounds = transitionTileAABBinECEF(id, transform);
         const normalizationMatrix = globeNormalizeECEF(bounds);
 
         this._makeGlobeTileDebugBorderBuffer(context, id, normalizationMatrix, transform);
@@ -758,8 +755,6 @@ class Tile {
                     const mercatorY = (y / EXTENT + id.y) / tileCount;
                     const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
                     vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
-                    // const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
-                    // vec3.transformMat4(mercatorPos, mercatorPos, globeMercatorMatrix);
                     ecef = interpolateArray(ecef, mercatorPos, phase);
                 }
 

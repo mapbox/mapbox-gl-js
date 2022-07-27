@@ -202,6 +202,58 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return new Aabb(bMin, bMax);
 }
 
+// Similar to globeTileBounds(), Return a tile's AABB in ECEF, accounting for globe to Mercator transition.
+
+export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aabb {
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase === 0) {
+        return globeTileBounds(id);
+    }
+
+    const bounds = tileCornersToBounds(id);
+    const corners = boundsToECEF(bounds);
+
+    // Interpolate during transition
+    if (phase > 0) {
+        const w = mercatorXfromLng(bounds.getWest()) * tr.worldSize;
+        const e = mercatorXfromLng(bounds.getEast()) * tr.worldSize;
+        const n = mercatorYfromLat(bounds.getNorth()) * tr.worldSize;
+        const s = mercatorYfromLat(bounds.getSouth()) * tr.worldSize;
+        // Mercator bounds globeCorners in world/pixel space
+        const nw = [w, n, 0];
+        const ne = [e, n, 0];
+        const sw = [w, s, 0];
+        const se = [e, s, 0];
+        // Transform Mercator globeCorners to ECEF
+        const worldToECEFMatrix = mat4.invert([], tr.globeMatrix);
+        vec3.transformMat4(nw, nw, worldToECEFMatrix);
+        vec3.transformMat4(ne, ne, worldToECEFMatrix);
+        vec3.transformMat4(sw, sw, worldToECEFMatrix);
+        vec3.transformMat4(se, se, worldToECEFMatrix);
+        // Interpolate Mercator corners and globe corners
+        corners[0] = interpolateArray(corners[0], sw, phase);
+        corners[1] = interpolateArray(corners[1], se, phase);
+        corners[2] = interpolateArray(corners[2], ne, phase);
+        corners[3] = interpolateArray(corners[3], nw, phase);
+    }
+
+    const aabbMin = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
+    const aabbMax = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+
+    for (const p of corners) {
+        aabbMin[0] = Math.min(aabbMin[0], p[0]);
+        aabbMin[1] = Math.min(aabbMin[1], p[1]);
+        aabbMin[2] = Math.min(aabbMin[2], p[2]);
+
+        aabbMax[0] = Math.max(aabbMax[0], p[0]);
+        aabbMax[1] = Math.max(aabbMax[1], p[1]);
+        aabbMax[2] = Math.max(aabbMax[2], p[2]);
+    }
+
+    return new Aabb(aabbMin, aabbMax);
+
+}
+
 function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
     for (const corner of corners) {
         vec3.transformMat4(corner, corner, globeMatrix);
@@ -415,7 +467,7 @@ export function globeECEFOrigin(tileMatrix: Mat4, id: UnwrappedTileID): [number,
 }
 
 export function globeECEFNormalizationScale({min, max}: Aabb): number {
-    return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) * .1;
+    return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
 }
 
 export function globeNormalizeECEF(bounds: Aabb): Float64Array {
