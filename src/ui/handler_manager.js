@@ -497,15 +497,15 @@ class HandlerManager {
         }
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
+        if (pinchAround !== undefined) {
+            around = pinchAround;
+        }
+
         if (eventStarted("drag") && around) {
             this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
             // Construct the tracking ellipsoid every time user changes the drag origin.
             // Direction of the ray will define size of the shape and hence defining the available range of movement
             this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
-        }
-
-        if (pinchAround !== undefined) {
-            around = pinchAround;
         }
 
         // All movement of the camera is done relative to the sea level
