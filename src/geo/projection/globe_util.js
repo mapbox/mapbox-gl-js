@@ -176,30 +176,35 @@ export function localExtremum(arc: Arc, dim: number): ?number {
     return slerp(arc.a[dim], arc.b[dim], arc.angle, clamp(t, 0.0, 1.0)) + arc.center[dim];
 }
 
+const cache = {};
 export function globeTileBounds(id: CanonicalTileID): Aabb {
     if (id.z <= 1) {
         return GLOBE_LOW_ZOOM_TILE_AABBS[id.z + id.y * 2 + id.x];
     }
+    if (cache[id.key]) {
+        return cache[id.key];
+    } else {
+        // After zoom 1 surface function is monotonic for all tile patches
+        // => it is enough to project corner points
+        const bounds = tileCornersToBounds(id);
+        const corners = boundsToECEF(bounds);
 
-    // After zoom 1 surface function is monotonic for all tile patches
-    // => it is enough to project corner points
-    const bounds = tileCornersToBounds(id);
-    const corners = boundsToECEF(bounds);
+        const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
+        const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
 
-    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
-    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
+        for (const p of corners) {
+            bMin[0] = Math.min(bMin[0], p[0]);
+            bMin[1] = Math.min(bMin[1], p[1]);
+            bMin[2] = Math.min(bMin[2], p[2]);
 
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
+            bMax[0] = Math.max(bMax[0], p[0]);
+            bMax[1] = Math.max(bMax[1], p[1]);
+            bMax[2] = Math.max(bMax[2], p[2]);
+        }
 
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
+        cache[id.key] = new Aabb(bMin, bMax);
+        return cache[id.key];
     }
-
-    return new Aabb(bMin, bMax);
 }
 
 function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
