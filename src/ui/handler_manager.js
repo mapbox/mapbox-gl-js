@@ -36,6 +36,51 @@ class RenderFrameEvent extends Event {
     timeStamp: number;
 }
 
+class TrackingEllipsoid {
+    constants: Array<number>;
+    radius: number;
+
+    constructor() {
+        // a, b, c in the equation x²/a² + y²/b² + z²/c² = 1
+        this.constants = [1, 1, 0.01];
+        this.radius = 0;
+    }
+
+    setup(center: Vec3, pointOnSurface: Vec3) {
+        const centerToSurface = vec3.sub([], pointOnSurface, center);
+        if (centerToSurface[2] < 0) {
+            this.radius = vec3.length(vec3.div([], centerToSurface, this.constants));
+        } else {
+            // The point on surface is above the center. This can happen for example when the camera is
+            // below the clicked point (like a mountain) Use slightly shorter radius for less aggressive movement
+            this.radius = vec3.length([centerToSurface[0], centerToSurface[1], 0]);
+        }
+    }
+
+    // Cast a ray from the center of the ellipsoid and the intersection point.
+    projectRay(dir: Vec3): Vec3 {
+        // Perform the intersection test against a unit sphere
+        vec3.div(dir, dir, this.constants);
+        vec3.normalize(dir, dir);
+        vec3.mul(dir, dir, this.constants);
+
+        const intersection = vec3.scale([], dir, this.radius);
+
+        if (intersection[2] > 0) {
+            // The intersection point is above horizon so special handling is required.
+            // Otherwise direction of the movement would be inverted due to the ellipsoid shape
+            const h = vec3.scale([], [0, 0, 1], vec3.dot(intersection, [0, 0, 1]));
+            const r = vec3.scale([], vec3.normalize([], [intersection[0], intersection[1], 0]), this.radius);
+            const p = vec3.add([], intersection, vec3.scale([], vec3.sub([], vec3.add([], r, h), intersection), 2));
+
+            intersection[0] = p[0];
+            intersection[1] = p[1];
+        }
+
+        return intersection;
+    }
+}
+
 // Handlers interpret dom events and return camera changes that should be
 // applied to the map (`HandlerResult`s). The camera changes are all deltas.
 // The handler itself should have no knowledge of the map's current state.
@@ -111,6 +156,8 @@ class HandlerManager {
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
     _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
+    _trackingEllipsoid: TrackingEllipsoid;
+    _dragOrigin: ?Vec3;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -122,6 +169,8 @@ class HandlerManager {
         this._inertia = new HandlerInertia(map);
         this._bearingSnap = options.bearingSnap;
         this._previousActiveHandlers = {};
+        this._trackingEllipsoid = new TrackingEllipsoid();
+        this._dragOrigin = null;
 
         // Track whether map is currently moving, to compute start/move/end events
         this._eventsInProgress = {};
@@ -416,18 +465,24 @@ class HandlerManager {
         this._changes = [];
     }
 
-    _eventEnded(type: string): boolean {
-        const event = this._eventsInProgress[type];
-        return event && !this._handlersById[event.handlerName].isActive();
-    }
-
     _updateMapTransform(combinedResult: any, combinedEventsInProgress: Object, deactivatedHandlers: Object) {
 
         const map = this._map;
         const tr = map.transform;
+
+        const eventStarted = (type) => {
+            const newEvent = combinedEventsInProgress[type];
+            return newEvent && !this._eventsInProgress[type];
+        };
+
+        const eventEnded = (type) => {
+            const event = this._eventsInProgress[type];
+            return event && !this._handlersById[event.handlerName].isActive();
+        };
+
         const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
-        if (this._eventEnded("drag") && !hasChange(combinedResult)) {
+        if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
             tr.cameraElevationReference = "sea";
             tr.recenterOnTerrain();
@@ -441,6 +496,13 @@ class HandlerManager {
             return;
         }
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
+
+        if (eventStarted("drag") && around) {
+            this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
+            // Construct the tracking ellipsoid every time user changes the drag origin.
+            // Direction of the ray will define size of the shape and hence defining the available range of movement
+            this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
+        }
 
         if (pinchAround !== undefined) {
             around = pinchAround;
@@ -460,22 +522,31 @@ class HandlerManager {
         // Compute Mercator 3D camera offset based on screenspace panDelta
         const panVec = [0, 0, 0];
         if (panDelta) {
-            const startPoint = tr.pointCoordinate(around);
-            if (tr.projection.name === 'globe') {
-                // Compute pan vector directly in pixel coordinates for the globe.
-                // Rotate the globe a bit faster when dragging near poles to compensate
-                // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
-                panDelta = panDelta.rotate(-tr.angle);
-                const scale = tr._pixelsPerMercatorPixel / tr.worldSize;
-                panVec[0] = -panDelta.x * mercatorScale(latFromMercatorY(startPoint.y)) * scale;
-                panVec[1] = -panDelta.y * mercatorScale(tr.center.lat) * scale;
+            if (tr.projection.name === 'mercator') {
+                assert(this._dragOrigin, '_dragOrigin should have been setup with a previous dragstart');
+                const startPoint = this._trackingEllipsoid.projectRay(tr.screenPointToMercatorRay(around).dir);
+                const endPoint = this._trackingEllipsoid.projectRay(tr.screenPointToMercatorRay(around.sub(panDelta)).dir);
+                panVec[0] = endPoint[0] - startPoint[0];
+                panVec[1] = endPoint[1] - startPoint[1];
 
             } else {
-                const endPoint = tr.pointCoordinate(around.sub(panDelta));
+                const startPoint = tr.pointCoordinate(around);
+                if (tr.projection.name === 'globe') {
+                    // Compute pan vector directly in pixel coordinates for the globe.
+                    // Rotate the globe a bit faster when dragging near poles to compensate
+                    // different pixel-per-meter ratios (ie. pixel-to-physical-rotation is lower)
+                    panDelta = panDelta.rotate(-tr.angle);
+                    const scale = tr._pixelsPerMercatorPixel / tr.worldSize;
+                    panVec[0] = -panDelta.x * mercatorScale(latFromMercatorY(startPoint.y)) * scale;
+                    panVec[1] = -panDelta.y * mercatorScale(tr.center.lat) * scale;
 
-                if (startPoint && endPoint) {
-                    panVec[0] = endPoint.x - startPoint.x;
-                    panVec[1] = endPoint.y - startPoint.y;
+                } else {
+                    const endPoint = tr.pointCoordinate(around.sub(panDelta));
+
+                    if (startPoint && endPoint) {
+                        panVec[0] = endPoint.x - startPoint.x;
+                        panVec[1] = endPoint.y - startPoint.y;
+                    }
                 }
             }
         }
