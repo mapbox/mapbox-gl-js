@@ -67,7 +67,7 @@ Done in 2.32s.
 
 ### Enable ANGLE configuration on render tests
 
-While running render tests locally, you can opt to use the chrome flag `--use-angle` to choose a graphic backend for ANGLE. Some ANGLE drivers may not be as performants on certain devices which may affect render tests. See chrome://flags/#use-angle for more information on the `--use-angle` flag.
+While running render tests locally, you can opt to use the chrome flag `--use-angle` to choose a graphic backend for ANGLE. Some ANGLE drivers may not be as performant on certain devices which may affect render tests. See `chrome://flags/#use-angle` for more information on the `--use-angle` flag.
 
 To run render tests with a specfic ANGLE driver:
 ```
