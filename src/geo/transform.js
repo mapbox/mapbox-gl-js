@@ -1613,12 +1613,13 @@ class Transform {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
         this._constraining = true;
+        const isGlobe = this.projection.name === 'globe';
 
         // alternate constraining for non-Mercator projections
-        if (this.projection.isReprojectedInTileSpace || this.projection.name === 'globe') {
+        if (this.projection.isReprojectedInTileSpace || isGlobe) {
             const center = this.center;
             center.lat = clamp(center.lat, this.minLat, this.maxLat);
-            if (this.maxBounds || !this.renderWorldCopies) center.lng = clamp(center.lng, this.minLng, this.maxLng);
+            if (this.maxBounds || !(this.renderWorldCopies || isGlobe)) center.lng = clamp(center.lng, this.minLng, this.maxLng);
             this.center = center;
             this._constraining = false;
             return;
