@@ -38,17 +38,6 @@ To run only the expression tests:
 yarn run test-expressions
 ```
 
-### Enable angle configuration on a render test run
-
-While running render tests locally, you can opt to use the chrome flag `--use-angle` to choose a graphic backend for ANGLE. Some ANGLE drivers may not be as performants on certain devices which may affect render tests. See chrome://flags/#use-angle for more information on the `--use-angle` flag.
-
-To run render tests with a specfic ANGLE driver:
-```
-USE_ANGLE={INPUT} yarn run test-render
-```
-
-Accepted inputs for `USE_ANGLE` are "metal", "gl", "vulkan", "swiftshader", and "gles".
-
 ### Running specific tests
 
 To run a subset of tests or an individual test, you can pass a specific subdirectory to the `test-render` script. For example, to run all the tests for a given property, e.g. `circle-radius`:
@@ -74,6 +63,18 @@ $ yarn run test-render tests=circle-radius/literal
 Results at: ./test/integration/render-tests/index.html
 Done in 2.32s.
 ```
+
+
+### Enable ANGLE configuration on render tests
+
+While running render tests locally, you can opt to use the chrome flag `--use-angle` to choose a graphic backend for ANGLE. Some ANGLE drivers may not be as performants on certain devices which may affect render tests. See chrome://flags/#use-angle for more information on the `--use-angle` flag.
+
+To run render tests with a specfic ANGLE driver:
+```
+USE_ANGLE={INPUT} yarn run test-render
+```
+
+Accepted inputs for `USE_ANGLE` are `metal`, `gl`, `vulkan`, `swiftshader`, and `gles`.
 
 ### Viewing test results
 
