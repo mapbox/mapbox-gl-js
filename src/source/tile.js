@@ -149,7 +149,7 @@ class Tile {
 
     _tileDebugBuffer: ?VertexBuffer;
     _tileBoundsBuffer: ?VertexBuffer;
-    _tileDebugIndexBuffer: IndexBuffer;
+    _tileDebugIndexBuffer: ?IndexBuffer;
     _tileBoundsIndexBuffer: IndexBuffer;
     _tileDebugSegments: SegmentVector;
     _tileBoundsSegments: SegmentVector;
@@ -333,9 +333,13 @@ class Tile {
 
         if (this._tileDebugBuffer) {
             this._tileDebugBuffer.destroy();
-            this._tileDebugIndexBuffer.destroy();
             this._tileDebugSegments.destroy();
             this._tileDebugBuffer = null;
+        }
+
+        if (this._tileDebugIndexBuffer) {
+            this._tileDebugIndexBuffer.destroy();
+            this._tileDebugIndexBuffer = null;
         }
 
         if (this._globeTileDebugBorderBuffer) {
@@ -697,9 +701,7 @@ class Tile {
     }
 
     _makeGlobeTileDebugBuffers(context: Context, transform: Transform) {
-
         const projection = transform.projection;
-
         if (!projection || projection.name !== 'globe' || transform.freezeTileCoverage) return;
 
         const id = this.tileID.canonical;
