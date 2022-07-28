@@ -3,14 +3,15 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 768,
+      "height": 512,
       "debug": true,
-      "allowed": 0.03
+      "allowed": 0.02
     }
   },
-  "center": [0, 48.7],
-  "zoom": 5.75,
-  "pitch": 85,
+  "center": [3, 49],
+  "zoom": 5.25,
+  "pitch": 60,
+  "bearing": 140,
   "sources": {
     "mapbox": {
       "type": "vector",

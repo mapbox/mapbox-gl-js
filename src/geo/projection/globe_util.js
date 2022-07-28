@@ -186,20 +186,41 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     const bounds = tileCornersToBounds(id);
     const corners = boundsToECEF(bounds);
 
-    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
-    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
+    return Aabb.fromPoints(corners);
+}
 
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
-
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
+// Similar to globeTileBounds() but accounts for globe to Mercator transition.
+export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aabb {
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase === 0) {
+        return globeTileBounds(id);
     }
 
-    return new Aabb(bMin, bMax);
+    const bounds = tileCornersToBounds(id);
+    const corners = boundsToECEF(bounds);
+
+    const w = mercatorXfromLng(bounds.getWest()) * tr.worldSize;
+    const e = mercatorXfromLng(bounds.getEast()) * tr.worldSize;
+    const n = mercatorYfromLat(bounds.getNorth()) * tr.worldSize;
+    const s = mercatorYfromLat(bounds.getSouth()) * tr.worldSize;
+    // Mercator bounds globeCorners in world/pixel space
+    const nw = [w, n, 0];
+    const ne = [e, n, 0];
+    const sw = [w, s, 0];
+    const se = [e, s, 0];
+    // Transform Mercator globeCorners to ECEF
+    const worldToECEFMatrix = mat4.invert([], tr.globeMatrix);
+    vec3.transformMat4(nw, nw, worldToECEFMatrix);
+    vec3.transformMat4(ne, ne, worldToECEFMatrix);
+    vec3.transformMat4(sw, sw, worldToECEFMatrix);
+    vec3.transformMat4(se, se, worldToECEFMatrix);
+    // Interpolate Mercator corners and globe corners
+    corners[0] = interpolateArray(corners[0], sw, phase);
+    corners[1] = interpolateArray(corners[1], se, phase);
+    corners[2] = interpolateArray(corners[2], ne, phase);
+    corners[3] = interpolateArray(corners[3], nw, phase);
+
+    return Aabb.fromPoints(corners);
 }
 
 function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
