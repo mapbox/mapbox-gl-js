@@ -186,20 +186,7 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     const bounds = tileCornersToBounds(id);
     const corners = boundsToECEF(bounds);
 
-    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
-    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
-
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
-
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
-    }
-
-    return new Aabb(bMin, bMax);
+    return Aabb.fromPoints(corners);
 }
 
 // Similar to globeTileBounds() but accounts for globe to Mercator transition.
@@ -233,21 +220,7 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     corners[2] = interpolateArray(corners[2], ne, phase);
     corners[3] = interpolateArray(corners[3], nw, phase);
 
-    const aabbMin = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-    const aabbMax = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
-
-    for (const p of corners) {
-        aabbMin[0] = Math.min(aabbMin[0], p[0]);
-        aabbMin[1] = Math.min(aabbMin[1], p[1]);
-        aabbMin[2] = Math.min(aabbMin[2], p[2]);
-
-        aabbMax[0] = Math.max(aabbMax[0], p[0]);
-        aabbMax[1] = Math.max(aabbMax[1], p[1]);
-        aabbMax[2] = Math.max(aabbMax[2], p[2]);
-    }
-
-    return new Aabb(aabbMin, aabbMax);
-
+    return Aabb.fromPoints(corners);
 }
 
 function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
