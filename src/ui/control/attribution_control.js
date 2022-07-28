@@ -3,6 +3,7 @@
 import * as DOM from '../../util/dom.js';
 import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
+import {getHashString} from '../hash.js';
 
 import type Map, {ControlPosition} from '../map.js';
 
@@ -131,7 +132,7 @@ class AttributionControl {
                 }
                 return acc;
             }, `?`);
-            editLink.href = `${config.FEEDBACK_URL}/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
+            editLink.href = `${config.FEEDBACK_URL}/${paramString}#${getHashString(this._map, true)}`;
             editLink.rel = 'noopener nofollow';
             this._setElementTitle(editLink, 'MapFeedback');
         }
