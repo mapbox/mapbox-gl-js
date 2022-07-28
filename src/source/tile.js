@@ -729,6 +729,23 @@ class Tile {
         this._makeGlobeTileDebugTextBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase, wrap);
     }
 
+    _globePoint(x: number, y: number, id: CanonicalTileID, worldSize: number, normalizationMatrix: Float64Array, worldToECEFMatrix?: Float64Array, phase: number, wrap: number): number[] {
+        // The following is equivalent to doing globe.projectTilePoint.
+        // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
+        let ecef = tileCoordToECEF(x, y, id);
+        if (worldToECEFMatrix) {
+            // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
+            const tileCount = 1 << id.z;
+            const mercatorX = (x / EXTENT + id.x) / tileCount + wrap;
+            const mercatorY = (y / EXTENT + id.y) / tileCount;
+            const mercatorPos = [mercatorX * worldSize, mercatorY * worldSize, 0];
+            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
+            ecef = interpolateArray(ecef, mercatorPos, phase);
+        }
+        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+        return gp;
+    }
+
     _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix?: Float64Array, phase: number, wrap: number) {
         const vertices = new PosArray();
         const indices = new LineStripIndexArray();
@@ -745,21 +762,7 @@ class Tile {
                 const y = sy + i * stepY;
                 vertices.emplaceBack(x, y);
 
-                // The following is equivalent to doing globe.projectTilePoint.
-                // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
-                let ecef = tileCoordToECEF(x, y, id);
-
-                // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
-                if (worldToECEFMatrix) {
-                    const tileCount = 1 << id.z;
-                    const mercatorX = (x / EXTENT + id.x) / tileCount + wrap;
-                    const mercatorY = (y / EXTENT + id.y) / tileCount;
-                    const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
-                    vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
-                    ecef = interpolateArray(ecef, mercatorPos, phase);
-                }
-
-                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+                const gp = this._globePoint(x, y, id, tr.worldSize, normalizationMatrix, worldToECEFMatrix, phase, wrap);
 
                 extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
                 indices.emplaceBack(vOffset + i);
@@ -804,18 +807,7 @@ class Tile {
                 const x = i * step;
                 vertices.emplaceBack(x, y);
 
-                let ecef = tileCoordToECEF(x, y, id);
-
-                // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
-                if (worldToECEFMatrix) {
-                    const tileCount = 1 << id.z;
-                    const mercatorX = (x / EXTENT + id.x) / tileCount + wrap;
-                    const mercatorY = (y / EXTENT + id.y) / tileCount;
-                    const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
-                    vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
-                    ecef = interpolateArray(ecef, mercatorPos, phase);
-                }
-                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+                const gp = this._globePoint(x, y, id, tr.worldSize, normalizationMatrix, worldToECEFMatrix, phase, wrap);
                 extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
             }
         }
