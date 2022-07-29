@@ -12,14 +12,27 @@ import {
 } from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import browser from '../util/browser.js';
-import LngLat from '../geo/lng_lat.js';
+import LngLat, {earthRadius} from '../geo/lng_lat.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented.js';
 import assert from 'assert';
 import {Debug} from '../util/debug.js';
-import MercatorCoordinate, {mercatorZfromAltitude, mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
-import {vec3} from 'gl-matrix';
+import MercatorCoordinate, {
+    mercatorZfromAltitude,
+    mercatorXfromLng,
+    mercatorYfromLat,
+    latFromMercatorY,
+    lngFromMercatorX}
+from '../geo/mercator_coordinate.js';
+import {
+    latLngToECEF,
+    ECEFToLatLng,
+    GLOBE_RADIUS,
+    GLOBE_ZOOM_THRESHOLD_MAX,
+    GLOBE_ZOOM_THRESHOLD_MIN
+} from '../geo/projection/globe_util.js';
+import {vec3, vec4, mat4} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera.js';
 import type Transform from '../geo/transform.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
@@ -580,7 +593,7 @@ class Camera extends Evented {
 
         bounds = LngLatBounds.convert(bounds);
         const bearing = (options && options.bearing) || 0;
-        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
+        return this._cameraForBoxAndBearing(this.transform, bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
     }
 
     _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
@@ -632,60 +645,231 @@ class Camera extends Evented {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForBoxAndBearing(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+        const tr = transform.clone();
+        const isGlobe = tr.projection.name === 'globe';
+
         const eOptions = this._extendCameraOptions(options);
-        const tr = this.transform;
-        const edgePadding = tr.padding;
 
-        // We want to calculate the corners of the box defined by p0 and p1 in a coordinate system
-        // rotated to match the destination bearing. All four corners of the box must be taken
-        // into account because of camera rotation.
-        const p0world = tr.project(LngLat.convert(p0));
-        const p1world = tr.project(LngLat.convert(p1));
-        const p2world = new Point(p0world.x, p1world.y);
-        const p3world = new Point(p1world.x, p0world.y);
+        tr.bearing = bearing;
 
-        const angleRadians = -degToRad(bearing);
-        const p0rotated = p0world.rotate(angleRadians);
-        const p1rotated = p1world.rotate(angleRadians);
-        const p2rotated = p2world.rotate(angleRadians);
-        const p3rotated = p3world.rotate(angleRadians);
+        const coord0 = LngLat.convert(p0);
+        const coord1 = LngLat.convert(p1);
 
-        const upperRight = new Point(
-            Math.max(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
-            Math.max(p0rotated.y, p1rotated.y, p2rotated.y, p3rotated.y)
-        );
-        const lowerLeft = new Point(
-            Math.min(p0rotated.x, p1rotated.x, p2rotated.x, p3rotated.x),
-            Math.min(p0rotated.y, p1rotated.y, p2rotated.y, p3rotated.y)
-        );
+        let minWorld, maxWorld;
 
-        // Calculate zoom: consider the original bbox and padding.
-        const size = upperRight.sub(lowerLeft);
-        const scaleX = (tr.width - ((edgePadding.left || 0) + (edgePadding.right || 0) + eOptions.padding.left + eOptions.padding.right)) / size.x;
-        const scaleY = (tr.height - ((edgePadding.top || 0) + (edgePadding.bottom || 0) + eOptions.padding.top + eOptions.padding.bottom)) / size.y;
+        if (isGlobe) {
+            const pWorld = [];
 
-        if (scaleY < 0 || scaleX < 0) {
-            warnOnce(
-                'Map cannot fit within canvas with the given bounds, padding, and/or offset.'
-            );
-            return;
+            pWorld[0] = latLngToECEF(coord0.lat, coord0.lng); // x0, y0
+            pWorld[1] = latLngToECEF(coord1.lat, coord0.lng); // x1, y0
+            pWorld[2] = latLngToECEF(coord1.lat, coord1.lng); // x1, y1
+            pWorld[3] = latLngToECEF(coord0.lat, coord1.lng); // x0, y1
+
+            minWorld = [Infinity, Infinity, Infinity];
+            maxWorld = [-Infinity, -Infinity, -Infinity];
+            for (let i = 0; i < 4; ++i) {
+                vec3.min(minWorld, minWorld, pWorld[i]);
+                vec3.max(maxWorld, maxWorld, pWorld[i]);
+            }
+        } else {
+            const p0World = tr.project(LngLat.convert(p0));
+            const p1World = tr.project(LngLat.convert(p1));
+
+            minWorld = [Math.min(p0World.x, p1World.x), Math.min(p0World.y, p1World.y), 0];
+            maxWorld = [Math.max(p0World.x, p1World.x), Math.max(p0World.y, p1World.y), 0];
         }
-        const zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
 
-        // Calculate center: apply the zoom, the configured offset, as well as offset that exists as a result of padding.
-        const offset = (typeof eOptions.offset.x === 'number' && typeof eOptions.offset.y === 'number') ?
-            new Point(eOptions.offset.x, eOptions.offset.y) :
-            Point.convert(eOptions.offset);
+        const zUnit = tr.projection.zAxisUnit === "meters" ? tr.pixelsPerMeter : 1.0;
+        const worldToCamera = tr._camera.getWorldToCamera(tr.worldSize, zUnit);
 
-        const paddingOffsetX = (eOptions.padding.left - eOptions.padding.right) / 2;
-        const paddingOffsetY = (eOptions.padding.top - eOptions.padding.bottom) / 2;
-        const paddingOffset = new Point(paddingOffsetX, paddingOffsetY);
-        const rotatedPaddingOffset = paddingOffset.rotate(bearing * Math.PI / 180);
-        const offsetAtInitialZoom = offset.add(rotatedPaddingOffset);
-        const offsetAtFinalZoom = offsetAtInitialZoom.mult(tr.scale / tr.zoomScale(zoom));
+        if (isGlobe) {
+            mat4.multiply(worldToCamera, worldToCamera, tr.globeMatrix);
+        }
 
-        const center =  tr.unproject(p0world.add(p1world).div(2).sub(offsetAtFinalZoom));
+        const aabb = [
+            [minWorld[0], minWorld[1], minWorld[2]],
+            [minWorld[0], minWorld[1], maxWorld[2]],
+            [minWorld[0], maxWorld[1], minWorld[2]],
+            [minWorld[0], maxWorld[1], maxWorld[2]],
+            [maxWorld[0], minWorld[1], minWorld[2]],
+            [maxWorld[0], minWorld[1], maxWorld[2]],
+            [maxWorld[0], maxWorld[1], minWorld[2]],
+            [maxWorld[0], maxWorld[1], maxWorld[2]]
+        ];
+
+        for (let i = 0; i < 8; ++i) {
+            vec3.transformMat4(aabb[i], aabb[i], worldToCamera);
+        }
+
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
+
+        for (let i = 0; i < 8; ++i) {
+            vec3.min(min, min, aabb[i]);
+            vec3.max(max, max, aabb[i]);
+        }
+
+        const aabbCamera = [
+            [min[0], min[1], min[2]],
+            [min[0], min[1], max[2]],
+            [min[0], max[1], min[2]],
+            [min[0], max[1], max[2]],
+            [max[0], min[1], min[2]],
+            [max[0], min[1], max[2]],
+            [max[0], max[1], min[2]],
+            [max[0], max[1], max[2]]
+        ];
+
+        const centroid = [0, 0, 0];
+        for (let i = 0; i < 8; ++i) {
+            vec3.add(centroid, centroid, aabbCamera[i]);
+        }
+        vec3.scale(centroid, centroid, 1.0 / 8.0);
+
+        const aspectRatio = tr.width / tr.height;
+        const aabbAspectRatio = (max[0] - min[0]) / (max[1] - min[1]);
+        const selectXAxisEdge = aabbAspectRatio > aspectRatio;
+
+        const minL = min;
+        const minR = [
+            selectXAxisEdge ? max[0] : min[0],
+            selectXAxisEdge ? min[1] : max[1],
+            min[2]
+        ];
+
+        const edgeLength = vec3.length(vec3.sub([], minL, minR));
+        const centroidToEdge = (max[2] - min[2]) * 0.5;
+
+        const fovx = tr._fov;
+        const focalLength = 1.0 / Math.tan(fovx * 0.5);
+        const fovy = 2 * Math.atan((1.0 / aspectRatio) / focalLength);
+
+        const cameraToEdge = selectXAxisEdge ?
+            edgeLength / (2 * Math.tan(fovx * 0.5) * aspectRatio) :
+            edgeLength / (2 * Math.tan(fovy * 0.5) * aspectRatio);
+
+        let minDistance;
+        let closestCenter;
+        if (isGlobe) {
+            let q0, q1;
+
+            const intersectSphere = (p, d, center, r) => {
+                const m = vec3.sub([], p, center);
+                const b = vec3.dot(m, d);
+                const c = vec3.dot(m, m) - r * r;
+
+                if (c > 0.0 && b > 0.0) {
+                    return;
+                }
+
+                const discr = b * b - c;
+
+                if (discr < 0.0) {
+                    return;
+                }
+
+                const t0 = -b - Math.sqrt(discr);
+                const t1 = -b + Math.sqrt(discr);
+
+                q0 = vec3.add([], p, vec3.scale([], d, t0));
+                q1 = vec3.add([], p, vec3.scale([], d, t1));
+            };
+
+            const pointOnEdge = vec3.add([], centroid, vec3.scale([], [0, 0, 1], centroidToEdge));
+            const rayDir = vec3.normalize([], vec3.sub([], pointOnEdge, centroid));
+
+            intersectSphere(centroid, rayDir, tr.globeCenterInViewSpace, tr.globeRadius);
+
+            if (!q0 && !q1) {
+                closestCenter = centroid;
+            } else {
+                if (vec3.squaredDistance(centroid, q1) > vec3.squaredDistance(centroid, q0)) {
+                    closestCenter = q0;
+                } else {
+                    closestCenter = q1;
+                }
+            }
+
+            const centroidToCenter = vec3.distance(centroid, closestCenter);
+
+            minDistance = cameraToEdge + Math.max(centroidToEdge, centroidToCenter);
+        } else {
+            minDistance = cameraToEdge + centroidToEdge;
+        }
+
+        const offsetAlongZ = vec3.scale([], [0, 0, 1], minDistance);
+        const cameraPosition = vec3.add([], centroid, offsetAlongZ);
+
+        let cameraPositionAlongZ;
+
+        if (isGlobe) {
+            const originToCenter = vec3.sub([], closestCenter, tr.globeCenterInViewSpace);
+
+            const normalZ = vec3.normalize([], originToCenter);
+            const cameraPositionToCenter = vec3.distance(closestCenter, cameraPosition);
+
+            const zOffset = vec3.scale([], normalZ, cameraPositionToCenter);
+
+            cameraPositionAlongZ = vec3.add([], closestCenter, zOffset);
+        } else {
+            const normalZ = [0, 0, 1, 0];
+
+            vec4.transformMat4(normalZ, normalZ, worldToCamera);
+            vec4.normalize(normalZ, normalZ);
+
+            const zOffset = vec3.scale([], normalZ, cameraToEdge + centroidToEdge);
+
+            cameraPositionAlongZ = vec3.add([], centroid, zOffset);    
+        }
+
+        const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
+
+        vec3.transformMat4(cameraPositionAlongZ, cameraPositionAlongZ, cameraToWorld);
+        vec3.transformMat4(centroid, centroid, cameraToWorld);
+        if (closestCenter) {
+            vec3.transformMat4(closestCenter, closestCenter, cameraToWorld);
+        }
+
+        let zoom;
+        let center;
+        if (isGlobe) {
+            const meterPerECEF = earthRadius / GLOBE_RADIUS;
+
+            const altitudeECEF = Math.sqrt(
+                cameraPositionAlongZ[0] * cameraPositionAlongZ[0] +
+                cameraPositionAlongZ[1] * cameraPositionAlongZ[1] +
+                cameraPositionAlongZ[2] * cameraPositionAlongZ[2]);
+
+            const altitude = altitudeECEF * meterPerECEF - earthRadius;
+
+            const mercatorZ = mercatorZfromAltitude(altitude, 0);
+
+            zoom = tr._zoomFromMercatorZ(mercatorZ);
+            center = ECEFToLatLng(centroid);
+        } else {
+            const mercatorX = centroid[0] / tr.worldSize;
+            const mercatorY = centroid[1] / tr.worldSize;
+            const mercatorZ = (cameraPositionAlongZ[2] * tr.pixelsPerMeter) / tr.worldSize;
+
+            const lng = lngFromMercatorX(mercatorX);
+            const lat = latFromMercatorY(mercatorY);
+
+            zoom = tr._zoomFromMercatorZ(mercatorZ);
+            center = new LngLat(lng, lat);
+        }
+
+        zoom = Math.min(zoom, eOptions.maxZoom);
+
+        const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
+
+        if (isGlobe && zoom > halfZoomTransition) {
+            tr.setProjection({name: 'mercator'});
+            return this._cameraForBoxAndBearing(tr, p0, p1, bearing, options);
+        } else if (tr.mercatorFromTransition && zoom < halfZoomTransition) {
+            tr.setProjection({name: 'globe'});
+            return this._cameraForBoxAndBearing(tr, p0, p1, bearing, options);
+        }
 
         return {
             center,
@@ -927,6 +1111,7 @@ class Camera extends Evented {
         if (this.transform.pitch === 0) {
             return this._fitInternal(
                 this._cameraForBoxAndBearing(
+                    this.transform,
                     this.transform.pointLocation(Point.convert(p0)),
                     this.transform.pointLocation(Point.convert(p1)),
                     bearing,

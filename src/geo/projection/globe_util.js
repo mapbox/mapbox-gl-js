@@ -428,6 +428,15 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
     return [sx, sy, sz];
 }
 
+export function ECEFToLatLng(ecef: Array<number>): LngLat {
+    const radius = Math.sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1] + ecef[2] * ecef[2]);
+
+    const lng = Math.atan2(ecef[0], ecef[2]);
+    const lat = Math.PI * 0.5 - Math.acos(-ecef[1] / radius);
+
+    return new LngLat(radToDeg(lng), radToDeg(lat));
+}
+
 export function latLngToECEF(lat: number, lng: number, radius?: number): Vec3 {
     assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
