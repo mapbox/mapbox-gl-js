@@ -446,7 +446,7 @@ class FillExtrusionBucket implements Bucket {
                 let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
                 let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
 
-                let kPrev, kFirst;
+                let kFirst;
 
                 // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
                 let na, nb;
@@ -546,20 +546,23 @@ class FillExtrusionBucket implements Bucket {
                         this.indexArray.emplaceBack(t0, t1, k + 3);
                         segment.primitiveLength += 2;
 
-                        if (kPrev !== undefined) {
-                            const prev = kPrev;
-                            // vertical side chamfer i.e. the space between consecutive walls.
-                            this.indexArray.emplaceBack(prev, prev + 1, k + 0);
-                            this.indexArray.emplaceBack(prev + 1, k + 1, k + 0);
-
-                            // top corner where the top(roof) and two sides(walls) meet.
-                            this.indexArray.emplaceBack(prev + 1, t0, k + 1);
-
-                            segment.primitiveLength += 3;
-                        } else {
+                        if (kFirst === undefined) {
                             kFirst = k;
                         }
-                        kPrev = k + 2;
+
+                        // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
+                        if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
+                            const l = i == ring.length - 1 ? kFirst : segment.vertexLength;
+
+                            // vertical side chamfer i.e. the space between consecutive walls.
+                            this.indexArray.emplaceBack(k + 2, k + 3, l);
+                            this.indexArray.emplaceBack(k + 3, l + 1, l);
+
+                            // top corner where the top(roof) and two sides(walls) meet.
+                            this.indexArray.emplaceBack(k + 3, t1, l + 1);
+
+                            segment.primitiveLength += 3;
+                        }
                     }
 
                     if (isGlobe) {
@@ -576,14 +579,6 @@ class FillExtrusionBucket implements Bucket {
                         addGlobeExtVertex(array, projectedP1, n1);
                         addGlobeExtVertex(array, projectedP1, n1);
                     }
-                }
-
-                // close the loop on vertical side chamfer
-                if (edgeRadius && kPrev !== undefined && kFirst !== undefined) {
-                    this.indexArray.emplaceBack(kPrev, kPrev + 1, kFirst + 0);
-                    this.indexArray.emplaceBack(kPrev + 1, kFirst + 1, kFirst + 0);
-                    this.indexArray.emplaceBack(kPrev + 1, topIndex + ring.length - 2, kFirst + 1);
-                    segment.primitiveLength += 3;
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
             }
