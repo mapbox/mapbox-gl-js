@@ -8,7 +8,7 @@ import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
+import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
