@@ -300,21 +300,6 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         (localExtremum(closestArc, 1) || arcStart[1]),
         (localExtremum(closestArc, 2) || arcStart[2])];
 
-    // Interpolate the four corners towards their world space location in mercator projection during transition.
-    const phase = globeToMercatorTransition(tr.zoom);
-    if (phase > 0.0 && phase < 1.0) {
-        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
-        for (let i = 0; i < corners.length; i++) {
-            corners[i] = interpolateArray(corners[i], mercatorCorners[i], phase);
-            vec3.min(cornerMin, cornerMin, corners[i]);
-            vec3.max(cornerMax, cornerMax, corners[i]);
-        }
-
-        // Interpolate arc extremum toward the edge midpoint in Mercator
-        const mercatorClosestMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
-        vec3.scale(mercatorClosestMidpoint, mercatorClosestMidpoint, .5);
-    }
-
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
     // of tiles farther away from the center as they would otherwise intersect with far end
     // of the view frustum
@@ -331,38 +316,6 @@ export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
     const sw = new LngLat(lngFromMercatorX(x * s), latFromMercatorY((y + 1) * s));
     const ne = new LngLat(lngFromMercatorX((x + 1) * s), latFromMercatorY(y * s));
     return new LngLatBounds(sw, ne);
-}
-
-function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, camX, camY): $ReadOnlyArray<Array<number>> {
-
-    const tileScale = 1.0 / (1 << z);
-    let w = x * tileScale;
-    let e = w + tileScale;
-    let n = y * tileScale;
-    let s = n + tileScale;
-
-    // Ensure that the tile viewed is the nearest when across the antimeridian
-    let wrap = 0;
-    const tileCenterXFromCamera = (w + e) / 2  - camX;
-    if (tileCenterXFromCamera > .5) {
-        wrap = -1;
-    } else if (tileCenterXFromCamera < -.5) {
-        wrap = 1;
-    }
-
-    camX *= mercatorScale;
-    camY *= mercatorScale;
-
-    // Transform position in Mercator to points on the plane tangent to the globe at cameraCenter.
-    w  = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
-    e  = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
-    n  = (n * numTiles - camY) * mercatorScale + camY;
-    s  = (s * numTiles - camY) * mercatorScale + camY;
-
-    return [[w, s, 0],
-        [e, s, 0],
-        [w, n, 0],
-        [e, n, 0]];
 }
 
 function boundsToECEF(bounds: LngLatBounds) {
