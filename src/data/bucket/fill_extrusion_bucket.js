@@ -552,7 +552,7 @@ class FillExtrusionBucket implements Bucket {
 
                         // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
                         if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
-                            const l = i == ring.length - 1 ? kFirst : segment.vertexLength;
+                            const l = i === ring.length - 1 ? kFirst : segment.vertexLength;
 
                             // vertical side chamfer i.e. the space between consecutive walls.
                             this.indexArray.emplaceBack(k + 2, k + 3, l);
