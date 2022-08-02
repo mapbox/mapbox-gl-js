@@ -8,7 +8,7 @@ import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {number as interpolate} from '../../style-spec/util/interpolate.js';
+import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
@@ -186,20 +186,41 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     const bounds = tileCornersToBounds(id);
     const corners = boundsToECEF(bounds);
 
-    const bMin = [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX];
-    const bMax = [GLOBE_MIN, GLOBE_MIN, GLOBE_MIN];
+    return Aabb.fromPoints(corners);
+}
 
-    for (const p of corners) {
-        bMin[0] = Math.min(bMin[0], p[0]);
-        bMin[1] = Math.min(bMin[1], p[1]);
-        bMin[2] = Math.min(bMin[2], p[2]);
-
-        bMax[0] = Math.max(bMax[0], p[0]);
-        bMax[1] = Math.max(bMax[1], p[1]);
-        bMax[2] = Math.max(bMax[2], p[2]);
+// Similar to globeTileBounds() but accounts for globe to Mercator transition.
+export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aabb {
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase === 0) {
+        return globeTileBounds(id);
     }
 
-    return new Aabb(bMin, bMax);
+    const bounds = tileCornersToBounds(id);
+    const corners = boundsToECEF(bounds);
+
+    const w = mercatorXfromLng(bounds.getWest()) * tr.worldSize;
+    const e = mercatorXfromLng(bounds.getEast()) * tr.worldSize;
+    const n = mercatorYfromLat(bounds.getNorth()) * tr.worldSize;
+    const s = mercatorYfromLat(bounds.getSouth()) * tr.worldSize;
+    // Mercator bounds globeCorners in world/pixel space
+    const nw = [w, n, 0];
+    const ne = [e, n, 0];
+    const sw = [w, s, 0];
+    const se = [e, s, 0];
+    // Transform Mercator globeCorners to ECEF
+    const worldToECEFMatrix = mat4.invert([], tr.globeMatrix);
+    vec3.transformMat4(nw, nw, worldToECEFMatrix);
+    vec3.transformMat4(ne, ne, worldToECEFMatrix);
+    vec3.transformMat4(sw, sw, worldToECEFMatrix);
+    vec3.transformMat4(se, se, worldToECEFMatrix);
+    // Interpolate Mercator corners and globe corners
+    corners[0] = interpolateArray(corners[0], sw, phase);
+    corners[1] = interpolateArray(corners[1], se, phase);
+    corners[2] = interpolateArray(corners[2], ne, phase);
+    corners[3] = interpolateArray(corners[3], nw, phase);
+
+    return Aabb.fromPoints(corners);
 }
 
 function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
@@ -351,13 +372,13 @@ export function latLngToECEF(lat: number, lng: number, radius?: number): Array<n
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
-export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID): Array<number> {
-    const tiles = 1 << id.z;
-    const mx = (x / EXTENT + id.x) / tiles;
-    const my = (y / EXTENT + id.y) / tiles;
-    const lat = latFromMercatorY(my);
-    const lng = lngFromMercatorX(mx);
-    const pos = latLngToECEF(lat, lng);
+export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): Array<number> {
+    const tileCount = 1 << id.z;
+    const mercatorX = (x / EXTENT + id.x) / tileCount;
+    const mercatorY = (y / EXTENT + id.y) / tileCount;
+    const lat = latFromMercatorY(mercatorY);
+    const lng = lngFromMercatorX(mercatorX);
+    const pos = latLngToECEF(lat, lng, radius);
     return pos;
 }
 
@@ -374,20 +395,20 @@ export function globeECEFNormalizationScale({min, max}: Aabb): number {
     return GLOBE_NORMALIZATION_MASK / Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
 }
 
+// avoid redundant allocations by sharing the same typed array for normalization/denormalization matrices;
+// we never use multiple instances of these at the same time, but this might change, so let's be careful here!
+const tempMatrix = new Float64Array(16);
+
 export function globeNormalizeECEF(bounds: Aabb): Float64Array {
-    const m = mat4.identity(new Float64Array(16));
     const scale = globeECEFNormalizationScale(bounds);
-    mat4.scale(m, m, [scale, scale, scale]);
-    mat4.translate(m, m, vec3.negate([], bounds.min));
-    return m;
+    const m = mat4.fromScaling(tempMatrix, [scale, scale, scale]);
+    return mat4.translate(m, m, vec3.negate([], bounds.min));
 }
 
 export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
-    const m = mat4.identity(new Float64Array(16));
+    const m = mat4.fromTranslation(tempMatrix, bounds.min);
     const scale = 1.0 / globeECEFNormalizationScale(bounds);
-    mat4.translate(m, m, bounds.min);
-    mat4.scale(m, m, [scale, scale, scale]);
-    return m;
+    return mat4.scale(m, m, [scale, scale, scale]);
 }
 
 export function globeECEFUnitsToPixelScale(worldSize: number): number {

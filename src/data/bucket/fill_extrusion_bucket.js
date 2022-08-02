@@ -195,6 +195,7 @@ class FillExtrusionBucket implements Bucket {
     indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
+    edgeRadius: number;
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
@@ -216,6 +217,7 @@ class FillExtrusionBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.hasPattern = false;
+        this.edgeRadius = 0;
         this.projection = options.projection;
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
@@ -234,6 +236,7 @@ class FillExtrusionBucket implements Bucket {
         this.borders = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
+        this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -326,6 +329,7 @@ class FillExtrusionBucket implements Bucket {
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
         const metadata = this.enableTerrain && !isGlobe ? new PartMetadata() : null;
+        const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
@@ -359,142 +363,225 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
-        for (const clippedPolygon of clippedPolygons) {
-            const polygon = clippedPolygon.polygon;
+        const edgeRadius = isPolygon ? this.edgeRadius : 0;
+
+        for (const {polygon, bounds} of clippedPolygons) {
+            // Only triangulate and draw the area of the feature if it is a polygon
+            // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
+            let topIndex = 0;
             let numVertices = 0;
-            let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+            for (const ring of polygon) {
+                // make sure the ring closes
+                if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
+                numVertices += (isPolygon ? (ring.length - 1) : ring.length);
+            }
+            // We use "(isPolygon ? 5 : 4) * numVertices" as an estimate to ensure whether additional segments are needed or not (see SegmentVector.MAX_VERTEX_ARRAY_LENGTH).
+            const segment = this.segments.prepareSegment((isPolygon ? 5 : 4) * numVertices, this.layoutVertexArray, this.indexArray);
+            if (isPolygon) {
+                const flattened = [];
+                const holeIndices = [];
+                topIndex = segment.vertexLength;
 
-            for (let i = 0; i < polygon.length; i++) {
-                const ring = polygon[i];
-                if (ring.length === 0) {
-                    continue;
-                }
-                numVertices += ring.length;
+                // First we offset (inset) the top vertices (i.e the vertices that make up the roof).
+                for (const ring of polygon) {
+                    if (ring.length && ring !== polygon[0]) {
+                        holeIndices.push(flattened.length / 2);
+                    }
 
-                let edgeDistance = 0;
-                if (metadata) metadata.startRing(ring[0]);
-                const isFirstCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
-                let isPrevCornerConcave = isFirstCornerConcave;
+                    // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
+                    let na, nb;
+                    {
+                        const p0 = ring[0];
+                        const p1 = ring[1];
+                        na = p1.sub(p0)._perp()._unit();
+                    }
+                    for (let i = 1; i < ring.length; i++) {
+                        const p1 = ring[i];
+                        const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
-                for (let p = 0; p < ring.length; p++) {
-                    const p1 = ring[p];
+                        let {x, y} = p1;
+                        if (edgeRadius) {
+                            nb = p2.sub(p1)._perp()._unit();
+                            const nm = na.add(nb)._unit();
 
-                    if (p >= 1) {
-                        const p2 = ring[p - 1];
-                        if (!isEdgeOutsideBounds(p1, p2, clippedPolygon.bounds)) {
-                            if (metadata) metadata.append(p1, p2);
-                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                            }
+                            const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+                            const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
 
-                            const d = p1.sub(p2)._perp();
-                            // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
-                            // This information is sufficient to reconstruct normal vector in vertex shader.
-                            const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
-                            const nySign = d.y > 0 ? 1 : 0;
-                            const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 0;
+                            x += offset * nm.x;
+                            y += offset * nm.y;
 
-                            const isConcaveCorner = ring.length > 4 && (p + 1 !== ring.length ? isAOConcaveAngle(p2, p1, ring[p + 1]) : isFirstCornerConcave);
+                            na = nb;
+                        }
 
-                            let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, true);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
+                        addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
+                        segment.vertexLength++;
 
-                            edgeDistance += dist;
+                        // triangulate as if vertices were not offset to ensure correct triangulation
+                        flattened.push(p1.x, p1.y);
 
-                            encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, false);
-                            isPrevCornerConcave = isConcaveCorner;
-
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
-
-                            const bottomRight = segment.vertexLength;
-
-                            // ┌──────┐
-                            // │ 0  1 │ Counter-clockwise winding order.
-                            // │      │ Triangle 1: 0 => 2 => 1
-                            // │ 2  3 │ Triangle 2: 1 => 2 => 3
-                            // └──────┘
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 2, bottomRight + 1);
-                            this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
-
-                            segment.vertexLength += 4;
-                            segment.primitiveLength += 2;
-
-                            if (isGlobe) {
-                                const array: any = this.layoutVertexExtArray;
-
-                                const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
-                                const projectedP2 = projection.projectTilePoint(p2.x, p2.y, canonical);
-
-                                const n1 = projection.upVector(canonical, p1.x, p1.y);
-                                const n2 = projection.upVector(canonical, p2.x, p2.y);
-
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP1, n1);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                                addGlobeExtVertex(array, projectedP2, n2);
-                            }
+                        if (isGlobe) {
+                            const array: any = this.layoutVertexExtArray;
+                            const projectedP = projection.projectTilePoint(x, y, canonical);
+                            const n = projection.upVector(canonical, x, y);
+                            addGlobeExtVertex(array, projectedP, n);
                         }
                     }
                 }
+
+                const indices = earcut(flattened, holeIndices);
+                assert(indices.length % 3 === 0);
+
+                for (let j = 0; j < indices.length; j += 3) {
+                    // clockwise winding order.
+                    this.indexArray.emplaceBack(
+                        topIndex + indices[j],
+                        topIndex + indices[j + 2],
+                        topIndex + indices[j + 1]);
+                    segment.primitiveLength++;
+                }
             }
 
-            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
-            }
+            for (const ring of polygon) {
+                if (metadata && ring.length) metadata.startRing(ring[0]);
+                let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
+                let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
 
-            //Only triangulate and draw the area of the feature if it is a polygon
-            //Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
-            if (vectorTileFeatureTypes[feature.type] !== 'Polygon')
-                continue;
+                let kFirst;
 
-            const flattened = [];
-            const holeIndices = [];
-            const triangleIndex = segment.vertexLength;
-
-            for (let i = 0; i < polygon.length; i++) {
-                const ring = polygon[i];
-                if (ring.length === 0) {
-                    continue;
+                // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
+                let na, nb;
+                {
+                    const p0 = ring[0];
+                    const p1 = ring[1];
+                    na = p1.sub(p0)._perp()._unit();
                 }
+                for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
+                    let p0 = ring[i - 1];
+                    let p1 = ring[i];
+                    const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
-                if (ring !== polygon[0]) {
-                    holeIndices.push(flattened.length / 2);
-                }
+                    if (metadata && isPolygon) metadata.currentPolyCount.top++;
+                    if (isEdgeOutsideBounds(p1, p0, bounds)) {
+                        if (edgeRadius) {
+                            na = p2.sub(p1)._perp()._unit();
+                        }
+                        continue;
+                    }
+                    if (metadata) metadata.append(p1, p0);
 
-                for (let i = 0; i < ring.length; i++) {
-                    const p = ring[i];
+                    const d = p1.sub(p0)._perp();
+                    // Given that nz === 0, encode nx / (abs(nx) + abs(ny)) and signs.
+                    // This information is sufficient to reconstruct normal vector in vertex shader.
+                    const nxRatio = d.x / (Math.abs(d.x) + Math.abs(d.y));
+                    const nySign = d.y > 0 ? 1 : 0;
 
-                    addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
+                    const dist = p0.dist(p1);
+                    if (edgeDistance + dist > 32768) edgeDistance = 0;
 
-                    flattened.push(p.x);
-                    flattened.push(p.y);
-                    if (metadata) metadata.currentPolyCount.top++;
+                    // Next offset the vertices along the edges and create a chamfer space between them:
+                    // So if we have the following (where 'x' denotes a vertex)
+                    // x──────x
+                    // |      |
+                    // |      |
+                    // |      |
+                    // |      |
+                    // x──────x
+                    // we end up with:
+                    //  x────x
+                    // x      x
+                    // |      |
+                    // |      |
+                    // x      x
+                    //  x────x
+                    // (drawing isn't exact but hopefully gets the point across).
+
+                    if (edgeRadius) {
+                        nb = p2.sub(p1)._perp()._unit();
+
+                        const cosHalfAngle = getCosHalfAngle(na, nb);
+                        let offsetNext = _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
+
+                        if (isNaN(offsetNext)) offsetNext = 0;
+                        const nEdge = p1.sub(p0)._unit();
+                        p0 = p0.add(nEdge.mult(offsetPrev))._round();
+                        p1 = p1.add(nEdge.mult(-offsetNext))._round();
+                        offsetPrev = offsetNext;
+
+                        na = nb;
+                    }
+
+                    const k = segment.vertexLength;
+
+                    const isConcaveCorner = ring.length > 4 && isAOConcaveAngle(p0, p1, p2);
+                    let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, true);
+
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
+
+                    edgeDistance += dist;
+                    encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, false);
+                    isPrevCornerConcave = isConcaveCorner;
+
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
+
+                    segment.vertexLength += 4;
+
+                    // ┌──────┐
+                    // │ 1  3 │ clockwise winding order.
+                    // │      │ Triangle 1: 0 => 1 => 2
+                    // │ 0  2 │ Triangle 2: 1 => 3 => 2
+                    // └──────┘
+                    this.indexArray.emplaceBack(k + 0, k + 1, k + 2);
+                    this.indexArray.emplaceBack(k + 1, k + 3, k + 2);
+                    segment.primitiveLength += 2;
+
+                    if (edgeRadius) {
+                        // Note that in the previous for-loop we start from index 1 to add the top vertices which explains the next line.
+                        const t0 = topIndex + (i === 1 ? ring.length - 2 : i - 2);
+                        const t1 = i === 1 ? topIndex : t0 + 1;
+
+                        // top chamfer along the side (i.e. the space between the wall and the roof).
+                        this.indexArray.emplaceBack(k + 1, t0, k + 3);
+                        this.indexArray.emplaceBack(t0, t1, k + 3);
+                        segment.primitiveLength += 2;
+
+                        if (kFirst === undefined) {
+                            kFirst = k;
+                        }
+
+                        // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
+                        if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
+                            const l = i === ring.length - 1 ? kFirst : segment.vertexLength;
+
+                            // vertical side chamfer i.e. the space between consecutive walls.
+                            this.indexArray.emplaceBack(k + 2, k + 3, l);
+                            this.indexArray.emplaceBack(k + 3, l + 1, l);
+
+                            // top corner where the top(roof) and two sides(walls) meet.
+                            this.indexArray.emplaceBack(k + 3, t1, l + 1);
+
+                            segment.primitiveLength += 3;
+                        }
+                    }
 
                     if (isGlobe) {
                         const array: any = this.layoutVertexExtArray;
-                        const projectedP = projection.projectTilePoint(p.x, p.y, canonical);
-                        const n = projection.upVector(canonical, p.x, p.y);
-                        addGlobeExtVertex(array, projectedP, n);
+
+                        const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
+                        const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
+
+                        const n0 = projection.upVector(canonical, p0.x, p0.y);
+                        const n1 = projection.upVector(canonical, p1.x, p1.y);
+
+                        addGlobeExtVertex(array, projectedP0, n0);
+                        addGlobeExtVertex(array, projectedP0, n0);
+                        addGlobeExtVertex(array, projectedP1, n1);
+                        addGlobeExtVertex(array, projectedP1, n1);
                     }
                 }
+                if (isPolygon) topIndex += (ring.length - 1);
             }
-
-            const indices = earcut(flattened, holeIndices);
-            assert(indices.length % 3 === 0);
-
-            for (let j = 0; j < indices.length; j += 3) {
-                // Counter-clockwise winding order.
-                this.indexArray.emplaceBack(
-                    triangleIndex + indices[j],
-                    triangleIndex + indices[j + 2],
-                    triangleIndex + indices[j + 1]);
-            }
-
-            segment.primitiveLength += indices.length / 3;
-            segment.vertexLength += numVertices;
         }
 
         assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
@@ -558,15 +645,33 @@ class FillExtrusionBucket implements Bucket {
             if (append) {
                 this.centroidVertexArray.resize(this.centroidVertexArray.length + polyInfo.edges * 4 + polyInfo.top);
             }
+            for (let i = 0; i < polyInfo.top; i++) {
+                this.centroidVertexArray.emplace(offset++, x, y);
+            }
             for (let i = 0; i < polyInfo.edges * 2; i++) {
                 this.centroidVertexArray.emplace(offset++, 0, y);
                 this.centroidVertexArray.emplace(offset++, x, y);
             }
-            for (let i = 0; i < polyInfo.top; i++) {
-                this.centroidVertexArray.emplace(offset++, x, y);
-            }
         }
     }
+}
+
+function getCosHalfAngle(na, nb) {
+    const nm = na.add(nb)._unit();
+    const cosHalfAngle = na.x * nm.x + na.y * nm.y;
+    return cosHalfAngle;
+}
+
+function getRoundedEdgeOffset(p0, p1, p2, edgeRadius) {
+    const na = p1.sub(p0)._perp()._unit();
+    const nb = p2.sub(p1)._perp()._unit();
+    const cosHalfAngle = getCosHalfAngle(na, nb);
+    return _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
+}
+
+function _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius) {
+    const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
+    return Math.min(p0.dist(p1) / 3, p1.dist(p2) / 3, edgeRadius * sinHalfAngle / cosHalfAngle);
 }
 
 register(FillExtrusionBucket, 'FillExtrusionBucket', {omit: ['layers', 'features']});

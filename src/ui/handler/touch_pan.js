@@ -54,7 +54,9 @@ export default class TouchPanHandler {
             }
         }
 
-        e.preventDefault();
+        if (e.cancelable) {
+            e.preventDefault();
+        }
 
         return this._calculateTransform(e, points, mapTouches);
     }

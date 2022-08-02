@@ -1,0 +1,128 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 320,
+      "width": 320
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 30
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.00027,
+                    -0.00015
+                  ],
+                  [
+                    0.00015,
+                    -0.00027
+                  ],
+                  [
+                    0.0,
+                    -0.0003
+                  ],
+                  [
+                    -0.00015,
+                    -0.00024
+                  ],
+                  [
+                    -0.00024,
+                    -0.00015
+                  ],
+                  [
+                    -0.000285,
+                    -0.00003
+                  ],
+
+                  [
+                    -0.000285,
+                    0.00003
+                  ],
+                  [
+                    -0.00024,
+                    0.00015
+                  ],
+                  [
+                    -0.00015,
+                    0.00024
+                  ],
+                  [
+                    0.0,
+                    0.0003
+                  ],
+                  [
+                    0.00015,
+                    0.00027
+                  ],
+                  [
+                    0.00027,
+                    0.00015
+                  ],
+                  [
+                    0.0,
+                    0.0
+                  ]
+                ],
+                [
+                  [
+                    0.00006,
+                    0.00012
+                  ],
+                  [
+                    0.00009,
+                    0.00015
+                  ],
+                  [
+                    0.00006,
+                    0.00018
+                  ],
+                  [
+                    0.00003,
+                    0.00015
+                  ],
+                  [
+                    0.00006,
+                    0.00012
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 45,
+  "bearing": 45,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 30,
+        "fill-extrusion-color": "red"
+      },
+      "layout": {
+        "fill-extrusion-edge-radius": 0.7
+      }
+    }
+  ]
+}

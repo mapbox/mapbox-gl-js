@@ -172,7 +172,7 @@ class GeolocateControl extends Evented {
                 callback(this._supportsGeolocation);
             });
         } else {
-            this._supportsGeolocation = !!this.geolocation;
+            this._supportsGeolocation = !!this.options.geolocation;
             callback(this._supportsGeolocation);
         }
     }

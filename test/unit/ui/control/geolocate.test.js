@@ -29,10 +29,13 @@ function lngLatAsFixed(lngLat, digits) {
 
 test('GeolocateControl with no options', (t) => {
     const map = createMap(t);
-    t.plan(0);
+    t.plan(1);
 
     const geolocate = new GeolocateControl();
     map.addControl(geolocate);
+
+    t.equal(geolocate._geolocateButton.disabled, false);
+
     t.end();
 });
 

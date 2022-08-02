@@ -77,6 +77,7 @@ declare module "gl-matrix" {
         create(): Float32Array,
 
         fromScaling<T: Mat4>(T, Vec3): T,
+        fromTranslation<T: Mat4>(T, Vec3): T,
         fromQuat<T: Mat4>(T, Quat): T,
         ortho<T: Mat4>(T, number, number, number, number, number, number): T,
         perspective<T: Mat4>(T, number, number, number, number): T,

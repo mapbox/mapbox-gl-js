@@ -12,7 +12,7 @@ import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
@@ -32,7 +32,8 @@ export type FillExtrusionUniformsType = {|
     'u_merc_center': Uniform2f,
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
-    'u_ao': Uniform2f
+    'u_ao': Uniform2f,
+    'u_edge_radius': Uniform1f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -42,6 +43,8 @@ export type FillExtrusionPatternUniformsType = {|
     'u_lightcolor': Uniform3f,
     'u_height_factor': Uniform1f,
     'u_vertical_gradient': Uniform1f,
+    'u_ao': Uniform2f,
+    'u_edge_radius': Uniform1f,
     // globe uniforms:
     'u_tile_id': Uniform3f,
     'u_zoom_transition': Uniform1f,
@@ -56,50 +59,51 @@ export type FillExtrusionPatternUniformsType = {|
     'u_pixel_coord_lower': Uniform2f,
     'u_scale': Uniform3f,
     'u_fade': Uniform1f,
-    'u_opacity': Uniform1f,
-    'u_ao': Uniform2f
+    'u_opacity': Uniform1f
 |};
 
-const fillExtrusionUniforms = (context: Context, locations: UniformLocations): FillExtrusionUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_lightpos': new Uniform3f(context, locations.u_lightpos),
-    'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
-    'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
-    'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
-    'u_opacity': new Uniform1f(context, locations.u_opacity),
+const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_lightpos': new Uniform3f(context),
+    'u_lightintensity': new Uniform1f(context),
+    'u_lightcolor': new Uniform3f(context),
+    'u_vertical_gradient': new Uniform1f(context),
+    'u_opacity': new Uniform1f(context),
+    'u_edge_radius': new Uniform1f(context),
+    'u_ao': new Uniform2f(context),
     // globe uniforms:
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_up_dir': new Uniform3f(context, locations.u_up_dir),
-    'u_height_lift': new Uniform1f(context, locations.u_height_lift),
-    'u_ao': new Uniform2f(context, locations.u_ao)
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_up_dir': new Uniform3f(context),
+    'u_height_lift': new Uniform1f(context)
 });
 
-const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): FillExtrusionPatternUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_lightpos': new Uniform3f(context, locations.u_lightpos),
-    'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
-    'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
-    'u_vertical_gradient': new Uniform1f(context, locations.u_vertical_gradient),
-    'u_height_factor': new Uniform1f(context, locations.u_height_factor),
+const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_lightpos': new Uniform3f(context),
+    'u_lightintensity': new Uniform1f(context),
+    'u_lightcolor': new Uniform3f(context),
+    'u_vertical_gradient': new Uniform1f(context),
+    'u_height_factor': new Uniform1f(context),
+    'u_edge_radius': new Uniform1f(context),
+    'u_ao': new Uniform2f(context),
     // globe uniforms:
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_up_dir': new Uniform3f(context, locations.u_up_dir),
-    'u_height_lift': new Uniform1f(context, locations.u_height_lift),
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_up_dir': new Uniform3f(context),
+    'u_height_lift': new Uniform1f(context),
     // pattern uniforms
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
-    'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_scale': new Uniform3f(context, locations.u_scale),
-    'u_fade': new Uniform1f(context, locations.u_fade),
-    'u_opacity': new Uniform1f(context, locations.u_opacity),
-    'u_ao': new Uniform2f(context, locations.u_ao)
+    'u_image': new Uniform1i(context),
+    'u_texsize': new Uniform2f(context),
+    'u_pixel_coord_upper': new Uniform2f(context),
+    'u_pixel_coord_lower': new Uniform2f(context),
+    'u_scale': new Uniform3f(context),
+    'u_fade': new Uniform1f(context),
+    'u_opacity': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create();
@@ -110,6 +114,7 @@ const fillExtrusionUniformValues = (
     shouldUseVerticalGradient: boolean,
     opacity: number,
     aoIntensityRadius: [number, number],
+    edgeRadius: number,
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -142,7 +147,8 @@ const fillExtrusionUniformValues = (
         'u_merc_center': [0, 0],
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
-        'u_ao': aoIntensityRadius
+        'u_ao': aoIntensityRadius,
+        'u_edge_radius': edgeRadius
     };
 
     if (tr.projection.name === 'globe') {
@@ -163,6 +169,7 @@ const fillExtrusionPatternUniformValues = (
     shouldUseVerticalGradient: boolean,
     opacity: number,
     aoIntensityRadius: [number, number],
+    edgeRadius: number,
     coord: OverscaledTileID,
     crossfade: CrossfadeParameters,
     tile: Tile,
@@ -172,7 +179,7 @@ const fillExtrusionPatternUniformValues = (
     invMatrix: Float32Array
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
-        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, coord,
+        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, coord,
         heightLift, zoomTransition, mercatorCenter, invMatrix);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8

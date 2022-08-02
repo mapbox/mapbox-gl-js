@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #radius {
+            position: absolute;
+            width: 700px;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<!-- <input type="range" id="radius" min="0" max="50" step="any" value="20" />
+ -->
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true
+});
+
+map.on('load', () => {
+
+    map.addLayer({
+        'id': 'add-3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'layout': {
+            'fill-extrusion-edge-radius': 0.4
+        },
+        'paint': {
+            'fill-extrusion-color': '#bbb',
+            'fill-extrusion-height': ['get', 'height'],
+            'fill-extrusion-base': ['get', 'min_height'],
+            'fill-extrusion-opacity': 1,
+            'fill-extrusion-ambient-occlusion-intensity': 0.5,
+            'fill-extrusion-ambient-occlusion-radius': 0.1
+        }
+    });
+
+    map.setLight({intensity: 0.7});
+});
+
+</script>
+</body>
+</html>
