@@ -67,7 +67,7 @@ Done in 2.32s.
 
 ### Enable ANGLE configuration on render tests
 
-While running render tests locally, you can opt to use the chrome flag `--use-angle` to choose a graphics backend for ANGLE. Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
+Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
 
 To configure the ANGLE backend, you can set the `--use-angle` input value to `USE_ANGLE` in CLI like so:
 ```
