@@ -34,25 +34,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-// const radiusEl = document.getElementById('radius');
-
-// window.edgeRadius = +radiusEl.value;
-
-// radiusEl.oninput = () => {
-//     window.edgeRadius = +radiusEl.value;
-//     map.triggerRepaint();
-// }
-
 map.on('load', () => {
-
-    // map.addSource('mapbox-dem', {
-    //     "type": "raster-dem",
-    //     "url": "mapbox://mapbox.terrain-rgb",
-    //     "tileSize": 512,
-    //     "maxzoom": 14
-    // });
-
-    // map.setTerrain({"source": "mapbox-dem"});
 
     map.addLayer({
         'id': 'add-3d-buildings',
@@ -62,14 +44,15 @@ map.on('load', () => {
         'type': 'fill-extrusion',
         'minzoom': 15,
         'layout': {
-            'fill-extrusion-edge-radius': 0.2
+            'fill-extrusion-edge-radius': 0.4
         },
         'paint': {
             'fill-extrusion-color': '#bbb',
             'fill-extrusion-height': ['get', 'height'],
             'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 1
-            // "fill-extrusion-pattern": "aquarium-15"
+            'fill-extrusion-opacity': 1,
+            'fill-extrusion-ambient-occlusion-intensity': 0.5,
+            'fill-extrusion-ambient-occlusion-radius': 0.1
         }
     });
 
