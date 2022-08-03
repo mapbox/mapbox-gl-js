@@ -222,7 +222,7 @@ class Aabb {
         return pointOnAabb - point[2];
     }
 
-    getCorners(): Array<Array<number>> {
+    getCorners(): Array<Vec3> {
         const mn = this.min;
         const mx = this.max;
         return [

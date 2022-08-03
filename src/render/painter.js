@@ -37,7 +37,7 @@ import fillExtrusion from './draw_fill_extrusion.js';
 import hillshade from './draw_hillshade.js';
 import raster from './draw_raster.js';
 import background from './draw_background.js';
-import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
+import debug, {drawDebugPadding, drawDebugQueryGeometry, drawAabbs} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import drawAtmosphere from './draw_atmosphere.js';
@@ -88,6 +88,7 @@ type PainterOptions = {
     showTileBoundaries: boolean,
     showTerrainWireframe: boolean,
     showQueryGeometry: boolean,
+    showTileAABBs: boolean,
     showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
@@ -656,7 +657,7 @@ class Painter {
             this.terrain.postRender();
         }
 
-        if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
+        if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             //Use source with highest maxzoom
             let selectedSource = null;
             const layers = values(this.style._layers);
@@ -671,6 +672,9 @@ class Painter {
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
                     draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                }
+                if (this.options.showTileAABBs) {
+                    drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                 }
 
                 Debug.run(() => {
