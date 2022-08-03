@@ -67,6 +67,8 @@ class Transform {
     // Distance from camera to the center, in screen pixel units, independent of zoom
     cameraToCenterDistance: number;
 
+    _useFixedPixelSpaceConversion: boolean;
+
     // Projection from mercator coordinates ([0, 0] nw, [1, 1] se) to GL clip coordinates
     mercatorMatrix: Array<number>;
 
@@ -173,6 +175,7 @@ class Transform {
         this._nearZ = 0;
         this._farZ = 0;
         this._unmodified = true;
+        this._useFixedPixelSpaceConversion = true;
         this._edgeInsets = new EdgeInsets();
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
@@ -196,6 +199,8 @@ class Transform {
         clone._centerAltitude = this._centerAltitude;
         clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
         clone.tileSize = this.tileSize;
+        clone._useFixedPixelSpaceConversion = this._useFixedPixelSpaceConversion;
+        clone.mercatorFromTransition = this.mercatorFromTransition;
         clone.width = this.width;
         clone.height = this.height;
         clone.cameraElevationReference = this.cameraElevationReference;
@@ -215,6 +220,11 @@ class Transform {
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.frustumCorners = this.frustumCorners;
         return clone;
+    }
+
+    set useFixedPixelSpaceConversion(useFixedPixelSpaceConversion: boolean) {
+        this._useFixedPixelSpaceConversion = useFixedPixelSpaceConversion;
+        this._calcMatrices();
     }
 
     get elevation(): ?Elevation { return this._elevation; }
@@ -374,9 +384,19 @@ class Transform {
         this._calcMatrices();
     }
 
-    get fov(): number {
-        return this._fov / Math.PI * 180;
+    get aspect(): mumber {
+        return this.width / this.height;
     }
+
+    get fovX(): number {
+        return this._fov;
+    }
+
+    get fovY(): number {
+        const focalLength = 1.0 / Math.tan(this.fovX * 0.5);
+        return 2 * Math.atan((1.0 / this.aspect) / focalLength);
+    }
+
     set fov(fov: number) {
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return;
@@ -1717,7 +1737,7 @@ class Transform {
         // 'this._pixelsPerMercatorPixel' is the ratio between pixelsPerMeter in the current projection relative to Mercator.
         // This is useful for converting e.g. camera position between pixel spaces as some logic
         // such as raycasting expects the scale to be in mercator pixels
-        this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT);
+        this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT, this._useFixedPixelSpaceConversion);
 
         this.cameraToCenterDistance = 0.5 / Math.tan(this._fov * 0.5) * this.height * this._pixelsPerMercatorPixel;
 
@@ -2077,8 +2097,20 @@ class Transform {
 
     getCameraToCenterDistance(projection: Projection): number {
         const t = getProjectionInterpolationT(projection, this.zoom, this.width, this.height, 1024);
-        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
+        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t, this._useFixedPixelSpaceConversion);
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
+    }
+
+
+    getWorldToCameraMatrix(): mat4 {
+        const zUnit = this.projection.zAxisUnit === "meters" ? this.pixelsPerMeter : 1.0;
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
+
+        if (this.projection.name === 'globe') {
+            mat4.multiply(worldToCamera, worldToCamera, this.globeMatrix);
+        }
+
+        return worldToCamera;
     }
 }
 

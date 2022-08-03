@@ -23,7 +23,7 @@
             color: #000;
             position: absolute;
             top: 10px;
-            right: 5%;
+            left: 50%;
             z-index: 1;
             border: none;
             width: 200px;
@@ -108,10 +108,12 @@ map.on('load', function() {
     map.setFog({});
 
     document.getElementById('zoomto').addEventListener('click', () => {
-        map.easeTo(map.cameraForBounds([
+        const bounds = [
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]]
-        ]));
+        ];
+        const camera = map.cameraForBounds(bounds, { bearing: map.getBearing() });
+        map.easeTo(camera);
     });
 });
 
