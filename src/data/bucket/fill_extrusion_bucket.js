@@ -236,7 +236,7 @@ class FillExtrusionBucket implements Bucket {
         this.borders = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
-        this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
+        this.edgeRadius = this.layers[0].layout && this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
