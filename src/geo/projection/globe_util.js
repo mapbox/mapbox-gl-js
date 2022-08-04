@@ -476,17 +476,12 @@ export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Arra
 }
 
 export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Float32Array {
-    const poleMatrix = mat4.identity(new Float64Array(16));
-    const numTiles = 1 << z;
-    const xOffsetAngle = (x / numTiles - 0.5) * 360;
-    const point = tr.point;
-    const ws = tr.worldSize;
-    const s = tr.worldSize / (tr.tileSize * numTiles);
+    const poleMatrix = calculateGlobeMatrix(tr);
 
-    mat4.translate(poleMatrix, poleMatrix, [point.x, point.y, -(ws / Math.PI / 2.0)]);
-    mat4.scale(poleMatrix, poleMatrix, [s, s, s]);
-    mat4.rotateX(poleMatrix, poleMatrix, degToRad(-tr._center.lat));
-    mat4.rotateY(poleMatrix, poleMatrix, degToRad(-tr._center.lng + xOffsetAngle));
+    // Rotate the pole triangle fan to the correct location
+    const numTiles = 1 << z;
+    const xOffsetAngle = (x / numTiles - 0.5) * Math.PI * 2.0;
+    mat4.rotateY(poleMatrix, poleMatrix, xOffsetAngle);
 
     return Float32Array.from(poleMatrix);
 }
@@ -651,18 +646,17 @@ export class GlobeSharedBuffers {
 
         for (let zoom = 0, offset = 0; zoom < GLOBE_ZOOM_THRESHOLD_MIN; zoom++) {
             const tiles = 1 << zoom;
-            const radius = tiles * TILE_SIZE / Math.PI / 2.0;
             const endAngle = 360.0 / tiles;
 
-            northVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 0); // place the tip
-            southVertices.emplaceBack(0, -radius, 0, 0, 0, 0.5, 1);
+            northVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 0); // place the tip
+            southVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 1);
 
             for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
                 const uvX = i / GLOBE_VERTEX_GRID_SIZE;
                 const angle = interpolate(0, endAngle, uvX);
-                const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, radius);
-                northVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 0);
-                southVertices.emplaceBack(gx, gy, gz, 0, 0, uvX, 1);
+                const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, GLOBE_RADIUS);
+                northVertices.emplaceBack(gx, gy, gz, uvX, 0);
+                southVertices.emplaceBack(gx, gy, gz, uvX, 1);
             }
 
             this._poleSegments.push(SegmentVector.simpleSegment(offset, 0, poleVertices, polePrimitives));
