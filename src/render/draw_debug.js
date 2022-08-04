@@ -271,16 +271,15 @@ export function drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Ar
 
     const worldToECEFMatrix = mat4.invert(new Float64Array(16), tr.globeMatrix);
     const ecefToPixelMatrix = mat4.multiply(mat4.identity(new Float64Array(16)), tr.pixelMatrix, tr.globeMatrix);
-    const numTiles =  1 << tr.coveringZoomLevel({tileSize: tr.tileSize});
 
     if (!tr.freezeTileCoverage) {
         aabbCorners = coords.map(coord => {
-            const aabb = aabbForTileOnGlobe(tr, numTiles, coord.canonical);
+            // Get tile AABBs in world/pixel space scaled by worldSize
+            const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical);
             const corners = aabb.getCorners();
             // Store AABBs to rectangular prisms in ECEF, this allows viewing them from other angles
             // when transform.freezeTileCoverage is enabled.
             for (const pos of corners) {
-                vec3.scale(pos, pos, tr.worldSize / numTiles);
                 vec3.transformMat4(pos, pos, worldToECEFMatrix);
             }
             return corners;
