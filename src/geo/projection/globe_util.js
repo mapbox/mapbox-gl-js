@@ -223,29 +223,23 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     return Aabb.fromPoints(corners);
 }
 
-function updateCorners(cornerMin, cornerMax, corners, globeMatrix, scale) {
+function transformPoints(corners: Array<Vec3>, globeMatrix: Mat4, scale: number) {
     for (const corner of corners) {
         vec3.transformMat4(corner, corner, globeMatrix);
         vec3.scale(corner, corner, scale);
-        vec3.min(cornerMin, cornerMin, corner);
-        vec3.max(cornerMax, cornerMax, corner);
     }
 }
 
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
-
-    const mx = Number.MAX_VALUE;
-    const cornerMax = [-mx, -mx, -mx];
-    const cornerMin = [mx, mx, mx];
     const m = tr.globeMatrix;
 
     if (tileId.z <= 1) {
-        // Compute minimum bounding box that fully encapsulates
-        // transformed corners of the local aabb
-        const aabb = globeTileBounds(tileId);
-        updateCorners(cornerMin, cornerMax, aabb.getCorners(), m, scale);
-        return new Aabb(cornerMin, cornerMax);
+        // Compute world/pixel space AABB that fully encapsulates
+        // transformed corners of the ECEF AABB
+        const corners = globeTileBounds(tileId).getCorners();
+        transformPoints(corners, m, scale);
+        return Aabb.fromPoints(corners);
     }
 
     // Find minimal aabb for a tile. Correct solution would be to compute bounding box that
@@ -263,12 +257,21 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     const bounds = tileCornersToBounds(tileId);
     const corners = boundsToECEF(bounds);
 
-    // Note that here we're transforming the corners to world space while finding the min/max values.
-    updateCorners(cornerMin, cornerMax, corners, m, scale);
+    // Transform the corners to world space
+    transformPoints(corners, m, scale);
 
+    const mx = Number.MAX_VALUE;
+    const cornerMax = [-mx, -mx, -mx];
+    const cornerMin = [mx, mx, mx];
+
+    // Extend the aabb by including the center point. There are some corner cases where center point is inside the
+    // tile but due to curvature aabb computed from corner points does not cover the curved area.
     if (bounds.contains(tr.center)) {
-        // Extend the aabb by including the center point. There are some corner cases where center point is inside the
-        // tile but due to curvature aabb computed from corner points does not cover the curved area.
+
+        for (const corner of corners) {
+            vec3.min(cornerMin, cornerMin, corner);
+            vec3.max(cornerMax, cornerMax, corner);
+        }
         cornerMax[2] = 0.0;
         const point = tr.point;
         const center = [point.x * scale, point.y * scale, 0];
@@ -278,7 +281,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         return new Aabb(cornerMin, cornerMax);
     }
 
-    // Compute parameters describing edges of the tile (i.e. arcs) on the globe surface.
+    // Compute arcs describing edges of the tile on the globe surface.
     // Vertical edges revolves around the globe origin whereas horizontal edges revolves around the y-axis.
     const arcCenter = [m[12] * scale, m[13] * scale, m[14] * scale];
 
@@ -321,6 +324,27 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         (localExtremum(closestArc, 1) || arcStart[1]),
         (localExtremum(closestArc, 2) || arcStart[2])];
 
+    const phase = globeToMercatorTransition(tr.zoom);
+    if (phase > 0.0) {
+        const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
+        // Interpolate the four corners towards their world space location in mercator projection during transition.
+        for (let i = 0; i < corners.length; i++) {
+            vec3.scale(corners[i], corners[i], 1 - phase);
+            vec3.scaleAndAdd(corners[i], corners[i], mercatorCorners[i], phase);
+        }
+        // Calculate the midpoint of the closest edge midpoint in Mercator
+        const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
+        vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
+        // Interpolate globe extremum toward Mercator midpoint
+        vec3.scale(arcExtremum, arcExtremum, 1 - phase);
+        vec3.scaleAndAdd(arcExtremum, arcExtremum, mercatorMidpoint, phase);
+    }
+
+    for (const corner of corners) {
+        vec3.min(cornerMin, cornerMin, corner);
+        vec3.max(cornerMax, cornerMax, corner);
+    }
+
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
     // of tiles farther away from the center as they would otherwise intersect with far end
     // of the view frustum
@@ -337,6 +361,39 @@ export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
     const sw = new LngLat(lngFromMercatorX(x * s), latFromMercatorY((y + 1) * s));
     const ne = new LngLat(lngFromMercatorX((x + 1) * s), latFromMercatorY(y * s));
     return new LngLatBounds(sw, ne);
+}
+
+function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: number, mercatorScale: number, camX: number, camY: number): Array<Vec3> {
+
+    const tileScale = 1.0 / (1 << z);
+    // Values in Mercator coordinates (0 - 1)
+    let w = x * tileScale;
+    let e = w + tileScale;
+    let n = y * tileScale;
+    let s = n + tileScale;
+
+    // // Ensure that the tile viewed is the nearest when across the antimeridian
+    let wrap = 0;
+    const tileCenterXFromCamera = (w + e) / 2  - camX;
+    if (tileCenterXFromCamera > .5) {
+        wrap = -1;
+    } else if (tileCenterXFromCamera < -.5) {
+        wrap = 1;
+    }
+
+    camX *= numTiles;
+    camY *= numTiles;
+
+    //  Transform Mercator coordinates to points on the plane tangent to the globe at cameraCenter.
+    w  = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
+    e  = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
+    n  = (n * numTiles - camY) * mercatorScale + camY;
+    s  = (s * numTiles - camY) * mercatorScale + camY;
+
+    return [[w, s, 0],
+        [e, s, 0],
+        [w, n, 0],
+        [e, n, 0]];
 }
 
 function boundsToECEF(bounds: LngLatBounds) {
