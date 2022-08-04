@@ -1,10 +1,10 @@
 // @flow
 
 const locale = {
-    "AttributionControl.ToggleAttribution": "속성 전환",
+    "AttributionControl.ToggleAttribution": "속성 보기/닫기",
     "AttributionControl.MapFeedback": "지도 피드백",
     "FullscreenControl.Enter": "전체 화면으로 전환",
-    "FullscreenControl.Exit": "전체화면 종료",
+    "FullscreenControl.Exit": "전체 화면 종료",
     "GeolocateControl.FindMyLocation": "내 위치 찾기",
     "GeolocateControl.LocationNotAvailable": "위치를 사용할 수 없음",
     "LogoControl.Title": "맵박스 로고",
