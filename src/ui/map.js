@@ -15,7 +15,6 @@ import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
 import LngLat from '../geo/lng_lat.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control.js';
@@ -67,7 +66,6 @@ import type {
     TransitionSpecification
 } from '../style-spec/types.js';
 import type StyleLayer from '../style/style_layer.js';
-import type {ElevationQueryOptions} from '../terrain/elevation.js';
 import type {Source} from '../source/source.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {QueryResult} from '../data/feature_index.js';
@@ -1773,31 +1771,6 @@ class Map extends Camera {
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         return this.style.querySourceFeatures(sourceId, parameters);
-    }
-
-    /**
-     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
-     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
-     *
-     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
-     *
-     * @param {LngLatLike} lnglat The geographical location at which to query.
-     * @param {ElevationQueryOptions} [options] Options object.
-     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
-     * When `false`, returns the raw value of the underlying data without styling applied.
-     * @returns {number | null} The elevation in meters.
-     * @example
-     * const coordinate = [-122.420679, 37.772537];
-     * const elevation = map.queryTerrainElevation(coordinate);
-     * @see [Example: Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
-     */
-    queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
-        const elevation = this.transform.elevation;
-        if (elevation) {
-            options = extend({}, {exaggerated: true}, options);
-            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
-        }
-        return null;
     }
 
     /** @section {Working with styles} */

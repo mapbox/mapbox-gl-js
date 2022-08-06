@@ -109,6 +109,18 @@ map.on('load', function() {
 
     map.setFog({});
 
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.terrain-rgb',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+
+    map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': 1.5
+    });
+
     document.getElementById('zoomto').addEventListener('click', () => {
         const bounds = [
             [bbox[0], bbox[1]],

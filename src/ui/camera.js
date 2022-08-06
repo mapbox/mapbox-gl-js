@@ -37,12 +37,12 @@ import type {FreeCameraOptions} from './free_camera.js';
 import type Transform from '../geo/transform.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {ElevationQueryOptions} from '../terrain/elevation.js';
 import type {TaskID} from '../util/task_queue.js';
 import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {Aabb, Frustum} from '../util/primitives.js';
+import {Aabb} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
-import type {Vec3} from 'gl-matrix';
 
 /**
  * A helper type: converts all Object type values to non-maybe types.
@@ -588,7 +588,9 @@ class Camera extends Evented {
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): ?EasingOptions {
         bounds = LngLatBounds.convert(bounds);
         const bearing = (options && options.bearing) || 0;
-        return this._cameraForBoxAndBearing(this.transform, bounds.getNorthWest(), bounds.getSouthEast(), bearing, options);
+        const lnglat0 = bounds.getNorthWest();
+        const lnglat1 = bounds.getSouthEast();
+        return this._cameraForAabb(this.transform, lnglat0, lnglat1, bearing, options);
     }
 
     _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
@@ -637,7 +639,7 @@ class Camera extends Evented {
         return minimumDistance;
     }
 
-    _cameraForBoxAndBearingOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForAabbOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
 
@@ -718,10 +720,35 @@ class Camera extends Evented {
         if (zoom > halfZoomTransition) {
             tr.setProjection({name: 'mercator'});
             tr.zoom = zoom;
-            return this._cameraForBoxAndBearing(tr, p0, p1, bearing, options);
+            return this._cameraForAabb(tr, p0, p1, bearing, options);
         }
 
         return {center: tr.center, zoom, bearing};
+    }
+
+    /**
+     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
+     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
+     *
+     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
+     *
+     * @param {LngLatLike} lnglat The geographical location at which to query.
+     * @param {ElevationQueryOptions} [options] Options object.
+     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
+     * When `false`, returns the raw value of the underlying data without styling applied.
+     * @returns {number | null} The elevation in meters.
+     * @example
+     * const coordinate = [-122.420679, 37.772537];
+     * const elevation = map.queryTerrainElevation(coordinate);
+     * @see [Example: Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
+     */
+    queryTerrainElevation(lnglat: LngLatLike, options: ?ElevationQueryOptions): number | null {
+        const elevation = this.transform.elevation;
+        if (elevation) {
+            options = extend({}, {exaggerated: true}, options);
+            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
+        }
+        return null;
     }
 
     /**
@@ -743,13 +770,13 @@ class Camera extends Evented {
      * var p0 = [-79, 43];
      * var p1 = [-73, 45];
      * var bearing = 90;
-     * var newCameraTransform = map._cameraForBoxAndBearing(p0, p1, bearing, {
+     * var newCameraTransform = map._cameraForAabb(p0, p1, bearing, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    _cameraForBoxAndBearing(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForAabb(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         if (transform.projection.name === 'globe') {
-            return this._cameraForBoxAndBearingOnGlobe(transform, p0, p1, bearing, options);
+            return this._cameraForAabbOnGlobe(transform, p0, p1, bearing, options);
         }
 
         const tr = transform.clone();
@@ -758,10 +785,24 @@ class Camera extends Evented {
 
         tr.bearing = bearing;
 
-        const p0world = tr.project(LngLat.convert(p0));
-        const p1world = tr.project(LngLat.convert(p1));
+        const coord0 = LngLat.convert(p0);
+        const coord1 = LngLat.convert(p1);
+        const coord2 = new LngLat(coord0.lng, coord1.lat);
+        const coord3 = new LngLat(coord1.lng, coord0.lat);
 
-        const worldCoords = [[p0world.x, p0world.y, 0], [p1world.x, p1world.y, 0]];
+        const p0world = tr.project(coord0);
+        const p1world = tr.project(coord1);
+
+        const z0 = this.queryTerrainElevation(coord0);
+        const z1 = this.queryTerrainElevation(coord1);
+        const z2 = this.queryTerrainElevation(coord2);
+        const z3 = this.queryTerrainElevation(coord3);
+
+        const worldCoords = [
+            [p0world.x, p0world.y, Math.min(z0 || 0, z1 || 0, z2 || 0, z3 || 0)],
+            [p1world.x, p1world.y, Math.max(z0 || 0, z1 || 0, z2 || 0, z3 || 0)]
+        ];
+
         let aabb = Aabb.fromPoints(worldCoords);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
@@ -829,109 +870,10 @@ class Camera extends Evented {
         if (tr.mercatorFromTransition && zoom < halfZoomTransition) {
             tr.setProjection({name: 'globe'});
             tr.zoom = zoom;
-            return this._cameraForBoxAndBearing(tr, p0, p1, bearing, options);
+            return this._cameraForAabb(tr, p0, p1, bearing, options);
         }
 
         return {center, zoom, bearing};
-    }
-
-    /**
-     * Finds the best camera fit for two given viewport point coordinates.
-     * The method will iteratively ray march towards the target and stops
-     * when any of the given input points collides with the view frustum.
-     * @memberof Map#
-     * @param {LngLatLike} p0 First point
-     * @param {LngLatLike} p1 Second point
-     * @param {number} minAltitude Optional min altitude in meters
-     * @param {number} maxAltitude Optional max altitude in meters
-     * @param {CameraOptions | null} options
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
-     *      `center`, `zoom`, `bearing` and `pitch`. If map is unable to fit, method will warn and return undefined.
-     * @private
-     */
-    _cameraForBox(p0: LngLatLike, p1: LngLatLike, minAltitude?: number, maxAltitude?: number, options?: CameraOptions): ?EasingOptions {
-        const eOptions = this._extendCameraOptions(options);
-
-        minAltitude = minAltitude || 0;
-        maxAltitude = maxAltitude || 0;
-
-        p0 = LngLat.convert(p0);
-        p1 = LngLat.convert(p1);
-
-        const tr = this.transform.clone();
-        tr.padding = eOptions.padding;
-
-        const camera = this.getFreeCameraOptions();
-        const focus = new LngLat((p0.lng + p1.lng) * 0.5, (p0.lat + p1.lat) * 0.5);
-        const focusAltitude = (minAltitude + maxAltitude) * 0.5;
-
-        if (tr._camera.position[2] < mercatorZfromAltitude(focusAltitude, focus.lat)) {
-            warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
-            return;
-        }
-
-        camera.lookAtPoint(focus);
-
-        tr.setFreeCameraOptions(camera);
-
-        const coord0 = MercatorCoordinate.fromLngLat(p0);
-        const coord1 = MercatorCoordinate.fromLngLat(p1);
-
-        const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
-
-        const centerIntersectionPoint = tr.pointRayIntersection(tr.centerPoint, focusAltitude);
-        const centerIntersectionCoord = toVec3(tr.rayIntersectionCoordinate(centerIntersectionPoint));
-        const centerMercatorRay = tr.screenPointToMercatorRay(tr.centerPoint);
-        const zInMeters = tr.projection.name !== 'globe';
-
-        const maxMarchingSteps = 10;
-
-        let steps = 0;
-        let halfDistanceToGround;
-        do {
-            const z = Math.floor(tr.zoom);
-            const z2 = 1 << z;
-
-            const minX = Math.min(z2 * coord0.x, z2 * coord1.x);
-            const minY = Math.min(z2 * coord0.y, z2 * coord1.y);
-            const maxX = Math.max(z2 * coord0.x, z2 * coord1.x);
-            const maxY = Math.max(z2 * coord0.y, z2 * coord1.y);
-
-            const aabb = new Aabb([minX, minY, minAltitude], [maxX, maxY, maxAltitude]);
-
-            const frustum = Frustum.fromInvProjectionMatrix(tr.invProjMatrix, tr.worldSize, z, zInMeters);
-
-            // Stop marching when frustum intersection
-            // reports any aabb point not fully inside
-            if (aabb.intersects(frustum) !== 2) {
-                // Went too far, step one iteration back
-                if (halfDistanceToGround) {
-                    tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, centerMercatorRay.dir, -halfDistanceToGround);
-                    tr._updateStateFromCamera();
-                }
-                break;
-            }
-
-            const cameraPositionToGround = vec3.sub([], tr._camera.position, centerIntersectionCoord);
-            halfDistanceToGround = 0.5 * vec3.length(cameraPositionToGround);
-
-            // March the camera position forward by half the distance to the ground
-            tr._camera.position = vec3.scaleAndAdd([], tr._camera.position, centerMercatorRay.dir, halfDistanceToGround);
-            try {
-                tr._updateStateFromCamera();
-            } catch (e) {
-                warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
-                return;
-            }
-        } while (++steps < maxMarchingSteps);
-
-        return {
-            center: tr.center,
-            zoom: tr.zoom,
-            bearing: tr.bearing,
-            pitch: tr.pitch
-        };
     }
 
     /**
@@ -963,51 +905,8 @@ class Camera extends Evented {
      * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: Object): this {
-        if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support fitBounds API, this API may behave unexpectedly.');
-        }
-
-        return this._fitInternal(
-            this.cameraForBounds(bounds, options),
-            options,
-            eventData);
-    }
-
-    _raycastElevationBox(point0: Point, point1: Point): ?ElevationBoxRaycast {
-        const elevation = this.transform.elevation;
-
-        if (!elevation) return;
-
-        const point2 = new Point(point0.x, point1.y);
-        const point3 = new Point(point1.x, point0.y);
-
-        const r0 = elevation.pointCoordinate(point0);
-        if (!r0) return;
-        const r1 = elevation.pointCoordinate(point1);
-        if (!r1) return;
-        const r2 = elevation.pointCoordinate(point2);
-        if (!r2) return;
-        const r3 = elevation.pointCoordinate(point3);
-        if (!r3) return;
-
-        const m0 = new MercatorCoordinate(r0[0], r0[1]).toLngLat();
-        const m1 = new MercatorCoordinate(r1[0], r1[1]).toLngLat();
-        const m2 = new MercatorCoordinate(r2[0], r2[1]).toLngLat();
-        const m3 = new MercatorCoordinate(r3[0], r3[1]).toLngLat();
-
-        const minLng = Math.min(m0.lng, Math.min(m1.lng, Math.min(m2.lng, m3.lng)));
-        const minLat = Math.min(m0.lat, Math.min(m1.lat, Math.min(m2.lat, m3.lat)));
-
-        const maxLng = Math.max(m0.lng, Math.max(m1.lng, Math.max(m2.lng, m3.lng)));
-        const maxLat = Math.max(m0.lat, Math.max(m1.lat, Math.max(m2.lat, m3.lat)));
-
-        const minAltitude = Math.min(r0[3], Math.min(r1[3], Math.min(r2[3], r3[3])));
-        const maxAltitude = Math.max(r0[3], Math.max(r1[3], Math.max(r2[3], r3[3])));
-
-        const minLngLat = new LngLat(minLng, minLat);
-        const maxLngLat = new LngLat(maxLng, maxLat);
-
-        return {minLngLat, maxLngLat, minAltitude, maxAltitude};
+        const cameraPlacement = this.cameraForBounds(bounds, options);
+        return this._fitInternal(cameraPlacement, options, eventData);
     }
 
     /**
@@ -1041,50 +940,32 @@ class Camera extends Evented {
      * @see Used by {@link BoxZoomHandler}
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: EasingOptions, eventData?: Object): this {
-        if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support fitScreenCoordinates API, this API may behave unexpectedly.');
-        }
+        const screen0 = Point.convert(p0);
+        const screen1 = Point.convert(p1);
 
-        let lngLat0, lngLat1, minAltitude, maxAltitude;
-        const point0 = Point.convert(p0);
-        const point1 = Point.convert(p1);
+        const min = new Point(Math.min(screen0.x, screen1.x), Math.min(screen0.y, screen1.y));
+        const max = new Point(Math.max(screen0.x, screen1.x), Math.max(screen0.y, screen1.y));
 
-        const raycast = this._raycastElevationBox(point0, point1);
+        const horizon = this.transform.horizonLineFromTop();
 
-        if (!raycast) {
-            if (this.transform.anyCornerOffEdge(point0, point1)) {
-                return this;
-            }
+        if (this.transform.projection.name === 'mercator' && min.y < horizon) return this;
 
-            lngLat0 = this.transform.pointLocation(point0);
-            lngLat1 = this.transform.pointLocation(point1);
-        } else {
-            lngLat0 = raycast.minLngLat;
-            lngLat1 = raycast.maxLngLat;
-            minAltitude = raycast.minAltitude;
-            maxAltitude = raycast.maxAltitude;
-        }
+        const lnglat0 = this.transform.pointLocation3D(min);
+        const lnglat1 = this.transform.pointLocation3D(max);
+        const lnglat2 = this.transform.pointLocation3D(new Point(min.x, max.y));
+        const lnglat3 = this.transform.pointLocation3D(new Point(max.x, min.y));
 
-        if (this.transform.pitch === 0) {
-            return this._fitInternal(
-                this._cameraForBoxAndBearing(
-                    this.transform,
-                    this.transform.pointLocation(Point.convert(p0)),
-                    this.transform.pointLocation(Point.convert(p1)),
-                    bearing,
-                    options),
-                options,
-                eventData);
-        }
+        const p0coord = [
+            Math.min(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
+            Math.min(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
+        ];
+        const p1coord =  [
+            Math.max(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
+            Math.max(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
+        ];
 
-        return this._fitInternal(
-            this._cameraForBox(
-                lngLat0,
-                lngLat1,
-                minAltitude,
-                maxAltitude,
-                options),
-            options, eventData);
+        const cameraPlacement = this._cameraForAabb(this.transform, p0coord, p1coord, bearing, options);
+        return this._fitInternal(cameraPlacement, options, eventData);
     }
 
     _fitInternal(calculatedOptions?: ?EasingOptions, options?: EasingOptions, eventData?: Object): this {
