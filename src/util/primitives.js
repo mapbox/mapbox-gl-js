@@ -84,10 +84,14 @@ class Ray {
         }
     }
 
-    intersectSphere(center: Vec3, r: number, isect: Vec3): boolean {
+    closestSphereIntersection(center: Vec3, r: number, isect: Vec3): boolean {
         const m = vec3.sub([], this.pos, center);
         const b = vec3.dot(m, this.dir);
         const c = vec3.dot(m, m) - r * r;
+
+        if (c > 0.0 && b > 0.0) {
+            return false;
+        }
 
         const discr = b * b - c;
 
@@ -95,10 +99,7 @@ class Ray {
             return false;
         }
 
-        const t0 = -b - Math.sqrt(discr);
-        const t1 = -b + Math.sqrt(discr);
-
-        const t = Math.min(Math.abs(t0), Math.abs(t1));
+        const t = -b - Math.sqrt(discr);
         vec3.add(isect, this.pos, vec3.scale([], this.dir, t));
 
         return true;

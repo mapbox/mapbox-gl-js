@@ -7,7 +7,8 @@ import window from './window.js';
 import assert from 'assert';
 
 import type {Callback} from '../types/callback.js';
-import type {Mat4, Vec4} from 'gl-matrix';
+import {Mat4, Vec3, Vec4} from 'gl-matrix';
+import {vec3} from 'gl-matrix';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -510,6 +511,20 @@ export function clone<T>(input: T): T {
  */
 export function mapValue(value: number, min: number, max: number, outMin: number, outMax: number): number {
     return clamp((value - min) / (max - min) * (outMax - outMin) + outMin, outMin, outMax);
+}
+
+export function slerpUnitVectors(v0: Vec3, v1: Vec3, t: number): Vec3 {
+    const theta = Math.acos(vec3.dot(v0, v1));
+    const d = Math.sin(theta);
+
+    const t0 = Math.sin((1.0 - t) * theta);
+    const t1 = Math.sin(t * theta);
+
+    vec3.scale(v0, v0, t0);
+    vec3.scale(v1, v1, t1);
+
+    const v = vec3.add([], v0, v1);
+    return vec3.scale(v, v, 1.0 / d);
 }
 
 /**

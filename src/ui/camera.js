@@ -8,7 +8,7 @@ import {
     wrap,
     ease as defaultEasing,
     pick,
-    degToRad
+    slerpUnitVectors
 } from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import browser from '../util/browser.js';
@@ -621,7 +621,7 @@ class Camera extends Evented {
 
     _minimumAABBFrustumDistance(tr: Transform, aabb: Aabb): number {
         const aabbW = aabb.max[0] - aabb.min[0];
-        const aabbH = aabb.max[1] - aabb.min[1]
+        const aabbH = aabb.max[1] - aabb.min[1];
         const aabbAspectRatio = aabbW / aabbH;
         const selectXAxis = aabbAspectRatio > tr.aspect;
 
@@ -639,7 +639,7 @@ class Camera extends Evented {
         return minimumDistance;
     }
 
-    _cameraForBoxAndBearingOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions) {
+    _cameraForBoxAndBearingOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
 
@@ -655,31 +655,28 @@ class Camera extends Evented {
             latLngToECEF(coord1.lat, coord1.lng),
             latLngToECEF(coord0.lat, coord1.lng),
         ];
-
         const aabb = Aabb.fromPoints(worldCoords);
 
-        const initWorldToCamera = tr.getWorldToCameraMatrix();
-        const initCameraToWorld = mat4.invert(new Float64Array(16), initWorldToCamera);
+        const v0 = vec3.normalize([], worldCoords[0]);
+        const v1 = vec3.normalize([], worldCoords[1]);
+        const v2 = vec3.normalize([], worldCoords[2]);
+        const v3 = vec3.normalize([], worldCoords[3]);
 
-        const aabbCamera = aabb.clone().applyTransform(initWorldToCamera);
+        const center = slerpUnitVectors(
+            slerpUnitVectors(v0, v3, 0.5),
+            slerpUnitVectors(v1, v2, 0.5),
+            0.5);
 
-        const rayDir = vec3.sub([], aabbCamera.center, tr.globeCenterInViewSpace);
-        const ray = new Ray(aabbCamera.center, vec3.normalize(rayDir, rayDir));
-
-        const center = [];
-        ray.intersectSphere(tr.globeCenterInViewSpace, tr.globeRadius, center);
-        vec3.transformMat4(center, center, initCameraToWorld);
         tr.center = ECEFToLatLng(center);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
 
         aabb.applyTransform(worldToCamera);
+        vec3.transformMat4(center, center, worldToCamera);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
-
-        vec3.transformMat4(center, center, worldToCamera);
 
         const offsetZ = vec3.scale([], [0, 0, 1], aabbHalfExtentZ);
         const aabbClosestPoint = vec3.add([], aabb.center, offsetZ);
@@ -710,7 +707,7 @@ class Camera extends Evented {
             return this._cameraForBoxAndBearing(tr, p0, p1, bearing, options);
         }
 
-        return {center: tr.center, zoom, bearing };
+        return {center: tr.center, zoom, bearing};
     }
 
     /**
