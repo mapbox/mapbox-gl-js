@@ -28,8 +28,8 @@ const map = new mapboxgl.Map({
     projection: 'globe'
 });
 
-const modelOrigin = [0, 0];
-const modelAltitude = 0;
+const modelOrigin = [0, 35];
+const modelAltitude = 100000;
 const modelRotate = [Math.PI / 2, 0, 0];
 const modelScale = 50000;
 
@@ -40,9 +40,8 @@ function degToRad(a) {
 
 const THREE = window.THREE;
 let prevTime = Date.now();
-let timePassedSinceStart = 0;
 
-const modelHeightMeters = 20;
+const modelRadiusMeters = 20;
 
 const customLayer = {
     id: '3d-model',
@@ -52,7 +51,7 @@ const customLayer = {
         this.camera = new THREE.Camera();
         this.scene = new THREE.Scene();
 
-        const geometry = new THREE.ConeGeometry(5, modelHeightMeters, 32);
+        const geometry = new THREE.SphereGeometry(modelRadiusMeters, 32, 16);
         const material = new THREE.MeshBasicMaterial({color: 0x8d9294, side: THREE.DoubleSide});
         const cone = new THREE.Mesh(geometry, material);
         this.scene.add(cone);
@@ -86,7 +85,7 @@ const customLayer = {
         const projection = new THREE.Matrix4().fromArray(projectionMatrix);
 
         let model;
-        const translate = new THREE.Matrix4().makeTranslation(0, modelHeightMeters / 2, 0);
+        const translate = new THREE.Matrix4().makeTranslation(0, modelRadiusMeters, 0);
 
         if (globeMatrix !== null) {
 
@@ -150,9 +149,7 @@ const customLayer = {
         const dt = (now - prevTime) / 1000;
 
         modelOrigin[0] += dt * 20.0;
-        modelOrigin[1] += dt * 10.0 * Math.sin(timePassedSinceStart);
         prevTime = now;
-        timePassedSinceStart += dt;
     }
 };
 
