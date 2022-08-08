@@ -2,6 +2,32 @@
 
 import LngLat, {earthRadius} from '../geo/lng_lat.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
+import EXTENT from '../data/extent.js';
+import assert from 'assert';
+
+export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
+
+const DEG_TO_RAD = Math.PI / 180;
+
+export function degToRad(a: number): number {
+    return a * DEG_TO_RAD;
+}
+
+function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): Array<number> {
+    lng = degToRad(lng);
+
+    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
+    const sx = cosLat * Math.sin(lng) * radius;
+    const sy = -sinLat * radius;
+    const sz = cosLat * Math.cos(lng) * radius;
+
+    return [sx, sy, sz];
+}
+
+export function latLngToECEF(lat: number, lng: number, radius?: number): Array<number> {
+    assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
+    return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
+}
 
 /*
  * The average circumference of the world in meters.
@@ -41,6 +67,8 @@ export function altitudeFromMercatorZ(z: number, y: number): number {
 }
 
 export const MAX_MERCATOR_LATITUDE = 85.051129;
+
+export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 
 /**
  * Determine the Mercator scale factor for a given latitude, see
@@ -108,6 +136,19 @@ class MercatorCoordinate {
                 mercatorZfromAltitude(altitude, lngLat.lat));
     }
 
+    static meterToEcefUnits(): number {
+        return GLOBE_METERS_TO_ECEF;
+    }
+
+    static lngLatToEcef(lngLatLike: LngLatLike, altitude: number = 0): Array<number> {
+        const lngLat = LngLat.convert(lngLatLike);
+
+        const altInEcef = altitude * GLOBE_METERS_TO_ECEF;
+        const radius = GLOBE_RADIUS + altInEcef;
+
+        return latLngToECEF(lngLat.lat, lngLat.lng, radius);
+    }
+
     /**
      * Returns the `LngLat` for the coordinate.
      *
@@ -152,7 +193,6 @@ class MercatorCoordinate {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
         return 1 / earthCircumference * mercatorScale(latFromMercatorY(this.y));
     }
-
 }
 
 export default MercatorCoordinate;

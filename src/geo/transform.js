@@ -97,6 +97,7 @@ class Transform {
 
     // globe coordinate transformation matrix
     globeMatrix: Float64Array;
+    customLayerGlobeMatrix: Float64Array;
 
     globeCenterInViewSpace: [number, number, number];
     globeRadius: number;
@@ -1533,6 +1534,17 @@ class Transform {
 
     customLayerMatrix(): Array<number> {
         return this.mercatorMatrix.slice();
+    }
+
+    ecefToMercatorMatrix(): ?Array<number> {
+        if (this.projection.name === 'globe') {
+            const m = this.globeMatrix;
+
+            const s = mat4.create();
+            mat4.fromScaling(s, [1.0 / this.worldSize, 1.0 / this.worldSize, this.pixelsPerMeter / this.worldSize]);
+            return mat4.multiply([], s, m);
+        }
+        return null;
     }
 
     recenterOnTerrain() {

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+<script>
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v10',
+    center: [0, 0],
+    antialias: true, // create the gl context with MSAA antialiasing, so custom layers are antialiased
+    hash:true,
+    projection: 'globe'
+});
+
+const modelOrigin = [0, 0];
+const modelAltitude = 0;
+const modelRotate = [Math.PI / 2, 0, 0];
+const modelScale = 50000;
+
+const DEG_TO_RAD = Math.PI / 180;
+function degToRad(a) {
+    return a * DEG_TO_RAD;
+}
+
+const THREE = window.THREE;
+let prevTime = Date.now();
+let timePassedSinceStart = 0;
+
+const modelHeightMeters = 20;
+
+const customLayer = {
+    id: '3d-model',
+    type: 'custom',
+    renderingMode: '3d',
+    onAdd (map, gl) {
+        this.camera = new THREE.Camera();
+        this.scene = new THREE.Scene();
+
+        const geometry = new THREE.ConeGeometry(5, modelHeightMeters, 32);
+        const material = new THREE.MeshBasicMaterial({color: 0x8d9294, side: THREE.DoubleSide});
+        const cone = new THREE.Mesh(geometry, material);
+        this.scene.add(cone);
+
+        this.map = map;
+
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: map.getCanvas(),
+            context: gl,
+            antialias: true
+        });
+
+        this.renderer.autoClear = false;
+    },
+    render (gl, projectionMatrix, globeMatrix) {
+        const now = Date.now();
+
+        const rotationX = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(1, 0, 0),
+            modelRotate[0]
+        );
+        const rotationY = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(0, 1, 0),
+            modelRotate[1]
+        );
+        const rotationZ = new THREE.Matrix4().makeRotationAxis(
+            new THREE.Vector3(0, 0, 1),
+            modelRotate[2]
+        );
+
+        const projection = new THREE.Matrix4().fromArray(projectionMatrix);
+
+        let model;
+        const translate = new THREE.Matrix4().makeTranslation(0, modelHeightMeters / 2, 0);
+
+        if (globeMatrix !== null) {
+
+            const modelInEcef = mapboxgl.MercatorCoordinate.lngLatToEcef(modelOrigin, modelAltitude);
+            const scale = modelScale * mapboxgl.MercatorCoordinate.meterToEcefUnits();
+
+            const rotEcefX = new THREE.Matrix4().makeRotationAxis(
+                new THREE.Vector3(1, 0, 0),
+                degToRad(modelOrigin[1])
+            );
+            const rotEcefY = new THREE.Matrix4().makeRotationAxis(
+                new THREE.Vector3(0, 1, 0),
+                degToRad(modelOrigin[0])
+            );
+
+            const world = new THREE.Matrix4().fromArray(globeMatrix);
+            model = new THREE.Matrix4()
+                .makeTranslation(
+                modelInEcef[0],
+                modelInEcef[1],
+                modelInEcef[2]
+                )
+                .multiply(rotEcefY)
+                .multiply(rotEcefX)
+                .scale(
+                new THREE.Vector3(scale, scale, scale)
+                )
+                .multiply(rotationX)
+                .multiply(rotationY)
+                .multiply(rotationZ)
+                .multiply(translate);
+
+            this.camera.projectionMatrix = projection.multiply(world).multiply(model);
+        } else {
+            const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+                modelOrigin,
+                modelAltitude
+            );
+
+            const scale = modelScale * modelAsMercatorCoordinate.meterInMercatorCoordinateUnits();
+            model = new THREE.Matrix4()
+                .makeTranslation(
+                modelAsMercatorCoordinate.x,
+                modelAsMercatorCoordinate.y,
+                modelAsMercatorCoordinate.z
+                )
+                .scale(
+                new THREE.Vector3(scale, scale, scale)
+                )
+                .multiply(rotationX)
+                .multiply(rotationY)
+                .multiply(rotationZ)
+                .multiply(translate);
+
+            this.camera.projectionMatrix = projection.multiply(model);
+        }
+
+        this.renderer.resetState();
+        this.renderer.render(this.scene, this.camera);
+        this.map.triggerRepaint();
+        const dt = (now - prevTime) / 1000;
+
+        modelOrigin[0] += dt * 20.0;
+        modelOrigin[1] += dt * 10.0 * Math.sin(timePassedSinceStart);
+        prevTime = now;
+        timePassedSinceStart += dt;
+    }
+};
+
+map.on('style.load', () => {
+    map.addLayer(customLayer, 'waterway-label');
+});
+
+</script>
+</body>
+</html>
