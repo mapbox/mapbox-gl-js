@@ -476,12 +476,12 @@ export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Arra
 }
 
 export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Float32Array {
-    const poleMatrix = calculateGlobeMatrix(tr);
+    const poleMatrix = mat4.identity(new Float64Array(16));
 
     // Rotate the pole triangle fan to the correct location
     const numTiles = 1 << z;
     const xOffsetAngle = (x / numTiles - 0.5) * Math.PI * 2.0;
-    mat4.rotateY(poleMatrix, poleMatrix, xOffsetAngle);
+    mat4.rotateY(poleMatrix, tr.globeMatrix, xOffsetAngle);
 
     return Float32Array.from(poleMatrix);
 }
