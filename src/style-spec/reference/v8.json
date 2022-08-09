@@ -880,6 +880,7 @@
     },
     "fill-extrusion-edge-radius": {
       "type": "number",
+      "private": true,
       "default": 0,
       "minimum": 0,
       "maximum": 1,
@@ -4674,6 +4675,7 @@
     "fill-extrusion-ambient-occlusion-intensity": {
       "property-type": "data-constant",
       "type": "number",
+      "private": true,
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -4696,6 +4698,7 @@
     "fill-extrusion-ambient-occlusion-radius": {
       "property-type": "data-constant",
       "type": "number",
+      "private": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
