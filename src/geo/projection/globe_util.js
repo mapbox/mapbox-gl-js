@@ -10,7 +10,7 @@ import MercatorCoordinate, {
 import EXTENT from '../../data/extent.js';
 import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
-import {vec3, vec4, mat4} from 'gl-matrix';
+import {vec3, vec4, mat3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
@@ -494,17 +494,40 @@ export function globeUseCustomAntiAliasing(painter: Painter, context: Context, t
     return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
 }
 
-export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number): Array<number> {
+export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number, worldSize: number): Array<number> {
     const n = bounds.getNorth();
     const s = bounds.getSouth();
     const w = bounds.getWest();
     const e = bounds.getEast();
-    const S = 1.0 / GLOBE_VERTEX_GRID_SIZE;
-    const x = (e - w) * S;
-    const latitudinalSubdivs = GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
-    const y = (s - n) / latitudinalSubdivs;
-    const tileZoom = 1 << id.z;
-    return [0, x, tileZoom, y, 0, id.y, n, w, S];
+
+    // Construct transformation matrix for converting tile coordinates into LatLngs
+    const tiles = 1 << id.z;
+    const tileWidth = e - w;
+    const tileHeight = n - s;
+    const toUv = 1.0 / GLOBE_VERTEX_GRID_SIZE;
+    const x = tileWidth * toUv;
+    const y = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
+
+    const matrix = [0, x, 0, y, 0, 0, n, w, 0];
+
+    if (id.z > 0) {
+        // Add slight padding to patch seams between tiles.
+        const pixelPadding = 0.5;
+        const padding = pixelPadding * 360.0 / worldSize;
+
+        const xScale = padding / tileWidth + 1;
+        const yScale = padding / tileHeight + 1;
+        const padMatrix = [xScale, 0, 0, 0, yScale, 0, -0.5 * padding / x, 0.5 * padding / y, 1];
+
+        mat3.multiply(matrix, matrix, padMatrix);
+    }
+
+    // Embed additional variables to the last row of the matrix
+    matrix[2] = tiles;
+    matrix[5] = id.x;
+    matrix[8] = id.y;
+
+    return matrix;
 }
 
 export function getLatitudinalLod(lat: number): number {
