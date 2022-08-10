@@ -385,7 +385,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const invMatrix = bucket.getProjection().createInversionMatrix(tr, coord.canonical);
 
         const baseDefines = ([]: any);
-        if (painter.terrainRenderModeElevated() && pitchWithMap) {
+        if (painter.terrain && pitchWithMap) {
             baseDefines.push('PITCH_WITH_MAP_TERRAIN');
         }
         if (bucketIsGlobeProjection) {
