@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.001,
+      "width": 256,
+      "height": 256
+    }
+  },
+  "projection": {"name": "globe"},
+  "center": [
+    0,
+    -80.0
+  ],
+  "zoom": 1.3,
+  "pitch": 45,
+  "terrain": {
+    "source": "terrain-dem-v1",
+    "exaggeration": 200.0
+  },
+  "sources": {
+    "terrain-dem-v1": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain-dem-v1.514.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 514
+    }
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "green"
+      }
+    }
+  ]
+}

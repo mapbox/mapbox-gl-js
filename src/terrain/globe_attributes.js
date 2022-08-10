@@ -5,7 +5,6 @@ import type {StructArrayLayout} from '../util/struct_array.js';
 
 const layout: StructArrayLayout = createLayout([
     {type: 'Float32', name: 'a_globe_pos', components: 3},
-    {type: 'Float32', name: 'a_merc_pos', components: 2},
     {type: 'Float32', name: 'a_uv', components: 2}
 ]);
 
