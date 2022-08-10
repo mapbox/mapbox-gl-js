@@ -504,20 +504,22 @@ export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitud
     const tiles = 1 << id.z;
     const tileWidth = e - w;
     const tileHeight = n - s;
-    const toUv = 1.0 / GLOBE_VERTEX_GRID_SIZE;
-    const x = tileWidth * toUv;
-    const y = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
+    const tileToLng = tileWidth / GLOBE_VERTEX_GRID_SIZE;
+    const tileToLat = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
 
-    const matrix = [0, x, 0, y, 0, 0, n, w, 0];
+    const matrix = [0, tileToLng, 0, tileToLat, 0, 0, n, w, 0];
 
     if (id.z > 0) {
         // Add slight padding to patch seams between tiles.
+        // This is done by extruding vertices by a fixed amount. Pixel padding
+        // is first converted to degrees and then to tile units before being
+        // applied to the final transformation matrix.
         const pixelPadding = 0.5;
         const padding = pixelPadding * 360.0 / worldSize;
 
         const xScale = padding / tileWidth + 1;
         const yScale = padding / tileHeight + 1;
-        const padMatrix = [xScale, 0, 0, 0, yScale, 0, -0.5 * padding / x, 0.5 * padding / y, 1];
+        const padMatrix = [xScale, 0, 0, 0, yScale, 0, -0.5 * padding / tileToLng, 0.5 * padding / tileToLat, 1];
 
         mat3.multiply(matrix, matrix, padMatrix);
     }
