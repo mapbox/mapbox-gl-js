@@ -848,7 +848,7 @@ class Painter {
 
     terrainRenderModeElevated(): boolean {
         // Whether elevation sampling should be enabled in the vertex shader.
-        return this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture;
+        return !!this.terrain && !this.terrain.renderingToTexture;
     }
 
     /**
