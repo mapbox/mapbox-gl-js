@@ -1,3 +1,5 @@
+precision highp float;
+
 #ifdef RENDER_SHADOWS
 
 uniform sampler2D u_shadowmap_0;
@@ -91,16 +93,129 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     return clamp(value / 9.0, 0.0, 1.0);
 }
 
+// float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
+//     const float cascadeFadeRange = 0.05;
+//     const float endFadeRange = 0.25;
+
+//     float occlusion = 0.0;
+//     if (view_depth < u_cascade_distances.x) {
+//         occlusion = shadow_occlusion_0(light_view_pos0, bias);
+//     }
+//     if (view_depth > u_cascade_distances.x * (1.0 - cascadeFadeRange) && view_depth < u_cascade_distances.y) {
+//         float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
+
+//         // If view_depth is within cascade 0 depth, mix the results
+//         occlusion = (view_depth >= u_cascade_distances.x) ? occlusion1 :
+//             mix(occlusion1, occlusion, (u_cascade_distances.x - view_depth) / (u_cascade_distances.x * cascadeFadeRange));
+        
+//         // If view_depth is within end fade range, fade out
+//         if (view_depth > u_cascade_distances.y * (1.0 - endFadeRange)) {
+//             occlusion *= (u_cascade_distances.y - view_depth) / (u_cascade_distances.y * endFadeRange);
+//         }
+//     }
+
+//     return occlusion;
+// }
+
+
+highp vec2 unpack_depth_vsm(highp vec4 moments){
+    const vec4 bit_shift = vec4(1.0 / 255.0, 1.0, 1.0 / 255.0, 1.0);
+    moments*= bit_shift;
+    return vec2((moments.x + moments.y), (moments.z+moments.w));
+}
+
+const float MIN_VARIANCE = 0.000002;
+const float LIGHT_BLEEDING_DROPPER = 0.79;
+
+highp float vsm(highp vec4 pos, sampler2D shadowMap){
+    pos.xyz /= pos.w;
+    pos.xyz = pos.xyz * 0.5 + 0.5;
+    vec2 moments = unpack_depth_vsm(texture2D(shadowMap, pos.xy));
+
+    // vec4 moments = texture2D(shadowMap, pos.xy);
+
+    float distance =  pos.z;
+
+   // Surface is fully lit. as the current fragment is before the light occluder
+    if (distance <= moments.x)
+        return 1.0 ;
+    // The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
+    // How likely this pixel is to be lit (p_max)
+    float variance = moments.y - (moments.x * moments.x);
+    variance = max(variance, MIN_VARIANCE);
+
+    float d = distance - moments.x;
+    float p_max = variance / (variance + d*d);
+
+    // float shade = smoothstep(0.20, 1.0, p_max);
+    float shade = clamp( ((p_max - LIGHT_BLEEDING_DROPPER) / (1.0 - LIGHT_BLEEDING_DROPPER)), 0.0, 1.0);
+
+    return shade;
+}
+
+// Applies exponential warp to shadow map depth, input depth should be in [0, 1]
+vec2 warp_depth(float depth, vec2 exponents)
+{
+    // Rescale depth into [-1, 1]
+    depth = 2.0 * depth - 1.0;
+    float pos =  exp( exponents.x * depth);
+    float neg = -exp(-exponents.y * depth);
+    return vec2(pos, neg);
+}
+
+
+float chebyshev(vec2 moments, float mean, float minVariance)
+{
+    // Compute variance
+    float variance = moments.y - (moments.x * moments.x);
+    variance = max(variance, minVariance);
+
+    // Compute probabilistic upper bound
+    float d = mean - moments.x;
+    float pMax = variance / (variance + (d * d));
+
+    // pMax = smoothstep(LIGHT_BLEEDING_DROPPER, 1.0, pMax);
+    clamp( ((pMax - LIGHT_BLEEDING_DROPPER) / (1.0 - LIGHT_BLEEDING_DROPPER)), 0.0, 1.0);
+
+    // One-tailed Chebyshev
+    return (mean <= moments.x ? 1.0 : pMax);
+}
+
+
+highp float evsm(highp vec4 pos, sampler2D shadowMap){
+    pos.xyz /= pos.w;
+    pos.xyz = pos.xyz * 0.5 + 0.5;
+    vec4 moments = texture2D(shadowMap, pos.xy);
+
+    const float PositiveExponent = 40.0;
+    const float NegativeExponent = 5.0;
+
+    vec2 exponents = vec2(PositiveExponent, NegativeExponent);
+    vec2 warpedDepth = warp_depth(pos.z, exponents);
+
+    // Derivative of warping at depth
+    vec2 depthScale = 0.01 * exponents * warpedDepth;
+    vec2 minVariance = depthScale * depthScale;
+
+    float posContrib = chebyshev(moments.xz, warpedDepth.x, minVariance.x);
+    float negContrib = chebyshev(moments.yw, warpedDepth.y, minVariance.y);
+    return min(posContrib, negContrib);
+}
+
+
+
+
 float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
     const float cascadeFadeRange = 0.05;
     const float endFadeRange = 0.25;
 
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x) {
-        occlusion = shadow_occlusion_0(light_view_pos0, bias);
+        occlusion = evsm(light_view_pos0, u_shadowmap_0);
     }
     if (view_depth > u_cascade_distances.x * (1.0 - cascadeFadeRange) && view_depth < u_cascade_distances.y) {
-        float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
+
+        float occlusion1 = evsm(light_view_pos1, u_shadowmap_1);
 
         // If view_depth is within cascade 0 depth, mix the results
         occlusion = (view_depth >= u_cascade_distances.x) ? occlusion1 :
@@ -115,29 +230,38 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
     return occlusion;
 }
 
+
+// vec3 shadowed_color_normal(
+//     vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+//     highp float NDotL = dot(N, u_shadow_direction);
+//     if (NDotL < 0.0)
+//         return color * (1.0 - u_shadow_intensity);
+
+//     NDotL = clamp(NDotL, 0.0, 1.0);
+
+//     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+//     highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
+//     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
+
+//     float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
+//     occlusion = mix(occlusion, 1.0, backfacing);
+//     color *= 1.0 - (u_shadow_intensity * occlusion);
+//     return color;
+// }
+
 vec3 shadowed_color_normal(
     vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
-    if (NDotL < 0.0)
-        return color * (1.0 - u_shadow_intensity);
-
-    NDotL = clamp(NDotL, 0.0, 1.0);
-
-    // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-    highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
-    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
-
-    float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
-    occlusion = mix(occlusion, 1.0, backfacing);
-    color *= 1.0 - (u_shadow_intensity * occlusion);
+    //float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, 0.0);
+    //color *= occlusion;
     return color;
 }
+
 
 vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
-    color *= 1.0 - (u_shadow_intensity * occlusion);
+    color *= occlusion;
     return color;
 }
 
