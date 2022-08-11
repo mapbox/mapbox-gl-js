@@ -14,7 +14,6 @@
 * Fix a bug where id expression didn't work for 0 values ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
 * Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
 * Allow style spec to use fog default values when toggling styles  ([#11992](https://github.com/mapbox/mapbox-gl-js/pull/11992))
-* Fix occasional missing tiles at bottom of screen during globe-Mercator transition ([#11988](https://github.com/mapbox/mapbox-gl-js/pull/11988))
 * Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. Add screen reader alert for cooperative gestures warning message. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
 * Fix clearing raster tiles when toggling "setStyle" with a globe projection ([#12049](https://github.com/mapbox/mapbox-gl-js/pull/12049))
 * Fix creating map in an iframe with sandbox attribute. ([#12101](https://github.com/mapbox/mapbox-gl-js/pull/12101))
