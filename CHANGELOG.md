@@ -1,7 +1,6 @@
 ## 2.10.0
 
 ## Features ✨ and improvements 🏁
-* Adding new marker styling option: rotationAlignment: 'horizon' allowing marker rotation to match the curvature of the horizon in globe view ([#11894](https://github.com/mapbox/mapbox-gl-js/pull/11894))
 * Improve rendering performance on globe view ([#12050](https://github.com/mapbox/mapbox-gl-js/pull/12050))
 * Improve tile loading performance on low zoom levels ([#12061](https://github.com/mapbox/mapbox-gl-js/pull/12061))
 * Improve globe-mercator transition and map load performance with globe projection ([#12039](https://github.com/mapbox/mapbox-gl-js/pull/12039))
@@ -9,7 +8,6 @@
 
 
 ## Bug fixes 🐞
-* Fix potential flickering on on image source updates ([#11928](https://github.com/mapbox/mapbox-gl-js/pull/11928))
 * Fix a bug where id expression didn't work for 0 values ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
 * Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
 * Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
