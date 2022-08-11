@@ -10,7 +10,6 @@
 
 ## Bug fixes 🐞
 * Fix potential flickering on on image source updates ([#11928](https://github.com/mapbox/mapbox-gl-js/pull/11928))
-* Copy stylesheet to allow toggling different styles using setStyle without overwriting some of the properties ([#11942](https://github.com/mapbox/mapbox-gl-js/pull/11942))
 * Fix a bug where id expression didn't work for 0 values ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
 * Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
 * Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
