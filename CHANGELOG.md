@@ -4,7 +4,7 @@
 * Improve rendering performance on globe view ([#12050](https://github.com/mapbox/mapbox-gl-js/pull/12050))
 * Improve tile loading performance on low zoom levels ([#12061](https://github.com/mapbox/mapbox-gl-js/pull/12061))
 * Improve globe-mercator transition and map load performance with globe projection ([#12039](https://github.com/mapbox/mapbox-gl-js/pull/12039))
-* Improve panning precision on Globe View and relax constrains on lower zoom levels ([#12114](https://github.com/mapbox/mapbox-gl-js/pull/12114))
+* Improve panning precision on Globe View and relax constraints on lower zoom levels ([#12114](https://github.com/mapbox/mapbox-gl-js/pull/12114))
 
 
 ## Bug fixes 🐞
