@@ -1,3 +1,26 @@
+## 2.10.0
+
+## Features ✨ and improvements 🏁
+* Adding new marker styling option: rotationAlignment: 'horizon' allowing marker rotation to match the curvature of the horizon in globe view ([#11894](https://github.com/mapbox/mapbox-gl-js/pull/11894))
+* Improve rendering performance on globe view ([#12050](https://github.com/mapbox/mapbox-gl-js/pull/12050))
+* Improve tile loading performance on low zoom levels ([#12061](https://github.com/mapbox/mapbox-gl-js/pull/12061))
+* Improve globe-mercator transition and map load performance with globe projection ([#12039](https://github.com/mapbox/mapbox-gl-js/pull/12039))
+* Improve panning precision on Globe View and relax constrains on lower zoom levels ([#12114](https://github.com/mapbox/mapbox-gl-js/pull/12114))
+
+
+## Bug fixes 🐞
+* Fix potential flickering on on image source updates ([#11928](https://github.com/mapbox/mapbox-gl-js/pull/11928))
+* Copy stylesheet to allow toggling different styles using setStyle without overwriting some of the properties ([#11942](https://github.com/mapbox/mapbox-gl-js/pull/11942))
+* Fix a bug where id expression didn't work for 0 values ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
+* Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
+* Allow style spec to use fog default values when toggling styles  ([#11992](https://github.com/mapbox/mapbox-gl-js/pull/11992))
+* Fix occasional missing tiles at bottom of screen during globe-Mercator transition ([#11988](https://github.com/mapbox/mapbox-gl-js/pull/11988))
+* Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. Add screen reader alert for cooperative gestures warning message. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
+* Fix clearing raster tiles when toggling "setStyle" with a globe projection ([#12049](https://github.com/mapbox/mapbox-gl-js/pull/12049))
+* Fix creating map in an iframe with sandbox attribute. ([#12101](https://github.com/mapbox/mapbox-gl-js/pull/12101))
+* Fix "improve map" link in the attribution to include location even if map hash is disabled ([#12122](https://github.com/mapbox/mapbox-gl-js/pull/12122))
+* Fix Chrome console warnings about ignored event cancel on touch interactions ([#12121](https://github.com/mapbox/mapbox-gl-js/pull/12121)) (h/t [jschaf](https://github.com/jschaf))
+
 ## 2.9.2
 
 ### Bug fixes 🐞
