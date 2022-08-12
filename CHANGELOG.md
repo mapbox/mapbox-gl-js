@@ -1,3 +1,22 @@
+## 2.10.0-beta.1
+
+## Features ✨ and improvements 🏁
+* Improve rendering performance on globe view ([#12050](https://github.com/mapbox/mapbox-gl-js/pull/12050))
+* Improve tile loading performance on low zoom levels ([#12061](https://github.com/mapbox/mapbox-gl-js/pull/12061))
+* Improve globe-mercator transition and map load performance with globe projection ([#12039](https://github.com/mapbox/mapbox-gl-js/pull/12039))
+* Improve panning precision on Globe View and relax constraints on lower zoom levels ([#12114](https://github.com/mapbox/mapbox-gl-js/pull/12114))
+
+
+## Bug fixes 🐞
+* Fix a bug where id expression didn't work for 0 values ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
+* Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
+* Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
+* Add screen reader alert for cooperative gestures warning message. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
+* Fix clearing raster tiles when toggling `setStyle` with a globe projection ([#12049](https://github.com/mapbox/mapbox-gl-js/pull/12049))
+* Fix creating map in an iframe with sandbox attribute. ([#12101](https://github.com/mapbox/mapbox-gl-js/pull/12101))
+* Fix "improve map" link in the attribution to include location even if map hash is disabled ([#12122](https://github.com/mapbox/mapbox-gl-js/pull/12122))
+* Fix Chrome console warnings about ignored event cancel on touch interactions ([#12121](https://github.com/mapbox/mapbox-gl-js/pull/12121)) (h/t [jschaf](https://github.com/jschaf))
+
 ## 2.9.2
 
 ### Bug fixes 🐞

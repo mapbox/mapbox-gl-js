@@ -1617,7 +1617,7 @@ class Transform {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
         this._constraining = true;
-        const isGlobe = this.projection.name === 'globe';
+        const isGlobe = this.projection.name === 'globe' || this.mercatorFromTransition;
 
         // alternate constraining for non-Mercator projections
         if (this.projection.isReprojectedInTileSpace || isGlobe) {
