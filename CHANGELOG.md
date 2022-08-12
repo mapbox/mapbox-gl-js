@@ -1,4 +1,4 @@
-## 2.10.0
+## 2.10.0-beta.1
 
 ## Features ✨ and improvements 🏁
 * Improve rendering performance on globe view ([#12050](https://github.com/mapbox/mapbox-gl-js/pull/12050))
