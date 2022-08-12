@@ -12,7 +12,7 @@
 * Fix precision errors in depth pack/unpack ([#12005](https://github.com/mapbox/mapbox-gl-js/pull/12005))
 * Fix `cooperativeGestures` preventing panning on mobile while in fullscreen. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
 * Add screen reader alert for cooperative gestures warning message. ([#12058](https://github.com/mapbox/mapbox-gl-js/pull/12058))
-* Fix clearing raster tiles when toggling "setStyle" with a globe projection ([#12049](https://github.com/mapbox/mapbox-gl-js/pull/12049))
+* Fix clearing raster tiles when toggling `setStyle` with a globe projection ([#12049](https://github.com/mapbox/mapbox-gl-js/pull/12049))
 * Fix creating map in an iframe with sandbox attribute. ([#12101](https://github.com/mapbox/mapbox-gl-js/pull/12101))
 * Fix "improve map" link in the attribution to include location even if map hash is disabled ([#12122](https://github.com/mapbox/mapbox-gl-js/pull/12122))
 * Fix Chrome console warnings about ignored event cancel on touch interactions ([#12121](https://github.com/mapbox/mapbox-gl-js/pull/12121)) (h/t [jschaf](https://github.com/jschaf))
