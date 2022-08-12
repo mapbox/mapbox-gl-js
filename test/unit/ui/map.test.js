@@ -383,6 +383,7 @@ test('Map', (t) => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
                     t.equal(map.getTerrain(), undefined);
+                    t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
             });
