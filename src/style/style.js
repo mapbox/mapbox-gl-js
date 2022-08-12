@@ -1222,12 +1222,13 @@ class Style extends Evented {
                 sources[source.id] = source.serialize();
             }
         }
+
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
-            terrain: this.stylesheet.terrain,
+            terrain: this.getTerrain(),
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
@@ -1446,7 +1447,7 @@ class Style extends Evented {
     }
 
     getTerrain(): ?TerrainSpecification {
-        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
+        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : undefined;
     }
 
     setTerrainForDraping() {
