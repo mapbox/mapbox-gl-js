@@ -202,7 +202,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const tileBounds = tileCornersToBounds(coord.canonical);
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
-            const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod);
+            const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
