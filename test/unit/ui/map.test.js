@@ -340,7 +340,7 @@ test('Map', (t) => {
             map.on('style.load', () => {
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 t.equal(map.getStyle().terrain, undefined);
                 t.end();
             });
@@ -356,7 +356,7 @@ test('Map', (t) => {
                 map.setProjection('globe');
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(12); // Above threshold for Mercator transition
                 map.once('render', () => {
@@ -376,13 +376,13 @@ test('Map', (t) => {
                 map.setProjection('globe');
                 t.equal(initStyleObj.setTerrain.callCount, 0);
                 t.notOk(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(3); // Below threshold for Mercator transition
                 map.once('render', () => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
-                    t.equal(map.getTerrain(), undefined);
+                    t.equal(map.getTerrain(), null);
                     t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
@@ -398,7 +398,7 @@ test('Map', (t) => {
                 map.setTerrain(null);
                 t.equal(initStyleObj.setTerrain.callCount, 2);
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 t.end();
             });
         });
@@ -458,14 +458,14 @@ test('Map', (t) => {
                 map.setProjection('globe');
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 // Should not overwrite style: https://github.com/mapbox/mapbox-gl-js/issues/11939
                 t.equal(style.terrain, undefined);
                 map.remove();
 
                 map = new Map({style, container: div, testMode: true});
                 t.equal(map.getProjection().name, 'mercator');
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
                 t.equal(style.terrain, undefined);
                 t.end();
             });
@@ -479,13 +479,13 @@ test('Map', (t) => {
                 map.setProjection('globe');
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
 
                 const style2 = createStyle();
                 map.setStyle(style2);
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
-                t.equal(map.getTerrain(), undefined);
+                t.equal(map.getTerrain(), null);
 
                 t.end();
             });

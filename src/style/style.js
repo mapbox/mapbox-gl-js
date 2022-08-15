@@ -1228,7 +1228,7 @@ class Style extends Evented {
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
-            terrain: this.getTerrain(),
+            terrain: this.getTerrain() || undefined,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
@@ -1447,7 +1447,7 @@ class Style extends Evented {
     }
 
     getTerrain(): ?TerrainSpecification {
-        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : undefined;
+        return this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.elevated ? this.terrain.get() : null;
     }
 
     setTerrainForDraping() {
