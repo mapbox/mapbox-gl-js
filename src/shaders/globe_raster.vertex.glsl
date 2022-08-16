@@ -8,7 +8,6 @@ uniform mat3 u_grid_matrix;
 
 #ifdef GLOBE_POLES
 attribute vec3 a_globe_pos;
-attribute vec2 a_merc_pos;
 attribute vec2 a_uv;
 #else
 attribute vec2 a_pos;
@@ -45,14 +44,13 @@ vec3 latLngToECEF(vec2 latLng) {
 void main() {
 #ifdef GLOBE_POLES
     vec3 globe_pos = a_globe_pos;
-    vec2 merc_pos = a_merc_pos;
     vec2 uv = a_uv;
 #else
     // The 3rd row of u_grid_matrix is only used as a spare space to 
     // pass the following 3 uniforms to avoid explicitly introducing new ones.
     float tiles = u_grid_matrix[0][2];
-    float idy = u_grid_matrix[1][2];
-    float S = u_grid_matrix[2][2];
+    float idx = u_grid_matrix[1][2];
+    float idy = u_grid_matrix[2][2];
 
     vec3 latLng = u_grid_matrix * vec3(a_pos, 1.0);
 
@@ -60,7 +58,7 @@ void main() {
     float uvY = mercatorY * tiles - idy;
     
     float mercatorX = mercatorXfromLng(latLng[1]);
-    float uvX = a_pos[0] * S;
+    float uvX = mercatorX * tiles - idx;
 
     vec3 globe_pos = latLngToECEF(latLng.xy);
     vec2 merc_pos = vec2(mercatorX, mercatorY);
@@ -68,30 +66,39 @@ void main() {
 #endif
 
     v_pos0 = uv;
+    vec2 tile_pos = uv * EXTENT;
 
-    uv = uv * EXTENT;
-    vec4 up_vector = vec4(elevationVector(uv), 1.0);
-    float height = elevation(uv);
+#ifdef GLOBE_POLES
+    // Normal vector can be derived from the ecef position
+    // as "elevationVector" can't be queried outside of the tile
+    vec3 up_vector = normalize(globe_pos) * u_tile_up_scale;
+#else
+    vec3 up_vector = elevationVector(tile_pos);
+#endif
+    float height = elevation(tile_pos);
 
 #ifdef TERRAIN_WIREFRAME
     height += wireframeOffset;
 #endif
 
-    globe_pos += up_vector.xyz * height;
+    globe_pos += up_vector * height;
 
-    vec4 globe = u_globe_matrix * vec4(globe_pos, 1.0);
-
-    vec4 mercator = vec4(0.0);
+#ifdef GLOBE_POLES
+    vec4 interpolated_pos = u_globe_matrix * vec4(globe_pos, 1.0);
+#else
+    vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);
+    vec4 merc_world_pos = vec4(0.0);
     if (u_zoom_transition > 0.0) {
-        mercator = vec4(merc_pos, height, 1.0);
-        mercator.xy -= u_merc_center;
-        mercator.x = wrap(mercator.x, -0.5, 0.5);
-        mercator = u_merc_matrix * mercator;
+        merc_world_pos = vec4(merc_pos, height, 1.0);
+        merc_world_pos.xy -= u_merc_center;
+        merc_world_pos.x = wrap(merc_world_pos.x, -0.5, 0.5);
+        merc_world_pos = u_merc_matrix * merc_world_pos;
     }
 
-    vec3 position = mix(globe.xyz, mercator.xyz, u_zoom_transition);
+    vec4 interpolated_pos = vec4(mix(globe_world_pos.xyz, merc_world_pos.xyz, u_zoom_transition), 1.0);
+#endif
 
-    gl_Position = u_proj_matrix * vec4(position, 1.0);
+    gl_Position = u_proj_matrix * interpolated_pos;
 
 #ifdef FOG
     v_fog_pos = fog_position((u_normalize_matrix * vec4(globe_pos, 1.0)).xyz);

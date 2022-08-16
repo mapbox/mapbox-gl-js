@@ -42,6 +42,5 @@
   "render-tests/fill-extrusion-pattern/opacity-terrain": "skip - deferred for globe-view",
   "render-tests/globe/globe-transition/horizon-during-transition": "skip - pending globe-view implementation",
   "render-tests/resize/mercator": "skip - implemented for mapbox-gl-native only",
-  "render-tests/resize/globe": "skip - implemented for mapbox-gl-native only",
-  "render-tests/globe/globe-transition/tiles-high-pitch": "skip - fix introduced other issues"
+  "render-tests/resize/globe": "skip - implemented for mapbox-gl-native only"
 }
