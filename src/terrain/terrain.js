@@ -53,6 +53,7 @@ import type {UniformValues} from '../render/uniform_binding.js';
 import type Transform from '../geo/transform.js';
 import type {DEMEncoding} from '../data/dem_data.js';
 import type {Vec3, Vec4} from 'gl-matrix';
+import type {CanonicalTileID} from '../source/tile_id.js';
 
 const GRID_DIM = 128;
 
@@ -648,24 +649,21 @@ export class Terrain extends Elevation {
         }
         program.setTerrainUniformValues(context, uniforms);
 
-        // eslint-disable-next-line no-warning-comments
-        // TODO: these defaults are all overwritten, let's avoid setting them.
-        // Let's also avoid this entire code block when not using globe.
-        const globeUniforms = defaultGlobeUniforms();
-        const tr = this.painter.transform;
-        const projection = tr.projection;
-
-        const id = tile.tileID.canonical;
-        globeUniforms['u_tile_tl_up'] = (projection.upVector(id, 0, 0): any);
-        globeUniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
-        globeUniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
-        globeUniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
-        if (options && options.useDenormalizedUpVectorScale) {
-            globeUniforms['u_tile_up_scale'] = GLOBE_METERS_TO_ECEF;
-        } else {
-            globeUniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
+        if (this.painter.transform.projection.name === 'globe') {
+            const globeUniforms = this.globeUniformValues(this.painter.transform, tile.tileID.canonical, options && options.useDenormalizedUpVectorScale);
+            program.setGlobeUniformValues(context, globeUniforms);
         }
-        program.setGlobeUniformValues(context, globeUniforms);
+    }
+
+    globeUniformValues(tr: Transform, id: CanonicalTileID, useDenormalizedUpVectorScale: ?boolean): UniformValues<GlobeUniformsType> {
+        const projection = tr.projection;
+        return {
+            'u_tile_tl_up': (projection.upVector(id, 0, 0): any),
+            'u_tile_tr_up': (projection.upVector(id, EXTENT, 0): any),
+            'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT): any),
+            'u_tile_bl_up': (projection.upVector(id, 0, EXTENT): any),
+            'u_tile_up_scale': (useDenormalizedUpVectorScale ? GLOBE_METERS_TO_ECEF : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile: any)
+        };
     }
 
     renderToBackBuffer(accumulatedDrapes: Array<OverscaledTileID>) {
@@ -1640,13 +1638,3 @@ export const globeUniforms = (context: Context): GlobeUniformsType => ({
     'u_tile_bl_up': new Uniform3f(context),
     'u_tile_up_scale': new Uniform1f(context)
 });
-
-function defaultGlobeUniforms(): UniformValues<GlobeUniformsType> {
-    return {
-        'u_tile_tl_up': [0, 0, 1],
-        'u_tile_tr_up': [0, 0, 1],
-        'u_tile_br_up': [0, 0, 1],
-        'u_tile_bl_up': [0, 0, 1],
-        'u_tile_up_scale': 1
-    };
-}
