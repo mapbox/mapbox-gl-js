@@ -597,20 +597,6 @@ export class Terrain extends Elevation {
         uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
         uniforms['u_exaggeration'] = this.exaggeration();
 
-        const tr = this.painter.transform;
-        const projection = tr.projection;
-
-        const id = tile.tileID.canonical;
-        uniforms['u_tile_tl_up'] = (projection.upVector(id, 0, 0): any);
-        uniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
-        uniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
-        uniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
-        if (options && options.useDenormalizedUpVectorScale) {
-            uniforms['u_tile_up_scale'] = GLOBE_METERS_TO_ECEF;
-        } else {
-            uniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
-        }
-
         let demTile = null;
         let prevDemTile = null;
         let morphingPhase = 1.0;
@@ -661,6 +647,25 @@ export class Terrain extends Elevation {
             uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv;
         }
         program.setTerrainUniformValues(context, uniforms);
+
+        // eslint-disable-next-line no-warning-comments
+        // TODO: these defaults are all overwritten, let's avoid setting them.
+        // Let's also avoid this entire code block when not using globe.
+        const globeUniforms = defaultGlobeUniforms();
+        const tr = this.painter.transform;
+        const projection = tr.projection;
+
+        const id = tile.tileID.canonical;
+        globeUniforms['u_tile_tl_up'] = (projection.upVector(id, 0, 0): any);
+        globeUniforms['u_tile_tr_up'] = (projection.upVector(id, EXTENT, 0): any);
+        globeUniforms['u_tile_br_up'] = (projection.upVector(id, EXTENT, EXTENT): any);
+        globeUniforms['u_tile_bl_up'] = (projection.upVector(id, 0, EXTENT): any);
+        if (options && options.useDenormalizedUpVectorScale) {
+            globeUniforms['u_tile_up_scale'] = GLOBE_METERS_TO_ECEF;
+        } else {
+            globeUniforms['u_tile_up_scale'] = projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile;
+        }
+        program.setGlobeUniformValues(context, globeUniforms);
     }
 
     renderToBackBuffer(accumulatedDrapes: Array<OverscaledTileID>) {
@@ -1584,11 +1589,6 @@ export type TerrainUniformsType = {|
     'u_depth_size_inv': Uniform2f,
     'u_meter_to_dem'?: Uniform1f,
     'u_label_plane_matrix_inv'?: UniformMatrix4f,
-    'u_tile_tl_up': Uniform3f,
-    'u_tile_tr_up': Uniform3f,
-    'u_tile_br_up': Uniform3f,
-    'u_tile_bl_up': Uniform3f,
-    'u_tile_up_scale': Uniform1f
 |};
 
 export const terrainUniforms = (context: Context): TerrainUniformsType => ({
@@ -1606,11 +1606,6 @@ export const terrainUniforms = (context: Context): TerrainUniformsType => ({
     'u_depth_size_inv': new Uniform2f(context),
     'u_meter_to_dem': new Uniform1f(context),
     'u_label_plane_matrix_inv': new UniformMatrix4f(context),
-    'u_tile_tl_up': new Uniform3f(context),
-    'u_tile_tr_up': new Uniform3f(context),
-    'u_tile_br_up': new Uniform3f(context),
-    'u_tile_bl_up': new Uniform3f(context),
-    'u_tile_up_scale': new Uniform1f(context)
 });
 
 function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
@@ -1627,6 +1622,27 @@ function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUni
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
         'u_exaggeration': 0,
+    };
+}
+
+export type GlobeUniformsType = {|
+    'u_tile_tl_up': Uniform3f,
+    'u_tile_tr_up': Uniform3f,
+    'u_tile_br_up': Uniform3f,
+    'u_tile_bl_up': Uniform3f,
+    'u_tile_up_scale': Uniform1f
+|};
+
+export const globeUniforms = (context: Context): GlobeUniformsType => ({
+    'u_tile_tl_up': new Uniform3f(context),
+    'u_tile_tr_up': new Uniform3f(context),
+    'u_tile_br_up': new Uniform3f(context),
+    'u_tile_bl_up': new Uniform3f(context),
+    'u_tile_up_scale': new Uniform1f(context)
+});
+
+function defaultGlobeUniforms(): UniformValues<GlobeUniformsType> {
+    return {
         'u_tile_tl_up': [0, 0, 1],
         'u_tile_tr_up': [0, 0, 1],
         'u_tile_br_up': [0, 0, 1],
