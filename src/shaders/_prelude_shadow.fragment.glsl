@@ -20,7 +20,35 @@ highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
     highp float compare1 = min(pos.z, 0.999) - bias;
-    return shadow_sample_1(pos.xy, compare1);
+
+    highp vec2 texel = pos.xy / u_texel_size - vec2(0.5);
+    highp vec2 f = fract(texel);
+
+    highp float s = u_texel_size;
+
+    // Perform percentage-closer filtering with a 2x2 sample grid.
+    // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
+
+    highp vec2 uv00 = (texel - f + 0.5) * s;
+    highp vec2 uv10 = uv00 + vec2(1.0 * s, 0.0);
+
+    highp vec2 uv01 = uv00 + vec2(0.0, 1.0 * s);
+    highp vec2 uv11 = uv01 + vec2(1.0 * s, 0.0);
+
+    highp float o00 = shadow_sample_1(uv00, compare1);
+    highp float o10 = shadow_sample_1(uv10, compare1);
+
+    highp float o01 = shadow_sample_1(uv01, compare1);
+    highp float o11 = shadow_sample_1(uv11, compare1);
+
+    // Edge tap smoothing
+    highp float value = 
+        (1.0 - f.x) * (1.0 - f.y) * o00 +
+        f.x * (1.0 - f.y) * o10 +
+        (1.0 - f.x) * f.y * o01 +
+        f.x * f.y * o11;
+
+    return clamp(value, 0.0, 1.0);
 }
 
 highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
