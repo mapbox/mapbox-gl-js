@@ -147,7 +147,7 @@ document.getElementById('pitch-checkbox').onclick = function() {
 
 document.getElementById('globe-checkbox').onclick = function() {
     map.dragRotate._pitchWithRotate = !!this.checked;
-    map.setProjection(this.checked? 'globe': null)
+    map.setProjection(this.checked ? 'globe' : null);
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
