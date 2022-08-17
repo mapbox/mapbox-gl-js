@@ -168,6 +168,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const sharedBuffers = painter.globeSharedBuffers;
     const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
     const globeMatrix = Float32Array.from(tr.globeMatrix);
+    const elevationOptions = {useDenormalizedUpVectorScale: true};
 
     batches.forEach(isWireframe => {
         // This code assumes the rendering is batched into mesh terrain and then wireframe
@@ -194,7 +195,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
-            const elevationOptions = {useDenormalizedUpVectorScale: true};
 
             if (morph) {
                 extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
@@ -202,7 +202,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             const tileBounds = tileCornersToBounds(coord.canonical);
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
-            const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod);
+            const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
@@ -257,7 +257,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);
 
-                terrain.setupElevationDraw(tile, program, {});
+                terrain.setupElevationDraw(tile, program, elevationOptions);
 
                 painter.prepareDrawProgram(context, program, coord.toUnwrapped());
 

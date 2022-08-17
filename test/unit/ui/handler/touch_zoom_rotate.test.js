@@ -5,10 +5,10 @@ import Marker from '../../../../src/ui/marker.js';
 import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 
-function createMap(t) {
+function createMap(t, options = {}) {
     t.stub(Map.prototype, '_detectMissingCSS');
     t.stub(Map.prototype, '_authenticate');
-    return new Map({container: DOM.create('div', '', window.document.body)});
+    return new Map({container: DOM.create('div', '', window.document.body), ...options});
 }
 
 test('TouchZoomRotateHandler fires zoomstart, zoom, and zoomend events at appropriate times in response to a pinch-zoom gesture', (t) => {
@@ -282,5 +282,112 @@ test('TouchZoomRotateHandler does not zoom when touching an element not on the m
     t.equal(zoomend.callCount, 0);
 
     map.remove();
+    t.end();
+});
+
+test('Drag up with two fingers fires pitch event', (t) => {
+    const map = createMap(t);
+    const target = map.getCanvas();
+
+    const pitchstart = t.spy();
+    const pitch      = t.spy();
+    const pitchend   = t.spy();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}]});
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}, {target, identifier: 2, clientX: 50, clientY: 0}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: -100}, {target, identifier: 2, clientX: 50, clientY: -100}]});
+    map._renderTaskQueue.run();
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 1);
+
+    t.end();
+});
+
+test('Touch pitching requires three fingers with cooperative gestures', (t) => {
+    const map = createMap(t, {cooperativeGestures: true});
+    const target = map.getCanvas();
+
+    const pitchstart = t.spy();
+    const pitch      = t.spy();
+    const pitchend   = t.spy();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    // two finger drag
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}]});
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}, {target, identifier: 2, clientX: 50, clientY: 0}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: -100}, {target, identifier: 2, clientX: 50, clientY: -100}]});
+    map._renderTaskQueue.run();
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+
+    t.equal(pitchstart.callCount, 0);
+    t.equal(pitch.callCount, 0);
+    t.equal(pitchend.callCount, 0);
+
+    // three finger drag
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}, {target, identifier: 2, clientX: 0, clientY: 0}, {target, identifier: 3, clientX: 50, clientY: 0}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: -100}, {target, identifier: 2, clientX: 0, clientY: -100}, {target, identifier: 3, clientX: 50, clientY: -100}]});
+    map._renderTaskQueue.run();
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+
+    t.equal(pitchstart.callCount, 2);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 1);
+
+    t.end();
+});
+
+test('with cooperative gesture enabled but in fullscreen, touch pitching works with two fingers', (t) => {
+    const map = createMap(t, {cooperativeGestures: true});
+    const target = map.getCanvas();
+    window.document.fullscreenElement = true;
+
+    const pitchstart = t.spy();
+    const pitch      = t.spy();
+    const pitchend   = t.spy();
+
+    map.on('pitchstart', pitchstart);
+    map.on('pitch',      pitch);
+    map.on('pitchend',   pitchend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}]});
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: 0}, {target, identifier: 2, clientX: 50, clientY: 0}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: -50, clientY: -100}, {target, identifier: 2, clientX: 50, clientY: -100}]});
+    map._renderTaskQueue.run();
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+
+    t.equal(pitchstart.callCount, 1);
+    t.equal(pitch.callCount, 1);
+    t.equal(pitchend.callCount, 1);
+
     t.end();
 });

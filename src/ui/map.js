@@ -825,6 +825,9 @@ class Map extends Camera {
      * as close as possible to the operation's request while still
      * remaining within the bounds.
      *
+     * For `mercator` projection, the viewport will be constrained to the bounds.
+     * For other projections such as `globe`, only the map center will be constrained.
+     *
      * @param {LngLatBoundsLike | null | undefined} bounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
