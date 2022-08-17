@@ -240,44 +240,44 @@ function initializeCanvas(tr: Transform) {
     return debugCanvas;
 }
 
-function drawLine(ctx: CanvasRenderingContext2D, start: Vec2, end: Vec2) {
-    ctx.beginPath();
+function drawLine(ctx: CanvasRenderingContext2D, start: ?Vec2, end: ?Vec2) {
+    if (!start || !end) { return; }
     ctx.moveTo(...start);
     ctx.lineTo(...end);
-    ctx.stroke();
 }
 
-function drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<Vec2>) {
-    ctx.beginPath();
-    ctx.moveTo(...corners[corners.length - 1]);
-    for (const corner of corners) {
-        ctx.lineTo(...corner);
-    }
-    ctx.stroke();
+function drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
+    drawLine(ctx, corners[0], corners[1]);
+    drawLine(ctx, corners[1], corners[2]);
+    drawLine(ctx, corners[2], corners[3]);
+    drawLine(ctx, corners[3], corners[0]);
 }
 
-function drawBox(ctx: CanvasRenderingContext2D, corners: Array<Vec3>) {
+function drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
     assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
+    ctx.beginPath();
     drawPolygon(ctx, corners.slice(0, 4));
     drawPolygon(ctx, corners.slice(4));
     drawLine(ctx, corners[0], corners[4]);
     drawLine(ctx, corners[1], corners[5]);
     drawLine(ctx, corners[2], corners[6]);
     drawLine(ctx, corners[3], corners[7]);
+    ctx.stroke();
 }
 
 export function drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     const tr = painter.transform;
 
     const worldToECEFMatrix = mat4.invert(new Float64Array(16), tr.globeMatrix);
-    const ecefToPixelMatrix = mat4.multiply(mat4.identity(new Float64Array(16)), tr.pixelMatrix, tr.globeMatrix);
+    const ecefToPixelMatrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
+    const ecefToCameraMatrix = mat4.multiply([],  tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
 
     if (!tr.freezeTileCoverage) {
         aabbCorners = coords.map(coord => {
             // Get tile AABBs in world/pixel space scaled by worldSize
             const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical);
             const corners = aabb.getCorners();
-            // Store AABBs to rectangular prisms in ECEF, this allows viewing them from other angles
+            // Store AABBs as rectangular prisms in ECEF, this allows viewing them from other angles
             // when transform.freezeTileCoverage is enabled.
             for (const pos of corners) {
                 vec3.transformMat4(pos, pos, worldToECEFMatrix);
@@ -296,7 +296,16 @@ export function drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Ar
     ctx.lineWidth = 1.5;
 
     for (let i = 0; i <  tileCount; i++) {
-        const pixelCorners = aabbCorners[i].map(ecef => vec3.transformMat4([], ecef, ecefToPixelMatrix));
+        const pixelCorners = aabbCorners[i].map(ecef => {
+            // Clipping to prevent visual artifacts.
+            // We don't draw any lines if one of their points is behind the camera.
+            // This means that AABBs close to the camera may appear to be missing.
+            // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
+            // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
+            const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
+            if (cameraPos[2] > 0) { return null; }
+            return vec3.transformMat4([], ecef, ecefToPixelMatrix);
+        });
         ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
         drawBox(ctx, pixelCorners);
     }
