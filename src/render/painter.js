@@ -864,6 +864,7 @@ class Painter {
         const defines = [];
 
         if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
+        if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {

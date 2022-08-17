@@ -13,8 +13,8 @@ import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';
 import Context from '../gl/context.js';
-import {terrainUniforms} from '../terrain/terrain.js';
-import type {TerrainUniformsType} from '../terrain/terrain.js';
+import {terrainUniforms, globeUniforms} from '../terrain/terrain.js';
+import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
 import type {FogUniformsType} from './fog.js';
 
@@ -60,6 +60,7 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
+    globeUniforms: ?GlobeUniformsType;
 
     static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -141,10 +142,13 @@ class Program<Us: UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
-        if (fixedDefines.indexOf('TERRAIN') !== -1) {
+        if (fixedDefines.includes('TERRAIN')) {
             this.terrainUniforms = terrainUniforms(context);
         }
-        if (fixedDefines.indexOf('FOG') !== -1) {
+        if (fixedDefines.includes('GLOBE')) {
+            this.globeUniforms = globeUniforms(context);
+        }
+        if (fixedDefines.includes('FOG')) {
             this.fogUniforms = fogUniforms(context);
         }
     }
@@ -157,7 +161,23 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in terrainUniformValues) {
-            uniforms[name].set(this.program, name, terrainUniformValues[name]);
+            if (uniforms[name]) {
+                uniforms[name].set(this.program, name, terrainUniformValues[name]);
+            }
+        }
+    }
+
+    setGlobeUniformValues(context: Context, globeUniformValues: UniformValues<GlobeUniformsType>) {
+        if (!this.globeUniforms) return;
+        const uniforms: GlobeUniformsType = this.globeUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in globeUniformValues) {
+            if (uniforms[name]) {
+                uniforms[name].set(this.program, name, globeUniformValues[name]);
+            }
         }
     }
 
