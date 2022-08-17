@@ -26,6 +26,7 @@
     <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
     <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
     <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+    <label><input id='globe-checkbox' type='checkbox'> globe</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -142,6 +143,11 @@ document.getElementById('show-overdraw-checkbox').onclick = function() {
 
 document.getElementById('pitch-checkbox').onclick = function() {
     map.dragRotate._pitchWithRotate = !!this.checked;
+};
+
+document.getElementById('globe-checkbox').onclick = function() {
+    map.dragRotate._pitchWithRotate = !!this.checked;
+    map.setProjection(this.checked? 'globe': null)
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native
