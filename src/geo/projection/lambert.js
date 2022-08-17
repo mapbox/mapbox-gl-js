@@ -26,7 +26,7 @@ export default class LambertConformalConic extends Projection {
 
         let y0 = degToRad(lat0);
         let y1 = degToRad(lat1);
-        // Run projcetion math on inverted lattitudes if the paralell lines are south of the equator
+        // Run projection math on inverted lattitudes if the paralell lines are south of the equator
         // This fixes divide by zero errors with a South polar projection
         this.southernCenter = (y0 + y1) < 0;
         if (this.southernCenter) {
