@@ -8,10 +8,9 @@ uniform vec2 u_cascade_distances;
 uniform highp vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
-float rand(float co) { return fract(sin(co * 91.3458) * 47453.5453); }
-float rand(vec2 co) { return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453); } 
-float rand(vec3 co) { return rand(co.xy + rand(co.z)); }
-
+float rand(vec2 co) {
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
@@ -56,27 +55,27 @@ highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
     return clamp(value, 0.0, 1.0);
 }
 
-highp float shadow_occlusion_0(highp vec3 world_pos, highp vec4 pos, highp float bias) {
+highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     float disc_radius = 5.0;
     vec2 poisson_disc[16];
-    poisson_disc[0] = vec2(-0.372773, -0.479649);
-    poisson_disc[1] = vec2(-0.147121, -0.977818);
-    poisson_disc[2] = vec2(-0.117312, -0.0812339);
-    poisson_disc[3] = vec2(0.136464, -0.719992);
-    poisson_disc[4] = vec2(-0.918976, -0.172404);
-    poisson_disc[5] = vec2(0.333555, -0.307162);
-    poisson_disc[6] = vec2(-0.625878, -0.762456);
-    poisson_disc[7] = vec2(-0.5919, 0.31843);
-    poisson_disc[8] = vec2(-0.48248, 0.755864);
-    poisson_disc[9] = vec2(0.126098, 0.320288);
-    poisson_disc[10] = vec2(-0.0775654, 0.705741);
-    poisson_disc[11] = vec2(0.359579, 0.890029);
-    poisson_disc[12] = vec2(0.549337, 0.378352);
-    poisson_disc[13] = vec2(0.713087, -0.639836);
-    poisson_disc[14] = vec2(0.77732, -0.187863);
-    poisson_disc[15] = vec2(0.907086, 0.180423);
+    poisson_disc[0] = vec2(-0.0563192, 0.178169);
+    poisson_disc[1] = vec2(-0.0920321, -0.282117);
+    poisson_disc[2] = vec2(0.314254, -0.0202571);
+    poisson_disc[3] = vec2(-0.535916, -0.21585);
+    poisson_disc[4] = vec2(0.112625, -0.629529);
+    poisson_disc[5] = vec2(-0.108192, 0.678537);
+    poisson_disc[6] = vec2(0.485583, -0.528734);
+    poisson_disc[7] = vec2(0.582397, 0.468722);
+    poisson_disc[8] = vec2(0.755208, 0.0462787);
+    poisson_disc[9] = vec2(-0.440837, -0.636651);
+    poisson_disc[10] = vec2(-0.600585, 0.491178);
+    poisson_disc[11] = vec2(-0.836046, 0.057842);
+    poisson_disc[12] = vec2(0.15566, 0.964595);
+    poisson_disc[13] = vec2(-0.442785, 0.871917);
+    poisson_disc[14] = vec2(0.860713, -0.471707);
+    poisson_disc[15] = vec2(-0.923336, -0.33788);
 
-    float angle = rand(world_pos);
+    float angle = rand(gl_FragCoord.xy);
     float cos_a = cos(angle);
     float sin_a = sin(angle);
     mat2 rotation = mat2(cos_a, sin_a, -sin_a, cos_a);
@@ -93,13 +92,13 @@ highp float shadow_occlusion_0(highp vec3 world_pos, highp vec4 pos, highp float
     return clamp(accumulate / 16.0, 0.0, 1.0);
 }
 
-float shadow_occlusion(highp vec3 world_pos, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
+float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
     const float cascadeFadeRange = 0.05;
     const float endFadeRange = 0.25;
 
     float occlusion = 0.0;
     if (view_depth < u_cascade_distances.x) {
-        occlusion = shadow_occlusion_0(world_pos, light_view_pos0, bias);
+        occlusion = shadow_occlusion_0(light_view_pos0, bias);
     }
     if (view_depth > u_cascade_distances.x * (1.0 - cascadeFadeRange) && view_depth < u_cascade_distances.y) {
         float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
@@ -118,7 +117,7 @@ float shadow_occlusion(highp vec3 world_pos, highp vec4 light_view_pos0, highp v
 }
 
 vec3 shadowed_color_normal(
-    vec3 color, highp vec3 world_pos, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     highp float NDotL = dot(N, u_shadow_direction);
     if (NDotL < 0.0)
         return color * (1.0 - u_shadow_intensity);
@@ -127,7 +126,7 @@ vec3 shadowed_color_normal(
 
     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
     highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
-    float occlusion = shadow_occlusion(world_pos, light_view_pos0, light_view_pos1, view_depth, bias);
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
     float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
     occlusion = mix(occlusion, 1.0, backfacing);
@@ -135,9 +134,9 @@ vec3 shadowed_color_normal(
     return color;
 }
 
-vec3 shadowed_color(vec3 color, highp vec3 world_pos, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
-    float occlusion = shadow_occlusion(world_pos, light_view_pos0, light_view_pos1, view_depth, bias);
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
     color *= 1.0 - (u_shadow_intensity * occlusion);
     return color;
