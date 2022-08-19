@@ -69,7 +69,7 @@ export default class HandlerInertia {
             inertia.shift();
     }
 
-    _onMoveEnd(panInertiaOptions?: DragPanOptions): ?(EasingOptions & {easeId?: string, preloadOnly?: boolean}) {
+    _onMoveEnd(panInertiaOptions?: DragPanOptions): ?(EasingOptions & {easeId?: string}) {
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             return;
