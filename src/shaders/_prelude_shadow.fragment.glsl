@@ -8,7 +8,7 @@ uniform vec2 u_cascade_distances;
 uniform highp vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
-float rand(vec2 co) {
+highp float rand(highp vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
@@ -75,18 +75,37 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     poisson_disc[14] = vec2(0.860713, -0.471707);
     poisson_disc[15] = vec2(-0.923336, -0.33788);
 
-    float angle = rand(gl_FragCoord.xy);
+    float angle = rand(gl_FragCoord.xy) * 2.0 * PI;
     float cos_a = cos(angle);
     float sin_a = sin(angle);
-    mat2 rotation = mat2(cos_a, sin_a, -sin_a, cos_a);
+    mat2 disc_rotation = mat2(cos_a, sin_a, -sin_a, cos_a);
 
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    highp float compare0 = min(pos.z, 0.999) - bias;
+    
+    // Receiver plane depth bias
+    // From https://developer.amd.com/wordpress/media/2012/10/Isidoro-ShadowMapping.pdf
+    // Packing derivatives of u,v, and distance to light source w.r.t. screen space x, and y
+    vec4 duvdist_dx = dFdx(pos);
+    vec4 duvdist_dy = dFdy(pos);
+
+    vec2 ddist_duv;
+    ddist_duv.x = (duvdist_dy.y * duvdist_dx.z) - (duvdist_dx.y * duvdist_dy.z);
+    ddist_duv.y = (duvdist_dx.x * duvdist_dy.z) - (duvdist_dy.x * duvdist_dx.z);
+
+    // Multiply ddist/dx and ddist/dy by inverse transpose of Jacobian
+    ddist_duv *= 1.0 / ((duvdist_dx.x * duvdist_dy.y) - (duvdist_dx.y * duvdist_dy.x));
 
     mediump float accumulate = 0.0;
     for (int i = 0; i < 16; ++i) {
-        accumulate += shadow_sample_0(pos.xy + (poisson_disc[i] * disc_radius * u_texel_size) * rotation, compare0);
+        // Offset of texel quad in texture coordinates;
+        vec2 texCoordOffset = (poisson_disc[i] * disc_radius * u_texel_size) * disc_rotation;
+
+        // Apply receiver plane depth offset
+        highp float receiverBias = (ddist_duv.x * texCoordOffset.x) + (ddist_duv.y * texCoordOffset.y);
+
+        highp float compare0 = min(pos.z, 0.999) + receiverBias - bias;
+        accumulate += shadow_sample_0(pos.xy + texCoordOffset, compare0);
     }
 
     return clamp(accumulate / 16.0, 0.0, 1.0);
