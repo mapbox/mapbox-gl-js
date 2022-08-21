@@ -20,12 +20,13 @@
 <body>
 <div id='map'></div>
 <div id='checkboxes'>
-    <label><input id='immediate-checkbox' type='checkbox'> add a custom layer with immediate rendering</label><br />
+    <label><input id='immediate-checkbox' type='checkbox' checked> add a custom layer with immediate rendering</label><br />
     <label><input id='draped-checkbox' type='checkbox'> add a custom layer with draped rendering</label><br />
     <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
-<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+<script src="threejs/three.min.js"></script>
+<script src="perlin.js"></script>
 <script src="cloud-custom-layer.js"></script>
 
 <script src="webgl-wind-dist/dist/wind-gl.js"></script>
@@ -35,11 +36,11 @@
 <script src='../debug/access_token_generated.js'></script>
 
 <script>
-
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
     center: [0, 0],
+    zoom: 10,
     antialias: true, // create the gl context with MSAA antialiasing, so custom layers are antialiased
     hash:true,
     projection: 'globe'
