@@ -1222,12 +1222,13 @@ class Style extends Evented {
                 sources[source.id] = source.serialize();
             }
         }
+
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
-            terrain: this.stylesheet.terrain,
+            terrain: this.getTerrain() || undefined,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,

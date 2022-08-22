@@ -341,6 +341,7 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 t.end();
             });
         });
@@ -356,6 +357,7 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(12); // Above threshold for Mercator transition
                 map.once('render', () => {
                     t.notOk(map.style.terrain);
@@ -375,11 +377,13 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 0);
                 t.notOk(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(3); // Below threshold for Mercator transition
                 map.once('render', () => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
                     t.equal(map.getTerrain(), null);
+                    t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
             });
