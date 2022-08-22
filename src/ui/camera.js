@@ -99,6 +99,7 @@ export type FullCameraOptions = {
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
+ * @property {boolean} preloadOnly If `true`, it will trigger tiles loading across the animation path, but no animation will occur.
  * @see [Example: Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
  * @see [Example: Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
  * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
@@ -108,7 +109,8 @@ export type AnimationOptions = {
     easing?: (_: number) => number,
     offset?: PointLike,
     animate?: boolean,
-    essential?: boolean
+    essential?: boolean,
+    preloadOnly?: boolean
 };
 
 export type EasingOptions = CameraOptions & AnimationOptions;
@@ -988,7 +990,7 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(options: CameraOptions & {preloadOnly?: boolean}, eventData?: Object): this {
+    jumpTo(options: CameraOptions & {preloadOnly?: $PropertyType<AnimationOptions, 'preloadOnly'>}, eventData?: Object): this {
         this.stop();
 
         const tr = options.preloadOnly ? this.transform.clone() : this.transform;
@@ -1194,7 +1196,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    easeTo(options: EasingOptions & {easeId?: string, preloadOnly?: boolean}, eventData?: Object): this {
+    easeTo(options: EasingOptions & {easeId?: string}, eventData?: Object): this {
         this._stop(false, options.easeId);
 
         options = extend({
@@ -1445,7 +1447,7 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: EasingOptions & {preloadOnly?: boolean}, eventData?: Object): this {
+    flyTo(options: EasingOptions, eventData?: Object): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (!options.essential && browser.prefersReducedMotion) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
