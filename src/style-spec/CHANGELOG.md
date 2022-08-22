@@ -1,3 +1,12 @@
+## 13.26.0
+
+### Features ✨
+
+* Add unit option to number-format expression ([#11839](https://github.com/mapbox/mapbox-gl-js/pull/11839)) (h/t [varna](https://github.com/varna))
+
+## Bug fixes 🐞
+* Fix a bug where `id` expression didn't correctly handle a value of 0 ([#12000](https://github.com/mapbox/mapbox-gl-js/pull/12000))
+
 ## 13.25.0
 
 ### Features ✨
