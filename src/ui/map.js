@@ -32,7 +32,7 @@ import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 import {setCacheLimits} from '../util/tile_request_cache.js';
-import {clearAabbs} from '../render/draw_debug.js';
+import {Debug} from '../util/debug.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
@@ -3674,10 +3674,9 @@ class Map extends Camera {
     */
     get showTileAABBs(): boolean { return !!this._showTileAABBs; }
     set showTileAABBs(value: boolean) {
-        console.log("setting showTileAABBs to", value);
         if (this._showTileAABBs === value) return;
         this._showTileAABBs = value;
-        if (!value) { clearAabbs(); return; }
+        if (!value) { Debug.clearAabbs(); return; }
         this._update();
     }
 

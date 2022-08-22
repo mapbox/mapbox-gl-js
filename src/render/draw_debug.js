@@ -7,17 +7,12 @@ import {debugUniformValues} from './program/debug_program.js';
 import Color from '../style-spec/util/color.js';
 import ColorMode from '../gl/color_mode.js';
 import browser from '../util/browser.js';
-import window from '../util/window.js';
-import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition, aabbForTileOnGlobe} from '../geo/projection/globe_util.js';
-import {mat4, vec3} from 'gl-matrix';
+import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {mat4} from 'gl-matrix';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
-import type {Vec2, Vec3} from 'gl-matrix';
-import type Transform from '../geo/transform.js';
-
-import assert from 'assert';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
@@ -214,105 +209,4 @@ function drawTextToOverlay(painter: Painter, text: string) {
 
     painter.debugOverlayTexture.update(canvas);
     painter.debugOverlayTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-}
-
-let debugCanvas: ?HTMLCanvasElement;
-let aabbCorners = [];
-
-function initializeCanvas(tr: Transform) {
-    if (!debugCanvas) {
-        debugCanvas = window.document.createElement('canvas');
-        window.document.body.appendChild(debugCanvas);
-        debugCanvas.style.position = 'absolute';
-        debugCanvas.style.left = 0;
-        debugCanvas.style.top = 0;
-        debugCanvas.style.pointerEvents = 'none';
-
-        const resize = () => {
-            if (!debugCanvas) { return; }
-            debugCanvas.width = tr.width;
-            debugCanvas.height = tr.height;
-        };
-        resize();
-
-        window.addEventListener("resize", resize);
-    }
-    return debugCanvas;
-}
-
-function drawLine(ctx: CanvasRenderingContext2D, start: ?Vec2, end: ?Vec2) {
-    if (!start || !end) { return; }
-    ctx.moveTo(...start);
-    ctx.lineTo(...end);
-}
-
-function drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
-    drawLine(ctx, corners[0], corners[1]);
-    drawLine(ctx, corners[1], corners[2]);
-    drawLine(ctx, corners[2], corners[3]);
-    drawLine(ctx, corners[3], corners[0]);
-}
-
-function drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
-    assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
-    ctx.beginPath();
-    drawPolygon(ctx, corners.slice(0, 4));
-    drawPolygon(ctx, corners.slice(4));
-    drawLine(ctx, corners[0], corners[4]);
-    drawLine(ctx, corners[1], corners[5]);
-    drawLine(ctx, corners[2], corners[6]);
-    drawLine(ctx, corners[3], corners[7]);
-    ctx.stroke();
-}
-
-export function drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
-    const tr = painter.transform;
-
-    const worldToECEFMatrix = mat4.invert(new Float64Array(16), tr.globeMatrix);
-    const ecefToPixelMatrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
-    const ecefToCameraMatrix = mat4.multiply([],  tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
-
-    if (!tr.freezeTileCoverage) {
-        aabbCorners = coords.map(coord => {
-            // Get tile AABBs in world/pixel space scaled by worldSize
-            const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical);
-            const corners = aabb.getCorners();
-            // Store AABBs as rectangular prisms in ECEF, this allows viewing them from other angles
-            // when transform.freezeTileCoverage is enabled.
-            for (const pos of corners) {
-                vec3.transformMat4(pos, pos, worldToECEFMatrix);
-            }
-            return corners;
-        });
-    }
-
-    const canvas = initializeCanvas(tr);
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const tileCount = aabbCorners.length;
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 2;
-    ctx.lineWidth = 1.5;
-
-    for (let i = 0; i <  tileCount; i++) {
-        const pixelCorners = aabbCorners[i].map(ecef => {
-            // Clipping to prevent visual artifacts.
-            // We don't draw any lines if one of their points is behind the camera.
-            // This means that AABBs close to the camera may appear to be missing.
-            // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
-            // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
-            const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
-            if (cameraPos[2] > 0) { return null; }
-            return vec3.transformMat4([], ecef, ecefToPixelMatrix);
-        });
-        ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
-        drawBox(ctx, pixelCorners);
-    }
-}
-
-export function clearAabbs() {
-    if (!debugCanvas) { return; }
-    debugCanvas.getContext('2d').clearRect(0, 0, debugCanvas.width, debugCanvas.height);
-    aabbCorners = [];
 }

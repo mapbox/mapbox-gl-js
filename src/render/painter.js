@@ -37,7 +37,7 @@ import fillExtrusion from './draw_fill_extrusion.js';
 import hillshade from './draw_hillshade.js';
 import raster from './draw_raster.js';
 import background from './draw_background.js';
-import debug, {drawDebugPadding, drawDebugQueryGeometry, drawAabbs} from './draw_debug.js';
+import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
 import drawAtmosphere from './draw_atmosphere.js';
@@ -680,7 +680,7 @@ class Painter {
                         drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                     if (this.options.showTileAABBs) {
-                        drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
+                        Debug.drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                 });
             }
