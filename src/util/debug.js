@@ -42,6 +42,7 @@ export const Debug: {
         }
 
     },
+
     debugCanvas: null,
     aabbCorners: [],
 
@@ -64,6 +65,31 @@ export const Debug: {
             window.addEventListener("resize", resize);
         }
         return this.debugCanvas;
+    },
+
+    _drawLine(ctx: CanvasRenderingContext2D, start: ?Vec2, end: ?Vec2) {
+        if (!start || !end) { return; }
+        ctx.moveTo(...start);
+        ctx.lineTo(...end);
+    },
+
+    _drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
+        this._drawLine(ctx, corners[0], corners[1]);
+        this._drawLine(ctx, corners[1], corners[2]);
+        this._drawLine(ctx, corners[2], corners[3]);
+        this._drawLine(ctx, corners[3], corners[0]);
+    },
+
+    _drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
+        assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
+        ctx.beginPath();
+        this._drawPolygon(ctx, corners.slice(0, 4));
+        this._drawPolygon(ctx, corners.slice(4));
+        this._drawLine(ctx, corners[0], corners[4]);
+        this._drawLine(ctx, corners[1], corners[5]);
+        this._drawLine(ctx, corners[2], corners[6]);
+        this._drawLine(ctx, corners[3], corners[7]);
+        ctx.stroke();
     },
 
     drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
@@ -108,7 +134,7 @@ export const Debug: {
                 return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
-            drawBox(ctx, pixelCorners);
+            this._drawBox(ctx, pixelCorners);
         }
     },
 
@@ -119,28 +145,3 @@ export const Debug: {
     }
 
 };
-
-function drawLine(ctx: CanvasRenderingContext2D, start: ?Vec2, end: ?Vec2) {
-    if (!start || !end) { return; }
-    ctx.moveTo(...start);
-    ctx.lineTo(...end);
-}
-
-function drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
-    drawLine(ctx, corners[0], corners[1]);
-    drawLine(ctx, corners[1], corners[2]);
-    drawLine(ctx, corners[2], corners[3]);
-    drawLine(ctx, corners[3], corners[0]);
-}
-
-function drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
-    assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
-    ctx.beginPath();
-    drawPolygon(ctx, corners.slice(0, 4));
-    drawPolygon(ctx, corners.slice(4));
-    drawLine(ctx, corners[0], corners[4]);
-    drawLine(ctx, corners[1], corners[5]);
-    drawLine(ctx, corners[2], corners[6]);
-    drawLine(ctx, corners[3], corners[7]);
-    ctx.stroke();
-}
