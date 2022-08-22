@@ -85,44 +85,53 @@ const cloudLayer = {
             antialias: true
         });
         this.renderer.autoClear = false;
-
-        const satrec = satellite.twoline2satrec('1    11U 59001A   22053.83197560  .00000847  00000-0  45179-3 0  9996',
-                                                '2    11  32.8647 264.6509 1466352 126.0358 248.5175 11.85932318689790');
-
-        this.satrec = satrec;
-
         this.camera = new THREE.Camera();
         this.scene = new THREE.Scene();
-
-        const geometry = new THREE.OctahedronGeometry(1, 0);
-        const material = new THREE.MeshBasicMaterial({color: '#ff0000', transparent: true, opacity: 0.8});
-        const mesh = new THREE.InstancedMesh(geometry, material, 1);
-        this.mesh = mesh;
-        this.scene.add(mesh);
         this.map = map;
+
+        fetch('space-track-leo.txt').then(r => r.text()).then(rawData => {
+            const tleData = rawData.replace(/\r/g, '')
+              .split(/\n(?=[^12])/)
+              .filter(d => d)
+              .map(tle => tle.split('\n'));
+            this.satData = tleData.map(([name, ...tle]) => ({
+              satrec: satellite.twoline2satrec(...tle),
+              name: name.trim().replace(/^0 /, '')
+            }))
+            // exclude those that can't be propagated
+            .filter(d => !!satellite.propagate(d.satrec, new Date()).position)
+            .slice(0, 500);
+
+            const geometry = new THREE.OctahedronGeometry(1, 0);
+            const material = new THREE.MeshBasicMaterial({color: '#ff0000', transparent: true, opacity: 0.8});
+            this.mesh = new THREE.InstancedMesh(geometry, material, this.satData.length);
+            this.scene.add(this.mesh);
+        });
     },
 
     render (gl, projectionMatrix, globeMatrix) {
-        if (this.map.transform.projection.name === 'globe') {
+        if (this.satData && this.map.transform.projection.name === 'globe') {
             const transform = this.map.transform;
 
             time = new Date(+time + TIME_STEP);
-
             const gmst = satellite.gstime(time);
-            const eci = satellite.propagate(this.satrec, time);
 
-            if (eci.position) {
-                const geodetic = satellite.eciToGeodetic(eci.position, gmst);
-                const modelToMercator = getModelToMercatorMatrix(
-                    transform,
-                    satellite.degreesLat(geodetic.latitude),
-                    satellite.degreesLong(geodetic.longitude),
-                    geodetic.height,
-                    100);
-                this.mesh.setMatrixAt(0, modelToMercator);
-                this.mesh.instanceMatrix.needsUpdate = true;
+            for (let i = 0; i < this.satData.length; ++i) {
+                const satrec = this.satData[i].satrec;
+                const eci = satellite.propagate(satrec, time);
+                if (eci.position) {
+                    const geodetic = satellite.eciToGeodetic(eci.position, gmst);
+                    const modelToMercator = getModelToMercatorMatrix(
+                        transform,
+                        satellite.degreesLat(geodetic.latitude),
+                        satellite.degreesLong(geodetic.longitude),
+                        geodetic.height,
+                        100);
+                    this.mesh.setMatrixAt(i, modelToMercator);
+                }
             }
-            
+            this.mesh.instanceMatrix.needsUpdate = true;
+
             const projection = new THREE.Matrix4().fromArray(projectionMatrix);
             this.camera.projectionMatrix = projection;
 
