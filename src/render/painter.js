@@ -673,13 +673,14 @@ class Painter {
                 if (this.options.showTileBoundaries) {
                     draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
                 }
-                if (this.options.showTileAABBs) {
-                    drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
-                }
 
                 Debug.run(() => {
-                    if (this.options.showQueryGeometry && selectedSource) {
+                    if (!selectedSource) return;
+                    if (this.options.showQueryGeometry) {
                         drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
+                    }
+                    if (this.options.showTileAABBs) {
+                        drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                 });
             }
