@@ -85,7 +85,7 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
         f.x * (o31 + o32) +
         (1.0 - f.x) * f.y * o03 +
         f.y * (o13 + o23) +
-        f.x * f.x * o33 +
+        f.x * f.y * o33 +
         o11 + o21 + o12 + o22;
 
     return clamp(value / 9.0, 0.0, 1.0);
