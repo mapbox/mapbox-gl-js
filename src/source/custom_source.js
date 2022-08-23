@@ -213,6 +213,9 @@ class CustomSource<T> extends Evented implements Source {
         implementation.update = this._update.bind(this);
 
         // $FlowFixMe[prop-missing]
+        implementation.clearTiles = this._clearTiles.bind(this);
+
+        // $FlowFixMe[prop-missing]
         implementation.coveringTiles = this._coveringTiles.bind(this);
 
         extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
@@ -375,6 +378,10 @@ class CustomSource<T> extends Evented implements Source {
         });
 
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
+    }
+
+    _clearTiles() {
+        this._map.style._clearSource(this.id);
     }
 
     _update() {
