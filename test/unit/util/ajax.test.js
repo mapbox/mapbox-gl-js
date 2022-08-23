@@ -11,14 +11,12 @@ import config from '../../../src/util/config.js';
 import webpSupported from '../../../src/util/webp_supported.js';
 
 test('ajax', (t) => {
-    t.beforeEach(callback => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach(callback => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('getArrayBuffer, 404', (t) => {

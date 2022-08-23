@@ -49,14 +49,12 @@ const createElevation = (func, exaggeration) => {
 };
 
 test('Map', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('constructor', (t) => {
@@ -844,9 +842,8 @@ test('Map', (t) => {
 
     t.test('#isSourceLoaded', (t) => {
 
-        t.afterEach((callback) => {
+        t.afterEach(() => {
             Map.prototype._detectMissingCSS.restore();
-            callback();
         });
 
         function setupIsSourceLoaded(tileState, callback) {

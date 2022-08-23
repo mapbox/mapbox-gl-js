@@ -1068,7 +1068,6 @@ test('legacy filter detection', t => {
 test('convert legacy filters to expressions', t => {
     t.beforeEach(done => {
         t.stub(console, 'warn');
-        done();
     });
 
     legacyFilterTests(t, (f) => {

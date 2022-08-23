@@ -41,14 +41,12 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
 }
 
 test('VectorTileSource', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('can be constructed from TileJSON', (t) => {

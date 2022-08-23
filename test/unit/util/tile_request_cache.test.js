@@ -5,15 +5,13 @@ import window from '../../../src/util/window.js';
 import sinon from 'sinon';
 
 test('tile_request_cache', (t) => {
-    t.beforeEach(callback => {
+    t.beforeEach(() => {
         cacheClose();
         window.caches = sinon.stub();
-        callback();
     });
 
-    t.afterEach(callback => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('cachePut, no window.caches', (t) => {
