@@ -10,12 +10,13 @@ test("dragging", async t => {
         const canvas = await browser.getMapCanvas(`${browser.basePath}/test/browser/fixtures/land.html`);
 
         // Perform drag action, wait a bit the end to avoid the momentum mode.
-        await driver
-            .actions()
-            .move(canvas)
+        const actions = await driver.actions({async: true});
+        const mouse = actions.mouse();
+
+        await actions.move(canvas)
             .press()
             .move({x: 100 / browser.scaleFactor, y: 0, origin: Origin.POINTER})
-            .pause(200)
+            .pause(200, mouse)
             .release()
             .perform();
 
