@@ -649,30 +649,56 @@ class Camera extends Evented {
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
 
-        const worldCoords = [
+        const ecefCoords = [
             latLngToECEF(coord0.lat, coord0.lng),
             latLngToECEF(coord1.lat, coord0.lng),
             latLngToECEF(coord1.lat, coord1.lng),
             latLngToECEF(coord0.lat, coord1.lng),
         ];
-        const aabb = Aabb.fromPoints(worldCoords);
 
-        const v0 = vec3.normalize([], worldCoords[0]);
-        const v1 = vec3.normalize([], worldCoords[1]);
-        const v2 = vec3.normalize([], worldCoords[2]);
-        const v3 = vec3.normalize([], worldCoords[3]);
+        const v0 = vec3.normalize([], ecefCoords[0]);
+        const v1 = vec3.normalize([], ecefCoords[1]);
+        const v2 = vec3.normalize([], ecefCoords[2]);
+        const v3 = vec3.normalize([], ecefCoords[3]);
 
         const center = slerpUnitVectors(
             slerpUnitVectors(v0, v3, 0.5),
             slerpUnitVectors(v1, v2, 0.5),
             0.5);
 
+        const zAxis = vec3.normalize([], center);
+        const xAxis = vec3.normalize([], vec3.cross([], zAxis, [0, 1, 0]));
+        const yAxis = vec3.cross([], xAxis, zAxis);
+
+        const aabbOrientation = [
+            xAxis[0], xAxis[1], xAxis[2], 0,
+            yAxis[0], yAxis[1], yAxis[2], 0,
+            zAxis[0], zAxis[1], zAxis[2], 0,
+            0, 0, 0, 1
+        ];
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
+
+        ecefCoords.push(vec3.scale([], center, GLOBE_RADIUS));
+        for (const p of ecefCoords) {
+            min[0] = Math.min(min[0], vec3.dot(xAxis, p));
+            min[1] = Math.min(min[1], vec3.dot(yAxis, p));
+            min[2] = Math.min(min[2], vec3.dot(zAxis, p));
+
+            max[0] = Math.max(max[0], vec3.dot(xAxis, p));
+            max[1] = Math.max(max[1], vec3.dot(yAxis, p));
+            max[2] = Math.max(max[2], vec3.dot(zAxis, p));
+        }
+
+        const aabb = new Aabb(min, max);
         tr.center = ECEFToLatLng(center);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
+        aabb.applyTransform(mat4.multiply([], worldToCamera, aabbOrientation));
 
         aabb.applyTransform(worldToCamera);
+        vec3.scale(center, center, GLOBE_RADIUS);
         vec3.transformMat4(center, center, worldToCamera);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
@@ -682,7 +708,7 @@ class Camera extends Evented {
         const aabbClosestPoint = vec3.add([], aabb.center, offsetZ);
         const isCenterCloser = aabbClosestPoint[2] < center[2];
 
-        const offsetRef = isCenterCloser ? aabbClosestPoint : center;
+        const offsetRef = isCenterCloser ? center : aabbClosestPoint;
         const offsetDistance = isCenterCloser ?
             frustumDistance :
             frustumDistance + Math.abs(aabbClosestPoint[2] - center[2]);
