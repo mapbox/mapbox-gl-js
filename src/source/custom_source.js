@@ -29,7 +29,7 @@ function isRaster(data: any): boolean {
  * These sources can be added between any regular sources using {@link Map#addSource}.
  *
  * Custom sources must have a unique `id` and must have the `type` of `"custom"`.
- * They must implement `loadTile` and may implement `unloadTile`, `prepareTile`, `onAdd` and `onRemove`.
+ * They must implement `loadTile` and may implement `unloadTile`, `onAdd` and `onRemove`.
  * They can trigger rendering using {@link Map#triggerRepaint}.
  *
  * @interface CustomSourceInterface
@@ -117,18 +117,6 @@ function isRaster(data: any): boolean {
  */
 
 /**
- * Optional method called during a render frame to allow a source to prepare and modify a tile texture if needed.
- *
- * @function
- * @memberof CustomSourceInterface
- * @instance
- * @name prepareTile
- * @param {{ z: number, x: number, y: number }} tile Tile name to prepare in the XYZ scheme format.
- * @returns {TextureImage | undefined | null} The tile image data as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
- *  If `prepareTile` returns `undefined`, a map will render a previous version of the tile in the tile’s space if there was any. If `prepareTile` resolves to `null`, a map will render nothing in the tile’s space.
- */
-
-/**
  * Called when the map starts loading tile for the current animation frame.
  *
  * @function
@@ -153,7 +141,6 @@ export type CustomSourceInterface<T> = {
     bounds: ?[number, number, number, number];
     hasTile: ?(tileID: { z: number, x: number, y: number }) => boolean,
     loadTile: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<?T>,
-    prepareTile: ?(tileID: { z: number, x: number, y: number }) => ?T,
     unloadTile: ?(tileID: { z: number, x: number, y: number }) => void,
     onAdd: ?(map: Map) => void,
     onRemove: ?(map: Map) => void,
@@ -322,28 +309,6 @@ class CustomSource<T> extends Evented implements Source {
     unloadTileData(tile: Tile): void {
         // Only raster data supported at the moment
         RasterTileSource.unloadTileData(tile, this._map.painter);
-    }
-
-    prepareTile(tile: Tile): ?T {
-        if (!this._implementation.prepareTile) return null;
-
-        const {x, y, z} = tile.tileID.canonical;
-        const data = this._implementation.prepareTile({x, y, z});
-
-        // If the implementation returned `undefined` as tile data, return immideatly to indicate that we have no new data for the tile.
-        // A map will render a previous version of the tile in the tile’s space if there was any.
-        if (data === undefined) return null;
-
-        // If the implementation returned `null` as tile data, mark the tile as `loading`.
-        // A SourceCache will trigger the tile loading. A map will render nothing in the tile’s space.
-        if (data === null) {
-            tile.state = 'loading';
-            return null;
-        }
-
-        this.loadTileData(tile, data);
-        tile.state = 'loaded';
-        return data;
     }
 
     unloadTile(tile: Tile, callback: Callback<void>): void {

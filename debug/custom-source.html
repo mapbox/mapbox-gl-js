@@ -53,16 +53,6 @@ map.on('load', () => {
             context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
             return canvas;
         },
-        prepareTile({z, x, y}) {
-            context.fillStyle = currentColor;
-            context.fillRect(0, 0, tileSize, tileSize);
-
-            context.font = '18px serif';
-            context.fillStyle = 'white';
-            context.textAlign = 'center';
-            context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
-            return canvas;
-        },
         hasTile({z, x, y}) {
             return (x + y) % 2 === 0;
         }
