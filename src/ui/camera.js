@@ -697,7 +697,6 @@ class Camera extends Evented {
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
         aabb.applyTransform(mat4.multiply([], worldToCamera, aabbOrientation));
 
-        aabb.applyTransform(worldToCamera);
         vec3.scale(center, center, GLOBE_RADIUS);
         vec3.transformMat4(center, center, worldToCamera);
 
@@ -705,17 +704,11 @@ class Camera extends Evented {
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
         const offsetZ = vec3.scale([], [0, 0, 1], aabbHalfExtentZ);
-        const aabbClosestPoint = vec3.add([], aabb.center, offsetZ);
-        const isCenterCloser = aabbClosestPoint[2] < center[2];
-
-        const offsetRef = isCenterCloser ? center : aabbClosestPoint;
-        const offsetDistance = isCenterCloser ?
-            frustumDistance :
-            frustumDistance + Math.abs(aabbClosestPoint[2] - center[2]);
-
-        // Retrieve camera position along the z axis
-        const offset = vec3.scale([], [0, 0, 1], offsetDistance);
-        const cameraPosition = vec3.add([], offsetRef, offset);
+        const aabbClosestPoint = vec3.add([], center, offsetZ);
+        const offsetDistance = frustumDistance + (tr.pitch === 0 ? 0 : vec3.distance(center, aabbClosestPoint));
+        const normal = vec3.normalize([], vec3.sub([], center, tr.globeCenterInViewSpace));
+        const offset = vec3.scale([], normal, offsetDistance);
+        const cameraPosition = vec3.add([], center, offset);
 
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
 
