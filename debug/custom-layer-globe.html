@@ -27,7 +27,7 @@
 
 <script src="threejs/three.min.js"></script>
 <script src="//unpkg.com/satellite.js/dist/satellite.min.js"></script>
-<script src="cloud-custom-layer.js"></script>
+<script src="satellites-custom-layer.js"></script>
 
 <script src="webgl-wind-dist/dist/wind-gl.js"></script>
 <script src="wind-custom-layer.js"></script>
@@ -47,7 +47,7 @@ const map = new mapboxgl.Map({
 });
 
 map.on('style.load', () => {
-    map.addLayer(cloudLayer);
+    map.addLayer(satellitesLayer);
     map.addLayer(windLayer);
 
     document.getElementById('immediate-checkbox').onclick();
@@ -55,7 +55,7 @@ map.on('style.load', () => {
 });
 
 document.getElementById('immediate-checkbox').onclick = function() {
-    map.setLayoutProperty('cloud', 'visibility', this.checked ? 'visible' : 'none');
+    map.setLayoutProperty('satellites', 'visibility', this.checked ? 'visible' : 'none');
 };
 
 document.getElementById('draped-checkbox').onclick = function() {

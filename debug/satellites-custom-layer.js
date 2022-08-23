@@ -12,6 +12,7 @@ const METERS_TO_ECEF = GLOBE_CIRCUMFERENCE_ECEF / EARTH_CIRCUMFERENCE_METERS;
 
 const KM_TO_M = 1000;
 const TIME_STEP = 3 * 1000;
+const SATELLITE_SIZE_KM = 60;
 
 function getPixelToMercatorMatrix(transform) {
     const PIXEL_TO_MERCATOR = 1 / transform.worldSize;
@@ -75,8 +76,8 @@ function getModelToMercatorMatrix(transform, lat, lon, altKm, sizeKm) {
 
 let time = new Date();
 
-const cloudLayer = {
-    id: 'cloud',
+const satellitesLayer = {
+    id: 'satellites',
     type: 'custom',
     onAdd (map, gl) {
         this.renderer = new THREE.WebGLRenderer({
@@ -102,7 +103,7 @@ const cloudLayer = {
             .filter(d => !!satellite.propagate(d.satrec, new Date()).position)
             .slice(0, 500);
 
-            const geometry = new THREE.OctahedronGeometry(1, 0);
+            const geometry = new THREE.OctahedronGeometry(1, 1);
             const material = new THREE.MeshBasicMaterial({color: '#ff0000', transparent: true, opacity: 0.8});
             this.mesh = new THREE.InstancedMesh(geometry, material, this.satData.length);
             this.scene.add(this.mesh);
@@ -126,7 +127,7 @@ const cloudLayer = {
                         satellite.degreesLat(geodetic.latitude),
                         satellite.degreesLong(geodetic.longitude),
                         geodetic.height,
-                        100);
+                        SATELLITE_SIZE_KM);
                     this.mesh.setMatrixAt(i, modelToMercator);
                 }
             }
