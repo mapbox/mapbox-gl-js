@@ -2122,11 +2122,8 @@ test('Style#query*Features', (t) => {
         onError = t.spy();
 
         return new Promise((resolve) => {
-            style.on('error', onError)
-            .on('style.load', () => {
-                resolve();
-            });
-        })
+            style.on('error', onError).on('style.load', () => resolve());
+        });
     });
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
