@@ -42,8 +42,8 @@ type Options = {
  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @param {number} [options.clickTolerance=0] The max number of pixels a user can shift the mouse pointer during a click on the marker for it to be considered a valid click (as opposed to a marker drag). The default is to inherit map's `clickTolerance`.
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
- * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
- * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation, added to options.rotation.`map` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `viewport` is screenspace-aligned. `horizon` is aligned`according to the nearest horizon, on non-globe projections it is equivalent to `viewport`. `auto` is equivalent to `viewport`.
+ * @param {string} [options.pitchAlignment='auto'] `'map'` aligns the `Marker` to the plane of the map. `'viewport'` aligns the `Marker` to the plane of the viewport. `'auto'` automatically matches the value of `rotationAlignment`.
+ * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()

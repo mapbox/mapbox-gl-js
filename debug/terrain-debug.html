@@ -28,6 +28,7 @@
     <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
     <label><input id='globe-checkbox' type='checkbox' checked> globe</label><br />
     <label><input id='show-terrain-wireframe-checkbox' type='checkbox'> terrain wireframe</label><br />
+    <label><input id='show-aabb-checkbox' type='checkbox'>tile aabb debug</label><br />
     <label><input id='satellite-checkbox' type='checkbox'> satellite</label><br />
     <label><input id='buildings-checkbox' type='checkbox'> buildings</label><br />
     <label><input id='road-label-checkbox' type='checkbox'> road-label-*</label><br />
@@ -283,6 +284,10 @@ document.getElementById('show-symbol-collision-boxes-checkbox').onclick = functi
 
 document.getElementById('show-overdraw-checkbox').onclick = function() {
     map.showOverdrawInspector = !!this.checked;
+};
+
+document.getElementById('show-aabb-checkbox').onclick = function() {
+    map.showTileAABBs = !!this.checked;
 };
 
 document.getElementById('globe-checkbox').onclick = function() {

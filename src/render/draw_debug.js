@@ -7,12 +7,12 @@ import {debugUniformValues} from './program/debug_program.js';
 import Color from '../style-spec/util/color.js';
 import ColorMode from '../gl/color_mode.js';
 import browser from '../util/browser.js';
+import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {mat4} from 'gl-matrix';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
-import {globeDenormalizeECEF, transitionTileAABBinECEF, globeToMercatorTransition} from '../geo/projection/globe_util.js';
-import {mat4} from 'gl-matrix';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);

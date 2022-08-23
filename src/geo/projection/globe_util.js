@@ -230,6 +230,7 @@ function transformPoints(corners: Array<Vec3>, globeMatrix: Mat4, scale: number)
     }
 }
 
+// Returns AABB in world/camera space scaled by numTiles / tr.worldSize
 export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
     const scale = numTiles / tr.worldSize;
     const m = tr.globeMatrix;
