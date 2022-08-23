@@ -86,14 +86,12 @@ const createNegativeGradientDEM = () => {
 test('Elevation', (t) => {
     const dem = createGradientDEM();
 
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('elevation sampling', t => {
@@ -776,14 +774,12 @@ test('Raycast projection 2D/3D', t => {
 });
 
 test('Negative Elevation', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     const map = createMap(t, {

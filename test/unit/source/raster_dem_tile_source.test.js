@@ -21,14 +21,12 @@ function createSource(options, transformCallback) {
 }
 
 test('RasterTileSource', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('create and serialize source', (t) => {

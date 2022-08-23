@@ -14,6 +14,10 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
         const outputfile = file.replace('.input', '.output');
         const style = fs.readFileSync(file);
         const result = validate(style);
+        // Error object does not survive JSON.stringify, so we don't include it in comparisons
+        for (const error of result) {
+            if (error.error) error.error = {};
+        }
         if (UPDATE) fs.writeFileSync(outputfile, JSON.stringify(result, null, 2));
         const expect = JSON.parse(fs.readFileSync(outputfile));
         t.deepEqual(result, expect);

@@ -60,9 +60,8 @@ class StubMap extends Evented {
 }
 
 test('Style', (t) => {
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('registers plugin state change listener', (t) => {
@@ -109,14 +108,12 @@ test('Style', (t) => {
 });
 
 test('Style#loadURL', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('fires "dataloading"', (t) => {
@@ -186,9 +183,8 @@ test('Style#loadURL', (t) => {
 });
 
 test('Style#loadJSON', (t) => {
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('fires "dataloading" (synchronously)', (t) => {
@@ -2107,7 +2103,7 @@ test('Style#query*Features', (t) => {
     let onError;
     let transform;
 
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         transform = new Transform();
         transform.resize(100, 100);
         style = new Style(new StubMap());
@@ -2125,10 +2121,9 @@ test('Style#query*Features', (t) => {
 
         onError = t.spy();
 
-        style.on('error', onError)
-            .on('style.load', () => {
-                callback();
-            });
+        return new Promise((resolve) => {
+            style.on('error', onError).on('style.load', () => resolve());
+        });
     });
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
