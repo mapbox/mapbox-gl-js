@@ -7,8 +7,7 @@ import {
     clamp,
     wrap,
     ease as defaultEasing,
-    pick,
-    slerpUnitVectors
+    pick
 } from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import browser from '../util/browser.js';
@@ -23,16 +22,15 @@ import MercatorCoordinate, {
     mercatorXfromLng,
     mercatorYfromLat,
     latFromMercatorY,
-    lngFromMercatorX}
-from '../geo/mercator_coordinate.js';
+    lngFromMercatorX
+} from '../geo/mercator_coordinate.js';
 import {
     latLngToECEF,
-    ECEFToLatLng,
+    ecefToLatLng,
     GLOBE_RADIUS,
     GLOBE_ZOOM_THRESHOLD_MAX,
     GLOBE_ZOOM_THRESHOLD_MIN
-}
-from '../geo/projection/globe_util.js';
+} from '../geo/projection/globe_util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera.js';
 import type Transform from '../geo/transform.js';
@@ -41,7 +39,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
 import type {TaskID} from '../util/task_queue.js';
 import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {Aabb, Ray, Frustum} from '../util/primitives.js';
+import {Aabb, Frustum} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
 import type {Vec3} from 'gl-matrix';
 
@@ -647,25 +645,11 @@ class Camera extends Evented {
 
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
+        const origin = latLngToECEF(
+            (coord0.lat + coord1.lat) * 0.5,
+            (coord0.lng + coord1.lng) * 0.5);
 
-        const ecefCoords = [
-            latLngToECEF(coord0.lat, coord0.lng),
-            latLngToECEF(coord1.lat, coord0.lng),
-            latLngToECEF(coord1.lat, coord1.lng),
-            latLngToECEF(coord0.lat, coord1.lng),
-        ];
-
-        const v0 = vec3.normalize([], ecefCoords[0]);
-        const v1 = vec3.normalize([], ecefCoords[1]);
-        const v2 = vec3.normalize([], ecefCoords[2]);
-        const v3 = vec3.normalize([], ecefCoords[3]);
-
-        const center = slerpUnitVectors(
-            slerpUnitVectors(v0, v3, 0.5),
-            slerpUnitVectors(v1, v2, 0.5),
-            0.5);
-
-        const zAxis = vec3.normalize([], center);
+        const zAxis = vec3.normalize([], origin);
         const xAxis = vec3.normalize([], vec3.cross([], zAxis, [0, 1, 0]));
         const yAxis = vec3.cross([], xAxis, zAxis);
 
@@ -703,13 +687,17 @@ class Camera extends Evented {
         }
 
         const aabb = new Aabb(min, max);
-        tr.center = ECEFToLatLng(center);
+
+        const center = vec3.transformMat4([], aabb.center, aabbOrientation);
+
+        vec3.normalize(center, center);
+        vec3.scale(center, center, GLOBE_RADIUS);
+        tr.center = ecefToLatLng(center);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
         aabb.applyTransform(mat4.multiply([], worldToCamera, aabbOrientation));
 
-        vec3.scale(center, center, GLOBE_RADIUS);
         vec3.transformMat4(center, center, worldToCamera);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
@@ -719,7 +707,8 @@ class Camera extends Evented {
         const aabbClosestPoint = vec3.add(offsetZ, center, offsetZ);
         const offsetDistance = frustumDistance + (tr.pitch === 0 ? 0 : vec3.distance(center, aabbClosestPoint));
 
-        const normal = vec3.sub([], center, tr.globeCenterInViewSpace);
+        const globeCenter = tr.globeCenterInViewSpace;
+        const normal = vec3.sub([], center, [globeCenter[0], globeCenter[1], globeCenter[2]]);
         vec3.normalize(normal, normal);
         vec3.scale(normal, normal, offsetDistance);
 

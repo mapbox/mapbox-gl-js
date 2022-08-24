@@ -53,6 +53,8 @@ var map = window.map = new mapboxgl.Map({
     projection: 'globe'
 });
 
+/*global MapboxDraw, turf*/
+
 const draw = new MapboxDraw({
     displayControlsDefault: false,
     controls: {
@@ -62,7 +64,7 @@ const draw = new MapboxDraw({
     defaultMode: 'draw_polygon'
 });
 map.addControl(draw);
- 
+
 map.on('draw.create', updatePolygon);
 map.on('draw.delete', updatePolygon);
 map.on('draw.update', updatePolygon);
@@ -74,7 +76,7 @@ const data = {
         "type": "Polygon",
         "coordinates": []
     }
-}
+};
 
 let bbox;
 
@@ -96,7 +98,7 @@ map.on('load', function() {
         'type': 'line',
         'source': {
             'type': 'geojson',
-            'data': data
+            data
         },
         'layout': {},
         'paint': {
@@ -112,7 +114,7 @@ map.on('load', function() {
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]]
         ];
-        const camera = map.cameraForBounds(bounds, { bearing: map.getBearing() });
+        const camera = map.cameraForBounds(bounds, {bearing: map.getBearing()});
         map.easeTo(camera);
     });
 });

@@ -3,7 +3,7 @@
 import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
 
-import type {Vec3} from 'gl-matrix';
+import type {Vec3, Mat4} from 'gl-matrix';
 
 class Ray {
     pos: Vec3;
@@ -208,7 +208,7 @@ class Aabb {
         return new Aabb(qMin, qMax);
     }
 
-    applyTransform(transform: mat4): Aabb {
+    applyTransform(transform: Mat4): Aabb {
         const corners = this.getCorners();
 
         for (let i = 0; i < corners.length; ++i) {

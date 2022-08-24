@@ -26,7 +26,7 @@ import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
-import type {Vec3, Vec4, Quat} from 'gl-matrix';
+import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -375,7 +375,7 @@ class Transform {
         this._calcMatrices();
     }
 
-    get aspect(): mumber {
+    get aspect(): number {
         return this.width / this.height;
     }
 
@@ -2113,8 +2113,7 @@ class Transform {
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
     }
 
-
-    getWorldToCameraMatrix(): mat4 {
+    getWorldToCameraMatrix(): Mat4 {
         const zUnit = this.projection.zAxisUnit === "meters" ? this.pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
 
