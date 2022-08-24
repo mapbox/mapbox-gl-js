@@ -39,7 +39,6 @@
     "@babel/eslint-parser": "^7.18.9",
     "@babel/preset-flow": "^7.18.6",
     "@mapbox/flow-remove-types": "^2.0.0",
-    "@mapbox/gazetteer": "^5.1.0",
     "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/auth-app": "^4.0.5",
