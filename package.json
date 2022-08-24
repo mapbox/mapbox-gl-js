@@ -41,7 +41,7 @@
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/gazetteer": "^5.1.0",
     "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
-    "@mapbox/mvt-fixtures": "^3.8.0",
+    "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/auth-app": "^4.0.5",
     "@octokit/rest": "^19.0.4",
     "@rollup/plugin-commonjs": "^22.0.2",
