@@ -67,8 +67,6 @@ class Transform {
     // Distance from camera to the center, in screen pixel units, independent of zoom
     cameraToCenterDistance: number;
 
-    _useFixedPixelSpaceConversion: boolean;
-
     // Projection from mercator coordinates ([0, 0] nw, [1, 1] se) to GL clip coordinates
     mercatorMatrix: Array<number>;
 
@@ -175,7 +173,6 @@ class Transform {
         this._nearZ = 0;
         this._farZ = 0;
         this._unmodified = true;
-        this._useFixedPixelSpaceConversion = true;
         this._edgeInsets = new EdgeInsets();
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
@@ -199,7 +196,6 @@ class Transform {
         clone._centerAltitude = this._centerAltitude;
         clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
         clone.tileSize = this.tileSize;
-        clone._useFixedPixelSpaceConversion = this._useFixedPixelSpaceConversion;
         clone.mercatorFromTransition = this.mercatorFromTransition;
         clone.width = this.width;
         clone.height = this.height;
@@ -220,11 +216,6 @@ class Transform {
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.frustumCorners = this.frustumCorners;
         return clone;
-    }
-
-    set useFixedPixelSpaceConversion(useFixedPixelSpaceConversion: boolean) {
-        this._useFixedPixelSpaceConversion = useFixedPixelSpaceConversion;
-        this._calcMatrices();
     }
 
     get elevation(): ?Elevation { return this._elevation; }
@@ -1737,7 +1728,7 @@ class Transform {
         // 'this._pixelsPerMercatorPixel' is the ratio between pixelsPerMeter in the current projection relative to Mercator.
         // This is useful for converting e.g. camera position between pixel spaces as some logic
         // such as raycasting expects the scale to be in mercator pixels
-        this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT, this._useFixedPixelSpaceConversion);
+        this._pixelsPerMercatorPixel = this.projection.pixelSpaceConversion(this.center.lat, this.worldSize, projectionT);
 
         this.cameraToCenterDistance = 0.5 / Math.tan(this._fov * 0.5) * this.height * this._pixelsPerMercatorPixel;
 
@@ -1989,6 +1980,26 @@ class Transform {
         return this.scaleZoom(this.cameraToCenterDistance / (z * this.tileSize));
     }
 
+    // This function is helpful to approximate true zoom given a mercator height with varying ppm.
+    // With Globe, since we use a fixed reference latitude at lower zoom levels and transition between this
+    // latitude and the center's latitude as you zoom in, camera to center distance varies dynamically.
+    // As the cameraToCenterDistance is a function of zoom, we need to approximate the true zoom
+    // given a mercator meter value in order to eliminate the zoom/cameraToCenterDistance dependency.
+    zoomFromMercatorZAdjusted(z: number): number {
+        const getZoom = (zoom) => {
+            const d = this.getCameraToCenterDistance(this.projection, zoom);
+            return this.scaleZoom(d / (z * this.tileSize));
+        };
+
+        const epsilon = 1e-6;
+        let zoom = getZoom(this.zoom);
+        while (Math.abs(zoom - getZoom(zoom)) > epsilon) {
+            zoom = getZoom(zoom);
+        }
+
+        return zoom;
+    }
+
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
         if (!this.projection.supportsTerrain) {
@@ -2095,9 +2106,10 @@ class Transform {
         }
     }
 
-    getCameraToCenterDistance(projection: Projection): number {
-        const t = getProjectionInterpolationT(projection, this.zoom, this.width, this.height, 1024);
-        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t, this._useFixedPixelSpaceConversion);
+    getCameraToCenterDistance(projection: Projection, zoom: ?number): number {
+        zoom = zoom || this.zoom;
+        const t = getProjectionInterpolationT(projection, zoom, this.width, this.height, 1024);
+        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
     }
 

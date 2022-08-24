@@ -644,7 +644,6 @@ class Camera extends Evented {
         const eOptions = this._extendCameraOptions(options);
 
         tr.bearing = bearing;
-        tr.useFixedPixelSpaceConversion = false;
 
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
@@ -679,7 +678,20 @@ class Camera extends Evented {
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
 
-        ecefCoords.push(vec3.scale([], center, GLOBE_RADIUS));
+        const ecefCoords = [];
+
+        ecefCoords.push(vec3.clone(origin));
+
+        ecefCoords.push(latLngToECEF(coord0.lat, coord0.lng));
+        ecefCoords.push(latLngToECEF(coord1.lat, coord0.lng));
+        ecefCoords.push(latLngToECEF(coord1.lat, coord1.lng));
+        ecefCoords.push(latLngToECEF(coord0.lat, coord1.lng));
+
+        ecefCoords.push(latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord0.lng));
+        ecefCoords.push(latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord1.lng));
+        ecefCoords.push(latLngToECEF(coord0.lat, (coord0.lng + coord1.lng) * 0.5));
+        ecefCoords.push(latLngToECEF(coord1.lat, (coord0.lng + coord1.lng) * 0.5));
+
         for (const p of ecefCoords) {
             min[0] = Math.min(min[0], vec3.dot(xAxis, p));
             min[1] = Math.min(min[1], vec3.dot(yAxis, p));
@@ -704,11 +716,14 @@ class Camera extends Evented {
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
         const offsetZ = vec3.scale([], [0, 0, 1], aabbHalfExtentZ);
-        const aabbClosestPoint = vec3.add([], center, offsetZ);
+        const aabbClosestPoint = vec3.add(offsetZ, center, offsetZ);
         const offsetDistance = frustumDistance + (tr.pitch === 0 ? 0 : vec3.distance(center, aabbClosestPoint));
-        const normal = vec3.normalize([], vec3.sub([], center, tr.globeCenterInViewSpace));
-        const offset = vec3.scale([], normal, offsetDistance);
-        const cameraPosition = vec3.add([], center, offset);
+
+        const normal = vec3.sub([], center, tr.globeCenterInViewSpace);
+        vec3.normalize(normal, normal);
+        vec3.scale(normal, normal, offsetDistance);
+
+        const cameraPosition = vec3.add([], center, normal);
 
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
 
@@ -717,7 +732,7 @@ class Camera extends Evented {
         const altitudeMeter = altitudeECEF * meterPerECEF - earthRadius;
         const mercatorZ = mercatorZfromAltitude(altitudeMeter, 0);
 
-        const zoom = Math.min(tr._zoomFromMercatorZ(mercatorZ), eOptions.maxZoom);
+        const zoom = Math.min(tr.zoomFromMercatorZAdjusted(mercatorZ), eOptions.maxZoom);
 
         const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
         if (zoom > halfZoomTransition) {

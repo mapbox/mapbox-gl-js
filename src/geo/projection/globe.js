@@ -71,24 +71,18 @@ export default class Globe extends Mercator {
         return mercatorZfromAltitude(1, 0) * worldSize;
     }
 
-    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number, useFixedPixelSpaceConversion: boolean): number {
-        // FIXME
-        return this.pixelsPerMeter(lat, worldSize) / (mercatorZfromAltitude(1, lat) * worldSize);
-        if (useFixedPixelSpaceConversion) {
-            // Using only the center latitude to determine scale causes the globe to rapidly change
-            // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
-            // This is because zoom levels are based on mercator.
-            //
-            // Instead, use a fixed reference latitude at lower zoom levels. And transition between
-            // this latitude and the center's latitude as you zoom in. This is a compromise that
-            // makes globe view more usable with existing camera parameters, styles and data.
-            const referenceScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * worldSize;
-            const centerScale = mercatorZfromAltitude(1, lat) * worldSize;
-            const combinedScale = interpolate(referenceScale, centerScale, interpolationT);
-            return this.pixelsPerMeter(lat, worldSize) / combinedScale;
-        } else {
-            return this.pixelsPerMeter(lat, worldSize) / (mercatorZfromAltitude(1, lat) * worldSize);
-        }
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
+        // Using only the center latitude to determine scale causes the globe to rapidly change
+        // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
+        // This is because zoom levels are based on mercator.
+        //
+        // Instead, use a fixed reference latitude at lower zoom levels. And transition between
+        // this latitude and the center's latitude as you zoom in. This is a compromise that
+        // makes globe view more usable with existing camera parameters, styles and data.
+        const centerScale = mercatorZfromAltitude(1, lat) * worldSize;
+        const referenceScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * worldSize;
+        const combinedScale = interpolate(referenceScale, centerScale, interpolationT);
+        return this.pixelsPerMeter(lat, worldSize) / combinedScale;
     }
 
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
