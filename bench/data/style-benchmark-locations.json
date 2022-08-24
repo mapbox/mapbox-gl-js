@@ -1,0 +1,198 @@
+{
+  "type": "FeatureCollection",
+  "name": "style-benchmark-locations",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-95.392, 29.799]
+      },
+      "properties": {
+        "place_name": "Roads, Houston, z12",
+        "zoom": 12,
+        "tags": ["road"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-95.381, 29.749]
+      },
+      "properties": {
+        "place_name": "Roads, Houston, z13",
+        "zoom": 13,
+        "tags": ["road", "poi_label", "landuse"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.985, 40.758]
+      },
+      "properties": {
+        "place_name": "High zoom labels, buildings, roads, New York City, z16",
+        "zoom": 16,
+        "tags": ["poi_label", "building", "road"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.985, 40.758]
+      },
+      "properties": {
+        "place_name": "High zoom labels, buildings, roads, New York City, z17, overzoomed",
+        "zoom": 17,
+        "tags": ["poi_label", "road", "building"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [139.76, 35.695]
+      },
+      "properties": {
+        "place_name": "High zoom cjk labels, when using local lang, buildings, roads, Tokyo, z16",
+        "zoom": 16,
+        "tags": ["poi_label", "building", "road"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [139.76, 35.695]
+      },
+      "properties": {
+        "place_name": "High zoom cjk labels, when using local lang, buildings, roads, Tokyo, z17, overzoomed",
+        "zoom": 17,
+        "tags": ["poi_label", "road", "building"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [27.602, 61.521]
+      },
+      "properties": {
+        "place_name": "Water, Finland, z10",
+        "zoom": 10,
+        "tags": ["water"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.21, 48.745]
+      },
+      "properties": {
+        "place_name": "Landuse and roads, Paris, z11",
+        "zoom": 11,
+        "tags": [
+          "place_label:settlement",
+          "road",
+          "landuse",
+          "poi_label",
+          "hillshade"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-118.314, 33.996]
+      },
+      "properties": {
+        "place_name": "Buildings, LA, z16",
+        "zoom": 16,
+        "tags": ["building", "road"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.316, 48.867]
+      },
+      "properties": {
+        "place_name": "High zoom roads, paths, landuse, labels, Paris, 15",
+        "zoom": 15,
+        "tags": [
+          "road",
+          "road:pedestrian",
+          "poi_label",
+          "landuse",
+          "transit_stop_label"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.316, 48.867]
+      },
+      "properties": {
+        "place_name": "High zoom pedestrian polygon fills, roads, paths, landuse, labels, Paris, z16",
+        "zoom": 16,
+        "tags": ["landuse", "road", "road:pedestrian", "poi_label", "road:path"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.835, 46.317]
+      },
+      "properties": {
+        "place_name": "Hillshading, Switzerland, z9",
+        "zoom": 9,
+        "tags": ["hillshade", "place_label"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.835, 46.317]
+      },
+      "properties": {
+        "place_name": "Hillshading and contours, Switzerland, z12",
+        "zoom": 12,
+        "tags": ["hillshade"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.416, 51.056]
+      },
+      "properties": {
+        "place_name": "Landcover, Germany z6",
+        "zoom": 6,
+        "tags": ["landcover", "place_label:settlement", "road", "admin"]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.762, 50.322]
+      },
+      "properties": {
+        "place_name": "Landcover, Germany z8",
+        "zoom": 8,
+        "tags": ["place_label:settlement", "road", "hillshade"]
+      }
+    }
+  ]
+}
