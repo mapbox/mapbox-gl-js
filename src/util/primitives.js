@@ -83,27 +83,6 @@ class Ray {
             }
         }
     }
-
-    closestSphereIntersection(center: Vec3, r: number, isect: Vec3): boolean {
-        const m = vec3.sub([], this.pos, center);
-        const b = vec3.dot(m, this.dir);
-        const c = vec3.dot(m, m) - r * r;
-
-        if (c > 0.0 && b > 0.0) {
-            return false;
-        }
-
-        const discr = b * b - c;
-
-        if (discr < 0.0) {
-            return false;
-        }
-
-        const t = -b - Math.sqrt(discr);
-        vec3.add(isect, this.pos, vec3.scale([], this.dir, t));
-
-        return true;
-    }
 }
 
 class FrustumCorners {
