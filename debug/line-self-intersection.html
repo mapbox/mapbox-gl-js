@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+    body { margin: 0; padding: 0; }
+    html, body, #map { height: 100%; }
+</style>
+</head>
+
+<body>
+    <div id='map'></div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script>
+    var map = window.map = new mapboxgl.Map({
+        container: 'map',
+        zoom: 16.5,
+        center: [11.520978212356567,48.12447159057148],
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        hash: true
+    });
+
+    const gj = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [[11.520050168037415,48.12305714430885],
+                [11.520978212356567,48.12447159057148],
+                [11.521986722946167,48.124546787889976],
+                [11.521723866462708,48.12366231722393],
+                [11.518800258636475,48.12389507413895],
+                [11.51975780725479,48.12425495006228],
+                [11.519132852554321,48.12331317987383],
+                [11.519358158111572,48.12304282060319]],
+                "type": "LineString"
+            }
+        }]
+    };
+
+    map.on('load', () => {
+        map.showTileBoundaries = true;
+
+        map.addSource('line', {
+            type: 'geojson',
+            lineMetrics: true,
+            data: gj
+        });
+
+        map.addLayer({
+            type: 'line',
+            source: 'line',
+            id: 'line',
+            paint: {
+                'line-color': 'red',
+                'line-width': 14,
+                'line-gradient': [
+                    'interpolate',
+                    ['linear'],
+                    ['line-progress'],
+                    0, "rgba(0, 0, 255, 0)",
+                    0.1, "royalblue",
+                    0.3, "cyan",
+                    0.5, "lime",
+                    0.7, "yellow",
+                    1, "red"
+                ]
+            },
+            layout: {
+                'line-cap': 'round',
+                'line-join': 'round'
+            }
+        });
+    });
+
+</script>
+</body>
+</html>
