@@ -2468,6 +2468,18 @@
         }
       },
       "property-type": "constant"
+    },
+    "signal": {
+      "type": "string",
+      "default": "",
+      "doc": "Signal to be emitted when evaluated to anything that is not an empty string.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "10.9.0",
+          "ios": "10.9.0"
+        }
+      },
+      "property-type": "data-driven"
     }
   },
   "layout_raster": {
