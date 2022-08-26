@@ -37,6 +37,10 @@ void main() {
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2.s;
 
+    if (v_normal.y > 0.0) {
+        discard;
+    }
+
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
