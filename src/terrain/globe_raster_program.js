@@ -13,6 +13,7 @@ import browser from '../util/browser.js';
 
 import type Context from '../gl/context.js';
 import type {UniformValues} from '../render/uniform_binding.js';
+import type {Mat4} from 'gl-matrix';
 
 export type GlobeRasterUniformsType = {|
     'u_proj_matrix': UniformMatrix4f,
@@ -89,7 +90,7 @@ const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
 });
 
 const globeRasterUniformValues = (
-    projMatrix: Array<number>,
+    projMatrix: Mat4,
     globeMatrix: Float32Array,
     globeMercatorMatrix: Float32Array,
     normalizeMatrix: Float64Array,
@@ -102,7 +103,7 @@ const globeRasterUniformValues = (
     globePosition: [number, number, number],
     globeRadius: number,
     viewport: [number, number],
-    gridMatrix: ?Array<number>
+    gridMatrix: ?Mat4
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
     'u_globe_matrix': globeMatrix,
