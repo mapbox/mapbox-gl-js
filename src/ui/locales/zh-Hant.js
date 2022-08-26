@@ -12,7 +12,7 @@ const locale = {
     "NavigationControl.ResetBearing": "將方位重置為北",
     "NavigationControl.ZoomIn": "放大",
     "NavigationControl.ZoomOut": "縮小",
-    "ScrollZoomBlocker.CtrlMessage": "使用 ctrl + scroll 縮放地圖",
+    "ScrollZoomBlocker.CtrlMessage": "使用 ctrl + 滾動縮放地圖"
     "ScrollZoomBlocker.CmdMessage": "使用 ⌘ + 滾動來縮放地圖",
     "TouchPanBlocker.Message": "用兩根手指移動地圖"
 };
