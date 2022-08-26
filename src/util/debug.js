@@ -1,15 +1,15 @@
 // @flow
 import {extend} from './util.js';
 import window from './window.js';
+import assert from 'assert';
+import {mat4, vec3} from 'gl-matrix';
+import {aabbForTileOnGlobe} from '../geo/projection/globe_util.js';
+
 import type {Vec2, Vec3} from 'gl-matrix';
 import type Transform from '../geo/transform.js';
-import assert from 'assert';
 import type Painter from '../render/painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
-import {aabbForTileOnGlobe} from '../geo/projection/globe_util.js';
-import {mat4, vec3} from 'gl-matrix';
-
 /**
  * This is a private namespace for utility functions that will get automatically stripped
  * out in production builds.
@@ -73,7 +73,7 @@ export const Debug: {
         ctx.lineTo(...end);
     },
 
-    _drawPolygon(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
+    _drawQuad(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
         this._drawLine(ctx, corners[0], corners[1]);
         this._drawLine(ctx, corners[1], corners[2]);
         this._drawLine(ctx, corners[2], corners[3]);
@@ -83,8 +83,8 @@ export const Debug: {
     _drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
         assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
         ctx.beginPath();
-        this._drawPolygon(ctx, corners.slice(0, 4));
-        this._drawPolygon(ctx, corners.slice(4));
+        this._drawQuad(ctx, corners.slice(0, 4));
+        this._drawQuad(ctx, corners.slice(4));
         this._drawLine(ctx, corners[0], corners[4]);
         this._drawLine(ctx, corners[1], corners[5]);
         this._drawLine(ctx, corners[2], corners[6]);

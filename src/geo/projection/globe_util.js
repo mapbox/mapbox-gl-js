@@ -400,7 +400,7 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
         [e, n, 0]];
 }
 
-function boundsToECEF(bounds: LngLatBounds) {
+function boundsToECEF(bounds: LngLatBounds): Array<Vec3> {
     const ny = degToRad(bounds.getNorth());
     const sy = degToRad(bounds.getSouth());
     const cosN = Math.cos(ny);
