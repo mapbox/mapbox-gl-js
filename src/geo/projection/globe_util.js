@@ -335,8 +335,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
         // Interpolate the four corners towards their world space location in mercator projection during transition.
         for (let i = 0; i < corners.length; i++) {
-            vec3.scale(corners[i], corners[i], 1 - phase);
-            vec3.scaleAndAdd(corners[i], corners[i], mercatorCorners[i], phase);
+            interpolateVec3(corners[i], mercatorCorners[i], phase);
         }
         // Calculate the midpoint of the closest edge midpoint in Mercator
         const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
