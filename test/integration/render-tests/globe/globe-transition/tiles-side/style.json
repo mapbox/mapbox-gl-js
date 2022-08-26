@@ -4,7 +4,8 @@
     "test": {
       "width": 640,
       "height": 512,
-      "debug": true
+      "debug": true,
+      "allowed": 0.002
     }
   },
   "center": [5.44, 46.42],
