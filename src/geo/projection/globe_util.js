@@ -396,8 +396,8 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
 
     return [[w, s, 0],
         [e, s, 0],
-        [w, n, 0],
-        [e, n, 0]];
+        [e, n, 0],
+        [w, n, 0]];
 }
 
 function boundsToECEF(bounds: LngLatBounds): Array<Vec3> {
