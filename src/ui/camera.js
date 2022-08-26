@@ -7,7 +7,8 @@ import {
     clamp,
     wrap,
     ease as defaultEasing,
-    pick
+    pick,
+    degToRad
 } from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import browser from '../util/browser.js';
@@ -809,8 +810,10 @@ class Camera extends Evented {
             new Point(eOptions.offset.x, eOptions.offset.y) :
             Point.convert(eOptions.offset);
 
-        aabb.center[0] -= centerOffset.x * scaleRatio;
-        aabb.center[1] -= centerOffset.y * scaleRatio;
+        const rotatedOffset = centerOffset.rotate(-degToRad(bearing));
+
+        aabb.center[0] -= rotatedOffset.x * scaleRatio;
+        aabb.center[1] += rotatedOffset.y * scaleRatio;
 
         vec3.transformMat4(aabb.center, aabb.center, cameraToWorld);
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);

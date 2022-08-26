@@ -392,7 +392,7 @@ class Transform {
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return;
         this._unmodified = false;
-        this._fov = fov / 180 * Math.PI;
+        this._fov = degToRad(fov);
         this._calcMatrices();
     }
 

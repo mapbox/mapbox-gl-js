@@ -8,7 +8,7 @@ import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
 import MercatorCoordinate, {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
-import {degToRad} from '../../../src/util/util.js';
+import {degToRad, radToDeg} from '../../../src/util/util.js';
 
 test('transform', (t) => {
 
@@ -88,9 +88,9 @@ test('transform', (t) => {
     t.test('set fov', (t) => {
         const transform = new Transform();
         transform.fov = 10;
-        t.equal(transform.fov, 10);
+        t.equal(radToDeg(transform._fov), 10);
         transform.fov = 10;
-        t.equal(transform.fov, 10);
+        t.equal(radToDeg(transform._fov), 10);
         t.end();
     });
 
