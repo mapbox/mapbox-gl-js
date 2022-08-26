@@ -58,19 +58,8 @@
             source: 'line',
             id: 'line',
             paint: {
-                'line-color': 'red',
-                'line-width': 14,
-                'line-gradient': [
-                    'interpolate',
-                    ['linear'],
-                    ['line-progress'],
-                    0, "rgba(0, 0, 255, 0)",
-                    0.1, "royalblue",
-                    0.3, "cyan",
-                    0.5, "lime",
-                    0.7, "yellow",
-                    1, "red"
-                ]
+                'line-color': 'cyan',
+                'line-width': 14
             },
             layout: {
                 'line-cap': 'round',
@@ -78,7 +67,19 @@
             }
         });
     });
-
 </script>
 </body>
+<!--
+'line-gradient': [
+    'interpolate',
+    ['linear'],
+    ['line-progress'],
+    0, "rgba(0, 0, 255, 0)",
+    0.1, "royalblue",
+    0.3, "cyan",
+    0.5, "lime",
+    0.7, "yellow",
+    1, "red"
+]
+-->
 </html>

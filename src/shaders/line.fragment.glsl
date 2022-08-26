@@ -42,7 +42,8 @@ void main() {
     // (v_width2.s)
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
-
+    float edgeBlur = (1.3 + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
 #ifdef RENDER_LINE_DASH
     float sdfdist_a = texture2D(u_dash_image, v_tex_a).a;
     float sdfdist_b = texture2D(u_dash_image, v_tex_b).a;
@@ -91,7 +92,13 @@ void main() {
     }
 #endif
 
+#ifndef RENDER_LINE_GRADIENT
+    if (alpha2 < 1.) {
+        out_color.rgb *= (0.7  + 0.3 * smoothstep(0.6, 1.0, alpha2));
+    }
+#endif
     gl_FragColor = out_color * (alpha * opacity);
+
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
