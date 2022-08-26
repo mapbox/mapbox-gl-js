@@ -195,6 +195,16 @@ class Aabb {
         this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
     }
 
+    setMin(min_: Vec3) {
+        this.min = min_;
+        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
+    }
+
+    setMax(max_: Vec3) {
+        this.max = max_;
+        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
+    }
+
     quadrant(index: number): Aabb {
         const split = [(index % 2) === 0, index < 2];
         const qMin = vec3.clone(this.min);

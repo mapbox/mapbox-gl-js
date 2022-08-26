@@ -566,7 +566,6 @@ class Camera extends Evented {
      * Returns a {@link CameraOptions} object for the highest zoom level
      * up to and including `Map#getMaxZoom()` that fits the bounds
      * in the viewport at the specified bearing.
-     * This function isn't supported with globe projection.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
@@ -664,7 +663,7 @@ class Camera extends Evented {
 
         const ecefCoords = [];
 
-        ecefCoords.push(vec3.clone(origin));
+        ecefCoords.push(origin);
 
         ecefCoords.push(latLngToECEF(coord0.lat, coord0.lng));
         ecefCoords.push(latLngToECEF(coord1.lat, coord0.lng));
@@ -763,20 +762,37 @@ class Camera extends Evented {
 
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
+        const edgePadding = tr.padding;
 
         tr.bearing = bearing;
 
-        const p0World = tr.project(LngLat.convert(p0));
-        const p1World = tr.project(LngLat.convert(p1));
+        const p0world = tr.project(LngLat.convert(p0));
+        const p1world = tr.project(LngLat.convert(p1));
 
-        const worldCoords = [[p0World.x, p0World.y, 0], [p1World.x, p1World.y, 0]];
-
+        const worldCoords = [[p0world.x, p0world.y, 0], [p1world.x, p1world.y, 0]];
         const aabb = Aabb.fromPoints(worldCoords);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
 
         aabb.applyTransform(worldToCamera);
+
+        const size = vec3.sub([], aabb.max, aabb.min);
+
+        const padL = (edgePadding.left || 0) + eOptions.padding.left;
+        const padR = (edgePadding.right || 0) + eOptions.padding.right;
+        const padT = (edgePadding.top || 0) + eOptions.padding.top;
+        const padB = (edgePadding.bottom || 0) + eOptions.padding.bottom;
+
+        const scaleX = (tr.width - (padL + padR)) / size[0];
+        const scaleY = (tr.height - (padB + padT)) / size[1];
+
+        const zoomRef = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
+
+        const scaleRatio = tr.scale / tr.zoomScale(zoomRef);
+
+        aabb.setMin([aabb.min[0] - padL * scaleRatio, aabb.min[1] - padB * scaleRatio, aabb.min[2]]);
+        aabb.setMax([aabb.max[0] + padR * scaleRatio, aabb.max[1] + padT * scaleRatio, aabb.max[2]]);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
@@ -788,6 +804,13 @@ class Camera extends Evented {
 
         const offset = vec3.scale([], normalZ, frustumDistance + aabbHalfExtentZ);
         const cameraPosition = vec3.add([], aabb.center, offset);
+
+        const centerOffset = (typeof eOptions.offset.x === 'number' && typeof eOptions.offset.y === 'number') ?
+            new Point(eOptions.offset.x, eOptions.offset.y) :
+            Point.convert(eOptions.offset);
+
+        aabb.center[0] -= centerOffset.x * scaleRatio;
+        aabb.center[1] -= centerOffset.y * scaleRatio;
 
         vec3.transformMat4(aabb.center, aabb.center, cameraToWorld);
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
