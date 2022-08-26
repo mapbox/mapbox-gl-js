@@ -1,6 +1,7 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
+uniform vec3 u_outline_color;
 
 varying vec2 v_width2;
 varying vec2 v_normal;
@@ -94,7 +95,7 @@ void main() {
 
 #ifndef RENDER_LINE_GRADIENT
     if (alpha2 < 1.) {
-        out_color.rgb *= (0.7  + 0.3 * smoothstep(0.6, 1.0, alpha2));
+        out_color.rgb = u_outline_color * (0.7  + 0.3 * smoothstep(0.6, 1.0, alpha2));
     }
 #endif
     gl_FragColor = out_color * (alpha * opacity);

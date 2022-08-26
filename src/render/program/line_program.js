@@ -30,7 +30,8 @@ export type LineUniformsType = {|
     'u_scale': Uniform3f,
     'u_mix': Uniform1f,
     'u_alpha_discard_threshold': Uniform1f,
-    'u_trim_offset': Uniform2f
+    'u_trim_offset': Uniform2f,
+    'u_outline_color': Uniform3f
 |};
 
 export type LinePatternUniformsType = {|
@@ -59,7 +60,8 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_scale': new Uniform3f(context),
     'u_mix': new Uniform1f(context),
     'u_alpha_discard_threshold': new Uniform1f(context),
-    'u_trim_offset': new Uniform2f(context)
+    'u_trim_offset': new Uniform2f(context),
+    'u_outline_color': new Uniform3f(context)
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -83,6 +85,7 @@ const lineUniformValues = (
     imageHeight: number,
     pixelRatio: number,
     trimOffset: [number, number],
+    outlineColor: [number, number, number]
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
@@ -102,7 +105,8 @@ const lineUniformValues = (
         'u_scale': [0, 0, 0],
         'u_mix': 0,
         'u_alpha_discard_threshold': 0.0,
-        'u_trim_offset': trimOffset
+        'u_trim_offset': trimOffset,
+        'u_outline_color': outlineColor
     };
     if (hasDash(layer)) {
         const tileZoomRatio = calculateTileRatio(tile, painter.transform);
