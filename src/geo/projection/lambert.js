@@ -17,21 +17,32 @@ function tany(y) {
 export default class LambertConformalConic extends Projection {
     n: number;
     f: number;
+    southernCenter: boolean;
 
     constructor(options: ProjectionSpecification) {
         super(options);
         this.center = options.center || [0, 30];
         const [lat0, lat1] = this.parallels = options.parallels || [30, 30];
 
-        const y0 = degToRad(lat0);
-        const y1 = degToRad(lat1);
+        let y0 = degToRad(lat0);
+        let y1 = degToRad(lat1);
+        // Run projection math on inverted lattitudes if the paralell lines are south of the equator
+        // This fixes divide by zero errors with a South polar projection
+        this.southernCenter = (y0 + y1) < 0;
+        if (this.southernCenter) {
+            y0 = -y0;
+            y1 = -y1;
+        }
         const cy0 = Math.cos(y0);
-        this.n = y0 === y1 ? Math.sin(y0) : Math.log(cy0 / Math.cos(y1)) / Math.log(tany(y1) / tany(y0));
+        const tany0 = tany(y0);
+
+        this.n = y0 === y1 ? Math.sin(y0) : Math.log(cy0 / Math.cos(y1)) / Math.log(tany(y1) / tany0);
         this.f = cy0 * Math.pow(tany(y0), this.n) / this.n;
     }
 
     project(lng: number, lat: number): ProjectedPoint {
         lat = degToRad(lat);
+        if (this.southernCenter) lat = -lat;
         lng = degToRad(lng - this.center[0]);
 
         const epsilon = 1e-6;
@@ -44,18 +55,21 @@ export default class LambertConformalConic extends Projection {
         }
 
         const r = f / Math.pow(tany(lat), n);
-        const x = r * Math.sin(n * lng);
-        const y = f - r * Math.cos(n * lng);
+        let x = r * Math.sin(n * lng);
+        let y = f - r * Math.cos(n * lng);
+        x = (x / Math.PI + 0.5) * 0.5;
+        y = (y / Math.PI + 0.5) * 0.5;
 
         return {
-            x: (x / Math.PI + 0.5) * 0.5,
-            y: 1 - (y / Math.PI + 0.5) * 0.5,
+            x,
+            y: this.southernCenter ? y : 1 - y,
             z: 0
         };
     }
 
     unproject(x: number, y: number): LngLat {
         x = (2 * x - 0.5) * Math.PI;
+        if (this.southernCenter) y = 1 - y;
         y = (2 * (1 - y) - 0.5) * Math.PI;
         const {n, f} = this;
         const fy = f - y;
@@ -69,6 +83,6 @@ export default class LambertConformalConic extends Projection {
         const phi = 2 * Math.atan(Math.pow(f / r, 1 / n)) - halfPi;
         const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
-        return new LngLat(lng, lat);
+        return new LngLat(lng, this.southernCenter ? -lat : lat);
     }
 }
