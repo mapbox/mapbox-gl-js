@@ -189,7 +189,7 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return Aabb.fromPoints(corners);
 }
 
-export function interpolateVec3 (from: Vec3, to: Vec3, phase: number): Vec3 {
+export function interpolateVec3(from: Vec3, to: Vec3, phase: number): Vec3 {
     vec3.scale(from, from, 1 - phase);
     return vec3.scaleAndAdd(from, from, to, phase);
 }
