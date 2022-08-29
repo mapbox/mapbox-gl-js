@@ -8,7 +8,7 @@ import MercatorCoordinate, {
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
 import EXTENT from '../../data/extent.js';
-import {number as interpolate, array as interpolateArray} from '../../style-spec/util/interpolate.js';
+import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
@@ -189,6 +189,11 @@ export function globeTileBounds(id: CanonicalTileID): Aabb {
     return Aabb.fromPoints(corners);
 }
 
+export function interpolateVec3(from: Vec3, to: Vec3, phase: number): Vec3 {
+    vec3.scale(from, from, 1 - phase);
+    return vec3.scaleAndAdd(from, from, to, phase);
+}
+
 // Similar to globeTileBounds() but accounts for globe to Mercator transition.
 export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aabb {
     const phase = globeToMercatorTransition(tr.zoom);
@@ -215,10 +220,10 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     vec3.transformMat4(sw, sw, worldToECEFMatrix);
     vec3.transformMat4(se, se, worldToECEFMatrix);
     // Interpolate Mercator corners and globe corners
-    corners[0] = interpolateArray(corners[0], sw, phase);
-    corners[1] = interpolateArray(corners[1], se, phase);
-    corners[2] = interpolateArray(corners[2], ne, phase);
-    corners[3] = interpolateArray(corners[3], nw, phase);
+    corners[0] = interpolateVec3(corners[0], sw, phase);
+    corners[1] = interpolateVec3(corners[1], se, phase);
+    corners[2] = interpolateVec3(corners[2], ne, phase);
+    corners[3] = interpolateVec3(corners[3], nw, phase);
 
     return Aabb.fromPoints(corners);
 }
@@ -330,15 +335,13 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         const mercatorCorners = mercatorTileCornersInCameraSpace(tileId, numTiles, tr._pixelsPerMercatorPixel, camX, camY);
         // Interpolate the four corners towards their world space location in mercator projection during transition.
         for (let i = 0; i < corners.length; i++) {
-            vec3.scale(corners[i], corners[i], 1 - phase);
-            vec3.scaleAndAdd(corners[i], corners[i], mercatorCorners[i], phase);
+            interpolateVec3(corners[i], mercatorCorners[i], phase);
         }
         // Calculate the midpoint of the closest edge midpoint in Mercator
         const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
         vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
         // Interpolate globe extremum toward Mercator midpoint
-        vec3.scale(arcExtremum, arcExtremum, 1 - phase);
-        vec3.scaleAndAdd(arcExtremum, arcExtremum, mercatorMidpoint, phase);
+        interpolateVec3(arcExtremum, mercatorMidpoint, phase);
     }
 
     for (const corner of corners) {
@@ -393,11 +396,11 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
 
     return [[w, s, 0],
         [e, s, 0],
-        [w, n, 0],
-        [e, n, 0]];
+        [e, n, 0],
+        [w, n, 0]];
 }
 
-function boundsToECEF(bounds: LngLatBounds) {
+function boundsToECEF(bounds: LngLatBounds): Array<Vec3> {
     const ny = degToRad(bounds.getNorth());
     const sy = degToRad(bounds.getSouth());
     const cosN = Math.cos(ny);
@@ -414,7 +417,7 @@ function boundsToECEF(bounds: LngLatBounds) {
     ];
 }
 
-function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): Array<number> {
+function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): Vec3 {
     lng = degToRad(lng);
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
@@ -425,12 +428,12 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
     return [sx, sy, sz];
 }
 
-export function latLngToECEF(lat: number, lng: number, radius?: number): Array<number> {
+export function latLngToECEF(lat: number, lng: number, radius?: number): Vec3 {
     assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
 
-export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): Array<number> {
+export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): Vec3 {
     const tileCount = 1 << id.z;
     const mercatorX = (x / EXTENT + id.x) / tileCount;
     const mercatorY = (y / EXTENT + id.y) / tileCount;
@@ -552,7 +555,7 @@ export function globeUseCustomAntiAliasing(painter: Painter, context: Context, t
     return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
 }
 
-export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number, worldSize: number): Array<number> {
+export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number, worldSize: number): Mat4 {
     const n = bounds.getNorth();
     const s = bounds.getSouth();
     const w = bounds.getWest();

@@ -2,16 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
+      "width": 640,
       "height": 512,
       "debug": true,
-      "allowed": 0.02
+      "allowed": 0.002
     }
   },
-  "center": [3, 49],
-  "zoom": 5.25,
-  "pitch": 60,
-  "bearing": 140,
+  "center": [5.44, 46.42],
+  "zoom": 5.23,
   "sources": {
     "mapbox": {
       "type": "vector",
