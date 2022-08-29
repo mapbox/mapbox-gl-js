@@ -2126,6 +2126,42 @@ test('camera', (t) => {
         t.end();
     });
 
+    t.test('#cameraForBounds with Globe', (t) => {
+        t.test('no options passed', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716}, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 2.106);
+            t.end();
+        });
+
+        t.test('bearing positive number', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 175});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716}, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 2.034);
+            t.equal(transform.bearing, 175);
+            t.end();
+        });
+
+        t.test('bearing negative number', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: -30});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716}, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 1.868);
+            t.equal(transform.bearing, -30);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#fitBounds', (t) => {
         t.test('no padding passed', (t) => {
             const camera = createCamera();

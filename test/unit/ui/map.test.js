@@ -188,6 +188,64 @@ test('Map', (t) => {
         function pass() { t.end(); }
     });
 
+    t.test('#cameraForBounds', (t) => {
+        t.test('crossing globe-mercator threshold globe -> mercator does not affect cameraForBounds result', (t) => {
+            const map = createMap(t);
+            map.setProjection('globe');
+            const bb = [[-133, 16], [-132, 18]];
+
+            let transform;
+
+            map.setZoom(0);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "globe");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -132.5, lat: 17.0027});
+            t.equal(fixedNum(transform.zoom, 3), 6.071);
+
+            map.setZoom(10);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "mercator");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -132.5, lat: 17.0027});
+            t.equal(fixedNum(transform.zoom, 3), 6.071);
+            t.end();
+        });
+
+        t.test('crossing globe-mercator threshold mercator -> globe does not affect cameraForBounds result', (t) => {
+            const map = createMap(t);
+            map.setProjection('globe');
+            const bb = [[-133, 16], [-68, 50]];
+
+            let transform;
+
+            map.setZoom(10);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "mercator");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 0.75);
+
+            map.setZoom(0);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "globe");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 0.75);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
