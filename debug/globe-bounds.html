@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map, #map2 { position: absolute; top: 0; bottom: 0; }
+        #map { left: 0; right: 50%; }
+        #map2 { left: 50%; right: 0; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='map2'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    projection: 'globe'
+});
+
+var map2 = new mapboxgl.Map({
+    container: 'map2',
+    zoom: 0.1,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    // projection: 'globe'
+});
+
+var lineData = {
+    type: 'LineString',
+    coordinates: []
+};
+var boundsData = {
+    'type': 'LineString',
+    coordinates: []
+};
+
+map2.on('load', () => {
+    map2.addSource('bounds', {
+        'type': 'geojson',
+        'data': lineData
+    });
+    map2.addLayer({
+        'id': 'bounds',
+        'type': 'line',
+        'source': 'bounds',
+        'paint': {
+            'line-color': 'blue',
+            'line-width': 5
+        }
+    });
+
+    map2.addSource('abounds', {
+        'type': 'geojson',
+        'data': boundsData
+    });
+    map2.addLayer({
+        'id': 'abounds',
+        'type': 'line',
+        'source': 'abounds',
+        'paint': {
+            'line-color': 'red',
+            'line-width': 5
+        }
+    });
+
+    updateBounds();
+});
+
+map.on('move', () => {
+    updateBounds();
+});
+
+function updateBounds() {
+    const points = [];
+    const w = map._containerWidth;
+    const h = map._containerHeight;
+    const res = 20;
+    for (let i = 0; i <= res; i++) points.push([w * i / res, 0]);
+    for (let i = 0; i <= res; i++) points.push([w, h * i / res]);
+    for (let i = 0; i <= res; i++) points.push([w * (1 - i / res), h]);
+    for (let i = 0; i <= res; i++) points.push([0, h * (1 - i / res)]);
+
+    lineData.coordinates = points.map(p => map.unproject(p).toArray());
+
+    const bounds = map.getBounds();
+
+    boundsData.coordinates = [
+        bounds.getSouthWest().toArray(),
+        bounds.getSouthEast().toArray(),
+        bounds.getNorthEast().toArray(),
+        bounds.getNorthWest().toArray(),
+        bounds.getSouthWest().toArray(),
+    ];
+
+    map2.getSource('bounds').setData(lineData);
+    map2.getSource('abounds').setData(boundsData);
+}
+
+const marker = new mapboxgl.Marker();
+
+map.on('mousemove', (e) => {
+    marker.setLngLat(e.lngLat).addTo(map2);
+});
+
+</script>
+</body>
+</html>
