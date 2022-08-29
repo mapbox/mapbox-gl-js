@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url);
 export default function () {
     const port = 2900;
     const integrationMount = st({path: path.join(__dirname, '..')});
-    const mapboxGLStylesMount = st({path: path.dirname(require.resolve('mapbox-gl-styles')), url: 'mapbox-gl-styles'});
+    const mapboxGLStylesMount = st({path: path.dirname(require.resolve('@mapbox/mapbox-gl-styles')), url: 'mapbox-gl-styles'});
     const mapboxMVTFixturesMount = st({path: path.dirname(require.resolve('@mapbox/mvt-fixtures')), url: 'mvt-fixtures'});
     const server = createServer((req, res) => {
         if (req.method === 'POST' && req.url === '/write-file') {
