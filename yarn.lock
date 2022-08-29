@@ -446,13 +446,6 @@
   resolved "https://registry.yarnpkg.com/@mapbox/jsonlint-lines-primitives/-/jsonlint-lines-primitives-2.0.2.tgz#ce56e539f83552b58d10d672ea4d6fc9adc7b234"
   integrity sha512-rY0o9A5ECsTQRVhv7tL/OyDpGAoUB4tTvLiW1DSzQGq4bvTPhNw1VpSNjDJc5GFZ2XuyOtSWSVN05qOtcD71qQ==
 
-"@mapbox/mapbox-gl-styles@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-styles/-/mapbox-gl-styles-2.1.1.tgz#5196e977cb4d11fb99316d8bb133dd97211c4652"
-  integrity sha512-ZWBF5Z99qllgc5L+NpDdxV6Mr+Q77HayRG65/1mUQWoF0edQKx//oelI6gYGbBLrJyTedJ78R+bWMpLCMgIjrw==
-  dependencies:
-    glob "^5.0.14"
-
 "@mapbox/mapbox-gl-supported@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-supported/-/mapbox-gl-supported-2.0.1.tgz#c15367178d8bfe4765e6b47b542fe821ce259c7b"
@@ -5384,6 +5377,13 @@ map-obj@^4.0.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/map-obj/-/map-obj-4.3.0.tgz#9304f906e93faae70880da102a9f1df0ea8bb05a"
   integrity sha512-hdN1wVrZbb29eBGiGjJbeP8JbKjq1urkHJ/LIP/NY48MZ1QVXUsQBV1G1zvYFHn1XE06cwjBsOI2K3Ulnj1YXQ==
+
+mapbox-gl-styles@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/mapbox-gl-styles/-/mapbox-gl-styles-2.0.2.tgz#bb525b77ea0dc2b041bb8051645176f3783e294a"
+  integrity sha512-Uf9Pd37vnKK+7iVs5PHvVr1k0cCdHu+k+twYx0woFf12y6nq340qJUb2HtBFu8vzYjx4OFBvLES8GQZ5ei5sLw==
+  dependencies:
+    glob "^5.0.14"
 
 markdown-table@^3.0.0:
   version "3.0.2"
