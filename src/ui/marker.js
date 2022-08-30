@@ -26,7 +26,8 @@ type Options = {
     clickTolerance?: number,
     rotation?: number,
     rotationAlignment?: string,
-    pitchAlignment?: string
+    pitchAlignment?: string,
+    terrainOccludedMarkerOpacity?: number
 };
 
 /**
@@ -44,6 +45,7 @@ type Options = {
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `'map'` aligns the `Marker` to the plane of the map. `'viewport'` aligns the `Marker` to the plane of the viewport. `'auto'` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
+ * @param {number} [options.terrainOccludedMarkerOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -83,6 +85,7 @@ export default class Marker extends Evented {
     _fadeTimer: ?TimeoutID;
     _updateFrameId: number;
     _updateMoving: () => void;
+    _terrainOccludedMarkerOpacity: number;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -113,6 +116,7 @@ export default class Marker extends Evented {
         this._rotationAlignment = (options && options.rotationAlignment) || 'auto';
         this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
+        this._terrainOccludedMarkerOpacity = (options && options.terrainOccludedMarkerOpacity) || 0.2;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -441,8 +445,7 @@ export default class Marker extends Evented {
         } else {
             opacity = 1 - map._queryFogOpacity(mapLocation);
             if (map.transform._terrainEnabled() && map.getTerrain() && this._behindTerrain()) {
-                const TERRAIN_OCCLUDED_OPACITY = 0.2;
-                opacity *= TERRAIN_OCCLUDED_OPACITY;
+                opacity *= this._terrainOccludedMarkerOpacity;
             }
         }
 
@@ -823,5 +826,30 @@ export default class Marker extends Evented {
             return this.getRotationAlignment();
         }
         return this._pitchAlignment;
+    }
+
+    /**
+     * Sets the `terrainOccludedMarkerOpacity` property of the marker.
+     *
+     * @param {number} [opacity=0.2] Sets the `terrainOccludedMarkerOpacity` property of the marker.
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setTerrainOccludedMarkerOpacity(0.3);
+     */
+    setTerrainOccludedMarkerOpacity(opacity: number): this {
+        this._terrainOccludedMarkerOpacity = opacity || 0.2;
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current `terrainOccludedMarkerOpacity` of the marker.
+     *
+     * @returns {number} The opacity of a terrain occluded marker.
+     * @example
+     * const opacity = marker.getTerrainOccludedMarkerOpacity();
+     */
+    getTerrainOccludedMarkerOpacity(): number {
+        return this._terrainOccludedMarkerOpacity;
     }
 }
