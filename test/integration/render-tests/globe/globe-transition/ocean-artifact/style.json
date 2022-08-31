@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "debug": true,
+      "allowed": 0.002
+    }
+  },
+  "center": [-80, 30],
+  "zoom": 5.5,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "layers": [
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "layout": {},
+      "paint": {"fill-color": "hsl(43, 90%, 56%)"}
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "layout": {},
+      "paint": {"fill-color": "hsl(206, 100%, 74%)"}
+    }
+  ]
+}

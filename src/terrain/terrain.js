@@ -260,7 +260,7 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
         this.orthoMatrix = mat4.create();
-        const epsilon = this.painter.transform.projection.name === 'globe' ?  .015 : 0; // Experimentally the smallest value to avoid rendering artifacts (https://github.com/mapbox/mapbox-gl-js/issues/11975)
+        const epsilon = .015 // Experimentally the smallest value to avoid rendering artifacts (https://github.com/mapbox/mapbox-gl-js/issues/11975)
         mat4.ortho(this.orthoMatrix, 0, EXTENT + epsilon, -epsilon, EXTENT, 0, 1);
         const gl = context.gl;
         this._overlapStencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
