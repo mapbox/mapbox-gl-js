@@ -174,18 +174,15 @@ class Aabb {
     center: Vec3;
 
     static fromPoints(points: Array<Vec3>): Aabb {
-        const aabbMin = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-        const aabbMax = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
-        for (const p of points) {
-            aabbMin[0] = Math.min(aabbMin[0], p[0]);
-            aabbMin[1] = Math.min(aabbMin[1], p[1]);
-            aabbMin[2] = Math.min(aabbMin[2], p[2]);
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
 
-            aabbMax[0] = Math.max(aabbMax[0], p[0]);
-            aabbMax[1] = Math.max(aabbMax[1], p[1]);
-            aabbMax[2] = Math.max(aabbMax[2], p[2]);
+        for (const p of points) {
+            vec3.min(min, min, p);
+            vec3.max(max, max, p);
         }
-        return new Aabb(aabbMin, aabbMax);
+
+        return new Aabb(min, max);
     }
 
     constructor(min_: Vec3, max_: Vec3) {
