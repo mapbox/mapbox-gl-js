@@ -2087,6 +2087,16 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('bearing and asymmetrical padding and assymetrical viewport padding', (t) => {
+            const camera = createCamera();
+            camera.setPadding({left: 30, top: 35, right: 50, bottom: 65});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -104.1932, lat: 30.837});
+            t.end();
+        });
+
         t.test('offset', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];

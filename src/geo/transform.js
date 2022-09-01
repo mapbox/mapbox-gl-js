@@ -1991,10 +1991,13 @@ class Transform {
             return this.scaleZoom(d / (z * this.tileSize));
         };
 
-        const epsilon = 1e-6;
         let zoom = getZoom(this.zoom);
-        while (Math.abs(zoom - getZoom(zoom)) > epsilon) {
+        let diff = Math.abs(zoom - getZoom(zoom));
+        let lastdiff;
+        while (lastdiff !== diff) {
             zoom = getZoom(zoom);
+            lastdiff = diff;
+            diff = Math.abs(zoom - getZoom(zoom));
         }
 
         return zoom;

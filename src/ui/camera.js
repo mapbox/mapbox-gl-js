@@ -780,20 +780,36 @@ class Camera extends Evented {
 
         const size = vec3.sub([], aabb.max, aabb.min);
 
-        const padL = (edgePadding.left || 0) + eOptions.padding.left;
-        const padR = (edgePadding.right || 0) + eOptions.padding.right;
-        const padT = (edgePadding.top || 0) + eOptions.padding.top;
-        const padB = (edgePadding.bottom || 0) + eOptions.padding.bottom;
+        const screenPadL = edgePadding.left || 0;
+        const screenPadR = edgePadding.right || 0;
+        const screenPadB = edgePadding.bottom || 0;
+        const screenPadT = edgePadding.top || 0;
 
-        const scaleX = (tr.width - (padL + padR)) / size[0];
-        const scaleY = (tr.height - (padB + padT)) / size[1];
+        const padL = eOptions.padding.left;
+        const padR = eOptions.padding.right;
+        const padT = eOptions.padding.top;
+        const padB = eOptions.padding.bottom;
+
+        const halfScreenPadX = ((edgePadding.left || 0) + (edgePadding.right || 0)) * 0.5;
+        const halfScreenPadY = ((edgePadding.top || 0) + (edgePadding.bottom || 0)) * 0.5;
+
+        const scaleX = (tr.width - (screenPadL + screenPadR + padL + padR)) / size[0];
+        const scaleY = (tr.height - (screenPadB + screenPadT + padB + padT)) / size[1];
 
         const zoomRef = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
 
         const scaleRatio = tr.scale / tr.zoomScale(zoomRef);
 
-        aabb.setMin([aabb.min[0] - padL * scaleRatio, aabb.min[1] - padB * scaleRatio, aabb.min[2]]);
-        aabb.setMax([aabb.max[0] + padR * scaleRatio, aabb.max[1] + padT * scaleRatio, aabb.max[2]]);
+        aabb.setMin([
+            aabb.min[0] - (padL + halfScreenPadX) * scaleRatio,
+            aabb.min[1] - (padB + halfScreenPadY) * scaleRatio,
+            aabb.min[2]
+        ]);
+        aabb.setMax([
+            aabb.max[0] + (padR + halfScreenPadX) * scaleRatio,
+            aabb.max[1] + (padT + halfScreenPadY) * scaleRatio,
+            aabb.max[2]
+        ]);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
