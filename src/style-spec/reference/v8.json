@@ -4791,16 +4791,16 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.3.0",
-          "android": "10.9.0",
-          "ios": "10.9.0",
-          "macos": "10.9.0"
+          "js": "0.23.0",
+          "android": "10.7.0",
+          "ios": "10.7.0",
+          "macos": "10.7.0"
         },
         "data-driven styling": {
-          "js": "2.3.0",
-          "android": "10.9.0",
-          "ios": "10.9.0",
-          "macos": "10.9.0"
+          "js": "0.23.0",
+          "android": "10.7.0",
+          "ios": "10.7.0",
+          "macos": "10.7.0"
         }
       },
       "expression": {
