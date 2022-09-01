@@ -4784,6 +4784,35 @@
       },
       "property-type": "data-driven"
     },
+    "line-border": {
+      "type": "boolean",
+      "doc": "If true, the line will have a border",
+      "default": false,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.3.0",
+          "android": "10.9.0",
+          "ios": "10.9.0",
+          "macos": "10.9.0"
+        },
+        "data-driven styling": {
+          "js": "2.3.0",
+          "android": "10.9.0",
+          "ios": "10.9.0",
+          "macos": "10.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "line-translate": {
       "type": "array",
       "value": "number",

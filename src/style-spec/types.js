@@ -224,6 +224,7 @@ export type LineLayerSpecification = {|
     "paint"?: {|
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "line-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "line-border"?: DataDrivenPropertyValueSpecification<boolean>,
         "line-translate"?: PropertyValueSpecification<[number, number]>,
         "line-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
         "line-width"?: DataDrivenPropertyValueSpecification<number>,

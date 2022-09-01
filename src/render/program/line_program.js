@@ -163,6 +163,11 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
         values.push('RENDER_LINE_TRIM_OFFSET');
     }
 
+    const lineBorder = layer.paint.get('line-border').constantOr(false);
+    if (lineBorder) {
+        values.push('RENDER_LINE_BORDER');
+    }
+
     const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
     const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
     if (!hasPattern && hasOpacity) {

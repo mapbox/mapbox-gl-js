@@ -38,6 +38,7 @@ const layout: Properties<LayoutProps> = new Properties({
 export type PaintProps = {|
     "line-opacity": DataDrivenProperty<number>,
     "line-color": DataDrivenProperty<Color>,
+    "line-border": DataDrivenProperty<boolean>,
     "line-translate": DataConstantProperty<[number, number]>,
     "line-translate-anchor": DataConstantProperty<"map" | "viewport">,
     "line-width": DataDrivenProperty<number>,
@@ -53,6 +54,7 @@ export type PaintProps = {|
 const paint: Properties<PaintProps> = new Properties({
     "line-opacity": new DataDrivenProperty(styleSpec["paint_line"]["line-opacity"]),
     "line-color": new DataDrivenProperty(styleSpec["paint_line"]["line-color"]),
+    "line-border": new DataDrivenProperty(styleSpec["paint_line"]["line-border"]),
     "line-translate": new DataConstantProperty(styleSpec["paint_line"]["line-translate"]),
     "line-translate-anchor": new DataConstantProperty(styleSpec["paint_line"]["line-translate-anchor"]),
     "line-width": new DataDrivenProperty(styleSpec["paint_line"]["line-width"]),
