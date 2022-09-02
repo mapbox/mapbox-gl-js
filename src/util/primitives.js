@@ -185,10 +185,6 @@ class Aabb {
         return new Aabb(min, max);
     }
 
-    clone(): Aabb {
-        return new Aabb(vec3.clone(this.min), vec3.clone(this.max));
-    }
-
     constructor(min_: Vec3, max_: Vec3) {
         this.min = min_;
         this.max = max_;

@@ -2109,8 +2109,7 @@ class Transform {
         }
     }
 
-    getCameraToCenterDistance(projection: Projection, zoom: ?number): number {
-        zoom = zoom || this.zoom;
+    getCameraToCenterDistance(projection: Projection, zoom: number = this.zoom): number {
         const t = getProjectionInterpolationT(projection, zoom, this.width, this.height, 1024);
         const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;

@@ -662,19 +662,19 @@ class Camera extends Evented {
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
 
-        const ecefCoords = [];
+        const ecefCoords = [
+            origin,
 
-        ecefCoords.push(origin);
+            latLngToECEF(coord0.lat, coord0.lng),
+            latLngToECEF(coord1.lat, coord0.lng),
+            latLngToECEF(coord1.lat, coord1.lng),
+            latLngToECEF(coord0.lat, coord1.lng),
 
-        ecefCoords.push(latLngToECEF(coord0.lat, coord0.lng));
-        ecefCoords.push(latLngToECEF(coord1.lat, coord0.lng));
-        ecefCoords.push(latLngToECEF(coord1.lat, coord1.lng));
-        ecefCoords.push(latLngToECEF(coord0.lat, coord1.lng));
-
-        ecefCoords.push(latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord0.lng));
-        ecefCoords.push(latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord1.lng));
-        ecefCoords.push(latLngToECEF(coord0.lat, (coord0.lng + coord1.lng) * 0.5));
-        ecefCoords.push(latLngToECEF(coord1.lat, (coord0.lng + coord1.lng) * 0.5));
+            latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord0.lng),
+            latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord1.lng),
+            latLngToECEF(coord0.lat, (coord0.lng + coord1.lng) * 0.5),
+            latLngToECEF(coord1.lat, (coord0.lng + coord1.lng) * 0.5),
+        ];
 
         for (const p of ecefCoords) {
             min[0] = Math.min(min[0], vec3.dot(xAxis, p));
@@ -790,8 +790,8 @@ class Camera extends Evented {
         const padT = eOptions.padding.top;
         const padB = eOptions.padding.bottom;
 
-        const halfScreenPadX = ((edgePadding.left || 0) + (edgePadding.right || 0)) * 0.5;
-        const halfScreenPadY = ((edgePadding.top || 0) + (edgePadding.bottom || 0)) * 0.5;
+        const halfScreenPadX = (screenPadL + screenPadR) * 0.5;
+        const halfScreenPadY = (screenPadT + screenPadB) * 0.5;
 
         const scaleX = (tr.width - (screenPadL + screenPadR + padL + padR)) / size[0];
         const scaleY = (tr.height - (screenPadB + screenPadT + padB + padT)) / size[1];
