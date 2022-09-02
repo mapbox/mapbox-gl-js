@@ -590,7 +590,7 @@ class Camera extends Evented {
         const bearing = (options && options.bearing) || 0;
         const lnglat0 = bounds.getNorthWest();
         const lnglat1 = bounds.getSouthEast();
-        return this._cameraForAabb(this.transform, lnglat0, lnglat1, bearing, options);
+        return this._cameraForBounds(this.transform, lnglat0, lnglat1, bearing, options);
     }
 
     _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
@@ -639,7 +639,7 @@ class Camera extends Evented {
         return minimumDistance;
     }
 
-    _cameraForAabbOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForBoundsOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
 
@@ -720,7 +720,7 @@ class Camera extends Evented {
         if (zoom > halfZoomTransition) {
             tr.setProjection({name: 'mercator'});
             tr.zoom = zoom;
-            return this._cameraForAabb(tr, p0, p1, bearing, options);
+            return this._cameraForBounds(tr, p0, p1, bearing, options);
         }
 
         return {center: tr.center, zoom, bearing};
@@ -770,13 +770,13 @@ class Camera extends Evented {
      * var p0 = [-79, 43];
      * var p1 = [-73, 45];
      * var bearing = 90;
-     * var newCameraTransform = map._cameraForAabb(p0, p1, bearing, {
+     * var newCameraTransform = map._cameraForBounds(p0, p1, bearing, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    _cameraForAabb(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForBounds(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         if (transform.projection.name === 'globe') {
-            return this._cameraForAabbOnGlobe(transform, p0, p1, bearing, options);
+            return this._cameraForBoundsOnGlobe(transform, p0, p1, bearing, options);
         }
 
         const tr = transform.clone();
@@ -870,7 +870,7 @@ class Camera extends Evented {
         if (tr.mercatorFromTransition && zoom < halfZoomTransition) {
             tr.setProjection({name: 'globe'});
             tr.zoom = zoom;
-            return this._cameraForAabb(tr, p0, p1, bearing, options);
+            return this._cameraForBounds(tr, p0, p1, bearing, options);
         }
 
         return {center, zoom, bearing};
@@ -962,7 +962,7 @@ class Camera extends Evented {
             Math.max(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
         ];
 
-        const cameraPlacement = this._cameraForAabb(this.transform, p0coord, p1coord, bearing, options);
+        const cameraPlacement = this._cameraForBounds(this.transform, p0coord, p1coord, bearing, options);
         return this._fitInternal(cameraPlacement, options, eventData);
     }
 
