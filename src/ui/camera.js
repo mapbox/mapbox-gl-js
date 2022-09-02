@@ -645,9 +645,11 @@ class Camera extends Evented {
 
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
-        const origin = latLngToECEF(
-            (coord0.lat + coord1.lat) * 0.5,
-            (coord0.lng + coord1.lng) * 0.5);
+
+        const midLat = (coord0.lat + coord1.lat) * 0.5;
+        const midLng = (coord0.lng + coord1.lng) * 0.5;
+
+        const origin = latLngToECEF(midLat, midLng);
 
         const zAxis = vec3.normalize([], origin);
         const xAxis = vec3.normalize([], vec3.cross([], zAxis, [0, 1, 0]));
@@ -670,10 +672,10 @@ class Camera extends Evented {
             latLngToECEF(coord1.lat, coord1.lng),
             latLngToECEF(coord0.lat, coord1.lng),
 
-            latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord0.lng),
-            latLngToECEF((coord0.lat + coord1.lat) * 0.5, coord1.lng),
-            latLngToECEF(coord0.lat, (coord0.lng + coord1.lng) * 0.5),
-            latLngToECEF(coord1.lat, (coord0.lng + coord1.lng) * 0.5),
+            latLngToECEF(midLat, coord0.lng),
+            latLngToECEF(midLat, coord1.lng),
+            latLngToECEF(coord0.lat, midLng),
+            latLngToECEF(coord1.lat, midLng),
         ];
 
         for (const p of ecefCoords) {
