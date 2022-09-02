@@ -786,10 +786,7 @@ class Camera extends Evented {
         const screenPadB = edgePadding.bottom || 0;
         const screenPadT = edgePadding.top || 0;
 
-        const padL = eOptions.padding.left;
-        const padR = eOptions.padding.right;
-        const padT = eOptions.padding.top;
-        const padB = eOptions.padding.bottom;
+        const {left: padL, right: padR, top: padT, bottom: padB} = eOptions.padding;
 
         const halfScreenPadX = (screenPadL + screenPadR) * 0.5;
         const halfScreenPadY = (screenPadT + screenPadB) * 0.5;
