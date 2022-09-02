@@ -686,7 +686,7 @@ class Camera extends Evented {
             max[2] = Math.max(max[2], vec3.dot(zAxis, p));
         }
 
-        const aabb = new Aabb(min, max);
+        let aabb = new Aabb(min, max);
 
         const center = vec3.transformMat4([], aabb.center, aabbOrientation);
 
@@ -696,7 +696,8 @@ class Camera extends Evented {
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
-        aabb.applyTransform(mat4.multiply([], worldToCamera, aabbOrientation));
+
+        aabb = Aabb.applyTransform(aabb, mat4.multiply([], worldToCamera, aabbOrientation));
 
         vec3.transformMat4(center, center, worldToCamera);
 
@@ -771,12 +772,12 @@ class Camera extends Evented {
         const p1world = tr.project(LngLat.convert(p1));
 
         const worldCoords = [[p0world.x, p0world.y, 0], [p1world.x, p1world.y, 0]];
-        const aabb = Aabb.fromPoints(worldCoords);
+        let aabb = Aabb.fromPoints(worldCoords);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
 
-        aabb.applyTransform(worldToCamera);
+        aabb = Aabb.applyTransform(aabb, worldToCamera);
 
         const size = vec3.sub([], aabb.max, aabb.min);
 
@@ -800,16 +801,9 @@ class Camera extends Evented {
 
         const scaleRatio = tr.scale / tr.zoomScale(zoomRef);
 
-        aabb.setMin([
-            aabb.min[0] - (padL + halfScreenPadX) * scaleRatio,
-            aabb.min[1] - (padB + halfScreenPadY) * scaleRatio,
-            aabb.min[2]
-        ]);
-        aabb.setMax([
-            aabb.max[0] + (padR + halfScreenPadX) * scaleRatio,
-            aabb.max[1] + (padT + halfScreenPadY) * scaleRatio,
-            aabb.max[2]
-        ]);
+        aabb = new Aabb(
+            [aabb.min[0] - (padL + halfScreenPadX) * scaleRatio, aabb.min[1] - (padB + halfScreenPadY) * scaleRatio, aabb.min[2]],
+            [aabb.max[0] + (padR + halfScreenPadX) * scaleRatio, aabb.max[1] + (padT + halfScreenPadY) * scaleRatio, aabb.max[2]]);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);

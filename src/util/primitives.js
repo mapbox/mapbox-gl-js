@@ -185,18 +185,17 @@ class Aabb {
         return new Aabb(min, max);
     }
 
+    static applyTransform(aabb: Aabb, transform: Mat4): Aabb {
+        const corners = aabb.getCorners();
+
+        for (let i = 0; i < corners.length; ++i) {
+            vec3.transformMat4(corners[i], corners[i], transform);
+        }
+        return Aabb.fromPoints(corners);
+    }
+
     constructor(min_: Vec3, max_: Vec3) {
         this.min = min_;
-        this.max = max_;
-        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
-    }
-
-    setMin(min_: Vec3) {
-        this.min = min_;
-        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
-    }
-
-    setMax(max_: Vec3) {
         this.max = max_;
         this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
     }
@@ -212,26 +211,6 @@ class Aabb {
         // Temporarily, elevation is constant, hence quadrant.max.z = this.max.z
         qMax[2] = this.max[2];
         return new Aabb(qMin, qMax);
-    }
-
-    applyTransform(transform: Mat4): Aabb {
-        const corners = this.getCorners();
-
-        for (let i = 0; i < corners.length; ++i) {
-            vec3.transformMat4(corners[i], corners[i], transform);
-        }
-
-        this.min = [Infinity, Infinity, Infinity];
-        this.max = [-Infinity, -Infinity, -Infinity];
-
-        for (const p of corners) {
-            vec3.min(this.min, this.min, p);
-            vec3.max(this.max, this.max, p);
-        }
-
-        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
-
-        return this;
     }
 
     distanceX(point: Array<number>): number {
