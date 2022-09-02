@@ -641,8 +641,6 @@ class Camera extends Evented {
 
     _cameraForBoundsOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
         const tr = transform.clone();
-        const eOptions = this._extendCameraOptions(options);
-
         tr.bearing = bearing;
 
         const coord0 = LngLat.convert(p0);
@@ -651,9 +649,39 @@ class Camera extends Evented {
         const midLat = (coord0.lat + coord1.lat) * 0.5;
         const midLng = (coord0.lng + coord1.lng) * 0.5;
 
-        const origin = latLngToECEF(midLat, midLng);
+        const lngLats = [
+            new LngLat(midLng, midLat),
+            coord0,
+            new LngLat(coord0.lng, coord1.lat),
+            coord1,
+            new LngLat(coord1.lng, coord0.lat),
+            new LngLat(coord0.lng, midLat),
+            new LngLat(coord1.lng, midLat),
+            new LngLat(midLng, coord0.lat),
+            new LngLat(midLng, coord1.lat),
+        ];
 
-        const zAxis = vec3.normalize([], origin);
+        return this._cameraForLngLats(tr, lngLats, options);
+    }
+
+    _cameraForLngLats(tr: Transform, lngLats: Array<LngLat>, options?: CameraOptions): ?EasingOptions {
+
+        const eOptions = this._extendCameraOptions(options);
+
+        let minLat = lngLats[0].lat;
+        let maxLat = lngLats[0].lat;
+        let minLng = lngLats[0].lng;
+        let maxLng = lngLats[0].lng;
+        for (const lngLat of lngLats) {
+            minLat = Math.min(minLat, lngLat.lat);
+            maxLat = Math.max(maxLat, lngLat.lat);
+            minLng = Math.min(minLng, lngLat.lng);
+            maxLng = Math.max(maxLng, lngLat.lng);
+        }
+        const midLat = (minLat + maxLat) / 2;
+        const midLng = (minLng + maxLng) / 2;
+
+        const zAxis = vec3.normalize([], latLngToECEF(midLat, midLng));
         const xAxis = vec3.normalize([], vec3.cross([], zAxis, [0, 1, 0]));
         const yAxis = vec3.cross([], xAxis, zAxis);
 
@@ -664,21 +692,11 @@ class Camera extends Evented {
             0, 0, 0, 1
         ];
 
-        const ecefCoords = [
-            origin,
-
-            latLngToECEF(coord0.lat, coord0.lng),
-            latLngToECEF(coord1.lat, coord0.lng),
-            latLngToECEF(coord1.lat, coord1.lng),
-            latLngToECEF(coord0.lat, coord1.lng),
-
-            latLngToECEF(midLat, coord0.lng),
-            latLngToECEF(midLat, coord1.lng),
-            latLngToECEF(coord0.lat, midLng),
-            latLngToECEF(coord1.lat, midLng),
-        ];
-
-        let aabb = Aabb.fromPoints(ecefCoords.map(p => [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)]));
+        let aabb = Aabb.fromPoints(lngLats.map(l => {
+            const p = latLngToECEF(l.lat, l.lng);
+            return [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)];
+        }
+        ));
 
         const center = vec3.transformMat4([], aabb.center, aabbOrientation);
 
@@ -716,14 +734,14 @@ class Camera extends Evented {
 
         const zoom = Math.min(tr.zoomFromMercatorZAdjusted(mercatorZ), eOptions.maxZoom);
 
-        const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
-        if (zoom > halfZoomTransition) {
-            tr.setProjection({name: 'mercator'});
-            tr.zoom = zoom;
-            return this._cameraForBounds(tr, p0, p1, bearing, options);
-        }
+        // const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
+        // if (zoom > halfZoomTransition) {
+        //     tr.setProjection({name: 'mercator'});
+        //     tr.zoom = zoom;
+        //     return this._cameraForBounds(tr, p0, p1, bearing, options);
+        // }
 
-        return {center: tr.center, zoom, bearing};
+        return {center: tr.center, zoom, bearing: tr.bearing};
     }
 
     /**
@@ -948,21 +966,16 @@ class Camera extends Evented {
 
         if (this.transform.projection.name === 'mercator' && min.y < horizon) return this;
 
-        const lnglat0 = this.transform.pointLocation3D(min);
-        const lnglat1 = this.transform.pointLocation3D(max);
-        const lnglat2 = this.transform.pointLocation3D(new Point(min.x, max.y));
-        const lnglat3 = this.transform.pointLocation3D(new Point(max.x, min.y));
-
-        const p0coord = [
-            Math.min(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
-            Math.min(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
-        ];
-        const p1coord =  [
-            Math.max(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
-            Math.max(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
+        const lngLats = [this.transform.pointLocation3D(min),
+            this.transform.pointLocation3D(max),
+            this.transform.pointLocation3D(new Point(min.x, max.y)),
+            this.transform.pointLocation3D(new Point(max.x, min.y))
         ];
 
-        const cameraPlacement = this._cameraForBounds(this.transform, p0coord, p1coord, bearing, options);
+        const tr = this.transform.clone();
+        tr.bearing = bearing;
+        const cameraPlacement = this._cameraForLngLats(tr, lngLats, options);
+
         return this._fitInternal(cameraPlacement, options, eventData);
     }
 
