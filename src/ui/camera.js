@@ -661,8 +661,6 @@ class Camera extends Evented {
             zAxis[0], zAxis[1], zAxis[2], 0,
             0, 0, 0, 1
         ];
-        const min = [Infinity, Infinity, Infinity];
-        const max = [-Infinity, -Infinity, -Infinity];
 
         const ecefCoords = [
             origin,
@@ -678,17 +676,7 @@ class Camera extends Evented {
             latLngToECEF(coord1.lat, midLng),
         ];
 
-        for (const p of ecefCoords) {
-            min[0] = Math.min(min[0], vec3.dot(xAxis, p));
-            min[1] = Math.min(min[1], vec3.dot(yAxis, p));
-            min[2] = Math.min(min[2], vec3.dot(zAxis, p));
-
-            max[0] = Math.max(max[0], vec3.dot(xAxis, p));
-            max[1] = Math.max(max[1], vec3.dot(yAxis, p));
-            max[2] = Math.max(max[2], vec3.dot(zAxis, p));
-        }
-
-        let aabb = new Aabb(min, max);
+        let aabb = Aabb.fromPoints(ecefCoords.map(p => [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)]));
 
         const center = vec3.transformMat4([], aabb.center, aabbOrientation);
 
