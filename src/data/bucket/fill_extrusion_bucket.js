@@ -455,6 +455,7 @@ class FillExtrusionBucket implements Bucket {
                     const p1 = ring[1];
                     na = p1.sub(p0)._perp()._unit();
                 }
+                let cap = true;
                 for (let i = 1, edgeDistance = 0; i < ring.length; i++) {
                     let p0 = ring[i - 1];
                     let p1 = ring[i];
@@ -464,6 +465,7 @@ class FillExtrusionBucket implements Bucket {
                     if (isEdgeOutsideBounds(p1, p0, bounds)) {
                         if (edgeRadius) {
                             na = p2.sub(p1)._perp()._unit();
+                            cap = !cap;
                         }
                         continue;
                     }
@@ -513,13 +515,13 @@ class FillExtrusionBucket implements Bucket {
                     const k = segment.vertexLength;
 
                     const isConcaveCorner = ring.length > 4 && isAOConcaveAngle(p0, p1, p2);
-                    let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, true);
+                    let encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isPrevCornerConcave, cap);
 
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
                     addVertex(this.layoutVertexArray, p0.x, p0.y, nxRatio, nySign, 0, 1, encodedEdgeDistance);
 
                     edgeDistance += dist;
-                    encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, false);
+                    encodedEdgeDistance = encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, !cap);
                     isPrevCornerConcave = isConcaveCorner;
 
                     addVertex(this.layoutVertexArray, p1.x, p1.y, nxRatio, nySign, 0, 0, encodedEdgeDistance);
@@ -563,6 +565,7 @@ class FillExtrusionBucket implements Bucket {
 
                             segment.primitiveLength += 3;
                         }
+                        cap = !cap;
                     }
 
                     if (isGlobe) {
