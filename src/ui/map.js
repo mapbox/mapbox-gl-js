@@ -1057,6 +1057,7 @@ class Map extends Camera {
     /**
      * Returns the map's language, which is used for translating map labels and UI components.
      *
+     * @private
      * @returns {string} Returns the map's language code.
      * @example
      * const language = map.getLanguage();
@@ -1068,6 +1069,7 @@ class Map extends Camera {
     /**
      * Sets the map's language, which is used for translating map labels and UI components.
      *
+     * @private
      * @param {'auto' | string} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
      *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
      *  If a label has no translation for the selected language, it will display in the label's local language.
@@ -1103,6 +1105,7 @@ class Map extends Camera {
     /**
      * Returns the code for the map's worldview.
      *
+     * @private
      * @returns {string} Returns the map's worldview code.
      * @example
      * const worldview = map.getWorldview();
@@ -1114,6 +1117,7 @@ class Map extends Camera {
     /**
      * Sets the map's worldview.
      *
+     * @private
      * @param {string} [worldview] A string representing the desired worldview.
      *  A worldview determines the way that certain disputed boundaries are rendered.
      *  Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes).
