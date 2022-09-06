@@ -673,6 +673,10 @@ class Camera extends Evented {
 
         const center = vec3.transformMat4([], aabb.center, aabbOrientation);
 
+        if (vec3.squaredLength(center) === 0) {
+            vec3.set(center, 0, 0, 1);
+        }
+
         vec3.normalize(center, center);
         vec3.scale(center, center, GLOBE_RADIUS);
         tr.center = ecefToLatLng(center);
