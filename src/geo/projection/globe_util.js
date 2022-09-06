@@ -428,11 +428,10 @@ function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: num
     return [sx, sy, sz];
 }
 
-export function ecefToLatLng(ecef: Array<number>): LngLat {
-    const radius = Math.sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1] + ecef[2] * ecef[2]);
-
-    const lng = Math.atan2(ecef[0], ecef[2]);
-    const lat = Math.PI * 0.5 - Math.acos(-ecef[1] / radius);
+export function ecefToLatLng([x, y, z]: Array<number>): LngLat {
+    const radius = Math.hypot(x, y, z);
+    const lng = Math.atan2(x, z);
+    const lat = Math.PI * 0.5 - Math.acos(-y / radius);
 
     return new LngLat(radToDeg(lng), radToDeg(lat));
 }
