@@ -792,7 +792,7 @@ class Camera extends Evented {
             [aabb.min[0] - (padL + halfScreenPadX) * scaleRatio, aabb.min[1] - (padB + halfScreenPadY) * scaleRatio, aabb.min[2]],
             [aabb.max[0] + (padR + halfScreenPadX) * scaleRatio, aabb.max[1] + (padT + halfScreenPadY) * scaleRatio, aabb.max[2]]);
 
-        const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
+        const aabbHalfExtentZ = size[2] * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
         const normalZ = [0, 0, 1, 0];
