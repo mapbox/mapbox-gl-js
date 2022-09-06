@@ -623,16 +623,9 @@ class Camera extends Evented {
         const aabbAspectRatio = aabbW / aabbH;
         const selectXAxis = aabbAspectRatio > tr.aspect;
 
-        const min = aabb.min;
-        const max = [
-            selectXAxis ? aabb.max[0] : aabb.min[0],
-            selectXAxis ? aabb.min[1] : aabb.max[1],
-            aabb.min[2]
-        ];
-        const axisLength = vec3.length(vec3.sub([], min, max));
         const minimumDistance = selectXAxis ?
-            axisLength / (2 * Math.tan(tr.fovX * 0.5) * tr.aspect) :
-            axisLength / (2 * Math.tan(tr.fovY * 0.5) * tr.aspect);
+            aabbW / (2 * Math.tan(tr.fovX * 0.5) * tr.aspect) :
+            aabbH / (2 * Math.tan(tr.fovY * 0.5) * tr.aspect);
 
         return minimumDistance;
     }
