@@ -29,6 +29,7 @@ declare module "gl-matrix" {
         normalize<T: Vec3>(T, Vec3): T,
         add<T: Vec3>(T, Vec3, Vec3): T,
         sub<T: Vec3>(T, Vec3, Vec3): T,
+        set<T: Vec3>(T, number, number, number): T,
         subtract<T: Vec3>(T, Vec3, Vec3): T,
         cross<T: Vec3>(T, Vec3, Vec3): T,
         negate<T: Vec3>(T, Vec3): T,
