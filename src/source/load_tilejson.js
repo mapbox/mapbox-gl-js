@@ -15,6 +15,9 @@ export default function(options: any, requestManager: RequestManager, language: 
         if (err) {
             return callback(err);
         } else if (tileJSON) {
+            // Prefer TileJSON tiles, if both URL and tiles options are set
+            if (options.url && tileJSON.tiles && options.tiles) delete options.tiles;
+
             const result: any = pick(
                 // explicit source options take precedence over TileJSON
                 extend(tileJSON, options),
@@ -24,32 +27,6 @@ export default function(options: any, requestManager: RequestManager, language: 
             if (tileJSON.vector_layers) {
                 result.vectorLayers = tileJSON.vector_layers;
                 result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
-            }
-
-            /**
-             * A tileset supports language localization if the TileJSON contains
-             * a `language_options` object in the response.
-             */
-            if (tileJSON.language_options) {
-                result.languageOptions = tileJSON.language_options;
-            }
-
-            if (tileJSON.language && tileJSON.language[tileJSON.id]) {
-                result.language = tileJSON.language[tileJSON.id];
-            }
-
-            /**
-             * A tileset supports different worldviews if the TileJSON contains
-             * a `worldview_options` object in the repsonse as well as a `worldview_default` key.
-             */
-            if (tileJSON.worldview_options) {
-                result.worldviewOptions = tileJSON.worldview_options;
-            }
-
-            if (tileJSON.worldview) {
-                result.worldview = tileJSON.worldview[tileJSON.id];
-            } else if (tileJSON.worldview_default) {
-                result.worldview = tileJSON.worldview_default;
             }
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);

@@ -256,13 +256,13 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {string} [options.language=null] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {'auto' | string} [options.language=null] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
  *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
- *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
+ *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
  *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
- * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
+ * @param {string} [options.worldview=null] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
      * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
      * Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes). Unsupported
      * ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
@@ -1055,7 +1055,7 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the code for the map's language which is used for translating map labels.
+     * Returns the map's language, which is used for translating map labels and UI components.
      *
      * @private
      * @returns {string} Returns the map's language code.
@@ -1067,28 +1067,31 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the map's language.
+     * Sets the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
+     * @param {'auto' | string} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+     *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
+     *  If a label has no translation for the selected language, it will display in the label's local language.
+     *  If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
+     *  If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
+     *  If param is set to `undefined` or `null`, it will remove the current map language and reset the language used for translating map labels and UI components.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
      *
      * @example
      * map.setLanguage('auto');
+     *
+     * @example
+     * map.setLanguage();
      */
-    setLanguage(language?: ?string): this {
-        this._language = language === 'auto' ? window.navigator.language : language;
+    setLanguage(language?: 'auto' | ?string): this {
+        const newLanguage = language === 'auto' ? window.navigator.language : language;
+        if (!this.style || newLanguage === this._language) return this;
+        this._language = newLanguage;
 
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setLanguage) {
-                    source._setLanguage(this._language);
-                }
-            }
-        }
+        this.style._reloadSources();
 
         for (const control of this._controls) {
             if (control._setLanguage) {
@@ -1115,21 +1118,24 @@ class Map extends Camera {
      * Sets the map's worldview.
      *
      * @private
-     * @param {string} worldview A string representing the desired worldview. `undefined` or `null` will cause the map to fall back to the TileJSON's default worldview.
+     * @param {string} [worldview] A string representing the desired worldview.
+     *  A worldview determines the way that certain disputed boundaries are rendered.
+     *  Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes).
+     *  Unsupported ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
+     *  If param is set to `undefined` or `null`, it will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setWorldView('JP');
+     *
+     * @example
+     * map.setWorldView();
      */
     setWorldview(worldview?: ?string): this {
+        if (!this.style || worldview === this._worldview) return this;
+
         this._worldview = worldview;
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setWorldview) {
-                    source._setWorldview(worldview);
-                }
-            }
-        }
+        this.style._reloadSources();
+
         return this;
     }
 

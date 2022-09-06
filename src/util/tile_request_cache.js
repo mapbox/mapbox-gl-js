@@ -20,29 +20,7 @@ export type ResponseOptions = {
 // We're using a global shared cache object. Normally, requesting ad-hoc Cache objects is fine, but
 // Safari has a memory leak in which it fails to release memory when requesting keys() from a Cache
 // object. See https://bugs.webkit.org/show_bug.cgi?id=203991 for more information.
-let sharedCaches = {};
-
-function getCacheName(url: string) {
-    const queryParams = getQueryParameters(url);
-    let language;
-    let worldview;
-
-    if (queryParams) {
-        queryParams.forEach(param => {
-            const entry = param.split('=');
-            if (entry[0] === 'language') {
-                language = entry[1];
-            } else if (entry[0] === 'worldview') {
-                worldview = entry[1];
-            }
-        });
-    }
-
-    let cacheName = CACHE_NAME;
-    if (language) cacheName += `-${language}`;
-    if (worldview) cacheName += `-${worldview}`;
-    return cacheName;
-}
+let sharedCache: ?Promise<Cache>;
 
 function getCaches() {
     try {
@@ -54,17 +32,17 @@ function getCaches() {
     }
 }
 
-function cacheOpen(cacheName: string) {
+function cacheOpen() {
     const caches = getCaches();
-    if (caches && !sharedCaches[cacheName]) {
-        sharedCaches[cacheName] = caches.open(cacheName);
+    if (caches && !sharedCache) {
+        sharedCache = window.caches.open(CACHE_NAME);
     }
 }
 
 // We're never closing the cache, but our unit tests rely on changing out the global window.caches
 // object, so we have a function specifically for unit tests that allows resetting the shared cache.
 export function cacheClose() {
-    sharedCaches = {};
+    sharedCache = undefined;
 }
 
 let responseConstructorSupportsReadableStream;
@@ -87,9 +65,8 @@ function prepareBody(response: Response, callback) {
 }
 
 export function cachePut(request: Request, response: Response, requestTime: number) {
-    const cacheName = getCacheName(request.url);
-    cacheOpen(cacheName);
-    if (!sharedCaches[cacheName]) return;
+    cacheOpen();
+    if (!sharedCache) return;
 
     const options: ResponseOptions = {
         status: response.status,
@@ -114,9 +91,9 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     prepareBody(response, body => {
         const clonedResponse = new window.Response(body, options);
 
-        cacheOpen(cacheName);
-        if (!sharedCaches[cacheName]) return;
-        sharedCaches[cacheName]
+        cacheOpen();
+        if (!sharedCache) return;
+        sharedCache
             .then(cache => cache.put(stripQueryParameters(request.url), clonedResponse))
             .catch(e => warnOnce(e.message));
     });
@@ -129,9 +106,9 @@ function getQueryParameters(url: string) {
 
 function stripQueryParameters(url: string) {
     const start = url.indexOf('?');
-
     if (start < 0) return url;
 
+    // preserve `language` and `worldview` params if any
     const params = getQueryParameters(url);
     const filteredParams = params.filter(param => {
         const entry = param.split('=');
@@ -146,13 +123,12 @@ function stripQueryParameters(url: string) {
 }
 
 export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void): void {
-    const cacheName = getCacheName(request.url);
-    cacheOpen(cacheName);
-    if (!sharedCaches[cacheName]) return callback(null);
+    cacheOpen();
+    if (!sharedCache) return callback(null);
 
     const strippedURL = stripQueryParameters(request.url);
 
-    sharedCaches[cacheName]
+    sharedCache
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431
@@ -201,29 +177,26 @@ export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
 
 // runs on worker, see above comment
 export function enforceCacheSizeLimit(limit: number) {
-    for (const sharedCache in sharedCaches) {
-        cacheOpen(sharedCache);
+    cacheOpen();
+    if (!sharedCache) return;
 
-        sharedCaches[sharedCache].then(cache => {
+    sharedCache
+        .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
                     cache.delete(keys[i]);
                 }
             });
         });
-    }
 }
 
 export function clearTileCache(callback?: (err: ?Error) => void) {
     const caches = getCaches();
-    const promises = [];
-    for (const cache in sharedCaches) {
-        if (caches) promises.push(caches.delete(cache));
-        delete sharedCaches[cache];
-    }
+    if (!caches) return;
 
+    const promise = window.caches.delete(CACHE_NAME);
     if (callback) {
-        Promise.all(promises).catch(callback).then(() => callback());
+        promise.catch(callback).then(() => callback());
     }
 }
 

@@ -824,6 +824,16 @@ class Style extends Evented {
         return sourceCache && sourceCache.getSource();
     }
 
+    _getSources(): Source[] {
+        const sources = [];
+        for (const id in this._otherSourceCaches) {
+            const sourceCache = this._getSourceCache(id);
+            if (sourceCache) sources.push(sourceCache.getSource());
+        }
+
+        return sources;
+    }
+
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
@@ -1671,6 +1681,14 @@ class Style extends Evented {
         for (const sourceCache of sourceCaches) {
             sourceCache.resume();
             sourceCache.reload();
+        }
+    }
+
+    _reloadSources() {
+        for (const source of this._getSources()) {
+            if (source.reload) {
+                source.reload();
+            }
         }
     }
 

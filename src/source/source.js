@@ -69,8 +69,7 @@ export interface Source {
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
     +prepareTile?: (tile: Tile) => ?any;
-    +_setLanguage?: (language?: ?string) => Source;
-    +_setWorldview?: (worldview?: ?string) => Source;
+    +reload?: () => void;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
