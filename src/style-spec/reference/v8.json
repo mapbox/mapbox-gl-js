@@ -1906,7 +1906,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.7.0",
+          "ios": "10.7.0"
         }
       },
       "expression": {
@@ -2814,7 +2816,9 @@
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.10.0"
+            "js": "1.10.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -2823,7 +2827,9 @@
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.10.0"
+            "js": "1.10.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -3210,7 +3216,9 @@
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.46.0"
+            "js": "0.46.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -4994,7 +5002,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.0.0",
+          "ios": "10.0.0"
         }
       },
       "expression": {
@@ -5055,7 +5065,10 @@
           "ios": "4.4.0",
           "macos": "0.11.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "android": "10.0.0",
+          "ios": "10.0.0"
+        }
       },
       "expression": {
         "interpolated": true,
