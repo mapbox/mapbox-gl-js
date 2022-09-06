@@ -1684,6 +1684,14 @@ class Style extends Evented {
         }
     }
 
+    _reloadSources() {
+        for (const source of this._getSources()) {
+            if (source.reload) {
+                source.reload();
+            }
+        }
+    }
+
     _updateSources(transform: Transform) {
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].update(transform);
