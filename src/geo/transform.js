@@ -26,7 +26,7 @@ import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
-import type {Vec3, Vec4, Quat} from 'gl-matrix';
+import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -196,6 +196,7 @@ class Transform {
         clone._centerAltitude = this._centerAltitude;
         clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
         clone.tileSize = this.tileSize;
+        clone.mercatorFromTransition = this.mercatorFromTransition;
         clone.width = this.width;
         clone.height = this.height;
         clone.cameraElevationReference = this.cameraElevationReference;
@@ -374,14 +375,24 @@ class Transform {
         this._calcMatrices();
     }
 
-    get fov(): number {
-        return this._fov / Math.PI * 180;
+    get aspect(): number {
+        return this.width / this.height;
     }
+
+    get fovX(): number {
+        return this._fov;
+    }
+
+    get fovY(): number {
+        const focalLength = 1.0 / Math.tan(this.fovX * 0.5);
+        return 2 * Math.atan((1.0 / this.aspect) / focalLength);
+    }
+
     set fov(fov: number) {
         fov = Math.max(0.01, Math.min(60, fov));
         if (this._fov === fov) return;
         this._unmodified = false;
-        this._fov = fov / 180 * Math.PI;
+        this._fov = degToRad(fov);
         this._calcMatrices();
     }
 
@@ -1969,6 +1980,29 @@ class Transform {
         return this.scaleZoom(this.cameraToCenterDistance / (z * this.tileSize));
     }
 
+    // This function is helpful to approximate true zoom given a mercator height with varying ppm.
+    // With Globe, since we use a fixed reference latitude at lower zoom levels and transition between this
+    // latitude and the center's latitude as you zoom in, camera to center distance varies dynamically.
+    // As the cameraToCenterDistance is a function of zoom, we need to approximate the true zoom
+    // given a mercator meter value in order to eliminate the zoom/cameraToCenterDistance dependency.
+    zoomFromMercatorZAdjusted(z: number): number {
+        const getZoom = (zoom) => {
+            const d = this.getCameraToCenterDistance(this.projection, zoom);
+            return this.scaleZoom(d / (z * this.tileSize));
+        };
+
+        let zoom = getZoom(this.zoom);
+        let diff = Math.abs(zoom - getZoom(zoom));
+        let lastdiff;
+        while (lastdiff !== diff) {
+            zoom = getZoom(zoom);
+            lastdiff = diff;
+            diff = Math.abs(zoom - getZoom(zoom));
+        }
+
+        return zoom;
+    }
+
     _terrainEnabled(): boolean {
         if (!this._elevation) return false;
         if (!this.projection.supportsTerrain) {
@@ -2075,10 +2109,21 @@ class Transform {
         }
     }
 
-    getCameraToCenterDistance(projection: Projection): number {
-        const t = getProjectionInterpolationT(projection, this.zoom, this.width, this.height, 1024);
+    getCameraToCenterDistance(projection: Projection, zoom: number = this.zoom): number {
+        const t = getProjectionInterpolationT(projection, zoom, this.width, this.height, 1024);
         const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
+    }
+
+    getWorldToCameraMatrix(): Mat4 {
+        const zUnit = this.projection.zAxisUnit === "meters" ? this.pixelsPerMeter : 1.0;
+        const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
+
+        if (this.projection.name === 'globe') {
+            mat4.multiply(worldToCamera, worldToCamera, this.globeMatrix);
+        }
+
+        return worldToCamera;
     }
 }
 

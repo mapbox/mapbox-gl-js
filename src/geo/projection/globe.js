@@ -79,8 +79,8 @@ export default class Globe extends Mercator {
         // Instead, use a fixed reference latitude at lower zoom levels. And transition between
         // this latitude and the center's latitude as you zoom in. This is a compromise that
         // makes globe view more usable with existing camera parameters, styles and data.
-        const referenceScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * worldSize;
         const centerScale = mercatorZfromAltitude(1, lat) * worldSize;
+        const referenceScale = mercatorZfromAltitude(1, GLOBE_SCALE_MATCH_LATITUDE) * worldSize;
         const combinedScale = interpolate(referenceScale, centerScale, interpolationT);
         return this.pixelsPerMeter(lat, worldSize) / combinedScale;
     }
