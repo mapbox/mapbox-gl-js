@@ -3255,7 +3255,9 @@
         "group": "Camera",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.6.0"
+            "js": "2.6.0",
+            "android": "10.9.0",
+            "ios": "10.9.0"
           }
         }
       },
@@ -3264,7 +3266,9 @@
         "group": "Camera",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.6.0"
+            "js": "2.6.0",
+            "android": "10.9.0",
+            "ios": "10.9.0"
           }
         }
       },
