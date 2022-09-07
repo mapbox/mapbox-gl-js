@@ -169,7 +169,7 @@ test('ImageSource', (t) => {
         t.end();
     });
 
-    t.test('', (t) => {
+    t.test('https://github.com/mapbox/mapbox-gl-js/issues/12209', (t) => {
         const source = createSource({url : '/image.png'});
         source.tiles[0] = new OverscaledTileID(0, 0, 0, 0, 0);
         const map = new StubMap();
