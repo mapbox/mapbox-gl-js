@@ -3445,10 +3445,10 @@ class Map extends Camera {
         removeNode(this._controlContainer);
         removeNode(this._missingCSSCanary);
 
-        this._canvas = undefined;
-        this._canvasContainer = undefined;
-        this._controlContainer = undefined;
-        this._missingCSSCanary = undefined;
+        this._canvas = (undefined: any);
+        this._canvasContainer = (undefined: any);
+        this._controlContainer = (undefined: any);
+        this._missingCSSCanary = (undefined: any);
 
         this._container.classList.remove('mapboxgl-map');
         this._container.removeEventListener('scroll', this._onMapScroll, false);
