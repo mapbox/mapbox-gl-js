@@ -370,23 +370,27 @@ test('Elevation', (t) => {
                 t.true(map._averageElevation.isEasing(timestamp));
                 t.equal(map.transform.averageElevation, 0);
 
-                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
-                changed = map._updateAverageElevation(timestamp);
-                t.true(changed);
-                t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 154.15083854452925);
+                const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+                    t.ok(Math.abs(actual - expected) < epsilon);
+                };
 
                 timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 308.3016770890585);
+                assertAlmostEqual(t, map.transform.averageElevation, 154.15083854452925);
+
+                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+                changed = map._updateAverageElevation(timestamp);
+                t.true(changed);
+                t.true(map._averageElevation.isEasing(timestamp));
+                assertAlmostEqual(t, map.transform.averageElevation, 308.3016770890585);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
                 changed = map._updateAverageElevation(timestamp);
                 t.false(changed);
                 t.false(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 308.3016770890585);
+                assertAlmostEqual(t, map.transform.averageElevation, 308.3016770890585);
 
                 t.end();
             });
