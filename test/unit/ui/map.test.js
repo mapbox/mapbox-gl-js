@@ -2211,6 +2211,26 @@ test('Map', (t) => {
         });
     });
 
+    t.test('#remove does not leak event listeners on container', (t) => {
+        const container = window.document.createElement('div');
+        container.addEventListener = t.spy();
+        container.removeEventListener = t.spy();
+
+        t.stub(Map.prototype, '_detectMissingCSS');
+        t.stub(Map.prototype, '_authenticate');
+
+        const map = new Map({
+            container,
+            testMode: true
+        });
+        map.remove();
+
+        t.equal(container.addEventListener.callCount, container.removeEventListener.callCount);
+        t.equal(container.addEventListener.callCount, 1);
+        t.equal(container.removeEventListener.callCount, 1);
+        t.end();
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
