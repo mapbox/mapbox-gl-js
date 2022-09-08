@@ -3437,10 +3437,21 @@ class Map extends Camera {
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
+
+        this._canvas.removeEventListener('webglcontextlost', this._contextLost, false);
+        this._canvas.removeEventListener('webglcontextrestored', this._contextRestored, false);
+
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
         removeNode(this._missingCSSCanary);
+
+        this._canvas = (undefined: any);
+        this._canvasContainer = (undefined: any);
+        this._controlContainer = (undefined: any);
+        this._missingCSSCanary = (undefined: any);
+
         this._container.classList.remove('mapboxgl-map');
+        this._container.removeEventListener('scroll', this._onMapScroll, false);
 
         PerformanceUtils.clearMetrics();
         removeAuthState(this.painter.context.gl);
