@@ -68,8 +68,6 @@ export interface Source {
     +hasTile?: (tileID: OverscaledTileID) => boolean;
     +abortTile?: (tile: Tile, callback: Callback<void>) => void;
     +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
-    +_setLanguage?: (language?: ?string) => Source;
-    +_setWorldview?: (worldview?: ?string) => Source;
     +reload?: () => void;
 
     /**
