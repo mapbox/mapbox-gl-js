@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "debug": true,
+      "allowed": 0.004
+    }
+  },
+  "center": [3, 49],
+  "zoom": 5.25,
+  "pitch": 60,
+  "bearing": 140,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "hsl(206, 100%, 74%)"}
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "country_boundaries",
+      "layout": {},
+      "paint": {"fill-color": "hsl(43, 90%, 56%)"}
+    }
+  ]
+}

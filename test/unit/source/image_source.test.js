@@ -5,7 +5,10 @@ import {Evented} from '../../../src/util/evented.js';
 import Transform from '../../../src/geo/transform.js';
 import {extend} from '../../../src/util/util.js';
 import browser from '../../../src/util/browser.js';
+import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import window from '../../../src/util/window.js';
+import Context from '../../../src/gl/context.js';
+import gl from 'gl';
 
 function createSource(options) {
     options = extend({
@@ -19,6 +22,8 @@ function createSource(options) {
 class StubMap extends Evented {
     constructor() {
         super();
+        this.painter = {};
+        this.painter.context = new Context(gl(10, 10));
         this.transform = new Transform();
         this._requestManager = {
             transformRequest: (url) => {
@@ -48,6 +53,7 @@ test('ImageSource', (t) => {
         req.response = new ArrayBuffer(1);
         req.onload();
         img.onload();
+        img.data = new Uint8Array(req.response);
     };
     t.stub(browser, 'getImageData').callsFake(() => new ArrayBuffer(1));
 
@@ -159,6 +165,36 @@ test('ImageSource', (t) => {
         t.equal(serialized.type, 'image');
         t.equal(serialized.url, '/image.png');
         t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
+
+        t.end();
+    });
+
+    t.test('https://github.com/mapbox/mapbox-gl-js/issues/12209', (t) => {
+        const source = createSource({url : '/image.png'});
+        source.tiles[0] = new OverscaledTileID(0, 0, 0, 0, 0);
+        const map = new StubMap();
+        const coordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
+
+        source.onAdd(map);
+        t.ok(!source.loaded());
+        t.ok(!source._dirty);
+        respond();
+        t.ok(source.loaded());
+        t.ok(source._dirty);
+        t.ok(source.image);
+
+        source.prepare();
+        t.ok(source.texture);
+        const spy = t.spy(source.texture, 'update');
+
+        source.prepare();
+        t.equal(spy.callCount, 0);
+        source.updateImage({url: '/image2.png', coordinates});
+        respond();
+        source.prepare();
+        t.equal(spy.callCount, 1);
+        source.prepare();
+        t.equal(spy.callCount, 1);
 
         t.end();
     });

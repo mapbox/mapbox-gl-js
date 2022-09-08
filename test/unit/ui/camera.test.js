@@ -2087,6 +2087,16 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('bearing and asymmetrical padding and assymetrical viewport padding', (t) => {
+            const camera = createCamera();
+            camera.setPadding({left: 30, top: 35, right: 50, bottom: 65});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -104.1932, lat: 30.837});
+            t.end();
+        });
+
         t.test('offset', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -2120,6 +2130,98 @@ test('camera', (t) => {
 
             const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100], duration: 0});
             t.deepEqual(fixedLngLat(transform.center, 4), {lng: -103.3761, lat: 43.0929}, 'correctly calculates coordinates for bounds with bearing, padding option as object, and offset applied');
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('#fitScreenCoordinates with globe', (t) => {
+        t.test('bearing 225', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const p0 = [128, 128];
+            const p1 = [256, 384];
+            const bearing = 225;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -39.7287, lat: 0});
+            t.equal(fixedNum(camera.getZoom(), 3), 0.946);
+            t.equal(camera.getBearing(), -135);
+            t.equal(camera.getPitch(), 0);
+            t.end();
+        });
+
+        t.test('bearing 225, pitch 30', (t) => {
+            const pitch = 30;
+            const camera = createCamera({projection: {name: 'globe'}, pitch});
+            const p0 = [100, 500];
+            const p1 = [300, 510];
+            const bearing = 225;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: 17.5434, lat: -80.2279});
+            t.equal(fixedNum(camera.getZoom(), 3), 1.311);
+            t.equal(camera.getBearing(), -135);
+            t.end();
+        });
+
+        t.test('bearing 0', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+
+            const p0 = [128, 128];
+            const p1 = [256, 384];
+            const bearing = 0;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -39.7287, lat: 0});
+            t.equal(fixedNum(camera.getZoom(), 3), 1.164);
+            t.equal(camera.getBearing(), 0);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('#cameraForBounds with Globe', (t) => {
+        t.test('no options passed', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 2.106);
+            t.end();
+        });
+
+        t.test('bearing positive number', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 175});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 2.034);
+            t.equal(transform.bearing, 175);
+            t.end();
+        });
+
+        t.test('bearing negative number', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: -30});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 1.868);
+            t.equal(transform.bearing, -30);
+            t.end();
+        });
+
+        t.test('entire longitude range: -180 to 180', (t) => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-180, 10], [180, 50]];
+
+            const transform = camera.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: 180, lat: 80});
+            t.equal(fixedNum(transform.zoom, 3), 1.072);
             t.end();
         });
 
@@ -2207,9 +2309,9 @@ test('camera', (t) => {
             const bearing = 225;
 
             camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -19.8767}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
-            t.equal(fixedNum(camera.getZoom(), 3), 0.173);
-            t.equal(camera.getBearing(), -16.844931165335765);
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -84.1374}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 5.2);
+            t.equal(camera.getBearing(), -135);
             t.end();
         });
 

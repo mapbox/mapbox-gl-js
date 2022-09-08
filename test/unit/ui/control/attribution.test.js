@@ -14,8 +14,7 @@ function createMap(t) {
             layers: [],
             owner: 'mapbox',
             id: 'streets-v10',
-        },
-        hash: true
+        }
     });
 }
 

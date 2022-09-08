@@ -41,14 +41,12 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
 }
 
 test('VectorTileSource', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('can be constructed from TileJSON', (t) => {
@@ -392,15 +390,15 @@ test('VectorTileSource', (t) => {
     });
 
     t.test('supports property updates', (t) => {
+        window.server.configure({respondImmediately: true});
         window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
         const source = createSource({url: '/source.json'});
-        window.server.respond();
 
         const loadSpy = t.spy(source, 'load');
         const clearTilesSpy = t.spy(source.map._sourceCaches[0], 'clearTiles');
 
         const responseSpy = t.spy((xhr) =>
-            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify(sourceFixture)));
+            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));
 
         window.server.respondWith('/source.json', responseSpy);
 
@@ -408,131 +406,85 @@ test('VectorTileSource', (t) => {
             source.attribution = 'OpenStreetMap';
         });
 
-        window.server.respond();
-
         t.ok(loadSpy.calledOnce);
         t.ok(responseSpy.calledOnce);
         t.ok(clearTilesSpy.calledOnce);
-        t.ok(responseSpy.calledBefore(clearTilesSpy), 'Tiles should be cleared after TileJSON is loaded');
+        t.ok(clearTilesSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
 
         t.end();
     });
 
     t.test('supports url property updates', (t) => {
-        const source = createSource({
-            url: "http://localhost:2900/source.json"
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+        window.server.respondWith('/new-source.json', JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}));
+        window.server.configure({autoRespond: true, autoRespondAfter: 0});
+
+        const source = createSource({url: '/source.json'});
+        source.setUrl('/new-source.json');
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.minzoom, 0);
+                t.deepEqual(source.maxzoom, 22);
+                t.deepEqual(source.attribution, 'Mapbox');
+                t.deepEqual(source.serialize(), {type: 'vector', url: '/new-source.json'});
+                t.end();
+            }
         });
-        source.setUrl("http://localhost:2900/source2.json");
-        t.deepEqual(source.serialize(), {
-            type: 'vector',
-            url: "http://localhost:2900/source2.json"
-        });
-        t.end();
     });
 
     t.test('supports tiles property updates', (t) => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"]
-        });
-        source.setTiles(["http://example2.com/{z}/{x}/{y}.png"]);
-        t.deepEqual(source.serialize(), {
-            type: 'vector',
-            minzoom: 1,
-            maxzoom: 10,
-            attribution: "Mapbox",
-            tiles: ["http://example2.com/{z}/{x}/{y}.png"]
-        });
-        t.end();
-    });
-
-    t.test('supports i18n tilesets', (t) => {
-        /* eslint camelcase: ["error", {allow: ["language_options", "worldview_options", "worldview_default"]}] */
-        const source = createSource({url: 'mapbox://user.map'}, {customAccessToken: 'key'});
-
-        const manager = source.map._requestManager;
-        const transformSpy = t.spy(manager, 'transformRequest');
-
-        // Response for initial request
-        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map'), JSON.stringify({
-            id: 'id',
-            minzoom: 1,
-            maxzoom: 10,
             attribution: 'Mapbox',
-            language_options: {en: 'English', es: 'Spanish'},
-            worldview_default: 'US',
-            worldview_options: {CN: 'China', US: 'United States'},
-            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key'],
-        }));
+            tiles: ['http://example.com/v1/{z}/{x}/{y}.png']
+        });
 
-        // Response for i18n request
-        window.server.respondWith(manager.normalizeSourceURL('mapbox://user.map', null, 'es', 'CN'), JSON.stringify({
-            id: 'id',
-            minzoom: 1,
-            maxzoom: 10,
-            attribution: 'Mapbox',
-            language: {id: 'es'},
-            language_options: {en: 'English', es: 'Spanish'},
-            worldview: {id: 'CN'},
-            worldview_default: 'US',
-            worldview_options: {CN: 'China', US: 'United States'},
-            tiles: ['https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key&language=es&worldview=CN'],
-        }));
-
-        let initialMetadataEvent = true;
+        source.setTiles(['http://example.com/v2/{z}/{x}/{y}.png']);
 
         source.on('data', (e) => {
-            if (e.sourceDataType !== 'metadata') return;
-
-            if (initialMetadataEvent) {
-                initialMetadataEvent = false;
-
-                // Initial language and worldview
-                t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png']);
-                t.deepEqual(source.minzoom, 1);
-                t.deepEqual(source.maxzoom, 10);
-                t.deepEqual(source.attribution, 'Mapbox');
-                t.deepEqual(source.language, undefined);
-                t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
-                t.deepEqual(source.worldview, 'US');
-                t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
-
-                source.loadTile({
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                }, () => {});
-
-                t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${manager._skuToken}&access_token=key`);
-
-                // Update source language and worldview
-                source._setLanguage('es');
-                source._setWorldview('CN');
-                window.server.respond();
-
-                return;
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.serialize(), {
+                    type: 'vector',
+                    minzoom: 1,
+                    maxzoom: 10,
+                    attribution: 'Mapbox',
+                    tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
+                });
+                t.end();
             }
+        });
+    });
 
-            // Updated language and worldview
-            t.deepEqual(source.tiles, ['mapbox://tiles/user.map/{z}/{x}/{y}.png?language=es&worldview=CN']);
-            t.deepEqual(source.minzoom, 1);
-            t.deepEqual(source.maxzoom, 10);
-            t.deepEqual(source.attribution, 'Mapbox');
-            t.deepEqual(source.language, 'es');
-            t.deepEqual(source.languageOptions, {en: 'English', es: 'Spanish'});
-            t.deepEqual(source.worldview, 'CN');
-            t.deepEqual(source.worldviewOptions, {CN: 'China', US: 'United States'});
+    t.test('prefers TileJSON tiles, if both URL and tiles options are set', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+        window.server.configure({autoRespond: true, autoRespondAfter: 0});
 
-            source.loadTile({
-                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-            }, () => {});
-
-            t.equal(transformSpy.lastCall.firstArg, `https://api.mapbox.com/v4/user.map/10/5/5.png?language=es&worldview=CN&sku=${manager._skuToken}&access_token=key`);
-
-            t.end();
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: 'Mapbox',
+            tiles: ['http://example.com/old/{z}/{x}/{y}.png']
         });
 
-        window.server.respond();
+        source.setUrl('/source.json');
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.tiles, ['http://example.com/{z}/{x}/{y}.png']);
+
+                t.deepEqual(source.serialize(), {
+                    type: 'vector',
+                    url: '/source.json',
+                    minzoom: 1,
+                    maxzoom: 10,
+                    attribution: 'Mapbox'
+                });
+
+                t.end();
+            }
+        });
     });
 
     t.end();

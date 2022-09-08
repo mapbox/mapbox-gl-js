@@ -16,6 +16,19 @@ test('primitives', (t) => {
             t.end();
         });
 
+        t.test('Create an aabb from points', (t) => {
+            const p0 = vec3.fromValues(-10, 20, 30);
+            const p1 = vec3.fromValues(10, -30, 50);
+            const p2 = vec3.fromValues(50, 10, -100);
+            const p3 = vec3.fromValues(-15, 5, 120);
+            const aabb = Aabb.fromPoints([p0, p1, p2, p3]);
+
+            t.deepEqual(aabb.min, vec3.fromValues(-15, -30, -100));
+            t.deepEqual(aabb.max, vec3.fromValues(50, 20, 120));
+            t.deepEqual(aabb.center, vec3.fromValues(17.5, -5, 10));
+            t.end();
+        });
+
         t.test('Create 4 quadrants', (t) => {
             const min = vec3.fromValues(0, 0, 0);
             const max = vec3.fromValues(2, 4, 1);

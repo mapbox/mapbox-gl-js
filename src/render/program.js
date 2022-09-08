@@ -13,8 +13,8 @@ import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';
 import Context from '../gl/context.js';
-import {terrainUniforms} from '../terrain/terrain.js';
-import type {TerrainUniformsType} from '../terrain/terrain.js';
+import {terrainUniforms, globeUniforms} from '../terrain/terrain.js';
+import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
 import type {FogUniformsType} from './fog.js';
 
@@ -25,7 +25,7 @@ import type DepthMode from '../gl/depth_mode.js';
 import type StencilMode from '../gl/stencil_mode.js';
 import type ColorMode from '../gl/color_mode.js';
 import type CullFaceMode from '../gl/cull_face_mode.js';
-import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding.js';
+import type {UniformBindings, UniformValues} from './uniform_binding.js';
 import type {BinderUniform} from '../data/program_configuration.js';
 
 export type DrawMode =
@@ -33,7 +33,14 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
     | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
-function getTokenizedAttributesAndUniforms (array: Array<string>): Array<string> {
+type ShaderSource = {
+    fragmentSource: string,
+    vertexSource: string,
+    staticAttributes: Array<string>,
+    usedDefines: Array<string>
+};
+
+function getTokenizedAttributes(array: Array<string>): Array<string> {
     const result = [];
 
     for (let i = 0; i < array.length; i++) {
@@ -43,6 +50,7 @@ function getTokenizedAttributesAndUniforms (array: Array<string>): Array<string>
     }
     return result;
 }
+
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
     attributes: {[_: string]: number};
@@ -52,36 +60,30 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
+    globeUniforms: ?GlobeUniformsType;
 
-    static cacheKey(name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
+    static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
         for (const define of defines) {
-            key += `/${define}`;
+            if (source.usedDefines.includes(define)) {
+                key += `/${define}`;
+            }
         }
         return key;
     }
 
     constructor(context: Context,
                 name: string,
-                source: {fragmentSource: string, vertexSource: string, staticAttributes: Array<string>, staticUniforms: Array<string>},
+                source: ShaderSource,
                 configuration: ?ProgramConfiguration,
-                fixedUniforms: (Context, UniformLocations) => Us,
+                fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {
         const gl = context.gl;
         this.program = gl.createProgram();
 
-        const staticAttrInfo = getTokenizedAttributesAndUniforms(source.staticAttributes);
+        const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
         const allAttrInfo = staticAttrInfo.concat(dynamicAttrInfo);
-
-        const staticUniformsInfo = source.staticUniforms ? getTokenizedAttributesAndUniforms(source.staticUniforms) : [];
-        const dynamicUniformsInfo = configuration ? configuration.getBinderUniforms() : [];
-        // remove duplicate uniforms
-        const uniformList = staticUniformsInfo.concat(dynamicUniformsInfo);
-        const allUniformsInfo = [];
-        for (const uniform of uniformList) {
-            if (allUniformsInfo.indexOf(uniform) < 0) allUniformsInfo.push(uniform);
-        }
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
@@ -100,6 +102,7 @@ class Program<Us: UniformBindings> {
             preludeFog.vertexSource,
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
+
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
@@ -121,7 +124,6 @@ class Program<Us: UniformBindings> {
         gl.attachShader(this.program, vertexShader);
 
         this.attributes = {};
-        const uniformLocations = {};
 
         this.numAttributes = allAttrInfo.length;
 
@@ -138,23 +140,16 @@ class Program<Us: UniformBindings> {
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
-        for (let it = 0; it < allUniformsInfo.length; it++) {
-            const uniform = allUniformsInfo[it];
-            if (uniform && !uniformLocations[uniform]) {
-                const uniformLocation = gl.getUniformLocation(this.program, uniform);
-                if (uniformLocation) {
-                    uniformLocations[uniform] = uniformLocation;
-                }
-            }
+        this.fixedUniforms = fixedUniforms(context);
+        this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
+        if (fixedDefines.includes('TERRAIN')) {
+            this.terrainUniforms = terrainUniforms(context);
         }
-
-        this.fixedUniforms = fixedUniforms(context, uniformLocations);
-        this.binderUniforms = configuration ? configuration.getUniforms(context, uniformLocations) : [];
-        if (fixedDefines.indexOf('TERRAIN') !== -1) {
-            this.terrainUniforms = terrainUniforms(context, uniformLocations);
+        if (fixedDefines.includes('GLOBE')) {
+            this.globeUniforms = globeUniforms(context);
         }
-        if (fixedDefines.indexOf('FOG') !== -1) {
-            this.fogUniforms = fogUniforms(context, uniformLocations);
+        if (fixedDefines.includes('FOG')) {
+            this.fogUniforms = fogUniforms(context);
         }
     }
 
@@ -166,7 +161,23 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in terrainUniformValues) {
-            uniforms[name].set(terrainUniformValues[name]);
+            if (uniforms[name]) {
+                uniforms[name].set(this.program, name, terrainUniformValues[name]);
+            }
+        }
+    }
+
+    setGlobeUniformValues(context: Context, globeUniformValues: UniformValues<GlobeUniformsType>) {
+        if (!this.globeUniforms) return;
+        const uniforms: GlobeUniformsType = this.globeUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in globeUniformValues) {
+            if (uniforms[name]) {
+                uniforms[name].set(this.program, name, globeUniformValues[name]);
+            }
         }
     }
 
@@ -178,9 +189,7 @@ class Program<Us: UniformBindings> {
         context.program.set(this.program);
 
         for (const name in fogUniformsValues) {
-            if (uniforms[name].location) {
-                uniforms[name].set(fogUniformsValues[name]);
-            }
+            uniforms[name].set(this.program, name, fogUniformsValues[name]);
         }
     }
 
@@ -212,11 +221,11 @@ class Program<Us: UniformBindings> {
         context.setCullFace(cullFaceMode);
 
         for (const name of Object.keys(this.fixedUniforms)) {
-            this.fixedUniforms[name].set(uniformValues[name]);
+            this.fixedUniforms[name].set(this.program, name, uniformValues[name]);
         }
 
         if (configuration) {
-            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
         }
 
         const primitiveSize = {

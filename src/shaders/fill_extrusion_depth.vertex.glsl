@@ -1,4 +1,5 @@
 uniform mat4 u_matrix;
+uniform float u_edge_radius;
 
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
@@ -23,7 +24,7 @@ void main() {
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
 
     base = max(0.0, base);
-    height = max(0.0, height);
+    height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);
 
     float t = top_up_ny.x;
 

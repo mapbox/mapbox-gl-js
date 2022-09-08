@@ -37,9 +37,8 @@ class StubMap extends Evented {
 }
 
 test('CanvasSource', (t) => {
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('constructor', (t) => {

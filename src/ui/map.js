@@ -15,7 +15,6 @@ import Hash from './hash.js';
 import HandlerManager from './handler_manager.js';
 import Camera from './camera.js';
 import LngLat from '../geo/lng_lat.js';
-import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control.js';
@@ -31,8 +30,8 @@ import Marker from '../ui/marker.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
-
 import {setCacheLimits} from '../util/tile_request_cache.js';
+import {Debug} from '../util/debug.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
@@ -67,7 +66,6 @@ import type {
     TransitionSpecification
 } from '../style-spec/types.js';
 import type StyleLayer from '../style/style_layer.js';
-import type {ElevationQueryOptions} from '../terrain/elevation.js';
 import type {Source} from '../source/source.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {QueryResult} from '../data/feature_index.js';
@@ -256,13 +254,13 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {string} [options.language=null] A string representing the language used for the map's data and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {'auto' | string} [options.language=null] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
  *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
- *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's `window.navigator.language` property.
+ *   If option is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
  *   If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
- * @param {string} [options.worldview] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
+ * @param {string} [options.worldview=null] Sets the map's worldview. A worldview determines the way that certain disputed boundaries
      * are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
      * Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes). Unsupported
      * ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
@@ -339,6 +337,7 @@ class Map extends Camera {
     _showQueryGeometry: ?boolean;
     _showCollisionBoxes: ?boolean;
     _showPadding: ?boolean;
+    _showTileAABBs: ?boolean;
     _showOverdrawInspector: boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
@@ -389,11 +388,8 @@ class Map extends Camera {
     _language: ?string;
     _worldview: ?string;
 
-    // `_explicitProjection represents projection as set by a call to map.setProjection()
-    // For the actual projection displayed, use `transform.projection`.
-    // (The two diverge above the transition zoom threshold in Globe view or when _explicitProjection === null
-    // a null _explicitProjection indicates the map defaults to first the stylesheet projection if present, then Mercator)
-    _explicitProjection: ProjectionSpecification | null;
+    // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
+    _useExplicitProjection: boolean;
 
     /** @section {Interaction handlers} */
 
@@ -508,7 +504,7 @@ class Map extends Camera {
         this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
 
-        this._explicitProjection = null; // Fallback to stylesheet by default
+        this._useExplicitProjection = false; // Fallback to stylesheet by default
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -827,6 +823,9 @@ class Map extends Camera {
      * as close as possible to the operation's request while still
      * remaining within the bounds.
      *
+     * For `mercator` projection, the viewport will be constrained to the bounds.
+     * For other projections such as `globe`, only the map center will be constrained.
+     *
      * @param {LngLatBoundsLike | null | undefined} bounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
@@ -1054,7 +1053,7 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the code for the map's language which is used for translating map labels.
+     * Returns the map's language, which is used for translating map labels and UI components.
      *
      * @private
      * @returns {string} Returns the map's language code.
@@ -1066,28 +1065,31 @@ class Map extends Camera {
     }
 
     /**
-     * Sets the map's language.
+     * Sets the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @param {string} language A string representing the desired language. `undefined` or `null` will remove the current map language and reset the map to the default language as determined by `window.navigator.language`.
+     * @param {'auto' | string} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+     *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
+     *  If a label has no translation for the selected language, it will display in the label's local language.
+     *  If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
+     *  If the `locale` property is not set separately, this language will also be used to localize the UI for supported languages.
+     *  If param is set to `undefined` or `null`, it will remove the current map language and reset the language used for translating map labels and UI components.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setLanguage('es');
      *
      * @example
      * map.setLanguage('auto');
+     *
+     * @example
+     * map.setLanguage();
      */
-    setLanguage(language?: ?string): this {
-        this._language = language === 'auto' ? window.navigator.language : language;
+    setLanguage(language?: 'auto' | ?string): this {
+        const newLanguage = language === 'auto' ? window.navigator.language : language;
+        if (!this.style || newLanguage === this._language) return this;
+        this._language = newLanguage;
 
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setLanguage) {
-                    source._setLanguage(this._language);
-                }
-            }
-        }
+        this.style._reloadSources();
 
         for (const control of this._controls) {
             if (control._setLanguage) {
@@ -1114,21 +1116,24 @@ class Map extends Camera {
      * Sets the map's worldview.
      *
      * @private
-     * @param {string} worldview A string representing the desired worldview. `undefined` or `null` will cause the map to fall back to the TileJSON's default worldview.
+     * @param {string} [worldview] A string representing the desired worldview.
+     *  A worldview determines the way that certain disputed boundaries are rendered.
+     *  Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes).
+     *  Unsupported ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
+     *  If param is set to `undefined` or `null`, it will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setWorldView('JP');
+     *
+     * @example
+     * map.setWorldView();
      */
     setWorldview(worldview?: ?string): this {
+        if (!this.style || worldview === this._worldview) return this;
+
         this._worldview = worldview;
-        if (this.style) {
-            for (const id in this.style._sourceCaches) {
-                const source = this.style._sourceCaches[id]._source;
-                if (source._setWorldview) {
-                    source._setWorldview(worldview);
-                }
-            }
-        }
+        this.style._reloadSources();
+
         return this;
     }
 
@@ -1142,13 +1147,10 @@ class Map extends Camera {
      * const projection = map.getProjection();
      */
     getProjection(): ProjectionSpecification {
-        if (this._explicitProjection) {
-            return this._explicitProjection;
+        if (this.transform.mercatorFromTransition) {
+            return {name: "globe", center: [0, 0]};
         }
-        if (this.style && this.style.stylesheet && this.style.stylesheet.projection) {
-            return this.style.stylesheet.projection;
-        }
-        return {name: "mercator", center:[0, 0]};
+        return this.transform.getProjection();
     }
 
     /**
@@ -1180,50 +1182,67 @@ class Map extends Camera {
      */
     setProjection(projection?: ?ProjectionSpecification | string): this {
         this._lazyInitEmptyStyle();
+
         if (!projection) {
             projection = null;
         } else if (typeof projection === 'string') {
             projection = (({name: projection}: any): ProjectionSpecification);
         }
-        return this._updateProjection(projection);
+
+        this._useExplicitProjection = !!projection;
+        const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
+        return this._prioritizeAndUpdateProjection(projection, stylesheetProjection);
     }
 
-    _updateProjection(explicitProjection?: ProjectionSpecification | null): this {
-        const prevProjection = this.getProjection();
-        if (explicitProjection === null) {
-            this._explicitProjection = null;
+    _updateProjectionTransition() {
+        // The projection isn't globe, we can skip updating the transition
+        if (this.getProjection().name !== 'globe') {
+            return;
         }
-        const projection = explicitProjection || this.getProjection();
 
+        const tr = this.transform;
+        const projection = tr.projection.name;
         let projectionHasChanged;
-        // At high zoom on globe, set transform projection to Mercator while _explicitProjection stays globe.
-        if (projection && projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-            projectionHasChanged = this.transform.setProjection({name: 'mercator'});
-            this.transform.mercatorFromTransition = true;
+
+        if (projection === 'globe' && tr.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            tr.setMercatorFromTransition();
+            projectionHasChanged = true;
+        } else if (projection === 'mercator' && tr.zoom < GLOBE_ZOOM_THRESHOLD_MAX) {
+            tr.setProjection({name: 'globe'});
+            projectionHasChanged = true;
+        }
+
+        if (projectionHasChanged) {
+            this.style.applyProjectionUpdate();
+            this.style._forceSymbolLayerUpdate();
+        }
+    }
+
+    _prioritizeAndUpdateProjection(explicitProjection: ?ProjectionSpecification, styleProjection: ?ProjectionSpecification): this {
+        // Given a stylesheet and eventual runtime projection, in order of priority, we select:
+        //  1. the explicit projection
+        //  2. the stylesheet projection
+        //  3. mercator (fallback)
+        const prioritizedProjection = explicitProjection || styleProjection || {name: "mercator"};
+
+        return this._updateProjection(prioritizedProjection);
+    }
+
+    _updateProjection(projection: ProjectionSpecification): this {
+        let projectionHasChanged;
+
+        if (projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
+            projectionHasChanged = this.transform.setMercatorFromTransition();
         } else {
             projectionHasChanged = this.transform.setProjection(projection);
-            this.transform.mercatorFromTransition = false;
-        }
-
-        // When called through setProjection, update _explicitProjection
-        if (explicitProjection) {
-            this._explicitProjection = (explicitProjection.name === "globe" ?
-                {name:'globe', center:[0, 0]} :
-                this.transform.getProjection());
         }
 
         this.style.applyProjectionUpdate();
 
         if (projectionHasChanged) {
-            // If a zoom transition on globe
-            if (prevProjection.name === 'globe' && this.getProjection().name === 'globe') {
-                this.style._forceSymbolLayerUpdate();
-            } else {
-                // If a switch between different projections
-                this.painter.clearBackgroundTiles();
-                for (const id in this.style._sourceCaches) {
-                    this.style._sourceCaches[id].clearTiles();
-                }
+            this.painter.clearBackgroundTiles();
+            for (const id in this.style._sourceCaches) {
+                this.style._sourceCaches[id].clearTiles();
             }
             this._update(true);
         }
@@ -1758,31 +1777,6 @@ class Map extends Camera {
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         return this.style.querySourceFeatures(sourceId, parameters);
-    }
-
-    /**
-     * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
-     * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
-     *
-     * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
-     *
-     * @param {LngLatLike} lnglat The geographical location at which to query.
-     * @param {ElevationQueryOptions} [options] Options object.
-     * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
-     * When `false`, returns the raw value of the underlying data without styling applied.
-     * @returns {number | null} The elevation in meters.
-     * @example
-     * const coordinate = [-122.420679, 37.772537];
-     * const elevation = map.queryTerrainElevation(coordinate);
-     * @see [Example: Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
-     */
-    queryTerrainElevation(lnglat: LngLatLike, options: ElevationQueryOptions): number | null {
-        const elevation = this.transform.elevation;
-        if (elevation) {
-            options = extend({}, {exaggerated: true}, options);
-            return elevation.getAtPoint(MercatorCoordinate.fromLngLat(lnglat), null, options.exaggerated);
-        }
-        return null;
     }
 
     /** @section {Working with styles} */
@@ -3070,16 +3064,7 @@ class Map extends Camera {
         // A task queue callback may have fired a user event which may have removed the map
         if (this._removed) return;
 
-        // In globe view, change to/from Mercator when zoom threshold is crossed.
-        if (this.getProjection().name === 'globe') {
-            if (this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
-                if (this.transform.projection.name === 'globe') {
-                    this._updateProjection();
-                }
-            } else if (this.transform.projection.name === 'mercator') {
-                this._updateProjection();
-            }
-        }
+        this._updateProjectionTransition();
 
         let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
@@ -3144,6 +3129,7 @@ class Map extends Camera {
                 showTerrainWireframe: this.showTerrainWireframe,
                 showOverdrawInspector: this._showOverdrawInspector,
                 showQueryGeometry: !!this._showQueryGeometry,
+                showTileAABBs: this.showTileAABBs,
                 rotating: this.isRotating(),
                 zooming: this.isZooming(),
                 moving: this.isMoving(),
@@ -3620,7 +3606,7 @@ class Map extends Camera {
         }
     }
 
-    /*
+    /**
      * Gets and sets a Boolean indicating whether the map should color-code
      * each fragment to show how many times it has been shaded.
      * White fragments have been shaded 8 or more times.
@@ -3658,6 +3644,20 @@ class Map extends Camera {
     // show vertices
     get vertices(): boolean { return !!this._vertices; }
     set vertices(value: boolean) { this._vertices = value; this._update(); }
+
+    /**
+    * Display tile AABBs for debugging
+    *
+    * @private
+    * @type {boolean}
+    */
+    get showTileAABBs(): boolean { return !!this._showTileAABBs; }
+    set showTileAABBs(value: boolean) {
+        if (this._showTileAABBs === value) return;
+        this._showTileAABBs = value;
+        if (!value) { Debug.clearAabbs(); return; }
+        this._update();
+    }
 
     // for cache browser tests
     _setCacheLimits(limit: number, checkThreshold: number) {

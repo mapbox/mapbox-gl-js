@@ -1,7 +1,7 @@
 // @flow
 
 import Context from '../gl/context.js';
-import type {UniformLocations, UniformValues} from './uniform_binding.js';
+import type {UniformValues} from './uniform_binding.js';
 import type {UnwrappedTileID} from '../source/tile_id.js';
 import Painter from './painter.js';
 import Fog from '../style/fog.js';
@@ -25,21 +25,21 @@ export type FogUniformsType = {|
     'u_viewport': Uniform2f,
 |};
 
-export const fogUniforms = (context: Context, locations: UniformLocations): FogUniformsType => ({
-    'u_fog_matrix': new UniformMatrix4f(context, locations.u_fog_matrix),
-    'u_fog_range': new Uniform2f(context, locations.u_fog_range),
-    'u_fog_color': new Uniform4f(context, locations.u_fog_color),
-    'u_fog_horizon_blend': new Uniform1f(context, locations.u_fog_horizon_blend),
-    'u_fog_temporal_offset': new Uniform1f(context, locations.u_fog_temporal_offset),
-    'u_frustum_tl': new Uniform3f(context, locations.u_frustum_tl),
-    'u_frustum_tr': new Uniform3f(context, locations.u_frustum_tr),
-    'u_frustum_br': new Uniform3f(context, locations.u_frustum_br),
-    'u_frustum_bl': new Uniform3f(context, locations.u_frustum_bl),
-    'u_globe_pos': new Uniform3f(context, locations.u_globe_pos),
-    'u_globe_radius': new Uniform1f(context, locations.u_globe_radius),
-    'u_globe_transition': new Uniform1f(context, locations.u_globe_transition),
-    'u_is_globe': new Uniform1i(context, locations.u_is_globe),
-    'u_viewport': new Uniform2f(context, locations.u_viewport)
+export const fogUniforms = (context: Context): FogUniformsType => ({
+    'u_fog_matrix': new UniformMatrix4f(context),
+    'u_fog_range': new Uniform2f(context),
+    'u_fog_color': new Uniform4f(context),
+    'u_fog_horizon_blend': new Uniform1f(context),
+    'u_fog_temporal_offset': new Uniform1f(context),
+    'u_frustum_tl': new Uniform3f(context),
+    'u_frustum_tr': new Uniform3f(context),
+    'u_frustum_br': new Uniform3f(context),
+    'u_frustum_bl': new Uniform3f(context),
+    'u_globe_pos': new Uniform3f(context),
+    'u_globe_radius': new Uniform1f(context),
+    'u_globe_transition': new Uniform1f(context),
+    'u_is_globe': new Uniform1i(context),
+    'u_viewport': new Uniform2f(context)
 });
 
 export const fogUniformValues = (

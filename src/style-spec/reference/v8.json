@@ -877,6 +877,22 @@
         }
       },
       "property-type": "constant"
+    },
+    "fill-extrusion-edge-radius": {
+      "type": "number",
+      "private": true,
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Radius of a fill extrusion edge in meters. If not zero, rounds extrusion edges for a smoother appearance.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "v2.10.0",
+          "android": "10.7.0",
+          "ios": "10.7.0"
+        }
+      },
+      "property-type": "constant"
     }
   },
   "layout_line": {
@@ -3736,7 +3752,9 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.45.0",
-            "android": "6.6.0"
+            "android": "6.6.0",
+            "ios": "4.1.0",
+            "macos": "0.8.0"
           }
         }
       },
@@ -4659,6 +4677,7 @@
     "fill-extrusion-ambient-occlusion-intensity": {
       "property-type": "data-constant",
       "type": "number",
+      "private": true,
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -4669,10 +4688,10 @@
         ]
       },
       "transition": true,
-      "doc": "Controls the intensity of ambient occlusion (AO) shading. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
+      "doc": "Controls the intensity of shading near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
       "sdk-support": {
         "basic functionality": {
-          "js": "2.8.3",
+          "js": "2.10.0",
           "android": "10.7.0",
           "ios": "10.7.0"
         }
@@ -4681,6 +4700,7 @@
     "fill-extrusion-ambient-occlusion-radius": {
       "property-type": "data-constant",
       "type": "number",
+      "private": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
@@ -4690,10 +4710,13 @@
         ]
       },
       "transition": true,
-      "doc": "The radius of ambient occlusion (AO) shading, in meters. Current AO implementation is a low-cost best-effort approach that shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to hight of one floor and brings the most plausible results for buildings.",
+      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings.",
+      "requires": [
+        "fill-extrusion-edge-radius"
+      ],
       "sdk-support": {
         "basic functionality": {
-          "js": "2.8.3",
+          "js": "2.10.0",
           "android": "10.7.0",
           "ios": "10.7.0"
         }

@@ -88,6 +88,7 @@ type PainterOptions = {
     showTileBoundaries: boolean,
     showTerrainWireframe: boolean,
     showQueryGeometry: boolean,
+    showTileAABBs: boolean,
     showPadding: boolean,
     rotating: boolean,
     zooming: boolean,
@@ -656,7 +657,7 @@ class Painter {
             this.terrain.postRender();
         }
 
-        if (this.options.showTileBoundaries || this.options.showQueryGeometry) {
+        if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             //Use source with highest maxzoom
             let selectedSource = null;
             const layers = values(this.style._layers);
@@ -674,8 +675,12 @@ class Painter {
                 }
 
                 Debug.run(() => {
-                    if (this.options.showQueryGeometry && selectedSource) {
+                    if (!selectedSource) return;
+                    if (this.options.showQueryGeometry) {
                         drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
+                    }
+                    if (this.options.showTileAABBs) {
+                        Debug.drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                 });
             }
@@ -846,6 +851,11 @@ class Painter {
         return !imagePosA || !imagePosB;
     }
 
+    terrainRenderModeElevated(): boolean {
+        // Whether elevation sampling should be enabled in the vertex shader.
+        return this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture;
+    }
+
     /**
      * Returns #defines that would need to be injected into every Program
      * based on the current state of Painter.
@@ -854,12 +864,12 @@ class Painter {
      * @private
      */
     currentGlobalDefines(): string[] {
-        const terrain = this.terrain && !this.terrain.renderingToTexture; // Enables elevation sampling in vertex shader.
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const fog = this.style && this.style.fog;
         const defines = [];
 
-        if (terrain) defines.push('TERRAIN');
+        if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
+        if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
@@ -876,7 +886,7 @@ class Painter {
 
         const globalDefines = this.currentGlobalDefines();
         const allDefines = globalDefines.concat(defines);
-        const key = Program.cacheKey(name, allDefines, programConfiguration);
+        const key = Program.cacheKey(shaders[name], name, allDefines, programConfiguration);
 
         if (!this.cache[key]) {
             this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);

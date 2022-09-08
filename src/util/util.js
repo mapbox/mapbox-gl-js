@@ -645,6 +645,10 @@ export function isSafariWithAntialiasingBug(scope: any): ?boolean {
     return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/));
 }
 
+export function isFullscreen(): boolean {
+    return !!window.document.fullscreenElement || !!window.document.webkitFullscreenElement;
+}
+
 export function storageAvailable(type: string): boolean {
     try {
         const storage = window[type];

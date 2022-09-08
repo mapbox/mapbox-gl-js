@@ -5,9 +5,11 @@ module.exports = {
             preset: ['default', {
                 svgo: {
                     plugins: [{
-                        removeViewBox: false
+                        name: 'removeViewBox',
+                        active: false
                     }, {
-                        removeDimensions: false
+                        name: 'removeDimensions',
+                        active: false
                     }],
                 },
             }],

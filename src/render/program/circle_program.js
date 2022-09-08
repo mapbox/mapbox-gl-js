@@ -9,7 +9,7 @@ import {
 } from '../uniform_binding.js';
 
 import type Context from '../../gl/context.js';
-import type {UniformValues, UniformLocations} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type Tile from '../../source/tile.js';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer.js';
@@ -33,16 +33,16 @@ export type CircleUniformsType = {|
 
 export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP' | 'PROJECTION_GLOBE_VIEW';
 
-const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ({
-    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_extrude_scale': new UniformMatrix2f(context, locations.u_extrude_scale),
-    'u_device_pixel_ratio': new Uniform1f(context, locations.u_device_pixel_ratio),
-    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
-    'u_inv_rot_matrix': new UniformMatrix4f(context, locations.u_inv_rot_matrix),
-    'u_merc_center': new Uniform2f(context, locations.u_merc_center),
-    'u_tile_id': new Uniform3f(context, locations.u_tile_id),
-    'u_zoom_transition': new Uniform1f(context, locations.u_zoom_transition),
-    'u_up_dir': new Uniform3f(context, locations.u_up_dir),
+const circleUniforms = (context: Context): CircleUniformsType => ({
+    'u_camera_to_center_distance': new Uniform1f(context),
+    'u_extrude_scale': new UniformMatrix2f(context),
+    'u_device_pixel_ratio': new Uniform1f(context),
+    'u_matrix': new UniformMatrix4f(context),
+    'u_inv_rot_matrix': new UniformMatrix4f(context),
+    'u_merc_center': new Uniform2f(context),
+    'u_tile_id': new Uniform3f(context),
+    'u_zoom_transition': new Uniform1f(context),
+    'u_up_dir': new Uniform3f(context),
 });
 
 const identityMatrix = mat4.create();

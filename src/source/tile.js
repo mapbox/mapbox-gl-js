@@ -6,6 +6,8 @@ import FeatureIndex from '../data/feature_index.js';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
+import FillBucket from '../data/bucket/fill_bucket.js';
+import LineBucket from '../data/bucket/line_bucket.js';
 import {CollisionBoxArray, TileBoundsArray, PosArray, TriangleIndexArray, LineStripIndexArray, PosGlobeExtArray} from '../data/array_types.js';
 import Texture from '../render/texture.js';
 import browser from '../util/browser.js';
@@ -20,19 +22,16 @@ import loadGeometry from '../data/load_geometry.js';
 import earcut from 'earcut';
 import getTileMesh from './tile_mesh.js';
 import tileTransform from '../geo/projection/tile_transform.js';
-
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import posAttributes, {posAttributesGlobeExt} from '../data/pos_attributes.js';
-
 import EXTENT from '../data/extent.js';
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../data/segment.js';
-
-const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
+import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition, interpolateVec3} from '../geo/projection/globe_util.js';
+import {vec3, mat4} from 'gl-matrix';
 
 import type {Bucket} from '../data/bucket.js';
-import FillBucket from '../data/bucket/fill_bucket.js';
-import LineBucket from '../data/bucket/line_bucket.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {WorkerTileResult} from './worker_source.js';
 import type Actor from '../util/actor.js';
@@ -56,10 +55,10 @@ import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
-import {globeTileBounds,  globeNormalizeECEF, tileCoordToECEF} from '../geo/projection/globe_util.js';
-import {vec3} from 'gl-matrix';
+import type {Vec3} from 'gl-matrix';
 import type {TextureImage} from '../render/texture.js';
 
+const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
@@ -147,7 +146,7 @@ class Tile {
 
     _tileDebugBuffer: ?VertexBuffer;
     _tileBoundsBuffer: ?VertexBuffer;
-    _tileDebugIndexBuffer: IndexBuffer;
+    _tileDebugIndexBuffer: ?IndexBuffer;
     _tileBoundsIndexBuffer: IndexBuffer;
     _tileDebugSegments: SegmentVector;
     _tileBoundsSegments: SegmentVector;
@@ -331,9 +330,13 @@ class Tile {
 
         if (this._tileDebugBuffer) {
             this._tileDebugBuffer.destroy();
-            this._tileDebugIndexBuffer.destroy();
             this._tileDebugSegments.destroy();
             this._tileDebugBuffer = null;
+        }
+
+        if (this._tileDebugIndexBuffer) {
+            this._tileDebugIndexBuffer.destroy();
+            this._tileDebugIndexBuffer = null;
         }
 
         if (this._globeTileDebugBorderBuffer) {
@@ -694,18 +697,58 @@ class Tile {
         this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
     }
 
-    _makeGlobeTileDebugBuffers(context: Context, projection: Projection) {
-        if (this._globeTileDebugBorderBuffer || this._globeTileDebugTextBuffer || !projection || projection.name !== 'globe') return;
+    _makeGlobeTileDebugBuffers(context: Context, transform: Transform) {
+        const projection = transform.projection;
+        if (!projection || projection.name !== 'globe' || transform.freezeTileCoverage) return;
 
         const id = this.tileID.canonical;
-        const bounds = globeTileBounds(id);
+        const bounds = transitionTileAABBinECEF(id, transform);
         const normalizationMatrix = globeNormalizeECEF(bounds);
 
-        this._makeGlobeTileDebugBorderBuffer(context, id, normalizationMatrix);
-        this._makeGlobeTileDebugTextBuffer(context, id, normalizationMatrix);
+        const phase = globeToMercatorTransition(transform.zoom);
+        let worldToECEFMatrix;
+        if (phase > 0.0) {
+            worldToECEFMatrix = mat4.invert(new Float64Array(16), transform.globeMatrix);
+        }
+
+        this._makeGlobeTileDebugBorderBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase);
+        this._makeGlobeTileDebugTextBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase);
     }
 
-    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, normalizationMatrix: Float64Array) {
+    _globePoint(x: number, y: number, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix?: Float64Array, phase: number): Vec3 {
+        // The following is equivalent to doing globe.projectTilePoint.
+        // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
+        let ecef = tileCoordToECEF(x, y, id);
+        if (worldToECEFMatrix) {
+            // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
+            const tileCount = 1 << id.z;
+
+            // Wrap tiles to ensure that that Mercator interpolation is in the right direction
+            const camX = mercatorXfromLng(tr.center.lng);
+            const camY = mercatorYfromLat(tr.center.lat);
+
+            const tileCenterX = (id.x + .5) / tileCount;
+            const dx = tileCenterX - camX;
+            let wrap = 0;
+            if (dx > .5) {
+                wrap = -1;
+            } else if (dx < -.5) {
+                wrap = 1;
+            }
+
+            let mercatorX = (x / EXTENT + id.x) / tileCount + wrap;
+            let mercatorY = (y / EXTENT + id.y) / tileCount;
+            mercatorX = (mercatorX - camX) * tr._pixelsPerMercatorPixel + camX;
+            mercatorY = (mercatorY - camY) * tr._pixelsPerMercatorPixel + camY;
+            const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
+            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
+            ecef = interpolateVec3(ecef, mercatorPos, phase);
+        }
+        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+        return gp;
+    }
+
+    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix?: Float64Array, phase: number) {
         const vertices = new PosArray();
         const indices = new LineStripIndexArray();
         const extraGlobe = new PosGlobeExtArray();
@@ -721,10 +764,7 @@ class Tile {
                 const y = sy + i * stepY;
                 vertices.emplaceBack(x, y);
 
-                // The next two lines are equivalent to doing projection.projectTilePoint.
-                // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
-                const ecef = tileCoordToECEF(x, y, id);
-                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+                const gp = this._globePoint(x, y, id, tr, normalizationMatrix, worldToECEFMatrix, phase);
 
                 extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
                 indices.emplaceBack(vOffset + i);
@@ -743,7 +783,7 @@ class Tile {
         this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, vertices.length, indices.length);
     }
 
-    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, normalizationMatrix: Float64Array) {
+    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix?: Float64Array, phase: number) {
         const SEGMENTS = 4;
         const numVertices = SEGMENTS + 1;
         const step = EXTENT / SEGMENTS;
@@ -769,8 +809,7 @@ class Tile {
                 const x = i * step;
                 vertices.emplaceBack(x, y);
 
-                const ecef = tileCoordToECEF(x, y, id);
-                const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+                const gp = this._globePoint(x, y, id, tr, normalizationMatrix, worldToECEFMatrix, phase);
                 extraGlobe.emplaceBack(gp[0], gp[1], gp[2]);
             }
         }

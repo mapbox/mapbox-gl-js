@@ -3,12 +3,12 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 768
+      "height": 512,
+      "allowed": 0.001
     }
   },
-  "center": [0, 48.7],
-  "zoom": 5.75,
-  "pitch": 85,
+  "center": [22, 78.9],
+  "zoom": 5.65,
   "sources": {
     "mapbox": {
       "type": "vector",

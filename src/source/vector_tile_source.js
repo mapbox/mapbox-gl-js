@@ -71,10 +71,6 @@ class VectorTileSource extends Evented implements Source {
     _loaded: boolean;
     _tileWorkers: {[string]: Actor};
     _deduped: DedupedRequest;
-    language: ?string;
-    languageOptions: ?{[string]: string};
-    worldview: ?string;
-    worldviewOptions: ?{[string]: string};
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -108,8 +104,8 @@ class VectorTileSource extends Evented implements Source {
     load(callback?: Callback<void>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        const language = this.language || this.map._language;
-        const worldview = this.worldview || this.map._worldview;
+        const language = this.map._language;
+        const worldview = this.map._worldview;
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
@@ -147,20 +143,22 @@ class VectorTileSource extends Evented implements Source {
         this.load();
     }
 
-    setSourceProperty(callback: Function) {
-        if (this._tileJSONRequest) {
-            this._tileJSONRequest.cancel();
-        }
+    reload() {
+        this.cancelTileJSONRequest();
 
-        callback();
-
-        // Reload current tiles after TileJSON is loaded
-        this.load(() => {
+        const clearTiles = () => {
             const sourceCaches = this.map.style._getSourceCaches(this.id);
             for (const sourceCache of sourceCaches) {
                 sourceCache.clearTiles();
             }
-        });
+        };
+
+        this.load(clearTiles);
+    }
+
+    setSourceProperty(callback: Function) {
+        callback();
+        this.reload();
     }
 
     /**
@@ -182,9 +180,8 @@ class VectorTileSource extends Evented implements Source {
      * vectorTileSource.setTiles(['https://another_end_point.net/{z}/{x}/{y}.mvt']);
      */
     setTiles(tiles: Array<string>): this {
-        this.setSourceProperty(() => {
-            this._options.tiles = tiles;
-        });
+        this._options.tiles = tiles;
+        this.reload();
 
         return this;
     }
@@ -206,43 +203,15 @@ class VectorTileSource extends Evented implements Source {
      * vectorTileSource.setUrl("mapbox://mapbox.mapbox-streets-v8");
      */
     setUrl(url: string): this {
-        this.setSourceProperty(() => {
-            this.url = url;
-            this._options.url = url;
-        });
-
-        return this;
-    }
-
-    _setLanguage(language?: ?string): this {
-        if (language === this.language) return this;
-
-        this.setSourceProperty(() => {
-            this.language = language;
-        });
-
-        return this;
-    }
-
-    _setWorldview(worldview?: ?string): this {
-        if (worldview === this.worldview) return this;
-        if (this.worldviewOptions && worldview && !this.worldviewOptions[worldview]) {
-            console.warn(`Vector tile source "${this.id}" does not support worldview "${worldview}".`);
-            return this;
-        }
-
-        this.setSourceProperty(() => {
-            this.worldview = worldview;
-        });
+        this.url = url;
+        this._options.url = url;
+        this.reload();
 
         return this;
     }
 
     onRemove() {
-        if (this._tileJSONRequest) {
-            this._tileJSONRequest.cancel();
-            this._tileJSONRequest = null;
-        }
+        this.cancelTileJSONRequest();
     }
 
     serialize(): VectorSourceSpecification {
@@ -353,6 +322,12 @@ class VectorTileSource extends Evented implements Source {
 
     afterUpdate() {
         this._tileWorkers = {};
+    }
+
+    cancelTileJSONRequest() {
+        if (!this._tileJSONRequest) return;
+        this._tileJSONRequest.cancel();
+        this._tileJSONRequest = null;
     }
 }
 

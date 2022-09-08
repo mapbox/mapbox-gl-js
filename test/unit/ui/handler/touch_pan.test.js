@@ -54,6 +54,24 @@ test('If cooperativeGestures option is set to true, touch pan is triggered when 
     t.end();
 });
 
+test('When cooperativeGestures is true and map is in fullscreen, touch pan is not prevented', (t) => {
+    window.document.fullscreenElement = true;
+    const map = createMapWithCooperativeGestures(t);
+    const target = map.getCanvas();
+
+    const moveSpy = t.spy();
+    map.on('move', moveSpy);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -50}]});
+    map._renderTaskQueue.run();
+
+    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -40}]});
+    map._renderTaskQueue.run();
+
+    t.equal(moveSpy.callCount, 1);
+    t.end();
+});
+
 test('Disabling touch pan removes the `.mapboxgl-touch-pan-blocker` element', (t) => {
     const map = createMapWithCooperativeGestures(t);
 

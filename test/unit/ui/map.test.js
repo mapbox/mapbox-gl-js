@@ -49,14 +49,12 @@ const createElevation = (func, exaggeration) => {
 };
 
 test('Map', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('constructor', (t) => {
@@ -188,6 +186,64 @@ test('Map', (t) => {
 
         function fail() { t.ok(false); }
         function pass() { t.end(); }
+    });
+
+    t.test('#cameraForBounds', (t) => {
+        t.test('crossing globe-mercator threshold globe -> mercator does not affect cameraForBounds result', (t) => {
+            const map = createMap(t);
+            map.setProjection('globe');
+            const bb = [[-133, 16], [-132, 18]];
+
+            let transform;
+
+            map.setZoom(0);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "globe");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -132.5, lat: 17.0027});
+            t.equal(fixedNum(transform.zoom, 3), 6.071);
+
+            map.setZoom(10);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "mercator");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -132.5, lat: 17.0027});
+            t.equal(fixedNum(transform.zoom, 3), 6.071);
+            t.end();
+        });
+
+        t.test('crossing globe-mercator threshold mercator -> globe does not affect cameraForBounds result', (t) => {
+            const map = createMap(t);
+            map.setProjection('globe');
+            const bb = [[-133, 16], [-68, 50]];
+
+            let transform;
+
+            map.setZoom(10);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "mercator");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 0.75);
+
+            map.setZoom(0);
+            map._updateProjectionTransition();
+
+            t.equal(map.transform.projection.name, "globe");
+
+            transform = map.cameraForBounds(bb);
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.716});
+            t.equal(fixedNum(transform.zoom, 3), 0.75);
+            t.end();
+        });
+
+        t.end();
     });
 
     t.test('#setStyle', (t) => {
@@ -341,6 +397,7 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 t.end();
             });
         });
@@ -356,6 +413,7 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 1);
                 t.ok(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(12); // Above threshold for Mercator transition
                 map.once('render', () => {
                     t.notOk(map.style.terrain);
@@ -375,11 +433,13 @@ test('Map', (t) => {
                 t.equal(initStyleObj.setTerrain.callCount, 0);
                 t.notOk(map.style.terrain);
                 t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, undefined);
                 map.setZoom(3); // Below threshold for Mercator transition
                 map.once('render', () => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
                     t.equal(map.getTerrain(), null);
+                    t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
             });
@@ -416,6 +476,26 @@ test('Map', (t) => {
                 t.equal(map.getProjection().name, 'globe');
                 t.ok(map.style.terrain);
                 t.deepEqual(map.getTerrain(), style['terrain']);
+
+                t.end();
+            });
+        });
+
+        t.test('Toggling globe and mercator projections at high zoom levels returns expected `map.getProjection()` result', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            t.spy(map.painter, 'clearBackgroundTiles');
+
+            map.on('load', () => {
+                map.setZoom(7);
+                t.equal(map.getProjection().name, 'mercator');
+
+                map.setProjection('globe');
+                t.equal(map.getProjection().name, 'globe');
+
+                map.setZoom(4);
+                t.equal(map.getProjection().name, 'globe');
+                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
 
                 t.end();
             });
@@ -820,9 +900,8 @@ test('Map', (t) => {
 
     t.test('#isSourceLoaded', (t) => {
 
-        t.afterEach((callback) => {
+        t.afterEach(() => {
             Map.prototype._detectMissingCSS.restore();
-            callback();
         });
 
         function setupIsSourceLoaded(tileState, callback) {
@@ -1797,6 +1876,30 @@ test('Map', (t) => {
             });
         });
 
+        t.test('Crossing globe-to-mercator zoom threshold sets mercator transition and calculates matrices', (t) => {
+            const map = createMap(t, {projection: 'globe'});
+
+            map.on('load', () => {
+
+                t.spy(map.transform, 'setMercatorFromTransition');
+                t.spy(map.transform, '_calcMatrices');
+
+                t.equal(map.transform.setMercatorFromTransition.callCount, 0);
+                t.equal(map.transform.mercatorFromTransition, false);
+                t.equal(map.transform._calcMatrices.callCount, 0);
+
+                map.setZoom(7);
+
+                map.once('render', () => {
+                    t.equal(map.transform.setMercatorFromTransition.callCount, 1);
+                    t.equal(map.transform.mercatorFromTransition, true);
+                    t.equal(map.transform._calcMatrices.callCount, 3);
+                    t.end();
+
+                });
+            });
+        });
+
         t.test('Changing zoom on globe does not clear tiles', (t) => {
             const map = createMap(t, {projection: 'globe'});
             t.spy(map.painter, 'clearBackgroundTiles');
@@ -1900,20 +2003,20 @@ test('Map', (t) => {
                 // Defaults to style projection
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 0);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
 
                 // Runtime api overrides stylesheet projection
                 map.setProjection('albers');
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'albers');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 1);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
 
                 // Unsetting runtime projection reveals stylesheet projection
                 map.setProjection(null);
                 t.equal(style.serialize().projection.name, 'globe');
                 t.equal(map.transform.getProjection().name, 'globe');
                 t.equal(map.getProjection().name, 'globe');
-                t.equal(map.painter.clearBackgroundTiles.callCount, 2);
+                t.equal(map.painter.clearBackgroundTiles.callCount, 3);
 
                 t.end();
             });

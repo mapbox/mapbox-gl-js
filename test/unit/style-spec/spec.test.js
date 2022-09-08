@@ -93,7 +93,8 @@ function validSchema(k, t, obj, ref, version, kind) {
         'period',
         'requires',
         'sdk-support',
-        'overridable'
+        'overridable',
+        'private'
     ];
 
     // Schema object.

@@ -103,3 +103,27 @@ test('ScaleControl should support different projections', (t) => {
 
     t.end();
 });
+
+test('ScaleControl should work in legacy safari', (t) => {
+    const realNumberFormat = Intl.NumberFormat;
+    Intl.NumberFormat = function(arg, options) {
+        if (options && options.style === 'unit') {
+            throw new Error('not supported');
+        }
+        return realNumberFormat.call(Intl, arg, options);
+    };
+    try {
+        const map = createMap(t);
+        const scale = new ScaleControl();
+        const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
+        map.addControl(scale);
+        map._domRenderTaskQueue.run();
+
+        const contents = map.getContainer().querySelector(selector).innerHTML;
+        t.match(contents, /km/);
+    } finally {
+        Intl.NumberFormat = realNumberFormat;
+    }
+    t.end();
+
+});

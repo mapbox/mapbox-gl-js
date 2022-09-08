@@ -29,6 +29,7 @@ declare module "gl-matrix" {
         normalize<T: Vec3>(T, Vec3): T,
         add<T: Vec3>(T, Vec3, Vec3): T,
         sub<T: Vec3>(T, Vec3, Vec3): T,
+        set<T: Vec3>(T, number, number, number): T,
         subtract<T: Vec3>(T, Vec3, Vec3): T,
         cross<T: Vec3>(T, Vec3, Vec3): T,
         negate<T: Vec3>(T, Vec3): T,
@@ -52,7 +53,8 @@ declare module "gl-matrix" {
     declare var vec4: {
         scale<T: Vec4>(T, Vec4, number): T,
         mul<T: Vec4>(T, Vec4, Vec4): T,
-        transformMat4<T: Vec4>(T, Vec4, Mat4): T
+        transformMat4<T: Vec4>(T, Vec4, Mat4): T,
+        normalize<T: Vec4>(T, Vec4): T
     };
 
     declare var mat2: {
@@ -77,6 +79,7 @@ declare module "gl-matrix" {
         create(): Float32Array,
 
         fromScaling<T: Mat4>(T, Vec3): T,
+        fromTranslation<T: Mat4>(T, Vec3): T,
         fromQuat<T: Mat4>(T, Quat): T,
         ortho<T: Mat4>(T, number, number, number, number, number, number): T,
         perspective<T: Mat4>(T, number, number, number, number): T,

@@ -19,6 +19,13 @@ import type Formatted from '../../style-spec/expression/types/formatted.js';
 
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
+export type LayoutProps = {|
+    "fill-extrusion-edge-radius": DataConstantProperty<number>,
+|};
+
+const layout: Properties<LayoutProps> = new Properties({
+    "fill-extrusion-edge-radius": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["fill-extrusion-edge-radius"]),
+});
 
 export type PaintProps = {|
     "fill-extrusion-opacity": DataConstantProperty<number>,
@@ -49,6 +56,6 @@ const paint: Properties<PaintProps> = new Properties({
 // Note: without adding the explicit type annotation, Flow infers weaker types
 // for these objects from their use in the constructor to StyleLayer, as
 // {layout?: Properties<...>, paint: Properties<...>}
-export default ({ paint }: $Exact<{
-  paint: Properties<PaintProps>
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
 }>);

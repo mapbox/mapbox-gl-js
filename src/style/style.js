@@ -365,17 +365,7 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
-        if (!this.map._explicitProjection) {
-            this.map._updateProjection();
-        }
-    }
-
-    _updateMapProjection() {
-        if (!this.map._explicitProjection) { // Update the visible projection if map's is null
-            this.map._updateProjection();
-        } else { // Ensure that style is consistent with current projection on style load
-            this.applyProjectionUpdate();
-        }
+        this._updateMapProjection();
     }
 
     applyProjectionUpdate() {
@@ -389,6 +379,14 @@ class Style extends Evented {
             }
         } else if (this.terrainSetForDrapingOnly()) {
             this.setTerrain(null);
+        }
+    }
+
+    _updateMapProjection() {
+        if (!this.map._useExplicitProjection) { // Update the visible projection if map's is null
+            this.map._prioritizeAndUpdateProjection(null, this.stylesheet.projection);
+        } else { // Ensure that style is consistent with current projection on style load
+            this.applyProjectionUpdate();
         }
     }
 
@@ -662,8 +660,8 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition') {
-                // `transition` is always read directly off of
+            if (op.command === 'setTransition' || op.command === 'setProjection') {
+                // `transition` and `projection` are always read directly from
                 // `this.stylesheet`, which we update below
                 return;
             }
@@ -824,6 +822,16 @@ class Style extends Evented {
     getSource(id: string): ?Source {
         const sourceCache = this._getSourceCache(id);
         return sourceCache && sourceCache.getSource();
+    }
+
+    _getSources(): Source[] {
+        const sources = [];
+        for (const id in this._otherSourceCaches) {
+            const sourceCache = this._getSourceCache(id);
+            if (sourceCache) sources.push(sourceCache.getSource());
+        }
+
+        return sources;
     }
 
     /**
@@ -1224,12 +1232,13 @@ class Style extends Evented {
                 sources[source.id] = source.serialize();
             }
         }
+
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             light: this.stylesheet.light,
-            terrain: this.stylesheet.terrain,
+            terrain: this.getTerrain() || undefined,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
@@ -1672,6 +1681,14 @@ class Style extends Evented {
         for (const sourceCache of sourceCaches) {
             sourceCache.resume();
             sourceCache.reload();
+        }
+    }
+
+    _reloadSources() {
+        for (const source of this._getSources()) {
+            if (source.reload) {
+                source.reload();
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import Point from '@mapbox/point-geometry';
 import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
 import type {HandlerResult} from '../handler_manager.js';
+import {isFullscreen} from '../../util/util.js';
 
 class TwoTouchHandler {
 
@@ -237,7 +238,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         const vectorA = points[0].sub(lastPoints[0]);
         const vectorB = points[1].sub(lastPoints[1]);
 
-        if (this._map._cooperativeGestures && e.touches.length < 3) return;
+        if (this._map._cooperativeGestures && !isFullscreen() && e.touches.length < 3) return;
 
         this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
 

@@ -51,7 +51,7 @@ class StubMap extends Evented {
         this.transform = new Transform();
         this._requestManager = new RequestManager();
         this._markers = [];
-        this._updateProjection = () => {};
+        this._prioritizeAndUpdateProjection = () => {};
     }
 
     _getMapId() {
@@ -60,9 +60,8 @@ class StubMap extends Evented {
 }
 
 test('Style', (t) => {
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('registers plugin state change listener', (t) => {
@@ -109,14 +108,12 @@ test('Style', (t) => {
 });
 
 test('Style#loadURL', (t) => {
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
-        callback();
     });
 
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('fires "dataloading"', (t) => {
@@ -186,9 +183,8 @@ test('Style#loadURL', (t) => {
 });
 
 test('Style#loadJSON', (t) => {
-    t.afterEach((callback) => {
+    t.afterEach(() => {
         window.restore();
-        callback();
     });
 
     t.test('fires "dataloading" (synchronously)', (t) => {
@@ -2107,7 +2103,7 @@ test('Style#query*Features', (t) => {
     let onError;
     let transform;
 
-    t.beforeEach((callback) => {
+    t.beforeEach(() => {
         transform = new Transform();
         transform.resize(100, 100);
         style = new Style(new StubMap());
@@ -2125,10 +2121,9 @@ test('Style#query*Features', (t) => {
 
         onError = t.spy();
 
-        style.on('error', onError)
-            .on('style.load', () => {
-                callback();
-            });
+        return new Promise((resolve) => {
+            style.on('error', onError).on('style.load', () => resolve());
+        });
     });
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
@@ -2434,64 +2429,5 @@ test('Style#getFog', (t) => {
         });
     });
 
-    t.end();
-});
-
-test('Style#setProjection', (t) => {
-    t.test('runtime projection overrides style projection', (t) => {
-        const style = new Style(new StubMap());
-
-        style.map.painter = {
-            clearBackgroundTiles: () => {}
-        };
-        style.map._update = () => {};
-        style.map.setProjection = (projection) => {
-            style.map._explicitProjection = projection;
-            style.map._updateProjection();
-        };
-        style.map._updateProjection = () => {
-            style.map.transform.setProjection(style.map._explicitProjection || style.stylesheet.projection || {name: "mercator"});
-        };
-
-        style.loadJSON({
-            "version": 8,
-            "projection": {
-                "name": "albers"
-            },
-            "sources": {},
-            "layers": []
-        });
-
-        style.on('style.load', () => {
-            t.equal(style.serialize().projection.name, 'albers');
-            t.equal(style.map.transform.getProjection().name, 'albers');
-
-            // Runtime api overrides style projection
-            // Stylesheet projection not changed by runtime apis
-            style.map.setProjection({name: 'winkelTripel'});
-            t.equal(style.serialize().projection.name, 'albers');
-            t.equal(style.map.transform.getProjection().name, 'winkelTripel');
-
-            // Runtime api overrides style projection
-            style.setState(Object.assign({}, style.serialize(), {projection: {name: 'naturalEarth'}}));
-            t.equal(style.serialize().projection.name, 'naturalEarth');
-            t.equal(style.map.transform.getProjection().name, 'winkelTripel');
-
-            // Unsetting runtime projection reveals map projection
-            style.map.setProjection(null);
-            t.equal(style.serialize().projection.name, 'naturalEarth');
-            t.equal(style.map.transform.getProjection().name, 'naturalEarth');
-
-            // Unsetting style projection reveals mercator
-            const stylesheet = style.serialize();
-            delete stylesheet.projection;
-            style.setState(stylesheet);
-            t.equal(style.serialize().projection, undefined);
-            t.equal(style.map.transform.getProjection().name, 'mercator');
-
-            t.end();
-        });
-
-    });
     t.end();
 });

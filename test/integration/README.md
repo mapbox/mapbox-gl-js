@@ -64,6 +64,18 @@ Results at: ./test/integration/render-tests/index.html
 Done in 2.32s.
 ```
 
+
+### Enable ANGLE configuration on render tests
+
+Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
+
+To configure the ANGLE backend, you can set the `--use-angle` input value to `USE_ANGLE` in CLI like so:
+```
+USE_ANGLE={INPUT} yarn run test-render
+```
+
+Accepted inputs for `USE_ANGLE` are `metal`, `gl`, `vulkan`, `swiftshader`, and `gles`. See `chrome://flags/#use-angle` for more information on the `--use-angle` flag.
+
 ### Viewing test results
 
 During a test run, the test harness will use Mapbox GL JS to create an `actual.png` image from the given `style.json`, and will then use [pixelmatch](https://github.com/mapbox/pixelmatch) to compare that image to `expected.png`, generating a `diff.png` highlighting the mismatched pixels (if any) in red.

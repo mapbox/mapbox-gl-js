@@ -8,10 +8,7 @@ import {
     Uniform3f,
     Uniform4f,
 } from '../uniform_binding.js';
-import type {
-    UniformValues,
-    UniformLocations,
-} from '../uniform_binding.js';
+import type {UniformValues} from '../uniform_binding.js';
 import type Context from '../../gl/context.js';
 
 export type SkyboxCaptureUniformsType = {|
@@ -23,13 +20,13 @@ export type SkyboxCaptureUniformsType = {|
     'u_luminance': Uniform1f,
 |};
 
-const skyboxCaptureUniforms = (context: Context, locations: UniformLocations): SkyboxCaptureUniformsType => ({
-    'u_matrix_3f': new UniformMatrix3f(context, locations.u_matrix_3f),
-    'u_sun_direction': new Uniform3f(context, locations.u_sun_direction),
-    'u_sun_intensity': new Uniform1f(context, locations.u_sun_intensity),
-    'u_color_tint_r': new Uniform4f(context, locations.u_color_tint_r),
-    'u_color_tint_m': new Uniform4f(context, locations.u_color_tint_m),
-    'u_luminance': new Uniform1f(context, locations.u_luminance),
+const skyboxCaptureUniforms = (context: Context): SkyboxCaptureUniformsType => ({
+    'u_matrix_3f': new UniformMatrix3f(context),
+    'u_sun_direction': new Uniform3f(context),
+    'u_sun_intensity': new Uniform1f(context),
+    'u_color_tint_r': new Uniform4f(context),
+    'u_color_tint_m': new Uniform4f(context),
+    'u_luminance': new Uniform1f(context),
 });
 
 const skyboxCaptureUniformValues = (

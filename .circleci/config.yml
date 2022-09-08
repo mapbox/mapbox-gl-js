@@ -150,7 +150,7 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: cimg/node:14.15-browsers
+    - image: cimg/node:14.16-browsers
   working_directory: ~/mapbox-gl-js
 
 jobs:

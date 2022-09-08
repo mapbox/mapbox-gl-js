@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #debugcanvas {
+            position:absolute;
+            left: 0px;
+            top: 0px;
+            pointer-events:none;
+        }
+        .btn-control {
+            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            background-color: white;
+            color: #000;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            z-index: 1;
+            border: none;
+            width: 200px;
+            margin-left: -100px;
+            display: block;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<button id="zoomto" class="btn-control">Zoom to bounds</button>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 5,
+    center: [-68.13734351262877, 45.137451890638886],
+    style: 'mapbox://styles/mapbox/dark-v10',
+    hash: true,
+    projection: 'globe'
+});
+
+/*global MapboxDraw, turf*/
+
+const draw = new MapboxDraw({
+    displayControlsDefault: false,
+    controls: {
+        polygon: true,
+        trash: true
+    },
+    defaultMode: 'draw_polygon'
+});
+map.addControl(draw);
+
+map.on('draw.create', updatePolygon);
+map.on('draw.delete', updatePolygon);
+map.on('draw.update', updatePolygon);
+
+const data = {
+    "type": "Feature",
+    "properties": {},
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": []
+    }
+};
+
+let bbox;
+
+function updatePolygon(e) {
+    bbox = turf.bbox(draw.getAll());
+    const bboxpolygon = [];
+    bboxpolygon.push([bbox[0], bbox[1]]); // x0, y0
+    bboxpolygon.push([bbox[2], bbox[1]]); // x1, y0
+    bboxpolygon.push([bbox[2], bbox[3]]); // x1, y1
+    bboxpolygon.push([bbox[0], bbox[3]]); // x0, y1
+    bboxpolygon.push([bbox[0], bbox[1]]); // x0, y0
+    data.geometry.coordinates[0] = bboxpolygon;
+    map.getSource('bbox').setData(data);
+}
+
+map.on('load', function() {
+    map.addLayer({
+        'id': 'bbox',
+        'type': 'line',
+        'source': {
+            'type': 'geojson',
+            data
+        },
+        'layout': {},
+        'paint': {
+            'line-color': 'red',
+            'line-width': 2
+        }
+    });
+
+    map.setFog({});
+
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.terrain-rgb',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+
+    map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': 1.5
+    });
+
+    document.getElementById('zoomto').addEventListener('click', () => {
+        const bounds = [
+            [bbox[0], bbox[1]],
+            [bbox[2], bbox[3]]
+        ];
+        const camera = map.cameraForBounds(bounds, {bearing: map.getBearing()});
+        map.easeTo(camera);
+    });
+});
+
+</script>
+</body>
+</html>
