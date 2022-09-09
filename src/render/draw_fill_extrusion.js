@@ -64,6 +64,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), layer.paint.get('fill-extrusion-ambient-occlusion-radius')];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
+    const roundedRoof = layer.paint.get('fill-extrusion-rounded-roof') && (edgeRadius > 0);
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
@@ -127,7 +128,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
                 crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, (roundedRoof ? edgeRadius : 0), roundedRoof, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

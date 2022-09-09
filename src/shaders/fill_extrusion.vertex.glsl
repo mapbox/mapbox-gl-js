@@ -30,9 +30,13 @@ uniform mat4 u_light_matrix_1;
 
 varying highp vec4 v_pos_light_view_0;
 varying highp vec4 v_pos_light_view_1;
-varying highp vec3 v_normal;
 varying float v_depth;
 #endif
+
+uniform bool u_rounded_roof;
+
+varying highp vec3 v_normal;
+varying vec4 v_roof_color;
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
@@ -60,6 +64,7 @@ void main() {
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
+    v_normal = normal;
 
     base = max(0.0, base);
 
@@ -102,7 +107,6 @@ void main() {
 #ifdef RENDER_SHADOWS
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(pos, 1);
-    v_normal = normal;
     v_depth = gl_Position.w;
 #endif
 
@@ -110,6 +114,7 @@ void main() {
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
 
     v_color = vec4(0.0, 0.0, 0.0, 1.0);
+    v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
 
     // Add slight ambient lighting so no extrusions are totally black
     vec4 ambientlight = vec4(0.03, 0.03, 0.03, 1.0);
@@ -157,6 +162,13 @@ void main() {
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_color *= u_opacity;
+
+    if (!u_rounded_roof) {
+        float roof_radiance = clamp(u_lightpos.z, 0.0, 1.0);
+        roof_radiance = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roof_radiance);
+        v_roof_color.rgb += clamp(color.rgb * roof_radiance * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+        v_roof_color *= u_opacity;
+    }
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);

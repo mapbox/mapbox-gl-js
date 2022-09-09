@@ -115,6 +115,7 @@ const fillExtrusionUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
+    roundedRoof: number,
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -148,7 +149,8 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': edgeRadius
+        'u_edge_radius': edgeRadius,
+        'u_rounded_roof': roundedRoof
     };
 
     if (tr.projection.name === 'globe') {

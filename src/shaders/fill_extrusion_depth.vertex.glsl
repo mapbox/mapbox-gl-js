@@ -20,9 +20,6 @@ void main() {
     // z is sign of ny: 1 for positive, 0 for values <= 0.
     mediump vec3 top_up_ny = a_pos_normal_ed.xyz - 2.0 * pos_nx;
 
-    float x_normal = pos_nx.z / 8192.0;
-    vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
-
     base = max(0.0, base);
     height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);
 
