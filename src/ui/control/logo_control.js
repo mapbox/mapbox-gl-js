@@ -17,6 +17,7 @@ import type Map, {ControlPosition} from '../map.js';
 
 class LogoControl {
     _map: Map;
+    _anchor: HTMLAnchorElement;
     _container: HTMLElement;
 
     constructor() {
@@ -26,13 +27,13 @@ class LogoControl {
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
-        const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
-        anchor.target = "_blank";
-        anchor.rel = "noopener nofollow";
-        anchor.href = "https://www.mapbox.com/";
-        anchor.setAttribute("aria-label", this._map._getUIString('LogoControl.Title'));
-        anchor.setAttribute("rel", "noopener nofollow");
-        this._container.appendChild(anchor);
+        this._anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
+        this._anchor.target = "_blank";
+        this._anchor.rel = "noopener nofollow";
+        this._anchor.href = "https://www.mapbox.com/";
+        this._anchor.setAttribute("aria-label", this._map._getUIString('LogoControl.Title'));
+        this._anchor.setAttribute("rel", "noopener nofollow");
+        this._container.appendChild(this._anchor);
         this._container.style.display = 'none';
 
         this._map.on('sourcedata', this._updateLogo);
@@ -52,6 +53,10 @@ class LogoControl {
 
     getDefaultPosition(): ControlPosition {
         return 'bottom-left';
+    }
+
+    _setLanguage() {
+        this._anchor.setAttribute('aria-label', this._map._getUIString('LogoControl.Title'));
     }
 
     _updateLogo(e: any) {

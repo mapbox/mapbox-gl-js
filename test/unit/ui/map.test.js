@@ -12,6 +12,7 @@ import simulate from '../../util/simulate_interaction.js';
 import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
+import getUIString from '../../../src/ui/get_ui_string.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 
 function createStyleSource() {
@@ -2612,6 +2613,48 @@ test('Map', (t) => {
                 t.end();
             });
         });
+
+        t.test('window.navigator.language is the default UI language', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                const defaultLanguage = window.navigator.language.split('-')[0];
+                t.equal(map._getUIString('Map.Title'), getUIString(defaultLanguage, 'Map.Title'));
+                t.end();
+            });
+        });
+
+        t.test('can instantiate map UI with language', (t) => {
+            const map = createMap(t, {language: 'uk'});
+            map.on('style.load', () => {
+                t.equal(map._getUIString('Map.Title'), getUIString('uk', 'Map.Title'));
+                t.end();
+            });
+        });
+
+        t.test('can change map UI language', (t) => {
+            const map = createMap(t);
+            map.on('style.load', () => {
+                t.equal(map._getUIString('Map.Title'), getUIString('en', 'Map.Title'));
+                map.setLanguage('es');
+                t.equal(map._getUIString('Map.Title'), getUIString('es', 'Map.Title'));
+                t.end();
+            });
+        });
+
+        t.test('can override UI language with `locale` property', (t) => {
+            const locale = {
+                'Map.Title': 'X Map',
+            };
+
+            const map = createMap(t, {locale});
+            map.on('style.load', () => {
+                t.equal(map._getUIString('Map.Title'), locale['Map.Title']);
+                map.setLanguage('es');
+                t.equal(map._getUIString('Map.Title'), locale['Map.Title'], 'if the locale is overridden, changing map language should not affect UI');
+                t.end();
+            });
+        });
+
         t.end();
     });
 
