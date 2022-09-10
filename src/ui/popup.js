@@ -225,6 +225,7 @@ export default class Popup extends Evented {
             map.off('mousemove', this._onMouseEvent);
             map.off('mouseup', this._onMouseEvent);
             map.off('drag', this._onMouseEvent);
+            map._canvasContainer.classList.remove('mapboxgl-track-pointer');
             this._map = undefined;
         }
 
