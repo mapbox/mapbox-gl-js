@@ -19,6 +19,13 @@ varying vec2 v_tex_b;
 uniform sampler2D u_gradient_image;
 #endif
 
+uniform float u_border_width;
+uniform vec4 u_border_color;
+float luminance(vec3 c) {
+    // Digital ITU BT.601 (Y = 0.299 R + 0.587 G + 0.114 B) approximation
+    return (c.r + c.r + c.b + c.g + c.g + c.g) * 0.1667;
+}
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 dash_from
@@ -42,7 +49,6 @@ void main() {
     // (v_width2.s)
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
-
 #ifdef RENDER_LINE_DASH
     float sdfdist_a = texture2D(u_dash_image, v_tex_a).a;
     float sdfdist_b = texture2D(u_dash_image, v_tex_b).a;
@@ -91,7 +97,27 @@ void main() {
     }
 #endif
 
+#ifdef RENDER_LINE_BORDER
+    float edgeBlur = (u_border_width + 1.0 / u_device_pixel_ratio);
+    float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
+    if (alpha2 < 1.) {
+        float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
+#ifdef RENDER_LINE_BORDER_AUTO
+        float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
+        float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
+        if (out_color.a > 0.25 && Y < 0.25) {
+            vec3 borderColor = (Y > 0.) ? out_color.rgb : vec3(1, 1, 1) * out_color.a;
+            out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - smoothAlpha));
+        } else {
+            out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
+        }
+#else  // use user-provided border color
+        out_color.rgb = mix(u_border_color.rgb, out_color.rgb, smoothAlpha);
+#endif // RENDER_LINE_BORDER_AUTO
+    }
+#endif
     gl_FragColor = out_color * (alpha * opacity);
+
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
