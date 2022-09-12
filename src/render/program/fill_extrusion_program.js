@@ -151,7 +151,7 @@ const fillExtrusionUniformValues = (
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,
-        'u_rounded_roof': true
+        'u_rounded_roof': 1
     };
 
     if (tr.projection.name === 'globe') {
