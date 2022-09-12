@@ -117,7 +117,6 @@ const fillExtrusionUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
-    roundedRoof: boolean,
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -137,12 +136,6 @@ const fillExtrusionUniformValues = (
     const lightColor = light.properties.get('color');
     const tr = painter.transform;
 
-    let er = 0, rr = true;
-    if (edgeRadius > 0) {
-        er = roundedRoof ? edgeRadius : 0;
-        rr = roundedRoof;
-    }
-
     const uniformValues = {
         'u_matrix': matrix,
         'u_lightpos': lightPos,
@@ -157,8 +150,8 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': er,
-        'u_rounded_roof': rr
+        'u_edge_radius': edgeRadius,
+        'u_rounded_roof': true
     };
 
     if (tr.projection.name === 'globe') {
