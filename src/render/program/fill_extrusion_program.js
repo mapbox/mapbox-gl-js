@@ -33,7 +33,8 @@ export type FillExtrusionUniformsType = {|
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
     'u_ao': Uniform2f,
-    'u_edge_radius': Uniform1f
+    'u_edge_radius': Uniform1f,
+    'u_rounded_roof': Uniform1i
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -45,7 +46,6 @@ export type FillExtrusionPatternUniformsType = {|
     'u_vertical_gradient': Uniform1f,
     'u_ao': Uniform2f,
     'u_edge_radius': Uniform1f,
-    'u_rounded_roof': Uniform1i,
     // globe uniforms:
     'u_tile_id': Uniform3f,
     'u_zoom_transition': Uniform1f,
