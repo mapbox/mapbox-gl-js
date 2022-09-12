@@ -128,7 +128,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
                 crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, (roundedRoof ? edgeRadius : 0), roundedRoof, coord,
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, roundedRoof, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

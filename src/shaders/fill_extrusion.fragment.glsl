@@ -20,8 +20,8 @@ const float cutoff = 0.00001;
 
 void main() {
     vec3 normal = v_normal;
-    float z = float(normal.z > cutoff);
-    vec4 color = u_rounded_roof ? v_color : mix(v_color, v_roof_color, z);
+    float z = u_rounded_roof ? 0.0 : float(normal.z > cutoff);
+    vec4 color = mix(v_color, v_roof_color, z);
 #ifdef FAUX_AO
     float intensity = u_ao[0];
     float h = max(0.0, v_ao.z);
@@ -29,7 +29,7 @@ void main() {
     float y_shade = 1.0 - 0.9 * intensity * min(v_ao.y, 1.0);
     float shade = (1.0 - 0.08 * intensity) * (y_shade + (1.0 - y_shade) * (1.0 - pow(1.0 - min(h_floors / 16.0, 1.0), 16.0))) + 0.08 * intensity * min(h_floors / 160.0, 1.0);
     // concave angle
-    float concave = v_ao.x * v_ao.x * (u_rounded_roof ? 1.0 : 1.0 - z);
+    float concave = v_ao.x * v_ao.x * (1.0 - z);
     float x_shade = mix(1.0, mix(0.6, 0.75, min(h_floors / 30.0, 1.0)), intensity) + 0.1 * intensity * min(h, 1.0);
     shade *= mix(1.0, x_shade * x_shade * x_shade, concave);
     color.rgb = color.rgb * shade;

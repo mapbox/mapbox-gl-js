@@ -45,6 +45,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_vertical_gradient': Uniform1f,
     'u_ao': Uniform2f,
     'u_edge_radius': Uniform1f,
+    'u_rounded_roof': Uniform1i,
     // globe uniforms:
     'u_tile_id': Uniform3f,
     'u_zoom_transition': Uniform1f,
@@ -70,6 +71,7 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_vertical_gradient': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
+    'u_rounded_roof': new Uniform1i(context),
     'u_ao': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
@@ -115,7 +117,7 @@ const fillExtrusionUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
-    roundedRoof: number,
+    roundedRoof: boolean,
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -135,6 +137,12 @@ const fillExtrusionUniformValues = (
     const lightColor = light.properties.get('color');
     const tr = painter.transform;
 
+    let er = 0, rr = true;
+    if (edgeRadius > 0) {
+        er = roundedRoof ? edgeRadius : 0;
+        rr = roundedRoof;
+    }
+
     const uniformValues = {
         'u_matrix': matrix,
         'u_lightpos': lightPos,
@@ -149,8 +157,8 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': edgeRadius,
-        'u_rounded_roof': roundedRoof
+        'u_edge_radius': er,
+        'u_rounded_roof': rr
     };
 
     if (tr.projection.name === 'globe') {
