@@ -33,8 +33,7 @@ export type FillExtrusionUniformsType = {|
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
     'u_ao': Uniform2f,
-    'u_edge_radius': Uniform1f,
-    'u_rounded_roof': Uniform1i
+    'u_edge_radius': Uniform1f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -71,7 +70,6 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_vertical_gradient': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
-    'u_rounded_roof': new Uniform1i(context),
     'u_ao': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
@@ -150,8 +148,7 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': edgeRadius,
-        'u_rounded_roof': 1
+        'u_edge_radius': edgeRadius
     };
 
     if (tr.projection.name === 'globe') {
