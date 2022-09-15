@@ -272,11 +272,11 @@ class ScrollZoomHandler {
         const tr = this._map.transform;
 
         // If projection wraps and center crosses the antimeridian, reset previous mouse scroll easing settings to resolve https://github.com/mapbox/mapbox-gl-js/issues/11910
-        if (this._type === 'wheel' && tr.projection.wrap && (this._map.transform.center.lng >= 180 || this._map.transform.center.lng <= -180)) {
+        if (this._type === 'wheel' && tr.projection.wrap && (tr._center.lng >= 180 || tr._center.lng <= -180)) {
             this._prevEase = null;
             this._easing = null;
-            this._lastWheelEventTime = 0;
             this._lastWheelEvent = null;
+            this._lastWheelEventTime = 0;
         }
 
         const startingZoom = () => {
