@@ -271,6 +271,9 @@ class ScrollZoomHandler {
 
         const tr = this._map.transform;
 
+        // If projection wraps and center crosses the antimeridian, reset this._easing to resolve https://github.com/mapbox/mapbox-gl-js/issues/11910
+        if (tr.projection.wrap && (tr.center.lng > 180 || tr.center.lng < -180)) this._easing = null;
+
         const startingZoom = () => {
             return (tr._terrainEnabled() && this._aroundCoord) ? tr.computeZoomRelativeTo(this._aroundCoord) : tr.zoom;
         };
