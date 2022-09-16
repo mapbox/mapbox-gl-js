@@ -914,7 +914,7 @@ test('When toggling projections, markers update with correct position', (t) => {
     const marker = new Marker()
         .setLngLat([12, 55])
         .addTo(map);
-    
+
     map.setCenter([-179, 0]);
     t.equal(marker.getLngLat().lng, -348);
 
@@ -923,7 +923,7 @@ test('When toggling projections, markers update with correct position', (t) => {
     map._domRenderTaskQueue.run();
 
     map.once('render', () => {
-        t.equal(marker.getLngLat().lng, 12)
+        t.equal(marker.getLngLat().lng, 12);
         map.remove();
         t.end();
     });
