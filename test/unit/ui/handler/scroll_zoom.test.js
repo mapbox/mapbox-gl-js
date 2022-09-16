@@ -65,7 +65,7 @@ test('ScrollZoomHandler', (t) => {
         // Simulate a single 'wheel' event without the magical deltaY value.
         // This requires the handler to briefly wait to see if a subsequent
         // event is coming in order to guess trackpad vs. mouse wheel
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -20});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
         map.on('zoomstart', () => {
             map.remove();
             t.end();
@@ -257,6 +257,21 @@ test('ScrollZoomHandler', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('Wheel events can cross antimeridian in projections that allow wrapping', (t) => {
+        const map = createMap(t);
+        map.setCenter([-178.90, 38.8888]);
+
+        for (let i = 0; i < 2; i++) {
+            simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+            map._renderTaskQueue.run();
+        }
+
+        t.equal(map.getCenter().lng, 175.63974309977988)
+
+        map.remove();
         t.end();
     });
 
