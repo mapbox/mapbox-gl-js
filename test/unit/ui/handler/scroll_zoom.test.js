@@ -65,7 +65,7 @@ test('ScrollZoomHandler', (t) => {
         // Simulate a single 'wheel' event without the magical deltaY value.
         // This requires the handler to briefly wait to see if a subsequent
         // event is coming in order to guess trackpad vs. mouse wheel
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -20});
         map.on('zoomstart', () => {
             map.remove();
             t.end();
