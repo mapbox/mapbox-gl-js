@@ -159,21 +159,25 @@ class GeolocateControl extends Evented {
         this._noTimeout = false;
     }
 
-    _checkGeolocationSupport(callback: (supported: boolean) => any) {
+    _checkGeolocationSupport(callback: boolean => void) {
+        const updateSupport = (supported = !!this.options.geolocation) => {
+            this._supportsGeolocation = supported;
+            callback(supported);
+        };
+
         if (this._supportsGeolocation !== undefined) {
             callback(this._supportsGeolocation);
+
         } else if (window.navigator.permissions !== undefined) {
-            // navigator.permissions has incomplete browser support
-            // http://caniuse.com/#feat=permissions-api
-            // Test for the case where a browser disables Geolocation because of an
-            // insecure origin
-            window.navigator.permissions.query({name: 'geolocation'}).then((p) => {
-                this._supportsGeolocation = p.state !== 'denied';
-                callback(this._supportsGeolocation);
-            });
+            // navigator.permissions has incomplete browser support http://caniuse.com/#feat=permissions-api
+            // Test for the case where a browser disables Geolocation because of an insecure origin;
+            // in some environments like iOS16 WebView, permissions reject queries but still support geolocation
+            window.navigator.permissions.query({name: 'geolocation'})
+                .then(p => updateSupport(p.state !== 'denied'))
+                .catch(() => updateSupport());
+
         } else {
-            this._supportsGeolocation = !!this.options.geolocation;
-            callback(this._supportsGeolocation);
+            updateSupport();
         }
     }
 
