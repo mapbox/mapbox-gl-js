@@ -2,6 +2,7 @@
 
 import CompoundExpression from './compound_expression.js';
 import Within from './definitions/within.js';
+import Distance from './definitions/distance.js';
 import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression): boolean {
@@ -24,6 +25,10 @@ function isFeatureConstant(e: Expression): boolean {
     }
 
     if (e instanceof Within) {
+        return false;
+    }
+
+    if (e instanceof Distance) {
         return false;
     }
 
