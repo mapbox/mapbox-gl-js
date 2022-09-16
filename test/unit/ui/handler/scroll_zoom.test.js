@@ -269,7 +269,7 @@ test('ScrollZoomHandler', (t) => {
             map._renderTaskQueue.run();
         }
 
-        t.equal(map.getCenter().lng, 175.63974309977988)
+        t.equal(map.getCenter().lng, 175.63974309977988);
 
         map.remove();
         t.end();
