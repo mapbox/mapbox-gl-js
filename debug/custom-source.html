@@ -41,8 +41,9 @@ let currentColor = colors[0];
 
 class CustomSource {
     constructor() {
-        this.id = 'custom-source';
+        // Setting type to `custom` is required to use CustomSource API
         this.type = 'custom';
+
         this.cache = new Map();
         this.tileSize = tileSize;
     }
