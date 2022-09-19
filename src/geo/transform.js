@@ -1921,6 +1921,9 @@ class Transform {
         const z = this._camera.position[2];
         const deltaZ = translation[2];
         let t = 1;
+
+        if (this.projection.wrap) this.center = this.center.wrap();
+
         // we only need to clamp if the camera is moving upwards
         if (deltaZ > 0) {
             t = Math.min((maxZ - z) / deltaZ, 1);
@@ -1928,9 +1931,6 @@ class Transform {
 
         this._camera.position = vec3.scaleAndAdd([], this._camera.position, translation, t);
         this._updateStateFromCamera();
-
-        if (this.projection.wrap)
-            this.center = this.center.wrap();
     }
 
     _updateStateFromCamera() {

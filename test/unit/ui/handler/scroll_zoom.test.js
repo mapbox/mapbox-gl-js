@@ -260,6 +260,21 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
+    t.test('Wheel events can cross antimeridian in projections that allow wrapping', (t) => {
+        const map = createMap(t);
+        map.setCenter([-178.90, 38.8888]);
+
+        for (let i = 0; i < 2; i++) {
+            simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+            map._renderTaskQueue.run();
+        }
+
+        t.equal(map.getCenter().lng, 175.63974309977988);
+
+        map.remove();
+        t.end();
+    });
+
     t.test('Gracefully ignores wheel events with deltaY: 0', (t) => {
         const map = createMap(t);
         map._renderTaskQueue.run();
