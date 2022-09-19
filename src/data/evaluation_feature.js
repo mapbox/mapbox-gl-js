@@ -3,6 +3,7 @@
 import loadGeometry from './load_geometry.js';
 
 import type Point from '@mapbox/point-geometry';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 type EvaluationFeature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -19,7 +20,7 @@ type EvaluationFeature = {
  * @param {boolean} needGeometry
  * @private
  */
-export default function toEvaluationFeature(feature: VectorTileFeature, needGeometry: boolean): EvaluationFeature {
+export default function toEvaluationFeature(feature: IVectorTileFeature, needGeometry: boolean): EvaluationFeature {
     return {type: feature.type,
         id: feature.id,
         properties:feature.properties,

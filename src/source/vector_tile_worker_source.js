@@ -2,7 +2,7 @@
 
 import {getArrayBuffer} from '../util/ajax.js';
 
-import vt from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile.js';
 import {extend} from '../util/util.js';
@@ -22,10 +22,11 @@ import type Actor from '../util/actor.js';
 import type StyleLayerIndex from '../style/style_layer_index.js';
 import type {Callback} from '../types/callback.js';
 import type Scheduler from '../util/scheduler.js';
+import type {IVectorTile} from '@mapbox/vector-tile';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
-    vectorTile?: VectorTile;
+    vectorTile?: IVectorTile;
     expires?: any;
     cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
@@ -106,7 +107,7 @@ export function loadVectorTile(params: RequestedTileParameters, callback: LoadVe
                 callback(err);
             } else if (data) {
                 callback(null, {
-                    vectorTile: skipParse ? undefined : new vt.VectorTile(new Protobuf(data)),
+                    vectorTile: skipParse ? undefined : new VectorTile(new Protobuf(data)),
                     rawData: data,
                     cacheControl,
                     expires
@@ -200,7 +201,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
             // because we stub the vector tile interface around JSON data instead of parsing it directly
-            workerTile.vectorTile = response.vectorTile || new vt.VectorTile(new Protobuf(rawTileData));
+            workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
                 workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, (err, result) => {
                     if (err || !result) return callback(err);

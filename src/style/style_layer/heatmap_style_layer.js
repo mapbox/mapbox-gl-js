@@ -22,6 +22,7 @@ import type {DEMSampler} from '../../terrain/elevation.js';
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type Transform from '../../geo/transform.js';
 import type CircleBucket from '../../data/bucket/circle_bucket.js';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -72,7 +73,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
-                           feature: VectorTileFeature,
+                           feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,

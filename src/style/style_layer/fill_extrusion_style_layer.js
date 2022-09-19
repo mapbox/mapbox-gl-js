@@ -20,6 +20,7 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -54,7 +55,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
-                           feature: VectorTileFeature,
+                           feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,

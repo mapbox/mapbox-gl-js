@@ -17,6 +17,7 @@ import {
     UniformColor,
     Uniform4f
 } from '../render/uniform_binding.js';
+import assert from 'assert';
 
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type Context from '../gl/context.js';
@@ -35,7 +36,7 @@ import type {
 import type {PossiblyEvaluated} from '../style/properties.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {FormattedSection} from '../style-spec/expression/types/formatted.js';
-import assert from 'assert';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 export type BinderUniform = {
     name: string,
@@ -470,7 +471,7 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: VectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions): boolean {
+    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
             const positions = featureMap.getPositions(id);
@@ -618,7 +619,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: IVectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions) {
         for (const layer of layers) {
             this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, availableImages, imagePositions) || this.needsUpload;
         }

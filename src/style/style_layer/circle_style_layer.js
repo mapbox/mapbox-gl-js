@@ -22,6 +22,7 @@ import type {LayoutProps, PaintProps} from './circle_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -47,7 +48,7 @@ class CircleStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
-                           feature: VectorTileFeature,
+                           feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,

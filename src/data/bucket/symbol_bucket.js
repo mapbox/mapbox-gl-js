@@ -33,8 +33,8 @@ import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/scrip
 import {WritingMode} from '../../symbol/shaping.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
-import mvt from '@mapbox/vector-tile';
-const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {VectorTileFeature} from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation.js';
 import Anchor from '../../symbol/anchor.js';
 import {getSizeData} from '../../symbol/symbol_size.js';
@@ -84,6 +84,7 @@ export type SingleCollisionBox = {
 };
 import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -620,7 +621,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);

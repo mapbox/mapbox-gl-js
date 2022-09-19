@@ -8,8 +8,8 @@ import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
 import EXTENT from '../extent.js';
 import earcut from 'earcut';
-import mvt from '@mapbox/vector-tile';
-const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {VectorTileFeature} from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = VectorTileFeature.types;
 import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
@@ -42,6 +42,7 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import {earthRadius} from '../../geo/lng_lat.js';
+import {IVectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -274,7 +275,7 @@ class FillExtrusionBucket implements Bucket {
         this.sortBorders();
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions);
     }
@@ -615,7 +616,7 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    encodeCentroid(c: Point, metadata: PartMetadata, append: boolean = true) {
+    encodeCentroid(c: ?Point, metadata: PartMetadata, append: boolean = true) {
         let x, y;
         // Encoded centroid x and y:
         //     x     y
