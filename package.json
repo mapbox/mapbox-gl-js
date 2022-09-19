@@ -82,7 +82,7 @@
     "postcss-cli": "^10.0.0",
     "postcss-inline-svg": "^5.0.0",
     "pretty-bytes": "^6.0.0",
-    "puppeteer-core": "^17.0.0",
+    "puppeteer-core": "^18.0.2",
     "qrcode-terminal": "^0.12.0",
     "rollup": "^2.78.1",
     "rollup-plugin-sourcemaps": "^0.6.3",
