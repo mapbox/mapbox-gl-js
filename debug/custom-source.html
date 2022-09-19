@@ -3,7 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -15,15 +15,17 @@
 <body>
 <div id='map'></div>
 <div id='controls'>
-    <input id="slider" type="range" list="colors" min="0" step="1">
-    <datalist id="colors"></datalist>
+    <input id='slider' type='range' value='0' min='0' step='1'><br />
+    <label><input id='custom-source-checkbox' type='checkbox' checked>custom source</label><br />
+    <label><input id='tile-boundaries-checkbox' type='checkbox'>tile boundaries</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'>terrain</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script>
+<script type='module'>
 
-var map = window.map = new mapboxgl.Map({
+const map = window.map = new mapboxgl.Map({
     container: 'map',
     center: [0, 0],
     zoom: 0,
@@ -31,59 +33,83 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-const tileSize = 256;
-const colors = ['#74a9cf', '#3690c0', '#0570b0', '#045a8d'];
+map.addControl(new mapboxgl.NavigationControl());
+
+const tileSize = 512;
+const colors = ['red', 'green', 'blue'];
 let currentColor = colors[0];
 
-const canvas = document.createElement('canvas');
-canvas.width = canvas.height = tileSize;
-const context = canvas.getContext('2d', {willReadFrequently: true});
+class CustomSource {
+    constructor() {
+        // Setting type to `custom` is required to use CustomSource API
+        this.type = 'custom';
+
+        this.cache = new Map();
+        this.tileSize = tileSize;
+    }
+
+    async loadTile({z, x, y}) {
+        const key = `${z}/${x}/${y}/${currentColor}`;
+        const tile = this.cache.get(key);
+        if (tile) return tile;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = tileSize;
+        const context = canvas.getContext('2d', {willReadFrequently: true});
+
+        context.fillStyle = currentColor;
+        context.fillRect(0, 0, tileSize, tileSize);
+        context.font = '24px sans-serif';
+        context.fillStyle = 'white';
+        context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2);
+
+        this.cache.set(key, canvas);
+        return canvas;
+    }
+}
 
 map.on('load', () => {
-    map.addSource('custom-source', {
-        type: 'custom',
-        tileSize,
-        async loadTile({z, x, y}) {
-            context.fillStyle = 'red';
-            context.fillRect(0, 0, tileSize, tileSize);
+    const customSource = window.customSource = new CustomSource();
 
-            context.font = '18px serif';
-            context.fillStyle = 'white';
-            context.textAlign = 'center';
-            context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
-            return canvas;
-        },
-        prepareTile({z, x, y}) {
-            context.fillStyle = currentColor;
-            context.fillRect(0, 0, tileSize, tileSize);
+    function triggerRepaint() {
+        customSource.clearTiles();
+        customSource.update();
+    }
 
-            context.font = '18px serif';
-            context.fillStyle = 'white';
-            context.textAlign = 'center';
-            context.fillText(`${z}/${x}/${y}`, tileSize / 2, tileSize / 2, tileSize);
-            return canvas;
-        },
-        hasTile({z, x, y}) {
-            return (x + y) % 2 === 0;
-        }
-    });
+    map.addSource('custom-source', customSource);
 
     map.addLayer({
         id: 'custom-source',
         type: 'raster',
         source: 'custom-source',
         paint: {
-            'raster-opacity': 0.75,
-            'raster-fade-duration': 0
+            'raster-opacity': 0.25,
         }
     });
 
+    map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512
+    });
+
+    document.getElementById('terrain-checkbox').onclick = function () {
+        map.setTerrain(this.checked ? {source: 'mapbox-dem'} : null);
+    };
+
+    document.getElementById('tile-boundaries-checkbox').onclick = function () {
+        map.showTileBoundaries = this.checked;
+    };
+
+    document.getElementById('custom-source-checkbox').onclick = function () {
+        map.setLayoutProperty('custom-source', 'visibility', this.checked ? 'visible' : 'none');
+    };
+
     const slider = document.getElementById('slider');
-    slider.value = 0;
     slider.max = colors.length - 1;
     slider.addEventListener('input', (e) => {
         currentColor = colors[e.target.value];
-        map.triggerRepaint();
+        triggerRepaint();
     });
 });
 

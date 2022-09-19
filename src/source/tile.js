@@ -598,7 +598,7 @@ class Tile {
     setTexture(img: TextureImage, painter: Painter) {
         const context = painter.context;
         const gl = context.gl;
-        this.texture = painter.getTileTexture(img.width);
+        this.texture = this.texture || painter.getTileTexture(img.width);
         if (this.texture) {
             this.texture.update(img, {useMipmap: true});
         } else {

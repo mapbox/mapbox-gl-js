@@ -172,21 +172,6 @@ class SourceCache extends Evented {
 
         this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
 
-        if (this._source.prepareTile) {
-            for (const i in this._tiles) {
-                const tile = this._tiles[i];
-                const data = this._source.prepareTile(tile);
-                if (data && this.map.painter.terrain) {
-                    this.map.painter.terrain._clearRenderCacheForTile(this.id, tile.tileID);
-                }
-
-                tile.upload(context);
-                tile.prepare(this.map.style.imageManager);
-            }
-
-            return;
-        }
-
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context);
@@ -759,10 +744,7 @@ class SourceCache extends Evented {
      */
     _addTile(tileID: OverscaledTileID): Tile {
         let tile = this._tiles[tileID.key];
-        if (tile) {
-            if (this._source.prepareTile) this._source.prepareTile(tile);
-            return tile;
-        }
+        if (tile) return tile;
 
         tile = this._cache.getAndRemove(tileID);
         if (tile) {
@@ -781,12 +763,7 @@ class SourceCache extends Evented {
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
             tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
-            if (this._source.prepareTile) {
-                const data = this._source.prepareTile(tile);
-                if (!data) this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
-            } else {
-                this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
-            }
+            this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
         // Impossible, but silence flow.
@@ -1065,7 +1042,7 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
 }
 
 function isRasterType(type): boolean {
-    return type === 'raster' || type === 'image' || type === 'video';
+    return type === 'raster' || type === 'image' || type === 'video' || type === 'custom';
 }
 
 function tileBoundsX(id: CanonicalTileID, wrap: number): [number, number] {
