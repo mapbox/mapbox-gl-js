@@ -32,6 +32,7 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket.js';
+import {earthRadius} from '../../geo/lng_lat.js';
 
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer.js';
 import type Context from '../../gl/context.js';
@@ -41,8 +42,7 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
-import {earthRadius} from '../../geo/lng_lat.js';
-import {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
 

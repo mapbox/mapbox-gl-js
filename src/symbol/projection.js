@@ -183,7 +183,7 @@ function getGlCoordMatrix(posMatrix: Float32Array,
     }
 }
 
-function project(point: Point, matrix: Mat4, elevation: number = 0): ProjectedSymbol {
+function project(point: {x: number, y: number}, matrix: Mat4, elevation: number = 0): ProjectedSymbol {
     const pos = [point.x, point.y, elevation, 1];
     if (elevation) {
         vec4.transformMat4(pos, pos, matrix);
@@ -597,7 +597,8 @@ function placeGlyphAlongLine(
     };
 
     const getTruncatedLineSegment = () => {
-        return projectTruncatedLineSegment(previousTilePoint(), currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation, reprojection, tileID.canonical);
+        const prevTilePoint = previousTilePoint();
+        return projectTruncatedLineSegment(prevTilePoint, currentVertex || prevTilePoint, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation, reprojection, tileID.canonical);
     };
 
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {

@@ -520,16 +520,14 @@ class SymbolBucket implements Bucket {
 
                 // cos(11.25 degrees) = 0.98078528056
                 const cosAngleThreshold = 0.98078528056;
+                const predicate = (a, b) => {
+                    const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
+                    const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
+                    return vec3.dot(v0, v1) < cosAngleThreshold;
+                };
 
                 for (let i = 0; i < geom.length; i++) {
-                    geom[i] = resamplePred(
-                        geom[i],
-                        p => p,
-                        (a, b) => {
-                            const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
-                            const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
-                            return vec3.dot(v0, v1) < cosAngleThreshold;
-                        });
+                    geom[i] = resamplePred(geom[i], predicate);
                 }
             }
 

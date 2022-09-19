@@ -35,7 +35,7 @@ import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type LineAtlas from '../../render/line_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
-import {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

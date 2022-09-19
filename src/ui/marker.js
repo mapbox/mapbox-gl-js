@@ -413,8 +413,9 @@ export default class Marker extends Evented {
 
     _behindTerrain(): boolean {
         const map = this._map;
-        if (!map) return false;
-        const unprojected = map.unproject(this._pos);
+        const pos = this._pos;
+        if (!map || !pos) return false;
+        const unprojected = map.unproject(pos);
         const camera = map.getFreeCameraOptions();
         if (!camera.position) return false;
         const cameraLngLat = camera.position.toLngLat();
@@ -608,13 +609,17 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!map) return;
 
+        const startPos = this._pointerdownPos;
+        const posDelta = this._positionDelta;
+        if (!startPos || !posDelta) return;
+
         if (!this._isDragging) {
             const clickTolerance = this._clickTolerance || map._clickTolerance;
-            this._isDragging = e.point.dist(this._pointerdownPos) >= clickTolerance;
+            if (e.point.dist(startPos) < clickTolerance) return;
+            this._isDragging = true;
         }
-        if (!this._isDragging) return;
 
-        this._pos = e.point.sub(this._positionDelta);
+        this._pos = e.point.sub(posDelta);
         this._lngLat = map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
@@ -682,7 +687,8 @@ export default class Marker extends Evented {
 
     _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
         const map = this._map;
-        if (!map) return;
+        const pos = this._pos;
+        if (!map || !pos) return;
 
         if (this._element.contains((e.originalEvent.target: any))) {
             e.preventDefault();
@@ -693,8 +699,7 @@ export default class Marker extends Evented {
             // to calculate the new marker position.
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
-            this._positionDelta = e.point.sub(this._pos);
-
+            this._positionDelta = e.point.sub(pos);
             this._pointerdownPos = e.point;
 
             this._state = 'pending';

@@ -100,9 +100,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         }
 
         const demSampler = terrainVisible ? elevationHelper : null;
-        const projected = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
-        const projectedBase = projected[0];
-        const projectedTop = projected[1];
+        const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
 
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
@@ -177,7 +175,7 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
     }
 }
 
-function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Point>, projectedQueryGeometry: Array<Point>) {
+function checkIntersection(projectedBase: Array<Array<Point>>, projectedTop: Array<Array<Point>>, projectedQueryGeometry: Array<Point>) {
     let closestDistance = Infinity;
 
     if (polygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {

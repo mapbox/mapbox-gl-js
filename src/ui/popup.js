@@ -685,5 +685,6 @@ function normalizeOffset(offset: Offset = new Point(0, 0), anchor: Anchor = 'bot
     }
 
     // input specifies an offset per position
+    // $FlowFixMe we know offset is an object at this point but Flow can't refine it for some reason
     return Point.convert(offset[anchor] || [0, 0]);
 }

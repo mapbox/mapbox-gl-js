@@ -32,7 +32,7 @@ import type {
 } from '../source/worker_source.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
-import type {VectorTile, IVectorTile} from '@mapbox/vector-tile';
+import type {IVectorTile} from '@mapbox/vector-tile';
 
 class WorkerTile {
     tileID: OverscaledTileID;
