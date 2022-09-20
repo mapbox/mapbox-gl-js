@@ -162,7 +162,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
         const lastVector = this._vector;
         this._vector = points[0].sub(points[1]);
 
-        if (!lastVector || !this._active && this._isBelowThreshold(this._vector)) return;
+        if (!lastVector || (!this._active && this._isBelowThreshold(this._vector))) return;
         this._active = true;
 
         return {
