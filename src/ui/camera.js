@@ -640,9 +640,6 @@ class Camera extends Evented {
     }
 
     _cameraForBoundsOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
-        const tr = transform.clone();
-        tr.bearing = bearing;
-
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
 
@@ -661,17 +658,20 @@ class Camera extends Evented {
             new LngLat(midLng, coord1.lat),
         ];
 
-        return this._cameraForLngLats(tr, lngLats, options);
+        return this._cameraForLngLats(transform, lngLats, bearing, options);
     }
 
-    _cameraForLngLats(tr: Transform, lngLats: Array<LngLat>, options?: CameraOptions): ?EasingOptions {
+    _cameraForLngLats(transform: Transform, lngLatLikes: Array<LngLatLike>, bearing: number, options?: CameraOptions): ?EasingOptions {
 
+        const tr = transform.clone();
+        tr.bearing = bearing;
         const eOptions = this._extendCameraOptions(options);
+        const lngLats = lngLatLikes.map(l => LngLat.convert(l));
 
-        let minLat = lngLats[0].lat;
-        let maxLat = lngLats[0].lat;
-        let minLng = lngLats[0].lng;
-        let maxLng = lngLats[0].lng;
+        let minLat = Infinity;
+        let maxLat = -Infinity;
+        let minLng = Infinity;
+        let maxLng = -Infinity;
         for (const lngLat of lngLats) {
             minLat = Math.min(minLat, lngLat.lat);
             maxLat = Math.max(maxLat, lngLat.lat);
@@ -974,7 +974,7 @@ class Camera extends Evented {
 
         const tr = this.transform.clone();
         tr.bearing = bearing;
-        const cameraPlacement = this._cameraForLngLats(tr, lngLats, options);
+        const cameraPlacement = this._cameraForLngLats(tr, lngLats, bearing, options);
 
         return this._fitInternal(cameraPlacement, options, eventData);
     }
@@ -984,7 +984,7 @@ class Camera extends Evented {
         if (!calculatedOptions) return this;
 
         options = extend(calculatedOptions, options);
-        // Explicitly remove the padding field because, calculatedOptions already accounts for padding by setting zoom and center accordingly.
+        // Explicitly remove the padding field because calculatedOptions already accounts for padding by setting zoom and center accordingly.
         delete options.padding;
 
         return options.linear ?
