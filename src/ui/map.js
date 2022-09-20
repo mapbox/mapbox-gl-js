@@ -27,6 +27,7 @@ import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
+import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
@@ -369,6 +370,7 @@ class Map extends Camera {
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _markers: Array<Marker>;
+    _popups: Array<Popup>;
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
@@ -493,6 +495,7 @@ class Map extends Camera {
         this._domRenderTaskQueue = new TaskQueue();
         this._controls = [];
         this._markers = [];
+        this._popups = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
@@ -2915,6 +2918,17 @@ class Map extends Camera {
         }
     }
 
+    _addPopup(popup: Popup) {
+        this._popups.push(popup);
+    }
+
+    _removePopup(popup: Popup) {
+        const index = this._popups.indexOf(popup);
+        if (index !== -1) {
+            this._popups.splice(index, 1);
+        }
+    }
+
     _setupPainter() {
         const attributes = extend({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
@@ -3114,8 +3128,9 @@ class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
-            // Update positions of markers on enabling/disabling terrain
+            // Update positions of markers and popups
             this._forceMarkerUpdate();
+            this._forcePopupUpdate();
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
@@ -3249,6 +3264,12 @@ class Map extends Camera {
     _forceMarkerUpdate() {
         for (const marker of this._markers) {
             marker._update();
+        }
+    }
+
+    _forcePopupUpdate() {
+        for (const popup of this._popups) {
+            popup._update();
         }
     }
 
