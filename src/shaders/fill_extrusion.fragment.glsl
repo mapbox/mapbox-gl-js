@@ -25,11 +25,13 @@ void main() {
     vec3 normal = v_normal;
 #endif
 
+float z;
+vec4 color;
 #ifdef ZERO_ROOF_RADIUS
-    float z = float(normal.z > 0.00001);
-    vec4 color = mix(v_color, v_roof_color, z);
+    z = float(normal.z > 0.00001);
+    color = mix(v_color, v_roof_color, z);
 #else
-    vec4 color = v_color;
+    color = v_color;
 #endif
 #ifdef FAUX_AO
     float intensity = u_ao[0];

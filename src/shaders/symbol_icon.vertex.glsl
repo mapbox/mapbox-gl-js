@@ -69,18 +69,21 @@ void main() {
     vec2 tile_anchor = a_pos;
     vec3 h = elevationVector(tile_anchor) * elevation(tile_anchor);
 
+    float globe_occlusion_fade;
+    vec3 world_pos;
+    vec3 mercator_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
-    vec3 world_pos = mix_globe_mercator(a_globe_anchor + h, mercator_pos, u_zoom_transition);
+    mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
+    world_pos = mix_globe_mercator(a_globe_anchor + h, mercator_pos, u_zoom_transition);
 
     vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
     vec3 origin_to_point = ecef_point.xyz - u_ecef_origin;
 
     // Occlude symbols that are on the non-visible side of the globe sphere
-    float globe_occlusion_fade = dot(origin_to_point, u_camera_forward) >= 0.0 ? 0.0 : 1.0;
+    globe_occlusion_fade = dot(origin_to_point, u_camera_forward) >= 0.0 ? 0.0 : 1.0;
 #else
-    vec3 world_pos = vec3(tile_anchor, 0) + h;
-    float globe_occlusion_fade = 1.0;
+    world_pos = vec3(tile_anchor, 0) + h;
+    globe_occlusion_fade = 1.0;
 #endif
 
     vec4 projected_point = u_matrix * vec4(world_pos, 1);
@@ -102,11 +105,12 @@ void main() {
     highp float symbol_rotation = 0.0;
     if (u_rotate_symbol) {
         // See comments in symbol_sdf.vertex
+        vec4 offsetProjected_point;
 #ifdef PROJECTION_GLOBE_VIEW
         vec3 displacement = vec3(a_globe_normal.z, 0, -a_globe_normal.x);
-        vec4 offsetProjected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
+        offsetProjected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
 #else
-        vec4 offsetProjected_point = u_matrix * vec4(tile_anchor + vec2(1, 0), 0, 1);
+        offsetProjected_point = u_matrix * vec4(tile_anchor + vec2(1, 0), 0, 1);
 #endif
         vec2 a = projected_point.xy / projected_point.w;
         vec2 b = offsetProjected_point.xy / offsetProjected_point.w;
@@ -114,11 +118,12 @@ void main() {
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
+    vec4 projected_pos;
 #ifdef PROJECTION_GLOBE_VIEW
     vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz + h, mercator_pos, u_zoom_transition);
-    vec4 projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
+    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
 #else
-    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
+    projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
 #endif
 
     highp float angle_sin = sin(segment_angle + symbol_rotation);

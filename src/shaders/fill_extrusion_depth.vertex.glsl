@@ -30,15 +30,16 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
+vec3 pos;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     float ele = elevation(pos_nx.xy);
     float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base);
-    vec3 pos = vec3(pos_nx.xy, h);
+    pos = vec3(pos_nx.xy, h);
 #else
-    vec3 pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
+    pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
 #endif
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
