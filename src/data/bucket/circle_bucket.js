@@ -32,7 +32,7 @@ import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
-import {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(

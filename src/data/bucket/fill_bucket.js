@@ -33,7 +33,7 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
-import {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 class FillBucket implements Bucket {
     index: number;

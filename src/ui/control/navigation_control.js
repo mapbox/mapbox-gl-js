@@ -172,8 +172,8 @@ class MouseRotateWrapper {
     element: HTMLElement;
     mouseRotate: MouseRotateHandler;
     mousePitch: MousePitchHandler;
-    _startPos: Point;
-    _lastPos: Point;
+    _startPos: ?Point;
+    _lastPos: ?Point;
 
     constructor(map: Map, element: HTMLElement, pitch?: boolean = false) {
         this._clickTolerance = 10;
