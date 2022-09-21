@@ -12,6 +12,7 @@ uniform vec2 u_viewport;
 #endif
 
 void main() {
+    vec4 color;
 #ifdef CUSTOM_ANTIALIASING
     vec2 uv = gl_FragCoord.xy / u_viewport;
 
@@ -30,9 +31,9 @@ void main() {
     float antialias = smoothstep(0.0, antialias_factor, norm_dist_from_center);
 
     vec4 raster = texture2D(u_image0, v_pos0);
-    vec4 color = vec4(raster.rgb * antialias, raster.a * antialias);
+    color = vec4(raster.rgb * antialias, raster.a * antialias);
 #else
-    vec4 color = texture2D(u_image0, v_pos0);
+    color = texture2D(u_image0, v_pos0);
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

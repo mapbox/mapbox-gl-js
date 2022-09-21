@@ -36,8 +36,9 @@ float stars(vec3 p, float scale, vec2 offset) {
 void main() {
     highp vec3 dir = normalize(v_ray_dir);
 
+    float globe_pos_dot_dir;
 #ifdef PROJECTION_GLOBE_VIEW
-    float globe_pos_dot_dir = dot(u_globe_pos, dir);
+    globe_pos_dot_dir = dot(u_globe_pos, dir);
     highp vec3 closest_point_forward = abs(globe_pos_dot_dir) * dir;
     float norm_dist_from_center = length(closest_point_forward - u_globe_pos) / u_globe_radius;
 
@@ -53,6 +54,7 @@ void main() {
     float horizon_angle_mercator = dir.y < horizon_dir.y ?
         0.0 : max(acos(dot(dir, horizon_dir)), 0.0);
 
+    float horizon_angle;
 #ifdef PROJECTION_GLOBE_VIEW
     // Angle between dir and globe center
     highp vec3 closest_point = globe_pos_dot_dir * dir;
@@ -60,7 +62,7 @@ void main() {
     float theta = asin(clamp(closest_point_to_center / length(u_globe_pos), -1.0, 1.0));
 
     // Backward facing closest point rays should be treated separately
-    float horizon_angle = globe_pos_dot_dir < 0.0 ?
+    horizon_angle = globe_pos_dot_dir < 0.0 ?
         PI - theta - u_horizon_angle : theta - u_horizon_angle;
 
     // Increase speed of change of the angle interpolation for
@@ -69,7 +71,7 @@ void main() {
 
     horizon_angle = mix(horizon_angle, horizon_angle_mercator, angle_t);
 #else
-    float horizon_angle = horizon_angle_mercator;
+    horizon_angle = horizon_angle_mercator;
 #endif
 
     // Normalize in [0, 1]

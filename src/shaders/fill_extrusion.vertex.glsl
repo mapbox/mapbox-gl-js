@@ -84,16 +84,18 @@ void main() {
 
     float ele = 0.0;
     float h = 0.0;
+    float c_ele;
+    vec3 pos;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
     ele = elevation(pos_nx.xy);
-    float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
+    c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
     // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
     h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
-    vec3 pos = vec3(pos_nx.xy, h);
+    pos = vec3(pos_nx.xy, h);
 #else
     h = t > 0.0 ? height : base;
-    vec3 pos = vec3(pos_nx.xy, h);
+    pos = vec3(pos_nx.xy, h);
 #endif
 
 #ifdef PROJECTION_GLOBE_VIEW
