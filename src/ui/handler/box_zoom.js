@@ -21,8 +21,8 @@ class BoxZoomHandler {
     _container: HTMLElement;
     _enabled: boolean;
     _active: boolean;
-    _startPos: Point;
-    _lastPos: Point;
+    _startPos: ?Point;
+    _lastPos: ?Point;
     _box: HTMLElement;
     _clickTolerance: number;
 
@@ -95,12 +95,13 @@ class BoxZoomHandler {
         if (!this._active) return;
 
         const pos = point;
+        const p0 = this._startPos;
+        const p1 = this._lastPos;
 
-        if (this._lastPos.equals(pos) || (!this._box && pos.dist(this._startPos) < this._clickTolerance)) {
+        if (!p0 || !p1 || p1.equals(pos) || (!this._box && pos.dist(p0) < this._clickTolerance)) {
             return;
         }
 
-        const p0 = this._startPos;
         this._lastPos = pos;
 
         if (!this._box) {
@@ -126,10 +127,10 @@ class BoxZoomHandler {
     mouseupWindow(e: MouseEvent, point: Point): ?HandlerResult {
         if (!this._active) return;
 
-        if (e.button !== 0) return;
-
         const p0 = this._startPos,
             p1 = point;
+
+        if (!p0 || e.button !== 0) return;
 
         this.reset();
 

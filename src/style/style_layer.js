@@ -33,6 +33,7 @@ import type Map from '../ui/map.js';
 import type {StyleSetterOptions} from './style.js';
 import type {TilespaceQueryGeometry} from './query_geometry.js';
 import type {DEMSampler} from '../terrain/elevation.js';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -60,7 +61,7 @@ class StyleLayer extends Evented {
 
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
-                              feature: VectorTileFeature,
+                              feature: IVectorTileFeature,
                               featureState: FeatureState,
                               geometry: Array<Array<Point>>,
                               zoom: number,

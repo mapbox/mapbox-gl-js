@@ -65,12 +65,17 @@ export class QueryGeometry {
     static createFromScreenPoints(geometry: PointLike | [PointLike, PointLike], transform: Transform): QueryGeometry {
         let screenGeometry;
         let aboveHorizon;
+
+        // $FlowFixMe: Flow can't refine that this will be PointLike but we can
         if (geometry instanceof Point || typeof geometry[0] === 'number') {
+            // $FlowFixMe
             const pt = Point.convert(geometry);
-            screenGeometry = [Point.convert(geometry)];
+            screenGeometry = [pt];
             aboveHorizon = transform.isPointAboveHorizon(pt);
         } else {
+            // $FlowFixMe
             const tl = Point.convert(geometry[0]);
+            // $FlowFixMe
             const br = Point.convert(geometry[1]);
             screenGeometry = [tl, br];
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));

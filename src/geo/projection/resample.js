@@ -29,7 +29,7 @@ function addResampled(resampled, mx0, my0, mx2, my2, start, end, reproject, tole
 
 // reproject and resample a line, adding point where necessary for lines that become curves;
 // note that this operation is mutable (modifying original points) for performance
-export default function resample(line: Array<Point>, reproject: (Point) => Point, tolerance: number): Array<Point> {
+export default function resample(line: Array<Point>, reproject: (Point) => void, tolerance: number): Array<Point> {
     let prev = line[0];
     let mx0 = prev.x;
     let my0 = prev.y;
@@ -49,31 +49,27 @@ export default function resample(line: Array<Point>, reproject: (Point) => Point
     return resampled;
 }
 
-function addResampledPred(resampled: Point[], a: Point, b: Point, reproject, pred) {
+function addResampledPred(resampled: Point[], a: Point, b: Point, pred) {
     const split = pred(a, b);
 
     // if the predicate condition is met, recurse into two halves
     if (split) {
-        const mid = a.add(b).mult(0.5);
-        reproject(mid);
-
-        addResampledPred(resampled, a, mid, reproject, pred);
-        addResampledPred(resampled, mid, b, reproject, pred);
+        const mid = a.add(b)._mult(0.5);
+        addResampledPred(resampled, a, mid, pred);
+        addResampledPred(resampled, mid, b, pred);
 
     } else {
         resampled.push(b);
     }
 }
 
-export function resamplePred(line: Point[], reproject: (Point) => Point, predicate: (Point, Point) => boolean): Point[] {
+export function resamplePred(line: Point[], predicate: (Point, Point) => boolean): Point[] {
     let prev = line[0];
-    reproject(prev);
     const resampled = [prev];
 
     for (let i = 1; i < line.length; i++) {
         const point = line[i];
-        reproject(point);
-        addResampledPred(resampled, prev, point, reproject, predicate);
+        addResampledPred(resampled, prev, point, predicate);
         prev = point;
     }
 

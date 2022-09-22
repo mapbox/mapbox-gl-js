@@ -1,42 +1,49 @@
 // @flow
-import type Pbf from 'pbf';
-import type Point from '@mapbox/point-geometry';
-import type { GeoJSONFeature } from '@mapbox/geojson-types';
-
-declare interface VectorTile {
-    layers: {[_: string]: VectorTileLayer};
-}
-
-declare interface VectorTileLayer {
-    version?: number;
-    name: string;
-    extent: number;
-    length: number;
-    feature(i: number): VectorTileFeature;
-}
-
-declare interface VectorTileFeature {
-    extent: number;
-    type: 1 | 2 | 3;
-    id: number;
-    properties: {[_: string]: string | number | boolean};
-
-    loadGeometry(): Array<Array<Point>>;
-    toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
-}
-
 declare module "@mapbox/vector-tile" {
-    declare class VectorTileImpl {
-        constructor(pbf: Pbf): VectorTile;
-    }
+    import type Pbf from 'pbf';
+    import type Point from '@mapbox/point-geometry';
+    import type { GeoJSONFeature } from '@mapbox/geojson-types';
 
-    declare class VectorTileFeatureImpl {
-        static types: ['Unknown', 'Point', 'LineString', 'Polygon'];
+    declare export interface IVectorTile {
+        layers: {[_: string]: IVectorTileLayer};
+    }
+    declare export interface IVectorTileLayer {
+        version?: ?number;
+        name: string;
+        extent: number;
+        length: number;
+        feature(i: number): IVectorTileFeature;
+    }
+    declare export interface IVectorTileFeature {
+        extent: number;
+        type: 1 | 2 | 3;
+        id: number;
+        properties: {[_: string]: string | number | boolean};
+
+        loadGeometry(): Array<Array<Point>>;
         toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
     }
 
-    declare module.exports: {
-        VectorTile: typeof VectorTileImpl;
-        VectorTileFeature: typeof VectorTileFeatureImpl;
+    declare export class VectorTile implements IVectorTile {
+        constructor(pbf: Pbf): VectorTile;
+        layers: {[_: string]: IVectorTileLayer};
+    }
+    declare export class VectorTileLayer implements IVectorTileLayer {
+        version?: ?number;
+        name: string;
+        extent: number;
+        length: number;
+        feature(i: number): IVectorTileFeature;
+    }
+    declare export class VectorTileFeature implements IVectorTileFeature {
+        extent: number;
+        type: 1 | 2 | 3;
+        id: number;
+        properties: {[_: string]: string | number | boolean};
+
+        loadGeometry(): Array<Array<Point>>;
+        toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
+
+        static types: ['Unknown', 'Point', 'LineString', 'Polygon'];
     }
 }

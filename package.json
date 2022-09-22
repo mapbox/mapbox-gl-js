@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@mapbox/geojson-rewind": "^0.5.2",
-    "@mapbox/geojson-types": "^1.0.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^2.0.1",
     "@mapbox/point-geometry": "^0.1.0",
@@ -63,7 +62,7 @@
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^39.3.6",
-    "flow-bin": "0.142.0",
+    "flow-bin": "0.145.0",
     "gl": "5.0.3",
     "glob": "^8.0.3",
     "is-builtin-module": "^3.2.0",

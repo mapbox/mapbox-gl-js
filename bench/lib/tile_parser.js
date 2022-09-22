@@ -1,7 +1,7 @@
 // @flow
 
 import Protobuf from 'pbf';
-import VT from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import assert from 'assert';
 
 import deref from '../../src/style-spec/deref.js';
@@ -137,7 +137,7 @@ export default class TileParser {
             projection: getProjection({name: 'mercator'})
         });
 
-        const vectorTile = new VT.VectorTile(new Protobuf(tile.buffer));
+        const vectorTile = new VectorTile(new Protobuf(tile.buffer));
 
         return new Promise((resolve, reject) => {
             workerTile.parse(vectorTile, this.layerIndex, [], (this.actor: any), (err, result) => {

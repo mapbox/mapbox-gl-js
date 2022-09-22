@@ -7,7 +7,6 @@ import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
-import Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../../source/tile_id.js';
 
 type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
@@ -16,7 +15,7 @@ type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
 type BBox = [number, number, number, number];
 const EXTENT = 8192;
 
-function updateBBox(bbox: BBox, coord: Point) {
+function updateBBox(bbox: BBox, coord: [number, number]) {
     bbox[0] = Math.min(bbox[0], coord[0]);
     bbox[1] = Math.min(bbox[1], coord[1]);
     bbox[2] = Math.max(bbox[2], coord[0]);

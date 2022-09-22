@@ -33,8 +33,8 @@ import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/scrip
 import {WritingMode} from '../../symbol/shaping.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
-import mvt from '@mapbox/vector-tile';
-const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {VectorTileFeature} from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation.js';
 import Anchor from '../../symbol/anchor.js';
 import {getSizeData} from '../../symbol/symbol_size.js';
@@ -84,6 +84,7 @@ export type SingleCollisionBox = {
 };
 import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -519,16 +520,14 @@ class SymbolBucket implements Bucket {
 
                 // cos(11.25 degrees) = 0.98078528056
                 const cosAngleThreshold = 0.98078528056;
+                const predicate = (a, b) => {
+                    const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
+                    const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
+                    return vec3.dot(v0, v1) < cosAngleThreshold;
+                };
 
                 for (let i = 0; i < geom.length; i++) {
-                    geom[i] = resamplePred(
-                        geom[i],
-                        p => p,
-                        (a, b) => {
-                            const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
-                            const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
-                            return vec3.dot(v0, v1) < cosAngleThreshold;
-                        });
+                    geom[i] = resamplePred(geom[i], predicate);
                 }
             }
 
@@ -620,7 +619,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);

@@ -8,7 +8,9 @@ export type ClippedPolygon = {
     bounds: [Point, Point]
 };
 
-function clipPolygon(polygons: Array<Array<Point>>, clipAxis1: number, clipAxis2: number, axis: number): Array<Array<Point>> {
+type PolygonArray = Array<Array<Array<Point>>>;
+
+function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: number, axis: number): PolygonArray {
     const intersectX = (ring, ax, ay, bx, by, x) => {
         ring.push(new Point(x, ay + (by - ay) * ((x - ax) / (bx - ax))));
     };
@@ -73,7 +75,7 @@ function clipPolygon(polygons: Array<Array<Point>>, clipAxis1: number, clipAxis2
     return polygonsClipped;
 }
 
-export function subdividePolygons(polygons: Array<Array<Point>>, bounds: [Point, Point], gridSizeX: number, gridSizeY: number, padding: number = 0.0, splitFn: Function): Array<ClippedPolygon> {
+export function subdividePolygons(polygons: PolygonArray, bounds: [Point, Point], gridSizeX: number, gridSizeY: number, padding: number = 0.0, splitFn: Function): Array<ClippedPolygon> {
     const outPolygons = [];
 
     if (!polygons.length || !gridSizeX || !gridSizeY) {
