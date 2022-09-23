@@ -3215,7 +3215,7 @@
         }
       },
       "geometry-type": {
-        "doc": "Returns the feature's geometry type: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`. `Multi*` feature types are only returned in GeoJSON sources. When working with vector tile sources, use the singular forms.",
+        "doc": "Returns the feature's geometry type: `Point`, `LineString`, `Polygon`. `Multi*` feature types use the singular forms.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
