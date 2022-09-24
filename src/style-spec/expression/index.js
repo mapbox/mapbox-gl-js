@@ -30,7 +30,7 @@ import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {FeatureDistanceData} from '../feature_filter/index.js';
 
 export type Feature = {
-    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
+    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
     +id?: number | null,
     +properties: {[_: string]: any},
     +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
