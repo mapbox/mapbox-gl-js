@@ -7237,9 +7237,9 @@ punycode@^2.0.0, punycode@^2.1.0, punycode@^2.1.1:
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
 puppeteer-core@^18.0.2:
-  version "18.0.2"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-18.0.2.tgz#f7fc938dbac20e5fb045a9de595c6443efbd1aaa"
-  integrity sha512-eoFh37ktcbeChAw4d6wxcwI7oZhD1vxcAtrbPO6DJZn1HFBym1rE6DUwB3eARtnq5TZDpk7sNoOzLFLWa/9OSA==
+  version "18.0.5"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-18.0.5.tgz#c37e0f52e92f1c91bf56cebc5a718f00698a5566"
+  integrity sha512-JM83vUAmWdzZfUEDTGlkSdGFq0/TiVbFjQrb6BJVeLJAWVYlkO4YvyFAaTWdCM5Kz+ovg4g7xOSAU4FRh4Cv/w==
   dependencies:
     cross-fetch "3.1.5"
     debug "4.3.4"
