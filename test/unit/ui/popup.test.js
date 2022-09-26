@@ -425,6 +425,28 @@ test('When toggling projections, popups update with correct position', (t) => {
     });
 });
 
+test('When disabling render world copies, popups update with correct position', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText('Test')
+        .setLngLat([12, 55])
+        .addTo(map);
+
+    map.setCenter([-179, 0]);
+    t.equal(popup.getLngLat().lng, -348);
+
+    map.setRenderWorldCopies(false);
+
+    map._domRenderTaskQueue.run();
+
+    map.once('render', () => {
+        t.equal(popup.getLngLat().lng, 12);
+        map.remove();
+        t.end();
+    });
+});
+
+
 test('Popup anchors as specified by the anchor option', (t) => {
     const map = createMap(t);
     const popup = new Popup({anchor: 'top-left'})

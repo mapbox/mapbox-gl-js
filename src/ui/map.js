@@ -1052,6 +1052,9 @@ class Map extends Camera {
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean): this {
         this.transform.renderWorldCopies = renderWorldCopies;
+        if (!this.transform.renderWorldCopies) {
+            this._forceMarkerAndPopupUpdate({'setToWrap': true});
+        }
         return this._update();
     }
 
@@ -1248,7 +1251,7 @@ class Map extends Camera {
                 this.style._sourceCaches[id].clearTiles();
             }
             this._update(true);
-            this._forceMarkerAndPopupUpdate({'projectionHasChanged': true});
+            this._forceMarkerAndPopupUpdate({'setToWrap': true});
         }
 
         return this;
@@ -3264,14 +3267,14 @@ class Map extends Camera {
     _forceMarkerAndPopupUpdate(options?: Object) {
         for (const marker of this._markers) {
             // Wrap marker location when toggling to a projection without world copies
-            if (options && options.projectionHasChanged && !this.transform.renderWorldCopies) {
+            if (options && options.setToWrap && !this.getRenderWorldCopies()) {
                 marker._lngLat = marker._lngLat.wrap();
             }
             marker._update();
         }
         for (const popup of this._popups) {
             // Wrap popup location when toggling to a projection without world copies and track pointer set to false
-            if (options && options.projectionHasChanged && !this.transform.renderWorldCopies && !popup._trackPointer) {
+            if (options && options.setToWrap && !this.getRenderWorldCopies() && !popup._trackPointer) {
                 popup._lngLat = popup._lngLat.wrap();
             }
             popup._update();
