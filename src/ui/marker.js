@@ -548,8 +548,6 @@ export default class Marker extends Evented {
 
         if (map.transform.renderWorldCopies) {
             this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
-        } else {
-            this._lngLat = this._lngLat.wrap();
         }
 
         this._pos = map.project(this._lngLat);

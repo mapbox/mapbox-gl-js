@@ -1243,6 +1243,7 @@ class Map extends Camera {
         this.style.applyProjectionUpdate();
 
         if (projectionHasChanged) {
+            this._forceMarkerAndPopupUpdate({'projectionChanged': true});
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
@@ -3129,8 +3130,7 @@ class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
             // Update positions of markers and popups
-            this._forceMarkerUpdate();
-            this._forcePopupUpdate();
+            this._forceMarkerAndPopupUpdate();
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
@@ -3261,14 +3261,21 @@ class Map extends Camera {
         }
     }
 
-    _forceMarkerUpdate() {
+    _forceMarkerAndPopupUpdate(options?: Object) {
         for (const marker of this._markers) {
+            // Wrap marker location when toggling to a projection without world copies
+            if (options && options.projectionChanged && !this.transform.renderWorldCopies) {
+                marker._lngLat = marker._lngLat.wrap();
+            }
             marker._update();
-        }
-    }
+        
 
-    _forcePopupUpdate() {
+        }
         for (const popup of this._popups) {
+            // Wrap popup location when toggling to a projection without world copies and track pointer set to false
+            if (options && options.projectionChanged && !this.transform.renderWorldCopies && !popup._trackPointer) {
+                popup._lngLat = popup._lngLat.wrap();
+            }
             popup._update();
         }
     }
