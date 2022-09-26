@@ -77,7 +77,7 @@ type IControl = {
     onRemove(map: Map): void;
 
     +getDefaultPosition?: () => ControlPosition;
-    +_setLanguage?: (language: ?string) => void;
+    +_setLanguage?: (language: ?string | ?string[]) => void;
 }
 /* eslint-enable no-use-before-define */
 
@@ -254,7 +254,7 @@ const defaultOptions = {
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {'auto' | string} [options.language=null] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {'auto' | string | string[]} [options.language=null] A string with a BCP 47 language tag, or an array of such strings representing the desired languages used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
  *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
@@ -385,7 +385,7 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: ?string;
+    _language: ?string | ?string[];
     _worldview: ?string;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
@@ -487,7 +487,7 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
-        this._language = options.language === 'auto' ? window.navigator.language : options.language;
+        this._language = this._parseLanguage(options.language);
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
@@ -1056,19 +1056,28 @@ class Map extends Camera {
      * Returns the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @returns {string} Returns the map's language code.
+     * @returns {undefined | string | string[]} Returns the map's language code.
      * @example
      * const language = map.getLanguage();
      */
-    getLanguage(): ?string {
+    getLanguage(): ?string | ?string[] {
         return this._language;
+    }
+
+    _parseLanguage(language?: 'auto' | ?string | ?string[]): ?string | ?string[] {
+        if (language === 'auto') return window.navigator.language;
+        if (Array.isArray(language)) return language.length === 0 ?
+            undefined :
+            language.map(l => l === 'auto' ? window.navigator.language : l);
+
+        return language;
     }
 
     /**
      * Sets the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @param {'auto' | string} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+     * @param {'auto' | string | string[]} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
      *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
      *  If a label has no translation for the selected language, it will display in the label's local language.
      *  If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
@@ -1079,13 +1088,16 @@ class Map extends Camera {
      * map.setLanguage('es');
      *
      * @example
+     * map.setLanguage(['en-GB', 'en-US']);
+     *
+     * @example
      * map.setLanguage('auto');
      *
      * @example
      * map.setLanguage();
      */
-    setLanguage(language?: 'auto' | ?string): this {
-        const newLanguage = language === 'auto' ? window.navigator.language : language;
+    setLanguage(language?: 'auto' | ?string | ?string[]): this {
+        const newLanguage = this._parseLanguage(language);
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
 

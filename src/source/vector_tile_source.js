@@ -104,13 +104,13 @@ class VectorTileSource extends Evented implements Source {
     load(callback?: Callback<void>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        const language = this.map._language;
+        const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
         const worldview = this.map._worldview;
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
             if (err) {
-                if (language) console.warn(`Ensure that your requested language string is a valid BCP-47 code. Found: ${language}`);
+                if (language) console.warn(`Ensure that your requested language string is a valid BCP-47 code or list of codes. Found: ${language}`);
                 if (worldview && worldview.length !== 2) console.warn(`Requested worldview strings must be a valid ISO alpha-2 code. Found: ${worldview}`);
 
                 this.fire(new ErrorEvent(err));

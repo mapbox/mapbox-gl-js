@@ -2583,6 +2583,14 @@ test('Map', (t) => {
             });
         });
 
+        t.test('can instantiate map with fallback language', (t) => {
+            const map = createMap(t, {language: ['en-GB', 'en-US']});
+            map.on('style.load', () => {
+                t.deepEqual(map.getLanguage(), ['en-GB', 'en-US']);
+                t.end();
+            });
+        });
+
         t.test('can instantiate map with the preferred language of the user', (t) => {
             const map = createMap(t, {language: 'auto'});
             map.on('style.load', () => {
@@ -2605,13 +2613,23 @@ test('Map', (t) => {
             map.on('style.load', () => {
                 map.setLanguage('es');
                 t.equal(map.getLanguage(), 'es');
+
+                map.setLanguage(['auto', 'en-GB', 'en-US']);
+                t.deepEqual(map.getLanguage(), [window.navigator.language, 'en-GB', 'en-US']);
+
+                map.setLanguage([]);
+                t.equal(map.getLanguage(), undefined);
+
                 map.setLanguage('auto');
                 t.equal(map.getLanguage(), window.navigator.language);
+
                 map.setLanguage();
                 t.equal(map.getLanguage(), undefined);
+
                 t.end();
             });
         });
+
         t.end();
     });
 
