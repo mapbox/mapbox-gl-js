@@ -153,7 +153,6 @@ export default class Popup extends Evented {
         map.on('remove', this.remove);
         this._update();
         map._addPopup(this);
-
         this._focusFirstElement();
 
         if (this._trackPointer) {
