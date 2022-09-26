@@ -332,7 +332,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
                 }
 
-                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
+                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt, painter.smoothDistance, painter.offset, painter.linear);
                 setShaderMode(shaderMode, isWireframe);
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
@@ -362,7 +362,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
+        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0, painter.smoothDistance, painter.offset, painter.linear);
         terrain.setupElevationDraw(tile, program);
 
         program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,

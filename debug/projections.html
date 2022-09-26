@@ -149,6 +149,13 @@ const map = new mapboxgl.Map({
     }
 });
 
+map.setProjection('albers')
+
+map.setProjection({
+     name: 'albers',
+     center: [35, 55],
+     parallels: [20, 60]
+});
 const projectionInput = document.getElementById('projection');
 const styleInput = document.getElementById('style');
 const debugInput = document.getElementById('debug');

@@ -18,16 +18,25 @@ export type TerrainRasterUniformsType = {|
 const terrainRasterUniforms = (context: Context): TerrainRasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_image0': new Uniform1i(context),
-    'u_skirt_height': new Uniform1f(context)
+    'u_skirt_height': new Uniform1f(context),
+    'u_smooth_distance': new Uniform1f(context),
+    'u_offset': new Uniform1f(context),
+    'u_linear': new Uniform1i(context)
 });
 
 const terrainRasterUniformValues = (
     matrix: Float32Array,
-    skirtHeight: number
+    skirtHeight: number,
+    smoothDistance: number,
+    offset: number,
+    linear: boolean
 ): UniformValues<TerrainRasterUniformsType> => ({
     'u_matrix': matrix,
     'u_image0': 0,
-    'u_skirt_height': skirtHeight
+    'u_skirt_height': skirtHeight,
+    'u_smooth_distance': smoothDistance,
+    'u_offset': offset,
+    'u_linear': linear ? 1 : 0,
 });
 
 export {terrainRasterUniforms, terrainRasterUniformValues};

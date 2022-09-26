@@ -1,5 +1,8 @@
 uniform mat4 u_matrix;
 uniform float u_skirt_height;
+uniform float u_smooth_distance;
+uniform float u_offset;
+uniform int u_linear;
 
 attribute vec2 a_pos;
 attribute vec2 a_texture_pos;
@@ -21,6 +24,18 @@ varying float v_depth;
 const float skirtOffset = 24575.0;
 const float wireframeOffset = 0.00015;
 
+float circle(vec2 uv, float radius) {
+    if (u_linear == 0) {
+        vec2 dist = uv - vec2(0.5, u_offset);
+        float blur = 0.5;
+        return smoothstep(radius - (radius * blur), radius + (radius * blur), dot(dist,dist)*4.0);
+    } else {
+        vec2 dist = uv - vec2(0.5);
+        float blur = 0.5;
+        return smoothstep(0.0, u_smooth_distance, uv.y - u_offset);
+    }
+}
+
 void main() {
     v_pos0 = a_texture_pos / 8192.0;
     float skirt = float(a_pos.x >= skirtOffset);
@@ -29,7 +44,11 @@ void main() {
     elevation += u_skirt_height * u_skirt_height * wireframeOffset;
 #endif
     vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
-    gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
+
+    vec4 position = u_matrix * vec4(decodedPos, 0.0, 1.0);
+    vec2 uv = (position.xy / position.w) * 0.5 + 0.5;
+    float popup = circle(uv, 0.5 * u_smooth_distance);
+    gl_Position = u_matrix * vec4(decodedPos, elevation * popup, 1.0);
 
 #ifdef FOG
     v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
