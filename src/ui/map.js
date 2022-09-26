@@ -1243,12 +1243,12 @@ class Map extends Camera {
         this.style.applyProjectionUpdate();
 
         if (projectionHasChanged) {
-            this._forceMarkerAndPopupUpdate({'projectionHasChanged': true});
             this.painter.clearBackgroundTiles();
             for (const id in this.style._sourceCaches) {
                 this.style._sourceCaches[id].clearTiles();
             }
             this._update(true);
+            this._forceMarkerAndPopupUpdate({'projectionHasChanged': true});
         }
 
         return this;
