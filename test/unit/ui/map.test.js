@@ -2614,8 +2614,8 @@ test('Map', (t) => {
                 map.setLanguage('es');
                 t.equal(map.getLanguage(), 'es');
 
-                map.setLanguage(['en-GB', 'en-US']);
-                t.deepEqual(map.getLanguage(), ['en-GB', 'en-US']);
+                map.setLanguage(['auto', 'en-GB', 'en-US']);
+                t.deepEqual(map.getLanguage(), [window.navigator.language, 'en-GB', 'en-US']);
 
                 map.setLanguage([]);
                 t.equal(map.getLanguage(), undefined);

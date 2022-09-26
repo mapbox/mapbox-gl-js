@@ -1066,7 +1066,10 @@ class Map extends Camera {
 
     _parseLanguage(language?: 'auto' | ?string | ?string[]): ?string | ?string[] {
         if (language === 'auto') return window.navigator.language;
-        if (Array.isArray(language)) return language.length > 0 ? language : undefined;
+        if (Array.isArray(language)) return language.length === 0 ?
+            undefined :
+            language.map(l => l === 'auto' ? window.navigator.language : l);
+
         return language;
     }
 
