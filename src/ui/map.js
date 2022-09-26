@@ -3129,7 +3129,7 @@ class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
-            // Update positions of markers and popups
+            // Update positions of markers and popups on enabling/disabling terrain
             this._forceMarkerAndPopupUpdate();
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
