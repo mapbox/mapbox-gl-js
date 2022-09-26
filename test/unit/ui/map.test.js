@@ -439,6 +439,7 @@ test('Map', (t) => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
                     t.equal(map.getTerrain(), null);
+                    t.true(map.painter._terrain._isMockSource());
                     t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
@@ -602,6 +603,57 @@ test('Map', (t) => {
             });
 
             t.end();
+        });
+
+        t.test('Setting globe and then terrain correctly sets terrain mock source', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style, projection: 'globe'});
+            map.setZoom(3);
+            map.on('style.load', () => {
+                map.addSource('mapbox-dem', {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.terrain-rgb',
+                    'tileSize': 512,
+                    'maxzoom': 14
+                });
+                map.once('render', () => {
+                    t.true(map.painter._terrain._isMockSource());
+                    map.setTerrain({'source': 'mapbox-dem'});
+                    map.once('render', () => {
+                        t.false(map.painter._terrain._isMockSource());
+                        map.setTerrain(null);
+                        map.once('render', () => {
+                            t.true(map.painter._terrain._isMockSource());
+                            t.end();
+                        });
+                    });
+                });
+            });
+        });
+
+        t.test('Setting terrain and then globe correctly sets terrain mock source', (t) => {
+            const style = createStyle();
+            const map = createMap(t, {style});
+            map.setZoom(3);
+            map.on('style.load', () => {
+                map.addSource('mapbox-dem', {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.terrain-rgb',
+                    'tileSize': 512,
+                    'maxzoom': 14
+                });
+                map.setTerrain({'source': 'mapbox-dem'});
+                map.once('render', () => {
+                    t.false(map.painter._terrain._isMockSource());
+                    map.setProjection('globe');
+                    t.false(map.painter._terrain._isMockSource());
+                    map.setTerrain(null);
+                    map.once('render', () => {
+                        t.true(map.painter._terrain._isMockSource());
+                        t.end();
+                    });
+                });
+            });
         });
 
         t.test('should apply different styles when toggling setStyle (https://github.com/mapbox/mapbox-gl-js/issues/11939)', (t) => {
