@@ -6391,7 +6391,7 @@ object-keys@^1.1.1:
   resolved "https://registry.yarnpkg.com/object-keys/-/object-keys-1.1.1.tgz#1c47f272df277f3b1daf061677d9c82e2322c60e"
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
 
-object.assign@^4.1.2, object.assign@^4.1.3:
+object.assign@^4.1.2, object.assign@^4.1.4:
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/object.assign/-/object.assign-4.1.4.tgz#9673c7c7c351ab8c4d0b516f4343ebf4dfb7799f"
   integrity sha512-1mxKf0e58bvyjSCtKYY4sRe9itRk3PJpquJOjeIkz885CczcI4IvJJDLPS72oowuSh+pBxUFROpX+TU++hxhZQ==
@@ -8614,9 +8614,9 @@ tape-filter@^1.0.4:
     minimist "^1.2.0"
 
 tape@^5.6.0:
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/tape/-/tape-5.6.0.tgz#588af7292e4a91e49ce5eba344d632d412317b9b"
-  integrity sha512-LyM4uqbiTAqDgsHTY0r1LH66yE24P3SZaz5TL3mPUds0XCTFl/0AMUBrjgBjUclvbPTFB4IalXg0wFfbTuuu/Q==
+  version "5.6.1"
+  resolved "https://registry.yarnpkg.com/tape/-/tape-5.6.1.tgz#bbc1420e5e13003cbd7e2cf0efaa091bfb5c970a"
+  integrity sha512-reNzS3rzsJtKk0f+zJx2XlzIsjJXlIcOIrIxk5shHAG/DzW3BKyMg8UfN79oluYlcWo4lIt56ahLqwgpRT4idg==
   dependencies:
     array.prototype.every "^1.1.3"
     call-bind "^1.0.2"
@@ -8634,7 +8634,7 @@ tape@^5.6.0:
     object-inspect "^1.12.2"
     object-is "^1.1.5"
     object-keys "^1.1.1"
-    object.assign "^4.1.3"
+    object.assign "^4.1.4"
     resolve "^2.0.0-next.3"
     resumer "^0.0.0"
     string.prototype.trim "^1.2.6"
