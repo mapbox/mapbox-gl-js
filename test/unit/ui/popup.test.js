@@ -446,7 +446,6 @@ test('When disabling render world copies, popups update with correct position', 
     });
 });
 
-
 test('Popup anchors as specified by the anchor option', (t) => {
     const map = createMap(t);
     const popup = new Popup({anchor: 'top-left'})

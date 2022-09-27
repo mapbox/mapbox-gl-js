@@ -3264,7 +3264,7 @@ class Map extends Camera {
         }
     }
 
-    _forceMarkerAndPopupUpdate(shouldWrap?: Boolean) {
+    _forceMarkerAndPopupUpdate(shouldWrap?: boolean) {
         for (const marker of this._markers) {
             // Wrap marker location when toggling to a projection without world copies
             if (shouldWrap && !this.getRenderWorldCopies()) {
