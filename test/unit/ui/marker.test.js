@@ -923,6 +923,46 @@ test('Drag below / behind camera', (t) => {
     t.end();
 });
 
+test('When toggling projections, markers update with correct position', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([12, 55])
+        .addTo(map);
+
+    map.setCenter([-179, 0]);
+    t.equal(marker.getLngLat().lng, -348);
+
+    map.setProjection('albers');
+
+    map._domRenderTaskQueue.run();
+
+    map.once('render', () => {
+        t.equal(marker.getLngLat().lng, 12);
+        map.remove();
+        t.end();
+    });
+});
+
+test('When disabling render world copies, markers update with correct position', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([12, 55])
+        .addTo(map);
+
+    map.setCenter([-179, 0]);
+    t.equal(marker.getLngLat().lng, -348);
+
+    map.setRenderWorldCopies(false);
+
+    map._domRenderTaskQueue.run();
+
+    map.once('render', () => {
+        t.equal(marker.getLngLat().lng, 12);
+        map.remove();
+        t.end();
+    });
+});
+
 test('Marker and fog', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})

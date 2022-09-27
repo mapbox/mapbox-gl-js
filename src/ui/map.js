@@ -27,6 +27,7 @@ import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
 import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
 import Marker from '../ui/marker.js';
+import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
@@ -369,6 +370,7 @@ class Map extends Camera {
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _markers: Array<Marker>;
+    _popups: Array<Popup>;
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
@@ -493,6 +495,7 @@ class Map extends Camera {
         this._domRenderTaskQueue = new TaskQueue();
         this._controls = [];
         this._markers = [];
+        this._popups = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
@@ -1049,6 +1052,9 @@ class Map extends Camera {
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean): this {
         this.transform.renderWorldCopies = renderWorldCopies;
+        if (!this.transform.renderWorldCopies) {
+            this._forceMarkerAndPopupUpdate(true);
+        }
         return this._update();
     }
 
@@ -1257,6 +1263,7 @@ class Map extends Camera {
                 this.style._sourceCaches[id].clearTiles();
             }
             this._update(true);
+            this._forceMarkerAndPopupUpdate(true);
         }
 
         return this;
@@ -2927,6 +2934,17 @@ class Map extends Camera {
         }
     }
 
+    _addPopup(popup: Popup) {
+        this._popups.push(popup);
+    }
+
+    _removePopup(popup: Popup) {
+        const index = this._popups.indexOf(popup);
+        if (index !== -1) {
+            this._popups.splice(index, 1);
+        }
+    }
+
     _setupPainter() {
         const attributes = extend({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
@@ -3126,8 +3144,8 @@ class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
-            // Update positions of markers on enabling/disabling terrain
-            this._forceMarkerUpdate();
+            // Update positions of markers and popups on enabling/disabling terrain
+            this._forceMarkerAndPopupUpdate();
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
@@ -3258,9 +3276,20 @@ class Map extends Camera {
         }
     }
 
-    _forceMarkerUpdate() {
+    _forceMarkerAndPopupUpdate(shouldWrap?: boolean) {
         for (const marker of this._markers) {
+            // Wrap marker location when toggling to a projection without world copies
+            if (shouldWrap && !this.getRenderWorldCopies()) {
+                marker._lngLat = marker._lngLat.wrap();
+            }
             marker._update();
+        }
+        for (const popup of this._popups) {
+            // Wrap popup location when toggling to a projection without world copies and track pointer set to false
+            if (shouldWrap && !this.getRenderWorldCopies() && !popup._trackPointer) {
+                popup._lngLat = popup._lngLat.wrap();
+            }
+            popup._update();
         }
     }
 
