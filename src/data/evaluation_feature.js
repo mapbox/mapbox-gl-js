@@ -6,7 +6,7 @@ import type Point from '@mapbox/point-geometry';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 type EvaluationFeature = {
-    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
+    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
     +id?: any,
     +properties: {[_: string]: any},
     +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},

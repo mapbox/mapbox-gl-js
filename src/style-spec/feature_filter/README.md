@@ -51,5 +51,5 @@ var feature = {
 };
 
 // will return a boolean based on whether the feature matched the filter
-return testFilter({zoom: 0}, feature);
+return testFilter.filter({zoom: 0}, feature);
 ```
