@@ -1,4 +1,5 @@
-import path from 'path';
+// Use linux 'path' syntax on all operating systems to preserve compatability with 'glob'
+import {posix as path} from "path";
 import fs from 'fs';
 import glob from 'glob';
 import localizeURLs from './localize-urls.js';
@@ -19,6 +20,10 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     //Extract the filedata into a flat dictionary
     const allFiles = {};
     let allPaths = glob.sync(jsonPaths);
+    if (!allPaths.length){
+        console.error(`Found no tests matching the pattern ${jsonPaths}`)
+        process.exit(1);
+    }
     if (includeImages) {
         allPaths = allPaths.concat(glob.sync(imagePaths));
     }
