@@ -227,6 +227,13 @@ export class Elevation {
         throw new Error('Pure virtual method called.');
     }
 
+    /*
+     * Whether the SourceCache instance is a mock source cache.
+     * This mock source cache is used solely for the Globe projection and with terrain disabled,
+     * where we only want to leverage the draping rendering pipeline without incurring DEM-tile
+     * download overhead. This function is useful to skip DEM processing as the mock data source
+     * placeholder contains only 0 height.
+     */
     _isMockSource(): boolean {
         throw new Error('Pure virtual method called.');
     }
