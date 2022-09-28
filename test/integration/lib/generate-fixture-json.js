@@ -20,9 +20,8 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     //Extract the filedata into a flat dictionary
     const allFiles = {};
     let allPaths = glob.sync(jsonPaths);
-    if (!allPaths.length){
-        console.error(`Found no tests matching the pattern ${jsonPaths}`)
-        process.exit(1);
+    if (!allPaths.length) {
+        console.error(`Found no tests matching the pattern ${jsonPaths}`);
     }
     if (includeImages) {
         allPaths = allPaths.concat(glob.sync(imagePaths));
