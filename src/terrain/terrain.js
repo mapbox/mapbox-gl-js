@@ -397,6 +397,10 @@ export class Terrain extends Elevation {
         return this.enabled ? this.sourceCache : null;
     }
 
+    isUsingMockSource(): boolean {
+        return this.sourceCache === this._mockSourceCache;
+    }
+
     // Implements Elevation::exaggeration.
     exaggeration(): number {
         return this._exaggeration;
