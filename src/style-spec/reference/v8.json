@@ -1907,8 +1907,8 @@
         },
         "data-driven styling": {
           "js": "2.3.0",
-          "android": "10.7.0",
-          "ios": "10.7.0"
+          "android": "10.0.0",
+          "ios": "10.0.0"
         }
       },
       "expression": {
@@ -5002,9 +5002,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "2.3.0",
-          "android": "10.0.0",
-          "ios": "10.0.0"
+          "js": "2.3.0"
         }
       },
       "expression": {
@@ -5065,10 +5063,7 @@
           "ios": "4.4.0",
           "macos": "0.11.0"
         },
-        "data-driven styling": {
-          "android": "10.0.0",
-          "ios": "10.0.0"
-        }
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": true,
