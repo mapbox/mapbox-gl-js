@@ -62,6 +62,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - prepare-windows:
+          filters:
+            tags:
+              only: /.*/
       - build-windows:
           requires:
             - prepare-windows
