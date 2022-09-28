@@ -375,6 +375,7 @@ class LineBucket implements Bucket {
         let nextVertex = ((undefined: any): Point);
         let prevNormal = ((undefined: any): Point);
         let nextNormal = ((undefined: any): Point);
+        let joinNormal = ((undefined: any): Point);
 
         // the last two vertices added
         this.e1 = this.e2 = -1;
@@ -413,7 +414,7 @@ class LineBucket implements Bucket {
             // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
             // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
             // below will also become 0 and miterLength will become Infinity.
-            let joinNormal = prevNormal.add(nextNormal);
+            joinNormal = prevNormal.add(nextNormal);
             if (joinNormal.x !== 0 || joinNormal.y !== 0) {
                 joinNormal._unit();
             }
@@ -446,7 +447,7 @@ class LineBucket implements Bucket {
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                     this.updateDistance(prevVertex, newPrevVertex);
-                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
+                    this.addCurrentVertex(newPrevVertex, prevNormal, joinNormal, 0, 0, segment);
                     prevVertex = newPrevVertex;
                 }
             }
@@ -481,24 +482,22 @@ class LineBucket implements Bucket {
             if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
             if (currentJoin === 'miter') {
-
-                joinNormal._mult(miterLength);
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
-
+                let modifiedNormal = joinNormal.clone();
+                modifiedNormal._mult(miterLength);
+                this.addCurrentVertex(currentVertex, modifiedNormal, joinNormal, 0, 0, segment);
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
-
+                let modifiedNormal = joinNormal.clone();
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.mult(-1);
+                    modifiedNormal = nextNormal.mult(-1);
 
                 } else {
                     const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
-                    joinNormal._perp()._mult(bevelLength * (lineTurnsLeft ? -1 : 1));
+                    modifiedNormal._perp()._mult(bevelLength * (lineTurnsLeft ? -1 : 1));
                 }
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
-                this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment);
-
+                this.addCurrentVertex(currentVertex, modifiedNormal, joinNormal, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, modifiedNormal.mult(-1), joinNormal, 0, 0, segment);
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 const offset = -Math.sqrt(miterLength * miterLength - 1);
                 const offsetA = lineTurnsLeft ? offset : 0;
@@ -506,7 +505,7 @@ class LineBucket implements Bucket {
 
                 // Close previous segment with a bevel
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, segment);
+                    this.addCurrentVertex(currentVertex, prevNormal, joinNormal, offsetA, offsetB, segment);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -528,47 +527,47 @@ class LineBucket implements Bucket {
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
                         const extrude = nextNormal.sub(prevNormal)._mult(t)._add(prevNormal)._unit()._mult(lineTurnsLeft ? -1 : 1);
-                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
+                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
                     }
                 }
 
                 if (nextVertex) {
                     // Start next segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment);
+                    this.addCurrentVertex(currentVertex, nextNormal, joinNormal, -offsetA, -offsetB, segment);
                 }
 
             } else if (currentJoin === 'butt') {
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment); // butt cap
+                this.addCurrentVertex(currentVertex, joinNormal, joinNormal, 0, 0, segment); // butt cap
 
             } else if (currentJoin === 'square') {
                 const offset = prevVertex ? 1 : -1; // closing or starting square cap
 
                 if (!prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                    this.addCurrentVertex(currentVertex, joinNormal, joinNormal, offset, offset, segment);
                 }
 
                 // make the cap it's own quad to avoid the cap affecting the line distance
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, joinNormal, joinNormal, 0, 0, segment);
 
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
+                    this.addCurrentVertex(currentVertex, joinNormal, joinNormal, offset, offset, segment);
                 }
 
             } else if (currentJoin === 'round') {
 
                 if (prevVertex) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
+                    this.addCurrentVertex(currentVertex, prevNormal, joinNormal, 0, 0, segment);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, true);
+                    this.addCurrentVertex(currentVertex, prevNormal, joinNormal, 1, 1, segment, true);
                 }
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment, true);
+                    this.addCurrentVertex(currentVertex, nextNormal, joinNormal, -1, -1, segment, true);
 
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment);
+                    this.addCurrentVertex(currentVertex, nextNormal, joinNormal, 0, 0, segment);
                 }
             }
 
@@ -577,7 +576,7 @@ class LineBucket implements Bucket {
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                     this.updateDistance(currentVertex, newCurrentVertex);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
+                    this.addCurrentVertex(newCurrentVertex, nextNormal, joinNormal, 0, 0, segment);
                     currentVertex = newCurrentVertex;
                 }
             }
@@ -589,29 +588,38 @@ class LineBucket implements Bucket {
      *
      * @param p the line vertex to add buffer vertices for
      * @param normal vertex normal
+     * @param offsetNormal offset normal
      * @param endLeft extrude to shift the left vertex along the line
      * @param endRight extrude to shift the left vertex along the line
      * @param segment the segment object to add the vertex to
      * @param round whether this is a round cap
      * @private
      */
-    addCurrentVertex(p: Point, normal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
+    addCurrentVertex(p: Point, normal: Point, offsetNormal: Point, endLeft: number, endRight: number, segment: Segment, round: boolean = false) {
         // left and right extrude vectors, perpendicularly shifted by endLeft/endRight
         const leftX = normal.x + normal.y * endLeft;
         const leftY = normal.y - normal.x * endLeft;
+        const leftOffsetX = offsetNormal.x + offsetNormal.y * endLeft;
+        const leftOffsetY = offsetNormal.y - offsetNormal.x * endLeft;
+
         const rightX = -normal.x + normal.y * endRight;
         const rightY = -normal.y - normal.x * endRight;
+        const rightOffsetX = -offsetNormal.x + offsetNormal.y * endRight;
+        const rightOffsetY = -offsetNormal.y - offsetNormal.x * endRight;
 
-        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
-        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
+        this.addHalfVertex(p, leftX, leftY, leftOffsetX, leftOffsetY, round, false, endLeft, segment);
+        this.addHalfVertex(p, rightX, rightY, rightOffsetX, rightOffsetY, round, true, -endRight, segment);
     }
 
-    addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
+    addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, offsetExtrudeX: number, offsetExtrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
             // Encode round/up the least significant bits
             (x << 1) + (round ? 1 : 0),
             (y << 1) + (up ? 1 : 0),
+            // a_offset_normal
+            Math.round(EXTRUDE_SCALE * offsetExtrudeX) + 128,
+            Math.round(EXTRUDE_SCALE * offsetExtrudeY) + 128,
             // a_data
             // add 128 to store a byte in an unsigned byte
             Math.round(EXTRUDE_SCALE * extrudeX) + 128,

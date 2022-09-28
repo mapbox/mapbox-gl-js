@@ -5,6 +5,7 @@ import type {StructArrayLayout} from '../../util/struct_array.js';
 
 const lineLayoutAttributes: StructArrayLayout = createLayout([
     {name: 'a_pos_normal', components: 2, type: 'Int16'},
+    {name: 'a_offset_normal', components: 2, type: 'Uint8'},
     {name: 'a_data', components: 4, type: 'Uint8'},
     {name: 'a_linesofar', components: 1, type: 'Float32'}
 ], 4);

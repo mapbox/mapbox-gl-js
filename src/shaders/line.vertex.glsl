@@ -7,6 +7,7 @@
 #define EXTRUDE_SCALE 0.015873016
 
 attribute vec2 a_pos_normal;
+attribute vec2 a_offset_normal;
 attribute vec4 a_data;
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices.
@@ -68,6 +69,7 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
     vec2 pos = floor(a_pos_normal * 0.5);
+    vec2 a_offset_extrude = a_offset_normal.xy - 128.0;
 
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
@@ -95,7 +97,7 @@ void main() {
     // extrude vector points in another direction.
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
+    mediump vec2 offset2 = offset * a_offset_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
