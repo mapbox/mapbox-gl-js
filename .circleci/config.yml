@@ -422,9 +422,9 @@ jobs:
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
-      - run: yarn
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
-      - run: (new-object System.Net.WebClient).DownloadFile('http://dl.google.com/chrome/install/375.126/chrome_installer.exe', 'c:/temp/chrome.exe');. c:/temp/chrome.exe /silent /install;rm c:/temp -rec
+      - run: $Path = $env:TEMP; $Installer = "chrome_installer.exe"; Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile $Path$Installer; Start-Process -FilePath $Path$Installer -Args "/silent /install" -Verb RunAs -Wait; Remove-Item $Path$Installer
+      - run: yarn
       - save_cache:
           key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
