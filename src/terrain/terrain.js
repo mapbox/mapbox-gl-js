@@ -397,7 +397,7 @@ export class Terrain extends Elevation {
         return this.enabled ? this.sourceCache : null;
     }
 
-    _isMockSource(): boolean {
+    isUsingMockSource(): boolean {
         return this.sourceCache === this._mockSourceCache;
     }
 

@@ -439,7 +439,7 @@ test('Map', (t) => {
                     t.equal(initStyleObj.setTerrain.callCount, 1);
                     t.ok(map.style.terrain);
                     t.equal(map.getTerrain(), null);
-                    t.true(map.painter._terrain._isMockSource());
+                    t.true(map.painter._terrain.isUsingMockSource());
                     t.equal(map.getStyle().terrain, undefined);
                     t.end();
                 });
@@ -617,13 +617,13 @@ test('Map', (t) => {
                     'maxzoom': 14
                 });
                 map.once('render', () => {
-                    t.true(map.painter._terrain._isMockSource());
+                    t.true(map.painter._terrain.isUsingMockSource());
                     map.setTerrain({'source': 'mapbox-dem'});
                     map.once('render', () => {
-                        t.false(map.painter._terrain._isMockSource());
+                        t.false(map.painter._terrain.isUsingMockSource());
                         map.setTerrain(null);
                         map.once('render', () => {
-                            t.true(map.painter._terrain._isMockSource());
+                            t.true(map.painter._terrain.isUsingMockSource());
                             t.end();
                         });
                     });
@@ -644,12 +644,12 @@ test('Map', (t) => {
                 });
                 map.setTerrain({'source': 'mapbox-dem'});
                 map.once('render', () => {
-                    t.false(map.painter._terrain._isMockSource());
+                    t.false(map.painter._terrain.isUsingMockSource());
                     map.setProjection('globe');
-                    t.false(map.painter._terrain._isMockSource());
+                    t.false(map.painter._terrain.isUsingMockSource());
                     map.setTerrain(null);
                     map.once('render', () => {
-                        t.true(map.painter._terrain._isMockSource());
+                        t.true(map.painter._terrain.isUsingMockSource());
                         t.end();
                     });
                 });

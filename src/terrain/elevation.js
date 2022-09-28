@@ -37,7 +37,7 @@ export class Elevation {
      */
     isDataAvailableAtPoint(point: MercatorCoordinate): boolean {
         const sourceCache = this._source();
-        if (this._isMockSource() || !sourceCache || point.y < 0.0 || point.y > 1.0) {
+        if (this.isUsingMockSource() || !sourceCache || point.y < 0.0 || point.y > 1.0) {
             return false;
         }
 
@@ -74,7 +74,7 @@ export class Elevation {
      * Doesn't invoke network request to fetch the data.
      */
     getAtPoint(point: MercatorCoordinate, defaultIfNotLoaded: ?number, exaggerated: boolean = true): number | null {
-        if (this._isMockSource()) {
+        if (this.isUsingMockSource()) {
             return null;
         }
 
@@ -137,7 +137,7 @@ export class Elevation {
      * Nearest filter sampling on dem data is done (no interpolation).
      */
     getForTilePoints(tileID: OverscaledTileID, points: Array<Vec3>, interpolated: ?boolean, useDemTile: ?Tile): boolean {
-        if (this._isMockSource()) {
+        if (this.isUsingMockSource()) {
             return false;
         }
 
@@ -156,7 +156,7 @@ export class Elevation {
      * @returns {?{min: number, max: number}} The min and max elevation.
      */
     getMinMaxForTile(tileID: OverscaledTileID): ?{min: number, max: number} {
-        if (this._isMockSource()) {
+        if (this.isUsingMockSource()) {
             return null;
         }
 
@@ -234,7 +234,7 @@ export class Elevation {
      * download overhead. This function is useful to skip DEM processing as the mock data source
      * placeholder contains only 0 height.
      */
-    _isMockSource(): boolean {
+    isUsingMockSource(): boolean {
         throw new Error('Pure virtual method called.');
     }
 
