@@ -424,7 +424,6 @@ jobs:
       name: win/default
     working_directory: ~/mapbox-gl-js
     steps:
-      - run: pwsh -c "Write-Host Running prepare-windows"
       - checkout
       - restore_cache:
           keys:
@@ -475,7 +474,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: pwsh -c "Write-Host Running test-render-windows"
+      - browser-tools/install-chrome
+      - run: yarn run test-render
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
