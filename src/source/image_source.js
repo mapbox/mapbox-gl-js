@@ -114,6 +114,7 @@ class ImageSource extends Evented implements Source {
     boundsSegments: ?SegmentVector;
     _loaded: boolean;
     _dirty: boolean;
+    _imageRequest: ?Cancelable;
     perspectiveTransform: [number, number];
 
     /**
@@ -144,7 +145,8 @@ class ImageSource extends Evented implements Source {
 
         this.url = this.options.url;
 
-        getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+        this._imageRequest = getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
+            this._imageRequest = null;
             this._loaded = true;
             if (err) {
                 this.fire(new ErrorEvent(err));
@@ -208,6 +210,10 @@ class ImageSource extends Evented implements Source {
         if (!this.image || !options.url) {
             return this;
         }
+        if (this._imageRequest) {
+            this._imageRequest.cancel();
+            this._imageRequest = null;
+        }
         this.options.url = options.url;
         this.load(options.coordinates, this._loaded);
         return this;
@@ -226,6 +232,10 @@ class ImageSource extends Evented implements Source {
     }
 
     onRemove() {
+        if (this._imageRequest) {
+            this._imageRequest.cancel();
+            this._imageRequest = null;
+        }
         if (this.texture) this.texture.destroy();
     }
 
