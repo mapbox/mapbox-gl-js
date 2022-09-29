@@ -62,13 +62,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - prepare-windows:
-          filters:
-            tags:
-              only: /.*/
       - test-render-windows:
-          requires:
-            - prepare-windows
           filters:
             tags:
               only: /.*/
@@ -413,15 +407,13 @@ jobs:
           command: |
             bash ./build/upload.sh
 
-  prepare-windows:
+  test-render-windows:
     executor:
       name: win/default
     working_directory: ~/mapbox-gl-js
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
+      - attach_workspace:
+          at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
       - run:
           name: Installing Chrome on Windows
@@ -437,24 +429,6 @@ jobs:
               Write-Host "Chrome failed to install";
             }
       - run: yarn
-      - save_cache:
-          key: v4-yarn-{{ checksum "yarn.lock" }}
-          paths:
-            - '~/.yarn'
-            - 'node_modules'
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - mapbox-gl-js
-            - .ssh
-
-  test-render-windows:
-    executor:
-      name: win/default
-    working_directory: ~/mapbox-gl-js
-    steps:
-      - attach_workspace:
-          at: ~/
       - run: yarn run test-render
       - run: yarn run test-render
       - store_test_results:
