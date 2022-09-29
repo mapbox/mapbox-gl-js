@@ -423,7 +423,11 @@ jobs:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
-      - run: $Path = $env:TEMP; $Installer = "chrome_installer.exe"; Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile $Path$Installer; Start-Process -FilePath $Path$Installer -Args "/silent /install" -Verb RunAs -Wait; Remove-Item $Path$Installer
+      - run: $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+      - run: $path = "$PSScriptRoot\ChromeSetup.exe";
+      - run: Invoke-WebRequest -Uri $uri -OutFile $path;
+      - run: Start-Process $path /install -NoNewWindow -Wait; 
+      - run: Remove-Item $path;
       - run: yarn
       - save_cache:
           key: v4-yarn-{{ checksum "yarn.lock" }}
