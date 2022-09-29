@@ -20,6 +20,7 @@ import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
+import type {Cancelable} from '../types/cancelable.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {
     ImageSourceSpecification,
@@ -210,7 +211,7 @@ class ImageSource extends Evented implements Source {
         if (!this.image || !options.url) {
             return this;
         }
-        if (this._imageRequest) {
+        if (this._imageRequest && options.url !== this.options.url) {
             this._imageRequest.cancel();
             this._imageRequest = null;
         }
