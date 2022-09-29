@@ -434,10 +434,7 @@ jobs:
 
             $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
             if ($chromeInstalled.FileName -eq $null) {
-              Write-Host "Chrome sucessfully installed"}
-            else {
-              Write-Host "Chrome is not installed";
-              throw "Chrome failed to install";
+              Write-Host "Chrome failed to install";
             }
       - run: yarn
       - save_cache:
