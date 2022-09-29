@@ -458,6 +458,32 @@ test('Popup anchors as specified by the anchor option', (t) => {
     t.end();
 });
 
+test('Popup anchors as specified by the anchor option when fixedAnchor is true', (t) => {
+    const map = createMap(t);
+    const popup = new Popup({anchor: 'top-left', fixedAnchor: true})
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top-left'));
+    t.end();
+});
+
+[true, false].forEach((fixedAnchor) => {
+    test(`Popup anchors as bottom when anchor is undefined and fixedAnchor is ${fixedAnchor}`, (t) => {
+        const map = createMap(t);
+        const popup = new Popup({fixedAnchor})
+            .setLngLat([0, 0])
+            .setText('Test')
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-bottom'));
+        t.end();
+    });
+});
+
 [
     ['top-left',     new Point(10, 10),                                     'translate(0,0) translate(7px,7px)'],
     ['top',          new Point(containerWidth / 2, 10),                     'translate(-50%,0) translate(0px,10px)'],
@@ -472,25 +498,26 @@ test('Popup anchors as specified by the anchor option', (t) => {
     const anchor = args[0];
     const point = args[1];
     const transform = args[2];
+    [undefined, false].forEach((fixedAnchor) => {
+        test(`Popup automatically anchors to ${anchor} when fixed anchor is ${fixedAnchor ?? 'undefined'}`, (t) => {
+            const map = createMap(t);
+            const popup = new Popup({fixedAnchor})
+                .setLngLat([0, 0])
+                .setText('Test')
+                .addTo(map);
+            map._domRenderTaskQueue.run();
 
-    test(`Popup automatically anchors to ${anchor}`, (t) => {
-        const map = createMap(t);
-        const popup = new Popup()
-            .setLngLat([0, 0])
-            .setText('Test')
-            .addTo(map);
-        map._domRenderTaskQueue.run();
+            Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
+            Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 100});
 
-        Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 100});
-        Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 100});
+            t.stub(map, 'project').returns(point);
+            t.stub(map.transform, 'locationPoint3D').returns(point);
+            popup.setLngLat([0, 0]);
+            map._domRenderTaskQueue.run();
 
-        t.stub(map, 'project').returns(point);
-        t.stub(map.transform, 'locationPoint3D').returns(point);
-        popup.setLngLat([0, 0]);
-        map._domRenderTaskQueue.run();
-
-        t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
-        t.end();
+            t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
+            t.end();
+        });
     });
 
     test(`Popup translation reflects offset and ${anchor} anchor`, (t) => {
@@ -531,6 +558,40 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
 
     t.ok(popup.getElement().classList.contains('mapboxgl-popup-anchor-top'));
     t.end();
+});
+
+[ 'center',
+    'top',
+    'bottom',
+    'left',
+    'right',
+    'top-left',
+    'top-right',
+    'bottom-left',
+    'bottom-right'].forEach((anchor) => {
+    test(`Popup automatically anchors to value (${anchor}) position if will be on-screen`, (t) => {
+        const map = createMap(t);
+        const point = new Point(containerWidth / 2, containerHeight / 2);
+        const options = {offset: {
+            'bottom': [0, 0],
+            'top': [0, 0]
+        }, anchor, fixedAnchor: false};
+        const popup = new Popup(options)
+            .setLngLat([0, 0])
+            .setText('Test')
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        Object.defineProperty(popup.getElement(), 'offsetWidth', {value: containerWidth / 2});
+        Object.defineProperty(popup.getElement(), 'offsetHeight', {value: containerHeight / 2});
+
+        t.stub(map, 'project').returns(point);
+        popup.setLngLat([0, 0]);
+        map._domRenderTaskQueue.run();
+
+        t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
+        t.end();
+    });
 });
 
 test('Popup is offset via a PointLike offset option', (t) => {

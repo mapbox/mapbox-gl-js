@@ -2,7 +2,7 @@
 
 import {extend, bindAll} from '../util/util.js';
 import {Event, Evented} from '../util/evented.js';
-import {MapMouseEvent} from '../ui/events.js';
+import {MapMouseEvent} from './events.js';
 import * as DOM from '../util/dom.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
@@ -21,7 +21,7 @@ const defaultOptions = {
     closeOnClick: true,
     focusAfterOpen: true,
     className: '',
-    maxWidth: "240px"
+    maxWidth: "240px",
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -34,7 +34,8 @@ export type PopupOptions = {
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
-    maxWidth?: string
+    maxWidth?: string,
+    fixedAnchor: boolean
 };
 
 const focusQuerySelector = [
@@ -59,6 +60,9 @@ const focusQuerySelector = [
  *   map moves.
  * @param {boolean} [options.focusAfterOpen=true] If `true`, the popup will try to focus the
  *   first focusable element inside the popup.
+ * @param {boolean} [options.fixedAnchor] - If 'true', the popup will fix to the value set by
+ * `options.anchor`. If 'false' the anchor will be dynamically set to ensure the popup falls within
+ *  the map container with a preference for the value set by `options.anchor`.
  * @param {string} [options.anchor] - A string indicating the part of the popup that should
  *   be positioned closest to the coordinate, set via {@link Popup#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
@@ -69,7 +73,7 @@ const focusQuerySelector = [
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a {@link PointLike} specifying a constant offset
- *   - an object of {@link Point}s specifing an offset for each anchor position.
+ *   - an object of {@link Point}s specifying an offset for each anchor position.
  *
  *  Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
@@ -549,13 +553,19 @@ export default class Popup extends Evented {
     }
 
     _getAnchor(bottomY: number): Anchor {
-        if (this.options.anchor) { return this.options.anchor; }
+        const fallbackPosition = 'bottom';
+        if (
+            this.options.fixedAnchor ||
+            (typeof (this.options.fixedAnchor) === 'undefined' && this.options.anchor)
+        ) {
+            return this.options.anchor || fallbackPosition;
+        }
 
         const map = this._map;
         const container = this._container;
         const pos = this._pos;
 
-        if (!map || !container || !pos) return 'bottom';
+        if (!map || !container || !pos) return fallbackPosition;
 
         const width = container.offsetWidth;
         const height = container.offsetHeight;
@@ -577,7 +587,7 @@ export default class Popup extends Evented {
         if (isLeft) return 'left';
         if (isRight) return 'right';
 
-        return 'bottom';
+        return this.options.anchor || fallbackPosition;
     }
 
     _updateClassList() {
