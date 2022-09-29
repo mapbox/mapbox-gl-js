@@ -412,6 +412,10 @@ jobs:
       name: win/default
     working_directory: ~/mapbox-gl-js
     steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v4-yarn-{{ checksum "yarn.lock" }}
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
