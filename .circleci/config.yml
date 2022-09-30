@@ -63,6 +63,8 @@ workflows:
             tags:
               only: /.*/
       - test-render-linux-firefox:
+          requires:
+            - prepare
           filters:
             tags:
               only: /.*/
@@ -274,6 +276,19 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
+            test-render-linux-firefox:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-firefox
+      - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+
   test-render-prod:
     <<: *defaults
     steps:
@@ -410,18 +425,6 @@ jobs:
           name: Deploy release
           command: |
             bash ./build/upload.sh
-
-  test-render-linux-firefox:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-firefox
-      - run: yarn run test-render
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
 
   test-render-windows:
     executor:
