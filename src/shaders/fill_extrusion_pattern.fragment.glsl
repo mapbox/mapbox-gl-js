@@ -18,6 +18,8 @@ varying vec4 v_lighting;
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
 #pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize lowp float base
@@ -26,6 +28,8 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern_to
     #pragma mapbox: initialize lowp float pixel_ratio_from
     #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -42,7 +46,7 @@ void main() {
 
     vec4 out_color = mix(color1, color2, u_fade);
 
-    out_color = out_color * v_lighting;
+    out_color.rgb = mix(out_color.rgb * v_lighting.rgb, out_color.rgb * emissive_color.rgb, emissive_strength);
 #ifdef FAUX_AO
     float intensity = u_ao[0];
     float h = max(0.0, v_ao.z);

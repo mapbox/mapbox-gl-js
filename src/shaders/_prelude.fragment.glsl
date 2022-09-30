@@ -28,3 +28,16 @@ highp vec4 pack_depth(highp float ndc_z) {
     res -= res.xxyz * bit_mask;
     return res;
 }
+
+highp vec3 lighting_model(highp vec3 color, highp vec3 ambient_light, highp vec3 sun_color, highp vec3 sun_dir, highp vec3 cam_fwd) {
+    highp float NdotL = sun_dir.z;  // vec3(0, 0, 1) * sun_dir
+    highp vec3 indirect_color = color * ambient_light;
+    highp vec3 direct_color = color * sun_color * NdotL;
+
+    //return vec4((indirect_color + direct_color) / 3.141592653589793, color.w);
+    return indirect_color + direct_color;
+}
+
+highp vec4 lighting_model(highp vec4 color, highp vec3 ambient_light, highp vec3 sun_color, highp vec3 sun_dir, highp vec3 cam_fwd) {
+    return vec4(lighting_model(color.rgb, ambient_light, sun_color, sun_dir, cam_fwd), color.w);
+}

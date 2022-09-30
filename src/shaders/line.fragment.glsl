@@ -2,6 +2,11 @@ uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
@@ -32,6 +37,8 @@ float luminance(vec3 c) {
 #pragma mapbox: define lowp vec4 dash_to
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -40,6 +47,8 @@ void main() {
     #pragma mapbox: initialize lowp vec4 dash_to
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2.s;
@@ -86,7 +95,7 @@ void main() {
         }
     }
 #endif
-
+    out_color = mix(lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), out_color * emissive_color, emissive_strength);
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif

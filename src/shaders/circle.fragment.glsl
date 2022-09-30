@@ -1,6 +1,11 @@
 varying vec3 v_data;
 varying float v_visibility;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
@@ -8,6 +13,8 @@ varying float v_visibility;
 #pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -17,6 +24,8 @@ void main() {
     #pragma mapbox: initialize highp vec4 stroke_color
     #pragma mapbox: initialize mediump float stroke_width
     #pragma mapbox: initialize lowp float stroke_opacity
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     vec2 extrude = v_data.xy;
     float extrude_length = length(extrude);
@@ -33,6 +42,7 @@ void main() {
     );
 
     vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
+    out_color = mix(lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), out_color * emissive_color, emissive_strength);
 
 #ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);

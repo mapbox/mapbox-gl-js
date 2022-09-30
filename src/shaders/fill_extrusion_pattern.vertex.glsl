@@ -10,6 +10,11 @@ uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
 
@@ -40,6 +45,8 @@ varying vec3 v_ao;
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
 #pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize lowp float base
@@ -48,6 +55,8 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern_to
     #pragma mapbox: initialize lowp float pixel_ratio_from
     #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -151,7 +160,12 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-    v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    //vec3 indirect_color = color.rgb * u_ambient_color;
+    //vec3 direct_color = color.rgb * u_sun_color;
+    float NdotL = (clamp(dot(normal, u_lightpos), -0.707, 1.0) + 0.707) / 1.707;
+    
+    v_lighting.rgb = u_ambient_color.rgb + u_sun_color * NdotL;
+    //v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;
 
 #ifdef FOG

@@ -12,8 +12,18 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
-void main() {
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
 
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
+
+void main() {
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
+    
     // read and cross-fade colors from the main and parent tiles
     vec4 color0 = texture2D(u_image0, v_pos0);
     vec4 color1 = texture2D(u_image1, v_pos1);
@@ -45,6 +55,7 @@ void main() {
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
+    out_color = mix(lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), out_color * emissive_color.rgb, emissive_strength);
 
 #ifdef FOG
     out_color = fog_dither(fog_apply(out_color, v_fog_pos));

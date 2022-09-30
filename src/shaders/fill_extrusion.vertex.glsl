@@ -7,6 +7,11 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_edge_radius;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
 
@@ -48,13 +53,16 @@ varying vec3 v_ao;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
-
 #pragma mapbox: define highp vec4 color
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed hold:
@@ -163,18 +171,27 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
+    vec3 indirect_color = color.rgb * u_ambient_color;
+    vec3 direct_color = color.rgb * u_sun_color;
+    float NdotL = (clamp(dot(normal, u_lightpos), -0.707, 1.0) + 0.707) / 1.707;
+    
+    v_color.rgb = mix(indirect_color + direct_color * NdotL, color.rgb * emissive_color.rgb, emissive_strength);
+    v_color *= u_opacity;
+    
     // Assign final color based on surface + ambient light color, diffuse light directional, and light color
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
-    v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    v_color *= u_opacity;
+    //v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    //v_color *= u_opacity;
 
 #ifdef ZERO_ROOF_RADIUS
-    v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
-    float roof_radiance = clamp(u_lightpos.z, 0.0, 1.0);
-    roof_radiance = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roof_radiance);
-    v_roof_color.rgb += clamp(color.rgb * roof_radiance * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    v_roof_color *= u_opacity;
+    //v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
+    //float roof_radiance = clamp(u_lightpos.z, 0.0, 1.0);
+    //roof_radiance = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roof_radiance);
+    //v_roof_color.rgb += clamp(color.rgb * roof_radiance * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    //v_roof_color *= u_opacity;
+    
+    v_roof_color = v_color;
 #endif
 
 #ifdef FOG

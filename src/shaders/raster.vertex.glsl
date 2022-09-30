@@ -9,7 +9,13 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 varying vec2 v_pos1;
 
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
+
 void main() {
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
+    
     float w = 1.0 + dot(a_texture_pos, u_perspective_transform);
     gl_Position = u_matrix * vec4(a_pos * w, 0, w);
     // We are using Int16 for texture position coordinates to give us enough precision for

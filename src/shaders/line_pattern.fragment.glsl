@@ -5,6 +5,11 @@ uniform mediump vec3 u_scale;
 
 uniform sampler2D u_image;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_linesofar;
@@ -17,15 +22,18 @@ varying float v_width;
 #pragma mapbox: define lowp float pixel_ratio_to
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern_from
     #pragma mapbox: initialize mediump vec4 pattern_to
     #pragma mapbox: initialize lowp float pixel_ratio_from
     #pragma mapbox: initialize lowp float pixel_ratio_to
-
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -65,6 +73,7 @@ void main() {
     vec2 pos_b = mix(pattern_tl_b * texel_size - texel_size, pattern_br_b * texel_size + texel_size, vec2(x_b, y));
 
     vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
+    color = mix(lighting_model(color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), color * emissive_color, emissive_strength);
 
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

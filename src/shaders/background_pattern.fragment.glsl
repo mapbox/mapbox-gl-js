@@ -6,6 +6,11 @@ uniform vec2 u_texsize;
 uniform float u_mix;
 uniform float u_opacity;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
 uniform sampler2D u_image;
 
 varying vec2 v_pos_a;
@@ -21,6 +26,7 @@ void main() {
     vec4 color2 = texture2D(u_image, pos2);
 
     vec4 out_color = mix(color1, color2, u_mix);
+    out_color = lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd);
 
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));

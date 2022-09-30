@@ -7,7 +7,18 @@ uniform vec4 u_shadow;
 uniform vec4 u_highlight;
 uniform vec4 u_accent;
 
+uniform vec3 u_ambient_color;
+uniform vec3 u_sun_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_cam_fwd;
+
+#pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define highp vec4 emissive_color
+
 void main() {
+    #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize highp vec4 emissive_color
+    
     vec4 pixel = texture2D(u_image, v_pos);
 
     vec2 deriv = ((pixel.rg * 2.0) - 1.0);
@@ -42,11 +53,14 @@ void main() {
     vec4 accent_color = (1.0 - accent) * u_accent * clamp(intensity * 2.0, 0.0, 1.0);
     float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
-    gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
+    
+    vec4 out_color = accent_color * (1.0 - shade_color.a) + shade_color;
+    out_color = mix(lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), out_color * emissive_color, emissive_strength);
 
 #ifdef FOG
-    gl_FragColor = fog_dither(fog_apply_premultiplied(gl_FragColor, v_fog_pos));
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
+    gl_FragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
