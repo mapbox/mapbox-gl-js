@@ -68,6 +68,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-macos-chrome:
+          filters:
+            tags:
+              only: /.*/
       - test-render-windows:
           filters:
             tags:
@@ -425,6 +429,27 @@ jobs:
           name: Deploy release
           command: |
             bash ./build/upload.sh
+
+  test-render-macos-chrome:
+    macos:
+      xcode: 13.4.1
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v4-yarn-{{ checksum "yarn.lock" }}
+      - attach_workspace:
+          at: ~/
+      - run: xcodebuild -version
+      - browser-tools/install-chrome
+      - run: yarn
+      - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
 
   test-render-windows:
     executor:
