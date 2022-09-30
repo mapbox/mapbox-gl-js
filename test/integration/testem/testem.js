@@ -24,6 +24,7 @@ const suiteName = process.env.SUITE_NAME;
 const suitePath = `${suiteName}-tests`;
 const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
+const browser = process.env.BROWSER || "Chrome";
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
@@ -111,7 +112,7 @@ const defaultTestemConfig = {
 };
 
 const renderTestemConfig = {
-    "launch_in_ci": [ "Chrome" ],
+    "launch_in_ci": [ browser ],
     "reporter": "xunit",
     "report_file": ciOutputFile,
     "xunit_intermediate_output": true,
@@ -132,16 +133,18 @@ const testemConfig = Object.assign({}, defaultTestemConfig);
 
 if (process.env.RENDER) Object.assign(testemConfig, renderTestemConfig);
 
-if (process.env.CI) {
-    // Set chrome flags for CircleCI to use llvmpipe driver (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-    const ciTestemConfig = setChromeFlags([ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
-    Object.assign(testemConfig, ciTestemConfig);
+if (browser === "Chrome") {
+    if (process.env.CI) {
+        // Set chrome flags for CircleCI to use llvmpipe driver (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
+        const ciTestemConfig = setChromeFlags([ "--disable-backgrounding-occluded-windows", "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
+        Object.assign(testemConfig, ciTestemConfig);
 
-} else if (process.env.RENDER && process.env.USE_ANGLE && ['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE)) {
-    // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
-    // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
-    const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
-    Object.assign(testemConfig, angleTestemConfig);
+    } else if (process.env.RENDER && process.env.USE_ANGLE && ['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE)) {
+        // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
+        // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
+        const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
+        Object.assign(testemConfig, angleTestemConfig);
+    }
 }
 
 module.exports = testemConfig;

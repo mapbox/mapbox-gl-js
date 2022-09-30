@@ -282,7 +282,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-firefox
-      - run: yarn run test-render
+      - run: yarn run test-render-firefox
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
