@@ -276,7 +276,7 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-            test-render-linux-firefox:
+  test-render-linux-firefox:
     <<: *defaults
     steps:
       - attach_workspace:
