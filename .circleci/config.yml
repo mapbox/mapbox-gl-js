@@ -436,9 +436,7 @@ jobs:
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
+      # TODO: implement cache
       - attach_workspace:
           at: ~/
       - run: xcodebuild -version
