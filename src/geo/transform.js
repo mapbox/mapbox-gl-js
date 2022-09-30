@@ -231,7 +231,7 @@ class Transform {
             this._updateCameraOnTerrain();
         }
         if (constrainCameraOverTerrain || centerAltitudeChanged) {
-            this._constrainCameraAltitude();
+            if (this._elevation) this._updateCameraState();
         }
         this._calcMatrices();
     }
@@ -1586,44 +1586,6 @@ class Transform {
         }
     }
 
-    _constrainCameraAltitude() {
-        if (!this._elevation)
-            return;
-
-        const elevation: Elevation = this._elevation;
-        this._updateCameraState();
-
-        // Find uncompensated camera position for elevation sampling.
-        // The default camera position might have been compensated by the active projection model.
-        const mercPixelsPerMeter = mercatorZfromAltitude(1, this._center.lat) * this.worldSize;
-        const pos = this._computeCameraPosition(mercPixelsPerMeter);
-
-        const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
-        const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(this._maxPitch));
-        const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
-        const cameraHeight = this._camera.position[2] - terrainElevation;
-
-        if (cameraHeight < minHeight) {
-            const center = this.locationCoordinate(this._center, this._centerAltitude);
-            const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
-            const prevDistToCamera = vec3.length(cameraToCenter);
-
-            // Adjust the camera vector so that the camera is placed above the terrain.
-            // Distance between the camera and the center point is kept constant.
-            cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
-
-            const newDistToCamera = vec3.length(cameraToCenter);
-            if (newDistToCamera === 0)
-                return;
-
-            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
-            this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
-
-            this._camera.orientation = orientationFromFrame(cameraToCenter, this._camera.up());
-            this._updateStateFromCamera();
-        }
-    }
-
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
@@ -1681,7 +1643,7 @@ class Transform {
             this.zoom += this.scaleZoom(s);
         }
 
-        this._constrainCameraAltitude();
+        if (this._elevation) this._updateCameraState();
         this._unmodified = unmodified;
         this._constraining = false;
     }
