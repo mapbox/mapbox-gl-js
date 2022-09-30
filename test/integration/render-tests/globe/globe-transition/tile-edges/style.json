@@ -5,7 +5,7 @@
       "width": 640,
       "height": 512,
       "debug": true,
-      "allowed": 0.004
+      "allowed": 0.02
     }
   },
   "center": [5.44, 46.42],
