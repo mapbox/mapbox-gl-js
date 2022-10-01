@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 
-import type { LngLatLike } from './lng_lat.js';
+import type {LngLatLike} from './lng_lat.js';
 
 /**
  * A `LngLatBounds` object represents a geographical bounding box,
@@ -273,7 +273,7 @@ class LngLatBounds {
     * console.log(llb.contains(ll)); // = true
     */
     contains(lnglat: LngLatLike): boolean {
-        const { lng, lat } = LngLat.convert(lnglat);
+        const {lng, lat} = LngLat.convert(lnglat);
 
         const containsLatitude = this._sw.lat <= lat && lat <= this._ne.lat;
         let containsLongitude = this._sw.lng <= lng && lng <= this._ne.lng;
