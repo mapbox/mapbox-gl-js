@@ -110,6 +110,8 @@ test('LngLatBounds', (t) => {
         t.equal(bounds1.getWest(), -10);
         t.equal(bounds1.getNorth(), 10);
         t.equal(bounds1.getEast(), 10);
+
+        t.end();
     });
 
     t.test('#extend with null', (t) => {
