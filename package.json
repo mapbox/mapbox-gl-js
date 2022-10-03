@@ -66,7 +66,7 @@
     "gl": "5.0.3",
     "glob": "^8.0.3",
     "is-builtin-module": "^3.2.0",
-    "jsdom": "^14.1.0",
+    "jsdom": "^15.2.1",
     "json-stringify-pretty-compact": "^4.0.0",
     "lodash.template": "^4.5.0",
     "mapbox-gl-styles": "^2.0.2",
