@@ -1906,7 +1906,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "2.3.0"
+          "js": "2.3.0",
+          "android": "10.0.0",
+          "ios": "10.0.0"
         }
       },
       "expression": {
@@ -2814,7 +2816,9 @@
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.10.0"
+            "js": "1.10.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -2823,7 +2827,9 @@
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
-            "js": "1.10.0"
+            "js": "1.10.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -3210,7 +3216,9 @@
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.46.0"
+            "js": "0.46.0",
+            "android": "10.0.0",
+            "ios": "10.0.0"
           }
         }
       },
@@ -3255,7 +3263,9 @@
         "group": "Camera",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.6.0"
+            "js": "2.6.0",
+            "android": "10.9.0",
+            "ios": "10.9.0"
           }
         }
       },
@@ -3264,7 +3274,9 @@
         "group": "Camera",
         "sdk-support": {
           "basic functionality": {
-            "js": "2.6.0"
+            "js": "2.6.0",
+            "android": "10.9.0",
+            "ios": "10.9.0"
           }
         }
       },
