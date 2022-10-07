@@ -29,6 +29,11 @@ varying vec2 v_width2;
 varying float v_gamma_scale;
 varying highp vec4 v_uv;
 
+
+#ifdef DEPTH_OCCLUSION
+varying vec4 v_projected_pos;
+#endif
+
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
 uniform mediump vec3 u_scale;
@@ -102,7 +107,12 @@ void main() {
     mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
+
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
+
+#ifdef DEPTH_OCCLUSION
+    v_projected_pos = gl_Position;
+#endif
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude

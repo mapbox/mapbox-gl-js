@@ -11,6 +11,7 @@ varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
 varying highp vec4 v_uv;
+
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
 
@@ -22,6 +23,21 @@ varying vec2 v_tex_b;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
+#endif
+
+#ifdef DEPTH_OCCLUSION
+uniform sampler2D u_depth;
+uniform float u_depth_occlusion_factor;
+
+varying vec4 v_projected_pos;
+
+float depth_occlusion_visibility(vec4 frag) {
+    vec3 coord = frag.xyz / frag.w;
+    vec2 uv = 0.5 * coord.xy + 0.5;
+    float buffer_depth = unpack_depth(texture2D(u_depth, uv));
+    float occlusion = step(buffer_depth, coord.z);
+    return 1.0 - occlusion * u_depth_occlusion_factor;
+}
 #endif
 
 uniform float u_border_width;
@@ -125,8 +141,12 @@ void main() {
 #endif // RENDER_LINE_BORDER_AUTO
     }
 #endif
-    gl_FragColor = out_color * (alpha * opacity);
 
+#ifdef DEPTH_OCCLUSION
+    alpha *= depth_occlusion_visibility(v_projected_pos);
+#endif
+
+    gl_FragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
