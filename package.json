@@ -40,7 +40,7 @@
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/rest": "^19.0.4",
-    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-commonjs": "^23.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^14.1.0",
     "@rollup/plugin-replace": "^4.0.0",
