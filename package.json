@@ -44,7 +44,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^14.1.0",
     "@rollup/plugin-replace": "^4.0.0",
-    "@rollup/plugin-strip": "^2.1.0",
+    "@rollup/plugin-strip": "^3.0.0",
     "address": "^1.2.0",
     "browserify": "^17.0.0",
     "chalk": "^5.0.1",
