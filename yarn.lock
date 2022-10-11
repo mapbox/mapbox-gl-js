@@ -683,14 +683,14 @@
     "@rollup/pluginutils" "^3.1.0"
     magic-string "^0.25.7"
 
-"@rollup/plugin-strip@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-strip/-/plugin-strip-2.1.0.tgz#04c2d2ccfb2c6b192bb70447fbf26e336379a333"
-  integrity sha512-OKlIlXMFlH4nVxq0beNSIKVw0LkpNUpVjjvfzH5OAOAR5dhLZgLZBzwYX4ifIAs18YDrreMcZH4xnKmW9fI2AQ==
+"@rollup/plugin-strip@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-strip/-/plugin-strip-3.0.0.tgz#b218a20ecebc9bf9409a01e1f446729507bca957"
+  integrity sha512-rVukw87sJvKbB8Pb7FY8RCfMwr7kWE+JXpaDaEg7FuzXcQ68UIY+dIgymonY88AKPUiOHsuWhuAMCR8vhkgwGg==
   dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    estree-walker "^2.0.1"
-    magic-string "^0.25.7"
+    "@rollup/pluginutils" "^4.2.1"
+    estree-walker "^2.0.2"
+    magic-string "^0.26.4"
 
 "@rollup/pluginutils@^3.0.8", "@rollup/pluginutils@^3.0.9", "@rollup/pluginutils@^3.1.0":
   version "3.1.0"
