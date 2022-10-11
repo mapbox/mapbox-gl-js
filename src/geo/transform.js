@@ -1617,7 +1617,6 @@ class Transform {
                 return;
 
             vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
-
             this._camera.position[0] = center.x - cameraToCenter[0];
             this._camera.position[1] = center.y - cameraToCenter[1];
 
@@ -1683,7 +1682,6 @@ class Transform {
         }
 
         this._constrainCameraAltitude();
-
         this._unmodified = unmodified;
         this._constraining = false;
     }
