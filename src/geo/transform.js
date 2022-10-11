@@ -1942,7 +1942,7 @@ class Transform {
 
         // Compute zoom from the distance between camera and terrain
         const centerAltitude = mercatorZfromAltitude(this._centerAltitude, this.center.lat) * this._pixelsPerMercatorPixel;
-        const minHeight = this._mercatorZfromZoom(this._maxZoom);
+        const minHeight = this._mercatorZfromZoom(this._maxZoom) * Math.cos(degToRad(this._maxPitch));
         const height = Math.max((position[2] - centerAltitude) / Math.cos(pitch), minHeight);
         const zoom = this._zoomFromMercatorZ(height);
 
