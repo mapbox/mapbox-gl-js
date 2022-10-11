@@ -71,7 +71,9 @@ Material getPBRMaterial(vec4 color, float metallicFactor, float roughnessFactor)
 
     mat.alphaRoughness = mat.perceptualRoughness * mat.perceptualRoughness;
     // Default reflectance off dielectric materials on 0 angle
-    const vec3 f0 = vec3(0.04);
+    // const vec3 f0 = vec3(0.04);
+    // remove default reflectance to achieve a similar effect we have with diffuse lighting
+    const vec3 f0 = vec3(0.0);
 
     mat.diffuseColor = mat.baseColor.rgb * (vec3(1.0) - f0);
     mat.diffuseColor *= 1.0 - mat.metallic;
