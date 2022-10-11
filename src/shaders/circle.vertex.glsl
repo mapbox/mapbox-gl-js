@@ -26,6 +26,9 @@ uniform vec3 u_up_dir;
 varying vec3 v_data;
 varying float v_visibility;
 
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
@@ -35,6 +38,8 @@ varying float v_visibility;
 #pragma mapbox: define lowp float stroke_opacity
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
 
 vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float view_scale) {
     return extrusion * (radius + stroke_width) * u_extrude_scale * view_scale;
@@ -93,7 +98,8 @@ void main(void) {
     #pragma mapbox: initialize lowp float stroke_opacity
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
-
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
     // unencode the extrusion vector that we snuck into the a_pos vector
     vec2 extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
 
@@ -143,6 +149,8 @@ void main(void) {
         #endif
     #endif
     gl_Position = project_vertex(extrude, world_center, projected_center, radius, stroke_width, view_scale, surface_vectors);
+    
+    v_position = vec3(u_lighting_matrix * world_center);
 
     float visibility = 0.0;
     #ifdef TERRAIN

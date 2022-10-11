@@ -21,6 +21,9 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float offset
@@ -33,6 +36,9 @@ varying float v_width;
 #pragma mapbox: define lowp float pixel_ratio_to
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
+
 
 void main() {
     #pragma mapbox: initialize lowp float blur
@@ -47,6 +53,9 @@ void main() {
     #pragma mapbox: initialize lowp float pixel_ratio_to
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
+
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -88,6 +97,8 @@ void main() {
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
+    v_position  = vec3(u_lighting_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude);
+
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude

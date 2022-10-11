@@ -10,13 +10,18 @@ uniform vec3 u_ambient_color;
 uniform vec3 u_sun_color;
 uniform vec3 u_sun_dir;
 uniform vec3 u_cam_fwd;
+uniform float u_metallic;
+uniform float u_roughness;
 
 uniform sampler2D u_image;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
+varying vec3 v_position;
+
 void main() {
+    
     vec2 imagecoord = mod(v_pos_a, 1.0);
     vec2 pos = mix(u_pattern_tl_a / u_texsize, u_pattern_br_a / u_texsize, imagecoord);
     vec4 color1 = texture2D(u_image, pos);
@@ -26,7 +31,8 @@ void main() {
     vec4 color2 = texture2D(u_image, pos2);
 
     vec4 out_color = mix(color1, color2, u_mix);
-    out_color = lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd);
+    Material mat = getPBRMaterial(out_color, u_metallic, u_roughness);
+    out_color = vec4(computeLightContribution(mat, v_position, u_sun_dir, u_sun_color, u_ambient_color), mat.baseColor.w);
 
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));

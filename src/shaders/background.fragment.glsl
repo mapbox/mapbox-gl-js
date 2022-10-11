@@ -5,10 +5,15 @@ uniform vec3 u_ambient_color;
 uniform vec3 u_sun_color;
 uniform vec3 u_sun_dir;
 uniform vec3 u_cam_fwd;
+uniform float u_metallic;
+uniform float u_roughness;
+
+varying vec3 v_position;
 
 void main() {
-    vec4 out_color = u_color;
-    out_color = lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd);
+
+    Material mat = getPBRMaterial(u_color, u_metallic, u_roughness);
+    vec4 out_color = vec4(computeLightContribution(mat, v_position, u_sun_dir, u_sun_color, u_ambient_color), mat.baseColor.w);
 
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));

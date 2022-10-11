@@ -12,12 +12,17 @@ attribute vec2 a_pos;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 void main() {
+
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
 
     v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_a * u_pattern_size_a, u_tile_units_to_pixels, a_pos);
     v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_b * u_pattern_size_b, u_tile_units_to_pixels, a_pos);
 
+    v_position  = vec3(u_lighting_matrix * vec4(a_pos, 0.0, 1.0));
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);
 #endif

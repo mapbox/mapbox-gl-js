@@ -16,6 +16,8 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
+varying vec3 v_position;
+
 #pragma mapbox: define lowp vec4 pattern_from
 #pragma mapbox: define lowp vec4 pattern_to
 #pragma mapbox: define lowp float pixel_ratio_from
@@ -24,6 +26,9 @@ varying float v_width;
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
+
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern_from
@@ -34,6 +39,9 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
+
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -73,7 +81,12 @@ void main() {
     vec2 pos_b = mix(pattern_tl_b * texel_size - texel_size, pattern_br_b * texel_size + texel_size, vec2(x_b, y));
 
     vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
-    color = mix(lighting_model(color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), color * emissive_color, emissive_strength);
+
+    Material mat = getPBRMaterial(color, metallic, roughness);
+    color = vec4(computeLightContribution(mat, v_position, u_sun_dir, u_sun_color, u_ambient_color), mat.baseColor.w);
+    
+    // Emission
+    color += emissive_color * emissive_strength;
 
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

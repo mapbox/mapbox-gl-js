@@ -45,6 +45,9 @@ varying vec2 v_tex_b;
 uniform float u_image_height;
 #endif
 
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 dash_from
@@ -56,6 +59,8 @@ uniform float u_image_height;
 #pragma mapbox: define mediump float width
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -69,7 +74,8 @@ void main() {
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
-
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
@@ -109,7 +115,7 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
 
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
-
+    v_position  = vec3(u_lighting_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude);
 #ifdef DEPTH_OCCLUSION
     v_projected_pos = gl_Position;
 #endif
@@ -117,7 +123,7 @@ void main() {
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
+    float extrudse_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 #else
     v_gamma_scale = 1.0;

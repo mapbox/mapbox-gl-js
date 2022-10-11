@@ -5,6 +5,7 @@ uniform vec3 u_ambient_color;
 uniform vec3 u_sun_color;
 uniform vec3 u_sun_dir;
 uniform vec3 u_cam_fwd;
+varying vec3 v_position;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
@@ -15,6 +16,9 @@ uniform vec3 u_cam_fwd;
 #pragma mapbox: define lowp float stroke_opacity
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
+
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -26,6 +30,8 @@ void main() {
     #pragma mapbox: initialize lowp float stroke_opacity
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
 
     vec2 extrude = v_data.xy;
     float extrude_length = length(extrude);
@@ -42,7 +48,11 @@ void main() {
     );
 
     vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
-    out_color = mix(lighting_model(out_color, u_ambient_color, u_sun_color, u_sun_dir, u_cam_fwd), out_color * emissive_color, emissive_strength);
+    Material mat = getPBRMaterial(out_color, metallic, roughness);
+    out_color = vec4(computeLightContribution(mat, v_position, u_sun_dir, u_sun_color, u_ambient_color), mat.baseColor.w);
+    
+    // Emission
+    out_color += emissive_color * emissive_strength;
 
 #ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);

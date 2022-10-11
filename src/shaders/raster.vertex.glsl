@@ -9,15 +9,24 @@ attribute vec2 a_texture_pos;
 varying vec2 v_pos0;
 varying vec2 v_pos1;
 
+uniform mat4 u_lighting_matrix;
+varying vec3 v_position;
+
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
 
 void main() {
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
     
     float w = 1.0 + dot(a_texture_pos, u_perspective_transform);
     gl_Position = u_matrix * vec4(a_pos * w, 0, w);
+    v_position = vec3(u_lighting_matrix * vec4(a_pos * w, 0, w));
+
     // We are using Int16 for texture position coordinates to give us enough precision for
     // fractional coordinates. We use 8192 to scale the texture coordinates in the buffer
     // as an arbitrarily high number to preserve adequate precision when rendering.

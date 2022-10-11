@@ -2,11 +2,15 @@ uniform mat4 u_matrix;
 uniform vec2 u_pixel_coord_upper;
 uniform vec2 u_pixel_coord_lower;
 uniform vec3 u_scale;
+uniform mat4 u_lighting_matrix;
 
 attribute vec2 a_pos;
 
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
+
+varying vec3 v_lightingPos;
+
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern_from
@@ -15,6 +19,8 @@ varying vec2 v_pos_b;
 #pragma mapbox: define lowp float pixel_ratio_to
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define highp vec4 emissive_color
+#pragma mapbox: define highp float metallic
+#pragma mapbox: define highp float roughness
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
@@ -24,6 +30,8 @@ void main() {
     #pragma mapbox: initialize lowp float pixel_ratio_to
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize highp vec4 emissive_color
+    #pragma mapbox: initialize highp float metallic
+    #pragma mapbox: initialize highp float roughness
 
     vec2 pattern_tl_a = pattern_from.xy;
     vec2 pattern_br_a = pattern_from.zw;
@@ -37,7 +45,7 @@ void main() {
     vec2 display_size_a = (pattern_br_a - pattern_tl_a) / pixel_ratio_from;
     vec2 display_size_b = (pattern_br_b - pattern_tl_b) / pixel_ratio_to;
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-
+    v_lightingPos = vec3(u_lighting_matrix * vec4(a_pos, 0, 1));
     v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, fromScale * display_size_a, tileZoomRatio, a_pos);
     v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, toScale * display_size_b, tileZoomRatio, a_pos);
 
