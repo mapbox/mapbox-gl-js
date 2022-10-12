@@ -20,7 +20,7 @@ import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile
 import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
-import type Projection from '../geo/projection/projection.js';
+import type Projection, {ProjectedPoint} from '../geo/projection/projection.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
@@ -1350,44 +1350,20 @@ class Transform {
         const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
         const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
 
-        // Consider far points at the maximum possible elevation
-        // and near points at the minimum to ensure full coverage.
-        const tl = this.pointCoordinate(topLeft, min);
-        const tr = this.pointCoordinate(topRight, min);
-        const br = this.pointCoordinate(bottomRight, max);
-        const bl = this.pointCoordinate(bottomLeft, max);
-
-        const projection = this.projection;
-        const s = Math.pow(2, -this.zoom);
-
-        const x1 = Math.min(tl.x, bl.x);
-        const x2 = Math.max(tr.x, br.x);
-        const y1 = Math.min(tl.y, tr.y);
-        const y2 = Math.max(bl.y, br.y);
-
-        const lng1 = lngFromMercatorX(x1);
-        const lng2 = lngFromMercatorX(x2);
-        const lat1 = latFromMercatorY(y1);
-        const lat2 = latFromMercatorY(y2);
-
-        const p0 = projection.project(lng1, lat1);
-        const p1 = projection.project(lng2, lat1);
-        const p2 = projection.project(lng2, lat2);
-        const p3 = projection.project(lng1, lat2);
-
-        let minX = Math.min(p0.x, p1.x, p2.x, p3.x);
-        let minY = Math.min(p0.y, p1.y, p2.y, p3.y);
-        let maxX = Math.max(p0.x, p1.x, p2.x, p3.x);
-        let maxY = Math.max(p0.y, p1.y, p2.y, p3.y);
+        const [[lng1, lat1], [lng2, lat2]] = this._getBounds(min, max).toArray();
+        let {x: minX, y: maxY} = this.projection.project(lng1, lat1);
+        let {x: maxX, y: minY} = this.projection.project(lng2, lat2);
 
         // we pick an error threshold for calculating the bbox that balances between performance and precision
+        const s = Math.pow(2, -this.zoom);
         const maxErr = s / 16;
 
-        function processSegment(pa, pb, ax, ay, bx, by) {
+        const processSegment = (pa, pb, ax, ay, bx, by) => {
             const mx = (ax + bx) / 2;
             const my = (ay + by) / 2;
 
-            const pm = projection.project(lngFromMercatorX(mx), latFromMercatorY(my));
+            const {x, y} = this.pointCoordinate3D(new Point(mx, my));
+            const pm = this.projection.project(lngFromMercatorX(x), latFromMercatorY(y));
             const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
 
             minX = Math.min(minX, pm.x);
@@ -1399,12 +1375,12 @@ class Transform {
                 processSegment(pa, pm, ax, ay, mx, my);
                 processSegment(pm, pb, mx, my, bx, by);
             }
-        }
+        };
 
-        processSegment(p0, p1, x1, y1, x2, y1);
-        processSegment(p1, p2, x2, y1, x2, y2);
-        processSegment(p2, p3, x2, y2, x1, y2);
-        processSegment(p3, p0, x1, y2, x1, y1);
+        processSegment(topLeft, topRight, topLeft.x, topLeft.y, topRight.x, topRight.y);
+        processSegment(topRight, bottomRight, topRight.x, topRight.y, bottomRight.x, bottomRight.y);
+        processSegment(bottomRight, bottomLeft, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
+        processSegment(bottomLeft, topLeft, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y);
 
         // extend the bbox by max error to make sure coords don't go past tile extent
         minX -= maxErr;
