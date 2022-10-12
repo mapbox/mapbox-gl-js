@@ -22,6 +22,11 @@ export type ViewType = $Keys<typeof viewTypes>;
  * @private
  */
 class Struct {
+    // When reading the ArrayBuffer as an array of different data types, arrays have different length
+    // depending on data type size. So to acess the same position,
+    // we need to read different indexes depending on array data size.
+    // _pos1 is the index reading an array with 1 byte data,
+    // _pos2 is reading 2 byte data, and so forth.
     _pos1: number;
     _pos2: number;
     _pos4: number;

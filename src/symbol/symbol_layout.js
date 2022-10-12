@@ -360,8 +360,8 @@ function tilePixelRatioForSymbolSpacing(overscaleFactor, overscaledZ) {
 /**
  * Given a feature and its shaped text and icon data, add a 'symbol
  * instance' for each _possible_ placement of the symbol feature.
- * (At render timePlaceSymbols#place() selects which of these instances to
- * show or hide based on collisions with symbols in other layers.)
+ * (At render time Placement.updateBucketOpacities() selects which of these
+ * instances to show or hide based on collisions with symbols in other layers.)
  * @private
  */
 function addFeature(bucket: SymbolBucket,
@@ -719,11 +719,15 @@ function addSymbol(bucket: SymbolBucket,
         }
     }
 
-    //Place icon first, so text can have a reference to its index in the placed symbol array.
-    //Text symbols can lazily shift at render-time because of variable anchor placement.
-    //If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
+    // Place icon first, so text can have a reference to its index in the placed symbol array.
+    // Text symbols can lazily shift at render-time because of variable anchor placement.
+    // If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
-    if (shapedIcon) {
+
+    if (!shapedIcon) {
+        // If a symbol has no icon, fill in space in the icon.placedSymbolArray in order to keep icon.placedSymbolArray and text.placedSymbol array in sync.s
+        bucket.icon.placedSymbolArray.emplaceBack(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (false: any), 0, 0, 0);
+    } else {
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
         const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);

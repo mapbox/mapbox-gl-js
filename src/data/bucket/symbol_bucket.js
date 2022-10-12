@@ -341,7 +341,7 @@ register(CollisionBuffers, 'CollisionBuffers');
  *      `this.textCollisionBox`: Debug SymbolBuffers for text collision boxes
  *    The results are sent to the foreground for rendering
  *
- * 4. performSymbolPlacement(bucket, collisionIndex) is run on the foreground,
+ * 4. Placement.updateBucketOpacities() is run on the foreground,
  *    and uses the CollisionIndex along with current camera settings to determine
  *    which symbols can actually show on the map. Collided symbols are hidden
  *    using a dynamic "OpacityVertexArray".
