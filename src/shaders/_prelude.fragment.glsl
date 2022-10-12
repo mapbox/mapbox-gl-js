@@ -143,7 +143,7 @@ vec3 computeLightContribution(Material mat, vec3 position, vec3 lightDir, vec3 l
 
     // Avoid dividing by zero when the dot product is zero
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
-    float NdotL = clamp(dot(n, l), 0.001, 1.0);
+    float NdotL = (clamp(dot(n, l), -0.707, 1.0) + 0.707) / 1.707;
     highp float NdotH = saturate(dot(n, h));
     float VdotH = saturate(dot(v, h));
 
