@@ -46,10 +46,6 @@ var boundsData = {
     'type': 'LineString',
     coordinates: []
 };
-var globeBoundsData = {
-    'type': 'LineString',
-    coordinates: []
-};
 
 map2.on('load', () => {
     map2.addSource('bounds', {
@@ -66,30 +62,16 @@ map2.on('load', () => {
         }
     });
 
-    map2.addSource('red-bounds', {
+    map2.addSource('abounds', {
         'type': 'geojson',
         'data': boundsData
     });
     map2.addLayer({
-        'id': 'red-bounds',
+        'id': 'abounds',
         'type': 'line',
-        'source': 'red-bounds',
+        'source': 'abounds',
         'paint': {
             'line-color': 'red',
-            'line-width': 5
-        }
-    });
-
-    map2.addSource('green-bounds', {
-        'type': 'geojson',
-        'data': globeBoundsData
-    });
-    map2.addLayer({
-        'id': 'green-bounds',
-        'type': 'line',
-        'source': 'green-bounds',
-        'paint': {
-            'line-color': 'green',
             'line-width': 5
         }
     });
@@ -114,7 +96,6 @@ function updateBounds() {
     lineData.coordinates = points.map(p => map.unproject(p).toArray());
 
     const bounds = map.getBounds();
-    const globeBounds = map.transform._getGlobeBounds();
 
     boundsData.coordinates = [
         bounds.getSouthWest().toArray(),
@@ -124,17 +105,8 @@ function updateBounds() {
         bounds.getSouthWest().toArray(),
     ];
 
-    globeBoundsData.coordinates = [
-        globeBounds.getSouthWest().toArray(),
-        globeBounds.getSouthEast().toArray(),
-        globeBounds.getNorthEast().toArray(),
-        globeBounds.getNorthWest().toArray(),
-        globeBounds.getSouthWest().toArray(),
-    ];
-
     map2.getSource('bounds').setData(lineData);
-    map2.getSource('red-bounds').setData(boundsData);
-    map2.getSource('green-bounds').setData(globeBoundsData);
+    map2.getSource('abounds').setData(boundsData);
 }
 
 const marker = new mapboxgl.Marker();
