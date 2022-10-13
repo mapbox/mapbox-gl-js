@@ -1344,26 +1344,32 @@ class Transform {
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
-    _getGlobeBounds(min: number = 0, max: number = 0): LngLatBounds {
+    _getGlobeBounds(): LngLatBounds {
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
         const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
         const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
 
-        const [[lng1, lat1], [lng2, lat2]] = this._getBounds(min, max).toArray();
-        let {x: minX, y: maxY} = this.projection.project(lng1, lat1);
-        let {x: maxX, y: minY} = this.projection.project(lng2, lat2);
+        const tl = this.pointCoordinate3D(topLeft);
+        const tr = this.pointCoordinate3D(topRight);
+        const br = this.pointCoordinate3D(bottomRight);
+        const bl = this.pointCoordinate3D(bottomLeft);
+
+        let minX = Math.min(tl.x, bl.x);
+        let maxX = Math.max(tr.x, br.x);
+        let minY = Math.min(tl.y, tr.y);
+        let maxY = Math.max(bl.y, br.y);
 
         // we pick an error threshold for calculating the bbox that balances between performance and precision
         const s = Math.pow(2, -this.zoom);
         const maxErr = s / 16;
 
-        const processSegment = (pa, pb, ax, ay, bx, by) => {
+        const processSegment = (ax, ay, bx, by) => {
             const mx = (ax + bx) / 2;
             const my = (ay + by) / 2;
 
-            const {x, y} = this.pointCoordinate3D(new Point(mx, my));
-            const pm = this.projection.project(lngFromMercatorX(x), latFromMercatorY(y));
+            const p = new Point(mx, my);
+            const pm = this.pointCoordinate3D(p);
             const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
 
             minX = Math.min(minX, pm.x);
@@ -1372,21 +1378,15 @@ class Transform {
             maxY = Math.max(maxY, pm.y);
 
             if (err > maxErr) {
-                processSegment(pa, pm, ax, ay, mx, my);
-                processSegment(pm, pb, mx, my, bx, by);
+                processSegment(ax, ay, mx, my);
+                processSegment(mx, my, bx, by);
             }
         };
 
-        processSegment(topLeft, topRight, topLeft.x, topLeft.y, topRight.x, topRight.y);
-        processSegment(topRight, bottomRight, topRight.x, topRight.y, bottomRight.x, bottomRight.y);
-        processSegment(bottomRight, bottomLeft, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
-        processSegment(bottomLeft, topLeft, bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y);
-
-        // extend the bbox by max error to make sure coords don't go past tile extent
-        minX -= maxErr;
-        minY -= maxErr;
-        maxX += maxErr;
-        maxY += maxErr;
+        processSegment(topLeft.x, topLeft.y, topRight.x, topRight.y);
+        processSegment(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
+        processSegment(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
+        processSegment(bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y);
 
         const sw = new LngLat(lngFromMercatorX(minX), latFromMercatorY(minY));
         const ne = new LngLat(lngFromMercatorX(maxX), latFromMercatorY(maxY));
