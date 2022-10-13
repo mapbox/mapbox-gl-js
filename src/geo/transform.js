@@ -20,7 +20,7 @@ import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile
 import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
-import type Projection, {ProjectedPoint} from '../geo/projection/projection.js';
+import type Projection from '../geo/projection/projection.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
 import type Tile from '../source/tile.js';
@@ -1394,6 +1394,10 @@ class Transform {
     }
 
     _getBounds(min: number, max: number): LngLatBounds {
+        if (this.projection.name === 'globe') {
+            return this._getGlobeBounds();
+        }
+
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
         const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
