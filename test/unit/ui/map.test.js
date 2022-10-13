@@ -1426,6 +1426,27 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('globe bounds', (t) => {
+            const map = createMap(t, {zoom: 0, skipCSSStub: true});
+            const mercatorBounds = map.getBounds();
+
+            t.same(
+                toFixed(mercatorBounds.toArray()),
+                toFixed([[ -70.3125000000, -57.3265212252, ], [ 70.3125000000, 57.3265212252]])
+            );
+
+            map.setProjection('globe');
+            t.stub(console, 'warn');
+            const globeBounds = map.getBounds();
+
+            t.same(
+                toFixed(globeBounds.toArray()),
+                toFixed([[ -73.8873304141, 73.8873304141, ], [ 73.8873304141, -73.8873304141]])
+            );
+
+            t.end();
+        });
+
         t.end();
 
         function toFixed(bounds) {
