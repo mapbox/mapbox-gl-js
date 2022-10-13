@@ -130,10 +130,6 @@ void main() {
 
     v_color = vec4(0.0, 0.0, 0.0, 1.0);
 
-    // Add slight ambient lighting so no extrusions are totally black
-    vec4 ambientlight = vec4(0.03, 0.03, 0.03, 1.0);
-    color += ambientlight;
-
     // Calculate cos(theta), where theta is the angle between surface normal and diffuse light ray
     float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
 
