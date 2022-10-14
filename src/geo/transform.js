@@ -1345,10 +1345,9 @@ class Transform {
     }
 
     _getGlobeBounds(): LngLatBounds {
-        const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
-        const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
-        const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
-        const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
+        const {top, left} = this._edgeInsets;
+        const bottom = this.height - this._edgeInsets.bottom;
+        const right = this.width - this._edgeInsets.right;
 
         const tl = this.pointCoordinate3D(topLeft);
         const tr = this.pointCoordinate3D(topRight);
