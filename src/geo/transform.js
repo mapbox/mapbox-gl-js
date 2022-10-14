@@ -1349,10 +1349,10 @@ class Transform {
         const bottom = this.height - this._edgeInsets.bottom;
         const right = this.width - this._edgeInsets.right;
 
-        const tl = this.pointCoordinate3D(topLeft);
-        const tr = this.pointCoordinate3D(topRight);
-        const br = this.pointCoordinate3D(bottomRight);
-        const bl = this.pointCoordinate3D(bottomLeft);
+        const tl = this.pointCoordinate3D(new Point(left, top));
+        const tr = this.pointCoordinate3D(new Point(right, top));
+        const br = this.pointCoordinate3D(new Point(right, bottom));
+        const bl = this.pointCoordinate3D(new Point(left, bottom));
 
         let minX = Math.min(tl.x, bl.x);
         let maxX = Math.max(tr.x, br.x);
@@ -1369,6 +1369,9 @@ class Transform {
 
             const p = new Point(mx, my);
             const pm = this.pointCoordinate3D(p);
+
+            // The error metric is the maximum distance between the midpoint
+            // and each of the currently calculated bounds
             const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
 
             minX = Math.min(minX, pm.x);
@@ -1382,10 +1385,10 @@ class Transform {
             }
         };
 
-        processSegment(topLeft.x, topLeft.y, topRight.x, topRight.y);
-        processSegment(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
-        processSegment(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
-        processSegment(bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y);
+        processSegment(left, top, right, top);
+        processSegment(right, top, right, bottom);
+        processSegment(right, bottom, left, bottom);
+        processSegment(left, bottom, left, top);
 
         const sw = new LngLat(lngFromMercatorX(minX), latFromMercatorY(minY));
         const ne = new LngLat(lngFromMercatorX(maxX), latFromMercatorY(maxY));
