@@ -1100,6 +1100,7 @@ export class PlacedSymbolArray extends StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1
      */
     get(index: number): PlacedSymbolStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
         return new PlacedSymbolStruct(this, index);
     }
 }
