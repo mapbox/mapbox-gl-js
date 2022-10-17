@@ -724,10 +724,7 @@ function addSymbol(bucket: SymbolBucket,
     // If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
 
-    if (!shapedIcon) {
-        // If a symbol has no icon, fill in space in the icon.placedSymbolArray in order to keep icon.placedSymbolArray and text.placedSymbol array in sync.s
-        bucket.icon.placedSymbolArray.emplaceBack(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (false: any), 0, 0, 0);
-    } else {
+    if (shapedIcon) {
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
         const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
