@@ -1436,7 +1436,6 @@ test('Map', (t) => {
             );
 
             map.setProjection('globe');
-            t.stub(console, 'warn');
             const globeBounds = map.getBounds();
 
             t.same(
