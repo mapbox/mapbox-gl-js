@@ -1,0 +1,76 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128,
+      "collisionDebug": true
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "name": "just text"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                20
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": { "name": "text and icon"},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -20
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": [
+          "match",
+          [ "get", "name" ],
+          "text and icon",
+          "fav-bicycle-18",
+          ""
+      ],
+        "text-field": ["get", "name"],
+        "icon-size": [
+          "match",
+          [ "get", "name" ],
+          "text and icon",
+          1,
+          0.5
+      ],
+        "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+        ],
+        "text-offset": [0, 0.6],
+        "text-anchor": "top"
+    }
+    }
+  ]
+}
