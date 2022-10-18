@@ -1012,6 +1012,8 @@ export class FillExtrusionExtArray extends StructArrayLayout6i12 {
      */
     get(index: number): FillExtrusionExtStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new FillExtrusionExtStruct(this, index);
     }
 }
@@ -1050,6 +1052,8 @@ export class CollisionBoxArray extends StructArrayLayout5i4f1i1ul2ui40 {
      */
     get(index: number): CollisionBoxStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new CollisionBoxStruct(this, index);
     }
 }
@@ -1101,6 +1105,7 @@ export class PlacedSymbolArray extends StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1
     get(index: number): PlacedSymbolStruct {
         assert(!this.isTransferred);
         assert(index < this.length);
+        assert(index >= 0);
         return new PlacedSymbolStruct(this, index);
     }
 }
@@ -1157,6 +1162,8 @@ export class SymbolInstanceArray extends StructArrayLayout3i2f6i15ui1ul3f76 {
      */
     get(index: number): SymbolInstanceStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new SymbolInstanceStruct(this, index);
     }
 }
@@ -1206,6 +1213,8 @@ export class FeatureIndexArray extends StructArrayLayout1ul3ui12 {
      */
     get(index: number): FeatureIndexStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new FeatureIndexStruct(this, index);
     }
 }
@@ -1233,6 +1242,8 @@ export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
      */
     get(index: number): FillExtrusionCentroidStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new FillExtrusionCentroidStruct(this, index);
     }
 }
@@ -1264,6 +1275,8 @@ export class CircleGlobeExtArray extends StructArrayLayout6i12 {
      */
     get(index: number): CircleGlobeExtStruct {
         assert(!this.isTransferred);
+        assert(index < this.length);
+        assert(index >= 0);
         return new CircleGlobeExtStruct(this, index);
     }
 }
