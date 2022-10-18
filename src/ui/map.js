@@ -6,7 +6,7 @@ import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
+import {RequestManager, getMapSessionAPI, postPerformanceEvent, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
@@ -389,6 +389,7 @@ class Map extends Camera {
     _containerHeight: number;
     _language: ?string | ?string[];
     _worldview: ?string;
+    _interactionRange: [number, number];
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -506,6 +507,8 @@ class Map extends Camera {
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
+
+        this._interactionRange = [+Infinity, -Infinity];
 
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
@@ -3087,6 +3090,11 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
+        if (this.isMoving() || this.isRotating() || this.isZooming()) {
+            this._interactionRange[0] = Math.min(this._interactionRange[0], window.performance.now());
+            this._interactionRange[1] = Math.max(this._interactionRange[1], window.performance.now());
+        }
+
         this._renderTaskQueue.run(paintStartTimeStamp);
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
@@ -3268,7 +3276,17 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
-            // Following line is billing related code. Do not change. See LICENSE.txt
+            // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
+            postPerformanceEvent(this._requestManager._customAccessToken, {
+                width: this.painter.width,
+                height: this.painter.height,
+                interactionRange: this._interactionRange,
+                terrain: this.painter.style.getTerrain(),
+                fog: this.painter.style.getFog(),
+                projection: this.painter.transform.projection,
+                renderer: this.painter.context.renderer,
+                vendor: this.painter.context.vendor
+            }, () => {});
             this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
