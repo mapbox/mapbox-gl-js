@@ -655,6 +655,14 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
     return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
 
+export function isLngLatInViewport(tr: Transform, lngLat: LngLat): boolean {
+    const lngLatToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
+    const aabb = Aabb.fromPoints([lngLatToPoint]);
+    const cameraFrustum = tr.getCameraFrustum();
+    const intersectResult = aabb.intersects(cameraFrustum);
+    return intersectResult > 0;
+}
+
 const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);

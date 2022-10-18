@@ -17,7 +17,7 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, isLngLatInViewport, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -715,6 +715,12 @@ class Transform {
         return result;
     }
 
+    getCameraFrustum(): Frustum {
+        const z = Math.floor(this.zoom);
+        const zInMeters = this.projection.name !== 'globe';
+        return Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
+    }
+
     /**
      * Return all coordinates that could cover this transform for a covering
      * zoom level.
@@ -1390,8 +1396,18 @@ class Transform {
         processSegment(right, bottom, left, bottom);
         processSegment(left, bottom, left, top);
 
-        const ne = new LngLat(lngFromMercatorX(maxX), latFromMercatorY(minY));
-        const sw = new LngLat(lngFromMercatorX(minX), latFromMercatorY(maxY));
+        // Check if the north pole is visible and minY is behind the pole
+        const northPoleLocation = new LngLat(this.center.lat, MAX_MERCATOR_LATITUDE);
+        const northPoleIsVisible = isLngLatInViewport(this, northPoleLocation) &&
+            latFromMercatorY(minY) < MAX_MERCATOR_LATITUDE;
+
+        // Check if the south pole is visible and maxY is behind the pole
+        const southPoleLocation = new LngLat(this.center.lat, -MAX_MERCATOR_LATITUDE);
+        const southPoleIsVisible = isLngLatInViewport(this, southPoleLocation) &&
+            latFromMercatorY(maxY) > -MAX_MERCATOR_LATITUDE;
+
+        const ne = new LngLat(lngFromMercatorX(maxX), northPoleIsVisible ? 90 : latFromMercatorY(minY));
+        const sw = new LngLat(lngFromMercatorX(minX), southPoleIsVisible ? -90 : latFromMercatorY(maxY));
         return new LngLatBounds(sw, ne);
     }
 

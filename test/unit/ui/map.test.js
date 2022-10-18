@@ -1444,6 +1444,33 @@ test('Map', (t) => {
                 toFixed([[ -73.8873304141, -73.8873304141, ], [ 73.8873304141, 73.8873304141]])
             );
 
+            map.setBearing(80);
+            map.setCenter({lng: 0, lat: 90});
+
+            const northBounds = map.getBounds();
+            t.same(northBounds.getNorth(), 90);
+            t.same(
+                toFixed(northBounds.toArray()),
+                toFixed([[ -169.7072944003, 11.2373406095 ], [ 175.8448619060, 90 ]])
+            );
+
+            map.setBearing(180);
+            map.setCenter({lng: 0, lat: -90});
+
+            const southBounds = map.getBounds();
+            t.same(southBounds.getSouth(), -90);
+            t.same(
+                toFixed(southBounds.toArray()),
+                toFixed([[ -165.5559158623, -90 ], [ 180, -11.1637985859]])
+            );
+
+            map.setZoom(3);
+            map.setBearing(0);
+            map.setCenter({lng: 0, lat: 45});
+
+            const europeBounds = map.getBounds();
+            t.notSame(europeBounds.getNorth(), 90);
+
             t.end();
         });
 
