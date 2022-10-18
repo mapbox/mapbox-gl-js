@@ -798,9 +798,6 @@ class Map extends Camera {
      * const bounds = map.getBounds();
      */
     getBounds(): LngLatBounds | null {
-        if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly."');
-        }
         return this.transform.getBounds();
     }
 
