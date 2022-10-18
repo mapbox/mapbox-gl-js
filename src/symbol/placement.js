@@ -849,13 +849,13 @@ export class Placement {
             symbolInstance.leftJustifiedTextSymbolIndex,
             symbolInstance.centerJustifiedTextSymbolIndex,
             symbolInstance.rightJustifiedTextSymbolIndex
-        ];
+        ].filter(i => i !== -1);
 
         for (const index of horizontalIndexes) {
             bucket.text.placedSymbolArray.get(index).placedOrientation = horizontal;
         }
 
-        if (symbolInstance.verticalPlacedTextSymbolIndex) {
+        if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
             bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).placedOrientation = vertical;
         }
     }
