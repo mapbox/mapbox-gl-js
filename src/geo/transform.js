@@ -1390,16 +1390,8 @@ class Transform {
         processSegment(right, bottom, left, bottom);
         processSegment(left, bottom, left, top);
 
-        // Check if minY is behind the globe and the north pole is visible
-        const northPoleIsVisible = latFromMercatorY(minY) < 90 &&
-            !isLngLatBehindGlobe(this, new LngLat(this.center.lat, 90));
-
-        // Check if maxY is behind the globe and the south pole is visible
-        const southPoleIsVisible = latFromMercatorY(maxY) > -90 &&
-            !isLngLatBehindGlobe(this, new LngLat(this.center.lat, -90));
-
-        const ne = new LngLat(lngFromMercatorX(maxX), northPoleIsVisible ? 90 : latFromMercatorY(minY));
-        const sw = new LngLat(lngFromMercatorX(minX), southPoleIsVisible ? -90 : latFromMercatorY(maxY));
+        const ne = new LngLat(lngFromMercatorX(maxX), latFromMercatorY(minY));
+        const sw = new LngLat(lngFromMercatorX(minX), latFromMercatorY(maxY));
         return new LngLatBounds(sw, ne);
     }
 
