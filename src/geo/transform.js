@@ -1609,8 +1609,8 @@ class Transform {
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
             const prevDistToCamera = vec3.length(cameraToCenter);
 
-            // // Adjust the camera vector so that the camera is placed above the terrain.
-            // // Distance between the camera and the center point is kept constant.
+            // Adjust the camera vector so that the camera is placed above the terrain.
+            // Distance between the camera and the center point is kept constant.
             cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
             const newDistToCamera = vec3.length(cameraToCenter);
 
