@@ -799,7 +799,7 @@ class Map extends Camera {
      */
     getBounds(): LngLatBounds | null {
         if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly."');
+            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly when viewing the poles."');
         }
         return this.transform.getBounds();
     }
