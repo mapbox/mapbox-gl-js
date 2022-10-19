@@ -188,7 +188,7 @@ class Painter {
         this._backgroundTiles = {};
     }
 
-    updateTerrain(style: Stylen) {
+    updateTerrain(style: Style) {
         const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
