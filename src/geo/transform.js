@@ -1618,8 +1618,6 @@ class Transform {
 
             vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
             this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
-            this._camera.orientation = orientationFromFrame(cameraToCenter, this._camera.up());
-
             this._updateStateFromCamera();
         }
     }
