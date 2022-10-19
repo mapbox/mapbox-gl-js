@@ -813,7 +813,7 @@ test('transform', (t) => {
         transform.elevation = null;
         t.ok(cameraAltitude() < 10);
 
-        // collision elevation does not push camera up
+        // collision elevation keeps center at 0 but pushes camera up.
         const elevation1 = createCollisionElevation(10);
         elevation1._exaggeration = 0;
 
