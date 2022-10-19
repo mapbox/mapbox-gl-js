@@ -1600,14 +1600,24 @@ class Transform {
 
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
         const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(this._maxPitch));
+
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
         if (cameraHeight < minHeight) {
             const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
+            const prevDistToCamera = vec3.length(cameraToCenter);
 
-            vec3.scale(cameraToCenter, cameraToCenter, this._pixelsPerMercatorPixel);
+            // // Adjust the camera vector so that the camera is placed above the terrain.
+            // // Distance between the camera and the center point is kept constant.
+            cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
+            const newDistToCamera = vec3.length(cameraToCenter);
+
+            if (newDistToCamera === 0)
+                return;
+
+            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
             this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
 
             this._updateStateFromCamera();
@@ -1961,7 +1971,7 @@ class Transform {
         // Values above than 2 allow max-pitch camera closer to e.g. top of the hill, exposing
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
-        const MAX_DRAPE_OVERZOOM = 2;
+        const MAX_DRAPE_OVERZOOM = 5;
         const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
         return this._mercatorZfromZoom(zoom);
     }

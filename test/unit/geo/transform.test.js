@@ -714,7 +714,7 @@ test('transform', (t) => {
         };
     };
 
-    test('Camera height and pitch does not change when colliding with terrain', (t) => {
+    test('Pitch does not change when camera collides with terrain', (t) => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.maxPitch = 85;
@@ -731,8 +731,7 @@ test('transform', (t) => {
         const cameraAltitude = altitudeFromMercatorZ(transform.getFreeCameraOptions().position.z, transform.getFreeCameraOptions().position.y);
         transform.updateElevation(false);
 
-        t.equal(fixedNum(cameraAltitude), 4.9999999999);
-        t.equal(fixedNum(transform.zoom), fixedNum(zoom));
+        t.ok(cameraAltitude > 10);
         t.equal(fixedNum(transform.bearing), -45);
         t.equal(fixedNum(transform.pitch), 85);
 
@@ -826,7 +825,7 @@ test('transform', (t) => {
         elevation1._exaggeration = 1;
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 0);
-        t.ok(cameraAltitude() < 10);
+        t.ok(cameraAltitude() > 10);
         t.equal(fixedNum(transform.pitch), 85);
 
         t.end();
@@ -1094,20 +1093,18 @@ test('transform', (t) => {
             transform.center = {lng: -104.99813327, lat: 39.72784465999999};
             options.roundZoom = true;
             t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(22, 0, 22, 873835, 1592007),
-                new OverscaledTileID(22, 0, 22, 873834, 1592007),
-                new OverscaledTileID(22, 0, 22, 873835, 1592006),
-                new OverscaledTileID(22, 0, 22, 873834, 1592006),
-                new OverscaledTileID(22, 0, 22, 873835, 1592008),
-                new OverscaledTileID(22, 0, 22, 873836, 1592007),
-                new OverscaledTileID(22, 0, 22, 873836, 1592006),
-                new OverscaledTileID(22, 0, 22, 873836, 1592008),
-                new OverscaledTileID(22, 0, 22, 873836, 1592005),
-                new OverscaledTileID(22, 0, 22, 873837, 1592007),
-                new OverscaledTileID(22, 0, 22, 873837, 1592006),
-                new OverscaledTileID(22, 0, 22, 873837, 1592008),
-                new OverscaledTileID(22, 0, 22, 873837, 1592005),
-                new OverscaledTileID(21, 0, 21, 436919, 796002)
+                new OverscaledTileID(20, 0, 20, 218460, 398001),
+                new OverscaledTileID(20, 0, 20, 218460, 398002),
+                new OverscaledTileID(20, 0, 20, 218459, 398001),
+                new OverscaledTileID(20, 0, 20, 218459, 398002),
+                new OverscaledTileID(20, 0, 20, 218461, 398001),
+                new OverscaledTileID(20, 0, 20, 218461, 398002),
+                new OverscaledTileID(20, 0, 20, 218461, 398000),
+                new OverscaledTileID(20, 0, 20, 218461, 398003),
+                new OverscaledTileID(20, 0, 20, 218462, 398001),
+                new OverscaledTileID(20, 0, 20, 218462, 398002),
+                new OverscaledTileID(20, 0, 20, 218462, 398000),
+                new OverscaledTileID(20, 0, 20, 218462, 398003)
             ]);
             t.end();
         });
