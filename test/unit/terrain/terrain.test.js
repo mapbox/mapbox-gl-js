@@ -378,19 +378,19 @@ test('Elevation', (t) => {
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation,  -28.11901918218041);
+                assertAlmostEqual(t, map.transform.averageElevation, -17.781004493268256);
 
                 timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, -56.23803836436082);
+                assertAlmostEqual(t, map.transform.averageElevation, -35.56200898653651);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
                 changed = map._updateAverageElevation(timestamp);
                 t.false(changed);
                 t.false(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, -56.23803836436082);
+                assertAlmostEqual(t, map.transform.averageElevation, -35.56200898653651);
 
                 t.end();
             });
