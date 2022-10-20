@@ -68,7 +68,6 @@ import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {CrossFaded} from '../style/properties.js';
-import type LineAtlas from './line_atlas.js';
 import type ImageManager from './image_manager.js';
 import type GlyphManager from './glyph_manager.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -137,7 +136,6 @@ class Painter {
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
-    lineAtlas: LineAtlas;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
     depthRangeFor3D: DepthRangeType;
@@ -484,7 +482,6 @@ class Painter {
         this.style = style;
         this.options = options;
 
-        this.lineAtlas = style.lineAtlas;
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
