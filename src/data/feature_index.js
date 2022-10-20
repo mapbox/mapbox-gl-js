@@ -305,7 +305,7 @@ class FeatureIndex {
         let id = feature.id;
         if (this.promoteId) {
             const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
-            id = feature.properties[propName];
+            if (propName != null) id = feature.properties[propName];
             if (typeof id === 'boolean') id =  Number(id);
         }
         return id;
