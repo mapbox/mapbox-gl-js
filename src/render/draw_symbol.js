@@ -486,6 +486,6 @@ function drawSymbolElements(buffers, segments, layer, painter, program, depthMod
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer];
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
-        buffers.indexBuffer, segments, layer.paint,
+        painter.symbolIndexBuffer, segments, layer.paint,
         painter.transform.zoom, buffers.programConfigurations.get(layer.id), dynamicBuffers);
 }

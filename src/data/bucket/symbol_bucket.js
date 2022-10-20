@@ -216,7 +216,6 @@ export class SymbolBuffers {
 
     constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
         this.layoutVertexArray = new SymbolLayoutArray();
-        this.indexArray = new TriangleIndexArray();
         this.programConfigurations = programConfigurations;
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
@@ -225,9 +224,12 @@ export class SymbolBuffers {
         this.globeExtVertexArray = new SymbolGlobeExtArray();
     }
 
+    get indexArray() {
+        throw new Error('indexArray');
+    }
+
     isEmpty(): boolean {
         return this.layoutVertexArray.length === 0 &&
-            this.indexArray.length === 0 &&
             this.dynamicLayoutVertexArray.length === 0 &&
             this.opacityVertexArray.length === 0;
     }
@@ -239,7 +241,6 @@ export class SymbolBuffers {
 
         if (upload) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
-            this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
             if (this.globeExtVertexArray.length > 0) {
@@ -257,7 +258,6 @@ export class SymbolBuffers {
     destroy() {
         if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
-        this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
@@ -710,11 +710,10 @@ class SymbolBucket implements Bucket {
                associatedIconIndex: number,
                availableImages: Array<string>,
                canonical: CanonicalTileID) {
-        const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const globeExtVertexArray = arrays.globeExtVertexArray;
 
-        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, indexArray, this.canOverlap ? feature.sortKey : undefined);
+        const segment = arrays.segments.prepareSegment(4 * quads.length, layoutVertexArray, { length: 0 }, this.canOverlap ? feature.sortKey : undefined);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
         const vertexStartIndex = segment.vertexLength;
 
@@ -745,8 +744,6 @@ class SymbolBucket implements Bucket {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
             }
 
-            indexArray.emplaceBack(index, index + 1, index + 2);
-            indexArray.emplaceBack(index + 1, index + 2, index + 3);
 
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
@@ -1058,6 +1055,8 @@ class SymbolBucket implements Bucket {
 
     sortFeatures(angle: number) {
         if (!this.sortFeaturesByY) return;
+        return;
+        throw new Error('sortbyy');
         if (this.sortedAngle === angle) return;
 
         // The current approach to sorting doesn't sort across segments so don't try.

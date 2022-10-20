@@ -283,6 +283,14 @@ class Painter {
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
 
+        const symbolIndexArray = new TriangleIndexArray();
+        const max = Math.pow(2, 16);
+        for (let i = 0; i < max; i += 4) {
+            symbolIndexArray.emplaceBack(i, i + 1, i + 2);
+            symbolIndexArray.emplaceBack(i + 1, i + 2, i + 3);
+        }
+        this.symbolIndexBuffer = context.createIndexBuffer(symbolIndexArray);
+
         const tileLineStripIndices = new LineStripIndexArray();
         for (const i of [0, 1, 3, 2, 0]) tileLineStripIndices.emplaceBack(i);
         this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
