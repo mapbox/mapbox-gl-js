@@ -11,7 +11,6 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
-import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
@@ -138,7 +137,6 @@ class Style extends Evented {
     dispatcher: Dispatcher;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
-    lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
     fog: ?Fog;
@@ -190,7 +188,6 @@ class Style extends Evented {
                 LocalGlyphMode.all :
                 (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
             options.localFontFamily || options.localIdeographFontFamily);
-        this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
