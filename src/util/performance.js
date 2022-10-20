@@ -35,6 +35,9 @@ export const PerformanceMarkers = {
 let fullLoadFinished = false;
 let placementTime = 0;
 
+let bufferedData = 0;
+let bufferDataCount = 0;
+
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
         performance.mark(marker);
@@ -85,6 +88,11 @@ export const PerformanceUtils = {
         }
     },
 
+    bufferData(n) {
+        bufferedData += n;
+        bufferDataCount++;
+    },
+
     getPerformanceMetrics(): PerformanceMetrics {
         const metrics = {};
 
@@ -97,6 +105,8 @@ export const PerformanceUtils = {
         }
 
         metrics.placementTime = placementTime;
+        metrics.bufferData = bufferedData;
+        metrics.bufferDataCount = bufferDataCount;
 
         return metrics;
     },

@@ -5,6 +5,8 @@ import type {StructArray} from '../util/struct_array.js';
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type.js';
 import type Context from '../gl/context.js';
 
+import {PerformanceUtils} from '../util/performance.js';
+
 class IndexBuffer {
     context: Context;
     buffer: WebGLBuffer;
@@ -23,6 +25,7 @@ class IndexBuffer {
 
         context.bindElementBuffer.set(this.buffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        PerformanceUtils.bufferData(array.arrayBuffer.byteLength);
 
         if (!this.dynamicDraw) {
             array.destroy();

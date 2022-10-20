@@ -10,6 +10,8 @@ import type {
 import type Program from '../render/program.js';
 import type Context from '../gl/context.js';
 
+import {PerformanceUtils} from '../util/performance.js';
+
 /**
  * @enum {string} AttributeType
  * @private
@@ -53,6 +55,7 @@ class VertexBuffer {
         this.buffer = gl.createBuffer();
         context.bindVertexBuffer.set(this.buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        PerformanceUtils.bufferData(array.arrayBuffer.byteLength);
 
         if (!this.dynamicDraw) {
             array.destroy();
