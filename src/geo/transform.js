@@ -715,10 +715,15 @@ class Transform {
         return result;
     }
 
+    getPerspectiveCameraMatrix(): Float64Array {
+        return this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
+    }
+
     getCameraFrustum(): Frustum {
-        const z = Math.floor(this.zoom);
-        const zInMeters = this.projection.name !== 'globe';
-        return Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, z, zInMeters);
+        const perspectiveCameraMatrix = this.getPerspectiveCameraMatrix();
+        // Create a matrix from clip space to world coords (inverse perspective matrix)
+        const invPerspectiveMatrix = mat4.invert(new Float64Array(16), perspectiveCameraMatrix);
+        return Frustum.fromInvPerspectiveMatrix(invPerspectiveMatrix);
     }
 
     /**
@@ -1818,7 +1823,7 @@ class Transform {
 
         const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
-        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
+        const cameraToClip = this.getPerspectiveCameraMatrix();
 
         // Apply center of perspective offset
         cameraToClip[8] = -offset.x * 2 / this.width;

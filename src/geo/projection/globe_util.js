@@ -656,8 +656,15 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
 }
 
 export function isLngLatInViewport(tr: Transform, lngLat: LngLat): boolean {
-    const lngLatToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
-    const aabb = Aabb.fromPoints([lngLatToPoint]);
+    // Create an array with one point in ECEF from the location at lngLat
+    const ecef = latLngToECEF(lngLat.lat, lngLat.lng);
+    const corners = [ecef];
+
+    // Translate points from ECEF to world coords
+    transformPoints(corners, tr.globeMatrix, 1);
+    const aabb = Aabb.fromPoints(corners);
+
+    // Create Frustum in world coords
     const cameraFrustum = tr.getCameraFrustum();
     const intersectResult = aabb.intersects(cameraFrustum);
     return intersectResult > 0;
