@@ -289,6 +289,7 @@ class Painter {
             symbolIndexArray.emplaceBack(i, i + 1, i + 2);
             symbolIndexArray.emplaceBack(i + 1, i + 2, i + 3);
         }
+        symbolIndexArray._trim();
         this.symbolIndexBuffer = context.createIndexBuffer(symbolIndexArray);
 
         const tileLineStripIndices = new LineStripIndexArray();
