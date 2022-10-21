@@ -931,15 +931,12 @@ export class Terrain extends Elevation {
             }
         }
 
-        const fadingOrTransitioning = id => {
+        const isTransitioning = id => {
             const layer = this._style._layers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            const crossFade = layer.getCrossfadeParameters();
-            const isFading = !!crossFade && crossFade.t !== 1;
-            const isTransitioning = layer.hasTransition();
-            return layer.type !== 'custom' && !isHidden && (isFading || isTransitioning);
+            return layer.type !== 'custom' && !isHidden && layer.hasTransition();
         };
-        return this._style.order.some(fadingOrTransitioning);
+        return this._style.order.some(isTransitioning);
     }
 
     _clearRasterFadeFromRenderCache() {
