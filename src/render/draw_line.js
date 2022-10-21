@@ -102,8 +102,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ?
-            linePatternUniformValues(painter, tile, layer, crossfade, matrix, pixelRatio) :
-            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
+            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio) :
+            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
