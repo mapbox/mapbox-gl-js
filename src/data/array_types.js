@@ -184,11 +184,11 @@ register(StructArrayLayout4f16, 'StructArrayLayout4f16');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Uint16[10]
+ * [0]: Uint16[5]
  *
  * @private
  */
-class StructArrayLayout10ui20 extends StructArray {
+class StructArrayLayout5ui10 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -197,38 +197,33 @@ class StructArrayLayout10ui20 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number): number {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number): number {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        return this.emplace(i, v0, v1, v2, v3, v4);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number): number {
-        const o2 = i * 10;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number): number {
+        const o2 = i * 5;
         this.uint16[o2 + 0] = v0;
         this.uint16[o2 + 1] = v1;
         this.uint16[o2 + 2] = v2;
         this.uint16[o2 + 3] = v3;
         this.uint16[o2 + 4] = v4;
-        this.uint16[o2 + 5] = v5;
-        this.uint16[o2 + 6] = v6;
-        this.uint16[o2 + 7] = v7;
-        this.uint16[o2 + 8] = v8;
-        this.uint16[o2 + 9] = v9;
         return i;
     }
 }
 
-StructArrayLayout10ui20.prototype.bytesPerElement = 20;
-register(StructArrayLayout10ui20, 'StructArrayLayout10ui20');
+StructArrayLayout5ui10.prototype.bytesPerElement = 10;
+register(StructArrayLayout5ui10, 'StructArrayLayout5ui10');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Uint16[8]
+ * [0]: Uint16[4]
  *
  * @private
  */
-class StructArrayLayout8ui16 extends StructArray {
+class StructArrayLayout4ui8 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -237,28 +232,24 @@ class StructArrayLayout8ui16 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number): number {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7);
+        return this.emplace(i, v0, v1, v2, v3);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number): number {
-        const o2 = i * 8;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number): number {
+        const o2 = i * 4;
         this.uint16[o2 + 0] = v0;
         this.uint16[o2 + 1] = v1;
         this.uint16[o2 + 2] = v2;
         this.uint16[o2 + 3] = v3;
-        this.uint16[o2 + 4] = v4;
-        this.uint16[o2 + 5] = v5;
-        this.uint16[o2 + 6] = v6;
-        this.uint16[o2 + 7] = v7;
         return i;
     }
 }
 
-StructArrayLayout8ui16.prototype.bytesPerElement = 16;
-register(StructArrayLayout8ui16, 'StructArrayLayout8ui16');
+StructArrayLayout4ui8.prototype.bytesPerElement = 8;
+register(StructArrayLayout4ui8, 'StructArrayLayout4ui8');
 
 /**
  * Implementation of the StructArray layout:
@@ -1289,8 +1280,8 @@ export {
     StructArrayLayout4i8,
     StructArrayLayout2i4ub1f12,
     StructArrayLayout4f16,
-    StructArrayLayout10ui20,
-    StructArrayLayout8ui16,
+    StructArrayLayout5ui10,
+    StructArrayLayout4ui8,
     StructArrayLayout6i12,
     StructArrayLayout4i4ui4i24,
     StructArrayLayout3i3f20,
@@ -1318,8 +1309,8 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout4f16 as LineExtLayoutArray,
-    StructArrayLayout10ui20 as PatternLayoutArray,
-    StructArrayLayout8ui16 as DashLayoutArray,
+    StructArrayLayout5ui10 as PatternLayoutArray,
+    StructArrayLayout4ui8 as DashLayoutArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3i3f20 as SymbolGlobeExtArray,
     StructArrayLayout4f16 as SymbolDynamicLayoutArray,

@@ -6413,7 +6413,7 @@
           "zoom"
         ]
       },
-      "property-type": "cross-faded"
+      "property-type": "data-constant"
     },
     "background-opacity": {
       "type": "number",
@@ -6696,10 +6696,6 @@
     "data-driven": {
       "type": "property-type",
       "doc": "Property is interpolable and can be represented using a property expression."
-    },
-    "cross-faded": {
-      "type": "property-type",
-      "doc": "Property is non-interpolable; rather, its values will be cross-faded to smoothly transition between integer zooms."
     },
     "cross-faded-data-driven": {
       "type": "property-type",

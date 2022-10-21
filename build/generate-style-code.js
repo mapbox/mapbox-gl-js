@@ -47,8 +47,6 @@ global.propertyType = function (property) {
     switch (property['property-type']) {
         case 'data-driven':
             return `DataDrivenProperty<${flowType(property)}>`;
-        case 'cross-faded':
-            return `CrossFadedProperty<${flowType(property)}>`;
         case 'cross-faded-data-driven':
             return `CrossFadedDataDrivenProperty<${flowType(property)}>`;
         case 'color-ramp':
@@ -117,8 +115,6 @@ global.propertyValue = function (property, type) {
             } else {
                 return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
             }
-        case 'cross-faded':
-            return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'cross-faded-data-driven':
             return `new CrossFadedDataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'color-ramp':

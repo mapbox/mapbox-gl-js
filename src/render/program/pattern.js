@@ -10,7 +10,6 @@ import pixelsToTileUnits from '../../source/pixels_to_tile_units.js';
 
 import type Painter from '../painter.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
-import type {CrossFaded} from '../../style/properties.js';
 import type {UniformValues} from '../uniform_binding.js';
 import type Tile from '../../source/tile.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
@@ -52,12 +51,12 @@ function patternUniformValues(painter: Painter, tile: Tile): UniformValues<Patte
     };
 }
 
-function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, painter: Painter,
+function bgPatternUniformValues(image: ResolvedImage, painter: Painter,
         tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
 
-    const imagePosB = painter.imageManager.getPattern(image.to.toString());
-    assert(imagePosB);
+    const imagePos = painter.imageManager.getPattern(image.toString());
+    assert(imagePos);
     const {width, height} = painter.imageManager.getPixelSize();
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
@@ -68,10 +67,10 @@ function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, painter: Paint
 
     return {
         'u_image': 0,
-        'u_pattern_tl': (imagePosB: any).tl,
-        'u_pattern_br': (imagePosB: any).br,
+        'u_pattern_tl': (imagePos: any).tl,
+        'u_pattern_br': (imagePos: any).br,
         'u_texsize': [width, height],
-        'u_pattern_size': (imagePosB: any).displaySize,
+        'u_pattern_size': (imagePos: any).displaySize,
         'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

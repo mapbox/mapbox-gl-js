@@ -64,20 +64,16 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
-            const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.to.toString()];
-            const posFrom = atlas.patternPositions[constantPattern.from.toString()];
-            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+            const posTo = tile.imageAtlas.patternPositions[constantPattern.to.toString()];
+            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
         const constantDash = dasharrayProperty.constantOr(null);
         const constantCap = capProperty.constantOr((null: any));
 
         if (!image && constantDash && constantCap && tile.lineAtlas) {
-            const atlas = tile.lineAtlas;
-            const posTo = atlas.getDash(constantDash.to, constantCap);
-            const posFrom = atlas.getDash(constantDash.from, constantCap);
-            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+            const posTo = tile.lineAtlas.getDash(constantDash.to, constantCap);
+            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
         let [trimStart, trimEnd] = layer.paint.get('line-trim-offset');

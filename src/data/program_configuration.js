@@ -115,37 +115,29 @@ class ConstantBinder implements UniformBinder {
 
 class CrossFadedConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
-    patternFrom: ?Array<number>;
     patternTo: ?Array<number>;
-    pixelRatioFrom: number;
     pixelRatioTo: number;
 
     constructor(value: mixed, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
-        this.patternFrom = null;
         this.patternTo = null;
-        this.pixelRatioFrom = 1;
         this.pixelRatioTo = 1;
     }
 
-    setConstantPatternPositions(posTo: SpritePosition, posFrom: SpritePosition) {
-        this.pixelRatioFrom = posFrom.pixelRatio || 1;
+    setConstantPatternPositions(posTo: SpritePosition) {
         this.pixelRatioTo = posTo.pixelRatio || 1;
-        this.patternFrom = posFrom.tl.concat(posFrom.br);
         this.patternTo = posTo.tl.concat(posTo.br);
     }
 
     setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
             uniformName === 'u_pattern_to' || uniformName === 'u_dash_to' ? this.patternTo :
-            uniformName === 'u_pattern_from' || uniformName === 'u_dash_from' ? this.patternFrom :
-            uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo :
-            uniformName === 'u_pixel_ratio_from' ? this.pixelRatioFrom : null;
+            uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo : null;
         if (pos) uniform.set(program, uniformName, pos);
     }
 
     getBinding(context: Context, name: string): $Shape<Uniform<any>> {
-        return name === 'u_pattern_from' || name === 'u_pattern_to' || name === 'u_dash_from' || name === 'u_dash_to' ?
+        return name === 'u_pattern_to' || name === 'u_dash_to' ?
             new Uniform4f(context) :
             new Uniform1f(context);
     }
@@ -343,9 +335,6 @@ class CrossFadedCompositeBinder implements AttributeBinder {
         const imageMid = positions[patterns.mid];
         if (!imageMid) return;
 
-        // We populate two paint arrays because, for cross-faded properties, we don't know which direction
-        // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
-        // unnecessary vertex data to the shaders, we determine which to upload at draw time.
         const {tl, br, pixelRatio} = imageMid;
         for (let i = start; i < end; i++) {
             this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
@@ -406,7 +395,7 @@ export default class ProgramConfiguration {
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;
             const propType = value.property.specification['property-type'];
-            const isCrossFaded = propType === 'cross-faded' || propType === 'cross-faded-data-driven';
+            const isCrossFaded = propType === 'cross-faded-data-driven';
 
             const sourceException = String(property) === 'line-dasharray' && (layer.layout: any).get('line-cap').value.kind !== 'constant';
 
@@ -445,11 +434,11 @@ export default class ProgramConfiguration {
                 (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, formattedSection);
         }
     }
-    setConstantPatternPositions(posTo: SpritePosition, posFrom: SpritePosition) {
+    setConstantPatternPositions(posTo: SpritePosition) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof CrossFadedConstantBinder)
-                binder.setConstantPatternPositions(posTo, posFrom);
+                binder.setConstantPatternPositions(posTo);
         }
     }
 
@@ -637,10 +626,10 @@ const attributeNameExceptions = {
     'text-halo-width': ['halo_width'],
     'icon-halo-width': ['halo_width'],
     'line-gap-width': ['gapwidth'],
-    'line-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-    'fill-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-    'fill-extrusion-pattern': ['pattern_to', 'pattern_from', 'pixel_ratio_to', 'pixel_ratio_from'],
-    'line-dasharray': ['dash_to', 'dash_from']
+    'line-pattern': ['pattern_to', 'pixel_ratio_to'],
+    'fill-pattern': ['pattern_to', 'pixel_ratio_to'],
+    'fill-extrusion-pattern': ['pattern_to', 'pixel_ratio_to'],
+    'line-dasharray': ['dash_to']
 };
 
 function paintAttributeNames(property, type) {
