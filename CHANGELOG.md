@@ -7,16 +7,16 @@
 * Improve support for `getBounds` with globe projection. ([#12286](https://github.com/mapbox/mapbox-gl-js/pull/12286))
 * Improve symbol placement performance with globe projection ([#12105](https://github.com/mapbox/mapbox-gl-js/pull/12105))
 * Add new marker styling option `terrainOccludedMarkerOpacity` allowing the user to set the opacity of a marker that's behind 3D terrain (h/t [jacadzaca](https://github.com/jacadzaca)) ([#12258](https://github.com/mapbox/mapbox-gl-js/pull/12258))
-* Cancel ImageSource image request when underlying resource is no longer used ([#12266](https://github.com/mapbox/mapbox-gl-js/pull/12266)) (h/t [maciejmatu](https://github.com/maciejmatu))
+* Cancel `ImageSource` image request when underlying resource is no longer used ([#12266](https://github.com/mapbox/mapbox-gl-js/pull/12266)) (h/t [maciejmatu](https://github.com/maciejmatu))
 * Add object literal support in `LngLatBounds.extend` ([#12270](https://github.com/mapbox/mapbox-gl-js/pull/12270)) (h/t [stampyzfanz](https://github.com/stampyzfanz))
 
 ### Bug fixes 🐞
 
 * Fix elevation of pole geometry when exaggerated terrain is used ([#12133](https://github.com/mapbox/mapbox-gl-js/pull/12133))
-* Fix GeolocateControl sometimes not working in iOS16 WebView ([#12239](https://github.com/mapbox/mapbox-gl-js/pull/12239))
+* Fix `GeolocateControl` sometimes not working in iOS16 WebView ([#12239](https://github.com/mapbox/mapbox-gl-js/pull/12239))
 * Fix map crashing on conformal projections at the south pole ([#12172](https://github.com/mapbox/mapbox-gl-js/pull/12172))
 * Fix pixel flickering between tiles on darker styles in globe view. ([#12145](https://github.com/mapbox/mapbox-gl-js/pull/12145))
-* Fix occasional missing tiles at bottom of screen during globe-Mercator transition ([#12137](https://github.com/mapbox/mapbox-gl-js/pull/12137))
+* Fix occasional missing tiles at bottom of screen during globe-mercator transition ([#12137](https://github.com/mapbox/mapbox-gl-js/pull/12137))
 * Fix incorrectly requiring three finger drags to change pitch with cooperative gestures while in fullscreen. ([#12165](https://github.com/mapbox/mapbox-gl-js/pull/12165))
 * Fix jumping when scrolling with mouse when crossing the antimeridian on projections that wrap. ([#12238](https://github.com/mapbox/mapbox-gl-js/pull/12238))
 * Fix terrain error being fired when using `map.getStyle()` with globe view ([#12163](https://github.com/mapbox/mapbox-gl-js/pull/12163))
