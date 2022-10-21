@@ -3,7 +3,7 @@
 ### Features ✨ and improvements 🏁
 
 * Improve symbol placement performance with globe projection ([#12105](https://github.com/mapbox/mapbox-gl-js/pull/12105))
-* Add support for cameraForBounds with globe view ([#12138](https://github.com/mapbox/mapbox-gl-js/pull/12138))
+* Add support for `cameraForBounds` with globe projection ([#12138](https://github.com/mapbox/mapbox-gl-js/pull/12138))
 * Add support for fitBounds and fitScreenCoordinates with globe projection ([#12211](https://github.com/mapbox/mapbox-gl-js/pull/12211))
 * Allow to override marker opacity when occluded by terrain (h/t [jacadzaca](https://github.com/jacadzaca)) ([#12258](https://github.com/mapbox/mapbox-gl-js/pull/12258))
 * Improve support for `getBounds` with globe projection. ([#12286](https://github.com/mapbox/mapbox-gl-js/pull/12286))
