@@ -28,7 +28,7 @@
 * Fix updating marker position when toggling between world copied projections and projections without ([#12242](https://github.com/mapbox/mapbox-gl-js/pull/12242))
 * Fix missing icons in some styles. ([#12299](https://github.com/mapbox/mapbox-gl-js/pull/12299))
 * Fix overwriting all feature ids while setting promoteIds on other layers with an object. ([#12322](https://github.com/mapbox/mapbox-gl-js/pull/12322)) (h/t [yongjun21](https://github.com/yongjun21))
-* Fix cursor to return to original state after a popup with `trackPointer` is removed ([#12230](https://github.com/mapbox/mapbox-gl-js/pull/12230)) (h/t [camouflagedName](https://github.com/camouflagedName))
+* Fix cursor returning to original state after a popup with `trackPointer` is removed ([#12230](https://github.com/mapbox/mapbox-gl-js/pull/12230)) (h/t [camouflagedName](https://github.com/camouflagedName))
 
 
 ## 2.10.0
