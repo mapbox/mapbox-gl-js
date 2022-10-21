@@ -42,7 +42,7 @@ input { position: absolute; opacity: 0; z-index: -1;}
 .tab-label { display: flex; color: white; border-radius: 5px; justify-content: space-between; padding: 1em; font-weight: bold; cursor: pointer; }
 .tab-label:hover { filter: brightness(85%); }
 .tab-label::after { content: "\\276F"; width: 1em; height: 1em; text-align: center; transition: all .35s; }
-.tab-content { max-height: 0; padding: 0 1em; background: white; transition: all .35s; }
+.tab-content { max-height: 0; padding: 0 1em; background: white; overflow: scroll; transition: all .35s; }
 .tab-content pre { font-size: 14px; margin: 0 0 10px; }
 input:checked + .tab-label { filter: brightness(90%); };
 input:checked + .tab-label::after { transform: rotate(90deg); }
