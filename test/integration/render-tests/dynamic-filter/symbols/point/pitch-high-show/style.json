@@ -4,6 +4,7 @@
       "test": {
         "height": 264,
         "width": 400,
+        "allowed": 0.0002,
         "operations": [["wait"]]
       }
     },
