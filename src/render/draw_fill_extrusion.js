@@ -126,7 +126,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
             fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                crossfade, tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+                tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 

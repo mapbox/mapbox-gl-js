@@ -15,7 +15,6 @@ import type {UniformValues} from '../uniform_binding.js';
 import type Context from '../../gl/context.js';
 import type Color from '../../style-spec/util/color.js';
 import type {CrossFaded} from '../../style/properties.js';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 

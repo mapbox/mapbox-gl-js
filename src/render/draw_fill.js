@@ -106,14 +106,14 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             indexBuffer = bucket.indexBuffer;
             segments = bucket.segments;
             uniformValues = image ?
-                fillPatternUniformValues(tileMatrix, painter, crossfade, tile) :
+                fillPatternUniformValues(tileMatrix, painter, tile) :
                 fillUniformValues(tileMatrix);
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
             const drawingBufferSize = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                fillOutlinePatternUniformValues(tileMatrix, painter, crossfade, tile, drawingBufferSize) :
+                fillOutlinePatternUniformValues(tileMatrix, painter, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 
