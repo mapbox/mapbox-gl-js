@@ -60,7 +60,6 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
-    const crossfade = layer.getCrossfadeParameters();
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), layer.paint.get('fill-extrusion-ambient-occlusion-radius')];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
@@ -105,7 +104,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {

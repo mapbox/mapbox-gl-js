@@ -63,7 +63,6 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
 
     const patternProperty = layer.paint.get('fill-pattern');
     const image = patternProperty && patternProperty.constantOr((1: any));
-    const crossfade = layer.getCrossfadeParameters();
     let drawMode, programName, uniformValues, indexBuffer, segments;
 
     if (!isOutline) {
@@ -88,7 +87,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
 
         const constantPattern = patternProperty.constantOr(null);

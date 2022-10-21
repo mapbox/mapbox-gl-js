@@ -6,12 +6,6 @@ import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin.js';
 
 import type {TransitionSpecification} from '../style-spec/types.js';
 
-export type CrossfadeParameters = {
-    fromScale: number,
-    toScale: number,
-    t: number
-};
-
 class EvaluationParameters {
     zoom: number;
     pitch: number;
@@ -41,12 +35,6 @@ class EvaluationParameters {
 
     isSupportedScript(str: string): boolean {
         return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
-    }
-
-    getCrossfadeParameters(): CrossfadeParameters {
-        return this.zoom > this.zoomHistory.lastIntegerZoom ?
-            {fromScale: 2, toScale: 1, t: 1} :
-            {fromScale: 0.5, toScale: 1, t: 1};
     }
 }
 

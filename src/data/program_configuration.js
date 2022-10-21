@@ -22,7 +22,6 @@ import assert from 'assert';
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type Context from '../gl/context.js';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer.js';
-import type {CrossfadeParameters} from '../style/evaluation_parameters.js';
 import type {StructArray, StructArrayMember} from '../util/struct_array.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {SpritePosition, SpritePositions} from '../util/image.js';
@@ -309,10 +308,8 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     zoom: number;
     layerId: string;
 
-    zoomInPaintVertexArray: StructArray;
-    zoomOutPaintVertexArray: StructArray;
-    zoomInPaintVertexBuffer: ?VertexBuffer;
-    zoomOutPaintVertexBuffer: ?VertexBuffer;
+    paintVertexArray: StructArray;
+    paintVertexBuffer: ?VertexBuffer;
     paintVertexAttributes: Array<StructArrayMember>;
 
     constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
@@ -327,14 +324,12 @@ class CrossFadedCompositeBinder implements AttributeBinder {
             assert(`a_${names[i]}` === this.paintVertexAttributes[i].name);
         }
 
-        this.zoomInPaintVertexArray = new PaintVertexArray();
-        this.zoomOutPaintVertexArray = new PaintVertexArray();
+        this.paintVertexArray = new PaintVertexArray();
     }
 
     populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions) {
-        const start = this.zoomInPaintVertexArray.length;
-        this.zoomInPaintVertexArray.resize(length);
-        this.zoomOutPaintVertexArray.resize(length);
+        const start = this.paintVertexArray.length;
+        this.paintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
@@ -345,39 +340,26 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     _setPaintValues(start, end, patterns, positions) {
         if (!positions || !patterns) return;
 
-        const {min, mid, max} = patterns;
-        const imageMin = positions[min];
-        const imageMid = positions[mid];
-        const imageMax = positions[max];
-        if (!imageMin || !imageMid || !imageMax) return;
+        const imageMid = positions[patterns.mid];
+        if (!imageMid) return;
 
         // We populate two paint arrays because, for cross-faded properties, we don't know which direction
         // we're cross-fading to at layout time. In order to keep vertex attributes to a minimum and not pass
         // unnecessary vertex data to the shaders, we determine which to upload at draw time.
+        const {tl, br, pixelRatio} = imageMid;
         for (let i = start; i < end; i++) {
-            this._setPaintValue(this.zoomInPaintVertexArray, i, imageMid, imageMin);
-            this._setPaintValue(this.zoomOutPaintVertexArray, i, imageMid, imageMax);
+            this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
         }
     }
 
-    _setPaintValue(array, i, posA, posB) {
-        array.emplace(i,
-            posA.tl[0], posA.tl[1], posA.br[0], posA.br[1],
-            posB.tl[0], posB.tl[1], posB.br[0], posB.br[1],
-            posA.pixelRatio, posB.pixelRatio
-        );
-    }
-
     upload(context: Context) {
-        if (this.zoomInPaintVertexArray && this.zoomInPaintVertexArray.arrayBuffer && this.zoomOutPaintVertexArray && this.zoomOutPaintVertexArray.arrayBuffer) {
-            this.zoomInPaintVertexBuffer = context.createVertexBuffer(this.zoomInPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
-            this.zoomOutPaintVertexBuffer = context.createVertexBuffer(this.zoomOutPaintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+        if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
         }
     }
 
     destroy() {
-        if (this.zoomOutPaintVertexBuffer) this.zoomOutPaintVertexBuffer.destroy();
-        if (this.zoomInPaintVertexBuffer) this.zoomInPaintVertexBuffer.destroy();
+        if (this.paintVertexBuffer) this.paintVertexBuffer.destroy();
     }
 }
 
@@ -557,16 +539,15 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintBuffers(crossfade?: CrossfadeParameters) {
+    updatePaintBuffers() {
         this._buffers = [];
 
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (crossfade && binder instanceof CrossFadedCompositeBinder) {
-                const patternVertexBuffer = crossfade.fromScale === 2 ? binder.zoomInPaintVertexBuffer : binder.zoomOutPaintVertexBuffer;
-                if (patternVertexBuffer) this._buffers.push(patternVertexBuffer);
-
-            } else if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder) && binder.paintVertexBuffer) {
+            if ((
+                binder instanceof SourceExpressionBinder ||
+                binder instanceof CompositeExpressionBinder ||
+                binder instanceof CrossFadedCompositeBinder) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
             }
         }

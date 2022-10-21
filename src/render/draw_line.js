@@ -39,7 +39,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const image = patternProperty.constantOr((1: any));
 
     const gradient = layer.paint.get('line-gradient');
-    const crossfade = layer.getCrossfadeParameters();
 
     const programId = image ? 'linePattern' : 'line';
 
@@ -142,12 +141,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         if (dasharray) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
         if (image) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

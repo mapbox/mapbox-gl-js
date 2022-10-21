@@ -20,7 +20,7 @@ import type {Bucket} from '../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index.js';
 import type {TransitionParameters, PropertyValue} from './properties.js';
-import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters.js';
+import type EvaluationParameters from './evaluation_parameters.js';
 import type Transform from '../geo/transform.js';
 import type {
     LayerSpecification,
@@ -47,7 +47,6 @@ class StyleLayer extends Evented {
     maxzoom: ?number;
     filter: FilterSpecification | void;
     visibility: 'visible' | 'none' | void;
-    _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
     +layout: mixed;
@@ -113,10 +112,6 @@ class StyleLayer extends Evented {
             //$FlowFixMe
             this.paint = new PossiblyEvaluated(properties.paint);
         }
-    }
-
-    getCrossfadeParameters(): CrossfadeParameters {
-        return this._crossfadeParameters;
     }
 
     getLayoutProperty(name: string): PropertyValueSpecification<mixed> {
@@ -216,10 +211,6 @@ class StyleLayer extends Evented {
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
-        if (parameters.getCrossfadeParameters) {
-            this._crossfadeParameters = parameters.getCrossfadeParameters();
-        }
-
         if (this._unevaluatedLayout) {
             (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
         }
