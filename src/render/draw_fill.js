@@ -93,7 +93,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.to.toString()];
+            const posTo = atlas.patternPositions[constantPattern.toString()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

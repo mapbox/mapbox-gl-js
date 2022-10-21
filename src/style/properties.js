@@ -25,12 +25,6 @@ import type {
 
 type TimePoint = number;
 
-export type CrossFaded<T> = {
-    to: T,
-    from: T,
-    other?: T
-};
-
 /**
  * Implements a number of classes that define state and behavior for paint and layout properties, most
  * importantly their respective evaluation chains:
@@ -484,8 +478,6 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * `PossiblyEvaluatedPropertyValue<number>`, but flow will not complain about comparing this to a number using `===`.
  * See https://github.com/facebook/flow/issues/2359.)
  *
- * There's also a third, special case possiblity for `R`: for cross-faded properties, it's `?CrossFaded<T>`.
- *
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Props: Object>
@@ -600,66 +592,6 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
 }
 
 /**
- * An implementation of `Property` for  data driven `line-pattern` which are transitioned by cross-fading
- * rather than interpolation.
- *
- * @private
- */
-export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFaded<T>> {
-
-    possiblyEvaluate(value: PropertyValue<?CrossFaded<T>, PossiblyEvaluatedPropertyValue<?CrossFaded<T>>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
-        if (value.value === undefined) {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: undefined}, parameters);
-        } else if (value.expression.kind === 'constant') {
-            const evaluatedValue = value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
-            const isImageExpression = value.property.specification.type === 'resolvedImage';
-            const constantValue = isImageExpression && typeof evaluatedValue !== 'string' ? evaluatedValue.name : evaluatedValue;
-            const constant = this._calculate(constantValue, constantValue, constantValue, parameters);
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: constant}, parameters);
-        } else if (value.expression.kind === 'camera') {
-            const cameraVal = this._calculate(
-                    value.expression.evaluate({zoom: parameters.zoom - 1.0}),
-                    value.expression.evaluate({zoom: parameters.zoom}),
-                    value.expression.evaluate({zoom: parameters.zoom + 1.0}),
-                    parameters);
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: cameraVal}, parameters);
-        } else {
-            // source or composite expression
-            return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
-        }
-    }
-
-    evaluate(value: PossiblyEvaluatedValue<?CrossFaded<T>>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>): ?CrossFaded<T> {
-        if (value.kind === 'source') {
-            const constant = value.evaluate(globals, feature, featureState, canonical, availableImages);
-            return this._calculate(constant, constant, constant, globals);
-        } else if (value.kind === 'composite') {
-            return this._calculate(
-                value.evaluate({zoom: Math.floor(globals.zoom) - 1.0}, feature, featureState),
-                value.evaluate({zoom: Math.floor(globals.zoom)}, feature, featureState),
-                value.evaluate({zoom: Math.floor(globals.zoom) + 1.0}, feature, featureState),
-                globals);
-        } else {
-            return value.value;
-        }
-    }
-
-    _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): CrossFaded<T> {
-        const z = parameters.zoom;
-        // ugly hack alert: when evaluating non-constant dashes on the worker side,
-        // we need all three values to pack into the atlas; the if condition is always false there;
-        // will be removed after removing cross-fading
-        return z > parameters.zoomHistory.lastIntegerZoom ?
-            {from: min, to: mid, other: max} :
-            {from: max, to: mid, other: min};
-    }
-
-    interpolate(a: PossiblyEvaluatedPropertyValue<?CrossFaded<T>>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
-        return a;
-    }
-}
-
-/**
  * An implementation of `Property` for `heatmap-color` and `line-gradient`. Interpolation is a no-op, and
  * evaluation returns a boolean value in order to indicate its presence, but the real
  * evaluation happens in StyleLayer classes.
@@ -727,5 +659,4 @@ export class Properties<Props: Object> {
 
 register(DataDrivenProperty, 'DataDrivenProperty');
 register(DataConstantProperty, 'DataConstantProperty');
-register(CrossFadedDataDrivenProperty, 'CrossFadedDataDrivenProperty');
 register(ColorRampProperty, 'ColorRampProperty');

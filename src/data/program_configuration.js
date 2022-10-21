@@ -113,7 +113,7 @@ class ConstantBinder implements UniformBinder {
     }
 }
 
-class CrossFadedConstantBinder implements UniformBinder {
+class PatternConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
     patternTo: ?Array<number>;
     pixelRatioTo: number;
@@ -293,7 +293,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 }
 
-class CrossFadedCompositeBinder implements AttributeBinder {
+class PatternCompositeBinder implements AttributeBinder {
     expression: CompositeExpression;
     type: string;
     useIntegerZoom: boolean;
@@ -332,10 +332,10 @@ class CrossFadedCompositeBinder implements AttributeBinder {
     _setPaintValues(start, end, patterns, positions) {
         if (!positions || !patterns) return;
 
-        const imageMid = positions[patterns.mid];
-        if (!imageMid) return;
+        const pos = positions[patterns];
+        if (!pos) return;
 
-        const {tl, br, pixelRatio} = imageMid;
+        const {tl, br, pixelRatio} = pos;
         for (let i = start; i < end; i++) {
             this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
         }
@@ -394,21 +394,19 @@ export default class ProgramConfiguration {
             const expression = value.value;
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;
-            const propType = value.property.specification['property-type'];
-            const isCrossFaded = propType === 'cross-faded-data-driven';
-
-            const sourceException = String(property) === 'line-dasharray' && (layer.layout: any).get('line-cap').value.kind !== 'constant';
+            const isPattern = property === 'line-dasharray' || property.endsWith('pattern');
+            const sourceException = property === 'line-dasharray' && (layer.layout: any).get('line-cap').value.kind !== 'constant';
 
             if (expression.kind === 'constant' && !sourceException) {
-                this.binders[property] = isCrossFaded ?
-                    new CrossFadedConstantBinder(expression.value, names) :
+                this.binders[property] = isPattern ?
+                    new PatternConstantBinder(expression.value, names) :
                     new ConstantBinder(expression.value, names, type);
                 keys.push(`/u_${property}`);
 
-            } else if (expression.kind === 'source' || sourceException || isCrossFaded) {
+            } else if (expression.kind === 'source' || sourceException || isPattern) {
                 const StructArrayLayout = layoutType(property, type, 'source');
-                this.binders[property] = isCrossFaded ?
-                    new CrossFadedCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
+                this.binders[property] = isPattern ?
+                    new PatternCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
 
@@ -430,14 +428,14 @@ export default class ProgramConfiguration {
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
                 (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, formattedSection);
         }
     }
     setConstantPatternPositions(posTo: SpritePosition) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof CrossFadedConstantBinder)
+            if (binder instanceof PatternConstantBinder)
                 binder.setConstantPatternPositions(posTo);
         }
     }
@@ -453,7 +451,7 @@ export default class ProgramConfiguration {
                 for (const property in this.binders) {
                     const binder = this.binders[property];
                     if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
-                         binder instanceof CrossFadedCompositeBinder) && (binder: any).expression.isStateDependent === true) {
+                         binder instanceof PatternCompositeBinder) && (binder: any).expression.isStateDependent === true) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
                         (binder: any).expression = value.value;
@@ -470,7 +468,7 @@ export default class ProgramConfiguration {
         const result = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof ConstantBinder || binder instanceof CrossFadedConstantBinder) {
+            if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder) {
                 result.push(...binder.uniformNames.map(name => `#define HAS_UNIFORM_${name}`));
             }
         }
@@ -481,7 +479,7 @@ export default class ProgramConfiguration {
         const result = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder) {
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder) {
                 for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
                     result.push(binder.paintVertexAttributes[i].name);
                 }
@@ -494,7 +492,7 @@ export default class ProgramConfiguration {
         const uniforms = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof ConstantBinder || binder instanceof CrossFadedConstantBinder || binder instanceof CompositeExpressionBinder) {
+            if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
                 for (const uniformName of binder.uniformNames) {
                     uniforms.push(uniformName);
                 }
@@ -511,7 +509,7 @@ export default class ProgramConfiguration {
         const uniforms = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof ConstantBinder || binder instanceof CrossFadedConstantBinder || binder instanceof CompositeExpressionBinder) {
+            if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
                 for (const name of binder.uniformNames) {
                     uniforms.push({name, property, binding: binder.getBinding(context, name)});
                 }
@@ -536,7 +534,7 @@ export default class ProgramConfiguration {
             if ((
                 binder instanceof SourceExpressionBinder ||
                 binder instanceof CompositeExpressionBinder ||
-                binder instanceof CrossFadedCompositeBinder) && binder.paintVertexBuffer) {
+                binder instanceof PatternCompositeBinder) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
             }
         }
@@ -545,7 +543,7 @@ export default class ProgramConfiguration {
     upload(context: Context) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
                 binder.upload(context);
         }
         this.updatePaintBuffers();
@@ -554,7 +552,7 @@ export default class ProgramConfiguration {
     destroy() {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof CrossFadedCompositeBinder)
+            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
                 binder.destroy();
         }
     }
@@ -672,9 +670,9 @@ function layoutType(property, type, binderType) {
 }
 
 register(ConstantBinder, 'ConstantBinder');
-register(CrossFadedConstantBinder, 'CrossFadedConstantBinder');
+register(PatternConstantBinder, 'PatternConstantBinder');
 register(SourceExpressionBinder, 'SourceExpressionBinder');
-register(CrossFadedCompositeBinder, 'CrossFadedCompositeBinder');
+register(PatternCompositeBinder, 'PatternCompositeBinder');
 register(CompositeExpressionBinder, 'CompositeExpressionBinder');
 register(ProgramConfiguration, 'ProgramConfiguration', {omit: ['_buffers']});
 register(ProgramConfigurationSet, 'ProgramConfigurationSet');

@@ -8,7 +8,6 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
-    CrossFadedDataDrivenProperty,
     ColorRampProperty
 } from '../properties.js';
 
@@ -31,7 +30,7 @@ export type PaintProps = {|
     "fill-extrusion-color": DataDrivenProperty<Color>,
     "fill-extrusion-translate": DataConstantProperty<[number, number]>,
     "fill-extrusion-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "fill-extrusion-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
+    "fill-extrusion-pattern": DataDrivenProperty<?ResolvedImage>,
     "fill-extrusion-height": DataDrivenProperty<number>,
     "fill-extrusion-base": DataDrivenProperty<number>,
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>,
@@ -44,7 +43,7 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-color": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-color"]),
     "fill-extrusion-translate": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate"]),
     "fill-extrusion-translate-anchor": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate-anchor"]),
-    "fill-extrusion-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
+    "fill-extrusion-pattern": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
     "fill-extrusion-height": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height"]),
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
     "fill-extrusion-vertical-gradient": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-gradient"]),

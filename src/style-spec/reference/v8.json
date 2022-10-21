@@ -4454,7 +4454,7 @@
           "feature"
         ]
       },
-      "property-type": "cross-faded-data-driven"
+      "property-type": "data-driven"
     }
   },
   "paint_fill-extrusion": {
@@ -4598,7 +4598,7 @@
           "feature"
         ]
       },
-      "property-type": "cross-faded-data-driven"
+      "property-type": "data-driven"
     },
     "fill-extrusion-height": {
       "type": "number",
@@ -5012,7 +5012,7 @@
           "feature"
         ]
       },
-      "property-type": "cross-faded-data-driven"
+      "property-type": "data-driven"
     },
     "line-pattern": {
       "type": "resolvedImage",
@@ -5039,7 +5039,7 @@
           "feature"
         ]
       },
-      "property-type": "cross-faded-data-driven"
+      "property-type": "data-driven"
     },
     "line-gradient": {
       "type": "color",
@@ -6696,10 +6696,6 @@
     "data-driven": {
       "type": "property-type",
       "doc": "Property is interpolable and can be represented using a property expression."
-    },
-    "cross-faded-data-driven": {
-      "type": "property-type",
-      "doc": "Property is non-interpolable; rather, its values will be cross-faded to smoothly transition between integer zooms. It can be represented using a property expression."
     },
     "color-ramp": {
       "type": "property-type",

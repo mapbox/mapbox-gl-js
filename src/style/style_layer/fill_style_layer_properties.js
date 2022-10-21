@@ -8,7 +8,6 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
-    CrossFadedDataDrivenProperty,
     ColorRampProperty
 } from '../properties.js';
 
@@ -33,7 +32,7 @@ export type PaintProps = {|
     "fill-outline-color": DataDrivenProperty<Color>,
     "fill-translate": DataConstantProperty<[number, number]>,
     "fill-translate-anchor": DataConstantProperty<"map" | "viewport">,
-    "fill-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
+    "fill-pattern": DataDrivenProperty<?ResolvedImage>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -43,7 +42,7 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-outline-color": new DataDrivenProperty(styleSpec["paint_fill"]["fill-outline-color"]),
     "fill-translate": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate"]),
     "fill-translate-anchor": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate-anchor"]),
-    "fill-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
+    "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

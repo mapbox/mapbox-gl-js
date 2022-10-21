@@ -159,7 +159,6 @@ class StyleLayer extends Evented {
             return false;
         } else {
             const transitionable = this._transitionablePaint._values[name];
-            const isCrossFadedProperty = transitionable.property.specification["property-type"] === 'cross-faded-data-driven';
             const wasDataDriven = transitionable.value.isDataDriven();
             const oldValue = transitionable.value;
 
@@ -172,7 +171,7 @@ class StyleLayer extends Evented {
             // if a cross-faded value is changed, we need to make sure the new icons get added to each tile's iconAtlas
             // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
             // Style#setPaintProperty
-            return isDataDriven || wasDataDriven || isCrossFadedProperty || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
+            return isDataDriven || wasDataDriven || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
         }
     }
 

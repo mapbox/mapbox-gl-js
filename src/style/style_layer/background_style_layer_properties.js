@@ -8,7 +8,6 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
-    CrossFadedDataDrivenProperty,
     ColorRampProperty
 } from '../properties.js';
 
@@ -21,7 +20,7 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type PaintProps = {|
     "background-color": DataConstantProperty<Color>,
-    "background-pattern": DataConstantProperty<ResolvedImage>,
+    "background-pattern": DataConstantProperty<?ResolvedImage>,
     "background-opacity": DataConstantProperty<number>,
 |};
 

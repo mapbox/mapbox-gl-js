@@ -51,7 +51,7 @@ export type BucketFeature = {|
     properties: Object,
     type: 1 | 2 | 3,
     id?: any,
-    +patterns: {[_: string]: {"min": string, "mid": string, "max": string}},
+    +patterns: {[_: string]: string},
     sortKey?: number
 |};
 

@@ -64,7 +64,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.to.toString()];
+            const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
@@ -72,7 +72,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const constantCap = capProperty.constantOr((null: any));
 
         if (!image && constantDash && constantCap && tile.lineAtlas) {
-            const posTo = tile.lineAtlas.getDash(constantDash.to, constantCap);
+            const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
