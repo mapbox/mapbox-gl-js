@@ -840,7 +840,8 @@ class Painter {
      * @private
      */
     isPatternMissing(image: ?ResolvedImage): boolean {
-        if (!image) return false;
+        if (image === null) return true;
+        if (image === undefined) return false;
         return !this.imageManager.getPattern(image.toString());
     }
 
