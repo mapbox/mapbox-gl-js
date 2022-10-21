@@ -166,42 +166,6 @@ class Frustum {
 
         return new Frustum(frustumCoords, frustumPlanes);
     }
-
-    static fromInvPerspectiveMatrix(invPerspective: Float64Array): Frustum {
-        const clipSpaceCorners = [
-            [-1, 1, -1, 1],
-            [ 1, 1, -1, 1],
-            [ 1, -1, -1, 1],
-            [-1, -1, -1, 1],
-            [-1, 1, 1, 1],
-            [ 1, 1, 1, 1],
-            [ 1, -1, 1, 1],
-            [-1, -1, 1, 1]
-        ];
-
-        // Transform frustum corner points from clip space to world coords space
-        const frustumCoords = clipSpaceCorners
-            .map(v => vec4.transformMat4([], v, invPerspective));
-
-        const frustumPlanePointIndices = [
-            [0, 1, 2],  // near
-            [6, 5, 4],  // far
-            [0, 3, 7],  // left
-            [2, 1, 5],  // right
-            [3, 2, 6],  // bottom
-            [0, 4, 5]   // top
-        ];
-
-        const frustumPlanes = frustumPlanePointIndices.map((p: Array<number>) => {
-            const a = vec3.sub([], frustumCoords[p[0]], frustumCoords[p[1]]);
-            const b = vec3.sub([], frustumCoords[p[2]], frustumCoords[p[1]]);
-            const n = vec3.normalize([], vec3.cross([], a, b));
-            const d = -vec3.dot(n, frustumCoords[p[1]]);
-            return n.concat(d);
-        });
-
-        return new Frustum(frustumCoords, frustumPlanes);
-    }
 }
 
 class Aabb {

@@ -655,19 +655,36 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
     return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
 
-export function isLngLatInViewport(tr: Transform, lngLat: LngLat): boolean {
-    // Create an array with one point in ECEF from the location at lngLat
-    const ecef = latLngToECEF(lngLat.lat, lngLat.lng);
-    const corners = [ecef];
+/**
+ * Check if poles are visible inside the current viewport
+ *
+ * @param {Transform} transform The current map transform.
+ * @returns {[boolean, boolean]} A tuple of booleans [northInViewport, southInViewport]
+ */
+export function polesInViewport(tr: Transform): [boolean, boolean] {
+    // Create matrix to screen coordinates
+    const matrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
 
-    // Translate points from ECEF to world coords
-    transformPoints(corners, tr.globeMatrix, 1);
-    const aabb = Aabb.fromPoints(corners);
+    const north = [0, GLOBE_MIN, 0];
+    const south = [0, GLOBE_MAX, 0];
 
-    // Create Frustum in world coords
-    const cameraFrustum = tr.getCameraFrustum();
-    const intersectResult = aabb.intersects(cameraFrustum);
-    return intersectResult > 0;
+    // Translate the pole coordinates to screen coordinates
+    vec3.transformMat4(north, north, matrix);
+    vec3.transformMat4(south, south, matrix);
+
+    // Check if the poles are inside the viewport and not behind the globe surface
+    const northInViewport =
+        north[0] > 0 && north[0] <= tr.width &&
+        north[1] > 0 && north[1] <= tr.height &&
+        !isLngLatBehindGlobe(tr, new LngLat(tr.center.lat, 90));
+
+    const southInViewport =
+        south[0] > 0 && south[0] <= tr.width &&
+        south[1] > 0 && south[1] <= tr.height &&
+        !isLngLatBehindGlobe(tr, new LngLat(tr.center.lat, -90));
+
+    return [northInViewport, southInViewport];
 }
 
 const POLE_RAD = degToRad(85.0);

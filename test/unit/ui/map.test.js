@@ -1428,48 +1428,44 @@ test('Map', (t) => {
 
         t.test('globe bounds', (t) => {
             const map = createMap(t, {zoom: 0, skipCSSStub: true});
-            const mercatorBounds = map.getBounds();
+            let bounds = map.getBounds();
 
             t.same(
-                toFixed(mercatorBounds.toArray()),
+                toFixed(bounds.toArray()),
                 toFixed([[ -70.3125000000, -57.3265212252, ], [ 70.3125000000, 57.3265212252]])
             );
 
             t.stub(console, 'warn');
             map.setProjection('globe');
-            const globeBounds = map.getBounds();
-
+            bounds = map.getBounds();
             t.same(
-                toFixed(globeBounds.toArray()),
+                toFixed(bounds.toArray()),
                 toFixed([[ -73.8873304141, -73.8873304141, ], [ 73.8873304141, 73.8873304141]])
             );
 
-            map.setBearing(80);
-            map.setCenter({lng: 0, lat: 90});
-
-            const northBounds = map.getBounds();
-            t.same(northBounds.getNorth(), 90);
+            map.jumpTo({zoom: 0, center: [0, 90]});
+            bounds = map.getBounds();
+            t.same(bounds.getNorth(), 90);
             t.same(
-                toFixed(northBounds.toArray()),
-                toFixed([[ -169.7072944003, 11.2373406095 ], [ 175.8448619060, 90 ]])
+                toFixed(bounds.toArray()),
+                toFixed([[ -180, 11.1637985859 ], [ 152.6922385164, 90 ]])
             );
 
-            map.setBearing(180);
-            map.setCenter({lng: 0, lat: -90});
-
-            const southBounds = map.getBounds();
-            t.same(southBounds.getSouth(), -90);
+            map.jumpTo({zoom: 0, center: [0, -90]});
+            bounds = map.getBounds();
+            t.same(bounds.getSouth(), -90);
             t.same(
-                toFixed(southBounds.toArray()),
-                toFixed([[ -165.5559158623, -90 ], [ 180, -11.1637985859]])
+                toFixed(bounds.toArray()),
+                toFixed([[ -180, -90 ], [ 152.6922385164, -11.1637985859]])
             );
 
-            map.setZoom(3);
-            map.setBearing(0);
-            map.setCenter({lng: 0, lat: 45});
+            map.jumpTo({zoom: 2, center: [0, 45], bearing: 0, pitch: 20});
+            bounds = map.getBounds();
+            t.notSame(bounds.getNorth(), 90);
 
-            const europeBounds = map.getBounds();
-            t.notSame(europeBounds.getNorth(), 90);
+            map.jumpTo({zoom: 2, center: [0, -45], bearing: 180, pitch: -20});
+            bounds = map.getBounds();
+            t.notSame(bounds.getSouth(), -90);
 
             t.end();
         });
