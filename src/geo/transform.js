@@ -719,13 +719,6 @@ class Transform {
         return this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
     }
 
-    getCameraFrustum(): Frustum {
-        const perspectiveCameraMatrix = this.getPerspectiveCameraMatrix();
-        // Create a matrix from clip space to world coords (inverse perspective matrix)
-        const invPerspectiveMatrix = mat4.invert(new Float64Array(16), perspectiveCameraMatrix);
-        return Frustum.fromInvPerspectiveMatrix(invPerspectiveMatrix);
-    }
-
     /**
      * Return all coordinates that could cover this transform for a covering
      * zoom level.
