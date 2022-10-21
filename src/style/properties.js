@@ -54,9 +54,8 @@ type TimePoint = number;
  *  The type `R` is the intermediate "possibly evaluated" value type. See below.
  *
  *  There are two main implementations of the interface -- one for properties that allow data-driven values,
- *  and one for properties that don't. There are a few "special case" implementations as well: one for properties
- *  which cross-fade between two values rather than interpolating, one for `heatmap-color` and `line-gradient`,
- *  and one for `light-position`.
+ *  and one for properties that don't. There are a few "special case" implementations as well:
+ *  one for `heatmap-color` and `line-gradient`, and one for `light-position`.
  *
  * @private
  */
