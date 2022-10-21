@@ -5,7 +5,7 @@ import properties from '../../../src/style/style_layer/symbol_style_layer_proper
 
 function createSymbolLayer(layerProperties) {
     const layer = new SymbolStyleLayer(layerProperties);
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
     return layer;
 }
 

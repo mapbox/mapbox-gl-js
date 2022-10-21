@@ -25,7 +25,7 @@ function createPolygon(numPoints) {
 
 test('FillBucket', (t) => {
     const layer = new FillStyleLayer({id: 'test', type: 'fill', layout: {}});
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
 
     const bucket = new FillBucket({layers: [layer]});
 
@@ -58,7 +58,7 @@ test('FillBucket segmentation', (t) => {
             'fill-color': ['to-color', ['get', 'foo'], '#000']
         }
     });
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
 
     const bucket = new FillBucket({layers: [layer]});
 

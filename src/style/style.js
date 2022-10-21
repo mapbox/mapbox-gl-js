@@ -45,7 +45,6 @@ import {
     triggerPluginCompletionEvent
 } from '../source/rtl_text_plugin.js';
 import PauseablePlacement from './pauseable_placement.js';
-import ZoomHistory from './zoom_history.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 
@@ -153,7 +152,6 @@ class Style extends Evented {
     _sourceCaches: {[_: string]: SourceCache};
     _otherSourceCaches: {[_: string]: SourceCache};
     _symbolSourceCaches: {[_: string]: SourceCache};
-    zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
@@ -198,7 +196,6 @@ class Style extends Evented {
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
-        this.zoomHistory = new ZoomHistory();
         this._loaded = false;
         this._availableImages = [];
         this._order  = [];
