@@ -10,7 +10,7 @@
 * Cancel ImageSource image request when underlying resource is no longer used ([#12266](https://github.com/mapbox/mapbox-gl-js/pull/12266)) (h/t [maciejmatu](https://github.com/maciejmatu))
 * Add object literal support in LngLatBounds.extend ([#12270](https://github.com/mapbox/mapbox-gl-js/pull/12270)) (h/t [stampyzfanz](https://github.com/stampyzfanz))
 
-### Bug fixes :ladybug:
+### Bug fixes 🐞
 
 * Fix elevation of pole geometry when exaggerated terrain is used ([#12133](https://github.com/mapbox/mapbox-gl-js/pull/12133))
 * Fix GeolocateControl sometimes not working in iOS16 WebView ([#12239](https://github.com/mapbox/mapbox-gl-js/pull/12239))
@@ -27,7 +27,7 @@
 * Fix jumping when scrolling with mouse when crossing the antimeridian on projections that wrap. ([#12238](https://github.com/mapbox/mapbox-gl-js/pull/12238))
 * Fix updating marker position when toggling between world copied projections and projections without ([#12242](https://github.com/mapbox/mapbox-gl-js/pull/12242))
 * Fix missing icons in some styles. ([#12299](https://github.com/mapbox/mapbox-gl-js/pull/12299))
-* Fix a bug where setting promoteId for some layers broke feature ids on other layers. ([#12322](https://github.com/mapbox/mapbox-gl-js/pull/12322)) (h/t [yongjun21](https://github.com/yongjun21))
+* Fix overwriting all feature ids while setting promoteIds on other layers with an object. ([#12322](https://github.com/mapbox/mapbox-gl-js/pull/12322)) (h/t [yongjun21](https://github.com/yongjun21))
 * Fix cursor to return to original state after a popup with `trackPointer` is removed ([#12230](https://github.com/mapbox/mapbox-gl-js/pull/12230)) (h/t [camouflagedName](https://github.com/camouflagedName))
 
 
