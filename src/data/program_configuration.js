@@ -15,7 +15,6 @@ import {
     Uniform,
     Uniform1f,
     UniformColor,
-    Uniform3f,
     Uniform4f
 } from '../render/uniform_binding.js';
 import assert from 'assert';
@@ -138,8 +137,9 @@ class PatternConstantBinder implements UniformBinder {
     }
 
     getBinding(context: Context, name: string): $Shape<Uniform<any>> {
-        return name === 'u_pattern_to' ? new Uniform4f(context) :
-            name === 'u_dash_to' ? new Uniform3f(context) : new Uniform1f(context);
+        return name === 'u_pattern_to' || name === 'u_dash_to' ?
+            new Uniform4f(context) :
+            new Uniform1f(context);
     }
 }
 
