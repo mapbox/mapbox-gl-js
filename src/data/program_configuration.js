@@ -295,20 +295,14 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
 class PatternCompositeBinder implements AttributeBinder {
     expression: CompositeExpression;
-    type: string;
-    useIntegerZoom: boolean;
-    zoom: number;
     layerId: string;
 
     paintVertexArray: StructArray;
     paintVertexBuffer: ?VertexBuffer;
     paintVertexAttributes: Array<StructArrayMember>;
 
-    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>, layerId: string) {
+    constructor(expression: CompositeExpression, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>, layerId: string) {
         this.expression = expression;
-        this.type = type;
-        this.useIntegerZoom = useIntegerZoom;
-        this.zoom = zoom;
         this.layerId = layerId;
 
         this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
@@ -406,7 +400,7 @@ export default class ProgramConfiguration {
             } else if (expression.kind === 'source' || sourceException || isPattern) {
                 const StructArrayLayout = layoutType(property, type, 'source');
                 this.binders[property] = isPattern ?
-                    new PatternCompositeBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout, layer.id) :
+                    new PatternCompositeBinder(expression, names, type, StructArrayLayout, layer.id) :
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
                 keys.push(`/a_${property}`);
 
