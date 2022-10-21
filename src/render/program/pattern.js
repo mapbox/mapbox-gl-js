@@ -19,16 +19,10 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,
-    'u_pattern_tl_a': Uniform2f,
-    'u_pattern_br_a': Uniform2f,
-    'u_pattern_tl_b': Uniform2f,
-    'u_pattern_br_b': Uniform2f,
+    'u_pattern_tl': Uniform2f,
+    'u_pattern_br': Uniform2f,
     'u_texsize': Uniform2f,
-    'u_mix': Uniform1f,
-    'u_pattern_size_a': Uniform2f,
-    'u_pattern_size_b': Uniform2f,
-    'u_scale_a': Uniform1f,
-    'u_scale_b': Uniform1f,
+    'u_pattern_size': Uniform2f,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
     'u_tile_units_to_pixels': Uniform1f
@@ -67,12 +61,12 @@ function patternUniformValues(crossfade: CrossfadeParameters, painter: Painter,
     };
 }
 
-function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: CrossfadeParameters, painter: Painter,
+function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, painter: Painter,
         tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
-    const imagePosA = painter.imageManager.getPattern(image.from.toString());
+
     const imagePosB = painter.imageManager.getPattern(image.to.toString());
-    assert(imagePosA && imagePosB);
+    assert(imagePosB);
     const {width, height} = painter.imageManager.getPixelSize();
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
@@ -83,16 +77,10 @@ function bgPatternUniformValues(image: CrossFaded<ResolvedImage>, crossfade: Cro
 
     return {
         'u_image': 0,
-        'u_pattern_tl_a': (imagePosA: any).tl,
-        'u_pattern_br_a': (imagePosA: any).br,
-        'u_pattern_tl_b': (imagePosB: any).tl,
-        'u_pattern_br_b': (imagePosB: any).br,
+        'u_pattern_tl': (imagePosB: any).tl,
+        'u_pattern_br': (imagePosB: any).br,
         'u_texsize': [width, height],
-        'u_mix': crossfade.t,
-        'u_pattern_size_a': (imagePosA: any).displaySize,
-        'u_pattern_size_b': (imagePosB: any).displaySize,
-        'u_scale_a': crossfade.fromScale,
-        'u_scale_b': crossfade.toScale,
+        'u_pattern_size': (imagePosB: any).displaySize,
         'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

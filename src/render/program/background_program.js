@@ -85,10 +85,9 @@ const backgroundPatternUniformValues = (
     opacity: number,
     painter: Painter,
     image: CrossFaded<ResolvedImage>,
-    tile: {tileID: OverscaledTileID, tileSize: number},
-    crossfade: CrossfadeParameters
+    tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> => extend(
-    bgPatternUniformValues(image, crossfade, painter, tile),
+    bgPatternUniformValues(image, painter, tile),
     {
         'u_matrix': matrix,
         'u_opacity': opacity
