@@ -14,7 +14,7 @@ class EvaluationParameters {
     zoomHistory: ZoomHistory;
     transition: TransitionSpecification;
 
-    // "options" may also be another EvaluationParameters to copy, see CrossFadedProperty.possiblyEvaluate
+    // "options" may also be another EvaluationParameters to copy
     constructor(zoom: number, options?: *) {
         this.zoom = zoom;
 

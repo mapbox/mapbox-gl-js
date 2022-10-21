@@ -605,7 +605,6 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
  *
  * @private
  */
-
 export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFaded<T>> {
 
     possiblyEvaluate(value: PropertyValue<?CrossFaded<T>, PossiblyEvaluatedPropertyValue<?CrossFaded<T>>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<?CrossFaded<T>> {
@@ -659,44 +658,6 @@ export class CrossFadedDataDrivenProperty<T> extends DataDrivenProperty<?CrossFa
         return a;
     }
 }
-/**
- * An implementation of `Property` for `*-pattern` and `line-dasharray`, which are transitioned by cross-fading
- * rather than interpolation.
- *
- * @private
- */
-export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
-    specification: StylePropertySpecification;
-
-    constructor(specification: StylePropertySpecification) {
-        this.specification = specification;
-    }
-
-    possiblyEvaluate(value: PropertyValue<T, ?CrossFaded<T>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): ?CrossFaded<T> {
-        if (value.value === undefined) {
-            return undefined;
-        } else if (value.expression.kind === 'constant') {
-            const constant = value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
-            return this._calculate(constant, constant, constant, parameters);
-        } else {
-            assert(!value.isDataDriven());
-            return this._calculate(
-                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom - 1.0), parameters)),
-                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom), parameters)),
-                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom + 1.0), parameters)),
-                parameters);
-        }
-    }
-
-    _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
-        const z = parameters.zoom;
-        return z > parameters.zoomHistory.lastIntegerZoom ? {from: min, to: mid} : {from: max, to: mid};
-    }
-
-    interpolate(a: ?CrossFaded<T>): ?CrossFaded<T> {
-        return a;
-    }
-}
 
 /**
  * An implementation of `Property` for `heatmap-color` and `line-gradient`. Interpolation is a no-op, and
@@ -705,7 +666,6 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
  *
  * @private
  */
-
 export class ColorRampProperty implements Property<Color, boolean> {
     specification: StylePropertySpecification;
 
@@ -768,5 +728,4 @@ export class Properties<Props: Object> {
 register(DataDrivenProperty, 'DataDrivenProperty');
 register(DataConstantProperty, 'DataConstantProperty');
 register(CrossFadedDataDrivenProperty, 'CrossFadedDataDrivenProperty');
-register(CrossFadedProperty, 'CrossFadedProperty');
 register(ColorRampProperty, 'ColorRampProperty');

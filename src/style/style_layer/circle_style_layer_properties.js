@@ -9,7 +9,6 @@ import {
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedDataDrivenProperty,
-    CrossFadedProperty,
     ColorRampProperty
 } from '../properties.js';
 
