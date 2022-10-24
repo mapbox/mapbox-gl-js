@@ -29,11 +29,11 @@ void main() {
     // |   |   |   |
     // +-----------+
     // |   |   |   |
-    // | d | e | f |
+    // | d |   | e |
     // |   |   |   |
     // +-----------+
     // |   |   |   |
-    // | g | h | i |
+    // | f | g | h |
     // |   |   |   |
     // +-----------+
 
@@ -41,11 +41,10 @@ void main() {
     float b = getElevation(v_pos + vec2(0, -epsilon.y));
     float c = getElevation(v_pos + vec2(epsilon.x, -epsilon.y));
     float d = getElevation(v_pos + vec2(-epsilon.x, 0));
-    float e = getElevation(v_pos);
-    float f = getElevation(v_pos + vec2(epsilon.x, 0));
-    float g = getElevation(v_pos + vec2(-epsilon.x, epsilon.y));
-    float h = getElevation(v_pos + vec2(0, epsilon.y));
-    float i = getElevation(v_pos + vec2(epsilon.x, epsilon.y));
+    float e = getElevation(v_pos + vec2(epsilon.x, 0));
+    float f = getElevation(v_pos + vec2(-epsilon.x, epsilon.y));
+    float g = getElevation(v_pos + vec2(0, epsilon.y));
+    float h = getElevation(v_pos + vec2(epsilon.x, epsilon.y));
 
     // Here we divide the x and y slopes by 8 * pixel size
     // where pixel size (aka meters/pixel) is:
@@ -63,8 +62,8 @@ void main() {
     float exaggeration = u_zoom < 15.0 ? (u_zoom - 15.0) * exaggerationFactor : 0.0;
 
     vec2 deriv = vec2(
-        (c + f + f + i) - (a + d + d + g),
-        (g + h + h + i) - (a + b + b + c)
+        (c + e + e + h) - (a + d + d + f),
+        (f + g + g + h) - (a + b + b + c)
     ) / pow(2.0, exaggeration + (19.2562 - u_zoom));
 
     gl_FragColor = clamp(vec4(
