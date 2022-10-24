@@ -1390,7 +1390,6 @@ class Transform {
         processSegment(right, bottom, left, bottom);
         processSegment(left, bottom, left, top);
 
-        // Include poles in bounds if visible
         const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
 
         const ne = new LngLat(lngFromMercatorX(maxX), northPoleIsVisible ? 90 : latFromMercatorY(minY));
