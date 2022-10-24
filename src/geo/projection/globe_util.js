@@ -663,15 +663,15 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
  */
 export function polesInViewport(tr: Transform): [boolean, boolean] {
     // Create matrix from ECEF to screen coordinates
-    const matrix = mat4.identity(new Float64Array(16));
-    mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
+    const ecefToScreenMatrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(ecefToScreenMatrix, tr.pixelMatrix, tr.globeMatrix);
 
     const north = [0, GLOBE_MIN, 0];
     const south = [0, GLOBE_MAX, 0];
 
-    // Translate the pole coordinates to screen coordinates
-    vec3.transformMat4(north, north, matrix);
-    vec3.transformMat4(south, south, matrix);
+    // Translate the poles from ECEF to screen coordinates
+    vec3.transformMat4(north, north, ecefToScreenMatrix);
+    vec3.transformMat4(south, south, ecefToScreenMatrix);
 
     // Check if the poles are inside the viewport and not behind the globe surface
     const northInViewport =
