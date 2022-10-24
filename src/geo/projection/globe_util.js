@@ -662,7 +662,7 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
  * @returns {[boolean, boolean]} A tuple of booleans [northInViewport, southInViewport]
  */
 export function polesInViewport(tr: Transform): [boolean, boolean] {
-    // Create matrix to screen coordinates
+    // Create matrix from ECEF to screen coordinates
     const matrix = mat4.identity(new Float64Array(16));
     mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
 
