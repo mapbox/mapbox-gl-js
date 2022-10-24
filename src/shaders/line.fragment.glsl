@@ -46,7 +46,7 @@ void main() {
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture2D(u_dash_image, v_tex).a;
-    float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash_to.z;
+    float sdfgamma = 1.5 / (2.0 * u_device_pixel_ratio) / dash_to.z;
     alpha *= smoothstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
 #endif
 
