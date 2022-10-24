@@ -1441,7 +1441,7 @@ test('Map', (t) => {
             t.same(bounds.getNorth(), 90);
             t.same(
                 toFixed(bounds.toArray()),
-                toFixed([[ -180, 11.1637985859 ], [ 152.6922385164, 90 ]])
+                toFixed([[ -180, 11.1637985859 ], [ 180, 90 ]])
             );
 
             map.jumpTo({zoom: 0, center: [0, -90]});
@@ -1449,7 +1449,7 @@ test('Map', (t) => {
             t.same(bounds.getSouth(), -90);
             t.same(
                 toFixed(bounds.toArray()),
-                toFixed([[ -180, -90 ], [ 152.6922385164, -11.1637985859]])
+                toFixed([[ -180, -90 ], [ 180, -11.1637985859]])
             );
 
             map.jumpTo({zoom: 2, center: [0, 45], bearing: 0, pitch: 20});
