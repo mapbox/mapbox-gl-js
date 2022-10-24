@@ -72,7 +72,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-windows:
+      - test-render-windows-chrome:
           filters:
             tags:
               only: /.*/
@@ -449,7 +449,7 @@ jobs:
           path: "test/integration/render-tests/index.html"
 
 
-  test-render-windows:
+  test-render-windows-chrome:
     executor:
       name: win/default
     working_directory: ~/mapbox-gl-js
