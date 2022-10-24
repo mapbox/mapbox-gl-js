@@ -1427,17 +1427,10 @@ test('Map', (t) => {
         });
 
         t.test('globe bounds', (t) => {
-            const map = createMap(t, {zoom: 0, skipCSSStub: true});
-            let bounds = map.getBounds();
-
-            t.same(
-                toFixed(bounds.toArray()),
-                toFixed([[ -70.3125000000, -57.3265212252, ], [ 70.3125000000, 57.3265212252]])
-            );
-
+            const map = createMap(t, {zoom: 0, projection: 'globe', skipCSSStub: true});
             t.stub(console, 'warn');
-            map.setProjection('globe');
-            bounds = map.getBounds();
+
+            let bounds = map.getBounds();
             t.same(
                 toFixed(bounds.toArray()),
                 toFixed([[ -73.8873304141, -73.8873304141, ], [ 73.8873304141, 73.8873304141]])
