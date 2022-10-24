@@ -1428,7 +1428,6 @@ test('Map', (t) => {
 
         t.test('globe bounds', (t) => {
             const map = createMap(t, {zoom: 0, projection: 'globe', skipCSSStub: true});
-            t.stub(console, 'warn');
 
             let bounds = map.getBounds();
             t.same(
