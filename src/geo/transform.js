@@ -1391,10 +1391,14 @@ class Transform {
         processSegment(left, bottom, left, top);
 
         const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
+        const poleIsVisible = northPoleIsVisible || southPoleIsVisible;
 
-        const ne = new LngLat(lngFromMercatorX(maxX), northPoleIsVisible ? 90 : latFromMercatorY(minY));
-        const sw = new LngLat(lngFromMercatorX(minX), southPoleIsVisible ? -90 : latFromMercatorY(maxY));
-        return new LngLatBounds(sw, ne);
+        const north = northPoleIsVisible ? 90 : latFromMercatorY(minY);
+        const east = poleIsVisible ? 180 : lngFromMercatorX(maxX);
+        const south = southPoleIsVisible ? -90 : latFromMercatorY(maxY);
+        const west = poleIsVisible ? -180 : lngFromMercatorX(minX);
+
+        return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
     _getBounds(min: number, max: number): LngLatBounds {
