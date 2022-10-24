@@ -715,10 +715,6 @@ class Transform {
         return result;
     }
 
-    getPerspectiveCameraMatrix(): Float64Array {
-        return this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
-    }
-
     /**
      * Return all coordinates that could cover this transform for a covering
      * zoom level.
@@ -1809,7 +1805,7 @@ class Transform {
 
         const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
-        const cameraToClip = this.getPerspectiveCameraMatrix();
+        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
         // Apply center of perspective offset
         cameraToClip[8] = -offset.x * 2 / this.width;
