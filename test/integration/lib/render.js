@@ -5,6 +5,7 @@
 // refer testem.js#before_tests()
 import fixtures from '../dist/render-fixtures.json';
 import ignores from '../../ignores.json';
+import ignoreWindows from '../../ignore-windows.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
 import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
@@ -53,6 +54,16 @@ for (const testName in fixtures) {
     tape(testName, {timeout: 20000}, ensureTeardown);
 }
 
+let os = null;
+const version = navigator.appVersion;
+if (version.includes("Macintosh")) {
+    os = "mac";
+} else if (version.includes("Linux")) {
+    os = "linux";
+} else if (version.includes("Windows")) {
+    os = "windows";
+} else { console.warn("Unrecognized OS:", os); }
+
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout: 5000};
@@ -65,7 +76,17 @@ function ensureTeardown(t) {
         }
     }
 
-    t.test(testName, options, runTest);
+    if (os === "windows") {
+        if (testName in ignoreWindows.skip) {
+            options.skip = true;
+        }
+        if (testName in ignoreWindows.todo) {
+            options.todo = true;
+        }
+    }
+    if (testName in ignoreWindows)
+
+        t.test(testName, options, runTest);
 
     //Teardown all global resources
     //Cleanup WebGL context and map
