@@ -64,6 +64,8 @@ if (version.includes("Macintosh")) {
     os = "windows";
 } else { console.warn("Unrecognized OS:", os); }
 
+console.log("os is", os);
+
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout: 5000};
@@ -84,9 +86,7 @@ function ensureTeardown(t) {
             options.todo = true;
         }
     }
-    if (testName in ignoreWindows)
-
-        t.test(testName, options, runTest);
+    t.test(testName, options, runTest);
 
     //Teardown all global resources
     //Cleanup WebGL context and map
