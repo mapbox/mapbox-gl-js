@@ -58,11 +58,12 @@ void main() {
     alpha *= smoothstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
 #endif
 
+    highp vec4 out_color;
 #ifdef RENDER_LINE_GRADIENT
     // For gradient lines, v_uv.xy are the coord specify where the texture will be simpled.
-    highp vec4 out_color = texture2D(u_gradient_image, v_uv.xy);
+    out_color = texture2D(u_gradient_image, v_uv.xy);
 #else
-    vec4 out_color = color;
+    out_color = color;
 #endif
 
 #ifdef RENDER_LINE_TRIM_OFFSET
