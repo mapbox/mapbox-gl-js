@@ -10,11 +10,14 @@ export default {
 
         // Bug: resampling isn't working.
         "render-tests/raster-resampling/function",
-        "render-tests/raster-resampling/literal"
+        "render-tests/raster-resampling/literal",
+
+        // Bug: Inconsistent zoom
+        "render-tests/fit-screen-coordinates/terrain"
     ],
     skip:[
         // Debug rendering
-        "render-tests/terrain/wireframe ",
+        "render-tests/terrain/wireframe",
 
         // Due to different antialasing on windows, shifted icons appear pixelated.
         // Difs here are small, but the appearance on windows is worse.
