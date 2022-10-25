@@ -56,30 +56,25 @@ for (const testName in fixtures) {
 }
 
 let osIgnore;
+let timeout = 5000;
+
+// On CI, MacOS and Windows run on virtual machines.
+// These run slower so we increase the timeout.
+
 const os = navigator.appVersion;
 if (os.includes("Macintosh")) {
     osIgnore = null;
+    timeout = 10000;
 } else if (os.includes("Linux")) {
     osIgnore = null;
 } else if (os.includes("Windows")) {
     osIgnore = ignoreWindows;
+    timeout = 10000;
 } else { console.warn("Unrecognized OS:", os); }
-
-console.log("boon DOGGLE!");
-console.log("os is", os);
-console.log("Browser is", navigator.userAgent);
 
 function ensureTeardown(t) {
     const testName = t.name;
-    const options = {timeout: 5000};
-    // if (testName in ignores) {
-    //     const ignoreType = ignores[testName];
-    //     if (/^skip/.test(ignoreType)) {
-    //         options.skip = true;
-    //     } else {
-    //         options.todo = true;
-    //     }
-    // }
+    const options = {timeout};
 
     function checkIgnore(ignoreConfig) {
         if (ignoreConfig.skip.includes(testName)) {
