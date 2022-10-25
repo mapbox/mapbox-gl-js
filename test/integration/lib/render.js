@@ -4,8 +4,9 @@
 // render-fixtures.json is automatically generated before this file gets built
 // refer testem.js#before_tests()
 import fixtures from '../dist/render-fixtures.json';
-import ignores from '../../ignores.json';
-import ignoreWindows from '../../ignore-windows.js';
+import ignores from '../../ignores/all.js';
+import ignoreWindows from '../../ignores/windows.js';
+import ignoreFirefox from '../../ignores/firefox.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
 import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
@@ -54,37 +55,47 @@ for (const testName in fixtures) {
     tape(testName, {timeout: 20000}, ensureTeardown);
 }
 
-let os = null;
-const version = navigator.appVersion;
-if (version.includes("Macintosh")) {
-    os = "mac";
-} else if (version.includes("Linux")) {
-    os = "linux";
-} else if (version.includes("Windows")) {
-    os = "windows";
+let osIgnore;
+const os = navigator.appVersion;
+if (os.includes("Macintosh")) {
+    osIgnore = null;
+} else if (os.includes("Linux")) {
+    osIgnore = null;
+} else if (os.includes("Windows")) {
+    osIgnore = ignoreWindows;
 } else { console.warn("Unrecognized OS:", os); }
 
+console.log("boon DOGGLE!");
 console.log("os is", os);
+console.log("Browser is", navigator.userAgent);
 
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout: 5000};
-    if (testName in ignores) {
-        const ignoreType = ignores[testName];
-        if (/^skip/.test(ignoreType)) {
+    // if (testName in ignores) {
+    //     const ignoreType = ignores[testName];
+    //     if (/^skip/.test(ignoreType)) {
+    //         options.skip = true;
+    //     } else {
+    //         options.todo = true;
+    //     }
+    // }
+
+    function checkIgnore(ignoreConfig) {
+        if (ignoreConfig.skip.includes(testName)) {
             options.skip = true;
-        } else {
+        }
+
+        if (ignoreConfig.todo.includes(testName)) {
             options.todo = true;
         }
     }
-
-    if (os === "windows") {
-        if (testName in ignoreWindows.skip) {
-            options.skip = true;
-        }
-        if (testName in ignoreWindows.todo) {
-            options.todo = true;
-        }
+    checkIgnore(ignores);
+    if (osIgnore) {
+        checkIgnore(osIgnore);
+    }
+    if (navigator.userAgent.includes("Firefox")) {
+        checkIgnore(ignoreFirefox);
     }
     t.test(testName, options, runTest);
 

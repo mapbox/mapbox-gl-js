@@ -4,7 +4,7 @@
 // query-fixtures.json is automatically generated before this file gets built
 // refer testem.js#before_tests()
 import fixtures from '../dist/query-fixtures.json';
-import ignores from '../../ignores.json';
+import ignores from '../../ignores/all.js';
 import {applyOperations} from './operation-handlers.js';
 import {deepEqual, generateDiffLog} from './json-diff.js';
 import {setupHTML, updateHTML} from '../../util/html_generator.js';
@@ -33,13 +33,13 @@ for (const testName in fixtures) {
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout: 5000};
-    if (testName in ignores) {
-        const ignoreType = ignores[testName];
-        if (/^skip/.test(ignoreType)) {
-            options.skip = true;
-        } else {
-            options.todo = true;
-        }
+
+    if (ignores.skip.includes(testName)) {
+        options.skip = true;
+    }
+
+    if (ignores.todo.includes(testName)) {
+        options.todo = true;
     }
     t.test(testName, options, runTest);
 
