@@ -28,9 +28,6 @@ const todo = [
     // https://github.com/mapbox/mapbox-gl-js/issues/7023
     "render-tests/within/paint-line",
 
-    // distance expression is not implemented
-    "render-tests/distance/layout-text-size",
-
     // Needs port from Native
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
     "render-tests/terrain/symbol-draping/style.json",
@@ -103,9 +100,12 @@ const skip = [
     // Pending globe view implementation
     "render-tests/globe/globe-transition/horizon-during-transition",
 
-    // "skip - implemented for mapbox-gl-native only"
+    // Implemented for mapbox-gl-native only
     "render-tests/resize/mercator",
     "render-tests/resize/globe",
+
+    // Distance expression is not implemented, test times out
+    "render-tests/distance/layout-text-size",
 
 ];
 
