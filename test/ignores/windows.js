@@ -42,6 +42,11 @@ export default {
 
         // Antialiasing results in a slightly different appearance for icon pattern on globe.
         // Appearance is still good but the dif is too high (this could use a platform-specific expected.png)
-        "render-tests/globe/globe-transforms/north-pole"
+        "render-tests/globe/globe-transforms/north-pole",
+
+        // Timing out on CI.
+        "render-tests/skybox/atmosphere-terrain",
+        "render-tests/terrain/decrease-exaggeration-fog",
+        "render-tests/terrain/error-overlap/initializing-no-terrain-at-center"
     ]
 };
