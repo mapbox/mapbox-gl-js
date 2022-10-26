@@ -7,6 +7,7 @@ import {uuid} from '../../../src/util/util.js';
 import {SKU_ID} from '../../../src/util/sku_token.js';
 import {version} from '../../../package.json';
 import {equalWithPrecision} from '../../util/index.js';
+import assert from 'assert'
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
@@ -506,6 +507,46 @@ test("mapbox", (t) => {
             t.equals(performanceEvent.event, 'gljs.performance');
             t.notOk(performanceEvent.skuId);
             t.notOk(performanceEvent.skuToken);
+            t.end();
+        });
+
+
+        t.test('metrics', (t) => {
+            event.postPerformanceEvent('token', {
+                width: 100,
+                height: 50,
+                interactionRange: [0, 0],
+                projection: 'mercator',
+                vendor: 'webgl vendor',
+                renderer: 'webgl renderer'
+            }, () => {});
+
+            const reqBody = window.server.requests[0].requestBody;
+            const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+            const checkMetric = (data, metricName, metricValue) => {
+                for (const metric of data) {
+                    if (metric.name === metricName) {
+                        t.equals(metric.value, metricValue);
+                        return;
+                    }
+                }
+                assert(false);
+            };
+
+            t.equals(performanceEvent.event, 'gljs.performance');
+
+            checkMetric(performanceEvent.metadata, 'sdkVersion', version);
+            checkMetric(performanceEvent.metadata, 'sdkIdentifier', 'mapbox-gl-js');
+            checkMetric(performanceEvent.metadata, 'devicePixelRatio', '1');
+            checkMetric(performanceEvent.metadata, 'windowWidth', '1024');
+            checkMetric(performanceEvent.metadata, 'windowHeight', '768');
+            checkMetric(performanceEvent.metadata, 'mapWidth', '100');
+            checkMetric(performanceEvent.metadata, 'mapHeight', '50');
+            checkMetric(performanceEvent.metadata, 'webglVendor', 'webgl vendor');
+            checkMetric(performanceEvent.metadata, 'webglRenderer', 'webgl renderer');
+            checkMetric(performanceEvent.attributes, 'terrain', 'false');
+            checkMetric(performanceEvent.attributes, 'fog', 'false');
+
             t.end();
         });
 
