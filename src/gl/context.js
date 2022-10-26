@@ -123,8 +123,8 @@ class Context {
 
         this.extDebugRendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
         if (this.extDebugRendererInfo) {
-            this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
-            this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
+            this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
+            this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
         this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
