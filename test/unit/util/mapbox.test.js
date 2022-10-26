@@ -475,6 +475,43 @@ test("mapbox", (t) => {
         t.end();
     });
 
+    t.test('PerformanceEvent', (t) => {
+        let event;
+
+        t.beforeEach(() => {
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.PerformanceEvent();
+        });
+
+        t.afterEach(() => {
+            window.restore();
+        });
+
+        t.test('mapbox.postPerformanceEvent', (t) => {
+            t.ok(mapbox.postPerformanceEvent);
+            t.end();
+        });
+
+        t.test('does not contains sku', (t) => {
+            event.postPerformanceEvent('token', {
+                width: 100,
+                height: 100,
+                interactionRange: [0, 0],
+                projection: 'mercator'
+            }, () => {});
+
+            const reqBody = window.server.requests[0].requestBody;
+            const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+
+            t.equals(performanceEvent.event, 'gljs.performance');
+            t.notOk(performanceEvent.skuId);
+            t.notOk(performanceEvent.skuToken);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('TurnstileEvent', (t) => {
         const ms25Hours = (25 * 60 * 60 * 1000);
         let event;
