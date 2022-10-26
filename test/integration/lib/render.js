@@ -64,12 +64,12 @@ let timeout = 5000;
 const os = navigator.appVersion;
 if (os.includes("Macintosh")) {
     osIgnore = null;
-    timeout = 10000;
+    timeout = 15000;
 } else if (os.includes("Linux")) {
     osIgnore = null;
 } else if (os.includes("Windows")) {
     osIgnore = ignoreWindows;
-    timeout = 10000;
+    timeout = 15000;
 } else { console.warn("Unrecognized OS:", os); }
 
 function ensureTeardown(t) {
