@@ -45,7 +45,7 @@ function categorize(arr, fn) {
     return obj;
 }
 
-function getTransferRangePerResourceCategory(resourceTimers) {
+function getTransferRangePerResourceType(resourceTimers) {
     const obj = {};
     if (resourceTimers) {
         for (const category in resourceTimers) {
@@ -67,16 +67,11 @@ function getTransferRangePerResourceCategory(resourceTimers) {
 
 function getResourceCategory(entry: PerformanceResourceTiming): string {
     const url = entry.name.split('?')[0];
-    console.log(url);
+
     // Code may be hosted on various endpoints: CDN, self-hosted,
     // from unpkg... so this check doesn't include mapbox HTTP URL
-    if (url.includes('mapbox-gl')) {
-        if (url.endsWith('.js')) {
-            return 'javascript';
-        } else if (url.endsWith('.css')) {
-            return 'css';
-        }
-    }
+    if (url.includes('mapbox-gl.js')) return 'javascript';
+    if (url.includes('mapbox-gl.css')) return 'css';
 
     if (isMapboxHTTPFontsURL(url)) return 'font';
     if (isMapboxHTTPSpriteURL(url)) return 'sprite';
@@ -103,7 +98,7 @@ function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
 export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerformanceMetrics {
     const resourceTimers = window.performance.getEntriesByType('resource');
     const resourcesByType = categorize(resourceTimers, getResourceCategory);
-    const counters = getTransferRangePerResourceCategory(resourcesByType);
+    const counters = getTransferRangePerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
     const metrics = {counters: [], metadata: [], attributes: []};

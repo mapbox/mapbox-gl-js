@@ -7,7 +7,7 @@ import {uuid} from '../../../src/util/util.js';
 import {SKU_ID} from '../../../src/util/sku_token.js';
 import {version} from '../../../package.json';
 import {equalWithPrecision} from '../../util/index.js';
-import assert from 'assert'
+import assert from 'assert';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
@@ -509,7 +509,6 @@ test("mapbox", (t) => {
             t.notOk(performanceEvent.skuToken);
             t.end();
         });
-
 
         t.test('metrics', (t) => {
             event.postPerformanceEvent('token', {
