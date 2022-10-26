@@ -67,7 +67,7 @@ function getTransferRangePerResourceCategory(resourceTimers) {
 
 function getResourceCategory(entry: PerformanceResourceTiming): string {
     const url = entry.name.split('?')[0];
-
+    console.log(url);
     // Code may be hosted on various endpoints: CDN, self-hosted,
     // from unpkg... so this check doesn't include mapbox HTTP URL
     if (url.includes('mapbox-gl')) {

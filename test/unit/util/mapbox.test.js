@@ -43,6 +43,50 @@ test("mapbox", (t) => {
         t.end();
     });
 
+    t.test('.isMapboxHTTPStyleURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11?'));
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.cn/styles/v1/mapbox/streets-v11'));
+        t.notOk(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPStyleURL('http://example.com/mapbox.com'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPTileJSONURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.cn/v4/mapbox.mapbox-streets-v8.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('http://a.tiles.mapbox.cn/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.notOk(mapbox.isMapboxHTTPTileJSONURL('http://example.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPSpriteURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2.5x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/user/style/sprite.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/user/style/sprite@2x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.cn/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/styles/v1/user/style/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/images@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPFontsURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/8192-8447.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/0-255.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/0-255.pbf?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/font1,font2/0-255.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.cn/fonts/v1/mapbox/font1,font2/0-255.pbf'));
+        t.notOk(mapbox.isMapboxHTTPFontsURL('https://example.com/file.pbf'));
+        t.notOk(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
+        t.end();
+    });
+
     t.test('RequestManager', (t) => {
         const manager = new mapbox.RequestManager();
 
