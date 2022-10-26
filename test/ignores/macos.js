@@ -19,8 +19,6 @@ const todo = [
     "render-tests/fog/set-fog-default-toggling",
     "render-tests/fog/switch-style-disable ",
 
-
-
 ];
 const skip = [];
 
