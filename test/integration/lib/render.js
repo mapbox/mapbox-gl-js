@@ -69,7 +69,7 @@ if (os.includes("Macintosh")) {
     osIgnore = null;
 } else if (os.includes("Windows")) {
     osIgnore = ignoreWindows;
-    timeout = 30000;
+    timeout = 45000;
 } else { console.warn("Unrecognized OS:", os); }
 
 function ensureTeardown(t) {
