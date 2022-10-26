@@ -1599,7 +1599,10 @@ class Transform {
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
 
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
+
+        // hard-setting value to 85 reduces unintended fast-moving past terrain when maxPitch is less than 85.
         const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(85));
+
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
