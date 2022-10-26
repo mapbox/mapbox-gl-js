@@ -1966,7 +1966,7 @@ class Transform {
 
     _minimumHeightOverTerrain(): number {
         // Determine minimum height for the camera over the terrain related to current zoom.
-        // Values above than 2 allow max-pitch camera closer to e.g. top of the hill, exposing
+        // Values above than 4 allow max-pitch camera closer to e.g. top of the hill, exposing
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
         const MAX_DRAPE_OVERZOOM = 4;
