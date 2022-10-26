@@ -1088,23 +1088,17 @@ test('transform', (t) => {
             tilesDefaultElevation = null;
             centerElevation = 1600;
             tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+            transform.pitch = 0;
+            transform.bearing = 0;
             transform.resize(768, 768);
             transform.zoom = options.maxzoom = 22;
             transform.center = {lng: -104.99813327, lat: 39.72784465999999};
             options.roundZoom = true;
             t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(20, 0, 20, 218460, 398001),
-                new OverscaledTileID(20, 0, 20, 218460, 398002),
-                new OverscaledTileID(20, 0, 20, 218459, 398001),
-                new OverscaledTileID(20, 0, 20, 218459, 398002),
-                new OverscaledTileID(20, 0, 20, 218461, 398001),
-                new OverscaledTileID(20, 0, 20, 218461, 398002),
-                new OverscaledTileID(20, 0, 20, 218461, 398000),
-                new OverscaledTileID(20, 0, 20, 218461, 398003),
-                new OverscaledTileID(20, 0, 20, 218462, 398001),
-                new OverscaledTileID(20, 0, 20, 218462, 398002),
-                new OverscaledTileID(20, 0, 20, 218462, 398000),
-                new OverscaledTileID(20, 0, 20, 218462, 398003)
+                new OverscaledTileID(22, 0, 22, 873835, 1592007),
+                new OverscaledTileID(22, 0, 22, 873834, 1592007),
+                new OverscaledTileID(22, 0, 22, 873835, 1592006),
+                new OverscaledTileID(22, 0, 22, 873834, 1592006)
             ]);
             t.end();
         });
