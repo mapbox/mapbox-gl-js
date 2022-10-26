@@ -116,7 +116,8 @@ const renderTestemConfig = {
     "reporter": "xunit",
     "report_file": ciOutputFile,
     "xunit_intermediate_output": true,
-    "tap_quiet_logs": true
+    "tap_quiet_logs": true,
+    "browser_disconnect_timeout": 30 // A longer disconnect time out prevents crashes on Windows Virtual Machines.
 };
 
 function setChromeFlags(flags) {
