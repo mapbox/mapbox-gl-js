@@ -1,12 +1,18 @@
 // @flow
 
-import window from '../util/window.js';
+import window from './window.js';
 import {version as sdkVersion} from '../../package.json';
 import type {
     TerrainSpecification,
     FogSpecification,
 } from '../style-spec/types.js';
 import type Projection from '../geo/projection/projection.js';
+import {
+    isMapboxHTTPStyleURL,
+    isMapboxHTTPTileJSONURL,
+    isMapboxHTTPSpriteURL,
+    isMapboxHTTPFontsURL
+} from './mapbox.js';
 
 type LivePerformanceMetrics = {
     counters: Array<Object>,
@@ -59,36 +65,23 @@ function getTransferRangePerResourceCategory(resourceTimers) {
     return obj;
 }
 
-function getResourceCategory(entry) {
-    const path = entry.name.split('?')[0];
+function getResourceCategory(entry: PerformanceResourceTiming): string {
+    const url = entry.name.split('?')[0];
 
     // Code may be hosted on various endpoints: CDN, self-hosted,
-    // from unpkg... so this check doesn't include mapbox specifics
-    if (path.includes('mapbox-gl')) {
-        if (path.endsWith('.js')) {
+    // from unpkg... so this check doesn't include mapbox HTTP URL
+    if (url.includes('mapbox-gl')) {
+        if (url.endsWith('.js')) {
             return 'javascript';
-        } else if (path.endsWith('.css')) {
+        } else if (url.endsWith('.css')) {
             return 'css';
         }
     }
-    // Per https://docs.mapbox.com/api/maps/fonts/#retrieve-font-glyph-ranges
-    if (path.includes('api.mapbox.com/fonts')) {
-        return 'font';
-    }
-    // Per
-    // - https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
-    // - https://docs.mapbox.com/api/maps/styles/#retrieve-a-sprite-image-or-json
-    if (path.includes('api.mapbox.com/styles')) {
-        if (path.includes('sprite')) {
-            return 'sprite';
-        } else {
-            return 'style';
-        }
-    }
-    // Per https://docs.mapbox.com/api/maps/mapbox-tiling-service/#retrieve-tilejson-metadata
-    if (path.includes('api.mapbox.com/v4') && path.endsWith('.json')) {
-        return 'tilejson';
-    }
+
+    if (isMapboxHTTPFontsURL(url)) return 'font';
+    if (isMapboxHTTPSpriteURL(url)) return 'sprite';
+    if (isMapboxHTTPStyleURL(url)) return 'style';
+    if (isMapboxHTTPTileJSONURL(url)) return 'tilejson';
 
     return 'other';
 }
@@ -96,9 +89,9 @@ function getResourceCategory(entry) {
 function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
     if (resourceTimers) {
         for (const timer of resourceTimers) {
-            const path = timer.name.split('?')[0];
-            if (path.includes('api.mapbox.com/styles') && !path.includes('sprite')) {
-                const split = path.split('/').slice(-2);
+            const url = timer.name.split('?')[0];
+            if (isMapboxHTTPStyleURL(url)) {
+                const split = url.split('/').slice(-2);
                 if (split.length === 2) {
                     return `${split[0]}:${split[1]}`;
                 }
