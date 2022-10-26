@@ -6,6 +6,7 @@
 import fixtures from '../dist/render-fixtures.json';
 import ignores from '../../ignores/all.js';
 import ignoreWindows from '../../ignores/windows.js';
+import ignoreMac from '../../ignores/macos.js';
 import ignoreFirefox from '../../ignores/firefox.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
@@ -58,20 +59,20 @@ for (const testName in fixtures) {
 let osIgnore;
 let timeout = 5000;
 
-// On CI, MacOS and Windows run on virtual machines.
-// These run slower so we increase the timeout.
-
-const os = navigator.appVersion;
-if (os.includes("Macintosh")) {
-    osIgnore = null;
-    timeout = 20000;
-} else if (os.includes("Linux")) {
-    osIgnore = null;
-} else if (os.includes("Windows")) {
-    osIgnore = ignoreWindows;
-    timeout = 45000;
-} else { console.warn("Unrecognized OS:", os); }
-
+if (process.env.CI) {
+    // On CI, MacOS and Windows run on virtual machines.
+    // These run slower so we increase the timeout.
+    const os = navigator.appVersion;
+    if (os.includes("Macintosh")) {
+        osIgnore = ignoreMac;
+        timeout = 20000;
+    } else if (os.includes("Linux")) {
+        osIgnore = null;
+    } else if (os.includes("Windows")) {
+        osIgnore = ignoreWindows;
+        timeout = 45000;
+    } else { console.warn("Unrecognized OS:", os); }
+}
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout};
