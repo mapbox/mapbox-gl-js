@@ -127,7 +127,7 @@ test('LivePerformance', (t) => {
         ]);
         t.deepEqual(metrics.metadata, [
             {name: 'devicePixelRatio', value: '1'},
-            {name: 'cpuCores', value: '8'},
+            {name: 'cpuCores', value: window.navigator.hardwareConcurrency.toString()},
             {
                 name: 'userAgent',
                 value: window.navigator.userAgent
