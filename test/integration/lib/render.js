@@ -52,10 +52,6 @@ tape.onFinish(() => {
     mapboxgl.clearPrewarmedResources();
 });
 
-for (const testName in fixtures) {
-    tape(testName, {timeout: 20000}, ensureTeardown);
-}
-
 let osIgnore;
 let timeout = 5000;
 
@@ -73,6 +69,11 @@ if (process.env.CI) {
         timeout = 45000;
     } else { console.warn("Unrecognized OS:", os); }
 }
+
+for (const testName in fixtures) {
+    tape(testName, {timeout}, ensureTeardown);
+}
+
 function ensureTeardown(t) {
     const testName = t.name;
     const options = {timeout};
