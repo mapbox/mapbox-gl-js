@@ -410,12 +410,10 @@ class TelemetryEvent {
 }
 
 export class PerformanceEvent extends TelemetryEvent {
-    +success: {[_: number]: boolean};
     errorCb: EventCallback;
 
     constructor() {
         super('gljs.performance');
-        this.success = {};
     }
 
     postPerformanceEvent(customAccessToken: ?string, performanceData: LivePerformanceData, callback: EventCallback) {
@@ -431,7 +429,10 @@ export class PerformanceEvent extends TelemetryEvent {
     }
 
     processRequests(customAccessToken?: ?string) {
-        if (this.pendingRequest || this.queue.length === 0) return;
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
+
         const {timestamp, performanceData} = this.queue.shift();
 
         const additionalPayload = getLivePerformanceMetrics(performanceData);
