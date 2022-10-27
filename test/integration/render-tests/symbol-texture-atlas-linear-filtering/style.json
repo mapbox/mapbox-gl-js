@@ -1,0 +1,104 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "pixelRatio": 3,
+      "operations": [
+        [
+          "addImage",
+          "one",
+          "./image/1.png"
+        ],
+        [
+          "addImage",
+          "marker",
+          "./image/marker.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "fill",
+            "type": "fill",
+            "source": "sampleA",
+            "paint": {
+              "fill-opacity": 0.3,
+              "fill-pattern": "one"
+            }
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "symbol-layer",
+            "type": "symbol",
+            "source": "sampleA",
+            "layout": {
+              "icon-image": "marker"
+            }
+          }
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 1.0,
+  "bearing": 20.0,
+  "sources": {
+    "sampleA": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                4,
+                4
+              ],
+              [
+                4,
+                0
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                4,
+                4
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "bg",
+      "type": "background",
+      "paint": {
+        "background-color": "purple"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "sampleA",
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-width": 4
+      }
+    }
+  ]
+}
