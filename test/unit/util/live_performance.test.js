@@ -1,6 +1,6 @@
 import {test} from '../../util/test.js';
 import window from '../../../src/util/window.js';
-import {getLivePerformanceMetrics} from '../../../src/util/live_performance.js'
+import {getLivePerformanceMetrics} from '../../../src/util/live_performance.js';
 
 test('LivePerformance', (t) => {
     t.beforeEach(() => {
@@ -100,7 +100,7 @@ test('LivePerformance', (t) => {
                         "startTime": 1679.4000000059605,
                         "responseEnd": 1685
                     }
-                ]
+                ];
             }
         };
         const metrics = getLivePerformanceMetrics({
@@ -112,39 +112,39 @@ test('LivePerformance', (t) => {
             renderer: 'webgl renderer'
         });
         t.deepEqual(metrics.counters, [
-            { name: 'cssTransferStart', value: '25' },
-            { name: 'cssTransferEnd', value: '52' },
-            { name: 'javascriptTransferStart', value: '25' },
-            { name: 'javascriptTransferEnd', value: '417' },
-            { name: 'styleTransferStart', value: '784' },
-            { name: 'styleTransferEnd', value: '795' },
-            { name: 'tilejsonTransferStart', value: '809' },
-            { name: 'tilejsonTransferEnd', value: '870' },
-            { name: 'spriteTransferStart', value: '810' },
-            { name: 'spriteTransferEnd', value: '900' },
-            { name: 'fontTransferStart', value: '1509.5' },
-            { name: 'fontTransferEnd', value: '1544.5' }
+            {name: 'cssTransferStart', value: '25'},
+            {name: 'cssTransferEnd', value: '52'},
+            {name: 'javascriptTransferStart', value: '25'},
+            {name: 'javascriptTransferEnd', value: '417'},
+            {name: 'styleTransferStart', value: '784'},
+            {name: 'styleTransferEnd', value: '795'},
+            {name: 'tilejsonTransferStart', value: '809'},
+            {name: 'tilejsonTransferEnd', value: '870'},
+            {name: 'spriteTransferStart', value: '810'},
+            {name: 'spriteTransferEnd', value: '900'},
+            {name: 'fontTransferStart', value: '1509.5'},
+            {name: 'fontTransferEnd', value: '1544.5'}
         ]);
         t.deepEqual(metrics.metadata, [
-            { name: 'devicePixelRatio', value: '1' },
-            { name: 'cpuCores', value: '8' },
+            {name: 'devicePixelRatio', value: '1'},
+            {name: 'cpuCores', value: '8'},
             {
-            name: 'userAgent',
-            value: 'Mozilla/5.0 (darwin) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/15.2.1'
+                name: 'userAgent',
+                value: window.navigator.userAgent
             },
-            { name: 'windowWidth', value: '1024' },
-            { name: 'windowHeight', value: '768' },
-            { name: 'mapWidth', value: '100' },
-            { name: 'mapHeight', value: '50' },
-            { name: 'webglRenderer', value: 'webgl renderer' },
-            { name: 'webglVendor', value: 'webgl vendor' },
-            { name: 'sdkVersion', value: '2.12.0-dev' },
-            { name: 'sdkIdentifier', value: 'mapbox-gl-js' }
+            {name: 'windowWidth', value: '1024'},
+            {name: 'windowHeight', value: '768'},
+            {name: 'mapWidth', value: '100'},
+            {name: 'mapHeight', value: '50'},
+            {name: 'webglRenderer', value: 'webgl renderer'},
+            {name: 'webglVendor', value: 'webgl vendor'},
+            {name: 'sdkVersion', value: '2.12.0-dev'},
+            {name: 'sdkIdentifier', value: 'mapbox-gl-js'}
         ]);
         t.deepEqual(metrics.attributes, [
-            { name: 'style', value: 'mapbox:streets-v11' },
-            { name: 'terrain', value: 'false' },
-            { name: 'fog', value: 'false' }
+            {name: 'style', value: 'mapbox:streets-v11'},
+            {name: 'terrain', value: 'false'},
+            {name: 'fog', value: 'false'}
         ]);
         t.end();
     });
