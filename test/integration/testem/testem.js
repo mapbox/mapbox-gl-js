@@ -143,10 +143,10 @@ if (browser === "Chrome") {
         Object.assign(testemConfig, ciTestemConfig);
     } if (process.env.RENDER && process.env.USE_ANGLE) {
         // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
-        // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
+        // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
         // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
         if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
-            throw new Error(`Unrecognized value for '-use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
+            throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
         }
         console.log(`Chrome webgl using '${process.env.USE_ANGLE}'`);
         const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
