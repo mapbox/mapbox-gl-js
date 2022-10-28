@@ -3,11 +3,6 @@ const todo = [
     // "https://github.com/mapbox/mapbox-gl-js/issues/2716
     "query-tests/regressions/mapbox-gl-js#4494",
 
-    // Patterns not working with projections
-    // https://github.com/mapbox/mapbox-gl-js/issues/11221
-    "render-tests/background-pattern/projected",
-    "render-tests/fill-pattern/projected",
-
     // https://github.com/mapbox/mapbox-gl-js/issues/7207
     "render-tests/fill-pattern/update-feature-state",
 
@@ -34,6 +29,11 @@ const todo = [
 ];
 
 const skip = [
+    // Pattern should be seamless across tile edges
+    // https://github.com/mapbox/mapbox-gl-js/issues/11221
+    "render-tests/background-pattern/projected",
+    "render-tests/fill-pattern/projected",
+
     // Needs baseline update
     "query-tests/globe/circle/opposite-side-over-north-pole",
 
@@ -81,7 +81,7 @@ const skip = [
     "render-tests/text-variable-anchor/remember-last-placement",
 
     // Flaky
-    //  https://github.com/mapbox/mapbox-gl-js/issues/10314"
+    // https://github.com/mapbox/mapbox-gl-js/issues/10314"
     "render-tests/skybox/atmosphere-padding",
 
     // non-deterministic symbol placement on tile boundaries"

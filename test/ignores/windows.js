@@ -1,23 +1,22 @@
 const todo = [
-    // Appearance is slightly offset and diff is high.
+    // Appearance is slightly offset and diff is > 0.01
     "render-tests/icon-image/stretchable-content",
 
     // Bug: missing shapes.
     "render-tests/icon-text-fit/both-text-anchor-1x-image-2x-screen",
     "render-tests/icon-text-fit/both-text-anchor-2x-image-1x-screen",
 
-    // Bug: resampling isn't working.
-    "render-tests/raster-resampling/function",
-    "render-tests/raster-resampling/literal",
-
     // Bug: Inconsistent zoom
     "render-tests/fit-screen-coordinates/terrain",
 
-    // Debug rendering
-    "render-tests/terrain/wireframe",
+    // Bug: raster-resampling doesn't work on Windows and some Macs
+    // https://github.com/mapbox/mapbox-gl-js/issues/7331
+    "render-tests/raster-resampling/function",
+    "render-tests/raster-resampling/literal",
 
-    // Due to different antialasing on windows, shifted icons appear pixelated.
-    // Difs here are small, but the appearance on windows is worse.
+    // Due to incorrect resampling or antialasing, shifted icons appear pixelated.
+    // Likely related to the above issue.
+    // Difs here are small, but the appearance is worse.
     "render-tests/debug/collision-overscaled-fractional-zoom",
     "render-tests/icon-opacity/default",
     "render-tests/icon-opacity/function",
@@ -39,8 +38,12 @@ const todo = [
 
     // Antialiasing results in a slightly different appearance for icon pattern on globe.
     // Appearance is still good but the dif is too high (this could use a platform-specific expected.png)
-    "render-tests/globe/globe-transforms/north-pole"
+    "render-tests/globe/globe-transforms/north-pole",
+
+    // Debug rendering
+    "render-tests/terrain/wireframe"
 ];
+
 const skip = [
     // Timing out on CI.
     "render-tests/skybox/atmosphere-terrain",
