@@ -25,6 +25,7 @@ const suitePath = `${suiteName}-tests`;
 const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
+const ci = process.env.npm_lifecycle_script.includes('testem ci');
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
@@ -54,7 +55,7 @@ function getQueryParams() {
     return queryParams;
 }
 
-const defaultTestemConfig = {
+const testemConfig = {
     "test_page": testPage,
     "query_params": getQueryParams(),
     "proxies": {
@@ -93,7 +94,7 @@ const defaultTestemConfig = {
         if (!beforeHookInvoked) {
             loadModules().then(() => {
                 server = createServer();
-                const buildPromise = config.appMode === 'ci' ? buildArtifactsCi() : buildArtifactsDev();
+                const buildPromise = ci ? buildArtifactsCi() : buildArtifactsDev();
                 buildPromise.then(() => {
                     server.listen(callback);
                 }).catch((e) => {
@@ -111,7 +112,8 @@ const defaultTestemConfig = {
     }
 };
 
-const renderTestemConfig = {
+// Configuration for tests running in CI mode (i.e. test-... not watch-...)
+const ciTestemConfig = {
     "launch_in_ci": [ browser ],
     "reporter": "xunit",
     "report_file": ciOutputFile,
@@ -130,9 +132,7 @@ function setChromeFlags(flags) {
     };
 }
 
-const testemConfig = defaultTestemConfig;
-
-if (process.env.RENDER) Object.assign(testemConfig, renderTestemConfig);
+if (ci) Object.assign(testemConfig, ciTestemConfig);
 
 if (browser === "Chrome") {
     Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows"]));
@@ -140,9 +140,9 @@ if (browser === "Chrome") {
         // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
         // This allows for more consistent behavior with MacOS development machines.
         // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-        const ciTestemConfig = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
-        Object.assign(testemConfig, ciTestemConfig);
-    } if (process.env.RENDER && process.env.USE_ANGLE) {
+        const useOpenGL = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
+        Object.assign(testemConfig, useOpenGL);
+    } if (process.env.USE_ANGLE) {
         // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
         // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
         // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
