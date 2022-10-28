@@ -442,7 +442,7 @@ jobs:
       - run: xcodebuild -version
       - browser-tools/install-chrome
       - run: yarn
-      - run: USE_ANGLE=gl yarn run test-render
+      - run: USE_ANGLE=metal yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
