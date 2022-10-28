@@ -13,9 +13,8 @@ export default {
         "render-tests/raster-resampling/literal",
 
         // Bug: Inconsistent zoom
-        "render-tests/fit-screen-coordinates/terrain"
-    ],
-    skip:[
+        "render-tests/fit-screen-coordinates/terrain",
+
         // Debug rendering
         "render-tests/terrain/wireframe",
 
@@ -42,8 +41,9 @@ export default {
 
         // Antialiasing results in a slightly different appearance for icon pattern on globe.
         // Appearance is still good but the dif is too high (this could use a platform-specific expected.png)
-        "render-tests/globe/globe-transforms/north-pole",
-
+        "render-tests/globe/globe-transforms/north-pole"
+    ],
+    skip:[
         // Timing out on CI.
         "render-tests/skybox/atmosphere-terrain",
         "render-tests/terrain/decrease-exaggeration-fog",
