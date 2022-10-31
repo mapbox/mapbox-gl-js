@@ -3286,8 +3286,8 @@ class Map extends Camera {
                     width: this.painter.width,
                     height: this.painter.height,
                     interactionRange: this._interactionRange,
-                    terrain: this.painter.style.getTerrain(),
-                    fog: this.painter.style.getFog(),
+                    terrainEnabled: !!this.painter.style.getTerrain(),
+                    fogEnabled: !!this.painter.style.getFog(),
                     projection: this.painter.transform.projection,
                     renderer: this.painter.context.renderer,
                     vendor: this.painter.context.vendor

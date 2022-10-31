@@ -35,19 +35,19 @@ const config: Config = {
     },
     get API_TILEJSON_REGEX() {
         // https://docs.mapbox.com/api/maps/mapbox-tiling-service/#retrieve-tilejson-metadata
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v4\/.*\.json.*$)/i;
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v[0-9]*\/.*\.json.*$)/i;
     },
     get API_SPRITE_REGEX() {
         // https://docs.mapbox.com/api/maps/styles/#retrieve-a-sprite-image-or-json
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v1\/)(.*\/sprite.*\..*$)/i;
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*\/sprite.*\..*$)/i;
     },
     get API_FONTS_REGEX() {
         // https://docs.mapbox.com/api/maps/fonts/#retrieve-font-glyph-ranges
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/fonts\/v1\/)(.*\.pbf.*$)/i;
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/fonts\/v[0-9]*\/)(.*\.pbf.*$)/i;
     },
     get API_STYLE_REGEX() {
         // https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
-        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v1\/)(.*$)/i;
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
     },
     get EVENTS_URL() {
         if (!this.API_URL) { return null; }
