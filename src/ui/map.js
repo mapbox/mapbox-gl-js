@@ -448,6 +448,7 @@ class Map extends Camera {
         PerformanceUtils.mark(PerformanceMarkers.create);
 
         options = extend({}, defaultOptions, options);
+        options.style = 'mapbox://styles/snailbones/cl9xbygw1008c14n784mv3i0b';
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than or equal to minZoom`);
