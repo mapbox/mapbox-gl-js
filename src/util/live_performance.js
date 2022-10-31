@@ -2,10 +2,6 @@
 
 import window from './window.js';
 import {version as sdkVersion} from '../../package.json';
-import type {
-    TerrainSpecification,
-    FogSpecification,
-} from '../style-spec/types.js';
 import type Projection from '../geo/projection/projection.js';
 import {
     isMapboxHTTPStyleURL,
@@ -24,8 +20,8 @@ export type LivePerformanceData = {
     interactionRange: [number, number],
     width: number,
     height: number,
-    terrain: ?TerrainSpecification,
-    fog: ?FogSpecification,
+    terrainEnabled: boolean,
+    fogEnabled: boolean,
     projection: Projection,
     renderer: ?string,
     vendor: ?string
@@ -118,8 +114,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     }
 
     addMetric(metrics.attributes, "style", getStyle(resourceTimers));
-    addMetric(metrics.attributes, "terrain", data.terrain ? "true" : "false");
-    addMetric(metrics.attributes, "fog", data.fog ? "true" : "false");
+    addMetric(metrics.attributes, "terrainEnabled", data.terrainEnabled ? "true" : "false");
+    addMetric(metrics.attributes, "fogEnabled", data.fogEnabled ? "true" : "false");
     addMetric(metrics.attributes, "projection", data.projection.name);
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);

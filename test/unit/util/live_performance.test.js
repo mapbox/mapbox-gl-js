@@ -1,6 +1,7 @@
 import {test} from '../../util/test.js';
 import window from '../../../src/util/window.js';
 import {getLivePerformanceMetrics} from '../../../src/util/live_performance.js';
+import {version} from '../../../package.json';
 
 test('LivePerformance', (t) => {
     t.beforeEach(() => {
@@ -138,13 +139,13 @@ test('LivePerformance', (t) => {
             {name: 'mapHeight', value: '50'},
             {name: 'webglRenderer', value: 'webgl renderer'},
             {name: 'webglVendor', value: 'webgl vendor'},
-            {name: 'sdkVersion', value: '2.12.0-dev'},
+            {name: 'sdkVersion', value: version},
             {name: 'sdkIdentifier', value: 'mapbox-gl-js'}
         ]);
         t.deepEqual(metrics.attributes, [
             {name: 'style', value: 'mapbox:streets-v11'},
-            {name: 'terrain', value: 'false'},
-            {name: 'fog', value: 'false'}
+            {name: 'terrainEnabled', value: 'false'},
+            {name: 'fogEnabled', value: 'false'}
         ]);
         t.end();
     });
