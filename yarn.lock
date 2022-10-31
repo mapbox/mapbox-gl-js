@@ -306,10 +306,10 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.0.2.tgz#1bfafe4b7ed0f3e4105837e056e0a89b108ebe36"
   integrity sha512-IkpVW/ehM1hWKln4fCA3NzJU8KwD+kIOvPZA4cqxoJHtE21CCzjyp+Kxbu0i5I4tBNOlXPL9mjwnWlL0VEG4Fg==
 
-"@es-joy/jsdoccomment@~0.33.0":
-  version "0.33.0"
-  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.33.0.tgz#59416d08442d0fdbb316fc1cb491e750db80b9ad"
-  integrity sha512-bkxMGTlHPE4vfarXt1L1fOm81O18jTRFNgh3Fm4iPKctfWxcpJw4cpth5BhLkGZy4HFzGn/KfD/zGks/J+ZIIw==
+"@es-joy/jsdoccomment@~0.33.4":
+  version "0.33.4"
+  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.33.4.tgz#391cdee831fda273b01f74a50ac7ec71bc0d082a"
+  integrity sha512-02XyYuvR/Gn+3BT6idHVNQ4SSQlA1X1FeEfeKm2ypv8ANB6Lt9KRFZ2S7y5xjwR+EPQ/Rzb0XFaD+xKyqe4ALw==
   dependencies:
     comment-parser "1.3.1"
     esquery "^1.4.0"
@@ -3335,11 +3335,11 @@ eslint-plugin-import@^2.26.0:
     tsconfig-paths "^3.14.1"
 
 eslint-plugin-jsdoc@^39.3.6:
-  version "39.3.24"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-39.3.24.tgz#43a4f81d2fddba4ec848dbed20b1c98d0ffab566"
-  integrity sha512-ePTnAvTKc/Ux97PgffhsgJcQVJimaNxb5yA4nwhHg+gZ21rjFQmOyowDDYe2u/L9ClwRGmwLq7/K422bTh+2Zg==
+  version "39.4.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-39.4.0.tgz#6b281043186c20f61b99c1289ac362002720564d"
+  integrity sha512-2FXAmh8lpO22aqZgu6NLB6berVnYgwbZx95BmjIIQjbRNwLIAwY0dtvSJDUZVW5nflv58c1gSWQjIJ8yLZ/+fw==
   dependencies:
-    "@es-joy/jsdoccomment" "~0.33.0"
+    "@es-joy/jsdoccomment" "~0.33.4"
     comment-parser "1.3.1"
     debug "^4.3.4"
     escape-string-regexp "^4.0.0"
