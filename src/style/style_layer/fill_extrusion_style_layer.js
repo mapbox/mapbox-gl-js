@@ -90,9 +90,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
             // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
             const centroidOffset = layoutVertexArrayOffset + 1;
             if (centroidOffset < centroidVertexArray.length) {
-                const centroidVertexObject = centroidVertexArray.get(centroidOffset);
-                centroid[0] = centroidVertexObject.a_centroid_pos0;
-                centroid[1] = centroidVertexObject.a_centroid_pos1;
+                centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
+                centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
             }
         }
 
