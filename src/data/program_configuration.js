@@ -415,6 +415,10 @@ export default class ProgramConfiguration {
 
         for (const property in layer.paint._values) {
             if (!filterProperties(property)) continue;
+
+            // optimization: ignore fill-outline-color if it matches fill-color or anti-alias is disabled
+            if ((property: any) === 'fill-outline-color' && ((layer.paint: any).get('fill-antialias') === false || (layer.paint._values: any)['fill-outline-color'] === (layer.paint._values: any)['fill-color'])) continue;
+
             const value = layer.paint.get(property);
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
