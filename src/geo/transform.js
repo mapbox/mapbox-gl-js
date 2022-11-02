@@ -1629,7 +1629,7 @@ class Transform {
             this._setZoom(this._zoomFromMercatorZ(minHeight));
             this._calcMatrices();
             this._updateSeaLevelZoom();
-            //this._updateCameraState();
+            this._updateCameraState();
         }
     }
 
