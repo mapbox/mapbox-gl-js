@@ -149,7 +149,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
     _mercatorScaleRatio: number;
-    cameraConstrained: boolean;
+    _isCameraConstrained: boolean;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -1625,7 +1625,7 @@ class Transform {
 
         } else if (cameraHeight <= minHeight && this._zoom > this._zoomFromMercatorZ(minHeight)) {
             // push zoom back to safe distance from terrain and stop current zoom
-            this.cameraConstrained = true;
+            this._isCameraConstrained = true;
             this._setZoom(this._zoomFromMercatorZ(minHeight));
             this._calcMatrices();
             this._updateSeaLevelZoom();

@@ -481,10 +481,10 @@ class HandlerManager {
         };
         
 
-        if (tr.cameraConstrained) {
+        if (tr._isCameraConstrained) {
             map.stop(false);
             this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
-            tr.cameraConstrained = false;
+            tr._isCameraConstrained = false;
             return;
         }
 
