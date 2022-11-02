@@ -1601,16 +1601,16 @@ class Transform {
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
 
         // hard-setting value to 85 reduces unintended fast-moving past terrain when maxPitch is less than 85.
-        const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(85));
+        const minHeight = this._minimumHeightOverTerrain();
 
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
-        if (cameraHeight < minHeight) {
+        if (cameraHeight <= 0) {
             const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
-            const prevDistToCamera = vec3.length(cameraToCenter);
 
+            const prevDistToCamera = vec3.length(cameraToCenter);
             // Adjust the camera vector so that the camera is placed above the terrain.
             // Distance between the camera and the center point is kept constant.
             cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
@@ -1620,8 +1620,16 @@ class Transform {
                 return;
 
             vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
-            this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
+
+            const newPosition = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
+            this._setCameraPosition(newPosition);
             this._updateStateFromCamera();
+
+        } else if (cameraHeight <= minHeight && this._zoom > this._zoomFromMercatorZ(minHeight)) {
+            //push zoom back to safe distance from terrain
+            this._setZoom(this._zoomFromMercatorZ(minHeight));
+            this._calcMatrices();
+            this._updateSeaLevelZoom();
         }
     }
 
