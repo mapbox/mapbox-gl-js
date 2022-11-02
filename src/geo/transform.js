@@ -149,6 +149,7 @@ class Transform {
     _nearZ: number;
     _farZ: number;
     _mercatorScaleRatio: number;
+    cameraConstrained: boolean;
 
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
@@ -1597,12 +1598,9 @@ class Transform {
         // The default camera position might have been compensated by the active projection model.
         const mercPixelsPerMeter = mercatorZfromAltitude(1, this._center.lat) * this.worldSize;
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
-
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
 
-        // hard-setting value to 85 reduces unintended fast-moving past terrain when maxPitch is less than 85.
         const minHeight = this._minimumHeightOverTerrain();
-
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
@@ -1626,10 +1624,12 @@ class Transform {
             this._updateStateFromCamera();
 
         } else if (cameraHeight <= minHeight && this._zoom > this._zoomFromMercatorZ(minHeight)) {
-            //push zoom back to safe distance from terrain
+            // push zoom back to safe distance from terrain and stop current zoom
+            this.cameraConstrained = true;
             this._setZoom(this._zoomFromMercatorZ(minHeight));
             this._calcMatrices();
             this._updateSeaLevelZoom();
+            //this._updateCameraState();
         }
     }
 

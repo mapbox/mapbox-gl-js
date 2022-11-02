@@ -479,6 +479,14 @@ class HandlerManager {
             const event = this._eventsInProgress[type];
             return event && !this._handlersById[event.handlerName].isActive();
         };
+        
+
+        if (tr.cameraConstrained) {
+            map.stop(false);
+            this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+            tr.cameraConstrained = false;
+            return;
+        }
 
         const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
@@ -495,6 +503,7 @@ class HandlerManager {
             this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
             return;
         }
+
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
         if (pinchAround !== undefined) {
@@ -573,7 +582,7 @@ class HandlerManager {
         const translation = vec3.add(panVec, panVec, zoomVec);
         tr._translateCameraConstrained(translation);
 
-        if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
+        if (Math.abs(tr.zoom - originalZoom) > 0.0001) {
             tr.recenterOnTerrain();
         }
 
@@ -582,7 +591,6 @@ class HandlerManager {
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
-
     }
 
     _fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object, allowEndAnimation: boolean) {
