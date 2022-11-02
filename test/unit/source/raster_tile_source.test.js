@@ -4,13 +4,18 @@ import window from '../../../src/util/window.js';
 import config from '../../../src/util/config.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
+import sourceFixture from '../../fixtures/source.json';
 
 function createSource(options, transformCallback) {
     const source = new RasterTileSource('id', options, {send() {}}, options.eventedParent);
+
     source.onAdd({
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
-        _requestManager: new RequestManager(transformCallback)
+        _requestManager: new RequestManager(transformCallback),
+        style: {
+            _clearSource: () => {},
+        }
     });
 
     source.on('error', (e) => {
@@ -186,6 +191,74 @@ test('RasterTileSource', (t) => {
         source.onRemove();
         t.equal(window.server.lastRequest.aborted, true);
         t.end();
+    });
+
+    t.test('supports property updates', (t) => {
+        window.server.configure({respondImmediately: true});
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+        const source = createSource({url: '/source.json'});
+
+        const loadSpy = t.spy(source, 'load');
+        const clearSourceSpy = t.spy(source.map.style, '_clearSource');
+
+        const responseSpy = t.spy((xhr) =>
+            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));
+
+        window.server.respondWith('/source.json', responseSpy);
+
+        source.setSourceProperty(() => {
+            source.attribution = 'OpenStreetMap';
+        });
+
+        t.ok(loadSpy.calledOnce);
+        t.ok(responseSpy.calledOnce);
+        t.ok(clearSourceSpy.calledOnce);
+        t.ok(clearSourceSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
+
+        t.end();
+    });
+
+    t.test('supports url property updates', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+        window.server.respondWith('/new-source.json', JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}));
+        window.server.configure({autoRespond: true, autoRespondAfter: 0});
+
+        const source = createSource({url: '/source.json'});
+        source.setUrl('/new-source.json');
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.minzoom, 0);
+                t.deepEqual(source.maxzoom, 22);
+                t.deepEqual(source.attribution, 'Mapbox');
+                t.deepEqual(source.serialize(), {type: 'raster', url: '/new-source.json'});
+                t.end();
+            }
+        });
+    });
+
+    t.test('supports tiles property updates', (t) => {
+        const source = createSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: 'Mapbox',
+            tiles: ['http://example.com/v1/{z}/{x}/{y}.png']
+        });
+
+        source.setTiles(['http://example.com/v2/{z}/{x}/{y}.png']);
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                t.deepEqual(source.serialize(), {
+                    type: 'raster',
+                    minzoom: 1,
+                    maxzoom: 10,
+                    attribution: 'Mapbox',
+                    tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
+                });
+                t.end();
+            }
+        });
     });
 
     t.end();

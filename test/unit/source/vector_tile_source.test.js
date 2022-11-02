@@ -21,15 +21,13 @@ const mockDispatcher = wrapDispatcher({
 
 function createSource(options, {transformCallback, customAccessToken} = {}) {
     const source = new VectorTileSource('id', options, mockDispatcher, options.eventedParent);
-    const sourceCache = {clearTiles: () => {}};
 
     source.onAdd({
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback, customAccessToken),
-        _sourceCaches: [sourceCache],
         style: {
-            _getSourceCaches: () => [sourceCache]
+            _clearSource: () => {},
         }
     });
 
@@ -395,7 +393,7 @@ test('VectorTileSource', (t) => {
         const source = createSource({url: '/source.json'});
 
         const loadSpy = t.spy(source, 'load');
-        const clearTilesSpy = t.spy(source.map._sourceCaches[0], 'clearTiles');
+        const clearSourceSpy = t.spy(source.map.style, '_clearSource');
 
         const responseSpy = t.spy((xhr) =>
             xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));
@@ -408,8 +406,8 @@ test('VectorTileSource', (t) => {
 
         t.ok(loadSpy.calledOnce);
         t.ok(responseSpy.calledOnce);
-        t.ok(clearTilesSpy.calledOnce);
-        t.ok(clearTilesSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
+        t.ok(clearSourceSpy.calledOnce);
+        t.ok(clearSourceSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
 
         t.end();
     });

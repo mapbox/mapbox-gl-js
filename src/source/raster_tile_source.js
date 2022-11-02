@@ -25,6 +25,27 @@ import type {
     RasterDEMSourceSpecification
 } from '../style-spec/types.js';
 
+/**
+ * A source containing raster tiles.
+ * See the [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#raster) for detailed documentation of options.
+ *
+ * @example
+ * map.addSource('some id', {
+ *     type: 'raster',
+ *     url: 'mapbox://mapbox.satellite',
+ *     tileSize: 256
+ * });
+ *
+ * @example
+ * map.addSource('some id', {
+ *     type: 'raster',
+ *     tiles: ['https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015'],
+ *     tileSize: 256
+ * });
+ *
+ * @see [Example: Add a raster tile source](https://docs.mapbox.com/mapbox-gl-js/example/map-tiles/)
+ * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
+ */
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';
     id: string;
@@ -63,7 +84,7 @@ class RasterTileSource extends Evented implements Source {
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
-    load() {
+    load(callback?: Callback<void>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, null, null, (err, tileJSON) => {
@@ -83,6 +104,8 @@ class RasterTileSource extends Evented implements Source {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
+
+            if (callback) callback(err);
         });
     }
 
@@ -95,11 +118,66 @@ class RasterTileSource extends Evented implements Source {
         this.load();
     }
 
+    reload() {
+        this.cancelTileJSONRequest();
+        this.load(() => this.map.style._clearSource(this.id));
+    }
+
+    setSourceProperty(callback: Function) {
+        callback();
+        this.reload();
+    }
+
+    /**
+     * Sets the source `tiles` property and re-renders the map.
+     *
+     * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
+     * @returns {RasterTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('raster_source_id', {
+     *     type: 'raster',
+     *     tiles: ['https://some_end_point.net/{z}/{x}/{y}.png'],
+     *     tileSize: 256
+     * });
+     *
+     * const rasterTileSource = map.getSource('raster_source_id');
+     *
+     * // Set the endpoint associated with a raster tile source.
+     * rasterTileSource.setTiles(['https://another_end_point.net/{z}/{x}/{y}.png']);
+     */
+    setTiles(tiles: Array<string>): this {
+        this._options.tiles = tiles;
+        this.reload();
+
+        return this;
+    }
+
+    /**
+     * Sets the source `url` property and re-renders the map.
+     *
+     * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
+     * @returns {RasterTileSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('raster_source_id', {
+     *     type: 'raster',
+     *     url: 'mapbox://mapbox.satellite'
+     * });
+     *
+     * const rasterTileSource = map.getSource('raster_source_id');
+     *
+     * // Update raster tile source to a new URL endpoint
+     * rasterTileSource.setUrl('mapbox://mapbox.satellite');
+     */
+    setUrl(url: string): this {
+        this.url = url;
+        this._options.url = url;
+        this.reload();
+
+        return this;
+    }
+
     onRemove() {
-        if (this._tileJSONRequest) {
-            this._tileJSONRequest.cancel();
-            this._tileJSONRequest = null;
-        }
+        this.cancelTileJSONRequest();
     }
 
     serialize(): RasterSourceSpecification | RasterDEMSourceSpecification {
@@ -162,6 +240,12 @@ class RasterTileSource extends Evented implements Source {
 
     hasTransition(): boolean {
         return false;
+    }
+
+    cancelTileJSONRequest() {
+        if (!this._tileJSONRequest) return;
+        this._tileJSONRequest.cancel();
+        this._tileJSONRequest = null;
     }
 }
 

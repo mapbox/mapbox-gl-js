@@ -145,15 +145,7 @@ class VectorTileSource extends Evented implements Source {
 
     reload() {
         this.cancelTileJSONRequest();
-
-        const clearTiles = () => {
-            const sourceCaches = this.map.style._getSourceCaches(this.id);
-            for (const sourceCache of sourceCaches) {
-                sourceCache.clearTiles();
-            }
-        };
-
-        this.load(clearTiles);
+        this.load(() => this.map.style._clearSource(this.id));
     }
 
     setSourceProperty(callback: Function) {
