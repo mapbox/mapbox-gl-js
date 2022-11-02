@@ -41,7 +41,7 @@ function categorize(arr, fn) {
     return obj;
 }
 
-function getTransferRangePerResourceType(resourceTimers) {
+function getTransferCountersPerResourceType(resourceTimers) {
     const obj = {};
     if (resourceTimers) {
         for (const category in resourceTimers) {
@@ -49,11 +49,22 @@ function getTransferRangePerResourceType(resourceTimers) {
                 for (const timer of resourceTimers[category]) {
                     const min = `${category}TransferStart`;
                     const max = `${category}TransferEnd`;
+                    const size = `${category}TransferSize`;
 
                     // Resource -TransferStart and -TransferEnd represent the wall time
                     // between the start of a request to when the data is available
                     obj[min] = Math.min(obj[min] || +Infinity, timer.startTime);
                     obj[max] = Math.max(obj[max] || -Infinity, timer.responseEnd);
+
+                    // transferSize is not supported on all platforms. When supported,
+                    // it may return 0 when cached so it's important to distintively
+                    // separate the 'not supported' from 'resource cached' case.
+                    if (timer.transferSize !== undefined) {
+                        if (!obj[size]) {
+                            obj[size] = 0;
+                        }
+                        obj[size] += timer.transferSize;
+                    }
                 }
             }
         }
@@ -94,19 +105,19 @@ function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
 export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerformanceMetrics {
     const resourceTimers = window.performance.getEntriesByType('resource');
     const resourcesByType = categorize(resourceTimers, getResourceCategory);
-    const counters = getTransferRangePerResourceType(resourcesByType);
+    const transferCounters = getTransferCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
     const metrics = {counters: [], metadata: [], attributes: []};
 
     const addMetric = (arr, name, value) => {
-        if (value) {
+        if (value !== undefined) {
             arr.push({name, value: value.toString()});
         }
     };
 
-    for (const counter in counters) {
-        addMetric(metrics.counters, counter, counters[counter]);
+    for (const counter in transferCounters) {
+        addMetric(metrics.counters, counter, transferCounters[counter]);
     }
     if (data.interactionRange[0] !== +Infinity && data.interactionRange[1] !== -Infinity) {
         addMetric(metrics.counters, "interactionRangeMin", data.interactionRange[0]);
