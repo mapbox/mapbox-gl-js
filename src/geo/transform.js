@@ -226,13 +226,13 @@ class Transform {
         this._updateCameraOnTerrain();
         this._calcMatrices();
     }
-    updateElevation(constrainCameraOverTerrain: boolean) { // On render, no need for higher granularity on update reasons.
+    updateElevation(constrainCameraOverTerrain: boolean, isDragging: boolean) { // On render, no need for higher granularity on update reasons.
         const centerAltitudeChanged = this._elevation && this._elevation.exaggeration() !== this._centerAltitudeValidForExaggeration;
         if (this._seaLevelZoom == null || centerAltitudeChanged) {
             this._updateCameraOnTerrain();
         }
         if (constrainCameraOverTerrain || centerAltitudeChanged) {
-            this._constrainCamera();
+            this._constrainCamera(isDragging);
         }
         this._calcMatrices();
     }
@@ -1587,7 +1587,7 @@ class Transform {
         }
     }
 
-    _constrainCamera() {
+    _constrainCamera(isDragging: boolean) {
         if (!this._elevation)
             return;
 
@@ -1600,11 +1600,11 @@ class Transform {
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
 
-        const minHeight = this._minimumHeightOverTerrain();
+        const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(this._maxPitch));
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
-        if (cameraHeight <= 0) {
+        if (cameraHeight <= 0 || (cameraHeight <= minHeight && isDragging)) {
             const center = this.locationCoordinate(this._center, this._centerAltitude);
             const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
 
@@ -1623,12 +1623,15 @@ class Transform {
             this._setCameraPosition(newPosition);
             this._updateStateFromCamera();
 
-        } else if (cameraHeight <= minHeight && this._zoom > this._zoomFromMercatorZ(minHeight)) {
+        } else if (cameraHeight <= minHeight) {
             // push zoom back to safe distance from terrain and stop current zoom
             this._isCameraConstrained = true;
-            this._setZoom(this._zoomFromMercatorZ(minHeight));
-            this._calcMatrices();
+            const zoom = this._maxZoom <= this._zoomFromMercatorZ(minHeight) ? this._maxZoom : this._zoomFromMercatorZ(minHeight);
+            this._setZoom(clamp(this._zoom, this._minZoom, zoom));
+            //this._setZoom(this._zoomFromMercatorZ(minHeight));
             this._updateSeaLevelZoom();
+            //this._unmodified = false;
+            this._calcMatrices();
             this._updateCameraState();
         }
     }
@@ -1980,7 +1983,7 @@ class Transform {
         // Values above 4 allow max-pitch camera closer to e.g. top of the hill, exposing
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
-        const MAX_DRAPE_OVERZOOM = 4;
+        const MAX_DRAPE_OVERZOOM = 2;
         const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
         return this._mercatorZfromZoom(zoom);
     }

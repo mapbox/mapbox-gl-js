@@ -322,6 +322,10 @@ class HandlerManager {
         return !!isMoving(this._eventsInProgress) || this.isZooming();
     }
 
+    isDragging(): boolean {
+        return !!this._eventsInProgress.drag;
+    }
+
     _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string): boolean {
         for (const name in activeHandlers) {
             if (name === myName) continue;
@@ -479,11 +483,10 @@ class HandlerManager {
             const event = this._eventsInProgress[type];
             return event && !this._handlersById[event.handlerName].isActive();
         };
-        
 
-        if (tr._isCameraConstrained) {
-            map.stop(false);
-            this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
+        if (tr._isCameraConstrained && (eventStarted("zoom") || eventEnded("zoom") || this._eventsInProgress["zoom"] || eventStarted("drag"))) {
+            map.stop(true);
+            //this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
             tr._isCameraConstrained = false;
             return;
         }
