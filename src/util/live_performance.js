@@ -120,7 +120,6 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
     addMetric(metrics.metadata, "connectionEffectiveType", connection ? connection.effectiveType : undefined);
-    addMetric(metrics.metadata, "navigatorHardwareConcurrency", window.navigator.hardwareConcurrency);
     addMetric(metrics.metadata, "navigatorUserAgent", window.navigator.userAgent);
     addMetric(metrics.metadata, "screenWidth", window.screen.width);
     addMetric(metrics.metadata, "screenHeight", window.screen.height);

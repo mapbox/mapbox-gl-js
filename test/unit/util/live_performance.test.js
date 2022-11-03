@@ -128,7 +128,6 @@ test('LivePerformance', (t) => {
         ]);
         t.deepEqual(metrics.metadata, [
             {name: 'devicePixelRatio', value: '1'},
-            {name: 'navigatorHardwareConcurrency', value: window.navigator.hardwareConcurrency.toString()},
             {
                 name: 'navigatorUserAgent',
                 value: window.navigator.userAgent
