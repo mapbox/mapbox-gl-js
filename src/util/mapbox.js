@@ -410,20 +410,14 @@ class TelemetryEvent {
 }
 
 export class PerformanceEvent extends TelemetryEvent {
-    errorCb: EventCallback;
-
     constructor() {
         super('gljs.performance');
     }
 
-    postPerformanceEvent(customAccessToken: ?string, performanceData: LivePerformanceData, callback: EventCallback) {
-        this.errorCb = callback;
-
+    postPerformanceEvent(customAccessToken: ?string, performanceData: LivePerformanceData) {
         if (config.EVENTS_URL) {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
-            } else {
-                this.errorCb(new Error(AUTH_ERR_MSG));
             }
         }
     }
@@ -448,11 +442,7 @@ export class PerformanceEvent extends TelemetryEvent {
             assert(typeof attribute.value === 'string');
         }
 
-        this.postEvent(timestamp, additionalPayload, (err) => {
-            if (err) {
-                this.errorCb(err);
-            }
-        }, customAccessToken);
+        this.postEvent(timestamp, additionalPayload, () => {}, customAccessToken);
     }
 }
 
@@ -653,7 +643,7 @@ const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
 
 const performanceEvent_ = new PerformanceEvent();
-export const postPerformanceEvent: (?string, LivePerformanceData, EventCallback) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
+export const postPerformanceEvent: (?string, LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();
 export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);

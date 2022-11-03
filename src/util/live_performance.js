@@ -100,7 +100,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const metrics = {counters: [], metadata: [], attributes: []};
 
     const addMetric = (arr, name, value) => {
-        if (value) {
+        if (value !== undefined) {
             arr.push({name, value: value.toString()});
         }
     };
@@ -120,14 +120,14 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
     addMetric(metrics.metadata, "connectionEffectiveType", connection ? connection.effectiveType : undefined);
-    addMetric(metrics.metadata, "cpuCores", window.navigator.hardwareConcurrency);
-    addMetric(metrics.metadata, "userAgent", window.navigator.userAgent);
-    addMetric(metrics.metadata, "screenWidth", window.screen.width * devicePixelRatio);
-    addMetric(metrics.metadata, "screenHeight", window.screen.height * devicePixelRatio);
-    addMetric(metrics.metadata, "windowWidth", window.innerWidth * devicePixelRatio);
-    addMetric(metrics.metadata, "windowHeight", window.innerHeight * devicePixelRatio);
-    addMetric(metrics.metadata, "mapWidth", data.width);
-    addMetric(metrics.metadata, "mapHeight", data.height);
+    addMetric(metrics.metadata, "navigatorHardwareConcurrency", window.navigator.hardwareConcurrency);
+    addMetric(metrics.metadata, "navigatorUserAgent", window.navigator.userAgent);
+    addMetric(metrics.metadata, "screenWidth", window.screen.width);
+    addMetric(metrics.metadata, "screenHeight", window.screen.height);
+    addMetric(metrics.metadata, "windowWidth", window.innerWidth);
+    addMetric(metrics.metadata, "windowHeight", window.innerHeight);
+    addMetric(metrics.metadata, "mapWidth", data.width / devicePixelRatio);
+    addMetric(metrics.metadata, "mapHeight", data.height / devicePixelRatio);
     addMetric(metrics.metadata, "webglRenderer", data.renderer);
     addMetric(metrics.metadata, "webglVendor", data.vendor);
     addMetric(metrics.metadata, "sdkVersion", sdkVersion);

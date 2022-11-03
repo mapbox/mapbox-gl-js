@@ -503,7 +503,7 @@ test("mapbox", (t) => {
                 height: 100,
                 interactionRange: [0, 0],
                 projection: 'mercator'
-            }, () => {});
+            });
 
             const reqBody = window.server.requests[0].requestBody;
             const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
@@ -521,7 +521,7 @@ test("mapbox", (t) => {
                 height: 100,
                 interactionRange: [0, 0],
                 projection: 'mercator'
-            }, () => {});
+            });
 
             const reqBody = window.server.requests[0].requestBody;
             const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
@@ -539,7 +539,7 @@ test("mapbox", (t) => {
                 projection: 'mercator',
                 vendor: 'webgl vendor',
                 renderer: 'webgl renderer'
-            }, () => {});
+            });
 
             const reqBody = window.server.requests[0].requestBody;
             const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));

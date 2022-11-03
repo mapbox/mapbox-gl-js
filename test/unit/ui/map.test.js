@@ -80,7 +80,7 @@ test('Map', (t) => {
     });
 
     t.test('disablePerformanceMetricsCollection', (t) => {
-        const map = createMap(t, {enablePerformanceMetricsCollection: false});
+        const map = createMap(t, {performanceMetricsCollection: false});
         map.once('idle', () => {
             map.triggerRepaint();
             map.once('idle', () => {

@@ -160,7 +160,7 @@ const defaultOptions = {
     touchZoomRotate: true,
     touchPitch: true,
     cooperativeGestures: false,
-    enablePerformanceMetricsCollection: true,
+    performanceMetricsCollection: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
@@ -250,7 +250,7 @@ const defaultOptions = {
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler}.
  * @param {boolean} [options.cooperativeGestures] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map. Touch pitch will require three fingers to activate if enabled.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
- * @param {boolean} [options.enablePerformanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
+ * @param {boolean} [options.performanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
  * @param {LngLatLike} [options.center=[0, 0]] The initial geographical [centerpoint](https://docs.mapbox.com/help/glossary/camera#center) of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial [zoom](https://docs.mapbox.com/help/glossary/camera#zoom) level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial [bearing](https://docs.mapbox.com/help/glossary/camera#bearing) (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -392,7 +392,7 @@ class Map extends Camera {
     _language: ?string | ?string[];
     _worldview: ?string;
     _interactionRange: [number, number];
-    _enablePerformanceMetricsCollection: boolean;
+    _performanceMetricsCollection: boolean;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -504,7 +504,7 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
-        this._enablePerformanceMetricsCollection = options.enablePerformanceMetricsCollection;
+        this._performanceMetricsCollection = options.performanceMetricsCollection;
         this._containerWidth = 0;
         this._containerHeight = 0;
 
@@ -3281,7 +3281,7 @@ class Map extends Camera {
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
             // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
-            if (this._enablePerformanceMetricsCollection) {
+            if (this._performanceMetricsCollection) {
                 postPerformanceEvent(this._requestManager._customAccessToken, {
                     width: this.painter.width,
                     height: this.painter.height,
@@ -3291,7 +3291,7 @@ class Map extends Camera {
                     projection: this.painter.transform.projection,
                     renderer: this.painter.context.renderer,
                     vendor: this.painter.context.vendor
-                }, () => {});
+                });
             }
             this._authenticate();
             PerformanceUtils.mark(PerformanceMarkers.fullLoad);

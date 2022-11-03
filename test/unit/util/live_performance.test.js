@@ -107,7 +107,7 @@ test('LivePerformance', (t) => {
         const metrics = getLivePerformanceMetrics({
             width: 100,
             height: 50,
-            interactionRange: [0, 0],
+            interactionRange: [Infinity, -Infinity],
             projection: 'mercator',
             vendor: 'webgl vendor',
             renderer: 'webgl renderer'
@@ -128,11 +128,13 @@ test('LivePerformance', (t) => {
         ]);
         t.deepEqual(metrics.metadata, [
             {name: 'devicePixelRatio', value: '1'},
-            {name: 'cpuCores', value: window.navigator.hardwareConcurrency.toString()},
+            {name: 'navigatorHardwareConcurrency', value: window.navigator.hardwareConcurrency.toString()},
             {
-                name: 'userAgent',
+                name: 'navigatorUserAgent',
                 value: window.navigator.userAgent
             },
+            {name: 'screenWidth', value: window.screen.width.toString()},
+            {name: 'screenHeight', value: window.screen.height.toString()},
             {name: 'windowWidth', value: '1024'},
             {name: 'windowHeight', value: '768'},
             {name: 'mapWidth', value: '100'},
