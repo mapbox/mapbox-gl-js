@@ -84,7 +84,7 @@ function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
             if (isMapboxHTTPStyleURL(url)) {
                 const split = url.split('/').slice(-2);
                 if (split.length === 2) {
-                    return `${split[0]}:${split[1]}`;
+                    return `mapbox://styles/${split[0]}/${split[1]}`;
                 }
             }
         }

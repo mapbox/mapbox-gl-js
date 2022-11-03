@@ -145,7 +145,7 @@ test('LivePerformance', (t) => {
             {name: 'sdkIdentifier', value: 'mapbox-gl-js'}
         ]);
         t.deepEqual(metrics.attributes, [
-            {name: 'style', value: 'mapbox:streets-v11'},
+            {name: 'style', value: 'mapbox://styles/mapbox/streets-v11'},
             {name: 'terrainEnabled', value: 'false'},
             {name: 'fogEnabled', value: 'false'}
         ]);
