@@ -6,7 +6,7 @@ import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
+import {RequestManager, getMapSessionAPI, postPerformanceEvent, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
@@ -25,7 +25,8 @@ import {Event, ErrorEvent} from '../util/evented.js';
 import {MapMouseEvent} from './events.js';
 import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
-import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
+import {PerformanceUtils} from '../util/performance.js';
+import {PerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
 import Marker from '../ui/marker.js';
 import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
@@ -160,6 +161,7 @@ const defaultOptions = {
     touchZoomRotate: true,
     touchPitch: true,
     cooperativeGestures: false,
+    performanceMetricsCollection: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
@@ -249,6 +251,7 @@ const defaultOptions = {
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler}.
  * @param {boolean} [options.cooperativeGestures] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map. Touch pitch will require three fingers to activate if enabled.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
+ * @param {boolean} [options.performanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
  * @param {LngLatLike} [options.center=[0, 0]] The initial geographical [centerpoint](https://docs.mapbox.com/help/glossary/camera#center) of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial [zoom](https://docs.mapbox.com/help/glossary/camera#zoom) level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial [bearing](https://docs.mapbox.com/help/glossary/camera#bearing) (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
@@ -389,6 +392,8 @@ class Map extends Camera {
     _containerHeight: number;
     _language: ?string | ?string[];
     _worldview: ?string;
+    _interactionRange: [number, number];
+    _performanceMetricsCollection: boolean;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -445,7 +450,7 @@ class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {
-        PerformanceUtils.mark(PerformanceMarkers.create);
+        LivePerformanceUtils.mark(PerformanceMarkers.create);
 
         options = extend({}, defaultOptions, options);
 
@@ -500,12 +505,15 @@ class Map extends Camera {
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
+        this._performanceMetricsCollection = options.performanceMetricsCollection;
         this._containerWidth = 0;
         this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
+
+        this._interactionRange = [+Infinity, -Infinity];
 
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
@@ -3087,6 +3095,11 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
+        if (this.isMoving() || this.isRotating() || this.isZooming()) {
+            this._interactionRange[0] = Math.min(this._interactionRange[0], window.performance.now());
+            this._interactionRange[1] = Math.max(this._interactionRange[1], window.performance.now());
+        }
+
         this._renderTaskQueue.run(paintStartTimeStamp);
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
@@ -3268,9 +3281,22 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
-            // Following line is billing related code. Do not change. See LICENSE.txt
+            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
+            // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
+            if (this._performanceMetricsCollection) {
+                postPerformanceEvent(this._requestManager._customAccessToken, {
+                    width: this.painter.width,
+                    height: this.painter.height,
+                    interactionRange: this._interactionRange,
+                    terrainEnabled: !!this.painter.style.getTerrain(),
+                    fogEnabled: !!this.painter.style.getFog(),
+                    projection: this.painter.transform.projection,
+                    zoom: this.transform.zoom,
+                    renderer: this.painter.context.renderer,
+                    vendor: this.painter.context.vendor
+                });
+            }
             this._authenticate();
-            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
     }
 

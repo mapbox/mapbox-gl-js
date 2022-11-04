@@ -1,6 +1,10 @@
 // @flow
 
 import window from '../util/window.js';
+import {
+    PerformanceMarkers,
+    LivePerformanceUtils
+} from '../util/live_performance.js';
 const performance = window.performance;
 
 performance.mark('library-evaluate');
@@ -26,25 +30,19 @@ export type PerformanceMetrics = {
 
 export type PerformanceMark = {mark: string, name: string};
 
-export const PerformanceMarkers = {
-    create: 'create',
-    load: 'load',
-    fullLoad: 'fullLoad'
-};
-
 let fullLoadFinished = false;
 let placementTime = 0;
 
 export const PerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
-        performance.mark(marker);
+        LivePerformanceUtils.mark(marker);
 
         if (marker === PerformanceMarkers.fullLoad) {
             fullLoadFinished = true;
         }
     },
     measure(name: string, begin?: string, end?: string) {
-        performance.measure(name, begin, end);
+        LivePerformanceUtils.measure(name, begin, end);
     },
     beginMeasure(name: string): PerformanceMark {
         const mark = name;

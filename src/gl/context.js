@@ -60,12 +60,15 @@ class Context {
     pixelStoreUnpack: PixelStoreUnpack;
     pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
     pixelStoreUnpackFlipY: PixelStoreUnpackFlipY;
+    renderer: ?string;
+    vendor: ?string;
 
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
     extRenderToTextureHalfFloat: any;
     extStandardDerivatives: any;
+    extDebugRendererInfo: any;
     extTimerQuery: any;
 
     extTextureFilterAnisotropicForceOff: boolean;
@@ -117,6 +120,12 @@ class Context {
         }
         this.extTextureFilterAnisotropicForceOff = false;
         this.extStandardDerivativesForceOff = false;
+
+        this.extDebugRendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (this.extDebugRendererInfo) {
+            this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
+            this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
+        }
 
         this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (this.extTextureHalfFloat) {
