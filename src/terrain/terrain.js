@@ -322,7 +322,7 @@ export class Terrain extends Elevation {
             }
 
             updateSourceCache();
-            // Camera, when zooming, gets constrained over terrain. Issue constrainCameraOverTerrain = true
+            // Camera gets constrained over terrain. Issue constrainCameraOverTerrain = true
             // here to cover potential under terrain situation on data, style, or other camera changes.
             transform.updateElevation(true, isDragging);
 

@@ -322,7 +322,7 @@ class HandlerManager {
         return !!isMoving(this._eventsInProgress) || this.isZooming();
     }
 
-    isDragging(): boolean {
+    _isDragging(): boolean {
         return !!this._eventsInProgress.drag;
     }
 
@@ -484,13 +484,6 @@ class HandlerManager {
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
-        if (tr._isCameraConstrained && (eventStarted("zoom") || eventEnded("zoom") || this._eventsInProgress["zoom"] || eventStarted("drag"))) {
-            map.stop(true);
-            //this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
-            tr._isCameraConstrained = false;
-            return;
-        }
-
         const toVec3 = (p: MercatorCoordinate): Vec3 => [p.x, p.y, p.z];
 
         if (eventEnded("drag") && !hasChange(combinedResult)) {
@@ -508,6 +501,11 @@ class HandlerManager {
         }
 
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
+
+        if (tr._isCameraConstrained && zoomDelta > 0) {
+            tr._isCameraConstrained = false;
+            zoomDelta = 0;
+        }
 
         if (pinchAround !== undefined) {
             around = pinchAround;
@@ -569,7 +567,7 @@ class HandlerManager {
         if (zoomDelta) {
             // Zoom value has to be computed relative to a secondary map plane that is created from the terrain position below the cursor.
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
-            const pickedPosition: Vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
+            let pickedPosition: Vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
 
             const aroundRay = {dir: vec3.normalize([], vec3.sub([], pickedPosition, tr._camera.position))};
             if (aroundRay.dir[2] < 0) {
@@ -591,6 +589,7 @@ class HandlerManager {
 
         tr.cameraElevationReference = "ground";
 
+        tr._isCameraConstrained = false;
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);

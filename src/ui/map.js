@@ -1340,8 +1340,8 @@ class Map extends Camera {
         return this._rotating || (this.handlers && this.handlers.isRotating()) || false;
     }
 
-    isDragging(): boolean {
-        return this.handlers && this.handlers.isDragging();
+    _isDragging(): boolean {
+        return this.handlers && this.handlers._isDragging();
     }
 
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
@@ -3396,7 +3396,7 @@ class Map extends Camera {
     _updateTerrain() {
         // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before
         // render (and deferred update after zoom recalculation), this needs to be called when removing terrain source.
-        this.painter.updateTerrain(this.style, this.isDragging());
+        this.painter.updateTerrain(this.style, this._isDragging());
     }
 
     _calculateSpeedIndex(): number {
