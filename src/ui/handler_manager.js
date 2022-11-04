@@ -583,7 +583,7 @@ class HandlerManager {
         const translation = vec3.add(panVec, panVec, zoomVec);
         tr._translateCameraConstrained(translation);
 
-        if (Math.abs(tr.zoom - originalZoom) > 0.0001) {
+        if (zoomDelta && Math.abs(tr.zoom - originalZoom) > 0.0001) {
             tr.recenterOnTerrain();
         }
 
