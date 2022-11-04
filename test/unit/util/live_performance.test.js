@@ -52,7 +52,7 @@ test('LivePerformance', (t) => {
                         "startTime": 112120.10000002384,
                         "duration": 0
                     }
-                ]
+                ];
             } else if (type === 'resource') {
                 return [
                     {
