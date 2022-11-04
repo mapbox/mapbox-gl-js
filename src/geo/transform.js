@@ -1600,7 +1600,7 @@ class Transform {
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
 
-        const minHeight = this._minimumHeightOverTerrain();
+        const minHeight = this._minimumHeightOverTerrain() * Math.cos(degToRad(this._maxPitch));
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
@@ -1974,10 +1974,10 @@ class Transform {
 
     _minimumHeightOverTerrain(): number {
         // Determine minimum height for the camera over the terrain related to current zoom.
-        // Values above 4 allow max-pitch camera closer to e.g. top of the hill, exposing
+        // Values above 2 allow max-pitch camera closer to e.g. top of the hill, exposing
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
-        const MAX_DRAPE_OVERZOOM = 4;
+        const MAX_DRAPE_OVERZOOM = 2;
         const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
         return this._mercatorZfromZoom(zoom);
     }
