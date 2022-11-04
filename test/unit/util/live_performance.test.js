@@ -14,7 +14,46 @@ test('LivePerformance', (t) => {
 
     t.test('getLivePerformanceMetrics', (t) => {
         window.performance.getEntriesByType = (type) => {
-            if (type === 'resource') {
+            if (type === 'mark') {
+                return [
+                    {
+                        "name": "library-evaluate",
+                        "entryType": "mark",
+                        "startTime": 664.9000000357628,
+                        "duration": 0
+                    },
+                    {
+                        "name": "create",
+                        "entryType": "mark",
+                        "startTime": 716.6000000238419,
+                        "duration": 0
+                    },
+                    {
+                        "name": "frame",
+                        "entryType": "mark",
+                        "startTime": 741,
+                        "duration": 0
+                    },
+                    {
+                        "name": "render",
+                        "entryType": "mark",
+                        "startTime": 741.1999999880791,
+                        "duration": 0
+                    },
+                    {
+                        "name": "load",
+                        "entryType": "mark",
+                        "startTime": 2076.900000035763,
+                        "duration": 0
+                    },
+                    {
+                        "name": "fullLoad",
+                        "entryType": "mark",
+                        "startTime": 112120.10000002384,
+                        "duration": 0
+                    }
+                ]
+            } else if (type === 'resource') {
                 return [
                     {
                         "name": "https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css",
@@ -110,21 +149,31 @@ test('LivePerformance', (t) => {
             interactionRange: [Infinity, -Infinity],
             projection: 'mercator',
             vendor: 'webgl vendor',
-            renderer: 'webgl renderer'
+            renderer: 'webgl renderer',
+            zoom: 5
         });
         t.deepEqual(metrics.counters, [
-            {name: 'cssTransferStart', value: '25'},
-            {name: 'cssTransferEnd', value: '52'},
-            {name: 'javascriptTransferStart', value: '25'},
-            {name: 'javascriptTransferEnd', value: '417'},
-            {name: 'styleTransferStart', value: '784'},
-            {name: 'styleTransferEnd', value: '795'},
-            {name: 'tilejsonTransferStart', value: '809'},
-            {name: 'tilejsonTransferEnd', value: '870'},
-            {name: 'spriteTransferStart', value: '810'},
-            {name: 'spriteTransferEnd', value: '900'},
-            {name: 'fontTransferStart', value: '1509.5'},
-            {name: 'fontTransferEnd', value: '1544.5'}
+            {name: 'cssResolveRangeMin', value: '25'},
+            {name: 'cssResolveRangeMax', value: '52'},
+            {name: 'cssRequestCount', value: '1'},
+            {name: 'javascriptResolveRangeMin', value: '25'},
+            {name: 'javascriptResolveRangeMax', value: '417'},
+            {name: 'javascriptRequestCount', value: '1'},
+            {name: 'styleResolveRangeMin', value: '784'},
+            {name: 'styleResolveRangeMax', value: '795'},
+            {name: 'styleRequestCount', value: '1'},
+            {name: 'tilejsonResolveRangeMin', value: '809'},
+            {name: 'tilejsonResolveRangeMax', value: '870'},
+            {name: 'tilejsonRequestCount', value: '1'},
+            {name: 'spriteResolveRangeMin', value: '810'},
+            {name: 'spriteResolveRangeMax', value: '900'},
+            {name: 'spriteRequestCount', value: '2'},
+            {name: 'fontRangeResolveRangeMin', value: '1509.5'},
+            {name: 'fontRangeResolveRangeMax', value: '1544.5'},
+            {name: 'fontRangeRequestCount', value: '5'},
+            {name: 'create', value: '716.6000000238419'},
+            {name: 'load', value: '2076.900000035763'},
+            {name: 'fullLoad', value: '112120.10000002384'},
         ]);
         t.deepEqual(metrics.metadata, [
             {name: 'devicePixelRatio', value: '1'},
@@ -146,7 +195,8 @@ test('LivePerformance', (t) => {
         t.deepEqual(metrics.attributes, [
             {name: 'style', value: 'mapbox://styles/mapbox/streets-v11'},
             {name: 'terrainEnabled', value: 'false'},
-            {name: 'fogEnabled', value: 'false'}
+            {name: 'fogEnabled', value: 'false'},
+            {name: 'zoom', value: '5'}
         ]);
         t.end();
     });

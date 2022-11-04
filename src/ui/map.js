@@ -25,7 +25,8 @@ import {Event, ErrorEvent} from '../util/evented.js';
 import {MapMouseEvent} from './events.js';
 import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
-import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
+import {PerformanceUtils} from '../util/performance.js';
+import {PerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
 import Marker from '../ui/marker.js';
 import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
@@ -449,7 +450,7 @@ class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {
-        PerformanceUtils.mark(PerformanceMarkers.create);
+        LivePerformanceUtils.mark(PerformanceMarkers.create);
 
         options = extend({}, defaultOptions, options);
 
@@ -3289,12 +3290,13 @@ class Map extends Camera {
                     terrainEnabled: !!this.painter.style.getTerrain(),
                     fogEnabled: !!this.painter.style.getFog(),
                     projection: this.painter.transform.projection,
+                    zoom: this.transform.zoom,
                     renderer: this.painter.context.renderer,
                     vendor: this.painter.context.vendor
                 });
             }
             this._authenticate();
-            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
+            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
     }
 

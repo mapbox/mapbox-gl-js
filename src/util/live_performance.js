@@ -23,8 +23,24 @@ export type LivePerformanceData = {
     terrainEnabled: boolean,
     fogEnabled: boolean,
     projection: Projection,
+    zoom: number,
     renderer: ?string,
     vendor: ?string
+};
+
+export const PerformanceMarkers = {
+    create: 'create',
+    load: 'load',
+    fullLoad: 'fullLoad'
+};
+
+export const LivePerformanceUtils = {
+    mark(marker: $Keys<typeof PerformanceMarkers>) {
+        window.performance.mark(marker);
+    },
+    measure(name: string, begin?: string, end?: string) {
+        window.performance.measure(name, begin, end);
+    }
 };
 
 function categorize(arr, fn) {
@@ -41,19 +57,25 @@ function categorize(arr, fn) {
     return obj;
 }
 
-function getTransferRangePerResourceType(resourceTimers) {
+function getCountersPerResourceType(resourceTimers) {
     const obj = {};
     if (resourceTimers) {
         for (const category in resourceTimers) {
             if (category !== 'other') {
                 for (const timer of resourceTimers[category]) {
-                    const min = `${category}TransferStart`;
-                    const max = `${category}TransferEnd`;
+                    const req = `${category}RequestCount`;
+                    const min = `${category}ResolveRangeMin`;
+                    const max = `${category}ResolveRangeMax`;
 
                     // Resource -TransferStart and -TransferEnd represent the wall time
                     // between the start of a request to when the data is available
                     obj[min] = Math.min(obj[min] || +Infinity, timer.startTime);
                     obj[max] = Math.max(obj[max] || -Infinity, timer.responseEnd);
+
+                    if (obj[req] === undefined) {
+                        obj[req] = 0;
+                    }
+                    ++obj[req];
                 }
             }
         }
@@ -69,7 +91,7 @@ function getResourceCategory(entry: PerformanceResourceTiming): string {
     if (url.includes('mapbox-gl.js')) return 'javascript';
     if (url.includes('mapbox-gl.css')) return 'css';
 
-    if (isMapboxHTTPFontsURL(url)) return 'font';
+    if (isMapboxHTTPFontsURL(url)) return 'fontRange';
     if (isMapboxHTTPSpriteURL(url)) return 'sprite';
     if (isMapboxHTTPStyleURL(url)) return 'style';
     if (isMapboxHTTPTileJSONURL(url)) return 'tilejson';
@@ -93,14 +115,15 @@ function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
 
 export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerformanceMetrics {
     const resourceTimers = window.performance.getEntriesByType('resource');
+    const markerTimers = window.performance.getEntriesByType('mark');
     const resourcesByType = categorize(resourceTimers, getResourceCategory);
-    const counters = getTransferRangePerResourceType(resourcesByType);
+    const counters = getCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
     const metrics = {counters: [], metadata: [], attributes: []};
 
     const addMetric = (arr, name, value) => {
-        if (value !== undefined) {
+        if (value !== undefined && value !== null) {
             arr.push({name, value: value.toString()});
         }
     };
@@ -112,11 +135,21 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
         addMetric(metrics.counters, "interactionRangeMin", data.interactionRange[0]);
         addMetric(metrics.counters, "interactionRangeMax", data.interactionRange[1]);
     }
+    if (markerTimers) {
+        for (const marker of Object.keys(PerformanceMarkers)) {
+            const markerName = PerformanceMarkers[marker];
+            const markerTimer = markerTimers.find((entry) => entry.name === markerName);
+            if (markerTimer) {
+                addMetric(metrics.counters, markerName, markerTimer.startTime);
+            }
+        }
+    }
 
     addMetric(metrics.attributes, "style", getStyle(resourceTimers));
     addMetric(metrics.attributes, "terrainEnabled", data.terrainEnabled ? "true" : "false");
     addMetric(metrics.attributes, "fogEnabled", data.fogEnabled ? "true" : "false");
     addMetric(metrics.attributes, "projection", data.projection.name);
+    addMetric(metrics.attributes, "zoom", data.zoom);
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
     addMetric(metrics.metadata, "connectionEffectiveType", connection ? connection.effectiveType : undefined);
