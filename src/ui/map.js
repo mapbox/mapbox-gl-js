@@ -3281,6 +3281,7 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
+            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
             // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
             if (this._performanceMetricsCollection) {
                 postPerformanceEvent(this._requestManager._customAccessToken, {
@@ -3296,7 +3297,6 @@ class Map extends Camera {
                 });
             }
             this._authenticate();
-            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
     }
 
