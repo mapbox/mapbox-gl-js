@@ -69,10 +69,14 @@ workflows:
             tags:
               only: /.*/
       - test-render-macos-chrome:
+          requires:
+            - prepare
           filters:
             tags:
               only: /.*/
       - test-render-windows-chrome:
+          requires:
+            - prepare
           filters:
             tags:
               only: /.*/
