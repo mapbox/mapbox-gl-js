@@ -5,14 +5,14 @@ uniform sampler2D u_image;
 varying vec2 v_pos;
 
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp vec4 pattern_to
+#pragma mapbox: define lowp vec4 pattern
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize mediump vec4 pattern_to
+    #pragma mapbox: initialize mediump vec4 pattern
 
-    vec2 pattern_tl = pattern_to.xy;
-    vec2 pattern_br = pattern_to.zw;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);

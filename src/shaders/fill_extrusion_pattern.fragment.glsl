@@ -12,17 +12,17 @@ varying vec4 v_lighting;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize lowp float base
     #pragma mapbox: initialize lowp float height
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
-    vec2 pattern_tl = pattern_to.xy;
-    vec2 pattern_br = pattern_to.zw;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);

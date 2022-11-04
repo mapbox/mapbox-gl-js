@@ -115,29 +115,29 @@ class ConstantBinder implements UniformBinder {
 
 class PatternConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
-    patternTo: ?Array<number>;
-    pixelRatioTo: number;
+    pattern: ?Array<number>;
+    pixelRatio: number;
 
     constructor(value: mixed, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
-        this.patternTo = null;
-        this.pixelRatioTo = 1;
+        this.pattern = null;
+        this.pixelRatio = 1;
     }
 
     setConstantPatternPositions(posTo: SpritePosition) {
-        this.pixelRatioTo = posTo.pixelRatio || 1;
-        this.patternTo = posTo.tl.concat(posTo.br);
+        this.pixelRatio = posTo.pixelRatio || 1;
+        this.pattern = posTo.tl.concat(posTo.br);
     }
 
     setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
-            uniformName === 'u_pattern_to' || uniformName === 'u_dash_to' ? this.patternTo :
-            uniformName === 'u_pixel_ratio_to' ? this.pixelRatioTo : null;
+            uniformName === 'u_pattern' || uniformName === 'u_dash' ? this.pattern :
+            uniformName === 'u_pixel_ratio' ? this.pixelRatio : null;
         if (pos) uniform.set(program, uniformName, pos);
     }
 
     getBinding(context: Context, name: string): $Shape<Uniform<any>> {
-        return name === 'u_pattern_to' || name === 'u_dash_to' ?
+        return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
             new Uniform1f(context);
     }
@@ -618,10 +618,10 @@ const attributeNameExceptions = {
     'text-halo-width': ['halo_width'],
     'icon-halo-width': ['halo_width'],
     'line-gap-width': ['gapwidth'],
-    'line-pattern': ['pattern_to', 'pixel_ratio_to'],
-    'fill-pattern': ['pattern_to', 'pixel_ratio_to'],
-    'fill-extrusion-pattern': ['pattern_to', 'pixel_ratio_to'],
-    'line-dasharray': ['dash_to']
+    'line-pattern': ['pattern', 'pixel_ratio'],
+    'fill-pattern': ['pattern', 'pixel_ratio'],
+    'fill-extrusion-pattern': ['pattern', 'pixel_ratio'],
+    'line-dasharray': ['dash']
 };
 
 function paintAttributeNames(property, type) {

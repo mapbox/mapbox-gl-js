@@ -10,20 +10,20 @@ varying vec2 v_pos;
 varying vec2 v_pos_world;
 
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
-    vec2 pattern_tl = pattern_to.xy;
-    vec2 pattern_br = pattern_to.zw;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
 
-    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio_to;
+    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
     v_pos = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, display_size, u_tile_units_to_pixels, a_pos);
 

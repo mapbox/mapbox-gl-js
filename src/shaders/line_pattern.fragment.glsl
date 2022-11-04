@@ -10,22 +10,22 @@ varying float v_linesofar;
 varying float v_gamma_scale;
 varying float v_width;
 
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 
 void main() {
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
 
-    vec2 pattern_tl = pattern_to.xy;
-    vec2 pattern_br = pattern_to.zw;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
-    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio_to;
+    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
     vec2 pattern_size = vec2(display_size.x / u_tile_units_to_pixels, display_size.y);
 

@@ -35,17 +35,17 @@ varying vec3 v_ao;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize lowp float base
     #pragma mapbox: initialize lowp float height
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
-    vec2 pattern_tl = pattern_to.xy;
-    vec2 pattern_br = pattern_to.zw;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
     vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:
@@ -60,7 +60,7 @@ void main() {
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
     float edgedistance = a_pos_normal_ed.w;
 
-    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio_to;
+    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
     base = max(0.0, base);
     height = max(0.0, height);

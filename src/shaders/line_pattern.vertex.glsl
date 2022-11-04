@@ -27,8 +27,8 @@ varying float v_width;
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize lowp float blur
@@ -37,8 +37,8 @@ void main() {
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.

@@ -41,7 +41,7 @@ uniform float u_image_height;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash_to
+#pragma mapbox: define lowp vec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
@@ -51,7 +51,7 @@ uniform float u_image_height;
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash_to
+    #pragma mapbox: initialize lowp vec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
@@ -122,10 +122,10 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    float scale = dash_to.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash_to.z;
-    float height = dash_to.y;
+    float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
+    float height = dash.y;
 
-    v_tex = vec2(a_linesofar * scale / floorwidth, (-normal.y * height + dash_to.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / floorwidth, (-normal.y * height + dash.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2 = vec2(outset, inset);
