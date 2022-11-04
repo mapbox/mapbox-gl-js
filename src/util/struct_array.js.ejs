@@ -26,7 +26,10 @@ for (const member of members) {
 }
 
 // exceptions for which we generate accessors on the array rather than a separate struct for performance
-const useComponentGetters = StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray';
+const useComponentGetters =
+    StructArrayClass === 'GlyphOffsetArray' ||
+    StructArrayClass === 'SymbolLineVertexArray' ||
+    StructArrayClass === 'FillExtrusionCentroidArray';
 
 if (includeStructAccessors && !useComponentGetters) {
 -%>

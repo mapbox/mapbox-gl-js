@@ -1427,22 +1427,37 @@ test('Map', (t) => {
         });
 
         t.test('globe bounds', (t) => {
-            const map = createMap(t, {zoom: 0, skipCSSStub: true});
-            const mercatorBounds = map.getBounds();
+            const map = createMap(t, {zoom: 0, projection: 'globe', skipCSSStub: true});
 
+            let bounds = map.getBounds();
             t.same(
-                toFixed(mercatorBounds.toArray()),
-                toFixed([[ -70.3125000000, -57.3265212252, ], [ 70.3125000000, 57.3265212252]])
-            );
-
-            t.stub(console, 'warn');
-            map.setProjection('globe');
-            const globeBounds = map.getBounds();
-
-            t.same(
-                toFixed(globeBounds.toArray()),
+                toFixed(bounds.toArray()),
                 toFixed([[ -73.8873304141, -73.8873304141, ], [ 73.8873304141, 73.8873304141]])
             );
+
+            map.jumpTo({zoom: 0, center: [0, 90]});
+            bounds = map.getBounds();
+            t.same(bounds.getNorth(), 90);
+            t.same(
+                toFixed(bounds.toArray()),
+                toFixed([[ -180, 11.1637985859 ], [ 180, 90 ]])
+            );
+
+            map.jumpTo({zoom: 0, center: [0, -90]});
+            bounds = map.getBounds();
+            t.same(bounds.getSouth(), -90);
+            t.same(
+                toFixed(bounds.toArray()),
+                toFixed([[ -180, -90 ], [ 180, -11.1637985859]])
+            );
+
+            map.jumpTo({zoom: 2, center: [0, 45], bearing: 0, pitch: 20});
+            bounds = map.getBounds();
+            t.notSame(bounds.getNorth(), 90);
+
+            map.jumpTo({zoom: 2, center: [0, -45], bearing: 180, pitch: -20});
+            bounds = map.getBounds();
+            t.notSame(bounds.getSouth(), -90);
 
             t.end();
         });

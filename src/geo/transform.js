@@ -17,7 +17,7 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, polesInViewport, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -1390,9 +1390,15 @@ class Transform {
         processSegment(right, bottom, left, bottom);
         processSegment(left, bottom, left, top);
 
-        const ne = new LngLat(lngFromMercatorX(maxX), latFromMercatorY(minY));
-        const sw = new LngLat(lngFromMercatorX(minX), latFromMercatorY(maxY));
-        return new LngLatBounds(sw, ne);
+        const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
+        const poleIsVisible = northPoleIsVisible || southPoleIsVisible;
+
+        const north = northPoleIsVisible ? 90 : latFromMercatorY(minY);
+        const east = poleIsVisible ? 180 : lngFromMercatorX(maxX);
+        const south = southPoleIsVisible ? -90 : latFromMercatorY(maxY);
+        const west = poleIsVisible ? -180 : lngFromMercatorX(minX);
+
+        return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
     _getBounds(min: number, max: number): LngLatBounds {

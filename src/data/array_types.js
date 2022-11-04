@@ -978,39 +978,6 @@ class StructArrayLayout2f8 extends StructArray {
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register(StructArrayLayout2f8, 'StructArrayLayout2f8');
 
-class FillExtrusionExtStruct extends Struct {
-    _structArray: FillExtrusionExtArray;
-    get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
-    get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
-}
-
-FillExtrusionExtStruct.prototype.size = 12;
-
-export type FillExtrusionExt = FillExtrusionExtStruct;
-
-/**
- * @private
- */
-export class FillExtrusionExtArray extends StructArrayLayout6i12 {
-    /**
-     * Return the FillExtrusionExtStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): FillExtrusionExtStruct {
-        assert(!this.isTransferred);
-        assert(index >= 0);
-        assert(index < this.length);
-        return new FillExtrusionExtStruct(this, index);
-    }
-}
-
-register(FillExtrusionExtArray, 'FillExtrusionExtArray');
-
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1212,67 +1179,15 @@ export class FeatureIndexArray extends StructArrayLayout1ul3ui12 {
 
 register(FeatureIndexArray, 'FeatureIndexArray');
 
-class FillExtrusionCentroidStruct extends Struct {
-    _structArray: FillExtrusionCentroidArray;
-    get a_centroid_pos0(): number { return this._structArray.uint16[this._pos2 + 0]; }
-    get a_centroid_pos1(): number { return this._structArray.uint16[this._pos2 + 1]; }
-}
-
-FillExtrusionCentroidStruct.prototype.size = 4;
-
-export type FillExtrusionCentroid = FillExtrusionCentroidStruct;
-
 /**
  * @private
  */
 export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
-    /**
-     * Return the FillExtrusionCentroidStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): FillExtrusionCentroidStruct {
-        assert(!this.isTransferred);
-        assert(index >= 0);
-        assert(index < this.length);
-        return new FillExtrusionCentroidStruct(this, index);
-    }
+    geta_centroid_pos0(index: number): number { return this.uint16[index * 2 + 0]; }
+    geta_centroid_pos1(index: number): number { return this.uint16[index * 2 + 1]; }
 }
 
 register(FillExtrusionCentroidArray, 'FillExtrusionCentroidArray');
-
-class CircleGlobeExtStruct extends Struct {
-    _structArray: CircleGlobeExtArray;
-    get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
-    get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
-}
-
-CircleGlobeExtStruct.prototype.size = 12;
-
-export type CircleGlobeExt = CircleGlobeExtStruct;
-
-/**
- * @private
- */
-export class CircleGlobeExtArray extends StructArrayLayout6i12 {
-    /**
-     * Return the CircleGlobeExtStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): CircleGlobeExtStruct {
-        assert(!this.isTransferred);
-        assert(index >= 0);
-        assert(index < this.length);
-        return new CircleGlobeExtStruct(this, index);
-    }
-}
-
-register(CircleGlobeExtArray, 'CircleGlobeExtArray');
 
 export {
     StructArrayLayout2i4,
@@ -1311,6 +1226,7 @@ export {
     StructArrayLayout4f16 as LineExtLayoutArray,
     StructArrayLayout5ui10 as PatternLayoutArray,
     StructArrayLayout4ui8 as DashLayoutArray,
+    StructArrayLayout6i12 as FillExtrusionExtArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3i3f20 as SymbolGlobeExtArray,
     StructArrayLayout4f16 as SymbolDynamicLayoutArray,
@@ -1326,5 +1242,6 @@ export {
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,
     StructArrayLayout3f12 as SkyboxVertexArray,
-    StructArrayLayout4i8 as TileBoundsArray
+    StructArrayLayout4i8 as TileBoundsArray,
+    StructArrayLayout6i12 as CircleGlobeExtArray
 };

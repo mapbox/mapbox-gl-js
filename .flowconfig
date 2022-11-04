@@ -22,7 +22,6 @@
 .*/node_modules/fsevents/.*
 .*/node_modules/stylelint/.*
 .*/node_modules/postcss.*/.*
-.*/node_modules/documentation/.*
 .*/node_modules/module-deps/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 .*/render-tests/.*

@@ -148,7 +148,7 @@ for (const name in layoutAttributes) {
 }
 
 // Globe extension arrays
-createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt, true);
+createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt);
 
 // symbol layer specific arrays
 import {
@@ -248,7 +248,7 @@ createStructArrayLayoutType(createLayout([{
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
 
 // Globe extension arrays
-createStructArrayType('circle_globe_ext', circleGlobeAttributesExt, true);
+createStructArrayType('circle_globe_ext', circleGlobeAttributesExt);
 
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 

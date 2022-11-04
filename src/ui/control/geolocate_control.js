@@ -417,6 +417,11 @@ class GeolocateControl extends Evented {
     }
 
     _setupUI(supported: boolean) {
+        if (this._map === undefined) {
+            // This control was removed from the map before geolocation
+            // support was determined.
+            return;
+        }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
         this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container);
         DOM.create('span', `mapboxgl-ctrl-icon`, this._geolocateButton).setAttribute('aria-hidden', 'true');

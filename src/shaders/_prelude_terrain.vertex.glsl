@@ -180,7 +180,6 @@ float flatElevation(vec2 pack) {
 
     vec2 w = floor(0.5 * (span * u_meter_to_dem - 1.0));
     vec2 d = dd * w;
-    vec4 bounds = vec4(d, vec2(1.0) - d);
 
     // Get building wide sample, to get better slope estimate.
     h = fourSample(pos - d, 2.0 * d + vec2(dd));
