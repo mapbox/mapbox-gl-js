@@ -2,12 +2,6 @@
 
 ### Features ✨ and improvements 🏁
 
-* Add live performance counters ([#12343](https://github.com/mapbox/mapbox-gl-js/pull/12343))
-
-## 2.11.0-beta.1
-
-### Features ✨ and improvements 🏁
-
 * Add support for `cameraForBounds` with globe projection ([#12138](https://github.com/mapbox/mapbox-gl-js/pull/12138))
 * Add support for `fitBounds` and `fitScreenCoordinates` with globe projection ([#12211](https://github.com/mapbox/mapbox-gl-js/pull/12211))
 * Improve support for `getBounds` with globe projection. ([#12286](https://github.com/mapbox/mapbox-gl-js/pull/12286))
@@ -15,6 +9,7 @@
 * Add new marker styling option `occludedOpacity` allowing the user to set the opacity of a marker that's behind 3D terrain (h/t [jacadzaca](https://github.com/jacadzaca)) ([#12258](https://github.com/mapbox/mapbox-gl-js/pull/12258))
 * Cancel `ImageSource` image request when underlying resource is no longer used ([#12266](https://github.com/mapbox/mapbox-gl-js/pull/12266)) (h/t [maciejmatu](https://github.com/maciejmatu))
 * Add object literal support in `LngLatBounds.extend` ([#12270](https://github.com/mapbox/mapbox-gl-js/pull/12270)) (h/t [stampyzfanz](https://github.com/stampyzfanz))
+* Add live performance counters ([#12343](https://github.com/mapbox/mapbox-gl-js/pull/12343))
 
 ### Bug fixes 🐞
 
