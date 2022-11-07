@@ -1182,10 +1182,9 @@ register(GlyphOffsetArray, 'GlyphOffsetArray');
 /**
  * @private
  */
-export class SymbolLineVertexArray extends StructArrayLayout3i6 {
-    getx(index: number): number { return this.int16[index * 3 + 0]; }
-    gety(index: number): number { return this.int16[index * 3 + 1]; }
-    gettileUnitDistanceFromAnchor(index: number): number { return this.int16[index * 3 + 2]; }
+export class SymbolLineVertexArray extends StructArrayLayout2i4 {
+    getx(index: number): number { return this.int16[index * 2 + 0]; }
+    gety(index: number): number { return this.int16[index * 2 + 1]; }
 }
 
 register(SymbolLineVertexArray, 'SymbolLineVertexArray');

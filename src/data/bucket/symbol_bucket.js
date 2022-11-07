@@ -666,28 +666,11 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    addToLineVertexArray(anchor: Anchor, line: any): LineVertexRange {
+    addToLineVertexArray(anchor: Anchor, line: Array<Point>): LineVertexRange {
         const lineStartIndex = this.lineVertexArray.length;
-        const segment = anchor.segment;
-        if (segment !== undefined) {
-            let sumForwardLength = anchor.dist(line[segment + 1]);
-            let sumBackwardLength = anchor.dist(line[segment]);
-            const vertices = {};
-            for (let i = segment + 1; i < line.length; i++) {
-                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength};
-                if (i < line.length - 1) {
-                    sumForwardLength += line[i + 1].dist(line[i]);
-                }
-            }
-            for (let i = segment || 0; i >= 0; i--) {
-                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength};
-                if (i > 0) {
-                    sumBackwardLength += line[i - 1].dist(line[i]);
-                }
-            }
-            for (let i = 0; i < line.length; i++) {
-                const vertex = vertices[i];
-                this.lineVertexArray.emplaceBack(vertex.x, vertex.y, vertex.tileUnitDistanceFromAnchor);
+        if (anchor.segment !== undefined) {
+            for (const {x, y} of line) {
+                this.lineVertexArray.emplaceBack(x, y);
             }
         }
         return {
