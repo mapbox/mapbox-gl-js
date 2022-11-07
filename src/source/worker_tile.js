@@ -32,6 +32,7 @@ import type {
 } from '../source/worker_source.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type {IVectorTile} from '@mapbox/vector-tile';
 
 class WorkerTile {
     tileID: OverscaledTileID;
@@ -53,12 +54,12 @@ class WorkerTile {
     tileTransform: TileTransform;
 
     status: 'parsing' | 'done';
-    data: VectorTile;
+    data: IVectorTile;
     collisionBoxArray: CollisionBoxArray;
 
     abort: ?() => void;
     reloadCallback: ?WorkerTileCallback;
-    vectorTile: VectorTile;
+    vectorTile: IVectorTile;
 
     constructor(params: WorkerTileParameters) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
@@ -80,7 +81,7 @@ class WorkerTile {
         this.projection = params.projection;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;

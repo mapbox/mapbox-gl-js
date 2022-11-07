@@ -46,7 +46,7 @@ export default class Albers extends Projection {
         const dt = degToRad(this.center[0]) * n;
         l = wrap(l, -Math.PI - dt, Math.PI - dt);
 
-        const lng = radToDeg(l / n) + this.center[0];
+        const lng = clamp(radToDeg(l / n) + this.center[0], -180, 180);
         const phi = Math.asin(clamp((c - (x * x + r0y * r0y) * n * n) / (2 * n), -1, 1));
         const lat = clamp(radToDeg(phi), -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 

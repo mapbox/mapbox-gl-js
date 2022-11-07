@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import vt from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import {test} from '../../util/test.js';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source.js';
@@ -206,7 +206,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
 
     function loadVectorData(params, callback) {
         return callback(null, {
-            vectorTile: new vt.VectorTile(new Protobuf(rawTileData)),
+            vectorTile: new VectorTile(new Protobuf(rawTileData)),
             rawData: rawTileData,
             cacheControl: null,
             expires: null

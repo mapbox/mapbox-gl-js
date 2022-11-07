@@ -25,7 +25,7 @@ function createLine(numPoints) {
 
 test('LineBucket', (t) => {
     const layer = new LineStyleLayer({id: 'test', type: 'line'});
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
 
     const bucket = new LineBucket({layers: [layer]});
 
@@ -108,7 +108,7 @@ test('LineBucket segmentation', (t) => {
     t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
     const layer = new LineStyleLayer({id: 'test', type: 'line'});
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
 
     const bucket = new LineBucket({layers: [layer]});
 

@@ -260,7 +260,8 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
         this.orthoMatrix = mat4.create();
-        mat4.ortho(this.orthoMatrix, 0, EXTENT, 0, EXTENT, 0, 1);
+        const epsilon = this.painter.transform.projection.name === 'globe' ?  .015 : 0; // Experimentally the smallest value to avoid rendering artifacts (https://github.com/mapbox/mapbox-gl-js/issues/11975)
+        mat4.ortho(this.orthoMatrix, epsilon, EXTENT, 0, EXTENT, 0, 1);
         const gl = context.gl;
         this._overlapStencilMode = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, 0, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
         this._previousZoom = painter.transform.zoom;
@@ -395,6 +396,10 @@ export class Terrain extends Elevation {
     // Implements Elevation::_source.
     _source(): ?SourceCache {
         return this.enabled ? this.sourceCache : null;
+    }
+
+    isUsingMockSource(): boolean {
+        return this.sourceCache === this._mockSourceCache;
     }
 
     // Implements Elevation::exaggeration.
@@ -926,15 +931,12 @@ export class Terrain extends Elevation {
             }
         }
 
-        const fadingOrTransitioning = id => {
+        const isTransitioning = id => {
             const layer = this._style._layers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            const crossFade = layer.getCrossfadeParameters();
-            const isFading = !!crossFade && crossFade.t !== 1;
-            const isTransitioning = layer.hasTransition();
-            return layer.type !== 'custom' && !isHidden && (isFading || isTransitioning);
+            return layer.type !== 'custom' && !isHidden && layer.hasTransition();
         };
-        return this._style.order.some(fadingOrTransitioning);
+        return this._style.order.some(isTransitioning);
     }
 
     _clearRasterFadeFromRenderCache() {

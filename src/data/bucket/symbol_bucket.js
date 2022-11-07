@@ -33,8 +33,8 @@ import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/scrip
 import {WritingMode} from '../../symbol/shaping.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
-import mvt from '@mapbox/vector-tile';
-const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {VectorTileFeature} from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation.js';
 import Anchor from '../../symbol/anchor.js';
 import {getSizeData} from '../../symbol/symbol_size.js';
@@ -84,6 +84,7 @@ export type SingleCollisionBox = {
 };
 import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
+import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -340,7 +341,7 @@ register(CollisionBuffers, 'CollisionBuffers');
  *      `this.textCollisionBox`: Debug SymbolBuffers for text collision boxes
  *    The results are sent to the foreground for rendering
  *
- * 4. performSymbolPlacement(bucket, collisionIndex) is run on the foreground,
+ * 4. Placement.updateBucketOpacities() is run on the foreground,
  *    and uses the CollisionIndex along with current camera settings to determine
  *    which symbols can actually show on the map. Collided symbols are hidden
  *    using a dynamic "OpacityVertexArray".
@@ -519,16 +520,14 @@ class SymbolBucket implements Bucket {
 
                 // cos(11.25 degrees) = 0.98078528056
                 const cosAngleThreshold = 0.98078528056;
+                const predicate = (a, b) => {
+                    const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
+                    const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
+                    return vec3.dot(v0, v1) < cosAngleThreshold;
+                };
 
                 for (let i = 0; i < geom.length; i++) {
-                    geom[i] = resamplePred(
-                        geom[i],
-                        p => p,
-                        (a, b) => {
-                            const v0 = tileCoordToECEF(a.x, a.y, canonical, 1);
-                            const v1 = tileCoordToECEF(b.x, b.y, canonical, 1);
-                            return vec3.dot(v0, v1) < cosAngleThreshold;
-                        });
+                    geom[i] = resamplePred(geom[i], predicate);
                 }
             }
 
@@ -620,7 +619,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         if (!this.stateDependentLayers.length) return;
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
@@ -835,7 +834,7 @@ class SymbolBucket implements Bucket {
     _addIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
-            const scale = this.getSymbolInstanceIconSize(size, zoom, b);
+            const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
 
             this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ, instance);
         }
@@ -874,8 +873,8 @@ class SymbolBucket implements Bucket {
         return this.tilePixelRatio * featureSize;
     }
 
-    getSymbolInstanceIconSize(iconSize: any, zoom: number, index: number): number {
-        const symbol: any = this.icon.placedSymbolArray.get(index);
+    getSymbolInstanceIconSize(iconSize: any, zoom: number, iconIndex: number): number {
+        const symbol: any = this.icon.placedSymbolArray.get(iconIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
         return this.tilePixelRatio * featureSize;
@@ -897,10 +896,10 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number) {
+    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, symbolIndex: number) {
         for (let b = startIndex; b < endIndex; b++) {
-            const box: CollisionBox = (collisionBoxArray.get(b): any);
-            const scale = this.getSymbolInstanceIconSize(size, zoom, b);
+            const box = (collisionBoxArray.get(b));
+            const scale = this.getSymbolInstanceIconSize(size, zoom, symbolIndex);
             const array = this.iconCollisionBox.collisionVertexArrayExt;
             this._commitDebugCollisionVertexUpdate(array, scale, box.padding);
         }
@@ -921,8 +920,8 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances.get(i);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
         }
 
         if (this.hasTextCollisionBoxData() && this.textCollisionBox.collisionVertexBufferExt) {

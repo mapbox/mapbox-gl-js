@@ -655,6 +655,38 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
     return (globeTiltAtLngLat(tr, lngLat) > Math.PI / 2 * 1.01);
 }
 
+/**
+ * Check if poles are visible inside the current viewport
+ *
+ * @param {Transform} transform The current map transform.
+ * @returns {[boolean, boolean]} A tuple of booleans [northInViewport, southInViewport]
+ */
+export function polesInViewport(tr: Transform): [boolean, boolean] {
+    // Create matrix from ECEF to screen coordinates
+    const ecefToScreenMatrix = mat4.identity(new Float64Array(16));
+    mat4.multiply(ecefToScreenMatrix, tr.pixelMatrix, tr.globeMatrix);
+
+    const north = [0, GLOBE_MIN, 0];
+    const south = [0, GLOBE_MAX, 0];
+
+    // Translate the poles from ECEF to screen coordinates
+    vec3.transformMat4(north, north, ecefToScreenMatrix);
+    vec3.transformMat4(south, south, ecefToScreenMatrix);
+
+    // Check if the poles are inside the viewport and not behind the globe surface
+    const northInViewport =
+        north[0] > 0 && north[0] <= tr.width &&
+        north[1] > 0 && north[1] <= tr.height &&
+        !isLngLatBehindGlobe(tr, new LngLat(tr.center.lat, 90));
+
+    const southInViewport =
+        south[0] > 0 && south[0] <= tr.width &&
+        south[1] > 0 && south[1] <= tr.height &&
+        !isLngLatBehindGlobe(tr, new LngLat(tr.center.lat, -90));
+
+    return [northInViewport, southInViewport];
+}
+
 const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);

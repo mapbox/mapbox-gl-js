@@ -37,7 +37,7 @@ const defaultOptions: Options = {
 class ScaleControl {
     _map: Map;
     _container: HTMLElement;
-    _language: ?string;
+    _language: ?string | ?string[];
     options: Options;
 
     constructor(options: Options) {

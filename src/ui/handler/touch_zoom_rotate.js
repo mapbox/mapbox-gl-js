@@ -25,7 +25,7 @@ class TwoTouchHandler {
     }
 
     _start(points: [Point, Point]) {} //eslint-disable-line
-    _move(points: [Point, Point], pinchAround: Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
+    _move(points: [Point, Point], pinchAround: ?Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
 
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
@@ -123,7 +123,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
         this._startDistance = this._distance = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround: Point): ?HandlerResult {
+    _move(points: [Point, Point], pinchAround: ?Point): ?HandlerResult {
         const lastDistance = this._distance;
         this._distance = points[0].dist(points[1]);
         if (!this._active && Math.abs(getZoomDelta(this._distance, this._startDistance)) < ZOOM_THRESHOLD) return;
@@ -158,11 +158,11 @@ export class TouchRotateHandler extends TwoTouchHandler {
         this._minDiameter = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround: Point): ?HandlerResult {
+    _move(points: [Point, Point], pinchAround: ?Point): ?HandlerResult {
         const lastVector = this._vector;
         this._vector = points[0].sub(points[1]);
 
-        if (!this._active && this._isBelowThreshold(this._vector)) return;
+        if (!lastVector || (!this._active && this._isBelowThreshold(this._vector))) return;
         this._active = true;
 
         return {
@@ -186,7 +186,10 @@ export class TouchRotateHandler extends TwoTouchHandler {
         const circumference = Math.PI * this._minDiameter;
         const threshold = ROTATION_THRESHOLD / circumference * 360;
 
-        const bearingDeltaSinceStart = getBearingDelta(vector, this._startVector);
+        const startVector = this._startVector;
+        if (!startVector) return false;
+
+        const bearingDeltaSinceStart = getBearingDelta(vector, startVector);
         return Math.abs(bearingDeltaSinceStart) < threshold;
     }
 }
@@ -232,7 +235,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
     }
 
-    _move(points: [Point, Point], center: Point, e: TouchEvent): ?HandlerResult {
+    _move(points: [Point, Point], center: ?Point, e: TouchEvent): ?HandlerResult {
         const lastPoints = this._lastPoints;
         if (!lastPoints) return;
         const vectorA = points[0].sub(lastPoints[0]);

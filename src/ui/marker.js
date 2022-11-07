@@ -26,7 +26,8 @@ type Options = {
     clickTolerance?: number,
     rotation?: number,
     rotationAlignment?: string,
-    pitchAlignment?: string
+    pitchAlignment?: string,
+    occludedOpacity?: number
 };
 
 /**
@@ -44,6 +45,7 @@ type Options = {
  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
  * @param {string} [options.pitchAlignment='auto'] `'map'` aligns the `Marker` to the plane of the map. `'viewport'` aligns the `Marker` to the plane of the viewport. `'auto'` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
+ * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -83,6 +85,7 @@ export default class Marker extends Evented {
     _fadeTimer: ?TimeoutID;
     _updateFrameId: number;
     _updateMoving: () => void;
+    _occludedOpacity: number;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -113,6 +116,7 @@ export default class Marker extends Evented {
         this._rotationAlignment = (options && options.rotationAlignment) || 'auto';
         this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
+        this._occludedOpacity = (options && options.occludedOpacity) || 0.2;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -413,8 +417,9 @@ export default class Marker extends Evented {
 
     _behindTerrain(): boolean {
         const map = this._map;
-        if (!map) return false;
-        const unprojected = map.unproject(this._pos);
+        const pos = this._pos;
+        if (!map || !pos) return false;
+        const unprojected = map.unproject(pos);
         const camera = map.getFreeCameraOptions();
         if (!camera.position) return false;
         const cameraLngLat = camera.position.toLngLat();
@@ -441,8 +446,7 @@ export default class Marker extends Evented {
         } else {
             opacity = 1 - map._queryFogOpacity(mapLocation);
             if (map.transform._terrainEnabled() && map.getTerrain() && this._behindTerrain()) {
-                const TERRAIN_OCCLUDED_OPACITY = 0.2;
-                opacity *= TERRAIN_OCCLUDED_OPACITY;
+                opacity *= this._occludedOpacity;
             }
         }
 
@@ -608,13 +612,17 @@ export default class Marker extends Evented {
         const map = this._map;
         if (!map) return;
 
+        const startPos = this._pointerdownPos;
+        const posDelta = this._positionDelta;
+        if (!startPos || !posDelta) return;
+
         if (!this._isDragging) {
             const clickTolerance = this._clickTolerance || map._clickTolerance;
-            this._isDragging = e.point.dist(this._pointerdownPos) >= clickTolerance;
+            if (e.point.dist(startPos) < clickTolerance) return;
+            this._isDragging = true;
         }
-        if (!this._isDragging) return;
 
-        this._pos = e.point.sub(this._positionDelta);
+        this._pos = e.point.sub(posDelta);
         this._lngLat = map.unproject(this._pos);
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
@@ -682,7 +690,8 @@ export default class Marker extends Evented {
 
     _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
         const map = this._map;
-        if (!map) return;
+        const pos = this._pos;
+        if (!map || !pos) return;
 
         if (this._element.contains((e.originalEvent.target: any))) {
             e.preventDefault();
@@ -693,8 +702,7 @@ export default class Marker extends Evented {
             // to calculate the new marker position.
             // If we don't do this, the marker 'jumps' to the click position
             // creating a jarring UX effect.
-            this._positionDelta = e.point.sub(this._pos);
-
+            this._positionDelta = e.point.sub(pos);
             this._pointerdownPos = e.point;
 
             this._state = 'pending';
@@ -823,5 +831,31 @@ export default class Marker extends Evented {
             return this.getRotationAlignment();
         }
         return this._pitchAlignment;
+    }
+
+    /**
+     * Sets the `occludedOpacity` property of the marker.
+     * This opacity is used on the marker when the marker is occluded by terrain.
+     *
+     * @param {number} [opacity=0.2] Sets the `occludedOpacity` property of the marker.
+     * @returns {Marker} Returns itself to allow for method chaining.
+     * @example
+     * marker.setOccludedOpacity(0.3);
+     */
+    setOccludedOpacity(opacity: number): this {
+        this._occludedOpacity = opacity || 0.2;
+        this._update();
+        return this;
+    }
+
+    /**
+     * Returns the current `occludedOpacity` of the marker.
+     *
+     * @returns {number} The opacity of a terrain occluded marker.
+     * @example
+     * const opacity = marker.getOccludedOpacity();
+     */
+    getOccludedOpacity(): number {
+        return this._occludedOpacity;
     }
 }

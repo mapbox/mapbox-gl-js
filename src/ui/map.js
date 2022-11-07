@@ -6,7 +6,7 @@ import browser from '../util/browser.js';
 import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
-import {RequestManager, getMapSessionAPI, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
+import {RequestManager, getMapSessionAPI, postPerformanceEvent, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import Painter from '../render/painter.js';
@@ -25,8 +25,10 @@ import {Event, ErrorEvent} from '../util/evented.js';
 import {MapMouseEvent} from './events.js';
 import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
-import {PerformanceMarkers, PerformanceUtils} from '../util/performance.js';
+import {PerformanceUtils} from '../util/performance.js';
+import {PerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
 import Marker from '../ui/marker.js';
+import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
@@ -77,7 +79,7 @@ type IControl = {
     onRemove(map: Map): void;
 
     +getDefaultPosition?: () => ControlPosition;
-    +_setLanguage?: (language: ?string) => void;
+    +_setLanguage?: (language: ?string | ?string[]) => void;
 }
 /* eslint-enable no-use-before-define */
 
@@ -159,6 +161,7 @@ const defaultOptions = {
     touchZoomRotate: true,
     touchPitch: true,
     cooperativeGestures: false,
+    performanceMetricsCollection: true,
 
     bearingSnap: 7,
     clickTolerance: 3,
@@ -248,13 +251,14 @@ const defaultOptions = {
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler}.
  * @param {boolean} [options.cooperativeGestures] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map. Touch pitch will require three fingers to activate if enabled.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
+ * @param {boolean} [options.performanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
  * @param {LngLatLike} [options.center=[0, 0]] The initial geographical [centerpoint](https://docs.mapbox.com/help/glossary/camera#center) of the map. If `center` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
  * @param {number} [options.zoom=0] The initial [zoom](https://docs.mapbox.com/help/glossary/camera#zoom) level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial [bearing](https://docs.mapbox.com/help/glossary/camera#bearing) (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
  * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {'auto' | string} [options.language=null] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+ * @param {'auto' | string | string[]} [options.language=null] A string with a BCP 47 language tag, or an array of such strings representing the desired languages used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
  *   By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *   Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
  *   If a label has no translation for the selected language, it will display in the label's local language.
@@ -362,13 +366,13 @@ class Map extends Camera {
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
-    _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _markers: Array<Marker>;
+    _popups: Array<Popup>;
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
@@ -385,8 +389,10 @@ class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: ?string;
+    _language: ?string | ?string[];
     _worldview: ?string;
+    _interactionRange: [number, number];
+    _performanceMetricsCollection: boolean;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -443,7 +449,7 @@ class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     constructor(options: MapOptions) {
-        PerformanceUtils.mark(PerformanceMarkers.create);
+        LivePerformanceUtils.mark(PerformanceMarkers.create);
 
         options = extend({}, defaultOptions, options);
 
@@ -484,25 +490,28 @@ class Map extends Camera {
         this._fadeDuration = options.fadeDuration;
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
-        this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
-        this._language = options.language === 'auto' ? window.navigator.language : options.language;
+        this._language = this._parseLanguage(options.language);
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();
         this._domRenderTaskQueue = new TaskQueue();
         this._controls = [];
         this._markers = [];
+        this._popups = [];
         this._mapId = uniqueId();
         this._locale = extend({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
+        this._performanceMetricsCollection = options.performanceMetricsCollection;
         this._containerWidth = 0;
         this._containerHeight = 0;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
         this._averageElevation = new EasedVariable(0);
+
+        this._interactionRange = [+Infinity, -Infinity];
 
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
@@ -788,16 +797,14 @@ class Map extends Camera {
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      * If a padding is set on the map, the bounds returned are for the inset.
-     * This function isn't supported with globe projection.
+     * With globe projection, the smallest bounds encompassing the visible region
+     * may not precisely represent the visible region due to the earth's curvature.
      *
      * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
      * @example
      * const bounds = map.getBounds();
      */
     getBounds(): LngLatBounds | null {
-        if (this.transform.projection.name === 'globe') {
-            warnOnce('Globe projection does not support getBounds API, this API may behave unexpectedly."');
-        }
         return this.transform.getBounds();
     }
 
@@ -1049,6 +1056,9 @@ class Map extends Camera {
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean): this {
         this.transform.renderWorldCopies = renderWorldCopies;
+        if (!this.transform.renderWorldCopies) {
+            this._forceMarkerAndPopupUpdate(true);
+        }
         return this._update();
     }
 
@@ -1056,19 +1066,28 @@ class Map extends Camera {
      * Returns the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @returns {string} Returns the map's language code.
+     * @returns {undefined | string | string[]} Returns the map's language code.
      * @example
      * const language = map.getLanguage();
      */
-    getLanguage(): ?string {
+    getLanguage(): ?string | ?string[] {
         return this._language;
+    }
+
+    _parseLanguage(language?: 'auto' | ?string | ?string[]): ?string | ?string[] {
+        if (language === 'auto') return window.navigator.language;
+        if (Array.isArray(language)) return language.length === 0 ?
+            undefined :
+            language.map(l => l === 'auto' ? window.navigator.language : l);
+
+        return language;
     }
 
     /**
      * Sets the map's language, which is used for translating map labels and UI components.
      *
      * @private
-     * @param {'auto' | string} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
+     * @param {'auto' | string | string[]} [language] A string representing the desired language used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
      *  Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
      *  If a label has no translation for the selected language, it will display in the label's local language.
      *  If param is set to `auto`, GL JS will select a user's preferred language as determined by the browser's [`window.navigator.language`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) property.
@@ -1079,13 +1098,16 @@ class Map extends Camera {
      * map.setLanguage('es');
      *
      * @example
+     * map.setLanguage(['en-GB', 'en-US']);
+     *
+     * @example
      * map.setLanguage('auto');
      *
      * @example
      * map.setLanguage();
      */
-    setLanguage(language?: 'auto' | ?string): this {
-        const newLanguage = language === 'auto' ? window.navigator.language : language;
+    setLanguage(language?: 'auto' | ?string | ?string[]): this {
+        const newLanguage = this._parseLanguage(language);
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
 
@@ -1245,6 +1267,7 @@ class Map extends Camera {
                 this.style._sourceCaches[id].clearTiles();
             }
             this._update(true);
+            this._forceMarkerAndPopupUpdate(true);
         }
 
         return this;
@@ -1733,7 +1756,7 @@ class Map extends Camera {
         }
 
         options = options || {};
-        geometry = geometry || [[0, 0], [this.transform.width, this.transform.height]];
+        geometry = geometry || [([0, 0]: PointLike), ([this.transform.width, this.transform.height]: PointLike)];
 
         return this.style.queryRenderedFeatures(geometry, options, this.transform);
     }
@@ -2915,6 +2938,17 @@ class Map extends Camera {
         }
     }
 
+    _addPopup(popup: Popup) {
+        this._popups.push(popup);
+    }
+
+    _removePopup(popup: Popup) {
+        const index = this._popups.indexOf(popup);
+        if (index !== -1) {
+            this._popups.splice(index, 1);
+        }
+    }
+
     _setupPainter() {
         const attributes = extend({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
@@ -3059,6 +3093,11 @@ class Map extends Camera {
         this.painter.context.setDirty();
         this.painter.setBaseState();
 
+        if (this.isMoving() || this.isRotating() || this.isZooming()) {
+            this._interactionRange[0] = Math.min(this._interactionRange[0], window.performance.now());
+            this._interactionRange[1] = Math.max(this._interactionRange[1], window.performance.now());
+        }
+
         this._renderTaskQueue.run(paintStartTimeStamp);
         this._domRenderTaskQueue.run(paintStartTimeStamp);
         // A task queue callback may have fired a user event which may have removed the map
@@ -3066,7 +3105,6 @@ class Map extends Camera {
 
         this._updateProjectionTransition();
 
-        let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
 
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
@@ -3078,21 +3116,13 @@ class Map extends Camera {
             const zoom = this.transform.zoom;
             const pitch = this.transform.pitch;
             const now = browser.now();
-            this.style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
                 pitch,
-                zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });
-
-            const factor = parameters.crossFadingFactor();
-            if (factor !== 1 || factor !== this._crossFadingFactor) {
-                crossFading = true;
-                this._crossFadingFactor = factor;
-            }
 
             this.style.update(parameters);
         }
@@ -3114,8 +3144,8 @@ class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style._updateSources(this.transform);
-            // Update positions of markers on enabling/disabling terrain
-            this._forceMarkerUpdate();
+            // Update positions of markers and popups on enabling/disabling terrain
+            this._forceMarkerAndPopupUpdate();
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
@@ -3150,7 +3180,7 @@ class Map extends Camera {
             this.fire(new Event('load'));
         }
 
-        if (this.style && (this.style.hasTransitions() || crossFading)) {
+        if (this.style && (this.style.hasTransitions())) {
             this._styleDirty = true;
         }
 
@@ -3240,15 +3270,39 @@ class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty) {
             this._fullyLoaded = true;
-            // Following line is billing related code. Do not change. See LICENSE.txt
+            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
+            // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
+            if (this._performanceMetricsCollection) {
+                postPerformanceEvent(this._requestManager._customAccessToken, {
+                    width: this.painter.width,
+                    height: this.painter.height,
+                    interactionRange: this._interactionRange,
+                    terrainEnabled: !!this.painter.style.getTerrain(),
+                    fogEnabled: !!this.painter.style.getFog(),
+                    projection: this.painter.transform.projection,
+                    zoom: this.transform.zoom,
+                    renderer: this.painter.context.renderer,
+                    vendor: this.painter.context.vendor
+                });
+            }
             this._authenticate();
-            PerformanceUtils.mark(PerformanceMarkers.fullLoad);
         }
     }
 
-    _forceMarkerUpdate() {
+    _forceMarkerAndPopupUpdate(shouldWrap?: boolean) {
         for (const marker of this._markers) {
+            // Wrap marker location when toggling to a projection without world copies
+            if (shouldWrap && !this.getRenderWorldCopies()) {
+                marker._lngLat = marker._lngLat.wrap();
+            }
             marker._update();
+        }
+        for (const popup of this._popups) {
+            // Wrap popup location when toggling to a projection without world copies and track pointer set to false
+            if (shouldWrap && !this.getRenderWorldCopies() && !popup._trackPointer) {
+                popup._lngLat = popup._lngLat.wrap();
+            }
+            popup._update();
         }
     }
 

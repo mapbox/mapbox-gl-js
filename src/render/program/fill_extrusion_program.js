@@ -13,7 +13,6 @@ import {extend} from '../../util/util.js';
 import type Context from '../../gl/context.js';
 import type Painter from '../painter.js';
 import type {UniformValues} from '../uniform_binding.js';
-import type {CrossfadeParameters} from '../../style/evaluation_parameters.js';
 import type Tile from '../../source/tile.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import EXTENT from '../../data/extent.js';
@@ -57,8 +56,7 @@ export type FillExtrusionPatternUniformsType = {|
     'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_scale': Uniform3f,
-    'u_fade': Uniform1f,
+    'u_tile_units_to_pixels': Uniform1f,
     'u_opacity': Uniform1f
 |};
 
@@ -101,8 +99,7 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
     'u_texsize': new Uniform2f(context),
     'u_pixel_coord_upper': new Uniform2f(context),
     'u_pixel_coord_lower': new Uniform2f(context),
-    'u_scale': new Uniform3f(context),
-    'u_fade': new Uniform1f(context),
+    'u_tile_units_to_pixels': new Uniform1f(context),
     'u_opacity': new Uniform1f(context)
 });
 
@@ -171,7 +168,6 @@ const fillExtrusionPatternUniformValues = (
     aoIntensityRadius: [number, number],
     edgeRadius: number,
     coord: OverscaledTileID,
-    crossfade: CrossfadeParameters,
     tile: Tile,
     heightLift: number,
     zoomTransition: number,
@@ -184,7 +180,7 @@ const fillExtrusionPatternUniformValues = (
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };
-    return extend(uniformValues, patternUniformValues(crossfade, painter, tile), heightFactorUniform);
+    return extend(uniformValues, patternUniformValues(painter, tile), heightFactorUniform);
 };
 
 export {

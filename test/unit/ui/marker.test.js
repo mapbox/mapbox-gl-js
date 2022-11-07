@@ -425,6 +425,20 @@ test('Marker#setDraggable turns off drag functionality', (t) => {
     t.end();
 });
 
+test('Marker#setOccludedOpacity functionality', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({draggable: true, occludedOpacity: 0.8})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.getOccludedOpacity(), 0.8);
+    marker.setOccludedOpacity(0.5);
+    t.equal(marker.getOccludedOpacity(), 0.5);
+
+    map.remove();
+    t.end();
+});
+
 test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to mouse-triggered drag with map-inherited clickTolerance', (t) => {
     const map = createMap(t);
     const marker = new Marker({draggable: true})
@@ -907,6 +921,46 @@ test('Drag below / behind camera', (t) => {
 
     map.remove();
     t.end();
+});
+
+test('When toggling projections, markers update with correct position', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([12, 55])
+        .addTo(map);
+
+    map.setCenter([-179, 0]);
+    t.equal(marker.getLngLat().lng, -348);
+
+    map.setProjection('albers');
+
+    map._domRenderTaskQueue.run();
+
+    map.once('render', () => {
+        t.equal(marker.getLngLat().lng, 12);
+        map.remove();
+        t.end();
+    });
+});
+
+test('When disabling render world copies, markers update with correct position', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([12, 55])
+        .addTo(map);
+
+    map.setCenter([-179, 0]);
+    t.equal(marker.getLngLat().lng, -348);
+
+    map.setRenderWorldCopies(false);
+
+    map._domRenderTaskQueue.run();
+
+    map.once('render', () => {
+        t.equal(marker.getLngLat().lng, 12);
+        map.remove();
+        t.end();
+    });
 });
 
 test('Marker and fog', (t) => {

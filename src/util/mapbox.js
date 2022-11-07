@@ -20,10 +20,12 @@ import {createSkuToken, SKU_ID} from './sku_token.js';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util.js';
 import {postData, ResourceType, getData} from './ajax.js';
-
+import {getLivePerformanceMetrics} from '../util/live_performance.js';
+import type {LivePerformanceData} from '../util/live_performance.js';
 import type {RequestParameters} from './ajax.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {TileJSON} from '../types/tilejson.js';
+import assert from 'assert';
 
 type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
@@ -228,6 +230,22 @@ export function isMapboxHTTPURL(url: string): boolean {
     return config.API_URL_REGEX.test(url);
 }
 
+export function isMapboxHTTPStyleURL(url: string): boolean {
+    return config.API_STYLE_REGEX.test(url) && !isMapboxHTTPSpriteURL(url);
+}
+
+export function isMapboxHTTPTileJSONURL(url: string): boolean {
+    return config.API_TILEJSON_REGEX.test(url);
+}
+
+export function isMapboxHTTPSpriteURL(url: string): boolean {
+    return config.API_SPRITE_REGEX.test(url);
+}
+
+export function isMapboxHTTPFontsURL(url: string): boolean {
+    return config.API_FONTS_REGEX.test(url);
+}
+
 export function hasCacheDefeatingSku(url: string): boolean {
     return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
@@ -282,7 +300,7 @@ function parseAccessToken(accessToken: ?string) {
     }
 }
 
-type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth';
+type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance';
 
 class TelemetryEvent {
     eventData: any;
@@ -365,11 +383,7 @@ class TelemetryEvent {
 
         const payload: Object = {
             event: this.type,
-            created: new Date(timestamp).toISOString(),
-            sdkIdentifier: 'mapbox-gl-js',
-            sdkVersion,
-            skuId: SKU_ID,
-            userId: this.anonId
+            created: new Date(timestamp).toISOString()
         };
 
         const finalPayload = additionalPayload ? extend(payload, additionalPayload) : payload;
@@ -389,9 +403,46 @@ class TelemetryEvent {
         });
     }
 
-    queueRequest(event: number | {id: number, timestamp: number}, customAccessToken?: ?string) {
+    queueRequest(event: any, customAccessToken?: ?string) {
         this.queue.push(event);
         this.processRequests(customAccessToken);
+    }
+}
+
+export class PerformanceEvent extends TelemetryEvent {
+    constructor() {
+        super('gljs.performance');
+    }
+
+    postPerformanceEvent(customAccessToken: ?string, performanceData: LivePerformanceData) {
+        if (config.EVENTS_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
+            }
+        }
+    }
+
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
+
+        const {timestamp, performanceData} = this.queue.shift();
+
+        const additionalPayload = getLivePerformanceMetrics(performanceData);
+
+        // Server will only process string for these entries
+        for (const metadata of additionalPayload.metadata) {
+            assert(typeof metadata.value === 'string');
+        }
+        for (const counter of additionalPayload.counters) {
+            assert(typeof counter.value === 'string');
+        }
+        for (const attribute of additionalPayload.attributes) {
+            assert(typeof attribute.value === 'string');
+        }
+
+        this.postEvent(timestamp, additionalPayload, () => {}, customAccessToken);
     }
 }
 
@@ -434,7 +485,15 @@ export class MapLoadEvent extends TelemetryEvent {
             this.anonId = uuid();
         }
 
-        this.postEvent(timestamp, {skuToken: this.skuToken}, (err) => {
+        const additionalPayload = {
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion,
+            skuId: SKU_ID,
+            skuToken: this.skuToken,
+            userId: this.anonId
+        };
+
+        this.postEvent(timestamp, additionalPayload, (err) => {
             if (err) {
                 this.errorCb(err);
             } else {
@@ -560,7 +619,15 @@ export class TurnstileEvent extends TelemetryEvent {
             return;
         }
 
-        this.postEvent(nextUpdate, {"enabled.telemetry": false}, (err) => {
+        const additionalPayload = {
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion,
+            skuId: SKU_ID,
+            "enabled.telemetry": false,
+            userId: this.anonId
+        };
+
+        this.postEvent(nextUpdate, additionalPayload, (err) => {
             if (!err) {
                 this.eventData.lastSuccess = nextUpdate;
                 this.eventData.tokenU = tokenU;
@@ -574,6 +641,9 @@ export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?
 
 const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+
+const performanceEvent_ = new PerformanceEvent();
+export const postPerformanceEvent: (?string, LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();
 export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);

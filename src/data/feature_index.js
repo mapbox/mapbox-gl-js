@@ -8,7 +8,7 @@ import EXTENT from './extent.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import Grid from 'grid-index';
 import DictionaryCoder from '../util/dictionary_coder.js';
-import vt from '@mapbox/vector-tile';
+import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson.js';
 import {arraysIntersect, mapObject, extend} from '../util/util.js';
@@ -29,6 +29,7 @@ import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/ty
 import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
+import type {IVectorTileLayer, IVectorTileFeature} from '@mapbox/vector-tile';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
@@ -63,8 +64,8 @@ class FeatureIndex {
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
 
-    vtLayers: {[_: string]: VectorTileLayer};
-    vtFeatures: {[_: string]: VectorTileFeature[]};
+    vtLayers: {[_: string]: IVectorTileLayer};
+    vtFeatures: {[_: string]: IVectorTileFeature[]};
     sourceLayerCoder: DictionaryCoder;
 
     constructor(tileID: OverscaledTileID, promoteId?: ?PromoteIdSpecification) {
@@ -77,7 +78,7 @@ class FeatureIndex {
         this.promoteId = promoteId;
     }
 
-    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0) {
+    insert(feature: IVectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex, layoutVertexArrayOffset);
 
@@ -104,9 +105,9 @@ class FeatureIndex {
         }
     }
 
-    loadVTLayers(): {[_: string]: VectorTileLayer} {
+    loadVTLayers(): {[_: string]: IVectorTileLayer} {
         if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
+            this.vtLayers = new VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
             this.vtFeatures = {};
             for (const layer in this.vtLayers) {
@@ -156,7 +157,7 @@ class FeatureIndex {
                 styleLayers,
                 serializedLayers,
                 sourceFeatureState,
-                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number = 0) => {
+                (feature: IVectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature, this.tileID.canonical, args.tileTransform);
                     }
@@ -178,7 +179,7 @@ class FeatureIndex {
         styleLayers: {[_: string]: StyleLayer},
         serializedLayers: {[_: string]: Object},
         sourceFeatureState?: SourceFeatureState,
-        intersectionTest?: (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number) => boolean | number) {
+        intersectionTest?: (feature: IVectorTileFeature, styleLayer: StyleLayer, featureState: Object, layoutVertexArrayOffset: number) => boolean | number) {
 
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
         const layerIDs = this.bucketLayerIDs[bucketIndex];
@@ -273,7 +274,7 @@ class FeatureIndex {
         return result;
     }
 
-    loadFeature(featureIndexData: FeatureIndices): VectorTileFeature {
+    loadFeature(featureIndexData: FeatureIndices): IVectorTileFeature {
         const {featureIndex, sourceLayerIndex} = featureIndexData;
 
         this.loadVTLayers();
@@ -300,11 +301,11 @@ class FeatureIndex {
         return false;
     }
 
-    getId(feature: VectorTileFeature, sourceLayerId: string): string | number | void {
+    getId(feature: IVectorTileFeature, sourceLayerId: string): string | number | void {
         let id = feature.id;
         if (this.promoteId) {
             const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
-            id = feature.properties[propName];
+            if (propName != null) id = feature.properties[propName];
             if (typeof id === 'boolean') id =  Number(id);
         }
         return id;

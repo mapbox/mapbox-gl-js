@@ -26,7 +26,10 @@ for (const member of members) {
 }
 
 // exceptions for which we generate accessors on the array rather than a separate struct for performance
-const useComponentGetters = StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray';
+const useComponentGetters =
+    StructArrayClass === 'GlyphOffsetArray' ||
+    StructArrayClass === 'SymbolLineVertexArray' ||
+    StructArrayClass === 'FillExtrusionCentroidArray';
 
 if (includeStructAccessors && !useComponentGetters) {
 -%>
@@ -87,6 +90,8 @@ if (useComponentGetters) {
      */
     get(index: number): <%=StructTypeClass%> {
         assert(!this.isTransferred);
+        assert(index >= 0);
+        assert(index < this.length);
         return new <%=StructTypeClass%>(this, index);
     }
 <%

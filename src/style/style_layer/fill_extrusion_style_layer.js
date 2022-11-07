@@ -20,6 +20,16 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
+
+class Point3D extends Point {
+    z: number;
+
+    constructor(x: number, y: number, z: number) {
+        super(x, y);
+        this.z = z;
+    }
+}
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -54,7 +64,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
-                           feature: VectorTileFeature,
+                           feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
@@ -80,9 +90,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
             // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
             const centroidOffset = layoutVertexArrayOffset + 1;
             if (centroidOffset < centroidVertexArray.length) {
-                const centroidVertexObject = centroidVertexArray.get(centroidOffset);
-                centroid[0] = centroidVertexObject.a_centroid_pos0;
-                centroid[1] = centroidVertexObject.a_centroid_pos1;
+                centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
+                centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
             }
         }
 
@@ -99,9 +108,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         }
 
         const demSampler = terrainVisible ? elevationHelper : null;
-        const projected = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
-        const projectedBase = projected[0];
-        const projectedTop = projected[1];
+        const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
 
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
@@ -113,7 +120,7 @@ function dot(a, b) {
     return a.x * b.x + a.y * b.y;
 }
 
-export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projectedFace: Array<Point>): number {
+export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, projectedFace: Array<Point3D>): number {
 
     if (projectedQueryGeometry.length === 1) {
         // For point queries calculate the z at which the point intersects the face
@@ -176,7 +183,7 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
     }
 }
 
-function checkIntersection(projectedBase: Array<Point>, projectedTop: Array<Point>, projectedQueryGeometry: Array<Point>) {
+function checkIntersection(projectedBase: Array<Array<Point3D>>, projectedTop: Array<Array<Point3D>>, projectedQueryGeometry: Array<Point>) {
     let closestDistance = Infinity;
 
     if (polygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {
@@ -275,8 +282,8 @@ function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBa
             vec3.transformMat4(basePoint, basePoint, m);
             vec3.transformMat4(topPoint, topPoint, m);
 
-            ringBase.push(toPoint(basePoint));
-            ringTop.push(toPoint(topPoint));
+            ringBase.push(new Point3D(basePoint[0], basePoint[1], basePoint[2]));
+            ringTop.push(new Point3D(topPoint[0], topPoint[1], topPoint[2]));
         }
         projectedBase.push(ringBase);
         projectedTop.push(ringTop);
@@ -327,13 +334,8 @@ function projectExtrusion2D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             const topZ = sZ + topZZ;
             const topW = Math.max(sW + topWZ, 0.00001);
 
-            const b = new Point(baseX / baseW, baseY / baseW);
-            b.z = baseZ / baseW;
-            ringBase.push(b);
-
-            const t = new Point(topX / topW, topY / topW);
-            t.z = topZ / topW;
-            ringTop.push(t);
+            ringBase.push(new Point3D(baseX / baseW, baseY / baseW, baseZ / baseW));
+            ringTop.push(new Point3D(topX / topW, topY / topW, topZ / topW));
         }
         projectedBase.push(ringBase);
         projectedTop.push(ringTop);
@@ -369,7 +371,7 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[3] = 1;
             vec4.transformMat4(v, v, m);
             v[3] = Math.max(v[3], 0.00001);
-            const base = toPoint([v[0] / v[3], v[1] / v[3], v[2] / v[3]]);
+            const base = new Point3D(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
 
             v[0] = x;
             v[1] = y;
@@ -377,7 +379,7 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
             v[3] = 1;
             vec4.transformMat4(v, v, m);
             v[3] = Math.max(v[3], 0.00001);
-            const top = toPoint([v[0] / v[3], v[1] / v[3], v[2] / v[3]]);
+            const top = new Point3D(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
 
             ringBase.push(base);
             ringTop.push(top);
@@ -386,12 +388,6 @@ function projectExtrusion3D(geometry: Array<Array<Point>>, zBase: number, zTop: 
         projectedTop.push(ringTop);
     }
     return [projectedBase, projectedTop];
-}
-
-function toPoint(v: Vec4): Point {
-    const p = new Point(v[0], v[1]);
-    p.z = v[2];
-    return p;
 }
 
 function getTerrainHeightOffset(x: number, y: number, zBase: number, zTop: number, demSampler: DEMSampler, centroid: Vec2, exaggeration: number, lat: number): { base: number, top: number} {

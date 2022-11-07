@@ -152,6 +152,7 @@ export default class Popup extends Evented {
 
         map.on('remove', this.remove);
         this._update();
+        map._addPopup(this);
         this._focusFirstElement();
 
         if (this._trackPointer) {
@@ -228,6 +229,7 @@ export default class Popup extends Evented {
             if (map._canvasContainer) {
                 map._canvasContainer.classList.remove('mapboxgl-track-pointer');
             }
+            map._removePopup(this);
             this._map = undefined;
         }
 
@@ -685,5 +687,6 @@ function normalizeOffset(offset: Offset = new Point(0, 0), anchor: Anchor = 'bot
     }
 
     // input specifies an offset per position
+    // $FlowFixMe we know offset is an object at this point but Flow can't refine it for some reason
     return Point.convert(offset[anchor] || [0, 0]);
 }

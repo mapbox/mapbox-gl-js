@@ -113,6 +113,23 @@ export type FullCameraOptions = {
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  * @property {boolean} preloadOnly If `true`, it will trigger tiles loading across the animation path, but no animation will occur.
+ * @property {number} curve The zooming "curve" that will occur along the
+ *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+ *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
+ *     value selected by participants in the user study discussed in
+ *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+ *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+ *     value of 1 would produce a circular motion. If `minZoom` is specified, this option will be ignored.
+ * @property {number} minZoom The zero-based zoom level at the peak of the flight path. If
+ *     this option is specified, `curve` will be ignored.
+ * @property {number} speed The average speed of the animation defined in relation to
+ *     `curve`. A speed of 1.2 means that the map appears to move along the flight path
+ *     by 1.2 times `curve` screenfuls every second. A _screenful_ is the map's visible span.
+ *     It does not correspond to a fixed physical distance, but varies by zoom level.
+ * @property {number} screenSpeed The average speed of the animation measured in screenfuls
+ *     per second, assuming a linear timing curve. If `speed` is specified, this option is ignored.
+ * @property {number} maxDuration The animation's maximum duration, measured in milliseconds.
+ *     If duration exceeds maximum duration, it resets to 0.
  * @see [Example: Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
  * @see [Example: Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
  * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)

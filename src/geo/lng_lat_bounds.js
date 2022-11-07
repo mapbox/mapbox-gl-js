@@ -96,16 +96,17 @@ class LngLatBounds {
 
             if (!sw2 || !ne2) return this;
 
-        } else {
-            if (Array.isArray(obj)) {
-                if (obj.length === 4 || obj.every(Array.isArray)) {
-                    const lngLatBoundsObj = ((obj: any): LngLatBoundsLike);
-                    return this.extend(LngLatBounds.convert(lngLatBoundsObj));
-                } else {
-                    const lngLatObj = ((obj: any): LngLatLike);
-                    return this.extend(LngLat.convert(lngLatObj));
-                }
+        } else if (Array.isArray(obj)) {
+            if (obj.length === 4 || obj.every(Array.isArray)) {
+                const lngLatBoundsObj = ((obj: any): LngLatBoundsLike);
+                return this.extend(LngLatBounds.convert(lngLatBoundsObj));
+            } else {
+                const lngLatObj = ((obj: any): LngLatLike);
+                return this.extend(LngLat.convert(lngLatObj));
             }
+        } else if (typeof obj === 'object' && obj !== null && obj.hasOwnProperty("lat") && obj.hasOwnProperty("lon")) {
+            return this.extend(LngLat.convert(obj));
+        } else {
             return this;
         }
 

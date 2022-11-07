@@ -37,8 +37,9 @@ export default class QueryBox extends Benchmark {
     }
 
     bench() {
+        const p = [0, 0];
         for (const map of this.maps) {
-            map.queryRenderedFeatures({});
+            map.queryRenderedFeatures(p);
         }
     }
 

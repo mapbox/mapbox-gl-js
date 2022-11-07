@@ -19,6 +19,7 @@ import type {LayoutProps, PaintProps} from './line_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
+import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: true;
@@ -27,7 +28,6 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
             now: parameters.now,
             fadeDuration: parameters.fadeDuration,
-            zoomHistory: parameters.zoomHistory,
             transition: parameters.transition
         });
         return super.possiblyEvaluate(value, parameters);
@@ -102,7 +102,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
-                           feature: VectorTileFeature,
+                           feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,

@@ -8,8 +8,6 @@ import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
-    CrossFadedDataDrivenProperty,
-    CrossFadedProperty,
     ColorRampProperty
 } from '../properties.js';
 
@@ -44,8 +42,8 @@ export type PaintProps = {|
     "line-gap-width": DataDrivenProperty<number>,
     "line-offset": DataDrivenProperty<number>,
     "line-blur": DataDrivenProperty<number>,
-    "line-dasharray": CrossFadedDataDrivenProperty<Array<number>>,
-    "line-pattern": CrossFadedDataDrivenProperty<ResolvedImage>,
+    "line-dasharray": DataDrivenProperty<?Array<number>>,
+    "line-pattern": DataDrivenProperty<?ResolvedImage>,
     "line-gradient": ColorRampProperty,
     "line-trim-offset": DataConstantProperty<[number, number]>,
 |};
@@ -59,8 +57,8 @@ const paint: Properties<PaintProps> = new Properties({
     "line-gap-width": new DataDrivenProperty(styleSpec["paint_line"]["line-gap-width"]),
     "line-offset": new DataDrivenProperty(styleSpec["paint_line"]["line-offset"]),
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
-    "line-dasharray": new CrossFadedDataDrivenProperty(styleSpec["paint_line"]["line-dasharray"]),
-    "line-pattern": new CrossFadedDataDrivenProperty(styleSpec["paint_line"]["line-pattern"]),
+    "line-dasharray": new DataDrivenProperty(styleSpec["paint_line"]["line-dasharray"]),
+    "line-pattern": new DataDrivenProperty(styleSpec["paint_line"]["line-pattern"]),
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
     "line-trim-offset": new DataConstantProperty(styleSpec["paint_line"]["line-trim-offset"]),
 });

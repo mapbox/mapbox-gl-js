@@ -90,6 +90,7 @@ function restore(): Window {
     window.restore = restore;
 
     window.performance.getEntriesByName = function() {};
+    window.performance.getEntriesByType = function() {};
     window.performance.mark = function() {};
     window.performance.measure = function() {};
     window.performance.clearMarks = function() {};

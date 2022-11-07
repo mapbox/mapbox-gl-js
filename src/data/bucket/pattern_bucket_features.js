@@ -26,8 +26,7 @@ export function hasPattern(type: string, layers: PatternStyleLayers, options: Po
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern) {
             hasPattern = true;
-            patterns[constantPattern.to] =  true;
-            patterns[constantPattern.from] =  true;
+            patterns[constantPattern] =  true;
         }
     }
 
@@ -41,19 +40,14 @@ export function addPatternDependencies(type: string, layers: PatternStyleLayers,
 
         const patternPropertyValue = patternProperty.value;
         if (patternPropertyValue.kind !== "constant") {
-            let min = patternPropertyValue.evaluate({zoom: zoom - 1}, patternFeature, {}, options.availableImages);
-            let mid = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
-            let max = patternPropertyValue.evaluate({zoom: zoom + 1}, patternFeature, {}, options.availableImages);
-            min = min && min.name ? min.name : min;
-            mid = mid && mid.name ? mid.name : mid;
-            max = max && max.name ? max.name : max;
+            let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
+            pattern = pattern && pattern.name ? pattern.name : pattern;
+
             // add to patternDependencies
-            patterns[min] = true;
-            patterns[mid] = true;
-            patterns[max] = true;
+            patterns[pattern] = true;
 
             // save for layout
-            patternFeature.patterns[layer.id] = {min, mid, max};
+            patternFeature.patterns[layer.id] = pattern;
         }
     }
     return patternFeature;
