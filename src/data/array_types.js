@@ -184,17 +184,20 @@ register(StructArrayLayout4f16, 'StructArrayLayout4f16');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Uint16[5]
+ * [0]: Uint16[4]
+ * [8]: Float32[1]
  *
  * @private
  */
-class StructArrayLayout5ui10 extends StructArray {
+class StructArrayLayout4ui1f12 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
+    float32: Float32Array;
 
     _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
     }
 
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number): number {
@@ -204,18 +207,19 @@ class StructArrayLayout5ui10 extends StructArray {
     }
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number): number {
-        const o2 = i * 5;
+        const o2 = i * 6;
+        const o4 = i * 3;
         this.uint16[o2 + 0] = v0;
         this.uint16[o2 + 1] = v1;
         this.uint16[o2 + 2] = v2;
         this.uint16[o2 + 3] = v3;
-        this.uint16[o2 + 4] = v4;
+        this.float32[o4 + 2] = v4;
         return i;
     }
 }
 
-StructArrayLayout5ui10.prototype.bytesPerElement = 10;
-register(StructArrayLayout5ui10, 'StructArrayLayout5ui10');
+StructArrayLayout4ui1f12.prototype.bytesPerElement = 12;
+register(StructArrayLayout4ui1f12, 'StructArrayLayout4ui1f12');
 
 /**
  * Implementation of the StructArray layout:
@@ -1195,7 +1199,7 @@ export {
     StructArrayLayout4i8,
     StructArrayLayout2i4ub1f12,
     StructArrayLayout4f16,
-    StructArrayLayout5ui10,
+    StructArrayLayout4ui1f12,
     StructArrayLayout4ui8,
     StructArrayLayout6i12,
     StructArrayLayout4i4ui4i24,
@@ -1224,7 +1228,7 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout4f16 as LineExtLayoutArray,
-    StructArrayLayout5ui10 as PatternLayoutArray,
+    StructArrayLayout4ui1f12 as PatternLayoutArray,
     StructArrayLayout4ui8 as DashLayoutArray,
     StructArrayLayout6i12 as FillExtrusionExtArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
