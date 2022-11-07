@@ -12,11 +12,29 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
+uniform sampler2D u_color_ramp;
+uniform vec2 u_colorization_scale;
+uniform vec3 u_colorization_mix;
+
+#ifdef RASTER_COLOR
+vec4 colormap (float value) {
+
+  float scaled_value = value * u_colorization_scale.y + u_colorization_scale.x;
+  return texture2D(u_color_ramp, vec2(scaled_value, 0.5));
+}
+#endif
+
 void main() {
 
     // read and cross-fade colors from the main and parent tiles
     vec4 color0 = texture2D(u_image0, v_pos0);
     vec4 color1 = texture2D(u_image1, v_pos1);
+
+#ifdef RASTER_COLOR
+    color0 = colormap(dot(color0.rgb, u_colorization_mix)) * color0.a;
+    color1 = colormap(dot(color1.rgb, u_colorization_mix)) * color1.a;
+#endif
+
     if (color0.a > 0.0) {
         color0.rgb = color0.rgb / color0.a;
     }

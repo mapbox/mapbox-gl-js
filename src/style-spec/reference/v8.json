@@ -6061,6 +6061,80 @@
       },
       "property-type": "data-constant"
     },
+    "raster-color": {
+      "type": "color",
+      "doc": "Defines a color map applied to a raster layer. Should be an expression that uses `[\"raster-value\"]` as input.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.12.0"
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "raster-value"
+        ]
+      },
+      "property-type": "color-ramp"
+    },
+    "raster-color-mix": {
+      "type": "array",
+      "default": [
+        0.2126,
+        0.7152,
+        0.0722
+      ],
+      "length": 3,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "The relative combination of respective RGB channels added together to compute the input to a raster color map.",
+      "example": [
+        0.2126,
+        0.7152,
+        0.0722
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.12.0"
+        }
+      }
+    },
+    "raster-color-range": {
+      "type": "array",
+      "default": [
+        0,
+        1
+      ],
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "The range of values to which a raster colorize is applied.",
+      "example": [
+        0.5,
+        10
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.12.0"
+        }
+      }
+    },
     "raster-hue-rotate": {
       "type": "number",
       "default": 0,

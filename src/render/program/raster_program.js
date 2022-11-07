@@ -25,7 +25,10 @@ export type RasterUniformsType = {|
     'u_saturation_factor': Uniform1f,
     'u_contrast_factor': Uniform1f,
     'u_spin_weights': Uniform3f,
-    'u_perspective_transform': Uniform2f
+    'u_perspective_transform': Uniform2f,
+    'u_colorization_mix': Uniform3f,
+    'u_colorization_scale': Uniform2f,
+    'u_color_ramp': Uniform1i,
 |};
 
 const rasterUniforms = (context: Context): RasterUniformsType => ({
@@ -41,7 +44,10 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_saturation_factor': new Uniform1f(context),
     'u_contrast_factor': new Uniform1f(context),
     'u_spin_weights': new Uniform3f(context),
-    'u_perspective_transform': new Uniform2f(context)
+    'u_perspective_transform': new Uniform2f(context),
+    'u_colorization_mix': new Uniform3f(context),
+    'u_colorization_scale': new Uniform2f(context),
+    'u_color_ramp': new Uniform1i(context),
 });
 
 const rasterUniformValues = (
@@ -50,7 +56,10 @@ const rasterUniformValues = (
     parentScaleBy: number,
     fade: {mix: number, opacity: number},
     layer: RasterStyleLayer,
-    perspectiveTransform: [number, number]
+    perspectiveTransform: [number, number],
+    colorRampUnit: number = 0,
+    colorMapInputMix: [number, number, number] = [NaN, NaN, NaN],
+    rasterDataScale: [number, number] = [NaN, NaN],
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
     'u_tl_parent': parentTL,
@@ -64,7 +73,10 @@ const rasterUniformValues = (
     'u_saturation_factor': saturationFactor(layer.paint.get('raster-saturation')),
     'u_contrast_factor': contrastFactor(layer.paint.get('raster-contrast')),
     'u_spin_weights': spinWeights(layer.paint.get('raster-hue-rotate')),
-    'u_perspective_transform': perspectiveTransform
+    'u_perspective_transform': perspectiveTransform,
+    'u_colorization_mix': colorMapInputMix,
+    'u_colorization_scale': rasterDataScale,
+    'u_color_ramp': colorRampUnit,
 });
 
 function spinWeights(angle) {
