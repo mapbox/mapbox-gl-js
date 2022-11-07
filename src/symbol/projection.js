@@ -393,41 +393,31 @@ function placeFirstAndLastGlyph(
 
 // Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
 // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
-function isInFlipRetainRange(firstPoint, lastPoint, aspectRatio) {
-    const deltaY = lastPoint.y - firstPoint.y;
-    const deltaX = (lastPoint.x - firstPoint.x) * aspectRatio;
-    if (deltaX === 0.0) {
-        return true;
-    }
-    const absTangent = Math.abs(deltaY / deltaX);
-    return (absTangent > maxTangent);
+function isInFlipRetainRange(dx, dy) {
+    return dx === 0 || Math.abs(dy / dx) > maxTangent;
 }
 
-function requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio) {
-    if (symbol.writingMode === WritingMode.horizontal) {
+function requiresOrientationChange(symbol, dx, dy) {
+    if (symbol.writingMode === WritingMode.horizontal && Math.abs(dy) > Math.abs(dx)) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
         // and vertical versions can have slightly different projections which could lead to angles where both or
         // neither showed.
-        const rise = Math.abs(lastPoint.y - firstPoint.y);
-        const run = Math.abs(lastPoint.x - firstPoint.x) * aspectRatio;
-        if (rise > run) {
-            return {useVertical: true};
-        }
+        return {useVertical: true};
     }
     // Check if flipping is required for "verticalOnly" case.
     if (symbol.writingMode === WritingMode.vertical) {
-        return (firstPoint.y < lastPoint.y) ? {needsFlipping: true} : null;
+        return dy > 0 ? {needsFlipping: true} : null;
     }
 
     // symbol's flipState stores the flip decision from the previous frame, and that
     // decision is reused when the symbol is in the retain range.
-    if (symbol.flipState !== FlipState.unknown && isInFlipRetainRange(firstPoint, lastPoint, aspectRatio)) {
+    if (symbol.flipState !== FlipState.unknown && isInFlipRetainRange(dx, dy)) {
         return (symbol.flipState === FlipState.flipRequired) ? {needsFlipping: true} : null;
     }
 
     // Check if flipping is required for "horizontal" case.
-    return (firstPoint.x > lastPoint.x) ? {needsFlipping: true} : null;
+    return dx < 0 ? {needsFlipping: true} : null;
 }
 
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap) {
@@ -447,14 +437,11 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         if (!firstAndLastGlyph) {
             return {notEnoughRoom: true};
         }
-        const firstVec = projectVector(firstAndLastGlyph.first.point, glCoordMatrix);
-        const lastVec = projectVector(firstAndLastGlyph.last.point, glCoordMatrix);
-
-        const firstPoint = new Point(firstVec[0], firstVec[1]);
-        const lastPoint = new Point(lastVec[0], lastVec[1]);
 
         if (keepUpright && !flip) {
-            const orientationChange = requiresOrientationChange(symbol, firstPoint, lastPoint, aspectRatio);
+            const firstVec = projectVector(firstAndLastGlyph.first.point, glCoordMatrix);
+            const lastVec = projectVector(firstAndLastGlyph.last.point, glCoordMatrix);
+            const orientationChange = requiresOrientationChange(symbol, (lastVec[0] - firstVec[0]) * aspectRatio, lastVec[1] - firstVec[1]);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
@@ -485,7 +472,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix, undefined, projection, tileID.canonical);
 
-            const orientationChange = requiresOrientationChange(symbol, new Point(a[0], a[1]), new Point(b[0], b[1]), aspectRatio);
+            const orientationChange = requiresOrientationChange(symbol, (b[0] - a[0]) * aspectRatio, b[1] - a[1]);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
