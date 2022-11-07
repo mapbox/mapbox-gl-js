@@ -79,6 +79,35 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('disablePerformanceMetricsCollection', (t) => {
+        const map = createMap(t, {performanceMetricsCollection: false});
+        map.once('idle', () => {
+            map.triggerRepaint();
+            map.once('idle', () => {
+                t.ok(map._fullyLoaded);
+                t.ok(map._loaded);
+                t.equals(window.server.requests.length, 0);
+                t.end();
+            });
+        });
+    });
+
+    t.test('default performance metrics collection', (t) => {
+        const map = createMap(t);
+        map._requestManager._customAccessToken = 'access-token';
+        map.once('idle', () => {
+            map.triggerRepaint();
+            map.once('idle', () => {
+                t.ok(map._fullyLoaded);
+                t.ok(map._loaded);
+                const reqBody = window.server.requests[0].requestBody;
+                const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+                t.equals(performanceEvent.event, 'gljs.performance');
+                t.end();
+            });
+        });
+    });
+
     t.test('warns when map container is not empty', (t) => {
         const container = window.document.createElement('div');
         container.textContent = 'Hello World';

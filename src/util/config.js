@@ -3,6 +3,10 @@
 type Config = {|
   API_URL: string,
   API_URL_REGEX: RegExp,
+  API_TILEJSON_REGEX: RegExp,
+  API_FONTS_REGEX: RegExp,
+  API_SPRITE_REGEX: RegExp,
+  API_STYLE_REGEX: RegExp,
   EVENTS_URL: ?string,
   SESSION_PATH: string,
   FEEDBACK_URL: string,
@@ -28,6 +32,22 @@ const config: Config = {
         }
 
         return mapboxHTTPURLRegex;
+    },
+    get API_TILEJSON_REGEX() {
+        // https://docs.mapbox.com/api/maps/mapbox-tiling-service/#retrieve-tilejson-metadata
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/v[0-9]*\/.*\.json.*$)/i;
+    },
+    get API_SPRITE_REGEX() {
+        // https://docs.mapbox.com/api/maps/styles/#retrieve-a-sprite-image-or-json
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*\/sprite.*\..*$)/i;
+    },
+    get API_FONTS_REGEX() {
+        // https://docs.mapbox.com/api/maps/fonts/#retrieve-font-glyph-ranges
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/fonts\/v[0-9]*\/)(.*\.pbf.*$)/i;
+    },
+    get API_STYLE_REGEX() {
+        // https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
     },
     get EVENTS_URL() {
         if (!this.API_URL) { return null; }
