@@ -39,7 +39,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const image = patternProperty.constantOr((1: any));
 
     const gradient = layer.paint.get('line-gradient');
-    const crossfade = layer.getCrossfadeParameters();
 
     const programId = image ? 'linePattern' : 'line';
 
@@ -65,20 +64,16 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
-            const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.to.toString()];
-            const posFrom = atlas.patternPositions[constantPattern.from.toString()];
-            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+            const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
+            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
         const constantDash = dasharrayProperty.constantOr(null);
         const constantCap = capProperty.constantOr((null: any));
 
         if (!image && constantDash && constantCap && tile.lineAtlas) {
-            const atlas = tile.lineAtlas;
-            const posTo = atlas.getDash(constantDash.to, constantCap);
-            const posFrom = atlas.getDash(constantDash.from, constantCap);
-            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+            const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
+            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
         let [trimStart, trimEnd] = layer.paint.get('line-trim-offset');
@@ -102,8 +97,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const matrix = painter.terrain ? coord.projMatrix : null;
         const uniformValues = image ?
-            linePatternUniformValues(painter, tile, layer, crossfade, matrix, pixelRatio) :
-            lineUniformValues(painter, tile, layer, crossfade, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
+            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio) :
+            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
@@ -142,12 +137,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         if (dasharray) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
         if (image) {
             context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

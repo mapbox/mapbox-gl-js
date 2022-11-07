@@ -813,56 +813,56 @@ test('Map', (t) => {
 
                 fog.set({'color': 'red'});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                fog.recalculate({zoom: 16, now: 1500});
                 t.deepEqual(fog.properties.get('color'), new Color(1, 0.5, 0.5, 1));
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                fog.recalculate({zoom: 16, now: 3000});
                 t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                fog.recalculate({zoom: 16, now: 3500});
                 t.deepEqual(fog.properties.get('color'), new Color(1, 0.0, 0.0, 1));
 
                 fog.set({'range-transition': {duration: 3000}});
                 fog.set({'range': [2, 5]});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                fog.recalculate({zoom: 16, now: 1500});
                 t.deepEqual(fog.properties.get('range')[0], 1.25);
                 t.deepEqual(fog.properties.get('range')[1], 7.5);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                fog.recalculate({zoom: 16, now: 3000});
                 t.deepEqual(fog.properties.get('range')[0], 2);
                 t.deepEqual(fog.properties.get('range')[1], 5);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                fog.recalculate({zoom: 16, now: 3500});
                 t.deepEqual(fog.properties.get('range')[0], 2);
                 t.deepEqual(fog.properties.get('range')[1], 5);
 
                 fog.set({'horizon-blend-transition': {duration: 3000}});
                 fog.set({'horizon-blend': 0.5});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                fog.recalculate({zoom: 16, now: 1500});
                 t.deepEqual(fog.properties.get('horizon-blend'), 0.3);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                fog.recalculate({zoom: 16, now: 3000});
                 t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                fog.recalculate({zoom: 16, now: 3500});
                 t.deepEqual(fog.properties.get('horizon-blend'), 0.5);
 
                 fog.set({'star-intensity-transition': {duration: 3000}});
                 fog.set({'star-intensity': 0.5});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 1500});
+                fog.recalculate({zoom: 16, now: 1500});
                 t.deepEqual(fog.properties.get('star-intensity'), 0.25);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                fog.recalculate({zoom: 16, now: 3000});
                 t.deepEqual(fog.properties.get('star-intensity'), 0.5);
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3500});
+                fog.recalculate({zoom: 16, now: 3500});
                 t.deepEqual(fog.properties.get('star-intensity'), 0.5);
 
                 fog.set({'high-color-transition': {duration: 3000}});
                 fog.set({'high-color': 'blue'});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 3000});
+                fog.recalculate({zoom: 16, now: 3000});
                 t.deepEqual(fog.properties.get('high-color'), new Color(0.0, 0.0, 1.0, 1));
 
                 fog.set({'space-color-transition': {duration: 3000}});
                 fog.set({'space-color': 'blue'});
                 fog.updateTransitions({transition: true}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 5000});
+                fog.recalculate({zoom: 16, now: 5000});
                 t.deepEqual(fog.properties.get('space-color'), new Color(0.0, 0.0, 1.0, 1));
 
                 t.end();
@@ -874,7 +874,7 @@ test('Map', (t) => {
 
                 fog.set({color: [444]}, {validate: false});
                 fog.updateTransitions({transition: false}, {});
-                fog.recalculate({zoom: 16, zoomHistory: {}, now: 10});
+                fog.recalculate({zoom: 16, now: 10});
 
                 t.ok(fogSpy.calledOnce);
                 t.deepEqual(fog.properties.get('color'), [444]);

@@ -13,7 +13,7 @@ test('evaluate', (t) => {
         const overriden = new PossiblyEvaluatedPropertyValue(
             properties.paint.properties['text-color'],
             {kind: 'constant', value: defaultColor},
-            {zoom: 0, zoomHistory: {}}
+            {zoom: 0}
         );
 
         const override = new FormatSectionOverride(overriden);
@@ -42,7 +42,7 @@ test('evaluate', (t) => {
         const overriden = new PossiblyEvaluatedPropertyValue(
             properties.paint.properties['text-color'],
             sourceExpr,
-            {zoom: 0, zoomHistory: {}}
+            {zoom: 0}
         );
 
         const override = new FormatSectionOverride(overriden);

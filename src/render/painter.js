@@ -67,7 +67,6 @@ import type Transform from '../geo/transform.js';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
-import type {CrossFaded} from '../style/properties.js';
 import type ImageManager from './image_manager.js';
 import type GlyphManager from './glyph_manager.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -837,15 +836,13 @@ class Painter {
     /**
      * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
      *
-* @returns true if a needed image is missing and rendering needs to be skipped.
+     * @returns true if a needed image is missing and rendering needs to be skipped.
      * @private
      */
-    isPatternMissing(image: ?CrossFaded<ResolvedImage>): boolean {
-        if (!image) return false;
-        if (!image.from || !image.to) return true;
-        const imagePosA = this.imageManager.getPattern(image.from.toString());
-        const imagePosB = this.imageManager.getPattern(image.to.toString());
-        return !imagePosA || !imagePosB;
+    isPatternMissing(image: ?ResolvedImage): boolean {
+        if (image === null) return true;
+        if (image === undefined) return false;
+        return !this.imageManager.getPattern(image.toString());
     }
 
     terrainRenderModeElevated(): boolean {

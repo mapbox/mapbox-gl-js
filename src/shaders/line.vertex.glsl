@@ -31,9 +31,8 @@ varying highp vec4 v_uv;
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
-uniform mediump vec3 u_scale;
-varying vec2 v_tex_a;
-varying vec2 v_tex_b;
+uniform float u_tile_units_to_pixels;
+varying vec2 v_tex;
 #endif
 
 #ifdef RENDER_LINE_GRADIENT
@@ -42,8 +41,7 @@ uniform float u_image_height;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 dash_from
-#pragma mapbox: define lowp vec4 dash_to
+#pragma mapbox: define lowp vec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
@@ -53,8 +51,7 @@ uniform float u_image_height;
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float floorwidth
-    #pragma mapbox: initialize lowp vec4 dash_from
-    #pragma mapbox: initialize lowp vec4 dash_to
+    #pragma mapbox: initialize lowp vec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
@@ -125,17 +122,10 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_DASH
-    float tileZoomRatio = u_scale.x;
-    float fromScale = u_scale.y;
-    float toScale = u_scale.z;
+    float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
+    float height = dash.y;
 
-    float scaleA = dash_from.z == 0.0 ? 0.0 : tileZoomRatio / (dash_from.z * fromScale);
-    float scaleB = dash_to.z == 0.0 ? 0.0 : tileZoomRatio / (dash_to.z * toScale);
-    float heightA = dash_from.y;
-    float heightB = dash_to.y;
-
-    v_tex_a = vec2(a_linesofar * scaleA / floorwidth, (-normal.y * heightA + dash_from.x + 0.5) / u_texsize.y);
-    v_tex_b = vec2(a_linesofar * scaleB / floorwidth, (-normal.y * heightB + dash_to.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / floorwidth, (-normal.y * height + dash.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2 = vec2(outset, inset);

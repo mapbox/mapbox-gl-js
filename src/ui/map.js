@@ -366,7 +366,6 @@ class Map extends Camera {
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
-    _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
@@ -491,7 +490,6 @@ class Map extends Camera {
         this._fadeDuration = options.fadeDuration;
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
-        this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._optimizeForTerrain = options.optimizeForTerrain;
         this._language = this._parseLanguage(options.language);
@@ -3107,7 +3105,6 @@ class Map extends Camera {
 
         this._updateProjectionTransition();
 
-        let crossFading = false;
         const fadeDuration = this._isInitialLoad ? 0 : this._fadeDuration;
 
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
@@ -3119,21 +3116,13 @@ class Map extends Camera {
             const zoom = this.transform.zoom;
             const pitch = this.transform.pitch;
             const now = browser.now();
-            this.style.zoomHistory.update(zoom, now);
 
             const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration,
                 pitch,
-                zoomHistory: this.style.zoomHistory,
                 transition: this.style.getTransition()
             });
-
-            const factor = parameters.crossFadingFactor();
-            if (factor !== 1 || factor !== this._crossFadingFactor) {
-                crossFading = true;
-                this._crossFadingFactor = factor;
-            }
 
             this.style.update(parameters);
         }
@@ -3191,7 +3180,7 @@ class Map extends Camera {
             this.fire(new Event('load'));
         }
 
-        if (this.style && (this.style.hasTransitions() || crossFading)) {
+        if (this.style && (this.style.hasTransitions())) {
             this._styleDirty = true;
         }
 

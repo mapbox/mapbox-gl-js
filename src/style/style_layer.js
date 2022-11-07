@@ -20,7 +20,7 @@ import type {Bucket} from '../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index.js';
 import type {TransitionParameters, PropertyValue} from './properties.js';
-import type EvaluationParameters, {CrossfadeParameters} from './evaluation_parameters.js';
+import type EvaluationParameters from './evaluation_parameters.js';
 import type Transform from '../geo/transform.js';
 import type {
     LayerSpecification,
@@ -47,7 +47,6 @@ class StyleLayer extends Evented {
     maxzoom: ?number;
     filter: FilterSpecification | void;
     visibility: 'visible' | 'none' | void;
-    _crossfadeParameters: CrossfadeParameters;
 
     _unevaluatedLayout: Layout<any>;
     +layout: mixed;
@@ -115,10 +114,6 @@ class StyleLayer extends Evented {
         }
     }
 
-    getCrossfadeParameters(): CrossfadeParameters {
-        return this._crossfadeParameters;
-    }
-
     getLayoutProperty(name: string): PropertyValueSpecification<mixed> {
         if (name === 'visibility') {
             return this.visibility;
@@ -164,7 +159,6 @@ class StyleLayer extends Evented {
             return false;
         } else {
             const transitionable = this._transitionablePaint._values[name];
-            const isCrossFadedProperty = transitionable.property.specification["property-type"] === 'cross-faded-data-driven';
             const wasDataDriven = transitionable.value.isDataDriven();
             const oldValue = transitionable.value;
 
@@ -173,11 +167,12 @@ class StyleLayer extends Evented {
 
             const newValue = this._transitionablePaint._values[name].value;
             const isDataDriven = newValue.isDataDriven();
+            const isPattern = endsWith(name, 'pattern') || name === 'line-dasharray';
 
-            // if a cross-faded value is changed, we need to make sure the new icons get added to each tile's iconAtlas
+            // if a pattern value is changed, we need to make sure the new icons get added to each tile's iconAtlas
             // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
             // Style#setPaintProperty
-            return isDataDriven || wasDataDriven || isCrossFadedProperty || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
+            return isDataDriven || wasDataDriven || isPattern || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
         }
     }
 
@@ -216,10 +211,6 @@ class StyleLayer extends Evented {
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
-        if (parameters.getCrossfadeParameters) {
-            this._crossfadeParameters = parameters.getCrossfadeParameters();
-        }
-
         if (this._unevaluatedLayout) {
             (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
         }

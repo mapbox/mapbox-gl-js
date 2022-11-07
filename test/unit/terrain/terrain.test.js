@@ -663,7 +663,7 @@ const spec = styleSpec.terrain;
 test('Terrain style', (t) => {
     test('Terrain defaults', (t) => {
         const terrain = new Terrain({});
-        terrain.recalculate({zoom: 0, zoomHistory: {}});
+        terrain.recalculate({zoom: 0});
 
         t.deepEqual(terrain.properties.get('source'), spec.source.default);
         t.deepEqual(terrain.properties.get('exaggeration'), spec.exaggeration.default);
@@ -678,7 +678,7 @@ test('Terrain style', (t) => {
                 stops: [[15, 0.2], [17, 0.8]]
             }
         });
-        terrain.recalculate({zoom: 16, zoomHistory: {}});
+        terrain.recalculate({zoom: 16});
 
         t.deepEqual(terrain.properties.get('exaggeration'), 0.5);
         t.end();

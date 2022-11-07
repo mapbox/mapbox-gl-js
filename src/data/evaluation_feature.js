@@ -9,7 +9,7 @@ type EvaluationFeature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
     +id?: any,
     +properties: {[_: string]: any},
-    +patterns?: {[_: string]: {"min": string, "mid": string, "max": string}},
+    +patterns?: {[_: string]: string},
     geometry: Array<Array<Point>>
 };
 

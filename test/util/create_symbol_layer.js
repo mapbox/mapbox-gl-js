@@ -9,7 +9,7 @@ export function createSymbolBucket(layerId, font, text, collisionBoxArray) {
         layout: {'text-font': [font], 'text-field': text},
         filter: featureFilter()
     });
-    layer.recalculate({zoom: 0, zoomHistory: {}});
+    layer.recalculate({zoom: 0});
 
     return new SymbolBucket({
         overscaling: 1,
