@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.03,
       "pixelRatio": 2
     }
   },
