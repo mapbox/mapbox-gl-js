@@ -1,3 +1,9 @@
+## 2.11.0-beta.2
+
+### Features ✨ and improvements 🏁
+
+* Add live performance counters ([#12343](https://github.com/mapbox/mapbox-gl-js/pull/12343)).
+
 ## 2.11.0-beta.1
 
 ### Features ✨ and improvements 🏁
