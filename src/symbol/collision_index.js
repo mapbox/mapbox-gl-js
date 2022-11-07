@@ -170,7 +170,7 @@ class CollisionIndex {
         const {perspectiveRatio} = screenAnchorPoint;
         const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
         const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
+        const labelPlaneAnchorPoint = projection.project(elevatedAnchor[0], elevatedAnchor[1], labelPlaneMatrix, elevatedAnchor[2]);
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
@@ -224,28 +224,24 @@ class CollisionIndex {
             // The path might need to be converted into screen space if a pitched map is used as the label space
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
-                const screenSpacePath = (elevation && !isGlobe) ?
+                projectedPath = (elevation && !isGlobe) ?
                     projectedPath.map((p, index) => {
                         const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
                         p[2] = elevation[2];
-                        return projection.projectVector((p: any), labelToScreenMatrix);
+                        return projection.projectVector(p, labelToScreenMatrix);
                     }) :
-                    projectedPath.map(p => projection.projectVector((p: any), labelToScreenMatrix));
+                    projectedPath.map(p => projection.projectVector(p, labelToScreenMatrix));
 
                 // Do not try to place collision circles if even of the points is behind the camera.
                 // This is a plausible scenario with big camera pitch angles
-                if (screenSpacePath.some(point => point.signedDistanceFromCamera <= 0)) {
+                if (projectedPath.some(point => point[3] <= 0)) {
                     projectedPath = [];
-                } else {
-                    projectedPath = screenSpacePath.map(p => p.point);
                 }
             }
 
             let segments = [];
 
             if (projectedPath.length > 0) {
-                const screenSpacePath = projectedPath.map(p => new Point(p[0], p[1]));
-
                 // Quickly check if the path is fully inside or outside of the padded collision region.
                 // For overlapping paths we'll only create collision circles for the visible segments
                 let minx = Infinity;
@@ -253,23 +249,24 @@ class CollisionIndex {
                 let miny = Infinity;
                 let maxy = -Infinity;
 
-                for (let i = 0; i < screenSpacePath.length; i++) {
-                    minx = Math.min(minx, screenSpacePath[i].x);
-                    miny = Math.min(miny, screenSpacePath[i].y);
-                    maxx = Math.max(maxx, screenSpacePath[i].x);
-                    maxy = Math.max(maxy, screenSpacePath[i].y);
+                for (const p of projectedPath) {
+                    minx = Math.min(minx, p[0]);
+                    miny = Math.min(miny, p[1]);
+                    maxx = Math.max(maxx, p[0]);
+                    maxy = Math.max(maxy, p[1]);
                 }
 
-                if (minx >= screenPlaneMin.x && maxx <= screenPlaneMax.x &&
-                    miny >= screenPlaneMin.y && maxy <= screenPlaneMax.y) {
-                    // Quad fully visible
-                    segments = [screenSpacePath];
-                } else if (maxx < screenPlaneMin.x || minx > screenPlaneMax.x ||
-                    maxy < screenPlaneMin.y || miny > screenPlaneMax.y) {
-                    // Not visible
-                    segments = [];
-                } else {
-                    segments = clipLine([screenSpacePath], screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                // Path visible
+                if (maxx >= screenPlaneMin.x && minx <= screenPlaneMax.x &&
+                    maxy >= screenPlaneMin.y && miny <= screenPlaneMax.y) {
+
+                    segments = [projectedPath.map(p => new Point(p[0], p[1]))];
+
+                    if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
+                        miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
+                        // Path partially visible, clip
+                        segments = clipLine(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                    }
                 }
             }
 

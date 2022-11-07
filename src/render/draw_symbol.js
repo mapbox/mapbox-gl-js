@@ -194,7 +194,7 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             ];
 
             const projectedAnchor = symbolProjection.projectVector(reprojectedAnchor, pitchWithMap ? tileMatrix : labelPlaneMatrix);
-            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(bucket.getProjection()), projectedAnchor.signedDistanceFromCamera);
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(bucket.getProjection()), projectedAnchor[3]);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
@@ -221,10 +221,10 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                     z + anchorElevation * upDir[2] * upVectorScale.metersToTile
                 ];
 
-                shiftedAnchor = symbolProjection.projectVector(reprojectedShiftedAnchor, labelPlaneMatrix).point;
+                shiftedAnchor = symbolProjection.projectVector(reprojectedShiftedAnchor, labelPlaneMatrix);
             } else {
                 const rotatedShift = rotateWithMap ? shift.rotate(-transform.angle) : shift;
-                shiftedAnchor = [projectedAnchor.point[0] + rotatedShift.x, projectedAnchor.point[1] + rotatedShift.y, 0];
+                shiftedAnchor = [projectedAnchor[0] + rotatedShift.x, projectedAnchor[1] + rotatedShift.y, 0];
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
