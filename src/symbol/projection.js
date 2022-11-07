@@ -508,7 +508,6 @@ function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Fl
     if (!getElevation) {
         return project(point.x, point.y, posMatrix, point.z);
     }
-
     const elevation = getElevation(p);
     return project(point.x + elevation[0], point.y + elevation[1], posMatrix, point.z + elevation[2]);
 }
@@ -518,11 +517,12 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
     // plane of the camera.
-    const unitVertex = previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit());
-    const projectedUnitVertex = elevatePointAndProject(unitVertex, tileID, projectionMatrix, projection, getElevation);
-    const projectedUnitSegment = vec3.sub([], previousProjectedPoint, projectedUnitVertex);
+    const unitVertex = previousTilePoint.sub(currentTilePoint)._unit()._add(previousTilePoint);
+    const projectedUnit = elevatePointAndProject(unitVertex, tileID, projectionMatrix, projection, getElevation);
+    vec3.sub(projectedUnit, previousProjectedPoint, projectedUnit);
+    vec3.normalize(projectedUnit, projectedUnit);
 
-    return vec3.scaleAndAdd([], previousProjectedPoint, projectedUnitSegment, minimumLength / vec3.length(projectedUnitSegment));
+    return vec3.scaleAndAdd(projectedUnit, previousProjectedPoint, projectedUnit, minimumLength);
 }
 
 function placeGlyphAlongLine(
@@ -573,17 +573,10 @@ function placeGlyphAlongLine(
     const pathVertices = [];
     const tilePath = [];
     let currentVertex = tileAnchorPoint;
-
-    const previousTilePoint = () => {
-        const previousLineVertexIndex = currentIndex - dir;
-        return distanceToPrev === 0 ?
-            tileAnchorPoint :
-            new Point(lineVertexArray.getx(previousLineVertexIndex), lineVertexArray.gety(previousLineVertexIndex));
-    };
+    let prevVertex = currentVertex;
 
     const getTruncatedLineSegment = () => {
-        const prevTilePoint = previousTilePoint();
-        return projectTruncatedLineSegment(prevTilePoint, currentVertex || prevTilePoint, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation, reprojection, tileID.canonical);
+        return projectTruncatedLineSegment(prevVertex, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation, reprojection, tileID.canonical);
     };
 
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
@@ -594,12 +587,15 @@ function placeGlyphAlongLine(
             return null;
 
         prev = current;
-        pathVertices.push(current);
-        if (returnPathInTileCoords) tilePath.push(currentVertex || previousTilePoint());
+        prevVertex = currentVertex;
 
+        pathVertices.push(prev);
+        if (returnPathInTileCoords) tilePath.push(prevVertex);
+
+        currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
         current = projectionCache[currentIndex];
-        if (current === undefined) {
-            currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+
+        if (!current) {
             const projection = elevatePointAndProject(currentVertex, tileID.canonical, labelPlaneMatrix, reprojection, getElevation);
             if (projection[3] > 0) {
                 current = projectionCache[currentIndex] = projection;
@@ -609,16 +605,11 @@ function placeGlyphAlongLine(
                 // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
                 current = getTruncatedLineSegment();
             }
-        } else {
-            currentVertex = null; // null stale data
         }
 
         distanceToPrev += currentSegmentDistance;
         currentSegmentDistance = vec3.distance(prev, current);
     }
-
-    currentVertex = currentVertex || new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
-    const prevVertex = previousTilePoint();
 
     if (endGlyph && getElevation) {
         // For terrain, always truncate end points in order to handle terrain curvature.
@@ -630,7 +621,7 @@ function placeGlyphAlongLine(
 
     // The point is on the current segment. Interpolate to find it. Compute points on both label plane and tile space
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
-    const tilePoint = currentVertex.sub(prevVertex).mult(segmentInterpolationT)._add(prevVertex);
+    const tilePoint = currentVertex.sub(prevVertex)._mult(segmentInterpolationT)._add(prevVertex);
     const prevToCurrent = vec3.sub([], current, prev);
     const labelPlanePoint = vec3.scaleAndAdd([], prev, prevToCurrent, segmentInterpolationT);
 
@@ -643,16 +634,10 @@ function placeGlyphAlongLine(
 
         if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
             // Compute coordinate frame that is aligned to the tangent of the surface
-            const axisX = [1, 0, 0];
-            const axisY = [0, 1, 0];
-
-            axisX[0] = axisZ[2];
-            axisX[1] = 0;
-            axisX[2] = -axisZ[0];
-            vec3.cross(axisY, axisZ, axisX);
+            const axisX = [axisZ[2], 0, -axisZ[0]];
+            const axisY = vec3.cross([], axisZ, axisX);
             vec3.normalize(axisX, axisX);
             vec3.normalize(axisY, axisY);
-
             diffX = vec3.dot(prevToCurrent, axisX);
             diffY = vec3.dot(prevToCurrent, axisY);
         }
