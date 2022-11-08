@@ -66,7 +66,7 @@ if (process.env.CI) {
         osIgnore = null;
     } else if (os.includes("Windows")) {
         osIgnore = ignoreWindows;
-        timeout = 60000;
+        timeout = 90000;
     } else { console.warn("Unrecognized OS:", os); }
 }
 
