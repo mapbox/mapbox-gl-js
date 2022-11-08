@@ -27,40 +27,78 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const presets = {
+    satellite: {
+        tileset: 'mapbox.satellite',
+        rasterColor: 'Cubehelix',
+        rasterColorMix: 'luminosity',
+        rasterColorRange: '[0, 1]'
+    },
+    terrain: {
+        tileset: 'mapbox.terrain-rgb',
+        rasterColor: 'Hypsometric',
+        rasterColorMix: 'decode terrain-rgb',
+        rasterColorRange: '[0, 8848]'
+    },
+};
+
 function GUIParams () {
-    this.colorScale = 'Viridis';
-    this.mix = 'luminosity';
-    this.range = '[0, 1]';
-    this.tileset = 'mapbox.satellite';
+    this.preset = 'satellite';
+    Object.assign(this, presets[this.preset]);
 }
 
 const guiParams = new GUIParams();
 
 const mixes = {
-    luminosity: [ 0.2126, 0.7152, 0.0722 ],
-    average: [1/3, 1/3, 1/3],
-    red: [1, 0, 0],
-    green: [0, 1, 0],
-    blue: [0, 0, 1],
-    'terrain-rgb': [256 * 256, 256, 1],
+    luminosity: [ 0.2126, 0.7152, 0.0722, 0 ],
+    average: [1/3, 1/3, 1/3, 0],
+    red: [1, 0, 0, 0],
+    green: [0, 1, 0, 0],
+    blue: [0, 0, 1, 0],
+    'decode terrain-rgb': [
+        256 * 256 * 256 * 0.1,
+        256 * 256 * 0.1,
+        256 * 0.1,
+        -10000
+    ],
+}
+
+function quantize(interpolator, n=100) {
+    return d3.quantize(interpolator, n).map((c, i) => {
+        const col = d3.rgb(c);
+        return [ i / (n - 1), `rgba(${col.r},${col.g},${col.b},${col.opacity})` ];
+    });
 }
 
 const colorScales = {
-    Viridis: d3.interpolateViridis,
-    Greys: x => d3.interpolateGreys(1 - x),
-    Turbo: d3.interpolateTurbo,
-    Inferno: d3.interpolateInferno,
-    Magma: d3.interpolateMagma,
-    Plasma: d3.interpolatePlasma,
-    Cividis: d3.interpolateCividis,
-    Cool: d3.interpolateCool,
-    Warm: d3.interpolateWarm,
-    Cubehelix: d3.interpolateCubehelixDefault,
-    RdPu: x => d3.interpolateRdPu(1 - x),
-    YlGnBu: x => d3.interpolateYlGnBu(1 - x),
-    Rainbow: d3.interpolateRainbow,
-    Sinebow: d3.interpolateSinebow,
-    RdBu: d3.interpolateRdBu,
+    Viridis: quantize(d3.interpolateViridis),
+    Greys: quantize(x => d3.interpolateGreys(1 - x)),
+    Turbo: quantize(d3.interpolateTurbo),
+    Inferno: quantize(d3.interpolateInferno),
+    Magma: quantize(d3.interpolateMagma),
+    Plasma: quantize(d3.interpolatePlasma),
+    Cividis: quantize(d3.interpolateCividis),
+    Cool: quantize(d3.interpolateCool),
+    Warm: quantize(d3.interpolateWarm),
+    Cubehelix: quantize(d3.interpolateCubehelixDefault),
+    RdPu: quantize(x => d3.interpolateRdPu(1 - x)),
+    YlGnBu: quantize(x => d3.interpolateYlGnBu(1 - x)),
+    Rainbow: quantize(d3.interpolateRainbow),
+    Sinebow: quantize(d3.interpolateSinebow),
+    RdBu: quantize(d3.interpolateRdBu),
+    Hypsometric: [
+        [ 0.004, "rgb(48, 167, 228)" ],
+        [ 0.005, "rgb(57, 143, 83)" ],
+        [ 0.031, "rgb(116, 166, 129)" ],
+        [ 0.055, "rgb(178, 205, 174)" ],
+        [ 0.076, "rgb(188, 195, 169)" ],
+        [ 0.108, "rgb(221, 207, 153)" ],
+        [ 0.153, "rgb(211, 174, 114)" ],
+        [ 0.205, "rgb(207, 155, 103)" ],
+        [ 0.277, "rgb(179, 120, 85)" ],
+        [ 0.375, "rgb(227, 210, 197)" ],
+        [ 0.660, "rgb(255, 255, 255)" ]
+    ]
 };
 
 function setStyle (tileset) {
@@ -70,9 +108,7 @@ function setStyle (tileset) {
         sources: {
             raster: {
                 type: 'raster',
-                tiles: [
-                    `https://api.mapbox.com/v4/${tileset}/{z}/{x}/{y}.${format}?access_token=${mapboxgl.accessToken}`
-                ],
+                tiles: [ `https://api.mapbox.com/v4/${tileset}/{z}/{x}/{y}.${format}?access_token=${mapboxgl.accessToken}` ],
                 maxzoom: 14
             }
         },
@@ -99,30 +135,30 @@ var map = window.map = new mapboxgl.Map({
     style: {version: 8, layers: [], sources: {}},
     hash: true,
     transformRequest: function (url, type) {
-        if (type !== 'Tile') return;
-        if (!/mapbox\.terrain-rgb/.test(url)) return;
-        console.log(url);
+        if (type !== 'Tile' || !/mapbox\.terrain-rgb/.test(url)) return;
         return {url: url.replace('.webp', '.png')};
     }
 });
 
 map.once('load', function () {
-    var gui = new dat.GUI(); // eslint-disable-line
+    var gui = window.gui = new dat.GUI(); // eslint-disable-line
 
+    const preset = gui.add(guiParams, 'preset', Object.keys(presets));
     const tileset = gui.add(guiParams, 'tileset', tilesets);
-    const scale = gui.add(guiParams, 'colorScale', Object.keys(colorScales));
-    const mix = gui.add(guiParams, 'mix', Object.keys(mixes));
-    const range = gui.add(guiParams, 'range', Object.keys(ranges));
+    const scale = gui.add(guiParams, 'rasterColor', Object.keys(colorScales));
+    const mix = gui.add(guiParams, 'rasterColorMix', Object.keys(mixes));
+    const range = gui.add(guiParams, 'rasterColorRange', Object.keys(ranges));
 
     function setColorScale(scale) {
+        const range = ranges[guiParams.rasterColorRange];
         map.setPaintProperty('raster', 'raster-color', [
             'interpolate',
             ['linear'],
             ['raster-value'],
-            ...d3.quantize(colorScales[scale], 100).map((c, i) => {
-                const col = d3.rgb(c);
-                return [i / (100 - 1), `rgba(${col.r},${col.g},${col.b},${col.opacity})`];
-            }).flat()
+            ...colorScales[scale].map(([pos, col]) => [
+               range[0] + (range[1] - range[0]) * pos,
+               col
+            ]).flat(),
         ])
     }
 
@@ -132,19 +168,27 @@ map.once('load', function () {
 
     function setColorRange(range) {
         map.setPaintProperty('raster', 'raster-color-range', ranges[range]);
+        setColorScale(guiParams.rasterColor);
     }
 
     function setTileset(range) {
         setStyle(guiParams.tileset);
-        setColorMix(guiParams.mix);
-        setColorScale(guiParams.colorScale);
-        setColorRange(guiParams.range);
+        setColorMix(guiParams.rasterColorMix);
+        setColorScale(guiParams.rasterColor);
+        setColorRange(guiParams.rasterColorRange);
     }
 
-    mix.onChange(setColorMix);
-    scale.onChange(setColorScale);
-    range.onChange(setColorRange);
-    tileset.onChange(setTileset);
+    function setPreset(presetName) {
+        const preset = presets[presetName];
+        Object.assign(guiParams, preset);
+        setTileset(guiParams.tileset);
+    }
+
+    mix.onChange(setColorMix).listen();
+    scale.onChange(setColorScale).listen();
+    range.onChange(setColorRange).listen();
+    tileset.onChange(setTileset).listen();
+    preset.onChange(setPreset);
 
     setTileset(guiParams.tileset);
 });

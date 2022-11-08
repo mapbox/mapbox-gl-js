@@ -6084,9 +6084,10 @@
       "default": [
         0.2126,
         0.7152,
-        0.0722
+        0.0722,
+        0.0
       ],
-      "length": 3,
+      "length": 4,
       "value": "number",
       "property-type": "data-constant",
       "transition": true,
@@ -6096,11 +6097,12 @@
           "zoom"
         ]
       },
-      "doc": "The relative combination of respective RGB channels added together to compute the input to a raster color map.",
+      "doc": "The combination of source RGB channels added together to compute the raster value. Computed using the equation `mix.r * src.r + mix.g * src.g + mix.b * src.b + mix.a`. Source alpha is applied as opacity of the output, while ",
       "example": [
         0.2126,
         0.7152,
-        0.0722
+        0.0722,
+        0.0
       ],
       "sdk-support": {
         "basic functionality": {

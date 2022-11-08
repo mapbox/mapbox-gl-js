@@ -5,6 +5,7 @@ import {
     Uniform1f,
     Uniform2f,
     Uniform3f,
+    Uniform4f,
     UniformMatrix4f
 } from '../uniform_binding.js';
 
@@ -26,7 +27,7 @@ export type RasterUniformsType = {|
     'u_contrast_factor': Uniform1f,
     'u_spin_weights': Uniform3f,
     'u_perspective_transform': Uniform2f,
-    'u_colorization_mix': Uniform3f,
+    'u_colorization_mix': Uniform4f,
     'u_colorization_scale': Uniform2f,
     'u_color_ramp': Uniform1i,
 |};
@@ -45,7 +46,7 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_contrast_factor': new Uniform1f(context),
     'u_spin_weights': new Uniform3f(context),
     'u_perspective_transform': new Uniform2f(context),
-    'u_colorization_mix': new Uniform3f(context),
+    'u_colorization_mix': new Uniform4f(context),
     'u_colorization_scale': new Uniform2f(context),
     'u_color_ramp': new Uniform1i(context),
 });
@@ -58,7 +59,7 @@ const rasterUniformValues = (
     layer: RasterStyleLayer,
     perspectiveTransform: [number, number],
     colorRampUnit: number = 0,
-    colorMapInputMix: [number, number, number] = [NaN, NaN, NaN],
+    colorMapInputMix: [number, number, number, number] = [NaN, NaN, NaN, NaN],
     rasterDataScale: [number, number] = [NaN, NaN],
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
