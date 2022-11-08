@@ -136,6 +136,9 @@ workflows:
             - test-unit
             - test-render-linux-chrome-dev
             - test-render-linux-chrome-prod
+            - test-render-linux-firefox-dev
+            - test-render-macos-chrome-dev
+            - test-render-windows-chrome-dev
             - test-query
             - test-expressions
           filters:
@@ -154,6 +157,9 @@ workflows:
             - test-unit
             - test-render-linux-chrome-dev
             - test-render-linux-chrome-prod
+            - test-render-linux-firefox-dev
+            - test-render-macos-chrome-dev
+            - test-render-windows-chrome-dev
             - test-query
             - test-expressions
           filters:
