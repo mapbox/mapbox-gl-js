@@ -56,27 +56,23 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-linux-chrome:
+      - test-render-linux-chrome-dev:
           requires:
             - prepare
           filters:
             tags:
               only: /.*/
-      - test-render-linux-firefox:
+      - test-render-linux-firefox-dev:
           requires:
             - prepare
           filters:
             tags:
               only: /.*/
-      - test-render-macos-chrome:
-          requires:
-            - prepare
+      - test-render-macos-chrome-dev:
           filters:
             tags:
               only: /.*/
-      - test-render-windows-chrome:
-          requires:
-            - prepare
+      - test-render-windows-chrome-dev:
           filters:
             tags:
               only: /.*/
@@ -138,7 +134,7 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render-linux-chrome
+            - test-render-linux-chrome-dev
             - test-render-linux-chrome-prod
             - test-query
             - test-expressions
@@ -156,7 +152,7 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render-linux-chrome
+            - test-render-linux-chrome-dev
             - test-render-linux-chrome-prod
             - test-query
             - test-expressions
@@ -272,7 +268,7 @@ jobs:
           at: ~/
       - run: yarn run test-unit
 
-  test-render-linux-chrome:
+  test-render-linux-chrome-dev:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -284,7 +280,7 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-linux-firefox:
+  test-render-linux-firefox-dev:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -434,7 +430,7 @@ jobs:
           command: |
             bash ./build/upload.sh
 
-  test-render-macos-chrome:
+  test-render-macos-chrome-dev:
     macos:
       xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
     working_directory: ~/mapbox-gl-js
@@ -453,7 +449,7 @@ jobs:
           path: "test/integration/render-tests/index.html"
 
 
-  test-render-windows-chrome:
+  test-render-windows-chrome-dev:
     executor:
       name: win/default
     working_directory: ~/mapbox-gl-js
