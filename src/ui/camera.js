@@ -16,8 +16,6 @@ import LngLat, {earthRadius} from '../geo/lng_lat.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented.js';
-import assert from 'assert';
-import {Debug} from '../util/debug.js';
 import MercatorCoordinate, {
     mercatorZfromAltitude,
     mercatorXfromLng,
