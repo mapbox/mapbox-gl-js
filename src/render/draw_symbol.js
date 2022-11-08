@@ -38,7 +38,6 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
 import type {CrossTileID, VariableOffset} from '../symbol/placement.js';
-import type {Vec3} from 'gl-matrix';
 
 export default drawSymbols;
 
@@ -124,7 +123,7 @@ function computeGlobeCameraUp(transform: Transform): [number, number, number] {
     return cameraUpVector;
 }
 
-function calculateVariableRenderShift(anchor, width, height, textOffset, textScale, renderTextSize): Point {
+function calculateVariableRenderShift({width, height, anchor, textOffset, textScale}, renderTextSize): Point {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(anchor);
     const shiftX = -(horizontalAlign - 0.5) * width;
     const shiftY = -(verticalAlign - 0.5) * height;
@@ -169,71 +168,72 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
     const placedTextShifts = {};
-    const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), transform);
+    const projection = bucket.getProjection();
+    const tileMatrix = getSymbolTileProjectionMatrix(coord, projection, transform);
     const elevation = transform.elevation;
-    const upVectorScale = bucket.getProjection().upVectorScale(coord.canonical, transform.center.lat, transform.worldSize);
+    const metersToTile = projection.upVectorScale(coord.canonical, transform.center.lat, transform.worldSize).metersToTile;
 
     dynamicTextLayoutVertexArray.clear();
     for (let s = 0; s < placedSymbols.length; s++) {
-        const symbol: any = placedSymbols.get(s);
+        const symbol = placedSymbols.get(s);
+        const {tileAnchorX, tileAnchorY, numGlyphs} = symbol;
         const skipOrientation = bucket.allowVerticalPlacement && !symbol.placedOrientation;
         const variableOffset = (!symbol.hidden && symbol.crossTileID && !skipOrientation) ? variableOffsets[symbol.crossTileID] : null;
 
         if (!variableOffset) {
             // These symbols are from a justification that is not being used, or a label that wasn't placed
             // so we don't need to do the extra math to figure out what incremental shift to apply.
-            symbolProjection.hideGlyphs(symbol.numGlyphs, dynamicTextLayoutVertexArray);
-        } else  {
-            const tileAnchor = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-            const upDir = bucket.getProjection().upVector(coord.canonical, tileAnchor.x, tileAnchor.y);
-            const anchorElevation = elevation ? elevation.getAtTileOffset(coord, tileAnchor.x, tileAnchor.y) : 0.0;
-            const reprojectedAnchor = [
-                symbol.projectedAnchorX + anchorElevation * upDir[0] * upVectorScale.metersToTile,
-                symbol.projectedAnchorY + anchorElevation * upDir[1] * upVectorScale.metersToTile,
-                symbol.projectedAnchorZ + anchorElevation * upDir[2] * upVectorScale.metersToTile
-            ];
+            symbolProjection.hideGlyphs(numGlyphs, dynamicTextLayoutVertexArray);
 
-            const projectedAnchor = symbolProjection.projectVector(reprojectedAnchor, pitchWithMap ? tileMatrix : labelPlaneMatrix);
-            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(bucket.getProjection()), projectedAnchor[3]);
+        } else  {
+            let dx = 0, dy = 0, dz = 0;
+            if (elevation) {
+                const h = elevation ? elevation.getAtTileOffset(coord, tileAnchorX, tileAnchorY) : 0.0;
+                const [ux, uy, uz] = projection.upVector(coord.canonical, tileAnchorX, tileAnchorY);
+                dx = h * ux * metersToTile;
+                dy = h * uy * metersToTile;
+                dz = h * uz * metersToTile;
+            }
+            let anchor = [
+                symbol.projectedAnchorX + dx,
+                symbol.projectedAnchorY + dy,
+                symbol.projectedAnchorZ + dz
+            ];
+            anchor = symbolProjection.projectVector(anchor, pitchWithMap ? tileMatrix : labelPlaneMatrix);
+
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), anchor[3]);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
             }
 
-            const {width, height, anchor, textOffset, textScale} = variableOffset;
-
-            const shift = calculateVariableRenderShift(
-                anchor, width, height, textOffset, textScale, renderTextSize);
+            const shift = calculateVariableRenderShift(variableOffset, renderTextSize);
 
             // Usual case is that we take the projected anchor and add the pixel-based shift
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
             // tile-unit based shift to the anchor before projecting to the label plane.
-            let shiftedAnchor: Vec3;
-
             if (pitchWithMap) {
-                const shiftedTileAnchor = tileAnchor.add(shift);
-                const {x, y, z} = bucket.getProjection().projectTilePoint(shiftedTileAnchor.x, shiftedTileAnchor.y, coord.canonical);
+                const {x, y, z} = projection.projectTilePoint(tileAnchorX + shift.x, tileAnchorY + shift.y, coord.canonical);
+                anchor[0] = x + dx;
+                anchor[1] = y + dy;
+                anchor[2] = z + dz;
+                anchor = symbolProjection.projectVector(anchor, labelPlaneMatrix);
 
-                const reprojectedShiftedAnchor = [
-                    x + anchorElevation * upDir[0] * upVectorScale.metersToTile,
-                    y + anchorElevation * upDir[1] * upVectorScale.metersToTile,
-                    z + anchorElevation * upDir[2] * upVectorScale.metersToTile
-                ];
-
-                shiftedAnchor = symbolProjection.projectVector(reprojectedShiftedAnchor, labelPlaneMatrix);
             } else {
-                const rotatedShift = rotateWithMap ? shift.rotate(-transform.angle) : shift;
-                shiftedAnchor = [projectedAnchor[0] + rotatedShift.x, projectedAnchor[1] + rotatedShift.y, 0];
+                if (rotateWithMap) shift._rotate(-transform.angle);
+                anchor[0] += shift.x;
+                anchor[1] += shift.y;
+                anchor[2] = 0;
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
-            for (let g = 0; g < symbol.numGlyphs; g++) {
-                addDynamicAttributes(dynamicTextLayoutVertexArray, shiftedAnchor[0], shiftedAnchor[1], shiftedAnchor[2], angle);
+            for (let g = 0; g < numGlyphs; g++) {
+                addDynamicAttributes(dynamicTextLayoutVertexArray, anchor[0], anchor[1], anchor[2], angle);
             }
             //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
-                placedTextShifts[symbol.associatedIconIndex] = {shiftedAnchor, angle};
+                placedTextShifts[symbol.associatedIconIndex] = {anchor, angle};
             }
         }
     }
@@ -243,16 +243,15 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
         const placedIcons = bucket.icon.placedSymbolArray;
         for (let i = 0; i < placedIcons.length; i++) {
             const placedIcon = placedIcons.get(i);
-            if (placedIcon.hidden) {
-                symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
+            const {numGlyphs} = placedIcon;
+            const shift = placedTextShifts[i];
+
+            if (placedIcon.hidden || !shift) {
+                symbolProjection.hideGlyphs(numGlyphs, dynamicIconLayoutVertexArray);
             } else {
-                const shift = placedTextShifts[i];
-                if (!shift) {
-                    symbolProjection.hideGlyphs(placedIcon.numGlyphs, dynamicIconLayoutVertexArray);
-                } else {
-                    for (let g = 0; g < placedIcon.numGlyphs; g++) {
-                        addDynamicAttributes(dynamicIconLayoutVertexArray, shift.shiftedAnchor[0], shift.shiftedAnchor[1], shift.shiftedAnchor[2], shift.angle);
-                    }
+                const [x, y, z] = shift.anchor;
+                for (let g = 0; g < numGlyphs; g++) {
+                    addDynamicAttributes(dynamicIconLayoutVertexArray, x, y, z, shift.angle);
                 }
             }
         }
