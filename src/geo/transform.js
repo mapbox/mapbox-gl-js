@@ -1687,7 +1687,7 @@ class Transform {
             this.zoom += this.scaleZoom(s);
         }
 
-        this._constrainCamera();
+        this._constrainCamera(false);
         this._unmodified = unmodified;
         this._constraining = false;
     }

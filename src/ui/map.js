@@ -1341,7 +1341,7 @@ class Map extends Camera {
     }
 
     _isDragging(): boolean {
-        return this.handlers && this.handlers._isDragging();
+        return (this.handlers && this.handlers._isDragging()) || false;
     }
 
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
