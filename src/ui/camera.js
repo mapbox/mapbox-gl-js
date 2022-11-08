@@ -16,6 +16,8 @@ import LngLat, {earthRadius} from '../geo/lng_lat.js';
 import LngLatBounds from '../geo/lng_lat_bounds.js';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented.js';
+import assert from 'assert';
+import {Debug} from '../util/debug.js';
 import MercatorCoordinate, {
     mercatorZfromAltitude,
     mercatorXfromLng,
@@ -207,6 +209,8 @@ class Camera extends Evented {
         this._bearingSnap = options.bearingSnap;
 
         bindAll(['_renderFrameCallback'], this);
+
+        //addAssertions(this);
     }
 
     /** @section {Camera}
@@ -1764,5 +1768,40 @@ class Camera extends Evented {
         return transforms;
     }
 }
+
+// In debug builds, check that camera change events are fired in the correct order.
+// - ___start events needs to be fired before ___ and ___end events
+// - another ___start event can't be fired before a ___end event has been fired for the previous one
+function addAssertions(camera: Camera) { //eslint-disable-line
+    Debug.run(() => {
+        const inProgress = {};
+
+        ['drag', 'zoom', 'rotate', 'pitch', 'move'].forEach(name => {
+            inProgress[name] = false;
+
+            camera.on(`${name}start`, () => {
+                assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
+                inProgress[name] = true;
+                assert(inProgress.move);
+            });
+
+            camera.on(name, () => {
+                assert(inProgress[name]);
+                assert(inProgress.move);
+            });
+
+            camera.on(`${name}end`, () => {
+                assert(inProgress.move);
+                assert(inProgress[name]);
+                inProgress[name] = false;
+            });
+        });
+
+        // Canary used to test whether this function is stripped in prod build
+        canary = 'canary debug run'; //eslint-disable-line
+    });
+}
+
+let canary; //eslint-disable-line
 
 export default Camera;
