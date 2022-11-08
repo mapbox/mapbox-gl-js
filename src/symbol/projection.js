@@ -673,18 +673,15 @@ function placeGlyphAlongLine(
     };
 }
 
-const hiddenGlyphAttributes = new Float32Array([-Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0]);
-
 // Hide them by moving them offscreen. We still need to add them to the buffer
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
 function hideGlyphs(num: number, dynamicLayoutVertexArray: SymbolDynamicLayoutArray) {
-    for (let i = 0; i < num; i++) {
-        const offset = dynamicLayoutVertexArray.length;
-        dynamicLayoutVertexArray.resize(offset + 4);
-        // Since all hidden glyphs have the same attributes, we can build up the array faster with a single call to Float32Array.set
-        // for each set of four vertices, instead of calling addDynamicAttributes for each vertex.
-        dynamicLayoutVertexArray.float32.set(hiddenGlyphAttributes, offset * 4);
-    }
+    const offset = dynamicLayoutVertexArray.length;
+    const end = offset + 4 * num;
+    dynamicLayoutVertexArray.resize(end);
+    // Since all hidden glyphs have the same attributes, we can build up the array faster with a single call to
+    // Float32Array.fill for all vertices, instead of calling addDynamicAttributes for each vertex.
+    dynamicLayoutVertexArray.float32.fill(-Infinity, offset * 4, end * 4);
 }
 
 // For line label layout, we're not using z output and our w input is always 1
