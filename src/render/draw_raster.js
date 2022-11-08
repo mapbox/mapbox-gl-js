@@ -18,20 +18,14 @@ export default drawRaster;
 function configureRasterColor (layer, context, gl) {
     const defines = [];
     let colorInputMix = null;
-    let colorScale = null;
+    let colorRange = null;
 
     if (layer.paint.get('raster-color')) {
         defines.push('RASTER_COLOR');
 
         colorInputMix = layer.paint.get('raster-color-mix');
 
-        // Precompute the range and offset so that the value is computed in-shader from the mixed value as
-        // `colorScale[0] + colorScale[1] * inputValue`
-        const colorInputRange = layer.paint.get('raster-color-range');
-        colorScale = [
-            -colorInputRange[0] / (colorInputRange[1] - colorInputRange[0]),
-            1 / (colorInputRange[1] - colorInputRange[0])
-        ];
+        colorRange = layer.paint.get('raster-color-range');
 
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE2);
@@ -42,7 +36,7 @@ function configureRasterColor (layer, context, gl) {
 
     return {
         colorInputMix,
-        colorScale,
+        colorRange,
         defines
     };
 }
@@ -56,7 +50,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const {defines, colorInputMix, colorScale} = configureRasterColor(layer, context, gl);
+    const {defines, colorInputMix, colorRange} = configureRasterColor(layer, context, gl);
 
     const program = painter.useProgram('raster', null, defines);
 
@@ -115,7 +109,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, 2, colorInputMix, colorScale);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, 2, colorInputMix, colorRange);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 

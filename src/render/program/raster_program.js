@@ -60,7 +60,7 @@ const rasterUniformValues = (
     perspectiveTransform: [number, number],
     colorRampUnit: number = 0,
     colorMapInputMix: [number, number, number, number] = [NaN, NaN, NaN, NaN],
-    rasterDataScale: [number, number] = [NaN, NaN],
+    colorRange: [number, number] = [NaN, NaN],
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
     'u_tl_parent': parentTL,
@@ -76,7 +76,7 @@ const rasterUniformValues = (
     'u_spin_weights': spinWeights(layer.paint.get('raster-hue-rotate')),
     'u_perspective_transform': perspectiveTransform,
     'u_colorization_mix': colorMapInputMix,
-    'u_colorization_scale': rasterDataScale,
+    'u_colorization_scale': colorScaleFactors(colorRange),
     'u_color_ramp': colorRampUnit,
 });
 
@@ -101,6 +101,15 @@ function saturationFactor(saturation) {
     return saturation > 0 ?
         1 - 1 / (1.001 - saturation) :
         -saturation;
+}
+
+function colorScaleFactors (colorRange) {
+    // Precompute the offset and delta so that operations are moved out of the shader and
+    // the raster value may be computed in-shader as `colorScale[0] + colorScale[1] * inputValue`
+    return [
+        -colorRange[0] / (colorRange[1] - colorRange[0]),
+        1 / (colorRange[1] - colorRange[0])
+    ];
 }
 
 export {rasterUniforms, rasterUniformValues};
