@@ -29,7 +29,14 @@ type PlacedGlyph = {|
     point: Vec3,
     tilePath: Array<Point>,
     up: Vec3
-|}
+|};
+type ProjectionCache = {[_: number]: Vec3};
+
+type PlacementStatus = {
+    needsFlipping?: boolean,
+    notEnoughRoom?: boolean,
+    useVertical?: boolean
+};
 
 const FlipState = {
     unknown: 0,
@@ -328,10 +335,10 @@ function updateLineLabels(bucket: SymbolBucket,
             continue;
         }
 
-        let projectionCache: {[_: number]: Vec3} = {};
+        let projectionCache: ProjectionCache = {};
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
-        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
+        const placeUnflipped = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap);
 
         useVertical = placeUnflipped.useVertical;
@@ -369,7 +376,7 @@ function placeFirstAndLastGlyph(
     symbol: PlacedSymbol,
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
-    projectionCache: any,
+    projectionCache: ProjectionCache,
     getElevation: ?((p: Point) => Array<number>),
     returnPathInTileCoords: ?boolean,
     projection: Projection,
@@ -425,14 +432,26 @@ function requiresOrientationChange(writingMode, flipState, dx, dy) {
     return dx < 0 ? {needsFlipping: true} : null;
 }
 
-function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap) {
+function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap): PlacementStatus {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
     const lineOffsetY = symbol.lineOffsetY * fontScale;
     const {lineStartIndex, glyphStartIndex, numGlyphs, segment, writingMode, flipState} = symbol;
     const lineEndIndex = lineStartIndex + symbol.lineLength;
 
-    let placedGlyphs;
+    const addGlyph = (glyph) => {
+        if (globeExtVertexArray) {
+            const [ux, uy, uz] = glyph.up;
+            const offset = dynamicLayoutVertexArray.length;
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 0, ux, uy, uz);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 1, ux, uy, uz);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 2, ux, uy, uz);
+            updateGlobeVertexNormal(globeExtVertexArray, offset + 3, ux, uy, uz);
+        }
+        const [x, y, z] = glyph.point;
+        addDynamicAttributes(dynamicLayoutVertexArray, x, y, z, glyph.angle);
+    };
+
     if (numGlyphs > 1) {
         // Place the first and the last glyph in the label first, so we can figure out
         // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
@@ -451,13 +470,14 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             }
         }
 
-        placedGlyphs = [firstAndLastGlyph.first];
+        addGlyph(firstAndLastGlyph.first);
         for (let glyphIndex = glyphStartIndex + 1; glyphIndex < glyphStartIndex + numGlyphs - 1; glyphIndex++) {
-            // Since first and last glyph fit on the line, we're sure that the rest of the glyphs can be placed
-            placedGlyphs.push(placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, segment,
-                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, projection, tileID, pitchWithMap));
+            // Since first and last glyph fit on the line, the rest of the glyphs can be placed too, but check to make sure
+            const glyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, segment,
+                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, projection, tileID, pitchWithMap);
+            if (glyph) addGlyph(glyph);
         }
-        placedGlyphs.push(firstAndLastGlyph.last);
+        addGlyph(firstAndLastGlyph.last);
     } else {
         // Only a single glyph to place
         // So, determine whether to flip based on projected angle of the line segment it's on
@@ -485,21 +505,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             return {notEnoughRoom: true};
         }
 
-        placedGlyphs = [singleGlyph];
-    }
-
-    if (globeExtVertexArray) {
-        for (const glyph: any of placedGlyphs) {
-            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 0, glyph.up[0], glyph.up[1], glyph.up[2]);
-            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 1, glyph.up[0], glyph.up[1], glyph.up[2]);
-            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 2, glyph.up[0], glyph.up[1], glyph.up[2]);
-            updateGlobeVertexNormal(globeExtVertexArray, dynamicLayoutVertexArray.length + 3, glyph.up[0], glyph.up[1], glyph.up[2]);
-            addDynamicAttributes(dynamicLayoutVertexArray, glyph.point[0], glyph.point[1], glyph.point[2], glyph.angle);
-        }
-    } else {
-        for (const glyph: any of placedGlyphs) {
-            addDynamicAttributes(dynamicLayoutVertexArray, glyph.point[0], glyph.point[1], glyph.point[2], glyph.angle);
-        }
+        addGlyph(singleGlyph);
     }
     return {};
 }
@@ -538,7 +544,7 @@ function placeGlyphAlongLine(
     lineEndIndex: number,
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
-    projectionCache: {[_: number]: Vec3},
+    projectionCache: ProjectionCache,
     getElevation: ?((p: Point) => Array<number>),
     returnPathInTileCoords: ?boolean,
     endGlyph: ?boolean,

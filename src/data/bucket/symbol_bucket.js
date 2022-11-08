@@ -716,14 +716,14 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
             if (globe) {
-                const globeAnchor = globe.anchor;
-                const up = globe.up;
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                const {x, y, z} = globe.anchor;
+                const [ux, uy, uz] = globe.up;
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
 
-                addDynamicAttributes(arrays.dynamicLayoutVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, angle);
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, x, y, z, angle);
             } else {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
             }
