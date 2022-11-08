@@ -15,32 +15,6 @@ import rasterFade from './raster_fade.js';
 
 export default drawRaster;
 
-function configureRasterColor (layer, context, gl) {
-    const defines = [];
-    let colorInputMix = null;
-    let colorRange = null;
-
-    if (layer.paint.get('raster-color')) {
-        defines.push('RASTER_COLOR');
-
-        colorInputMix = layer.paint.get('raster-color-mix');
-
-        colorRange = layer.paint.get('raster-color-range');
-
-        // Allocate a texture if not allocated
-        context.activeTexture.set(gl.TEXTURE2);
-        let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
-        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-    }
-
-    return {
-        colorInputMix,
-        colorRange,
-        defines
-    };
-}
-
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
@@ -50,9 +24,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const {defines, colorInputMix, colorRange} = configureRasterColor(layer, context, gl);
+    const rasterColor = configureRasterColor(layer, context, gl);
 
-    const program = painter.useProgram('raster', null, defines);
+    const program = painter.useProgram('raster', null, rasterColor.defines);
 
     const colorMode = painter.colorModeForRenderPass();
 
@@ -109,7 +83,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, 2, colorInputMix, colorRange);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, 2, rasterColor.mix, rasterColor.range);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
@@ -130,3 +104,21 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
+function configureRasterColor (layer, context, gl) {
+    const defines = [];
+    let mix = undefined;
+    let range = undefined;
+
+    if (layer.paint.get('raster-color')) {
+        defines.push('RASTER_COLOR');
+        mix = layer.paint.get('raster-color-mix');
+        range = layer.paint.get('raster-color-range');
+
+        // Allocate a texture if not allocated
+        context.activeTexture.set(gl.TEXTURE2);
+        let tex = layer.colorRampTexture;
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
+    return {mix, range, defines};
+}
