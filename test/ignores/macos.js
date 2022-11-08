@@ -6,9 +6,6 @@ const todo = [
     "render-tests/icon-text-fit/both-text-anchor-1x-image-2x-screen",
     "render-tests/icon-text-fit/both-text-anchor-2x-image-1x-screen",
 
-    // Bug: Inconsistent zoom
-    "render-tests/fit-screen-coordinates/terrain",
-
     // Bug: raster-resampling doesn't work on Windows and some Macs
     // https://github.com/mapbox/mapbox-gl-js/issues/7331
     "render-tests/raster-resampling/function",
