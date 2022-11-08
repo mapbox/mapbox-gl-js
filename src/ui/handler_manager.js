@@ -495,6 +495,9 @@ class HandlerManager {
             if (preZoom !== tr.zoom) this._map._update(true);
         }
 
+        // Catches double click and double tap zooms when camera is constrained over terrain
+        if (tr._isCameraConstrained) map._stop(true);
+
         if (!hasChange(combinedResult)) {
             this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
             return;
@@ -502,8 +505,9 @@ class HandlerManager {
 
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
 
-        if (tr._isCameraConstrained && zoomDelta > 0) {
-            zoomDelta = 0;
+        if (tr._isCameraConstrained) {
+            // Catches wheel zoom events when camera is constrained over terrain
+            if (zoomDelta > 0) zoomDelta = 0;
             tr._isCameraConstrained = false;
         }
 
