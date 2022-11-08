@@ -56,7 +56,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render:
+      - test-render-linux-chrome:
           requires:
             - prepare
           filters:
@@ -80,13 +80,13 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-prod:
+      - test-render-linux-chrome-prod:
           requires:
             - prepare
           filters:
             tags:
               only: /.*/
-      - test-render-csp:
+      - test-render-linux-chrome-csp:
           requires:
             - prepare
           filters:
@@ -138,8 +138,8 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render
-            - test-render-prod
+            - test-render-linux-chrome
+            - test-render-linux-chrome-prod
             - test-query
             - test-expressions
           filters:
@@ -156,8 +156,8 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render
-            - test-render-prod
+            - test-render-linux-chrome
+            - test-render-linux-chrome-prod
             - test-query
             - test-expressions
           filters:
@@ -272,7 +272,7 @@ jobs:
           at: ~/
       - run: yarn run test-unit
 
-  test-render:
+  test-render-linux-chrome:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -297,7 +297,7 @@ jobs:
           path: "test/integration/render-tests/index.html"
 
 
-  test-render-prod:
+  test-render-linux-chrome-prod:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -309,7 +309,7 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-csp:
+  test-render-linux-chrome-csp:
     <<: *defaults
     steps:
       - attach_workspace:
