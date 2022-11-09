@@ -3817,6 +3817,15 @@
             "macos": "0.9.0"
           }
         }
+      },
+      "raster-value": {
+        "doc": "Returns the raster value of a pixel computed via `raster-color-mix`. Can only be used in the `raster-color` property.",
+        "group": "Raster Colorization",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.12.0"
+          }
+        }
       }
     }
   },

@@ -5,9 +5,11 @@ import StyleLayer from '../style_layer.js';
 import properties from './raster_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import {renderColorRamp} from '../../util/color_ramp.js';
+import {RGBAImage} from '../../util/image.js';
 
 import type {PaintProps} from './raster_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
+import type Texture from '../../render/texture.js';
 
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

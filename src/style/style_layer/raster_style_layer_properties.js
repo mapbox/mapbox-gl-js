@@ -28,7 +28,7 @@ export type PaintProps = {|
     "raster-resampling": DataConstantProperty<"linear" | "nearest">,
     "raster-fade-duration": DataConstantProperty<number>,
     "raster-color": ColorRampProperty,
-    "raster-color-mix": DataConstantProperty<[number, number, number]>,
+    "raster-color-mix": DataConstantProperty<[number, number, number, number]>,
     "raster-color-range": DataConstantProperty<[number, number]>,
 |};
 
