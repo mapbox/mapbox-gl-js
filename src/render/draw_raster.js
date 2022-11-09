@@ -83,7 +83,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, 2, rasterColor.mix, rasterColor.range);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, rasterColor.unit, rasterColor.mix, rasterColor.range);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
@@ -108,6 +108,7 @@ function configureRasterColor (layer, context, gl) {
     const defines = [];
     let mix = undefined;
     let range = undefined;
+    let unit = -1;
 
     if (layer.paint.get('raster-color')) {
         defines.push('RASTER_COLOR');
@@ -116,9 +117,10 @@ function configureRasterColor (layer, context, gl) {
 
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE2);
+        unit = 2;
         let tex = layer.colorRampTexture;
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
-    return {mix, range, defines};
+    return {mix, range, defines, unit};
 }

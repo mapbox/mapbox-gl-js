@@ -6063,7 +6063,7 @@
     },
     "raster-color": {
       "type": "color",
-      "doc": "Defines a color map applied to a raster layer. Should be an expression that uses `[\"raster-value\"]` as input.",
+      "doc": "Defines a color map by which to colorize a raster layer, parameterized by the `[\"raster-value\"]` expression and evaluated at 1024 uniformly spaced steps over the range specified by `raster-color-range`.",
       "transition": false,
       "sdk-support": {
         "basic functionality": {
@@ -6097,7 +6097,7 @@
           "zoom"
         ]
       },
-      "doc": "The combination of source RGB channels added together to compute the raster value. Computed using the equation `mix.r * src.r + mix.g * src.g + mix.b * src.b + mix.a`. Source alpha is applied as opacity of the output, while ",
+      "doc": "When `raster-color` is active, specifies the combination of source RGB channels used to compute the raster value. Computed using the equation `mix.r * src.r + mix.g * src.g + mix.b * src.b + mix.a`. The first three components specify the mix of source red, green, and blue channels, respectively. The fourth component serves as a constant offset and is *not* multipled by source alpha. Source alpha is instead carried through and applied as opacity to the colorized result.",
       "example": [
         0.2126,
         0.7152,
@@ -6126,7 +6126,7 @@
           "zoom"
         ]
       },
-      "doc": "The range of values to which a raster colorize is applied.",
+      "doc": "When `raster-color` is active, specifies the range over which `raster-color` is tabulated. Units correspond to the computed raster value via `raster-color-mix`.",
       "example": [
         0.5,
         10
