@@ -30,11 +30,10 @@ void main() {
     vec4 color1 = texture2D(u_image1, v_pos1);
 
 #ifdef RASTER_COLOR
-    vec4 color = colormap(mix(
-      dot(vec4(color0.rgb, 1), u_colorization_mix),
-      dot(vec4(color1.rgb, 1), u_colorization_mix),
-      u_fade_t
-    ));
+    // In the case of raster colorization, interpolate the raster value first,
+    // then sample the color map. Otherwise we interpolate two tabulated colors
+    // and end up with a color *not* on the color map.
+    vec4 color = colormap(dot(vec4(mix(color0.rgb, color1.rgb, u_fade_t), 1), u_colorization_mix));
 
     // Apply input alpha on top of color ramp alpha
     color.a *= mix(color0.a, color1.a, u_fade_t);
