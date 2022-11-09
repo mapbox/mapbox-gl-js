@@ -35,7 +35,7 @@
           0.5, "rgba(0,255,0,1)",
           1, "rgba(0,0,255,1)"
         ],
-        "raster-color-mix": [ 2, 1, 1 ],
+        "raster-color-mix": [ 2, 1, 1, 0 ],
         "raster-color-range": [0, 4]
       }
     }
