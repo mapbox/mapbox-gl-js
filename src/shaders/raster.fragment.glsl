@@ -12,11 +12,11 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
+#ifdef RASTER_COLOR
 uniform sampler2D u_color_ramp;
 uniform vec2 u_colorization_scale;
 uniform vec4 u_colorization_mix;
 
-#ifdef RASTER_COLOR
 vec4 colormap (float value) {
   float scaled_value = value * u_colorization_scale.y + u_colorization_scale.x;
   return texture2D(u_color_ramp, vec2(scaled_value, 0.5));
