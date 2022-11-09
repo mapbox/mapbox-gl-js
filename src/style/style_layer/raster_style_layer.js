@@ -28,7 +28,7 @@ class RasterStyleLayer extends StyleLayer {
         return ['raster'];
     }
 
-    hasColorMap () {
+    hasColorMap (): boolean {
         const expr = this._transitionablePaint._values['raster-color'].value;
         return !!expr.value;
     }
@@ -43,7 +43,7 @@ class RasterStyleLayer extends StyleLayer {
         if (!this.hasColorMap()) return;
 
         const expression = this._transitionablePaint._values['raster-color'].value.expression;
-        const [start, end] = this._transitionablePaint._values['raster-color-range'].value.expression.evaluate();
+        const [start, end] = this._transitionablePaint._values['raster-color-range'].value.expression.evaluate({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

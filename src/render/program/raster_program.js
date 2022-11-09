@@ -32,6 +32,8 @@ export type RasterUniformsType = {|
     'u_color_ramp': Uniform1i,
 |};
 
+export type RasterDefinesType = 'RASTER_COLOR';
+
 const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_tl_parent': new Uniform2f(context),

@@ -7,6 +7,7 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import {rasterUniformValues} from './program/raster_program.js';
 
+import type Context from '../gl/context.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
@@ -104,7 +105,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-function configureRasterColor (layer, context, gl) {
+function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: WebGLRenderingContext) {
     const defines = [];
     let mix;
     let range;
