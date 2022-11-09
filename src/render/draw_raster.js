@@ -106,8 +106,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
 function configureRasterColor (layer, context, gl) {
     const defines = [];
-    let mix = undefined;
-    let range = undefined;
+    let mix;
+    let range;
     let unit = -1;
 
     if (layer.paint.get('raster-color')) {
