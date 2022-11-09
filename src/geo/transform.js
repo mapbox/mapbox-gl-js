@@ -1587,7 +1587,7 @@ class Transform {
         }
     }
 
-    _constrainCamera(isDragging: boolean) {
+    _constrainCamera(isDragging: boolean = false) {
         if (!this._elevation)
             return;
 
@@ -1624,8 +1624,8 @@ class Transform {
             this._setCameraPosition(newPosition);
             this._updateStateFromCamera();
 
+        // Set camera as constrained to keep zoom at safe distance from terrain
         } else if (cameraHeight < minHeight) {
-            // Set camera as constrained to keep zoom at safe distance from terrain
             this._isCameraConstrained = true;
         }
     }
@@ -1687,7 +1687,7 @@ class Transform {
             this.zoom += this.scaleZoom(s);
         }
 
-        this._constrainCamera(false);
+        this._constrainCamera();
         this._unmodified = unmodified;
         this._constraining = false;
     }
