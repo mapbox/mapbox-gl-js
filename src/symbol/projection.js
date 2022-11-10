@@ -21,7 +21,7 @@ import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 import {WritingMode} from '../symbol/shaping.js';
 import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
 import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
-export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectVector, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 type PlacedGlyph = {|
     angle: number,
@@ -187,9 +187,9 @@ function getGlCoordMatrix(posMatrix: Float32Array,
     }
 }
 
-function project(x: number, y: number, matrix: Mat4, elevation: number = 0): Vec4 {
-    const pos = [x, y, elevation, 1];
-    if (elevation) {
+function project(x: number, y: number, z: number, matrix: Mat4): Vec4 {
+    const pos = [x, y, z, 1];
+    if (z) {
         vec4.transformMat4(pos, pos, matrix);
     } else {
         xyTransformMat4(pos, pos, matrix);
@@ -201,18 +201,8 @@ function project(x: number, y: number, matrix: Mat4, elevation: number = 0): Vec
     return pos;
 }
 
-function projectVector(point: Vec3, matrix: Mat4): Vec4 {
-    const pos = [point[0], point[1], point[2], 1];
-    vec4.transformMat4(pos, pos, matrix);
-    const w = pos[3];
-    pos[0] /= w;
-    pos[1] /= w;
-    pos[2] /= w;
-    return pos;
-}
-
-function projectClamped(point: Vec3, matrix: Mat4): Vec4 {
-    const pos = [point[0], point[1], point[2], 1];
+function projectClamped([x, y, z]: Vec3, matrix: Mat4): Vec4 {
+    const pos = [x, y, z, 1];
     vec4.transformMat4(pos, pos, matrix);
 
     // Clamp distance to a positive value so we can avoid screen coordinate
@@ -327,7 +317,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        const labelPlaneAnchorPoint = project(x, y, labelPlaneMatrix, z);
+        const labelPlaneAnchorPoint = project(x, y, z, labelPlaneMatrix);
 
         // Skip labels behind the camera
         if (labelPlaneAnchorPoint[3] <= 0.0) {
@@ -461,9 +451,11 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         }
 
         if (keepUpright && !flip) {
-            const firstVec = projectVector(firstAndLastGlyph.first.point, glCoordMatrix);
-            const lastVec = projectVector(firstAndLastGlyph.last.point, glCoordMatrix);
-            const orientationChange = requiresOrientationChange(writingMode, flipState, (lastVec[0] - firstVec[0]) * aspectRatio, lastVec[1] - firstVec[1]);
+            let [x0, y0, z0] = firstAndLastGlyph.first.point;
+            let [x1, y1, z1] = firstAndLastGlyph.last.point;
+            [x0, y0] = project(x0, y0, z0, glCoordMatrix);
+            [x1, y1] = project(x1, y1, z1, glCoordMatrix);
+            const orientationChange = requiresOrientationChange(writingMode, flipState, (x1 - x0) * aspectRatio, y1 - y0);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
             if (orientationChange) {
                 return orientationChange;
@@ -482,10 +474,10 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         // Only a single glyph to place
         // So, determine whether to flip based on projected angle of the line segment it's on
         if (keepUpright && !flip) {
-            const a = project(tileAnchorPoint.x, tileAnchorPoint.y, posMatrix);
+            const a = project(tileAnchorPoint.x, tileAnchorPoint.y, 0, posMatrix);
             const tileVertexIndex = lineStartIndex + segment + 1;
             const tileSegmentEnd = new Point(lineVertexArray.getx(tileVertexIndex), lineVertexArray.gety(tileVertexIndex));
-            const projectedVertex = project(tileSegmentEnd.x, tileSegmentEnd.y, posMatrix);
+            const projectedVertex = project(tileSegmentEnd.x, tileSegmentEnd.y, 0, posMatrix);
             // We know the anchor will be in the viewport, but the end of the line segment may be
             // behind the plane of the camera, in which case we can use a point at any arbitrary (closer)
             // point on the segment.
@@ -511,12 +503,12 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 }
 
 function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation: ?((p: Point) => Array<number>)) {
-    const point = projection.projectTilePoint(p.x, p.y, tileID);
+    const {x, y, z} = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
-        return project(point.x, point.y, posMatrix, point.z);
+        return project(x, y, z, posMatrix);
     }
-    const elevation = getElevation(p);
-    return project(point.x + elevation[0], point.y + elevation[1], posMatrix, point.z + elevation[2]);
+    const [dx, dy, dz] = getElevation(p);
+    return project(x + dx, y + dy, z + dz, posMatrix);
 }
 
 function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Vec3, minimumLength: number, projectionMatrix: Float32Array, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID): Vec3 {

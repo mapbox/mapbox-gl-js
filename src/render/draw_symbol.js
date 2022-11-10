@@ -194,14 +194,13 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
                 dy = h * uy * metersToTile;
                 dz = h * uz * metersToTile;
             }
-            let anchor = [
+            let [x, y, z, w] = symbolProjection.project(
                 symbol.projectedAnchorX + dx,
                 symbol.projectedAnchorY + dy,
-                symbol.projectedAnchorZ + dz
-            ];
-            anchor = symbolProjection.projectVector(anchor, pitchWithMap ? tileMatrix : labelPlaneMatrix);
+                symbol.projectedAnchorZ + dz,
+                pitchWithMap ? tileMatrix : labelPlaneMatrix);
 
-            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), anchor[3]);
+            const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), w);
             let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
@@ -214,26 +213,23 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             // calculated above. In the (somewhat weird) case of pitch-aligned text, we add an equivalent
             // tile-unit based shift to the anchor before projecting to the label plane.
             if (pitchWithMap) {
-                const {x, y, z} = projection.projectTilePoint(tileAnchorX + shift.x, tileAnchorY + shift.y, coord.canonical);
-                anchor[0] = x + dx;
-                anchor[1] = y + dy;
-                anchor[2] = z + dz;
-                anchor = symbolProjection.projectVector(anchor, labelPlaneMatrix);
+                ({x, y, z} = projection.projectTilePoint(tileAnchorX + shift.x, tileAnchorY + shift.y, coord.canonical));
+                [x, y, z] = symbolProjection.project(x + dx, y + dy, z + dz, labelPlaneMatrix);
 
             } else {
                 if (rotateWithMap) shift._rotate(-transform.angle);
-                anchor[0] += shift.x;
-                anchor[1] += shift.y;
-                anchor[2] = 0;
+                x += shift.x;
+                y += shift.y;
+                z = 0;
             }
 
             const angle = (bucket.allowVerticalPlacement && symbol.placedOrientation === WritingMode.vertical) ? Math.PI / 2 : 0;
             for (let g = 0; g < numGlyphs; g++) {
-                addDynamicAttributes(dynamicTextLayoutVertexArray, anchor[0], anchor[1], anchor[2], angle);
+                addDynamicAttributes(dynamicTextLayoutVertexArray, x, y, z, angle);
             }
             //Only offset horizontal text icons
             if (updateTextFitIcon && symbol.associatedIconIndex >= 0) {
-                placedTextShifts[symbol.associatedIconIndex] = {anchor, angle};
+                placedTextShifts[symbol.associatedIconIndex] = {x, y, z, angle};
             }
         }
     }
@@ -249,9 +245,9 @@ function updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, var
             if (placedIcon.hidden || !shift) {
                 symbolProjection.hideGlyphs(numGlyphs, dynamicIconLayoutVertexArray);
             } else {
-                const [x, y, z] = shift.anchor;
+                const {x, y, z, angle} = shift;
                 for (let g = 0; g < numGlyphs; g++) {
-                    addDynamicAttributes(dynamicIconLayoutVertexArray, x, y, z, shift.angle);
+                    addDynamicAttributes(dynamicIconLayoutVertexArray, x, y, z, angle);
                 }
             }
         }
