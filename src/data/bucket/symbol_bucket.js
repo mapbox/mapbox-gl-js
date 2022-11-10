@@ -850,14 +850,14 @@ class SymbolBucket implements Bucket {
                     instance.leftJustifiedTextSymbolIndex : instance.verticalPlacedTextSymbolIndex >= 0 ?
                         instance.verticalPlacedTextSymbolIndex : boxIndex;
 
-        const symbol: any = this.text.placedSymbolArray.get(symbolIndex);
+        const symbol = this.text.placedSymbolArray.get(symbolIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.textSizeData, textSize, symbol) / ONE_EM;
 
         return this.tilePixelRatio * featureSize;
     }
 
     getSymbolInstanceIconSize(iconSize: any, zoom: number, iconIndex: number): number {
-        const symbol: any = this.icon.placedSymbolArray.get(iconIndex);
+        const symbol = this.icon.placedSymbolArray.get(iconIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
         return this.tilePixelRatio * featureSize;
