@@ -18,6 +18,7 @@
     <button id="getBounds">getBounds</button>
     <button id="setBounds">setBounds</button>
     <button id="maintainBearing">Maintain Bearing: false</button>
+    <button id="maintainPitch">Maintain Pitch: false</button>
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -60,6 +61,7 @@ map.on('load', function () {
 
 var bounds;
 var maintainBearing = false;
+var maintainPitch = false;
 document.getElementById('getBounds').addEventListener('click', function () {
     bounds = map.getBounds();
     map.getSource('bounds').setData({
@@ -81,12 +83,18 @@ document.getElementById('setBounds').addEventListener('click', function () {
     map.fitBounds(bounds, {
         duration: 0,
         bearing: maintainBearing ? map.getBearing() : 0,
+        pitch: maintainPitch ? map.getPitch() : 0
     });
 });
 const maintainBearingElement = document.getElementById('maintainBearing');
 maintainBearingElement.addEventListener('click', function() {
     maintainBearing = !maintainBearing;
     maintainBearingElement.innerHTML = `Maintain Bearing: ${maintainBearing}`;
+});
+const maintainPitchElement = document.getElementById('maintainPitch');
+maintainPitchElement.addEventListener('click', function() {
+    maintainPitch = !maintainPitch;
+    maintainPitchElement.innerHTML = `Maintain Pitch: ${maintainPitch}`;
 });
 </script>
 </body>
