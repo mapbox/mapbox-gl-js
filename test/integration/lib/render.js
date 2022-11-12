@@ -20,6 +20,7 @@ config.REQUIRE_ACCESS_TOKEN = false;
 window._suiteName = 'render-tests';
 
 mapboxgl.prewarm();
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
 
 //1. Create and position the container, floating at the bottom right
 const container = document.createElement('div');
