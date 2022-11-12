@@ -481,6 +481,9 @@ function determineLineBreaks(logicalInput: TaggedString,
                              imagePositions: {[_: string]: ImagePosition},
                              symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
+    if (symbolPlacement !== 'point')
+        return [];
+
     if (!logicalInput)
         return [];
 
