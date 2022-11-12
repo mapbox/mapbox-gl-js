@@ -234,9 +234,9 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
             const symbolPlacement = layout.get('symbol-placement');
             const isPointPlacement = symbolPlacement === 'point';
-            const maxWidth = symbolPlacement === 'point' ?
+            const maxWidth = isPointPlacement ?
                 layout.get('text-max-width').evaluate(feature, {}, canonical) * ONE_EM :
-                0;
+                Infinity;
 
             const addVerticalShapingIfNeeded = (textJustify) => {
                 if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
