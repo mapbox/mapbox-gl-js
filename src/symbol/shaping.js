@@ -260,7 +260,6 @@ function shapeText(text: Formatted,
                    translate: [number, number],
                    writingMode: 1 | 2,
                    allowVerticalPlacement: boolean,
-                   symbolPlacement: string,
                    layoutTextSize: number,
                    layoutTextSizeThisZoom: number): Shaping | false {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
@@ -271,7 +270,7 @@ function shapeText(text: Formatted,
 
     let lines: Array<TaggedString> = [];
 
-    const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, symbolPlacement, layoutTextSize);
+    const lineBreaks = determineLineBreaks(logicalInput, spacing, maxWidth, glyphMap, imagePositions, layoutTextSize);
 
     const {processBidirectionalText, processStyledBidirectionalText} = rtlTextPlugin;
     if (processBidirectionalText && logicalInput.sections.length === 1) {
@@ -479,7 +478,6 @@ function determineLineBreaks(logicalInput: TaggedString,
                              maxWidth: number,
                              glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}},
                              imagePositions: {[_: string]: ImagePosition},
-                             symbolPlacement: string,
                              layoutTextSize: number): Array<number> {
     if (!logicalInput)
         return [];
