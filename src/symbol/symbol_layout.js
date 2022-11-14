@@ -67,13 +67,13 @@ const baselineOffset = 7;
 const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 const sqrt2 = Math.sqrt(2);
 
-export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]): [number, number] {
+export function evaluateVariableOffset(anchor: TextAnchor, [offsetX, offsetY]: [number, number]): [number, number] {
+    let x = 0, y = 0;
 
-    function fromRadialOffset(anchor: TextAnchor, radialOffset: number) {
-        let x = 0, y = 0;
-        if (radialOffset < 0) radialOffset = 0; // Ignore negative offset.
-        // solve for r where r^2 + r^2 = radialOffset^2
-        const hypotenuse = radialOffset / sqrt2;
+    if (offsetY === INVALID_TEXT_OFFSET) { // radial offset
+        if (offsetX < 0) offsetX = 0; // Ignore negative offset.
+        // solve for r where r^2 + r^2 = offsetX^2
+        const hypotenuse = offsetX / sqrt2;
         switch (anchor) {
         case 'top-right':
         case 'top-left':
@@ -84,10 +84,10 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             y = -hypotenuse + baselineOffset;
             break;
         case 'bottom':
-            y = -radialOffset + baselineOffset;
+            y = -offsetX + baselineOffset;
             break;
         case 'top':
-            y = radialOffset - baselineOffset;
+            y = offsetX - baselineOffset;
             break;
         }
 
@@ -101,18 +101,14 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             x = hypotenuse;
             break;
         case 'left':
-            x = radialOffset;
+            x = offsetX;
             break;
         case 'right':
-            x = -radialOffset;
+            x = -offsetX;
             break;
         }
 
-        return [x, y];
-    }
-
-    function fromTextOffset(anchor: TextAnchor, offsetX: number, offsetY: number) {
-        let x = 0, y = 0;
+    } else { // text offset
         // Use absolute offset values.
         offsetX = Math.abs(offsetX);
         offsetY = Math.abs(offsetY);
@@ -142,11 +138,9 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             x = offsetX;
             break;
         }
-
-        return [x, y];
     }
 
-    return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
+    return [x, y];
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
