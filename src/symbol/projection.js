@@ -429,7 +429,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     const {lineStartIndex, glyphStartIndex, numGlyphs, segment, writingMode, flipState} = symbol;
     const lineEndIndex = lineStartIndex + symbol.lineLength;
 
-    const addGlyph = (glyph) => {
+    const addGlyph = (glyph: PlacedGlyph) => {
         if (globeExtVertexArray) {
             const [ux, uy, uz] = glyph.up;
             const offset = dynamicLayoutVertexArray.length;
@@ -467,7 +467,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             // Since first and last glyph fit on the line, the rest of the glyphs can be placed too, but check to make sure
             const glyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, segment,
                 lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, projection, tileID, pitchWithMap);
-            if (glyph) addGlyph(glyph);
+            if (!glyph) return {notEnoughRoom: true};
+            addGlyph(glyph);
         }
         addGlyph(firstAndLastGlyph.last);
     } else {
