@@ -7,6 +7,12 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+uniform lowp float u_opacity;
+uniform vec3 u_lightcolor;
+#ifdef UNIFORM_LIGHTING
+uniform vec3 u_ambient;
+#endif
+
 varying vec2 v_pos;
 varying vec4 v_lighting;
 
@@ -28,7 +34,19 @@ void main() {
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     vec4 out_color = texture2D(u_image, pos);
 
+#ifdef UNIFORM_LIGHTING
+    vec3 NdotL = v_lighting.rgb;
+    
+    vec3 indirct = u_ambient * out_color.rgb;
+    vec3 direct = u_lightcolor * out_color.rgb;
+
+    vec3 l = indirct + direct * NdotL;
+
+    out_color = vec4(l, out_color.w) * u_opacity;
+#else
     out_color = out_color * v_lighting;
+#endif
+
 #ifdef FAUX_AO
     float intensity = u_ao[0];
     float h = max(0.0, v_ao.z);

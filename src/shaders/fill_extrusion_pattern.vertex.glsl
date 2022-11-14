@@ -108,15 +108,25 @@ void main() {
     v_pos = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, display_size, u_tile_units_to_pixels, pos);
 
     v_lighting = vec4(0.0, 0.0, 0.0, 1.0);
-    float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
-    directional = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), directional);
+    float NdotL = 0.0;
+#ifdef UNIFORM_LIGHTING
+    const float ext = 0.70710678118; // acos(pi/4)
+    NdotL = (clamp(dot(normal, u_lightpos), -ext, 1.0) + ext) / (1.0 + ext);
+#else
+    NdotL = clamp(dot(normal, u_lightpos), 0.0, 1.0);
+    NdotL = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), NdotL);
+#endif
 
     if (normal.y != 0.0) {
+        float r = 0.84;
+#ifndef UNIFORM_LIGHTING
+        r = mix(0.7, 0.98, 1.0 - u_lightintensity);
+#endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= (
+        NdotL *= (
             (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), r, 1.0)));
     }
 
 #ifdef FAUX_AO
@@ -130,7 +140,7 @@ void main() {
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
     v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
-    directional *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
@@ -138,8 +148,12 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-    v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+#ifdef UNIFORM_LIGHTING
+    v_lighting.rgb += NdotL;
+#else
+    v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;
+#endif 
 
 #ifdef FOG
     v_fog_pos = fog_position(p);
