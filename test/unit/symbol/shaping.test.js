@@ -75,6 +75,10 @@ test('shaping', (t) => {
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedNewLine);
 
+    // along a line
+    shaped = shaping.shapeText(Formatted.fromString('abcde\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, 'line', layoutTextSize, layoutTextSizeThisZoom);
+    t.deepEqual(shaped, expectedNewLine);
+
     shaped = shaping.shapeText(Formatted.fromString('abcde\r\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, 'point', layoutTextSize, layoutTextSizeThisZoom);
     t.deepEqual(shaped.positionedLines, expectedNewLine.positionedLines);
 
