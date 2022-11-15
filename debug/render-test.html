@@ -24,7 +24,7 @@ fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).
         fadeDuration = 0,
         optimizeForTerrain = false,
         localIdeographFontFamily = false,
-        projection
+        projection, debug
     } = style.metadata.test;
 
     const container = document.getElementById('map');
@@ -45,6 +45,8 @@ fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).
         attributionControl: false
     });
     map.removeControl(map._logoControl);
+
+    if (debug) map.showTileBoundaries = true;
 });
 
 </script>
