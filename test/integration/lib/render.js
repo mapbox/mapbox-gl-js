@@ -50,12 +50,7 @@ tape.onFinish(() => {
 });
 
 for (const testName in fixtures) {
-    tape(testName, {timeout: 20000}, ensureTeardown);
-}
-
-function ensureTeardown(t) {
-    const testName = t.name;
-    const options = {timeout: 5000};
+    const options = {timeout: 20000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
         if (/^skip/.test(ignoreType)) {
@@ -64,9 +59,10 @@ function ensureTeardown(t) {
             options.todo = true;
         }
     }
+    tape(testName, options, runTest);
+}
 
-    t.test(testName, options, runTest);
-
+function ensureTeardown() {
     //Teardown all global resources
     //Cleanup WebGL context and map
     if (map) {
@@ -83,10 +79,11 @@ function ensureTeardown(t) {
 
     //Restore timers
     mapboxgl.restoreNow();
-    t.end();
 }
 
 async function runTest(t) {
+    t.teardown(ensureTeardown);
+
     let style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
@@ -333,7 +330,7 @@ function drawImage(canvas, ctx, src, getImageData = true) {
 function createCanvas(id = 'fake-canvas') {
     const canvas = window.document.createElement('canvas');
     canvas.id = id;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
     return {canvas, ctx};
 }
 
