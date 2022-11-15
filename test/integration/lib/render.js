@@ -236,23 +236,23 @@ async function runTest(t) {
         }
 
         let fileInfo;
-        let actual;
 
-        if (options.output === "terrainDepth") {
-            terrainDepthCanvas.width = w;
-            terrainDepthCanvas.height = h;
-            const terrainDepthData = new ImageData(actualImageData, w, h);
-            terrainDepthCtx.putImageData(terrainDepthData, 0, 0);
-            actual = terrainDepthCanvas.toDataURL();
-        } else {
-            actual = map.getCanvas().toDataURL();
-        }
+        const getActual = () => {
+            if (options.output === "terrainDepth") {
+                terrainDepthCanvas.width = w;
+                terrainDepthCanvas.height = h;
+                const terrainDepthData = new ImageData(actualImageData, w, h);
+                terrainDepthCtx.putImageData(terrainDepthData, 0, 0);
+                return terrainDepthCanvas.toDataURL();
+            }
+            return map.getCanvas().toDataURL();
+        };
 
         if (process.env.UPDATE) {
             fileInfo = [
                 {
                     path: `${writeFileBasePath}/expected.png`,
-                    data: actual.split(',')[1]
+                    data: getActual().split(',')[1]
                 }
             ];
         } else {
@@ -276,40 +276,44 @@ async function runTest(t) {
                 }
             }
 
-            // 5. Convert diff Uint8Array to ImageData and write to canvas
-            // so we can get a base64 string to display the diff in the browser
-            diffCanvas.width = w;
-            diffCanvas.height = h;
-            const diffImageData = new ImageData(minDiffImage, w, h);
-            diffCtx.putImageData(diffImageData, 0, 0);
-
-            const expected = minExpectedCanvas.toDataURL();
-            const imgDiff = diffCanvas.toDataURL();
-
-            // 6. use browserWriteFile to write actual and diff to disk (convert image back to base64)
-            fileInfo = [
-                {
-                    path: `${writeFileBasePath}/actual.png`,
-                    data: actual.split(',')[1]
-                },
-                {
-                    path: `${writeFileBasePath}/diff.png`,
-                    data: imgDiff.split(',')[1]
-                }
-            ];
-
-            // 7. pass image paths to testMetaData so the UI can load them from disk
+            const pass = minDiff <= options.allowed;
             const testMetaData = {
                 name: currentTestName,
-                actual,
-                expected,
-                imgDiff,
-                minDiff: minDiff.toFixed(5)
+                minDiff: minDiff.toFixed(5),
+                status: t._todo ? 'todo' : pass ? 'passed' : 'failed'
             };
-
-            const pass = minDiff <= options.allowed;
             t.ok(pass || t._todo, t.name);
-            testMetaData.status = t._todo ? 'todo' : pass ? 'passed' : 'failed';
+
+            // only display results locally, or on CI if it's failing
+            if (!process.env.CI || !pass) {
+                // 5. Convert diff Uint8Array to ImageData and write to canvas
+                // so we can get a base64 string to display the diff in the browser
+                diffCanvas.width = w;
+                diffCanvas.height = h;
+                const diffImageData = new ImageData(minDiffImage, w, h);
+                diffCtx.putImageData(diffImageData, 0, 0);
+
+                const actual = getActual();
+                const imgDiff = diffCanvas.toDataURL();
+
+                // 6. use browserWriteFile to write actual and diff to disk (convert image back to base64)
+                fileInfo = process.env.CI ? null : [
+                    {
+                        path: `${writeFileBasePath}/actual.png`,
+                        data: actual.split(',')[1]
+                    },
+                    {
+                        path: `${writeFileBasePath}/diff.png`,
+                        data: imgDiff.split(',')[1]
+                    }
+                ];
+
+                // 7. pass image paths to testMetaData so the UI can load them from disk
+                testMetaData.actual = actual;
+                testMetaData.expected = minExpectedCanvas.toDataURL();
+                testMetaData.imgDiff = imgDiff;
+            }
+
             updateHTML(testMetaData);
         }
 

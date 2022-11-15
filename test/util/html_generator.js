@@ -119,13 +119,13 @@ export function setupHTML() {
 export function updateHTML(testData) {
     const status = testData.status;
     stats[status]++;
-
-    testData["color"] = colors[status];
-    testData["id"] = `${status}Test-${stats[status]}`;
     counterDom[status].innerHTML = stats[status];
 
     // skip adding passing tests to report in CI mode
     if (CI && status === 'passed') return;
+
+    testData["color"] = colors[status];
+    testData["id"] = `${status}Test-${stats[status]}`;
     const resultHTMLFrag = document.createRange().createContextualFragment(generateResultHTML({r: testData}));
     resultsContainer.appendChild(resultHTMLFrag);
 }
