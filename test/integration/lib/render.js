@@ -41,7 +41,7 @@ setupHTML();
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
-const {canvas: terrainDepthCanvas, ctx: terrainDepthCtx} = createCanvas();
+const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
 
 tape.onFinish(() => {
@@ -75,8 +75,6 @@ function ensureTeardown(t) {
         map = null;
     }
     mapboxgl.clearStorage();
-    expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
-    diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
     //Cleanup canvases added if any
     while (fakeCanvasContainer.firstChild) {
@@ -201,29 +199,10 @@ async function runTest(t) {
             }
             actualImageData = Uint8ClampedArray.from(pixels);
         } else {
-            actualImageData = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, actualImageData);
-
-            // readPixels premultiplies the alpha channel so we need to
-            // undo that for comparison with the expected image pixels
-            for (let i = 0; i < actualImageData.length; i += 4) {
-                const alpha = actualImageData[i + 3] / 255;
-                actualImageData[i + 0] /= alpha;
-                actualImageData[i + 1] /= alpha;
-                actualImageData[i + 2] /= alpha;
-            }
-
-            // readPixels starts at the bottom of the canvas
-            // so we need to flip the image data
-            const stride = w * 4;
-            const temp = new Uint8Array(w * 4);
-            for (let i = 0; i < (h / 2 | 0); ++i) {
-                const topOffset = i * stride;
-                const bottomOffset = (h - i - 1) * stride;
-                temp.set(actualImageData.subarray(topOffset, topOffset + stride));
-                actualImageData.copyWithin(topOffset, bottomOffset, bottomOffset + stride);
-                actualImageData.set(temp, bottomOffset);
-            }
+            actualCanvas.width = w;
+            actualCanvas.height = h;
+            actualCtx.drawImage(map.getCanvas(), 0, 0);
+            actualImageData = actualCtx.getImageData(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight).data;
         }
 
         // if we have multiple expected images, we'll compare against each one and pick the one with
@@ -239,11 +218,11 @@ async function runTest(t) {
 
         const getActual = () => {
             if (options.output === "terrainDepth") {
-                terrainDepthCanvas.width = w;
-                terrainDepthCanvas.height = h;
+                actualCanvas.width = w;
+                actualCanvas.height = h;
                 const terrainDepthData = new ImageData(actualImageData, w, h);
-                terrainDepthCtx.putImageData(terrainDepthData, 0, 0);
-                return terrainDepthCanvas.toDataURL();
+                actualCtx.putImageData(terrainDepthData, 0, 0);
+                return actualCanvas.toDataURL();
             }
             return map.getCanvas().toDataURL();
         };
