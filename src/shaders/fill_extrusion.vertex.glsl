@@ -7,10 +7,6 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_edge_radius;
 
-#ifdef UNIFORM_LIGHTING
-uniform vec3 u_ambient;
-#endif
-
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
 
@@ -123,9 +119,9 @@ void main() {
 
     float NdotL = 0.0;
     float colorvalue = 0.0;
-#ifdef UNIFORM_LIGHTING
+#ifdef LIGHTING_3D_MODE
     const float ext = 0.70710678118; // acos(pi/4)
-    NdotL = (clamp(dot(normal, u_lightpos), -ext, 1.0) + ext) / (1.0 + ext);
+    NdotL = (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
 #else
     // Relative luminance (how dark/bright is the surface color?)
     colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
@@ -147,7 +143,7 @@ void main() {
     // Add gradient along z axis of side surfaces
     if (normal.y != 0.0) {
         float r = 0.84;
-#ifndef UNIFORM_LIGHTING
+#ifndef LIGHTING_3D_MODE
         r = mix(0.7, 0.98, 1.0 - u_lightintensity);
 #endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
@@ -180,9 +176,9 @@ void main() {
 
     vec3 indirect = vec3(0.0);
     vec3 direct = vec3(0.0);
-#ifdef UNIFORM_LIGHTING
-    indirect = u_ambient * color.rgb;
-    direct = u_lightcolor * color.rgb;
+#ifdef LIGHTING_3D_MODE
+    indirect = u_lighting_ambient_color * color.rgb;
+    direct = u_lighting_directional_color * color.rgb;
     v_color.rgb += indirect + direct * NdotL;
 #else
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
@@ -197,7 +193,7 @@ void main() {
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
     float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
 
-#ifdef UNIFORM_LIGHTING
+#ifdef LIGHTING_3D_MODE
     v_roof_color.rgb += indirect + direct * roofNdotL;
 #else
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);

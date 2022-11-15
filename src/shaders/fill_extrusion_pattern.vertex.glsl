@@ -4,7 +4,7 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
 uniform float u_tile_units_to_pixels;
 uniform float u_vertical_gradient;
-uniform lowp float u_opacity;
+uniform float u_opacity;
 
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -109,9 +109,9 @@ void main() {
 
     v_lighting = vec4(0.0, 0.0, 0.0, 1.0);
     float NdotL = 0.0;
-#ifdef UNIFORM_LIGHTING
+#ifdef LIGHTING_3D_MODE
     const float ext = 0.70710678118; // acos(pi/4)
-    NdotL = (clamp(dot(normal, u_lightpos), -ext, 1.0) + ext) / (1.0 + ext);
+    NdotL = (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
 #else
     NdotL = clamp(dot(normal, u_lightpos), 0.0, 1.0);
     NdotL = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), NdotL);
@@ -119,7 +119,7 @@ void main() {
 
     if (normal.y != 0.0) {
         float r = 0.84;
-#ifndef UNIFORM_LIGHTING
+#ifndef LIGHTING_3D_MODE
         r = mix(0.7, 0.98, 1.0 - u_lightintensity);
 #endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
@@ -148,7 +148,7 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-#ifdef UNIFORM_LIGHTING
+#ifdef LIGHTING_3D_MODE
     v_lighting.rgb += NdotL;
 #else
     v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
