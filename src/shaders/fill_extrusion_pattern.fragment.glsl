@@ -10,7 +10,7 @@ varying vec3 v_ao;
 varying vec2 v_pos;
 varying vec4 v_lighting;
 
-uniform float u_opacity;
+uniform lowp float u_opacity;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height

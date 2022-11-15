@@ -4,7 +4,7 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
 uniform float u_tile_units_to_pixels;
 uniform float u_vertical_gradient;
-uniform float u_opacity;
+uniform lowp float u_opacity;
 
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
