@@ -47,7 +47,7 @@ input { position: absolute; opacity: 0; z-index: -1;}
 input:checked + .tab-label { filter: brightness(90%); };
 input:checked + .tab-label::after { transform: rotate(90deg); }
 input:checked ~ .tab-content { max-height: 100vh; padding: 1em; border: 1px solid #eee; border-top: 0; border-radius: 5px; }
-iframe { pointer-events: none; }
+iframe { pointer-events: none; opacity: 0; }
 `;
 
 const stats = {

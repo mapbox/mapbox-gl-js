@@ -27,6 +27,7 @@ const container = document.createElement('div');
 container.style.position = 'fixed';
 container.style.bottom = '10px';
 container.style.right = '10px';
+container.style.background = 'white';
 document.body.appendChild(container);
 
 // Container used to store all fake canvases added via addFakeCanvas operation
@@ -99,7 +100,14 @@ async function runTest(t) {
             throw new Error(`Error occured while parsing style.json: ${style.message}`);
         }
 
-        options = style.metadata.test;
+        options = {
+            width: 512,
+            height: 512,
+            pixelRatio: 1,
+            recycleMap: false,
+            allowed: 0.00015,
+            ...(style.metadata && style.metadata.test)
+        };
 
         // there may be multiple expected images, covering different platforms
         const expectedPaths = [];
@@ -255,7 +263,7 @@ async function runTest(t) {
             const pass = minDiff <= options.allowed;
             const testMetaData = {
                 name: currentTestName,
-                minDiff: minDiff.toFixed(5),
+                minDiff: Math.round(100000 * minDiff) / 100000,
                 status: t._todo ? 'todo' : pass ? 'passed' : 'failed'
             };
             t.ok(pass || t._todo, t.name);

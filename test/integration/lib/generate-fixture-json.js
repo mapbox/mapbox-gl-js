@@ -33,7 +33,8 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
 
                 //Special case for style json which needs some preprocessing
                 if (fileName === 'style.json') {
-                    json = processStyle(testName, json);
+                    // 7357 is testem's default port
+                    localizeURLs(json, 7357);
                 }
 
                 allFiles[fixturePath] = json;
@@ -84,22 +85,4 @@ export function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
 
 function parseJsonFromFile(filePath) {
     return JSON.parse(fs.readFileSync(filePath, {encoding: 'utf8'}));
-}
-
-function processStyle(testName, style) {
-    const clone = JSON.parse(JSON.stringify(style));
-    // 7357 is testem's default port
-    localizeURLs(clone, 7357);
-
-    clone.metadata = clone.metadata || {};
-    clone.metadata.test = Object.assign({
-        testName,
-        width: 512,
-        height: 512,
-        pixelRatio: 1,
-        recycleMap: false,
-        allowed: 0.00015
-    }, clone.metadata.test);
-
-    return clone;
 }
