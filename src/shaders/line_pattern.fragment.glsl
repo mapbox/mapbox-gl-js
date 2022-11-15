@@ -49,6 +49,9 @@ void main() {
     vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
     vec4 color = texture2D(u_image, pos);
 
+#ifdef LIGHTING_3D_MODE
+    color = apply_lighting(color);
+#endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
