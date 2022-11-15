@@ -21,6 +21,7 @@ uniform highp float u_size; // used when size is both zoom and feature constant
 uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
+uniform mat4 u_perspective_matrix;
 uniform bool u_is_text;
 uniform bool u_pitch_with_map;
 uniform bool u_rotate_symbol;
@@ -99,7 +100,14 @@ void main() {
 
     vec4 projected_point = u_matrix * vec4(world_pos, 1);
 
+#ifdef ORTHOGRAPHIC_TRANSITION
+    // We need a perspective matrix to correctly compute the perspective ratio
+    vec4 perspective_projected_point = u_perspective_matrix * vec4(world_pos, 1);
+    highp float camera_to_anchor_distance = perspective_projected_point.w;
+#else 
     highp float camera_to_anchor_distance = projected_point.w;
+#endif
+
     // If the label is pitched with the map, layout is done in pitched space,
     // which makes labels in the distance smaller relative to viewport space.
     // We counteract part of that effect by multiplying by the perspective ratio.
