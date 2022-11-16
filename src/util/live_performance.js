@@ -64,19 +64,31 @@ function getCountersPerResourceType(resourceTimers) {
         for (const category in resourceTimers) {
             if (category !== 'other') {
                 for (const timer of resourceTimers[category]) {
-                    const req = `${category}RequestCount`;
                     const min = `${category}ResolveRangeMin`;
                     const max = `${category}ResolveRangeMax`;
+                    const reqCount = `${category}RequestCount`;
+                    const reqCachedCount = `${category}RequestCachedCount`;
 
                     // Resource -TransferStart and -TransferEnd represent the wall time
                     // between the start of a request to when the data is available
                     obj[min] = Math.min(obj[min] || +Infinity, timer.startTime);
                     obj[max] = Math.max(obj[max] || -Infinity, timer.responseEnd);
 
-                    if (obj[req] === undefined) {
-                        obj[req] = 0;
+                    const increment = (key) => {
+                        if (obj[key] === undefined) {
+                            obj[key] = 0;
+                        }
+                        ++obj[key];
+                    };
+
+                    const transferSizeSupported = timer.transferSize !== undefined;
+                    if (transferSizeSupported) {
+                        const resourceFetchedFromCache = (timer.transferSize === 0);
+                        if (resourceFetchedFromCache) {
+                            increment(reqCachedCount);
+                        }
                     }
-                    ++obj[req];
+                    increment(reqCount);
                 }
             }
         }
