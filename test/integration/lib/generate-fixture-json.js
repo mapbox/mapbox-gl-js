@@ -24,12 +24,11 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     }
 
     for (const fixturePath of allPaths) {
-        const testName = path.dirname(fixturePath);
         const fileName = path.basename(fixturePath);
         const extension = path.extname(fixturePath);
         try {
             if (extension === '.json') {
-                let json = parseJsonFromFile(fixturePath);
+                const json = parseJsonFromFile(fixturePath);
 
                 //Special case for style json which needs some preprocessing
                 if (fileName === 'style.json') {

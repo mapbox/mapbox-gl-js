@@ -104,7 +104,6 @@ async function runTest(t) {
             width: 512,
             height: 512,
             pixelRatio: 1,
-            recycleMap: false,
             allowed: 0.00015,
             ...(style.metadata && style.metadata.test)
         };
