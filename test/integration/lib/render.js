@@ -105,7 +105,7 @@ async function runTest(t) {
             height: 512,
             pixelRatio: 1,
             allowed: 0.00015,
-            ...(style.metadata && style.metadata.test)
+            ...(style.metadata && style.metadata.test || {})
         };
 
         // there may be multiple expected images, covering different platforms

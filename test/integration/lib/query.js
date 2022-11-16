@@ -76,8 +76,8 @@ async function runTest(t) {
         options = {
             width: 512,
             height: 512,
-            pixelRatio: 1
-            ...(style.metadata && style.metadata.test)
+            pixelRatio: 1,
+            ...(style.metadata && style.metadata.test || {})
         }
         const skipLayerDelete = style.metadata.skipLayerDelete;
 
