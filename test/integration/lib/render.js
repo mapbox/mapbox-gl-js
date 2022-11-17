@@ -64,6 +64,9 @@ if (process.env.CI) {
         timeout = 20000;
     } else if (os.includes("Linux")) {
         osIgnore = null;
+        if (navigator.userAgent.includes("Firefox")) {
+            timeout = 7500;
+        }
     } else if (os.includes("Windows")) {
         osIgnore = ignoreWindows;
         timeout = 90000;
