@@ -392,6 +392,7 @@ class Map extends Camera {
     _language: ?string | ?string[];
     _worldview: ?string;
     _interactionRange: [number, number];
+    _visibilityHidden: number;
     _performanceMetricsCollection: boolean;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
@@ -512,6 +513,7 @@ class Map extends Camera {
         this._averageElevation = new EasedVariable(0);
 
         this._interactionRange = [+Infinity, -Infinity];
+        this._visibilityHidden = 0;
 
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
@@ -541,6 +543,7 @@ class Map extends Camera {
         bindAll([
             '_onWindowOnline',
             '_onWindowResize',
+            '_onVisibilityChange',
             '_onMapScroll',
             '_contextLost',
             '_contextRestored'
@@ -561,6 +564,7 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
             window.addEventListener('orientationchange', this._onWindowResize, false);
             window.addEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            window.addEventListener('visibilitychange', this._onVisibilityChange, false);
         }
 
         this.handlers = new HandlerManager(this, options);
@@ -3277,6 +3281,7 @@ class Map extends Camera {
                     width: this.painter.width,
                     height: this.painter.height,
                     interactionRange: this._interactionRange,
+                    visibilityHidden: this._visibilityHidden,
                     terrainEnabled: !!this.painter.style.getTerrain(),
                     fogEnabled: !!this.painter.style.getFog(),
                     projection: this.painter.transform.projection,
@@ -3487,6 +3492,7 @@ class Map extends Camera {
             window.removeEventListener('orientationchange', this._onWindowResize, false);
             window.removeEventListener('webkitfullscreenchange', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
+            window.removeEventListener('visibilitychange', this._onVisibilityChange, false);
         }
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
@@ -3565,6 +3571,12 @@ class Map extends Camera {
     _onWindowResize(event: Event) {
         if (this._trackResize) {
             this.resize({originalEvent: event})._update();
+        }
+    }
+
+    _onVisibilityChange() {
+        if (document.visibilityState === 'hidden') {
+            this._visibilityHidden++;
         }
     }
 
