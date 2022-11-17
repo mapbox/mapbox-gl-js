@@ -107,6 +107,9 @@ const skip = [
     // Distance expression is not implemented, test times out
     "render-tests/distance/layout-text-size",
 
+    // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11726
+    "query-tests/terrain/draped/lines/slope-occlusion"
+
 ];
 
 export default {todo, skip};

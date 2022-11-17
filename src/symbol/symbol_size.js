@@ -80,7 +80,7 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
 
 function evaluateSizeForFeature(sizeData: SizeData,
                                 {uSize, uSizeT}: InterpolatedSize,
-                                {lowerSize, upperSize}: { lowerSize: number, upperSize: number}): number {
+                                {lowerSize, upperSize}: {+lowerSize: number, +upperSize: number}): number {
     if (sizeData.kind === 'source') {
         return lowerSize / SIZE_PACK_FACTOR;
     } else if (sizeData.kind === 'composite') {

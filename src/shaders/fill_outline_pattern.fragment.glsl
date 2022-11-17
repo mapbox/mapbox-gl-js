@@ -25,6 +25,9 @@ void main() {
 
     vec4 out_color = texture2D(u_image, pos);
 
+#ifdef LIGHTING_3D_MODE
+    out_color = apply_lighting(out_color);
+#endif
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
