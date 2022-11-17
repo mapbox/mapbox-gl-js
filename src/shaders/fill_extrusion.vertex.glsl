@@ -120,8 +120,7 @@ void main() {
     float NdotL = 0.0;
     float colorvalue = 0.0;
 #ifdef LIGHTING_3D_MODE
-    const float ext = 0.70710678118; // acos(pi/4)
-    NdotL = (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
+    NdotL = calculate_NdotL(normal);
 #else
     // Relative luminance (how dark/bright is the surface color?)
     colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
@@ -177,9 +176,7 @@ void main() {
     vec3 indirect = vec3(0.0);
     vec3 direct = vec3(0.0);
 #ifdef LIGHTING_3D_MODE
-    indirect = u_lighting_ambient_color * color.rgb;
-    direct = u_lighting_directional_color * color.rgb;
-    v_color.rgb += indirect + direct * NdotL;
+    v_color = apply_lighting(color, NdotL);
 #else
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
@@ -191,11 +188,11 @@ void main() {
 
 #ifdef ZERO_ROOF_RADIUS
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
-    float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
 
 #ifdef LIGHTING_3D_MODE
-    v_roof_color.rgb += indirect + direct * roofNdotL;
+    v_roof_color = apply_lighting(color);
 #else
+    float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);
     v_roof_color.rgb += clamp(color.rgb * roofNdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
 #endif

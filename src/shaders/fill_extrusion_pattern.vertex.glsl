@@ -33,6 +33,10 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+#ifdef LIGHTING_3D_MODE
+varying float v_NdotL;
+#endif
+
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
 #pragma mapbox: define lowp vec4 pattern
@@ -110,8 +114,7 @@ void main() {
     v_lighting = vec4(0.0, 0.0, 0.0, 1.0);
     float NdotL = 0.0;
 #ifdef LIGHTING_3D_MODE
-    const float ext = 0.70710678118; // acos(pi/4)
-    NdotL = (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
+    NdotL = calculate_NdotL(normal);
 #else
     NdotL = clamp(dot(normal, u_lightpos), 0.0, 1.0);
     NdotL = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), NdotL);
@@ -149,7 +152,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    v_lighting.rgb += NdotL;
+    v_NdotL = NdotL;
 #else
     v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;

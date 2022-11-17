@@ -7,6 +7,10 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+#ifdef LIGHTING_3D_MODE
+varying float v_NdotL;
+#endif
+
 varying vec2 v_pos;
 varying vec4 v_lighting;
 
@@ -31,14 +35,7 @@ void main() {
     vec4 out_color = texture2D(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
-    vec3 NdotL = v_lighting.rgb;
-    
-    vec3 indirct = u_lighting_ambient_color * out_color.rgb;
-    vec3 direct = u_lighting_directional_color * out_color.rgb;
-
-    vec3 l = indirct + direct * NdotL;
-
-    out_color = vec4(l, out_color.w) * u_opacity;
+    out_color = apply_lighting(out_color, v_NdotL) * u_opacity;
 #else
     out_color = out_color * v_lighting;
 #endif

@@ -13,4 +13,17 @@ vec4 apply_lighting(vec4 color) {
     return vec4(apply_lighting(color.rgb), color.a);
 }
 
+float calculate_NdotL(vec3 normal) {
+    const float ext = 0.70710678118; // acos(pi/4)
+    return (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
+}
+
+vec3 apply_lighting(vec3 color, float NdotL) {
+    return color * (u_lighting_ambient_color + u_lighting_directional_color * NdotL);
+}
+
+vec4 apply_lighting(vec4 color, float NdotL) {
+    return vec4(apply_lighting(color.rgb, NdotL), color.a);
+}
+
 #endif
