@@ -19,6 +19,7 @@ export default function localizeURLs(style, port) {
                     localizeStyleURLs(op[1], port);
                     return;
                 }
+                if (op[1].startsWith('mapbox://')) return;
 
                 let styleJSON;
                 try {
