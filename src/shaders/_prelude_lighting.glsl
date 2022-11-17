@@ -14,6 +14,8 @@ vec4 apply_lighting(vec4 color) {
 }
 
 float calculate_NdotL(vec3 normal) {
+    // Use slightly modified dot product for lambertian diffuse shading. This increase the range of NdotL to cover surfaces facing up to 45 degrees away from the light source.
+    // This allows us to trade some realism for performance/usability as a single light source is enough to shade the scene.
     const float ext = 0.70710678118; // acos(pi/4)
     return (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
 }
