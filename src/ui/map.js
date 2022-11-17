@@ -3575,7 +3575,7 @@ class Map extends Camera {
     }
 
     _onVisibilityChange() {
-        if (document.visibilityState === 'hidden') {
+        if (window.document.visibilityState === 'hidden') {
             this._visibilityHidden++;
         }
     }
