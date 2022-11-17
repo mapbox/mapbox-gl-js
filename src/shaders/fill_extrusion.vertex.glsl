@@ -173,8 +173,6 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-    vec3 indirect = vec3(0.0);
-    vec3 direct = vec3(0.0);
 #ifdef LIGHTING_3D_MODE
     v_color = apply_lighting(color, NdotL);
 #else
@@ -190,7 +188,7 @@ void main() {
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 #ifdef LIGHTING_3D_MODE
-    v_roof_color = apply_lighting(color);
+    v_roof_color = apply_lighting(color, calculate_NdotL(vec3(0.0, 0.0, 1.0)));
 #else
     float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);
