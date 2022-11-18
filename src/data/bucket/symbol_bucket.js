@@ -140,8 +140,8 @@ function addVertex(array, tileAnchorX, tileAnchorY, ox, oy, tx, ty, sizeVertex, 
         // a_pos_offset
         tileAnchorX,
         tileAnchorY,
-        Math.round(ox * 4),
-        Math.round(oy * 4),
+        Math.round(ox * 16),
+        Math.round(oy * 16),
 
         // a_data
         tx, // x coordinate of symbol on glyph atlas texture

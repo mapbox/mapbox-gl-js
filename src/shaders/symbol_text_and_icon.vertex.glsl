@@ -144,7 +144,7 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     float z = 0.0;
-    vec2 offset = rotation_matrix * (a_offset / 4.0 * font_scale);
+    vec2 offset = rotation_matrix * (a_offset / 16.0 * font_scale);
 #ifdef TERRAIN
 #ifdef PITCH_WITH_MAP_TERRAIN
     vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
