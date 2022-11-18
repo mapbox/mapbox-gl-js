@@ -18,6 +18,7 @@ type LivePerformanceMetrics = {
 
 export type LivePerformanceData = {
     interactionRange: [number, number],
+    visibilityHidden: number,
     width: number,
     height: number,
     terrainEnabled: boolean,
@@ -144,6 +145,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
             }
         }
     }
+    addMetric(metrics.counters, "visibilityHidden", data.visibilityHidden);
 
     addMetric(metrics.attributes, "style", getStyle(resourceTimers));
     addMetric(metrics.attributes, "terrainEnabled", data.terrainEnabled ? "true" : "false");
