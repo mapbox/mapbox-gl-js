@@ -1,7 +1,13 @@
 #ifdef RENDER_SHADOWS
 
+#ifdef DEPTH_TEXTURE
+uniform highp sampler2D u_shadowmap_0;
+uniform highp sampler2D u_shadowmap_1;
+#else
 uniform sampler2D u_shadowmap_0;
 uniform sampler2D u_shadowmap_1;
+#endif
+
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
 uniform vec2 u_cascade_distances;
@@ -9,17 +15,29 @@ uniform highp vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
-    return step(unpack_depth(texture2D(u_shadowmap_1, uv)), compare);
+    highp float shadow_depth;
+#ifdef DEPTH_TEXTURE
+    shadow_depth = texture2D(u_shadowmap_1, uv).r * 2.0 - 1.0;
+#else
+    shadow_depth = unpack_depth(texture2D(u_shadowmap_1, uv));
+#endif
+    return step(shadow_depth, compare);
 }
 
 highp float shadow_sample_0(highp vec2 uv, highp float compare) {
-    return step(unpack_depth(texture2D(u_shadowmap_0, uv)), compare);
+    highp float shadow_depth;
+#ifdef DEPTH_TEXTURE
+    shadow_depth = texture2D(u_shadowmap_0, uv).r * 2.0 - 1.0;
+#else
+    shadow_depth = unpack_depth(texture2D(u_shadowmap_0, uv));
+#endif
+    return step(shadow_depth, compare);
 }
 
 highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    highp float compare1 = min(pos.z, 0.999) - bias;
+    highp float compare1 = pos.z - bias;
 
     highp vec2 texel = pos.xy / u_texel_size - vec2(0.5);
     highp vec2 f = fract(texel);
@@ -54,10 +72,9 @@ highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
 highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     pos.xyz /= pos.w;
     pos.xy = pos.xy * 0.5 + 0.5;
-    highp float compare0 = min(pos.z, 0.999) - bias;
-    highp vec2 uv = pos.xy;
+    highp float compare0 = pos.z - bias;
 
-    highp vec2 texel = uv / u_texel_size - vec2(1.5);
+    highp vec2 texel = pos.xy / u_texel_size - vec2(1.5);
     highp vec2 f = fract(texel);
 
     highp float s = u_texel_size;

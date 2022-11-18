@@ -25,7 +25,8 @@ class RasterDEMTileWorkerSource {
         if (!this.offscreenCanvas || !this.offscreenCanvasContext) {
             // Dem tiles are typically 256x256
             this.offscreenCanvas = new OffscreenCanvas(imgBitmap.width, imgBitmap.height);
-            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
+            // $FlowIssue[extra-arg]: internal Flow types don't yet know about willReadFrequently
+            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d', {willReadFrequently: true});
         }
 
         this.offscreenCanvas.width = imgBitmap.width;

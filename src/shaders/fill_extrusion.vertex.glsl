@@ -117,32 +117,42 @@ void main() {
     v_depth = gl_Position.w;
 #endif
 
+    float NdotL = 0.0;
+    float colorvalue = 0.0;
+#ifdef LIGHTING_3D_MODE
+    NdotL = calculate_NdotL(normal);
+#else
     // Relative luminance (how dark/bright is the surface color?)
-    float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
-
-    v_color = vec4(0.0, 0.0, 0.0, 1.0);
+    colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
 
     // Add slight ambient lighting so no extrusions are totally black
     vec4 ambientlight = vec4(0.03, 0.03, 0.03, 1.0);
     color += ambientlight;
 
     // Calculate cos(theta), where theta is the angle between surface normal and diffuse light ray
-    float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
+    NdotL = clamp(dot(normal, u_lightpos), 0.0, 1.0);
 
-    // Adjust directional so that
+    // Adjust NdotL so that
     // the range of values for highlight/shading is narrower
     // with lower light intensity
     // and with lighter/brighter surface colors
-    directional = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), directional);
+    NdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), NdotL);
+#endif
 
     // Add gradient along z axis of side surfaces
     if (normal.y != 0.0) {
+        float r = 0.84;
+#ifndef LIGHTING_3D_MODE
+        r = mix(0.7, 0.98, 1.0 - u_lightintensity);
+#endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= (
+        NdotL *= (
             (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), r, 1.0)));
     }
+
+    v_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 #ifdef FAUX_AO
     // Documented at https://github.com/mapbox/mapbox-gl-js/pull/11926#discussion_r898496259
@@ -155,7 +165,7 @@ void main() {
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
     v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
-    directional *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
@@ -163,17 +173,28 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-    // Assign final color based on surface + ambient light color, diffuse light directional, and light color
+#ifdef LIGHTING_3D_MODE
+    v_color = apply_lighting(color, NdotL);
+#else
+    // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
-    v_color.rgb += clamp(color.rgb * directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+    v_color.rgb += clamp(color.rgb * NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+#endif
+    
     v_color *= u_opacity;
 
 #ifdef ZERO_ROOF_RADIUS
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
-    float roof_radiance = clamp(u_lightpos.z, 0.0, 1.0);
-    roof_radiance = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roof_radiance);
-    v_roof_color.rgb += clamp(color.rgb * roof_radiance * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+
+#ifdef LIGHTING_3D_MODE
+    v_roof_color = apply_lighting(color, calculate_NdotL(vec3(0.0, 0.0, 1.0)));
+#else
+    float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
+    roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);
+    v_roof_color.rgb += clamp(color.rgb * roofNdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+#endif
+
     v_roof_color *= u_opacity;
 #endif
 

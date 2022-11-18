@@ -7,8 +7,14 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+#ifdef LIGHTING_3D_MODE
+varying float v_NdotL;
+#endif
+
 varying vec2 v_pos;
 varying vec4 v_lighting;
+
+uniform lowp float u_opacity;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
@@ -28,7 +34,12 @@ void main() {
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     vec4 out_color = texture2D(u_image, pos);
 
+#ifdef LIGHTING_3D_MODE
+    out_color = apply_lighting(out_color, v_NdotL) * u_opacity;
+#else
     out_color = out_color * v_lighting;
+#endif
+
 #ifdef FAUX_AO
     float intensity = u_ao[0];
     float h = max(0.0, v_ao.z);
