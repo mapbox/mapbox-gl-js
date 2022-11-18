@@ -226,7 +226,8 @@ class Transform {
         this._updateCameraOnTerrain();
         this._calcMatrices();
     }
-    updateElevation(constrainCameraOverTerrain: boolean, isDragging: boolean = false) { // On render, no need for higher granularity on update reasons.
+
+    updateElevation(constrainCameraOverTerrain: boolean, isDragging: boolean = false) {
         const centerAltitudeChanged = this._elevation && this._elevation.exaggeration() !== this._centerAltitudeValidForExaggeration;
         if (this._seaLevelZoom == null || centerAltitudeChanged) {
             this._updateCameraOnTerrain();
