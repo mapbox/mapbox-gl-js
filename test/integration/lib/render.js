@@ -70,12 +70,10 @@ if (process.env.CI) {
     } else { console.warn("Unrecognized OS:", os); }
 }
 
-
 function checkIgnore(ignoreConfig, testName, options) {
-    if (ignoreConfig.skip.includes(testName)){
+    if (ignoreConfig.skip.includes(testName)) {
         options.skip = true;
-    }
-    else if(ignoreConfig.todo.includes(testName)){
+    } else if (ignoreConfig.todo.includes(testName)) {
         options.todo = true;
     }
 }
