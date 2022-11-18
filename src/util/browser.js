@@ -45,7 +45,7 @@ const exported = {
             canvas = window.document.createElement('canvas');
         }
 
-        const context = canvas.getContext('2d');
+        const context = canvas.getContext('2d', {willReadFrequently: true});
         if (!context) {
             throw new Error('failed to create canvas 2d context');
         }
