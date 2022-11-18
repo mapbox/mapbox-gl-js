@@ -58,7 +58,7 @@ void main() {
     #pragma mapbox: initialize lowp float halo_blur
 
     vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw;
+    vec2 a_offset = a_pos_offset.zw * vec2(32.0);
 
     vec2 a_tex = a_tex_size.xy;
     vec2 a_size = a_tex_size.zw;
