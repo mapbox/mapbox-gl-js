@@ -1604,29 +1604,31 @@ class Transform {
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const cameraHeight = this._camera.position[2] - terrainElevation;
 
-        // If camera is under terrain or dragging at unsafe distance from terrain, force camera position above terrain
-        if (cameraHeight <= 0 || (cameraHeight < minHeight && isDragging)) {
-            const center = this.locationCoordinate(this._center, this._centerAltitude);
-            const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
+        if (cameraHeight < minHeight) {
+            // If camera is under terrain or dragging at unsafe distance from terrain, force camera position above terrain
+            if (cameraHeight <= 0 || isDragging) {
+                const center = this.locationCoordinate(this._center, this._centerAltitude);
+                const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
 
-            const prevDistToCamera = vec3.length(cameraToCenter);
-            // Adjust the camera vector so that the camera is placed above the terrain.
-            // Distance between the camera and the center point is kept constant.
-            cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
-            const newDistToCamera = vec3.length(cameraToCenter);
+                const prevDistToCamera = vec3.length(cameraToCenter);
+                // Adjust the camera vector so that the camera is placed above the terrain.
+                // Distance between the camera and the center point is kept constant.
+                cameraToCenter[2] -= (minHeight - cameraHeight) / this._pixelsPerMercatorPixel;
+                const newDistToCamera = vec3.length(cameraToCenter);
 
-            if (newDistToCamera === 0)
-                return;
+                if (newDistToCamera === 0)
+                    return;
 
-            vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
+                vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
 
-            const newPosition = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
-            this._setCameraPosition(newPosition);
-            this._updateStateFromCamera();
+                const newPosition = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
+                this._setCameraPosition(newPosition);
+                this._updateStateFromCamera();
 
-        // Set camera as constrained to keep zoom at safe distance from terrain
-        } else if (cameraHeight < minHeight) {
-            this._isCameraConstrained = true;
+            // Set camera as constrained to keep zoom at safe distance from terrain
+            } else {
+                this._isCameraConstrained = true;
+            }
         }
     }
 
