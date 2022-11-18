@@ -1013,7 +1013,7 @@ class SourceCache extends Evented {
             }
 
             if (this.usedForTerrain) {
-                tr.updateElevation(false, false);
+                tr.updateElevation(false);
             }
         }
 
