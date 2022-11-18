@@ -316,7 +316,7 @@ test('Elevation', (t) => {
             })
         });
         map.setPitch(85);
-        map.setZoom(13);
+        map.setZoom(12);
 
         map.once('style.load', () => {
             map.addSource('mapbox-dem', {
@@ -361,7 +361,8 @@ test('Elevation', (t) => {
                 t.false(map._averageElevation.isEasing(timestamp));
                 t.equal(map.transform.averageElevation, 0);
 
-                map.setZoom(14);
+                map.setZoom(13);
+                map.setPitch(70);
                 map.setCenter([map.getCenter().lng + 0.01, map.getCenter().lat]);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
@@ -378,19 +379,19 @@ test('Elevation', (t) => {
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, -26.98473561839535);
+                assertAlmostEqual(t, map.transform.averageElevation, 554.8275564709015);
 
                 timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
                 changed = map._updateAverageElevation(timestamp);
                 t.true(changed);
                 t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, -53.9694712367907);
+                assertAlmostEqual(t, map.transform.averageElevation, 1109.655112941803);
 
                 timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
                 changed = map._updateAverageElevation(timestamp);
                 t.false(changed);
                 t.false(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, -53.9694712367907);
+                assertAlmostEqual(t, map.transform.averageElevation, 1109.655112941803);
 
                 t.end();
             });
