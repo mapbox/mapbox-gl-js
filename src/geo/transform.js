@@ -1620,9 +1620,7 @@ class Transform {
                     return;
 
                 vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
-
-                const newPosition = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
-                this._setCameraPosition(newPosition);
+                this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
                 this._updateStateFromCamera();
 
             // Set camera as constrained to keep zoom at safe distance from terrain
