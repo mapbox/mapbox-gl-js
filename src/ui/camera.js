@@ -743,6 +743,8 @@ class Camera extends Evented {
         return {center: tr.center, zoom, bearing, pitch};
     }
 
+    /** @section {Querying features} */
+
     /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
@@ -768,6 +770,11 @@ class Camera extends Evented {
         }
         return null;
     }
+
+    /** @section {Camera}
+     * @method
+     * @instance
+     * @memberof Map */
 
     /**
      * Calculate the center of these two points in the viewport and use
