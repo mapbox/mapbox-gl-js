@@ -1,3 +1,9 @@
+## 2.11.1-beta.1
+
+### Bug fixes 🐞
+
+* Fix support for line breaks in labels that follow line geometries ([#12377](https://github.com/mapbox/mapbox-gl-js/pull/12377))
+
 ## 2.11.0
 
 ### Features ✨ and improvements 🏁
