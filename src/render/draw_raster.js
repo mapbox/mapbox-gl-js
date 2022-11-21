@@ -16,6 +16,8 @@ import rasterFade from './raster_fade.js';
 
 export default drawRaster;
 
+const RASTER_COLOR_TEXTURE_UNIT = 2;
+
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
@@ -84,7 +86,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, rasterColor.unit, rasterColor.mix, rasterColor.range);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix, rasterColor.range);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);
 
@@ -109,7 +111,6 @@ function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: We
     const defines = [];
     let mix;
     let range;
-    let unit = -1;
 
     if (layer.paint.get('raster-color')) {
         defines.push('RASTER_COLOR');
@@ -118,10 +119,9 @@ function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: We
 
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE2);
-        unit = 2;
         let tex = layer.colorRampTexture;
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
-    return {mix, range, defines, unit};
+    return {mix, range, defines};
 }
