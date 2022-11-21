@@ -58,7 +58,7 @@ let timeout = 20000;
 
 if (process.env.CI) {
     // On CI, MacOS and Windows run on virtual machines.
-    // Windows runs especially slow so we increase the timeout.
+    // Windows runs are especially slow so we increase the timeout.
     const os = navigator.appVersion;
     if (os.includes("Macintosh")) {
         osIgnore = ignoreMac;
@@ -66,7 +66,7 @@ if (process.env.CI) {
         osIgnore = null;
     } else if (os.includes("Windows")) {
         osIgnore = ignoreWindows;
-        timeout = 90000;
+        timeout = 120000;
     } else { console.warn("Unrecognized OS:", os); }
 }
 
