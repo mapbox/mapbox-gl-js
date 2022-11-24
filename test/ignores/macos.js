@@ -2,7 +2,8 @@ const todo = [
     // Appearance is slightly offset and diff is > 0.01
     "render-tests/icon-image/stretchable-content",
 
-    // Bug: missing shapes.
+    // Bug: missing icons.
+    // https://github.com/mapbox/mapbox-gl-js/issues/12409
     "render-tests/icon-text-fit/both-text-anchor-1x-image-2x-screen",
     "render-tests/icon-text-fit/both-text-anchor-2x-image-1x-screen",
 

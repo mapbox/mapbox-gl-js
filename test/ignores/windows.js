@@ -2,11 +2,13 @@ const todo = [
     // Appearance is slightly offset and diff is > 0.01
     "render-tests/icon-image/stretchable-content",
 
-    // Bug: missing shapes.
+    // Bug: missing icons.
+    // https://github.com/mapbox/mapbox-gl-js/issues/12409
     "render-tests/icon-text-fit/both-text-anchor-1x-image-2x-screen",
     "render-tests/icon-text-fit/both-text-anchor-2x-image-1x-screen",
 
     // Bug: Inconsistent zoom
+    // https://github.com/mapbox/mapbox-gl-js/issues/12408
     "render-tests/fit-screen-coordinates/terrain",
 
     // Bug: raster-resampling doesn't work on Windows and some Macs
@@ -46,6 +48,7 @@ const todo = [
 
 const skip = [
     // Timing out on CI.
+    // Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407
     "render-tests/skybox/atmosphere-terrain",
     "render-tests/terrain/decrease-exaggeration-fog",
     "render-tests/terrain/error-overlap/initializing-no-terrain-at-center"
