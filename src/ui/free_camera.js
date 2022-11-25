@@ -317,8 +317,8 @@ class FreeCamera {
         return matrix;
     }
 
-    getDistanceToElevation(elevationMeters: number): number {
-        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, this.position[1]);
+    getDistanceToElevation(centerElevationMeters: number, centerLat: number): number {
+        const z0 = centerElevationMeters === 0 ? 0 : mercatorZfromAltitude(centerElevationMeters, centerLat);
         const f = this.forward();
         return (z0 - this.position[2]) / f[2];
     }
