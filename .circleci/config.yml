@@ -383,7 +383,8 @@ jobs:
     <<: *defaults
     steps:
       - <<: *attach_workspace_at_ramdisk
-      - browser-tools/install-chrome
+      - browser-tools/install-browser-tools:
+          chrome-version: latest
       - run: yarn run build-dev
       - run: yarn run build-token
       - run:
