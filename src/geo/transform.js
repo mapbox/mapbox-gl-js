@@ -315,7 +315,7 @@ class Transform {
     }
 
     get cameraWorldSize(): number {
-        const distance = Math.max(this._camera.getDistanceToElevation(this._centerAltitude, this._center.lat), Number.EPSILON);
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
 
@@ -1524,7 +1524,7 @@ class Transform {
         //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
-        const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
+        const scale = this.worldSize / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
         const tX = unwrappedX * scale;
         const tY = canonical.y * scale;
