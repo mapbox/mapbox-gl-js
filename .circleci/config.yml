@@ -183,11 +183,10 @@ jobs:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
             - v4-yarn-
-      - run: yarn
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
           key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
-            - '/home/circleci/.cache/yarn/v6'
             - 'node_modules'
       - persist_to_workspace:
           root: ~/
@@ -444,12 +443,11 @@ jobs:
     steps:
       - checkout
       # TODO: implement cache
-      # yarn directory: /Users/distiller/Library/Caches/Yarn/v6
       - attach_workspace:
           at: ~/
       - run: xcodebuild -version
       - browser-tools/install-chrome
-      - run: yarn
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -463,6 +461,8 @@ jobs:
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
+      # TODO: Consider seperate cache for different OS's
+      # This is nondeterministic and could introduce file system conflicts
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -483,8 +483,7 @@ jobs:
             if ($chromeInstalled.FileName -eq $null) {
               Write-Host "Chrome failed to install";
             }
-      # Restore cache from C:\Users\circleci\AppData\Local\Yarn\Cache\v6
-      - run: yarn
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
