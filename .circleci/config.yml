@@ -179,6 +179,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run: yarn cache dir
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
@@ -447,7 +448,9 @@ jobs:
           at: ~/
       - run: xcodebuild -version
       - browser-tools/install-chrome
+      - run: yarn cache dir
       - run: yarn
+      - run: yarn cache dir
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
