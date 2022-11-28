@@ -179,10 +179,10 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: yarn cache dir
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
+            - v4-yarn-
       - run: yarn
       - save_cache:
           key: v4-yarn-{{ checksum "yarn.lock" }}
@@ -466,6 +466,7 @@ jobs:
       - restore_cache:
           keys:
             - v4-yarn-{{ checksum "yarn.lock" }}
+            - v4-yarn-
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
@@ -482,8 +483,8 @@ jobs:
             if ($chromeInstalled.FileName -eq $null) {
               Write-Host "Chrome failed to install";
             }
+      # Restore cache from C:\Users\circleci\AppData\Local\Yarn\Cache\v6
       - run: yarn
-      - run: yarn cache dir
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
