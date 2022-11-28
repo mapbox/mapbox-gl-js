@@ -187,7 +187,7 @@ jobs:
       - save_cache:
           key: v4-yarn-{{ checksum "yarn.lock" }}
           paths:
-            - '~/.yarn'
+            - '/home/circleci/.cache/yarn/v6'
             - 'node_modules'
       - persist_to_workspace:
           root: ~/
@@ -444,13 +444,12 @@ jobs:
     steps:
       - checkout
       # TODO: implement cache
+      # yarn directory: /Users/distiller/Library/Caches/Yarn/v6
       - attach_workspace:
           at: ~/
       - run: xcodebuild -version
       - browser-tools/install-chrome
-      - run: yarn cache dir
       - run: yarn
-      - run: yarn cache dir
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -484,6 +483,7 @@ jobs:
               Write-Host "Chrome failed to install";
             }
       - run: yarn
+      - run: yarn cache dir
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
