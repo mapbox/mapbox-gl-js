@@ -149,6 +149,7 @@ async function runTest(t) {
             localIdeographFontFamily: options.localIdeographFontFamily || false,
             projection: options.projection,
             crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
+            performanceMetricsCollection: false,
             transformRequest: (url, resourceType) => {
                 // some tests have the port hardcoded to 2900
                 // this makes that backwards compatible
@@ -163,6 +164,7 @@ async function runTest(t) {
         });
 
         map.repaint = true;
+        map._authenticate = () => {};
 
         // override internal timing to enable precise wait operations
         window._renderTestNow = 0;
