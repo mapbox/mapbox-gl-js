@@ -1,3 +1,9 @@
+## 13.27.0
+
+### Bug fixes 🐞
+
+* Fix overwriting all feature ids while setting promoteIds on other layers with an object. ([#12322](https://github.com/mapbox/mapbox-gl-js/pull/12322)) (h/t [yongjun21](https://github.com/yongjun21))
+
 ## 13.26.0
 
 ### Features ✨
