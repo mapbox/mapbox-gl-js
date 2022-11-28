@@ -3284,7 +3284,7 @@ class Map extends Camera {
                     visibilityHidden: this._visibilityHidden,
                     terrainEnabled: !!this.painter.style.getTerrain(),
                     fogEnabled: !!this.painter.style.getFog(),
-                    projection: this.painter.transform.projection,
+                    projection: this.getProjection().name,
                     zoom: this.transform.zoom,
                     renderer: this.painter.context.renderer,
                     vendor: this.painter.context.vendor

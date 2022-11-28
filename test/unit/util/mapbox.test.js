@@ -565,6 +565,7 @@ test("mapbox", (t) => {
             checkMetric(performanceEvent.metadata, 'webglVendor', 'webgl vendor');
             checkMetric(performanceEvent.metadata, 'webglRenderer', 'webgl renderer');
             checkMetric(performanceEvent.attributes, 'terrainEnabled', 'false');
+            checkMetric(performanceEvent.attributes, 'projection', 'mercator');
             checkMetric(performanceEvent.attributes, 'fogEnabled', 'false');
 
             t.end();

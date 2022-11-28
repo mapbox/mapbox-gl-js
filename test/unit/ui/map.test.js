@@ -13,6 +13,8 @@ import {fixedLngLat, fixedNum} from '../../util/fixed.js';
 import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
+import {performanceEvent_} from '../../../src/util/mapbox.js';
+import assert from 'assert';
 
 function createStyleSource() {
     return {
@@ -103,6 +105,33 @@ test('Map', (t) => {
                 const reqBody = window.server.requests[0].requestBody;
                 const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
                 t.equals(performanceEvent.event, 'gljs.performance');
+                performanceEvent_.pendingRequest = null;
+                t.end();
+            });
+        });
+    });
+
+    t.test('performance metrics event stores explicit projection', (t) => {
+        const map = createMap(t, {projection: 'globe', zoom: 20});
+        map._requestManager._customAccessToken = 'access-token';
+        map.once('idle', () => {
+            map.triggerRepaint();
+            map.once('idle', () => {
+                t.ok(map._fullyLoaded);
+                t.ok(map._loaded);
+                const reqBody = window.server.requests[0].requestBody;
+                const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+                const checkMetric = (data, metricName, metricValue) => {
+                    for (const metric of data) {
+                        if (metric.name === metricName) {
+                            t.equals(metric.value, metricValue);
+                            return;
+                        }
+                    }
+                    assert(false);
+                };
+                checkMetric(performanceEvent.attributes, 'projection', 'globe');
+                performanceEvent_.pendingRequest = null;
                 t.end();
             });
         });
