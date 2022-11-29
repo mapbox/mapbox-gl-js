@@ -181,13 +181,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
-            - v4-yarn-
+            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v5-test-yarn-{{ .Branch }}-
+            - v5-test-yarn-
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
-          key: v4-yarn-{{ checksum "yarn.lock" }}
+          key: v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
-            - 'node_modules'
+           - ~/.cache/yarn
       - persist_to_workspace:
           root: ~/
           paths:
@@ -465,8 +466,9 @@ jobs:
       # This is nondeterministic and could introduce file system conflicts
       - restore_cache:
           keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
-            - v4-yarn-
+            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v5-test-yarn-{{ .Branch }}-
+            - v5-test-yarn-
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
