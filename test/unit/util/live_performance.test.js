@@ -196,6 +196,7 @@ test('LivePerformance', (t) => {
             {name: 'style', value: 'mapbox://styles/mapbox/streets-v11'},
             {name: 'terrainEnabled', value: 'false'},
             {name: 'fogEnabled', value: 'false'},
+            {name: 'projection', value: 'mercator'},
             {name: 'zoom', value: '5'}
         ]);
         t.end();
