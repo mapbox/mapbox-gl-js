@@ -466,7 +466,6 @@ jobs:
       # This is nondeterministic and could introduce file system conflicts
       - restore_cache:
           keys:
-            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
             - v5-test-yarn-{{ .Branch }}-
             - v5-test-yarn-
       - attach_workspace:
