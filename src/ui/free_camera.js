@@ -317,8 +317,11 @@ class FreeCamera {
         return matrix;
     }
 
-    getDistanceToElevation(elevationMeters: number): number {
-        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, latFromMercatorY(this.position[1]));
+    // $FlowFixMe The additional parameter needs to be removed. This was introduced because originally
+    // the value returned by this function was incorrect. Fixing it would break the fog visuals and needs to be
+    // communicated carefully first. Also see transform.cameraWorldSize.
+    getDistanceToElevation(elevationMeters: number, convert: boolean = false): number {
+        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, convert ? latFromMercatorY(this.position[1]) : this.position[1]);
         const f = this.forward();
         return (z0 - this.position[2]) / f[2];
     }
