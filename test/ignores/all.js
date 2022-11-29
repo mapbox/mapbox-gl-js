@@ -108,7 +108,10 @@ const skip = [
     "render-tests/distance/layout-text-size",
 
     // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11726
-    "query-tests/terrain/draped/lines/slope-occlusion"
+    "query-tests/terrain/draped/lines/slope-occlusion",
+
+    // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11732
+    "render-tests/dynamic-filter"
 
 ];
 
