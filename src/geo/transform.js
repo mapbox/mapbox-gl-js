@@ -1524,12 +1524,17 @@ class Transform {
         //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
-        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const cws = this.cameraWorldSize;
+        const scale = cws / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
         const tX = unwrappedX * scale;
         const tY = canonical.y * scale;
 
+        // this.point is in world/pixel coordinate, convert it to mercator and multiply by cameraWorldSize to 
+        // ensure it's in the same coordinate space as tX and tY computed earlier. 
         const center = this.point;
+        center.x *= cws / this.worldSize;
+        center.y *= cws / this.worldSize;
 
         // Calculate the bearing vector by rotating unit vector [0, -1] clockwise
         const angle = this.angle;
