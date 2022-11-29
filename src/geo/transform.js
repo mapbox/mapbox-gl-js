@@ -1530,8 +1530,8 @@ class Transform {
         const tX = unwrappedX * scale;
         const tY = canonical.y * scale;
 
-        // this.point is in world/pixel coordinate, convert it to mercator and multiply by cameraWorldSize to 
-        // ensure it's in the same coordinate space as tX and tY computed earlier. 
+        // this.point is in world/pixel coordinate, convert it to mercator and multiply by cameraWorldSize to
+        // ensure it's in the same coordinate space as tX and tY computed earlier.
         const center = this.point;
         center.x *= cws / this.worldSize;
         center.y *= cws / this.worldSize;
