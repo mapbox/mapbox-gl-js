@@ -484,7 +484,8 @@ jobs:
             if ($chromeInstalled.FileName -eq $null) {
               Write-Host "Chrome failed to install";
             }
-      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - run: echo %~"~/.cache/yarn"
+      - run: yarn --frozen-lockfile --cache-folder /home/circleci/.cache/yarn
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
