@@ -466,8 +466,9 @@ jobs:
       # This is nondeterministic and could introduce file system conflicts
       - restore_cache:
           keys:
-            - v5-test-yarn-{{ .Branch }}-
-            - v5-test-yarn-
+            - v0-test-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-test-windows-yarn-{{ .Branch }}-
+            - v0-test-windows-yarn-
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
@@ -485,6 +486,10 @@ jobs:
               Write-Host "Chrome failed to install";
             }
       - run: yarn --frozen-lockfile --cache-folder /home/circleci/.cache/yarn
+      - save_cache:
+          key: v0-test-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+           - /home/circleci/.cache/yarn
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
