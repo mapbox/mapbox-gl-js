@@ -443,10 +443,13 @@ jobs:
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
-      # TODO: implement cache
       - attach_workspace:
           at: ~/
-      - run: xcodebuild -version
+      - restore_cache:
+          keys:
+            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v5-test-yarn-{{ .Branch }}-
+            - v5-test-yarn-
       - browser-tools/install-chrome
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - run: yarn run test-render
