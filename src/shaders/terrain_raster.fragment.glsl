@@ -19,7 +19,11 @@ void main() {
 #endif
 
 #ifdef FOG
+#ifdef ZERO_EXAGGERATION
+    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
+#else
     color = fog_dither(fog_apply_from_vert(color, v_fog_opacity));
+#endif
 #endif
     gl_FragColor = color;
 #ifdef TERRAIN_WIREFRAME
