@@ -314,7 +314,7 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    // This getter returns an incorrect value. 
+    // This getter returns an incorrect value.
     // It should eventually be removed and cameraWorldSize be used instead.
     // See free_camera.getDistanceToElevation for the rationale.
     get cameraWorldSizeForFog(): number {
