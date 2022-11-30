@@ -181,12 +181,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v5-test-yarn-{{ .Branch }}-
-            - v5-test-yarn-
+            - v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-linux-yarn-{{ .Branch }}-
+            - v0-linux-yarn-
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
-          key: v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
       - persist_to_workspace:
@@ -447,13 +447,13 @@ jobs:
           at: ~/
       - restore_cache:
           keys:
-            - v1-test-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v1-test-mac-yarn-{{ .Branch }}-
-            - v1-test-mac-yarn-
+            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-mac-yarn-{{ .Branch }}-
+            - v0-mac-yarn-
       - browser-tools/install-chrome
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
-          key: v1-test-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
       - run: yarn run test-render
@@ -471,9 +471,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v0-test-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v0-test-windows-yarn-{{ .Branch }}-
-            - v0-test-windows-yarn-
+            - v0-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-windows-yarn-{{ .Branch }}-
+            - v0-windows-yarn-
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
@@ -492,7 +492,7 @@ jobs:
             }
       - run: yarn --frozen-lockfile --cache-folder /home/circleci/.cache/yarn
       - save_cache:
-          key: v0-test-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          key: v0-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - /home/circleci/.cache/yarn
       - run: yarn run test-render
