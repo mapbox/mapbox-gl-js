@@ -136,13 +136,7 @@ if (ci) Object.assign(testemConfig, ciTestemConfig);
 
 if (browser === "Chrome") {
     Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows"]));
-    if (process.platform === "linux") {
-        // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
-        // This allows for more consistent behavior with MacOS development machines.
-        // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-        const useOpenGL = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
-        Object.assign(testemConfig, useOpenGL);
-    } if (process.env.USE_ANGLE) {
+    if (process.env.USE_ANGLE) {
         // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
         // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
         // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
