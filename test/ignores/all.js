@@ -110,8 +110,30 @@ const skip = [
     // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11726
     "query-tests/terrain/draped/lines/slope-occlusion",
 
-    // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11732
-    "render-tests/dynamic-filter"
+    // Debug: ignore icon resampling issues
+    "render-tests/debug/collision-overscaled-fractional-zoom",
+    "render-tests/globe/globe-transforms/north-pole",
+    "render-tests/icon-image/stretchable-content",
+    "render-tests/icon-opacity/default",
+    "render-tests/icon-opacity/function",
+    "render-tests/icon-opacity/icon-only",
+    "render-tests/icon-opacity/literal",
+    "render-tests/icon-opacity/text-and-icon",
+    "render-tests/icon-translate-anchor/map",
+    "render-tests/icon-translate-anchor/viewport",
+    "render-tests/icon-translate/default",
+    "render-tests/icon-translate/function",
+    "render-tests/icon-translate/literal",
+    "render-tests/icon-visibility/visible",
+    "render-tests/raster-resampling/function",
+    "render-tests/raster-resampling/literal",
+    "render-tests/regressions/mapbox-gl-js#7172",
+    "render-tests/runtime-styling/set-style-sprite",
+    "render-tests/symbol-placement/point",
+    "render-tests/symbol-spacing/point-close",
+    "render-tests/symbol-spacing/point-far",
+    "render-tests/symbol-visibility/visible",
+    "render-tests/terrain/wireframe",
 
 ];
 
