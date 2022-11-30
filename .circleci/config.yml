@@ -447,11 +447,15 @@ jobs:
           at: ~/
       - restore_cache:
           keys:
-            - v5-test-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v5-test-yarn-{{ .Branch }}-
-            - v5-test-yarn-
+            - v0-test-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-test-mac-yarn-{{ .Branch }}-
+            - v0-test-mac-yarn-
       - browser-tools/install-chrome
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: v0-test-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+           - /home/circleci/.cache/yarn
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -465,8 +469,6 @@ jobs:
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
-      # TODO: Consider seperate cache for different OS's
-      # This is nondeterministic and could introduce file system conflicts
       - restore_cache:
           keys:
             - v0-test-windows-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
