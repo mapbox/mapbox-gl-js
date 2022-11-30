@@ -32,7 +32,11 @@ void main() {
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
 #ifdef FOG
+#ifdef ZERO_EXAGGERATION
+    v_fog_pos = fog_position(decodedPos);
+#else
     v_fog_opacity = fog(fog_position(vec3(decodedPos, elevation)));
+#endif
 #endif
 
 #ifdef RENDER_SHADOWS
