@@ -15,7 +15,7 @@
             "sources": {
               "geojson": {
                 "type": "geojson",
-                "data": "local://geojson/point.json"
+                "data": "local://data/point.json"
               }
             },
             "layers": [
