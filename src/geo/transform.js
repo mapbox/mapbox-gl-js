@@ -314,8 +314,16 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    get cameraWorldSize(): number {
+    // This getter returns an incorrect value.
+    // It should eventually be removed and cameraWorldSize be used instead.
+    // See free_camera.getDistanceToElevation for the rationale.
+    get cameraWorldSizeForFog(): number {
         const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
+    }
+
+    get cameraWorldSize(): number {
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation, true), Number.EPSILON);
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
 
@@ -329,7 +337,7 @@ class Transform {
     }
 
     get cameraPixelsPerMeter(): number {
-        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSize);
+        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSizeForFog);
     }
 
     get centerOffset(): Point {
@@ -1524,12 +1532,16 @@ class Transform {
         //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
-        const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
+        const cws = this.cameraWorldSize;
+        const scale = cws / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
         const tX = unwrappedX * scale;
         const tY = canonical.y * scale;
 
         const center = this.point;
+        // center is in world/pixel coordinate, ensure it's in the same coordinate space as tX and tY computed earlier.
+        center.x *= cws / this.worldSize;
+        center.y *= cws / this.worldSize;
 
         // Calculate the bearing vector by rotating unit vector [0, -1] clockwise
         const angle = this.angle;
@@ -1563,7 +1575,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
+        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSizeForFog, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1914,7 +1926,7 @@ class Transform {
     _calcFogMatrices() {
         this._fogTileMatrixCache = {};
 
-        const cameraWorldSize = this.cameraWorldSize;
+        const cameraWorldSizeForFog = this.cameraWorldSizeForFog;
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
         const cameraPos = this._camera.position;
 
@@ -1922,10 +1934,10 @@ class Transform {
         // translates p to camera origin and transforms it from pixels to meters. The windowScaleFactor is used to have a
         // consistent transformation across different window sizes.
         // - p = p - cameraOrigin
-        // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
+        // - p.xy = p.xy * cameraWorldSizeForFog * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
         const windowScaleFactor = 1 / this.height / this._pixelsPerMercatorPixel;
-        const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
+        const metersToPixel = [cameraWorldSizeForFog, cameraWorldSizeForFog, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);
         vec3.multiply(cameraPos, cameraPos, metersToPixel);
@@ -1937,7 +1949,7 @@ class Transform {
 
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
-        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSizeForFog, cameraPixelsPerMeter, windowScaleFactor);
     }
 
     _computeCameraPosition(targetPixelsPerMeter: ?number): Vec3 {
