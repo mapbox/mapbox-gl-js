@@ -48,48 +48,48 @@ test('shaping', (t) => {
 
     let shaped;
 
-    JSON.parse('{}');
+    const basePath = path.join(__dirname, '../../fixtures/expected');
 
     shaped = shaping.shapeText(Formatted.fromString(`hi${String.fromCharCode(0)}`), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-null.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-null.json'))));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-null.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-null.json'))));
 
     // Default shaping.
     shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-default.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-default.json'))));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-default.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-default.json'))));
 
     // Letter spacing.
     shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0.125 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-spacing.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-spacing.json'))));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-spacing.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-spacing.json'))));
 
     // Line break.
     shaped = shaping.shapeText(Formatted.fromString('abcde abcde'), glyphMap, glyphPositions, images, fontStack, 4 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(__dirname, '../../expected/text-shaping-linebreak.json'))));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-linebreak.json'))));
 
-    const expectedNewLine = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json')));
+    const expectedNewLine = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-newline.json')));
 
     shaped = shaping.shapeText(Formatted.fromString('abcde\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json'), JSON.stringify(shaped, null, 2));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-newline.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedNewLine);
 
     shaped = shaping.shapeText(Formatted.fromString('abcde\r\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
     t.deepEqual(shaped.positionedLines, expectedNewLine.positionedLines);
 
-    const expectedNewLinesInMiddle = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newlines-in-middle.json')));
+    const expectedNewLinesInMiddle = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-newlines-in-middle.json')));
 
     shaped = shaping.shapeText(Formatted.fromString('abcde\n\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newlines-in-middle.json'), JSON.stringify(shaped, null, 2));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-newlines-in-middle.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedNewLinesInMiddle);
 
     // Prefer zero width spaces when breaking lines. Zero width spaces are used by Mapbox data sources as a hint that
     // a position is ideal for breaking.
-    const expectedZeroWidthSpaceBreak = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json')));
+    const expectedZeroWidthSpaceBreak = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-zero-width-space.json')));
 
     shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
+    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, expectedZeroWidthSpaceBreak);
 
     // Null shaping.
@@ -112,7 +112,7 @@ test('shaping', (t) => {
     });
 
     t.test('images in horizontal layout', (t) => {
-        const expectedImagesHorizontal = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-images-horizontal.json')));
+        const expectedImagesHorizontal = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-images-horizontal.json')));
         const horizontalFormatted = new Formatted([
             sectionForText('Foo'),
             sectionForImage('square'),
@@ -123,13 +123,13 @@ test('shaping', (t) => {
             sectionForText(' bar'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-images-horizontal.json'), JSON.stringify(shaped, null, 2));
+        if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-images-horizontal.json'), JSON.stringify(shaped, null, 2));
         t.deepEqual(shaped, expectedImagesHorizontal);
         t.end();
     });
 
     t.test('images in vertical layout', (t) => {
-        const expectedImagesVertical = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-images-vertical.json')));
+        const expectedImagesVertical = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-images-vertical.json')));
         const horizontalFormatted = new Formatted([
             sectionForText('三'),
             sectionForImage('square'),
@@ -140,7 +140,7 @@ test('shaping', (t) => {
             sectionForText('三'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom);
-        if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-images-vertical.json'), JSON.stringify(shaped, null, 2));
+        if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-images-vertical.json'), JSON.stringify(shaped, null, 2));
         t.deepEqual(shaped, expectedImagesVertical);
         t.end();
     });
