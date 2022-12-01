@@ -642,7 +642,7 @@ export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?
 const mapLoadEvent_ = new MapLoadEvent();
 export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
 
-const performanceEvent_ = new PerformanceEvent();
+export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 export const postPerformanceEvent: (?string, LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();

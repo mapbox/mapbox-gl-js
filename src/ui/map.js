@@ -3284,7 +3284,7 @@ class Map extends Camera {
                     visibilityHidden: this._visibilityHidden,
                     terrainEnabled: !!this.painter.style.getTerrain(),
                     fogEnabled: !!this.painter.style.getFog(),
-                    projection: this.painter.transform.projection,
+                    projection: this.getProjection().name,
                     zoom: this.transform.zoom,
                     renderer: this.painter.context.renderer,
                     vendor: this.painter.context.vendor
@@ -3501,9 +3501,9 @@ class Map extends Camera {
         this._canvas.removeEventListener('webglcontextlost', this._contextLost, false);
         this._canvas.removeEventListener('webglcontextrestored', this._contextRestored, false);
 
-        removeNode(this._canvasContainer);
-        removeNode(this._controlContainer);
-        removeNode(this._missingCSSCanary);
+        this._canvasContainer.remove();
+        this._controlContainer.remove();
+        this._missingCSSCanary.remove();
 
         this._canvas = (undefined: any);
         this._canvasContainer = (undefined: any);
@@ -3754,12 +3754,6 @@ class Map extends Camera {
 }
 
 export default Map;
-
-function removeNode(node) {
-    if (node.parentNode) {
-        node.parentNode.removeChild(node);
-    }
-}
 
 /**
  * Interface for interactive controls added to the map. This is a

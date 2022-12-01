@@ -98,10 +98,13 @@ async function runTest(t) {
             skew: options.skew || [0, 0],
             fadeDuration: options.fadeDuration || 0,
             localIdeographFontFamily: options.localIdeographFontFamily || false,
-            crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
+            crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
+            performanceMetricsCollection: false
         });
 
         map.repaint = true;
+        map._authenticate = () => {};
+
         await map.once('load');
         //3. Run the operations on the map
         await applyOperations(map, options);
