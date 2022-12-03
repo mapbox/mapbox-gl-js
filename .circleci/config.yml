@@ -466,6 +466,7 @@ jobs:
   test-render-windows-chrome-dev:
     executor:
       name: win/default
+    parallelism: 10
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
@@ -486,7 +487,11 @@ jobs:
               Write-Host "Chrome failed to install";
             }
       - run: yarn --frozen-lockfile
-      - run: yarn run test-render
+      - run:
+          name: Running tests in parallel
+          command: |
+            TEST=$(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
+            yarn run test-render $TEST
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
