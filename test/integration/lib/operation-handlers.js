@@ -160,7 +160,7 @@ export function applyOperations(map, options) {
 function updateCanvas(imagePath) {
     return new Promise((resolve) => {
         const canvas = window.document.getElementById('fake-canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
         const image = new Image();
         image.src = imagePath.replace('./', '');
         image.onload = () => {

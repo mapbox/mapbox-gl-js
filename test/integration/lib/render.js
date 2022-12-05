@@ -54,7 +54,7 @@ tape.onFinish(() => {
 });
 
 let osIgnore;
-let timeout = 20000;
+let timeout = 25000;
 
 if (process.env.CI) {
     // On CI, MacOS and Windows run on virtual machines.
