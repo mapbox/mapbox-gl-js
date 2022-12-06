@@ -277,11 +277,19 @@ jobs:
 
   test-render-linux-chrome-dev:
     <<: *defaults
+    parallelism: 5
     steps:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      - run: yarn run test-render
+      # - run: yarn run test-render
+      - run:
+          name: Running tests in parallel
+          command: |
+            TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
+            circleci tests glob "test/integration/render-tests/**/*.json"
+            echo ${TESTFILES}
+            yarn run test-render $TESTFILES
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -461,7 +469,7 @@ jobs:
           name: Running tests in parallel
           command: |
             TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
-            circleci tests glob "test/integration/render-tests/**.json"
+            circleci tests glob "test/integration/render-tests/**/*.json"
             echo ${TESTFILES}
             yarn run test-render $TESTFILES
       - store_test_results:
@@ -473,7 +481,7 @@ jobs:
   test-render-windows-chrome-dev:
     executor:
       name: win/default
-    parallelism: 10
+    parallelism: 5
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
@@ -498,7 +506,7 @@ jobs:
           name: Running tests in parallel
           command: |
             set TESTFILES=(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
-            circleci tests glob "test/integration/render-tests/**.json"
+            circleci tests glob "test/integration/render-tests/**/*.json"
             echo %TESTFILES% 
             yarn run test-render %TESTFILES%
       - store_test_results:
