@@ -440,6 +440,7 @@ jobs:
   test-render-macos-chrome-dev:
     macos:
       xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
+    parallelism: 5
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
@@ -456,7 +457,12 @@ jobs:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
-      - run: yarn run test-render
+      - run:
+          name: Running tests in parallel
+          command: |
+            TESTFILES=$(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
+            echo ${TESTFILES}
+            yarn run test-render $TESTFILES
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -490,8 +496,9 @@ jobs:
       - run:
           name: Running tests in parallel
           command: |
-            TEST=$(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
-            yarn run test-render $TEST
+            set TESTFILES=(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
+            echo %TESTFILES% 
+            yarn run test-render $TESTFILES
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
