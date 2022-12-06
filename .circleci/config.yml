@@ -460,7 +460,7 @@ jobs:
       - run:
           name: Running tests in parallel
           command: |
-            TESTFILES=$(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
+            TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
             circleci tests glob "test/integration/render-tests/**.json"
             echo ${TESTFILES}
             yarn run test-render $TESTFILES
@@ -497,7 +497,7 @@ jobs:
       - run:
           name: Running tests in parallel
           command: |
-            set TESTFILES=(circleci tests glob "test/integration/render-tests/**.json" | circleci tests split)
+            set TESTFILES=(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
             circleci tests glob "test/integration/render-tests/**.json"
             echo %TESTFILES% 
             yarn run test-render %TESTFILES%
