@@ -500,7 +500,7 @@ jobs:
       - run:
           name: Creating test list
           command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8 -FilePath tests-to-run.txt
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8NoBOM -FilePath tests-to-run.txt
       # TODO: Remove this testing artifact
       - store_artifacts:
           path: "tests-to-run.txt"
