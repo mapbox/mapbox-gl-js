@@ -94,11 +94,21 @@ export default function validateSource(options: ValidationOptions): Array<Valida
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
-            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
+            valueSpec: {values: getSourceTypeValues(styleSpec)},
             style,
             styleSpec
         });
     }
+}
+
+function getSourceTypeValues(styleSpec) {
+    return styleSpec.source.reduce((memo, source) => {
+        const sourceType = styleSpec[source];
+        if (sourceType.type.type === 'enum') {
+            memo = memo.concat(Object.keys(sourceType.type.values));
+        }
+        return memo;
+    }, []);
 }
 
 function validatePromoteId({key, value}) {
