@@ -506,7 +506,7 @@ jobs:
           name: Running tests in parallel
           # Windows powershell has a limit to character count, therefore we write to a file which we read in testem.js
           command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File - FilePath tests-to-run.txt
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -FilePath tests-to-run.txt
             yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
