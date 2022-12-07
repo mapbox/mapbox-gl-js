@@ -14,7 +14,7 @@ import localizeURLs from './localize-urls.js';
  * @param {boolean} includeImages
  */
 export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
-    if (!stylePaths.length){
+    if (!stylePaths.length) {
         const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
         stylePaths = glob.sync(pathGlob);
         if (!stylePaths.length) {
@@ -25,8 +25,10 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     const allFiles = {};
 
     for (const stylePath of stylePaths) {
-        const fileName = path.basename(stylePath);
-        const extension = path.extname(stylePath);
+        // eslint-disable-next-line no-warning-comments
+        // TODO: use concatenation instead of replace
+        // const fileName = path.basename(stylePath);
+        // const extension = path.extname(stylePath);
         try {
             const json = parseJsonFromFile(stylePath);
 
@@ -34,15 +36,15 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
             // 7357 is testem's default port
             localizeURLs(json, 7357);
 
-            const actualPath = stylePath.replace("style.json", "actual.png")
-            const expectedPath = stylePath.replace("style.json", "expected.png")
-            const diffPath = stylePath.replace("style.json", "diff.png")
+            const actualPath = stylePath.replace("style.json", "actual.png");
+            const expectedPath = stylePath.replace("style.json", "expected.png");
+            const diffPath = stylePath.replace("style.json", "diff.png");
 
             if (includeImages) {
                 allFiles[stylePath] = json;
                 allFiles[actualPath] = true;
                 allFiles[expectedPath] = true;
-                allFiles[diffPath] = true;    
+                allFiles[diffPath] = true;
             }
         } catch (e) {
             console.log(`Error parsing file: ${stylePath}`);

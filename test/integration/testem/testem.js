@@ -26,12 +26,12 @@ const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
 const ci = process.env.npm_lifecycle_script.includes('testem ci');
-const testFiles = JSON.parse(process.env.npm_config_argv).original
+const testFiles = JSON.parse(process.env.npm_config_argv).original;
 
-// Remove previous arguments to leave just file names
-let start
-while (testFiles.length && start !== "test-render")
-{start  = testFiles.shift()}
+// Remove all command arguments up to and including "test-render" or "test-query", leaving just an array of file names
+let start;
+do { start  = testFiles.shift(); }
+while (testFiles.length && !/^test-/.test(start));
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
