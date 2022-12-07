@@ -6799,10 +6799,10 @@ rollup-plugin-unassert@^0.6.0:
     multi-stage-sourcemap "^0.3.1"
     unassert "^2.0.0"
 
-rollup@^2.78.1:
-  version "2.79.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.79.1.tgz#bedee8faef7c9f93a2647ac0108748f497f081c7"
-  integrity sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==
+rollup@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-3.6.0.tgz#2bff14b8680747fbb0228d102607d6a6e21859d7"
+  integrity sha512-qCgiBeSu2/AIOKWGFMiRkjPlGlcVwxAjwpGKQZOQYng+83Hip4PjrWHm7EQX1wnrvRqfTytEihRRfLHdX+hR4g==
   optionalDependencies:
     fsevents "~2.3.2"
 
