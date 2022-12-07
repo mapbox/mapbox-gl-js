@@ -82,7 +82,7 @@ test('ajax', (t) => {
         });
         getJSON({url:'api.mapbox.com'}, (error) => {
             t.equal(error.status, 401);
-            t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes");
+            t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes");
             t.end();
         });
         window.server.respond();
