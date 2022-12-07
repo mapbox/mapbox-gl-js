@@ -4,6 +4,8 @@ const runAll = require('npm-run-all');
 const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
+const fs = require('fs');
+const path = require('path');
 
 // hack to be able to import ES modules inside a CommonJS one
 let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
@@ -26,12 +28,31 @@ const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
 const ci = process.env.npm_lifecycle_script.includes('testem ci');
-const testFiles = JSON.parse(process.env.npm_config_argv).original;
 
 // Remove all command arguments up to and including "test-render" or "test-query", leaving just an array of file names
+let testFiles = JSON.parse(process.env.npm_config_argv).original;
+console.log("testFiles is");
+console.log(testFiles);
 let start;
 do { start  = testFiles.shift(); }
 while (testFiles.length && !/^test-/.test(start));
+
+const testsToRunFile = "tests-to-run.txt";
+
+console.log("looking at path:");
+console.log(path.resolve(testsToRunFile));
+if (!testFiles.length && fs.existsSync(testsToRunFile)) {
+    try {
+        const file = fs.readFileSync(testsToRunFile, 'utf8');
+        testFiles = file.split("\n");
+        console.log("testFiles is");
+        console.log(testFiles);
+        console.log("length:", testFiles.length);
+    } catch (err) {
+        console.log("Failed to read file ", path.resolve(testsToRunFile));
+        console.error(err);
+    }
+}
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
