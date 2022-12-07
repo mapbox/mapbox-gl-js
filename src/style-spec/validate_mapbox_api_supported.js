@@ -167,7 +167,7 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<ValidationErr
  *   var validateMapboxApiSupported = require('mapbox-gl-style-spec/lib/validate_style_mapbox_api_supported.js');
  *   var errors = validateMapboxApiSupported(style);
  */
-export default function validateMapboxApiSupported(style: Object): ValidationErrors {
+export default function validateMapboxApiSupported(style: Object, styleSpec: Object = v8): ValidationErrors {
     let s = style;
     try {
         s = readStyle(s);
@@ -175,7 +175,7 @@ export default function validateMapboxApiSupported(style: Object): ValidationErr
         return [e];
     }
 
-    let errors = validateStyle(s, v8)
+    let errors = validateStyle(s, styleSpec)
         .concat(getRootErrors(s, Object.keys(v8.$root)));
 
     if (s.sources) {
