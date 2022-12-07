@@ -44,7 +44,7 @@ console.log(path.resolve(testsToRunFile));
 if (!testFiles.length && fs.existsSync(testsToRunFile)) {
     try {
         const file = fs.readFileSync(testsToRunFile, 'utf8');
-        testFiles = file.split("\n");
+        testFiles = file.split(/\r?\n/);
         console.log("testFiles is");
         console.log(testFiles);
         console.log("length:", testFiles.length);
