@@ -26,6 +26,8 @@ const ciOutputFile = `${rootFixturePath}${suitePath}/test-results.xml`;
 const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
 const ci = process.env.npm_lifecycle_script.includes('testem ci');
+const testFiles = JSON.parse(process.env.npm_config_argv).original
+testFiles.shift()
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
@@ -161,7 +163,7 @@ module.exports = testemConfig;
 // Retuns a promise that resolves when all artifacts are built
 function buildArtifactsCi() {
     //1. Compile fixture data into a json file, so it can be bundled
-    generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
+    generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests', testFiles);
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel

@@ -13,42 +13,41 @@ import localizeURLs from './localize-urls.js';
  * @param {string} suiteDirectory
  * @param {boolean} includeImages
  */
-export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false) {
-    const globs = getAllFixtureGlobs(rootDirectory, suiteDirectory);
-    const jsonPaths = globs[0];
-    const imagePaths = globs[1];
-    //Extract the filedata into a flat dictionary
+export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
+    if (!stylePaths.length){
+        const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
+        stylePaths = glob.sync(pathGlob);
+        if (!stylePaths.length) {
+            console.error(`Found no tests matching the pattern ${pathGlob}`);
+        }
+    }
+
     const allFiles = {};
-    let allPaths = glob.sync(jsonPaths);
-    if (!allPaths.length) {
-        console.error(`Found no tests matching the pattern ${jsonPaths}`);
-    }
-    if (includeImages) {
-        allPaths = allPaths.concat(glob.sync(imagePaths));
-    }
 
-    for (const fixturePath of allPaths) {
-        const fileName = path.basename(fixturePath);
-        const extension = path.extname(fixturePath);
+    for (const stylePath of stylePaths) {
+        const fileName = path.basename(stylePath);
+        const extension = path.extname(stylePath);
         try {
-            if (extension === '.json') {
-                const json = parseJsonFromFile(fixturePath);
+            const json = parseJsonFromFile(stylePath);
 
-                //Special case for style json which needs some preprocessing
-                if (fileName === 'style.json') {
-                    // 7357 is testem's default port
-                    localizeURLs(json, 7357);
-                }
+            // Special case for style json which needs some preprocessing
+            // 7357 is testem's default port
+            localizeURLs(json, 7357);
 
-                allFiles[fixturePath] = json;
-            } else if (extension === '.png') {
-                allFiles[fixturePath] = true;
-            } else {
-                throw new Error(`${extension} is incompatible , file path ${fixturePath}`);
+            const actualPath = stylePath.replace("style.json", "actual.png")
+            const expectedPath = stylePath.replace("style.json", "expected.png")
+            const diffPath = stylePath.replace("style.json", "diff.png")
+
+            if (includeImages) {
+                allFiles[stylePath] = json;
+                allFiles[actualPath] = true;
+                allFiles[expectedPath] = true;
+                allFiles[diffPath] = true;    
             }
         } catch (e) {
-            console.log(`Error parsing file: ${fixturePath}`);
-            allFiles[fixturePath] = {PARSE_ERROR: true, message: e.message};
+            console.log(`Error parsing file: ${stylePath}`);
+            console.log(e.message);
+            allFiles[stylePath] = {PARSE_ERROR: true, message: e.message};
         }
     }
 
