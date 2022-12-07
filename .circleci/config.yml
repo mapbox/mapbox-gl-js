@@ -277,7 +277,6 @@ jobs:
 
   test-render-linux-chrome-dev:
     <<: *defaults
-    parallelism: 5
     steps:
       - attach_workspace:
           at: ~/
@@ -286,10 +285,7 @@ jobs:
       - run:
           name: Running tests in parallel
           command: |
-            TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
-            circleci tests glob "test/integration/render-tests/**/*.json"
-            echo ${TESTFILES}
-            yarn run test-render $TESTFILES
+            yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -469,8 +465,6 @@ jobs:
           name: Running tests in parallel
           command: |
             TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
-            circleci tests glob "test/integration/render-tests/**/*.json"
-            echo ${TESTFILES}
             yarn run test-render $TESTFILES
       - store_test_results:
           path: test/integration/render-tests
@@ -488,20 +482,20 @@ jobs:
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
-      - run:
-          name: Installing Chrome on Windows
-          command: |
-            $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
-            $path = "$PSScriptRoot\ChromeSetup.exe";
-            Invoke-WebRequest -Uri $uri -OutFile $path;
-            Start-Process $path /install -NoNewWindow -Wait; 
-            Remove-Item $path;
+      # - run:
+      #     name: Installing Chrome on Windows
+      #     command: |
+      #       $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+      #       $path = "$PSScriptRoot\ChromeSetup.exe";
+      #       Invoke-WebRequest -Uri $uri -OutFile $path;
+      #       Start-Process $path /install -NoNewWindow -Wait; 
+      #       Remove-Item $path;
 
-            $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
-            if ($chromeInstalled.FileName -eq $null) {
-              Write-Host "Chrome failed to install";
-            }
-      - run: yarn --frozen-lockfile
+      #       $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
+      #       if ($chromeInstalled.FileName -eq $null) {
+      #         Write-Host "Chrome failed to install";
+      #       }
+      # - run: yarn --frozen-lockfile
       # Windows powershell has a limit to character count, therefore we write to a file which we read in testem.js
       - run:
           name: Creating test list
@@ -509,7 +503,7 @@ jobs:
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -FilePath tests-to-run.txt
       # TODO: Remove this testing artifact
       - store_artifacts:
-          path: "test-to-run.txt"
+          path: "tests-to-run.txt"
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
