@@ -482,25 +482,25 @@ jobs:
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
-      # - run:
-      #     name: Installing Chrome on Windows
-      #     command: |
-      #       $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
-      #       $path = "$PSScriptRoot\ChromeSetup.exe";
-      #       Invoke-WebRequest -Uri $uri -OutFile $path;
-      #       Start-Process $path /install -NoNewWindow -Wait; 
-      #       Remove-Item $path;
+      - run:
+          name: Installing Chrome on Windows
+          command: |
+            $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+            $path = "$PSScriptRoot\ChromeSetup.exe";
+            Invoke-WebRequest -Uri $uri -OutFile $path;
+            Start-Process $path /install -NoNewWindow -Wait; 
+            Remove-Item $path;
 
-      #       $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
-      #       if ($chromeInstalled.FileName -eq $null) {
-      #         Write-Host "Chrome failed to install";
-      #       }
-      # - run: yarn --frozen-lockfile
+            $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
+            if ($chromeInstalled.FileName -eq $null) {
+              Write-Host "Chrome failed to install";
+            }
+      - run: yarn --frozen-lockfile
       # Windows powershell has a limit to character count, therefore we write to a file which we read in testem.js
       - run:
           name: Creating test list
           command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -FilePath tests-to-run.txt
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8 -FilePath tests-to-run.txt
       # TODO: Remove this testing artifact
       - store_artifacts:
           path: "tests-to-run.txt"
