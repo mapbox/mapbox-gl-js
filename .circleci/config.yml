@@ -508,7 +508,7 @@ jobs:
             $TESTFILES=(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
             circleci tests glob "test/integration/render-tests/**/*.json"
             echo $TESTFILES 
-            yarn run test-render $TESTFILES
+            $TESTFILES | yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
