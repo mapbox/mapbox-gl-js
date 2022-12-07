@@ -27,7 +27,11 @@ const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
 const ci = process.env.npm_lifecycle_script.includes('testem ci');
 const testFiles = JSON.parse(process.env.npm_config_argv).original
-testFiles.shift()
+
+// Remove previous arguments to leave just file names
+let start
+while (testFiles.length && start !== "test-render")
+{start  = testFiles.shift()}
 
 const testPage = `test/integration/testem_page_${
     process.env.BUILD === "production" ? "prod" :
