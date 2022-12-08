@@ -444,7 +444,7 @@ jobs:
   test-render-macos-chrome-dev:
     macos:
       xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
-    parallelism: 5
+    parallelism: 3
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
@@ -464,7 +464,7 @@ jobs:
       - run:
           name: Creating test list
           command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split > tests-to-run.txt
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
       # TODO: Remove this testing artifact
       - store_artifacts:
           path: "tests-to-run.txt"
