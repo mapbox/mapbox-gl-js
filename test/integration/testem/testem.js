@@ -38,12 +38,14 @@ if (fs.existsSync(testsToRunFile)) {
     try {
         let file = fs.readFileSync(testsToRunFile, 'utf8');
         // Remove BOM header which is written on Windows
-        file = file.replace(/^\uFEFF/, '');
+        file = file.replace(/^\uFEFF/, '').trim();
         // Convert windows to linux paths. Even on windows, we use path.posix for consisten path syntax.
         file = file.replace(/^\uFEFF/, '').replace(/\\/g, '/');
         testFiles = file.split(/\r?\n/);
+        // testFiles = file.split("\n");
         console.log("testFiles is");
         console.log(testFiles);
+        console.log(`last item is: '${testFiles[testFiles.length - 1]}'`);
         console.log("length:", testFiles.length);
     } catch (err) {
         console.log("Failed to read file ", path.resolve(testsToRunFile));
