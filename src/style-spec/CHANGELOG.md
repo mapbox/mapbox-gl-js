@@ -1,3 +1,14 @@
+## 13.28.0-beta.1
+
+### Features ✨
+
+* Add optional spec parameter to `validateMapboxApiSupported` ([#12448](https://github.com/mapbox/mapbox-gl-js/pull/12448))
+* Derive source type values from spec ([#12449](https://github.com/mapbox/mapbox-gl-js/pull/12449))
+
+### Bug fixes 🐞
+
+* Fix incorrect transition flag in *-pattern and line-dasharray properties ([#12372](https://github.com/mapbox/mapbox-gl-js/pull/12372))
+
 ## 13.27.0
 
 ### Bug fixes 🐞
