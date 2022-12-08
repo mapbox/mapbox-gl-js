@@ -43,8 +43,8 @@ console.log("looking at path:");
 console.log(path.resolve(testsToRunFile));
 if (!testFiles.length && fs.existsSync(testsToRunFile)) {
     try {
-        const file = fs.readFileSync(testsToRunFile, 'utf8');
-        file.replace(/\\/g, '/'); // Convert windows to linux paths. Even on windows, we use path.posix so that path operations can work in only one code path.
+        let file = fs.readFileSync(testsToRunFile, 'utf8');
+        file = file.replace(/\\/g, '/'); // Convert windows to linux paths. Even on windows, we use path.posix so that path operations can work in only one code path.
         testFiles = file.split(/\r?\n/);
         console.log("testFiles is");
         console.log(testFiles);
