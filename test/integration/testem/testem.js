@@ -44,7 +44,10 @@ console.log(path.resolve(testsToRunFile));
 if (!testFiles.length && fs.existsSync(testsToRunFile)) {
     try {
         let file = fs.readFileSync(testsToRunFile, 'utf8');
-        file = file.replace(/\\/g, '/'); // Convert windows to linux paths. Even on windows, we use path.posix so that path operations can work in only one code path.
+        // Remove BOM header which is written on Windows
+        file = file.replace(/^\uFEFF/, '');
+        // Convert windows to linux paths. Even on windows, we use path.posix for consisten path syntax.
+        file = file.replace(/^\uFEFF/, '').replace(/\\/g, '/');
         testFiles = file.split(/\r?\n/);
         console.log("testFiles is");
         console.log(testFiles);
