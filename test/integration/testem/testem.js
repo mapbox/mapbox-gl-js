@@ -29,19 +29,12 @@ const fixtureBuildInterval = 2000;
 const browser = process.env.BROWSER || "Chrome";
 const ci = process.env.npm_lifecycle_script.includes('testem ci');
 
-// Remove all command arguments up to and including "test-render" or "test-query", leaving just an array of file names
-let testFiles = JSON.parse(process.env.npm_config_argv).original;
-console.log("testFiles is");
-console.log(testFiles);
-let start;
-do { start  = testFiles.shift(); }
-while (testFiles.length && !/^test-/.test(start));
-
+let testFiles;
 const testsToRunFile = "tests-to-run.txt";
 
 console.log("looking at path:");
 console.log(path.resolve(testsToRunFile));
-if (!testFiles.length && fs.existsSync(testsToRunFile)) {
+if (fs.existsSync(testsToRunFile)) {
     try {
         let file = fs.readFileSync(testsToRunFile, 'utf8');
         // Remove BOM header which is written on Windows

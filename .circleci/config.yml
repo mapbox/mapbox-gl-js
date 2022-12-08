@@ -462,10 +462,13 @@ jobs:
           paths:
            - ~/.cache/yarn
       - run:
-          name: Running tests in parallel
+          name: Creating test list
           command: |
-            TESTFILES=$(circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split)
-            yarn run test-render $TESTFILES
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split > tests-to-run.txt
+      # TODO: Remove this testing artifact
+      - store_artifacts:
+          path: "tests-to-run.txt"
+      - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -496,7 +499,6 @@ jobs:
               Write-Host "Chrome failed to install";
             }
       - run: yarn --frozen-lockfile
-      # Windows powershell has a limit to character count, therefore we write to a file which we read in testem.js
       - run:
           name: Creating test list
           command: |
