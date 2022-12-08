@@ -54,7 +54,7 @@ tape.onFinish(() => {
 });
 
 let osIgnore;
-let timeout = 25000;
+let timeout = 30000;
 
 if (process.env.CI) {
     // On CI, MacOS and Windows run on virtual machines.
@@ -230,7 +230,7 @@ async function renderMap(style, options) {
 
     //3. Run the operations on the map
     await applyOperations(map, options);
-    map.repaint = false;
+    await map.on('idle');
 
     return map;
 }
