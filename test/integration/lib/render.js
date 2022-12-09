@@ -221,13 +221,13 @@ async function renderMap(style, options) {
     // Disable globe antialiasing on render tests expect for antialiasing test
     map.painter.context.extStandardDerivativesForceOff = !options.standardDerivatives;
 
+    map.repaint = true;
+    await map.once('load');
+
     // Disable vertex morphing by default
     if (map.painter.terrain) {
         map.painter.terrain.useVertexMorphing = false;
     }
-
-    map.repaint = true;
-    await map.once('load');
 
     // 3. Run the operations on the map
     await applyOperations(map, options);
