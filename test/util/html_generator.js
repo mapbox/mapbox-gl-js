@@ -25,6 +25,14 @@ const generateResultHTML = template(`
       <% if (r.jsonDiff) { %>
           <pre><%- r.jsonDiff.trim() %></pre>
       <% } %>
+      <% if (r.mapErrors.length !== 0) { %>
+          <ul>
+            <% r.mapErrors.forEach((error) => { %><li><pre><%- error.message %></pre></li><% }); %>
+          </ul>
+      <% } %>
+      <% if (r.status === 'failed') { %>
+          <pre><%- JSON.stringify(r.style, null, 2) %></pre>
+      <% } %>
     </div>
   </div>
 `);
