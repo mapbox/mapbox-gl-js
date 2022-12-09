@@ -7,7 +7,8 @@ import {
     isMapboxHTTPStyleURL,
     isMapboxHTTPTileJSONURL,
     isMapboxHTTPSpriteURL,
-    isMapboxHTTPFontsURL
+    isMapboxHTTPFontsURL,
+    isMapboxHTTPCDNURL
 } from './mapbox.js';
 
 type LivePerformanceMetrics = {
@@ -99,11 +100,8 @@ function getCountersPerResourceType(resourceTimers) {
 function getResourceCategory(entry: PerformanceResourceTiming): string {
     const url = entry.name.split('?')[0];
 
-    // Code may be hosted on various endpoints: CDN, self-hosted,
-    // from unpkg... so this check doesn't include mapbox HTTP URL
-    if (url.includes('mapbox-gl.js')) return 'javascript';
-    if (url.includes('mapbox-gl.css')) return 'css';
-
+    if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.js')) return 'javascript';
+    if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.css')) return 'css';
     if (isMapboxHTTPFontsURL(url)) return 'fontRange';
     if (isMapboxHTTPSpriteURL(url)) return 'sprite';
     if (isMapboxHTTPStyleURL(url)) return 'style';

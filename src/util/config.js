@@ -49,6 +49,9 @@ const config: Config = {
         // https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
         return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
     },
+    get API_CDN_URL_REGEX() {
+        return /^((https?:)?\/\/)?api\.mapbox\.c(n|om)(\/mapbox-gl-js\/)(.*$)/i;
+    },
     get EVENTS_URL() {
         if (!this.API_URL) { return null; }
         if (this.API_URL.indexOf('https://api.mapbox.cn') === 0) {
