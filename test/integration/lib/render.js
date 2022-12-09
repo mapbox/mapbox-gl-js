@@ -228,10 +228,11 @@ async function renderMap(style, options) {
         map.painter.terrain.useVertexMorphing = false;
     }
 
-    //3. Run the operations on the map
+    // 3. Run the operations on the map
     await applyOperations(map, options);
-    map.repaint = false;
-    await map.once('idle');
+
+    // 4. Wait until the map is idle
+    await new Promise(resolve => map._requestDomTask(resolve));
 
     return map;
 }
