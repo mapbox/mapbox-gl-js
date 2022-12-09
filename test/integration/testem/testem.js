@@ -5,7 +5,6 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
-const path = require('path');
 
 // hack to be able to import ES modules inside a CommonJS one
 let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
@@ -32,8 +31,6 @@ const ci = process.env.npm_lifecycle_script.includes('testem ci');
 let testFiles;
 const testsToRunFile = "tests-to-run.txt";
 
-console.log("looking at path:");
-console.log(path.resolve(testsToRunFile));
 if (fs.existsSync(testsToRunFile)) {
     try {
         let file = fs.readFileSync(testsToRunFile, 'utf8');
@@ -42,13 +39,8 @@ if (fs.existsSync(testsToRunFile)) {
         // Convert windows to linux paths. Even on windows, we use path.posix for consisten path syntax.
         file = file.replace(/^\uFEFF/, '').replace(/\\/g, '/');
         testFiles = file.split(/\r?\n/);
-        // testFiles = file.split("\n");
-        console.log("testFiles is");
-        console.log(testFiles);
-        console.log(`last item is: '${testFiles[testFiles.length - 1]}'`);
-        console.log("length:", testFiles.length);
     } catch (err) {
-        console.log("Failed to read file ", path.resolve(testsToRunFile));
+        console.log("Failed to read file ", testsToRunFile);
         console.error(err);
     }
 }
