@@ -133,6 +133,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
     const metrics = {counters: [], metadata: [], attributes: []};
 
+    // Please read carefully before adding or modifying the following metrics:
+    // https://github.com/mapbox/gl-js-team/blob/main/docs/live_performance_metrics.md
     const addMetric = (arr, name, value) => {
         if (value !== undefined && value !== null) {
             arr.push({name, value: value.toString()});

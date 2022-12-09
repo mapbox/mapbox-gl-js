@@ -7,6 +7,7 @@ type Config = {|
   API_FONTS_REGEX: RegExp,
   API_SPRITE_REGEX: RegExp,
   API_STYLE_REGEX: RegExp,
+  API_CDN_URL_REGEX: RegExp,
   EVENTS_URL: ?string,
   SESSION_PATH: string,
   FEEDBACK_URL: string,
