@@ -203,7 +203,6 @@ async function renderMap(style, options) {
         }
     });
 
-    map.repaint = true;
     map._authenticate = () => {};
 
     // override internal timing to enable precise wait operations
@@ -300,11 +299,6 @@ function calculateDiff(map, {w, h}, actualImageData, expectedImages) {
 }
 
 async function runTest(t) {
-    const errors = [];
-    const onError = (error) => {
-        errors.push(error);
-    };
-
     t.teardown(ensureTeardown);
 
     // This needs to be read from the `t` object because this function runs async in a closure.
@@ -320,8 +314,6 @@ async function runTest(t) {
 
         //2. Initialize the Map
         map = await renderMap(style, options);
-        map.on('error', onError);
-
         const {w, h} = getViewportSize(map);
         const actualImageData = getActualImageData(map, {w, h}, options);
 
@@ -340,8 +332,7 @@ async function runTest(t) {
             name: currentTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
-            style: pass ? 'ok' : map.getStyle(),
-            mapErrors: errors
+            style: map.getStyle(),
         };
 
         t.ok(pass || t._todo, t.name);
@@ -383,9 +374,6 @@ async function runTest(t) {
         t.error(e);
         updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
     }
-
-    map.off('error', onError);
-    t.end();
 }
 
 function drawImage(canvas, ctx, src, getImageData = true) {
