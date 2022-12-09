@@ -63,7 +63,6 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
 
     const patternProperty = layer.paint.get('fill-pattern');
     const image = patternProperty && patternProperty.constantOr((1: any));
-    const crossfade = layer.getCrossfadeParameters();
     let drawMode, programName, uniformValues, indexBuffer, segments;
 
     if (!isOutline) {
@@ -88,15 +87,14 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            programConfiguration.updatePaintBuffers(crossfade);
+            programConfiguration.updatePaintBuffers();
         }
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.to.toString()];
-            const posFrom = atlas.patternPositions[constantPattern.from.toString()];
-            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+            const posTo = atlas.patternPositions[constantPattern.toString()];
+            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
@@ -106,14 +104,14 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             indexBuffer = bucket.indexBuffer;
             segments = bucket.segments;
             uniformValues = image ?
-                fillPatternUniformValues(tileMatrix, painter, crossfade, tile) :
+                fillPatternUniformValues(tileMatrix, painter, tile) :
                 fillUniformValues(tileMatrix);
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
             const drawingBufferSize = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                fillOutlinePatternUniformValues(tileMatrix, painter, crossfade, tile, drawingBufferSize) :
+                fillOutlinePatternUniformValues(tileMatrix, painter, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 

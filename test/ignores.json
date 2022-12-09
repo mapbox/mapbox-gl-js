@@ -1,6 +1,7 @@
 {
   "query-tests/regressions/mapbox-gl-js#4494": "https://github.com/mapbox/mapbox-gl-js/issues/2716",
   "query-tests/globe/circle/opposite-side-over-north-pole": "skip - needs baseline update",
+  "query-tests/terrain/draped/lines/slope-occlusion": "skip - https://github.com/mapbox/mapbox-gl-js/issues/11726",
   "render-tests/background-pattern/projected": "skip - patterns not working with projections",
   "render-tests/fill-pattern/projected": "https://github.com/mapbox/mapbox-gl-js/issues/11221",
   "render-tests/debug/tile": "skip - inconsistent text rendering with canvas on different platforms",

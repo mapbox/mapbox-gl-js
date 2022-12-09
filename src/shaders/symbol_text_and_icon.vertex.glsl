@@ -145,9 +145,11 @@ void main() {
 
     float z = 0.0;
     vec2 offset = rotation_matrix * (a_offset / 32.0 * font_scale);
+#ifdef TERRAIN
 #ifdef PITCH_WITH_MAP_TERRAIN
     vec4 tile_pos = u_label_plane_matrix_inv * vec4(a_projected_pos.xy + offset, 0.0, 1.0);
     z = elevation(tile_pos.xy);
+#endif
 #endif
     float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
 #ifdef PROJECTION_GLOBE_VIEW

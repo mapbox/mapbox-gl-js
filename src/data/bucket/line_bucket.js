@@ -212,9 +212,7 @@ class LineBucket implements Bucket {
                 const constCap = capPropertyValue.value;
                 const constDash = dashPropertyValue.value;
                 if (!constDash) continue;
-                lineAtlas.addDash(constDash.from, constCap);
-                lineAtlas.addDash(constDash.to, constCap);
-                if (constDash.other) lineAtlas.addDash(constDash.other, constCap);
+                lineAtlas.addDash(constDash, constCap);
             }
         }
 
@@ -231,40 +229,27 @@ class LineBucket implements Bucket {
 
             if (dashPropertyValue.kind === 'constant' && capPropertyValue.kind === 'constant') continue;
 
-            let minDashArray, midDashArray, maxDashArray, minCap, midCap, maxCap;
+            let dashArray, cap;
 
             if (dashPropertyValue.kind === 'constant') {
-                const constDash = dashPropertyValue.value;
-                if (!constDash) continue;
-                minDashArray = constDash.other || constDash.to;
-                midDashArray = constDash.to;
-                maxDashArray = constDash.from;
+                dashArray = dashPropertyValue.value;
+                if (!dashArray) continue;
 
             } else {
-                minDashArray = dashPropertyValue.evaluate({zoom: zoom - 1}, feature);
-                midDashArray = dashPropertyValue.evaluate({zoom}, feature);
-                maxDashArray = dashPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                dashArray = dashPropertyValue.evaluate({zoom}, feature);
             }
 
             if (capPropertyValue.kind === 'constant') {
-                minCap = midCap = maxCap = capPropertyValue.value;
+                cap = capPropertyValue.value;
 
             } else {
-                minCap = capPropertyValue.evaluate({zoom: zoom - 1}, feature);
-                midCap = capPropertyValue.evaluate({zoom}, feature);
-                maxCap = capPropertyValue.evaluate({zoom: zoom + 1}, feature);
+                cap = capPropertyValue.evaluate({zoom}, feature);
             }
 
-            lineAtlas.addDash(minDashArray, minCap);
-            lineAtlas.addDash(midDashArray, midCap);
-            lineAtlas.addDash(maxDashArray, maxCap);
-
-            const min = lineAtlas.getKey(minDashArray, minCap);
-            const mid = lineAtlas.getKey(midDashArray, midCap);
-            const max = lineAtlas.getKey(maxDashArray, maxCap);
+            lineAtlas.addDash(dashArray, cap);
 
             // save positions for paint array
-            feature.patterns[layer.id] = {min, mid, max};
+            feature.patterns[layer.id] = lineAtlas.getKey(dashArray, cap);
         }
 
     }

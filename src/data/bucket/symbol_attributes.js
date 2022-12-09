@@ -135,6 +135,5 @@ export const glyphOffset: StructArrayLayout = createLayout([
 
 export const lineVertex: StructArrayLayout = createLayout([
     {type: 'Int16', name: 'x'},
-    {type: 'Int16', name: 'y'},
-    {type: 'Int16', name: 'tileUnitDistanceFromAnchor'}
+    {type: 'Int16', name: 'y'}
 ]);

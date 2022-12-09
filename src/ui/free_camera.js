@@ -1,6 +1,6 @@
 // @flow
 
-import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import {degToRad, wrap, getColumn, setColumn} from '../util/util.js';
 import {vec3, quat, mat4} from 'gl-matrix';
 
@@ -317,8 +317,11 @@ class FreeCamera {
         return matrix;
     }
 
-    getDistanceToElevation(elevationMeters: number): number {
-        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, this.position[1]);
+    // The additional parameter needs to be removed. This was introduced because originally
+    // the value returned by this function was incorrect. Fixing it would break the fog visuals and needs to be
+    // communicated carefully first. Also see transform.cameraWorldSizeForFog.
+    getDistanceToElevation(elevationMeters: number, convert: boolean = false): number {
+        const z0 = elevationMeters === 0 ? 0 : mercatorZfromAltitude(elevationMeters, convert ? latFromMercatorY(this.position[1]) : this.position[1]);
         const f = this.forward();
         return (z0 - this.position[2]) / f[2];
     }

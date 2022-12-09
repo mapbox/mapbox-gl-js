@@ -184,51 +184,50 @@ register(StructArrayLayout4f16, 'StructArrayLayout4f16');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Uint16[10]
+ * [0]: Uint16[4]
+ * [8]: Float32[1]
  *
  * @private
  */
-class StructArrayLayout10ui20 extends StructArray {
+class StructArrayLayout4ui1f12 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
+    float32: Float32Array;
 
     _refreshViews() {
         this.uint8 = new Uint8Array(this.arrayBuffer);
         this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number): number {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number): number {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        return this.emplace(i, v0, v1, v2, v3, v4);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number): number {
-        const o2 = i * 10;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number): number {
+        const o2 = i * 6;
+        const o4 = i * 3;
         this.uint16[o2 + 0] = v0;
         this.uint16[o2 + 1] = v1;
         this.uint16[o2 + 2] = v2;
         this.uint16[o2 + 3] = v3;
-        this.uint16[o2 + 4] = v4;
-        this.uint16[o2 + 5] = v5;
-        this.uint16[o2 + 6] = v6;
-        this.uint16[o2 + 7] = v7;
-        this.uint16[o2 + 8] = v8;
-        this.uint16[o2 + 9] = v9;
+        this.float32[o4 + 2] = v4;
         return i;
     }
 }
 
-StructArrayLayout10ui20.prototype.bytesPerElement = 20;
-register(StructArrayLayout10ui20, 'StructArrayLayout10ui20');
+StructArrayLayout4ui1f12.prototype.bytesPerElement = 12;
+register(StructArrayLayout4ui1f12, 'StructArrayLayout4ui1f12');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Uint16[8]
+ * [0]: Uint16[4]
  *
  * @private
  */
-class StructArrayLayout8ui16 extends StructArray {
+class StructArrayLayout4ui8 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -237,28 +236,24 @@ class StructArrayLayout8ui16 extends StructArray {
         this.uint16 = new Uint16Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number): number {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7);
+        return this.emplace(i, v0, v1, v2, v3);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number): number {
-        const o2 = i * 8;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number): number {
+        const o2 = i * 4;
         this.uint16[o2 + 0] = v0;
         this.uint16[o2 + 1] = v1;
         this.uint16[o2 + 2] = v2;
         this.uint16[o2 + 3] = v3;
-        this.uint16[o2 + 4] = v4;
-        this.uint16[o2 + 5] = v5;
-        this.uint16[o2 + 6] = v6;
-        this.uint16[o2 + 7] = v7;
         return i;
     }
 }
 
-StructArrayLayout8ui16.prototype.bytesPerElement = 16;
-register(StructArrayLayout8ui16, 'StructArrayLayout8ui16');
+StructArrayLayout4ui8.prototype.bytesPerElement = 8;
+register(StructArrayLayout4ui8, 'StructArrayLayout4ui8');
 
 /**
  * Implementation of the StructArray layout:
@@ -987,37 +982,6 @@ class StructArrayLayout2f8 extends StructArray {
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register(StructArrayLayout2f8, 'StructArrayLayout2f8');
 
-class FillExtrusionExtStruct extends Struct {
-    _structArray: FillExtrusionExtArray;
-    get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
-    get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
-}
-
-FillExtrusionExtStruct.prototype.size = 12;
-
-export type FillExtrusionExt = FillExtrusionExtStruct;
-
-/**
- * @private
- */
-export class FillExtrusionExtArray extends StructArrayLayout6i12 {
-    /**
-     * Return the FillExtrusionExtStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): FillExtrusionExtStruct {
-        assert(!this.isTransferred);
-        return new FillExtrusionExtStruct(this, index);
-    }
-}
-
-register(FillExtrusionExtArray, 'FillExtrusionExtArray');
-
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1050,6 +1014,8 @@ export class CollisionBoxArray extends StructArrayLayout5i4f1i1ul2ui40 {
      */
     get(index: number): CollisionBoxStruct {
         assert(!this.isTransferred);
+        assert(index >= 0);
+        assert(index < this.length);
         return new CollisionBoxStruct(this, index);
     }
 }
@@ -1100,6 +1066,8 @@ export class PlacedSymbolArray extends StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1
      */
     get(index: number): PlacedSymbolStruct {
         assert(!this.isTransferred);
+        assert(index >= 0);
+        assert(index < this.length);
         return new PlacedSymbolStruct(this, index);
     }
 }
@@ -1156,6 +1124,8 @@ export class SymbolInstanceArray extends StructArrayLayout3i2f6i15ui1ul3f76 {
      */
     get(index: number): SymbolInstanceStruct {
         assert(!this.isTransferred);
+        assert(index >= 0);
+        assert(index < this.length);
         return new SymbolInstanceStruct(this, index);
     }
 }
@@ -1174,10 +1144,9 @@ register(GlyphOffsetArray, 'GlyphOffsetArray');
 /**
  * @private
  */
-export class SymbolLineVertexArray extends StructArrayLayout3i6 {
-    getx(index: number): number { return this.int16[index * 3 + 0]; }
-    gety(index: number): number { return this.int16[index * 3 + 1]; }
-    gettileUnitDistanceFromAnchor(index: number): number { return this.int16[index * 3 + 2]; }
+export class SymbolLineVertexArray extends StructArrayLayout2i4 {
+    getx(index: number): number { return this.int16[index * 2 + 0]; }
+    gety(index: number): number { return this.int16[index * 2 + 1]; }
 }
 
 register(SymbolLineVertexArray, 'SymbolLineVertexArray');
@@ -1205,69 +1174,23 @@ export class FeatureIndexArray extends StructArrayLayout1ul3ui12 {
      */
     get(index: number): FeatureIndexStruct {
         assert(!this.isTransferred);
+        assert(index >= 0);
+        assert(index < this.length);
         return new FeatureIndexStruct(this, index);
     }
 }
 
 register(FeatureIndexArray, 'FeatureIndexArray');
 
-class FillExtrusionCentroidStruct extends Struct {
-    _structArray: FillExtrusionCentroidArray;
-    get a_centroid_pos0(): number { return this._structArray.uint16[this._pos2 + 0]; }
-    get a_centroid_pos1(): number { return this._structArray.uint16[this._pos2 + 1]; }
-}
-
-FillExtrusionCentroidStruct.prototype.size = 4;
-
-export type FillExtrusionCentroid = FillExtrusionCentroidStruct;
-
 /**
  * @private
  */
 export class FillExtrusionCentroidArray extends StructArrayLayout2ui4 {
-    /**
-     * Return the FillExtrusionCentroidStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): FillExtrusionCentroidStruct {
-        assert(!this.isTransferred);
-        return new FillExtrusionCentroidStruct(this, index);
-    }
+    geta_centroid_pos0(index: number): number { return this.uint16[index * 2 + 0]; }
+    geta_centroid_pos1(index: number): number { return this.uint16[index * 2 + 1]; }
 }
 
 register(FillExtrusionCentroidArray, 'FillExtrusionCentroidArray');
-
-class CircleGlobeExtStruct extends Struct {
-    _structArray: CircleGlobeExtArray;
-    get a_pos_30(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_pos_31(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_pos_32(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get a_pos_normal_30(): number { return this._structArray.int16[this._pos2 + 3]; }
-    get a_pos_normal_31(): number { return this._structArray.int16[this._pos2 + 4]; }
-    get a_pos_normal_32(): number { return this._structArray.int16[this._pos2 + 5]; }
-}
-
-CircleGlobeExtStruct.prototype.size = 12;
-
-export type CircleGlobeExt = CircleGlobeExtStruct;
-
-/**
- * @private
- */
-export class CircleGlobeExtArray extends StructArrayLayout6i12 {
-    /**
-     * Return the CircleGlobeExtStruct at the given location in the array.
-     * @param {number} index The index of the element.
-     * @private
-     */
-    get(index: number): CircleGlobeExtStruct {
-        assert(!this.isTransferred);
-        return new CircleGlobeExtStruct(this, index);
-    }
-}
-
-register(CircleGlobeExtArray, 'CircleGlobeExtArray');
 
 export {
     StructArrayLayout2i4,
@@ -1275,8 +1198,8 @@ export {
     StructArrayLayout4i8,
     StructArrayLayout2i4ub1f12,
     StructArrayLayout4f16,
-    StructArrayLayout10ui20,
-    StructArrayLayout8ui16,
+    StructArrayLayout4ui1f12,
+    StructArrayLayout4ui8,
     StructArrayLayout6i12,
     StructArrayLayout4i4ui4i24,
     StructArrayLayout3i3f20,
@@ -1304,8 +1227,9 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout4f16 as LineExtLayoutArray,
-    StructArrayLayout10ui20 as PatternLayoutArray,
-    StructArrayLayout8ui16 as DashLayoutArray,
+    StructArrayLayout4ui1f12 as PatternLayoutArray,
+    StructArrayLayout4ui8 as DashLayoutArray,
+    StructArrayLayout6i12 as FillExtrusionExtArray,
     StructArrayLayout4i4ui4i24 as SymbolLayoutArray,
     StructArrayLayout3i3f20 as SymbolGlobeExtArray,
     StructArrayLayout4f16 as SymbolDynamicLayoutArray,
@@ -1321,5 +1245,6 @@ export {
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,
     StructArrayLayout3f12 as SkyboxVertexArray,
-    StructArrayLayout4i8 as TileBoundsArray
+    StructArrayLayout4i8 as TileBoundsArray,
+    StructArrayLayout6i12 as CircleGlobeExtArray
 };

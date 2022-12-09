@@ -11,7 +11,6 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
-import LineAtlas from '../render/line_atlas.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
@@ -46,7 +45,6 @@ import {
     triggerPluginCompletionEvent
 } from '../source/rtl_text_plugin.js';
 import PauseablePlacement from './pauseable_placement.js';
-import ZoomHistory from './zoom_history.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 
@@ -138,7 +136,6 @@ class Style extends Evented {
     dispatcher: Dispatcher;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
-    lineAtlas: LineAtlas;
     light: Light;
     terrain: ?Terrain;
     fog: ?Fog;
@@ -155,7 +152,6 @@ class Style extends Evented {
     _sourceCaches: {[_: string]: SourceCache};
     _otherSourceCaches: {[_: string]: SourceCache};
     _symbolSourceCaches: {[_: string]: SourceCache};
-    zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
@@ -190,7 +186,6 @@ class Style extends Evented {
                 LocalGlyphMode.all :
                 (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
             options.localFontFamily || options.localIdeographFontFamily);
-        this.lineAtlas = new LineAtlas(256, 512);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
@@ -201,7 +196,6 @@ class Style extends Evented {
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
-        this.zoomHistory = new ZoomHistory();
         this._loaded = false;
         this._availableImages = [];
         this._order  = [];

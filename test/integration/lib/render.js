@@ -27,6 +27,7 @@ const container = document.createElement('div');
 container.style.position = 'fixed';
 container.style.bottom = '10px';
 container.style.right = '10px';
+container.style.background = 'white';
 document.body.appendChild(container);
 
 // Container used to store all fake canvases added via addFakeCanvas operation
@@ -41,7 +42,7 @@ setupHTML();
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
-const {canvas: terrainDepthCanvas, ctx: terrainDepthCtx} = createCanvas();
+const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
 
 tape.onFinish(() => {
@@ -50,12 +51,7 @@ tape.onFinish(() => {
 });
 
 for (const testName in fixtures) {
-    tape(testName, {timeout: 20000}, ensureTeardown);
-}
-
-function ensureTeardown(t) {
-    const testName = t.name;
-    const options = {timeout: 5000};
+    const options = {timeout: 20000};
     if (testName in ignores) {
         const ignoreType = ignores[testName];
         if (/^skip/.test(ignoreType)) {
@@ -64,9 +60,10 @@ function ensureTeardown(t) {
             options.todo = true;
         }
     }
+    tape(testName, options, runTest);
+}
 
-    t.test(testName, options, runTest);
-
+function ensureTeardown() {
     //Teardown all global resources
     //Cleanup WebGL context and map
     if (map) {
@@ -75,8 +72,6 @@ function ensureTeardown(t) {
         map = null;
     }
     mapboxgl.clearStorage();
-    expectedCtx.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
-    diffCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
     //Cleanup canvases added if any
     while (fakeCanvasContainer.firstChild) {
@@ -85,10 +80,11 @@ function ensureTeardown(t) {
 
     //Restore timers
     mapboxgl.restoreNow();
-    t.end();
 }
 
 async function runTest(t) {
+    t.teardown(ensureTeardown);
+
     let style, options;
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
@@ -104,7 +100,13 @@ async function runTest(t) {
             throw new Error(`Error occured while parsing style.json: ${style.message}`);
         }
 
-        options = style.metadata.test;
+        options = {
+            width: 512,
+            height: 512,
+            pixelRatio: 1,
+            allowed: 0.00015,
+            ...((style.metadata && style.metadata.test) || {})
+        };
 
         // there may be multiple expected images, covering different platforms
         const expectedPaths = [];
@@ -147,6 +149,7 @@ async function runTest(t) {
             localIdeographFontFamily: options.localIdeographFontFamily || false,
             projection: options.projection,
             crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
+            performanceMetricsCollection: false,
             transformRequest: (url, resourceType) => {
                 // some tests have the port hardcoded to 2900
                 // this makes that backwards compatible
@@ -161,6 +164,7 @@ async function runTest(t) {
         });
 
         map.repaint = true;
+        map._authenticate = () => {};
 
         // override internal timing to enable precise wait operations
         window._renderTestNow = 0;
@@ -201,29 +205,10 @@ async function runTest(t) {
             }
             actualImageData = Uint8ClampedArray.from(pixels);
         } else {
-            actualImageData = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, actualImageData);
-
-            // readPixels premultiplies the alpha channel so we need to
-            // undo that for comparison with the expected image pixels
-            for (let i = 0; i < actualImageData.length; i += 4) {
-                const alpha = actualImageData[i + 3] / 255;
-                actualImageData[i + 0] /= alpha;
-                actualImageData[i + 1] /= alpha;
-                actualImageData[i + 2] /= alpha;
-            }
-
-            // readPixels starts at the bottom of the canvas
-            // so we need to flip the image data
-            const stride = w * 4;
-            const temp = new Uint8Array(w * 4);
-            for (let i = 0; i < (h / 2 | 0); ++i) {
-                const topOffset = i * stride;
-                const bottomOffset = (h - i - 1) * stride;
-                temp.set(actualImageData.subarray(topOffset, topOffset + stride));
-                actualImageData.copyWithin(topOffset, bottomOffset, bottomOffset + stride);
-                actualImageData.set(temp, bottomOffset);
-            }
+            actualCanvas.width = w;
+            actualCanvas.height = h;
+            actualCtx.drawImage(map.getCanvas(), 0, 0);
+            actualImageData = actualCtx.getImageData(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight).data;
         }
 
         // if we have multiple expected images, we'll compare against each one and pick the one with
@@ -236,23 +221,23 @@ async function runTest(t) {
         }
 
         let fileInfo;
-        let actual;
 
-        if (options.output === "terrainDepth") {
-            terrainDepthCanvas.width = w;
-            terrainDepthCanvas.height = h;
-            const terrainDepthData = new ImageData(actualImageData, w, h);
-            terrainDepthCtx.putImageData(terrainDepthData, 0, 0);
-            actual = terrainDepthCanvas.toDataURL();
-        } else {
-            actual = map.getCanvas().toDataURL();
-        }
+        const getActual = () => {
+            if (options.output === "terrainDepth") {
+                actualCanvas.width = w;
+                actualCanvas.height = h;
+                const terrainDepthData = new ImageData(actualImageData, w, h);
+                actualCtx.putImageData(terrainDepthData, 0, 0);
+                return actualCanvas.toDataURL();
+            }
+            return map.getCanvas().toDataURL();
+        };
 
         if (process.env.UPDATE) {
             fileInfo = [
                 {
                     path: `${writeFileBasePath}/expected.png`,
-                    data: actual.split(',')[1]
+                    data: getActual().split(',')[1]
                 }
             ];
         } else {
@@ -276,40 +261,44 @@ async function runTest(t) {
                 }
             }
 
-            // 5. Convert diff Uint8Array to ImageData and write to canvas
-            // so we can get a base64 string to display the diff in the browser
-            diffCanvas.width = w;
-            diffCanvas.height = h;
-            const diffImageData = new ImageData(minDiffImage, w, h);
-            diffCtx.putImageData(diffImageData, 0, 0);
-
-            const expected = minExpectedCanvas.toDataURL();
-            const imgDiff = diffCanvas.toDataURL();
-
-            // 6. use browserWriteFile to write actual and diff to disk (convert image back to base64)
-            fileInfo = [
-                {
-                    path: `${writeFileBasePath}/actual.png`,
-                    data: actual.split(',')[1]
-                },
-                {
-                    path: `${writeFileBasePath}/diff.png`,
-                    data: imgDiff.split(',')[1]
-                }
-            ];
-
-            // 7. pass image paths to testMetaData so the UI can load them from disk
+            const pass = minDiff <= options.allowed;
             const testMetaData = {
                 name: currentTestName,
-                actual,
-                expected,
-                imgDiff,
-                minDiff: minDiff.toFixed(5)
+                minDiff: Math.round(100000 * minDiff) / 100000,
+                status: t._todo ? 'todo' : pass ? 'passed' : 'failed'
             };
-
-            const pass = minDiff <= options.allowed;
             t.ok(pass || t._todo, t.name);
-            testMetaData.status = t._todo ? 'todo' : pass ? 'passed' : 'failed';
+
+            // only display results locally, or on CI if it's failing
+            if (!process.env.CI || !pass) {
+                // 5. Convert diff Uint8Array to ImageData and write to canvas
+                // so we can get a base64 string to display the diff in the browser
+                diffCanvas.width = w;
+                diffCanvas.height = h;
+                const diffImageData = new ImageData(minDiffImage, w, h);
+                diffCtx.putImageData(diffImageData, 0, 0);
+
+                const actual = getActual();
+                const imgDiff = diffCanvas.toDataURL();
+
+                // 6. use browserWriteFile to write actual and diff to disk (convert image back to base64)
+                fileInfo = process.env.CI ? null : [
+                    {
+                        path: `${writeFileBasePath}/actual.png`,
+                        data: actual.split(',')[1]
+                    },
+                    {
+                        path: `${writeFileBasePath}/diff.png`,
+                        data: imgDiff.split(',')[1]
+                    }
+                ];
+
+                // 7. pass image paths to testMetaData so the UI can load them from disk
+                testMetaData.actual = actual;
+                testMetaData.expected = minExpectedCanvas.toDataURL();
+                testMetaData.imgDiff = imgDiff;
+            }
+
             updateHTML(testMetaData);
         }
 
@@ -350,7 +339,7 @@ function drawImage(canvas, ctx, src, getImageData = true) {
 function createCanvas(id = 'fake-canvas') {
     const canvas = window.document.createElement('canvas');
     canvas.id = id;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
     return {canvas, ctx};
 }
 

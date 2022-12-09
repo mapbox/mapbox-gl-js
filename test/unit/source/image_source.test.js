@@ -214,6 +214,45 @@ test('ImageSource', (t) => {
         respond();
         t.ok(source.loaded());
         source.updateImage({url: '/image2.png', coordinates});
+        respond();
+        t.end();
+    });
+
+    t.test('cancels image request when onRemove is called', (t) => {
+        const source = createSource({url: '/image.png'});
+        source.onAdd(new StubMap());
+        const req = requests.shift();
+        const spy = t.spy(req, 'abort');
+
+        source.onRemove();
+
+        t.equal(spy.callCount, 1);
+        t.end();
+    });
+
+    t.test('cancels image request when updateImage is called', (t) => {
+        const source = createSource({url: '/image.png'});
+        source.image = img;
+        source.onAdd(new StubMap());
+        const req = requests.shift();
+        const spy = t.spy(req, 'abort');
+
+        source.updateImage({url: '/image2.png'});
+
+        t.equal(spy.callCount, 1);
+        t.end();
+    });
+
+    t.test('does not cancel image request when updateImage is called with the same url', (t) => {
+        const source = createSource({url: '/image.png'});
+        source.image = img;
+        source.onAdd(new StubMap());
+        const req = requests.shift();
+        const spy = t.spy(req, 'abort');
+
+        source.updateImage({url: '/image.png'});
+
+        t.equal(spy.callCount, 0);
         t.end();
     });
 

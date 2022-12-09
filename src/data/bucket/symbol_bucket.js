@@ -341,7 +341,7 @@ register(CollisionBuffers, 'CollisionBuffers');
  *      `this.textCollisionBox`: Debug SymbolBuffers for text collision boxes
  *    The results are sent to the foreground for rendering
  *
- * 4. performSymbolPlacement(bucket, collisionIndex) is run on the foreground,
+ * 4. Placement.updateBucketOpacities() is run on the foreground,
  *    and uses the CollisionIndex along with current camera settings to determine
  *    which symbols can actually show on the map. Collided symbols are hidden
  *    using a dynamic "OpacityVertexArray".
@@ -666,28 +666,11 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    addToLineVertexArray(anchor: Anchor, line: any): LineVertexRange {
+    addToLineVertexArray(anchor: Anchor, line: Array<Point>): LineVertexRange {
         const lineStartIndex = this.lineVertexArray.length;
-        const segment = anchor.segment;
-        if (segment !== undefined) {
-            let sumForwardLength = anchor.dist(line[segment + 1]);
-            let sumBackwardLength = anchor.dist(line[segment]);
-            const vertices = {};
-            for (let i = segment + 1; i < line.length; i++) {
-                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength};
-                if (i < line.length - 1) {
-                    sumForwardLength += line[i + 1].dist(line[i]);
-                }
-            }
-            for (let i = segment || 0; i >= 0; i--) {
-                vertices[i] = {x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength};
-                if (i > 0) {
-                    sumBackwardLength += line[i - 1].dist(line[i]);
-                }
-            }
-            for (let i = 0; i < line.length; i++) {
-                const vertex = vertices[i];
-                this.lineVertexArray.emplaceBack(vertex.x, vertex.y, vertex.tileUnitDistanceFromAnchor);
+        if (anchor.segment !== undefined) {
+            for (const {x, y} of line) {
+                this.lineVertexArray.emplaceBack(x, y);
             }
         }
         return {
@@ -733,14 +716,14 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
             if (globe) {
-                const globeAnchor = globe.anchor;
-                const up = globe.up;
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
-                addGlobeVertex(globeExtVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, up[0], up[1], up[2]);
+                const {x, y, z} = globe.anchor;
+                const [ux, uy, uz] = globe.up;
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
+                addGlobeVertex(globeExtVertexArray, x, y, z, ux, uy, uz);
 
-                addDynamicAttributes(arrays.dynamicLayoutVertexArray, globeAnchor.x, globeAnchor.y, globeAnchor.z, angle);
+                addDynamicAttributes(arrays.dynamicLayoutVertexArray, x, y, z, angle);
             } else {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
             }
@@ -834,7 +817,7 @@ class SymbolBucket implements Bucket {
     _addIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
-            const scale = this.getSymbolInstanceIconSize(size, zoom, b);
+            const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
 
             this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ, instance);
         }
@@ -867,14 +850,14 @@ class SymbolBucket implements Bucket {
                     instance.leftJustifiedTextSymbolIndex : instance.verticalPlacedTextSymbolIndex >= 0 ?
                         instance.verticalPlacedTextSymbolIndex : boxIndex;
 
-        const symbol: any = this.text.placedSymbolArray.get(symbolIndex);
+        const symbol = this.text.placedSymbolArray.get(symbolIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.textSizeData, textSize, symbol) / ONE_EM;
 
         return this.tilePixelRatio * featureSize;
     }
 
-    getSymbolInstanceIconSize(iconSize: any, zoom: number, index: number): number {
-        const symbol: any = this.icon.placedSymbolArray.get(index);
+    getSymbolInstanceIconSize(iconSize: any, zoom: number, iconIndex: number): number {
+        const symbol = this.icon.placedSymbolArray.get(iconIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
         return this.tilePixelRatio * featureSize;
@@ -896,10 +879,10 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number) {
+    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, symbolIndex: number) {
         for (let b = startIndex; b < endIndex; b++) {
-            const box: CollisionBox = (collisionBoxArray.get(b): any);
-            const scale = this.getSymbolInstanceIconSize(size, zoom, b);
+            const box = (collisionBoxArray.get(b));
+            const scale = this.getSymbolInstanceIconSize(size, zoom, symbolIndex);
             const array = this.iconCollisionBox.collisionVertexArrayExt;
             this._commitDebugCollisionVertexUpdate(array, scale, box.padding);
         }
@@ -920,8 +903,8 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances.get(i);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
         }
 
         if (this.hasTextCollisionBoxData() && this.textCollisionBox.collisionVertexBufferExt) {
@@ -940,32 +923,27 @@ class SymbolBucket implements Bucket {
         iconStartIndex: number, iconEndIndex: number,
         verticalIconStartIndex: number, verticalIconEndIndex: number): CollisionArrays {
 
+        // Only one box allowed per instance
         const collisionArrays = {};
-        for (let k = textStartIndex; k < textEndIndex; k++) {
-            const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.textBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
-            collisionArrays.textFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
+        if (textStartIndex < textEndIndex) {
+            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(textStartIndex);
+            collisionArrays.textBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
+            collisionArrays.textFeatureIndex = featureIndex;
         }
-        for (let k = verticalTextStartIndex; k < verticalTextEndIndex; k++) {
-            const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalTextBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
-            collisionArrays.verticalTextFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
+        if (verticalTextStartIndex < verticalTextEndIndex) {
+            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(verticalTextStartIndex);
+            collisionArrays.verticalTextBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
+            collisionArrays.verticalTextFeatureIndex = featureIndex;
         }
-        for (let k = iconStartIndex; k < iconEndIndex; k++) {
-            // An icon can only have one box now, so this indexing is a bit vestigial...
-            const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.iconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
-            collisionArrays.iconFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
+        if (iconStartIndex < iconEndIndex) {
+            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(iconStartIndex);
+            collisionArrays.iconBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
+            collisionArrays.iconFeatureIndex = featureIndex;
         }
-        for (let k = verticalIconStartIndex; k < verticalIconEndIndex; k++) {
-            // An icon can only have one box now, so this indexing is a bit vestigial...
-            const box: CollisionBox = (collisionBoxArray.get(k): any);
-            collisionArrays.verticalIconBox = {x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, padding: box.padding, projectedAnchorX: box.projectedAnchorX, projectedAnchorY: box.projectedAnchorY, projectedAnchorZ: box.projectedAnchorZ, tileAnchorX: box.tileAnchorX, tileAnchorY: box.tileAnchorY};
-            collisionArrays.verticalIconFeatureIndex = box.featureIndex;
-            break; // Only one box allowed per instance
+        if (verticalIconStartIndex < verticalIconEndIndex) {
+            const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(verticalIconStartIndex);
+            collisionArrays.verticalIconBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};
+            collisionArrays.verticalIconFeatureIndex = featureIndex;
         }
         return collisionArrays;
     }
@@ -1035,10 +1013,7 @@ class SymbolBucket implements Bucket {
             featureIndexes.push(symbolInstance.featureIndex);
         }
 
-        result.sort((aIndex, bIndex) => {
-            return (rotatedYs[aIndex] - rotatedYs[bIndex]) ||
-                   (featureIndexes[bIndex] - featureIndexes[aIndex]);
-        });
+        result.sort((aIndex, bIndex) => (rotatedYs[aIndex] - rotatedYs[bIndex]) || (featureIndexes[bIndex] - featureIndexes[aIndex]));
 
         return result;
     }
@@ -1078,33 +1053,23 @@ class SymbolBucket implements Bucket {
         this.featureSortOrder = [];
 
         for (const i of this.symbolInstanceIndexes) {
-            const symbolInstance = this.symbolInstances.get(i);
-            this.featureSortOrder.push(symbolInstance.featureIndex);
+            const symbol = this.symbolInstances.get(i);
+            this.featureSortOrder.push(symbol.featureIndex);
+            const {
+                rightJustifiedTextSymbolIndex: right, centerJustifiedTextSymbolIndex: center,
+                leftJustifiedTextSymbolIndex: left, verticalPlacedTextSymbolIndex: vertical,
+                placedIconSymbolIndex: icon, verticalPlacedIconSymbolIndex: iconVertical
+            } = symbol;
 
-            [
-                symbolInstance.rightJustifiedTextSymbolIndex,
-                symbolInstance.centerJustifiedTextSymbolIndex,
-                symbolInstance.leftJustifiedTextSymbolIndex
-            ].forEach((index, i, array) => {
-                // Only add a given index the first time it shows up,
-                // to avoid duplicate opacity entries when multiple justifications
-                // share the same glyphs.
-                if (index >= 0 && array.indexOf(index) === i) {
-                    this.addIndicesForPlacedSymbol(this.text, index);
-                }
-            });
+            // Only add a given index the first time it shows up, to avoid duplicate
+            // opacity entries when multiple justifications share the same glyphs.
+            if (right >= 0) this.addIndicesForPlacedSymbol(this.text, right);
+            if (center >= 0 && center !== right) this.addIndicesForPlacedSymbol(this.text, center);
+            if (left >= 0 && left !== center && left !== right) this.addIndicesForPlacedSymbol(this.text, left);
 
-            if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
-                this.addIndicesForPlacedSymbol(this.text, symbolInstance.verticalPlacedTextSymbolIndex);
-            }
-
-            if (symbolInstance.placedIconSymbolIndex >= 0) {
-                this.addIndicesForPlacedSymbol(this.icon, symbolInstance.placedIconSymbolIndex);
-            }
-
-            if (symbolInstance.verticalPlacedIconSymbolIndex >= 0) {
-                this.addIndicesForPlacedSymbol(this.icon, symbolInstance.verticalPlacedIconSymbolIndex);
-            }
+            if (vertical >= 0) this.addIndicesForPlacedSymbol(this.text, vertical);
+            if (icon >= 0) this.addIndicesForPlacedSymbol(this.icon, icon);
+            if (iconVertical >= 0) this.addIndicesForPlacedSymbol(this.icon, iconVertical);
         }
 
         if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);

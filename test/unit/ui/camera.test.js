@@ -2039,6 +2039,18 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('bearing and pitch', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 175, pitch: 40});
+            t.deepEqual(fixedLngLat(transform.center, 4), {lng: -100.5, lat: 34.7171}, 'correctly calculates coordinates for new bounds');
+            t.equal(fixedNum(transform.zoom, 3), 2.197);
+            t.equal(transform.bearing, 175);
+            t.equal(transform.pitch, 40);
+            t.end();
+        });
+
         t.test('bearing negative number', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -2268,6 +2280,16 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('padding object with pitch', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16], [-68, 50]];
+
+            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0, pitch: 30});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -96.5558, lat: 32.4408}, 'pans to coordinates based on fitBounds with padding option as object applied');
+            t.equal(camera.getPitch(), 30);
+            t.end();
+        });
+
         t.test('padding does not get propagated to transform.padding', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
@@ -2312,6 +2334,21 @@ test('camera', (t) => {
             t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -84.1374}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
             t.equal(fixedNum(camera.getZoom(), 3), 5.2);
             t.equal(camera.getBearing(), -135);
+            t.end();
+        });
+
+        t.test('bearing 225, pitch 30 and 60 at end of animation', (t) => {
+            const pitch = 30;
+            const camera = createCamera({pitch});
+            const p0 = [200, 500];
+            const p1 = [210, 510];
+            const bearing = 225;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0, pitch: 60});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -30.215, lat: -84.1374}, 'centers, rotates 225 degrees, pitch 30 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 5.056);
+            t.equal(camera.getBearing(), -135);
+            t.equal(camera.getPitch(), 60);
             t.end();
         });
 

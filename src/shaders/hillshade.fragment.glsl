@@ -44,6 +44,9 @@ void main() {
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
     gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
 
+#ifdef LIGHTING_3D_MODE
+    gl_FragColor = apply_lighting(gl_FragColor);
+#endif
 #ifdef FOG
     gl_FragColor = fog_dither(fog_apply_premultiplied(gl_FragColor, v_fog_pos));
 #endif

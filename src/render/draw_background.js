@@ -50,7 +50,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.imageManager.bind(painter.context);
     }
 
-    const crossfade = layer.getCrossfadeParameters();
     for (const tileID of tileIDs) {
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
@@ -60,7 +59,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-            backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
+            backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}) :
             backgroundUniformValues(matrix, opacity, color);
 
         painter.prepareDrawProgram(context, program, unwrappedTileID);

@@ -7,6 +7,7 @@ import {uuid} from '../../../src/util/util.js';
 import {SKU_ID} from '../../../src/util/sku_token.js';
 import {version} from '../../../package.json';
 import {equalWithPrecision} from '../../util/index.js';
+import assert from 'assert';
 
 const mapboxTileURLs = [
     'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf',
@@ -40,6 +41,54 @@ test("mapbox", (t) => {
         t.ok(mapbox.isMapboxHTTPURL('https://api.mapbox.cn/tiles'));
         t.ok(mapbox.isMapboxHTTPURL('http://a.tiles.mapbox.cn/tiles'));
         t.notOk(mapbox.isMapboxHTTPURL('http://example.com/mapbox.com'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPStyleURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v52/mapbox/streets-v11'));
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11?'));
+        t.ok(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.cn/styles/v1/mapbox/streets-v11'));
+        t.notOk(mapbox.isMapboxHTTPStyleURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPStyleURL('http://example.com/mapbox.com'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPTileJSONURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v52/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.com/v4/mapbox.mapbox-streets-v8.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('https://api.mapbox.cn/v4/mapbox.mapbox-streets-v8.json'));
+        t.ok(mapbox.isMapboxHTTPTileJSONURL('http://a.tiles.mapbox.cn/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.notOk(mapbox.isMapboxHTTPTileJSONURL('http://example.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2.json'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPSpriteURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v52/mapbox/streets-v11/sprite@2x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2.5x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/user/style/sprite.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/user/style/sprite@2x.json'));
+        t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.cn/styles/v1/mapbox/streets-v11/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/styles/v1/user/style/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/sprite@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('http://example.com/mapbox.com/images@2x.json'));
+        t.notOk(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
+        t.end();
+    });
+
+    t.test('.isMapboxHTTPFontsURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/8192-8447.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v52/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/8192-8447.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/0-255.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/DIN%20Offc%20Pro%20Medium,Arial%20Unicode%20MS%20Regular/0-255.pbf?access_token=pk.eyJ1Ijoi'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/fonts/v1/mapbox/font1,font2/0-255.pbf'));
+        t.ok(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.cn/fonts/v1/mapbox/font1,font2/0-255.pbf'));
+        t.notOk(mapbox.isMapboxHTTPFontsURL('https://example.com/file.pbf'));
+        t.notOk(mapbox.isMapboxHTTPFontsURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11'));
         t.end();
     });
 
@@ -431,6 +480,100 @@ test("mapbox", (t) => {
         t.end();
     });
 
+    t.test('PerformanceEvent', (t) => {
+        let event;
+
+        t.beforeEach(() => {
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.PerformanceEvent();
+        });
+
+        t.afterEach(() => {
+            window.restore();
+        });
+
+        t.test('mapbox.postPerformanceEvent', (t) => {
+            t.ok(mapbox.postPerformanceEvent);
+            t.end();
+        });
+
+        t.test('does not contains sku, skuId and userId', (t) => {
+            event.postPerformanceEvent('token', {
+                width: 100,
+                height: 100,
+                interactionRange: [0, 0],
+                projection: 'mercator'
+            });
+
+            const reqBody = window.server.requests[0].requestBody;
+            const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+
+            t.equals(performanceEvent.event, 'gljs.performance');
+            t.notOk(performanceEvent.skuId);
+            t.notOk(performanceEvent.skuToken);
+            t.notOk(performanceEvent.userId);
+            t.end();
+        });
+
+        t.test('contains default payload', (t) => {
+            event.postPerformanceEvent('token', {
+                width: 100,
+                height: 100,
+                interactionRange: [0, 0],
+                projection: 'mercator'
+            });
+
+            const reqBody = window.server.requests[0].requestBody;
+            const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+
+            t.equals(performanceEvent.event, 'gljs.performance');
+            t.true(!!performanceEvent.created);
+            t.end();
+        });
+
+        t.test('metrics', (t) => {
+            event.postPerformanceEvent('token', {
+                width: 100,
+                height: 50,
+                interactionRange: [0, 0],
+                projection: 'mercator',
+                vendor: 'webgl vendor',
+                renderer: 'webgl renderer'
+            });
+
+            const reqBody = window.server.requests[0].requestBody;
+            const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
+            const checkMetric = (data, metricName, metricValue) => {
+                for (const metric of data) {
+                    if (metric.name === metricName) {
+                        t.equals(metric.value, metricValue);
+                        return;
+                    }
+                }
+                assert(false);
+            };
+
+            t.equals(performanceEvent.event, 'gljs.performance');
+
+            checkMetric(performanceEvent.metadata, 'sdkVersion', version);
+            checkMetric(performanceEvent.metadata, 'sdkIdentifier', 'mapbox-gl-js');
+            checkMetric(performanceEvent.metadata, 'devicePixelRatio', '1');
+            checkMetric(performanceEvent.metadata, 'windowWidth', '1024');
+            checkMetric(performanceEvent.metadata, 'windowHeight', '768');
+            checkMetric(performanceEvent.metadata, 'mapWidth', '100');
+            checkMetric(performanceEvent.metadata, 'mapHeight', '50');
+            checkMetric(performanceEvent.metadata, 'webglVendor', 'webgl vendor');
+            checkMetric(performanceEvent.metadata, 'webglRenderer', 'webgl renderer');
+            checkMetric(performanceEvent.attributes, 'terrainEnabled', 'false');
+            checkMetric(performanceEvent.attributes, 'projection', 'mercator');
+            checkMetric(performanceEvent.attributes, 'fogEnabled', 'false');
+
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('TurnstileEvent', (t) => {
         const ms25Hours = (25 * 60 * 60 * 1000);
         let event;
@@ -448,13 +591,18 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        t.test('contains skuId', (t) => {
+        t.test('contains all payload including skuId', (t) => {
             event.postTurnstileEvent(mapboxTileURLs);
             const reqBody = window.server.requests[0].requestBody;
             // reqBody is a string of an array containing the event object so pick out the stringified event object and convert to an object
             const mapLoadEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
             t.equals(mapLoadEvent.event, 'appUserTurnstile');
             t.equals(mapLoadEvent.skuId, SKU_ID);
+            t.equals(mapLoadEvent.sdkIdentifier, 'mapbox-gl-js');
+            t.equals(mapLoadEvent.sdkVersion, version);
+            t.equals(mapLoadEvent["enabled.telemetry"], false);
+            t.true(!!mapLoadEvent.userId);
+            t.true(!!mapLoadEvent.created);
             t.end();
         });
 
@@ -780,7 +928,7 @@ test("mapbox", (t) => {
             t.end();
         });
 
-        t.test('contains skuId and skuToken', (t) => {
+        t.test('contains all payload including skuId and skuToken', (t) => {
             event.postMapLoadEvent(1, skuToken);
             const reqBody = window.server.requests[0].requestBody;
             // reqBody is a string of an array containing the event object so pick out the stringified event object and convert to an object
@@ -788,6 +936,10 @@ test("mapbox", (t) => {
             t.equals(mapLoadEvent.event, 'map.load');
             t.equals(mapLoadEvent.skuId, SKU_ID);
             t.equals(mapLoadEvent.skuToken, skuToken);
+            t.equals(mapLoadEvent.sdkIdentifier, 'mapbox-gl-js');
+            t.equals(mapLoadEvent.sdkVersion, version);
+            t.true(!!mapLoadEvent.userId);
+            t.true(!!mapLoadEvent.created);
             t.end();
         });
 

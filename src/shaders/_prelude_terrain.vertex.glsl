@@ -100,12 +100,18 @@ float prevElevation(vec2 apos) {
 
 #ifdef TERRAIN_VERTEX_MORPHING
 float elevation(vec2 apos) {
+    #ifdef ZERO_EXAGGERATION
+        return 0.0;
+    #endif
     float nextElevation = currentElevation(apos);
     float prevElevation = prevElevation(apos);
     return mix(prevElevation, nextElevation, u_dem_lerp);
 }
 #else
 float elevation(vec2 apos) {
+    #ifdef ZERO_EXAGGERATION
+        return 0.0;
+    #endif
     return currentElevation(apos);
 }
 #endif
@@ -180,7 +186,6 @@ float flatElevation(vec2 pack) {
 
     vec2 w = floor(0.5 * (span * u_meter_to_dem - 1.0));
     vec2 d = dd * w;
-    vec4 bounds = vec4(d, vec2(1.0) - d);
 
     // Get building wide sample, to get better slope estimate.
     h = fourSample(pos - d, 2.0 * d + vec2(dd));

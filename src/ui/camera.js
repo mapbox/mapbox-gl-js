@@ -113,6 +113,23 @@ export type FullCameraOptions = {
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  * @property {boolean} preloadOnly If `true`, it will trigger tiles loading across the animation path, but no animation will occur.
+ * @property {number} curve The zooming "curve" that will occur along the
+ *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+ *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
+ *     value selected by participants in the user study discussed in
+ *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+ *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+ *     value of 1 would produce a circular motion. If `minZoom` is specified, this option will be ignored.
+ * @property {number} minZoom The zero-based zoom level at the peak of the flight path. If
+ *     this option is specified, `curve` will be ignored.
+ * @property {number} speed The average speed of the animation defined in relation to
+ *     `curve`. A speed of 1.2 means that the map appears to move along the flight path
+ *     by 1.2 times `curve` screenfuls every second. A _screenful_ is the map's visible span.
+ *     It does not correspond to a fixed physical distance, but varies by zoom level.
+ * @property {number} screenSpeed The average speed of the animation measured in screenfuls
+ *     per second, assuming a linear timing curve. If `speed` is specified, this option is ignored.
+ * @property {number} maxDuration The animation's maximum duration, measured in milliseconds.
+ *     If duration exceeds maximum duration, it resets to 0.
  * @see [Example: Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
  * @see [Example: Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
  * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
@@ -575,6 +592,7 @@ class Camera extends Evented {
      * @param {CameraOptions | null} options Options object.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
+     * @param {number} [options.pitch=0] Desired map pitch at end of animation, in degrees.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
@@ -588,9 +606,10 @@ class Camera extends Evented {
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): ?EasingOptions {
         bounds = LngLatBounds.convert(bounds);
         const bearing = (options && options.bearing) || 0;
+        const pitch = (options && options.pitch) || 0;
         const lnglat0 = bounds.getNorthWest();
         const lnglat1 = bounds.getSouthEast();
-        return this._cameraForBounds(this.transform, lnglat0, lnglat1, bearing, options);
+        return this._cameraForBounds(this.transform, lnglat0, lnglat1, bearing, pitch, options);
     }
 
     _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
@@ -632,11 +651,12 @@ class Camera extends Evented {
         return minimumDistance;
     }
 
-    _cameraForBoundsOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForBoundsOnGlobe(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, pitch: number, options?: CameraOptions): ?EasingOptions {
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
 
         tr.bearing = bearing;
+        tr.pitch = pitch;
 
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
@@ -717,10 +737,10 @@ class Camera extends Evented {
         if (zoom > halfZoomTransition) {
             tr.setProjection({name: 'mercator'});
             tr.zoom = zoom;
-            return this._cameraForBounds(tr, p0, p1, bearing, options);
+            return this._cameraForBounds(tr, p0, p1, bearing, pitch, options);
         }
 
-        return {center: tr.center, zoom, bearing};
+        return {center: tr.center, zoom, bearing, pitch};
     }
 
     /**
@@ -756,6 +776,7 @@ class Camera extends Evented {
      * @param {LngLatLike} p0 First point
      * @param {LngLatLike} p1 Second point
      * @param {number} bearing Desired map bearing at end of animation, in degrees
+     * @param {number} pitch Desired map pitch at end of animation, in degrees
      * @param {CameraOptions | null} options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
@@ -767,13 +788,13 @@ class Camera extends Evented {
      * var p0 = [-79, 43];
      * var p1 = [-73, 45];
      * var bearing = 90;
-     * var newCameraTransform = map._cameraForBounds(p0, p1, bearing, {
+     * var newCameraTransform = map._cameraForBounds(p0, p1, bearing, pitch, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    _cameraForBounds(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): ?EasingOptions {
+    _cameraForBounds(transform: Transform, p0: LngLatLike, p1: LngLatLike, bearing: number, pitch: number, options?: CameraOptions): ?EasingOptions {
         if (transform.projection.name === 'globe') {
-            return this._cameraForBoundsOnGlobe(transform, p0, p1, bearing, options);
+            return this._cameraForBoundsOnGlobe(transform, p0, p1, bearing, pitch, options);
         }
 
         const tr = transform.clone();
@@ -781,6 +802,7 @@ class Camera extends Evented {
         const edgePadding = tr.padding;
 
         tr.bearing = bearing;
+        tr.pitch = pitch;
 
         const coord0 = LngLat.convert(p0);
         const coord1 = LngLat.convert(p1);
@@ -867,15 +889,14 @@ class Camera extends Evented {
         if (tr.mercatorFromTransition && zoom < halfZoomTransition) {
             tr.setProjection({name: 'globe'});
             tr.zoom = zoom;
-            return this._cameraForBounds(tr, p0, p1, bearing, options);
+            return this._cameraForBounds(tr, p0, p1, bearing, pitch, options);
         }
 
-        return {center, zoom, bearing};
+        return {center, zoom, bearing, pitch};
     }
 
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     * This function will also reset the map's bearing to 0 if bearing is nonzero.
      * If a padding is set on the map, the bounds are fit to the inset.
      *
      * @memberof Map#
@@ -883,6 +904,8 @@ class Camera extends Evented {
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {number} [options.pitch=0] Desired map pitch at end of animation, in degrees.
+     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     those functions and {@link AnimationOptions} for information about options available.
@@ -913,12 +936,14 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {PointLike} p0 First point on screen, in pixel coordinates.
      * @param {PointLike} p1 Second point on screen, in pixel coordinates.
-     * @param {number} bearing Desired map bearing at end of animation, in degrees. This value is ignored if the map has non-zero pitch.
-     * @param {CameraOptions | null} options Options object.
+     * @param {number} bearing Desired map bearing at end of animation, in degrees.
+     * @param {EasingOptions | null} options Options object.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     those functions and {@link AnimationOptions} for information about options available.
+     * @param {number} [options.pitch=0] Desired map pitch at end of animation, in degrees.
      * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
@@ -941,7 +966,9 @@ class Camera extends Evented {
         const min = new Point(Math.min(screen0.x, screen1.x), Math.min(screen0.y, screen1.y));
         const max = new Point(Math.max(screen0.x, screen1.x), Math.max(screen0.y, screen1.y));
 
-        if (this.transform.projection.name === 'mercator' && this.transform.anyCornerOffEdge(screen0, screen1)) return this;
+        if (this.transform.projection.name === 'mercator' && this.transform.anyCornerOffEdge(screen0, screen1)) {
+            return this;
+        }
 
         const lnglat0 = this.transform.pointLocation3D(min);
         const lnglat1 = this.transform.pointLocation3D(max);
@@ -957,7 +984,9 @@ class Camera extends Evented {
             Math.max(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
         ];
 
-        const cameraPlacement = this._cameraForBounds(this.transform, p0coord, p1coord, bearing, options);
+        const pitch = options && options.pitch ? options.pitch : this.getPitch();
+
+        const cameraPlacement = this._cameraForBounds(this.transform, p0coord, p1coord, bearing, pitch, options);
         return this._fitInternal(cameraPlacement, options, eventData);
     }
 

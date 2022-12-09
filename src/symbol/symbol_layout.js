@@ -67,13 +67,13 @@ const baselineOffset = 7;
 const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 const sqrt2 = Math.sqrt(2);
 
-export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, number]): [number, number] {
+export function evaluateVariableOffset(anchor: TextAnchor, [offsetX, offsetY]: [number, number]): [number, number] {
+    let x = 0, y = 0;
 
-    function fromRadialOffset(anchor: TextAnchor, radialOffset: number) {
-        let x = 0, y = 0;
-        if (radialOffset < 0) radialOffset = 0; // Ignore negative offset.
-        // solve for r where r^2 + r^2 = radialOffset^2
-        const hypotenuse = radialOffset / sqrt2;
+    if (offsetY === INVALID_TEXT_OFFSET) { // radial offset
+        if (offsetX < 0) offsetX = 0; // Ignore negative offset.
+        // solve for r where r^2 + r^2 = offsetX^2
+        const hypotenuse = offsetX / sqrt2;
         switch (anchor) {
         case 'top-right':
         case 'top-left':
@@ -84,10 +84,10 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             y = -hypotenuse + baselineOffset;
             break;
         case 'bottom':
-            y = -radialOffset + baselineOffset;
+            y = -offsetX + baselineOffset;
             break;
         case 'top':
-            y = radialOffset - baselineOffset;
+            y = offsetX - baselineOffset;
             break;
         }
 
@@ -101,18 +101,14 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             x = hypotenuse;
             break;
         case 'left':
-            x = radialOffset;
+            x = offsetX;
             break;
         case 'right':
-            x = -radialOffset;
+            x = -offsetX;
             break;
         }
 
-        return [x, y];
-    }
-
-    function fromTextOffset(anchor: TextAnchor, offsetX: number, offsetY: number) {
-        let x = 0, y = 0;
+    } else { // text offset
         // Use absolute offset values.
         offsetX = Math.abs(offsetX);
         offsetY = Math.abs(offsetY);
@@ -142,11 +138,9 @@ export function evaluateVariableOffset(anchor: TextAnchor, offset: [number, numb
             x = offsetX;
             break;
         }
-
-        return [x, y];
     }
 
-    return (offset[1] !== INVALID_TEXT_OFFSET) ? fromTextOffset(anchor, offset[0], offset[1]) : fromRadialOffset(anchor, offset[0]);
+    return [x, y];
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
@@ -232,11 +226,10 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 "center" :
                 layout.get('text-justify').evaluate(feature, {}, canonical);
 
-            const symbolPlacement = layout.get('symbol-placement');
-            const isPointPlacement = symbolPlacement === 'point';
-            const maxWidth = symbolPlacement === 'point' ?
+            const isPointPlacement = layout.get('symbol-placement') === 'point';
+            const maxWidth = isPointPlacement ?
                 layout.get('text-max-width').evaluate(feature, {}, canonical) * ONE_EM :
-                0;
+                Infinity;
 
             const addVerticalShapingIfNeeded = (textJustify) => {
                 if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
@@ -244,7 +237,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     // writing mode, thus, default left justification is used. If Latin
                     // scripts would need to be supported, this should take into account other justifications.
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor,
-                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
+                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom);
                 }
             };
 
@@ -266,7 +259,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, 'center',
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.positionedLines.length === 1;
@@ -282,12 +275,12 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 // Add horizontal shaping for all point labels and line labels that need horizontal writing mode.
                 if (isPointPlacement || ((layout.get("text-writing-mode").indexOf('horizontal') >= 0) || !allowsVerticalWritingMode(unformattedText))) {
                     const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
-                                            textOffset, WritingMode.horizontal, false, symbolPlacement, layoutTextSize, layoutTextSizeThisZoom);
+                                            textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
                     if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
                 }
 
                 // Vertical point label (if allowVerticalPlacement is enabled).
-                addVerticalShapingIfNeeded(symbolPlacement === 'point' ? 'left' : textJustify);
+                addVerticalShapingIfNeeded(isPointPlacement ? 'left' : textJustify);
             }
         }
 
@@ -360,8 +353,8 @@ function tilePixelRatioForSymbolSpacing(overscaleFactor, overscaledZ) {
 /**
  * Given a feature and its shaped text and icon data, add a 'symbol
  * instance' for each _possible_ placement of the symbol feature.
- * (At render timePlaceSymbols#place() selects which of these instances to
- * show or hide based on collisions with symbols in other layers.)
+ * (At render time Placement.updateBucketOpacities() selects which of these
+ * instances to show or hide based on collisions with symbols in other layers.)
  * @private
  */
 function addFeature(bucket: SymbolBucket,
@@ -719,10 +712,11 @@ function addSymbol(bucket: SymbolBucket,
         }
     }
 
-    //Place icon first, so text can have a reference to its index in the placed symbol array.
-    //Text symbols can lazily shift at render-time because of variable anchor placement.
-    //If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
+    // Place icon first, so text can have a reference to its index in the placed symbol array.
+    // Text symbols can lazily shift at render-time because of variable anchor placement.
+    // If the style specifies an `icon-text-fit` then the icon would have to shift along with it.
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
+
     if (shapedIcon) {
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
         const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';

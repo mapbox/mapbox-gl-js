@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, lngFromMercatorX, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
 import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
@@ -17,7 +17,7 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
+import {calculateGlobeMatrix, polesInViewport, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -316,8 +316,16 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    get cameraWorldSize(): number {
+    // This getter returns an incorrect value.
+    // It should eventually be removed and cameraWorldSize be used instead.
+    // See free_camera.getDistanceToElevation for the rationale.
+    get cameraWorldSizeForFog(): number {
         const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation), Number.EPSILON);
+        return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
+    }
+
+    get cameraWorldSize(): number {
+        const distance = Math.max(this._camera.getDistanceToElevation(this._averageElevation, true), Number.EPSILON);
         return this._worldSizeFromZoom(this._zoomFromMercatorZ(distance));
     }
 
@@ -331,7 +339,7 @@ class Transform {
     }
 
     get cameraPixelsPerMeter(): number {
-        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSize);
+        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSizeForFog);
     }
 
     get centerOffset(): Point {
@@ -1346,7 +1354,68 @@ class Transform {
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
+    _getGlobeBounds(): LngLatBounds {
+        const {top, left} = this._edgeInsets;
+        const bottom = this.height - this._edgeInsets.bottom;
+        const right = this.width - this._edgeInsets.right;
+
+        const tl = this.pointCoordinate3D(new Point(left, top));
+        const tr = this.pointCoordinate3D(new Point(right, top));
+        const br = this.pointCoordinate3D(new Point(right, bottom));
+        const bl = this.pointCoordinate3D(new Point(left, bottom));
+
+        let minX = Math.min(tl.x, bl.x);
+        let maxX = Math.max(tr.x, br.x);
+        let minY = Math.min(tl.y, tr.y);
+        let maxY = Math.max(bl.y, br.y);
+
+        // we pick an error threshold for calculating the bbox that balances between performance and precision
+        const s = Math.pow(2, -this.zoom);
+        const maxErr = s / 16;
+
+        const processSegment = (ax, ay, bx, by) => {
+            const mx = (ax + bx) / 2;
+            const my = (ay + by) / 2;
+
+            const p = new Point(mx, my);
+            const pm = this.pointCoordinate3D(p);
+
+            // The error metric is the maximum distance between the midpoint
+            // and each of the currently calculated bounds
+            const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
+
+            minX = Math.min(minX, pm.x);
+            maxX = Math.max(maxX, pm.x);
+            minY = Math.min(minY, pm.y);
+            maxY = Math.max(maxY, pm.y);
+
+            if (err > maxErr) {
+                processSegment(ax, ay, mx, my);
+                processSegment(mx, my, bx, by);
+            }
+        };
+
+        processSegment(left, top, right, top);
+        processSegment(right, top, right, bottom);
+        processSegment(right, bottom, left, bottom);
+        processSegment(left, bottom, left, top);
+
+        const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
+        const poleIsVisible = northPoleIsVisible || southPoleIsVisible;
+
+        const north = northPoleIsVisible ? 90 : latFromMercatorY(minY);
+        const east = poleIsVisible ? 180 : lngFromMercatorX(maxX);
+        const south = southPoleIsVisible ? -90 : latFromMercatorY(maxY);
+        const west = poleIsVisible ? -180 : lngFromMercatorX(minX);
+
+        return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
+    }
+
     _getBounds(min: number, max: number): LngLatBounds {
+        if (this.projection.name === 'globe') {
+            return this._getGlobeBounds();
+        }
+
         const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
         const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
         const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
@@ -1378,7 +1447,7 @@ class Transform {
     _getBounds3D(): LngLatBounds {
         assert(this.elevation);
         const elevation = ((this.elevation: any): Elevation);
-        if (!elevation.visibleDemTiles.length) { return this._getBounds(0, 0); }
+        if (!elevation.visibleDemTiles.length || elevation.isUsingMockSource()) { return this._getBounds(0, 0); }
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;
@@ -1465,12 +1534,16 @@ class Transform {
         //Calculate the offset of the tile
         const canonical = unwrappedTileID.canonical;
         const windowScaleFactor = 1 / this.height;
-        const scale = this.cameraWorldSize / this.zoomScale(canonical.z);
+        const cws = this.cameraWorldSize;
+        const scale = cws / this.zoomScale(canonical.z);
         const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
         const tX = unwrappedX * scale;
         const tY = canonical.y * scale;
 
         const center = this.point;
+        // center is in world/pixel coordinate, ensure it's in the same coordinate space as tX and tY computed earlier.
+        center.x *= cws / this.worldSize;
+        center.y *= cws / this.worldSize;
 
         // Calculate the bearing vector by rotating unit vector [0, -1] clockwise
         const angle = this.angle;
@@ -1504,7 +1577,7 @@ class Transform {
             return cache[fogTileMatrixKey];
         }
 
-        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSize, unwrappedTileID);
+        const posMatrix = this.projection.createTileMatrix(this, this.cameraWorldSizeForFog, unwrappedTileID);
         mat4.multiply(posMatrix, this.worldToFogMatrix, posMatrix);
 
         cache[fogTileMatrixKey] = new Float32Array(posMatrix);
@@ -1860,7 +1933,7 @@ class Transform {
     _calcFogMatrices() {
         this._fogTileMatrixCache = {};
 
-        const cameraWorldSize = this.cameraWorldSize;
+        const cameraWorldSizeForFog = this.cameraWorldSizeForFog;
         const cameraPixelsPerMeter = this.cameraPixelsPerMeter;
         const cameraPos = this._camera.position;
 
@@ -1868,10 +1941,10 @@ class Transform {
         // translates p to camera origin and transforms it from pixels to meters. The windowScaleFactor is used to have a
         // consistent transformation across different window sizes.
         // - p = p - cameraOrigin
-        // - p.xy = p.xy * cameraWorldSize * windowScaleFactor
+        // - p.xy = p.xy * cameraWorldSizeForFog * windowScaleFactor
         // - p.z  = p.z  * cameraPixelsPerMeter * windowScaleFactor
         const windowScaleFactor = 1 / this.height / this._pixelsPerMercatorPixel;
-        const metersToPixel = [cameraWorldSize, cameraWorldSize, cameraPixelsPerMeter];
+        const metersToPixel = [cameraWorldSizeForFog, cameraWorldSizeForFog, cameraPixelsPerMeter];
         vec3.scale(metersToPixel, metersToPixel, windowScaleFactor);
         vec3.scale(cameraPos, cameraPos, -1);
         vec3.multiply(cameraPos, cameraPos, metersToPixel);
@@ -1883,7 +1956,7 @@ class Transform {
 
         // The worldToFogMatrix can be used for conversion from world coordinates to relative camera position in
         // units of fractions of the map height. Later composed with tile position to construct the fog tile matrix.
-        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSize, cameraPixelsPerMeter, windowScaleFactor);
+        this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSizeForFog, cameraPixelsPerMeter, windowScaleFactor);
     }
 
     _computeCameraPosition(targetPixelsPerMeter: ?number): Vec3 {

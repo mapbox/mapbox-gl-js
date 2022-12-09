@@ -24,3 +24,13 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
         t.end();
     });
 });
+
+const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
+const style = JSON.parse(fs.readFileSync(fixtures[0]));
+import reference from '../../../src/style-spec/reference/latest.js';
+
+test('errors from validate do not contain line numbers', (t) => {
+    const result = validateMapboxApiSupported(style, reference);
+    t.equal(result[0].line, undefined);
+    t.end();
+});

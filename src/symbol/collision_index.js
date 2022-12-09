@@ -3,23 +3,19 @@
 import Point from '@mapbox/point-geometry';
 import clipLine from './clip_line.js';
 import PathInterpolator from './path_interpolator.js';
-
 import * as intersectionTests from '../util/intersection_tests.js';
 import Grid from './grid_index.js';
 import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em.js';
-
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers.js';
 import assert from 'assert';
 import {OverscaledTileID} from '../source/tile_id.js';
-import * as projection from '../symbol/projection.js';
+import * as symbolProjection from '../symbol/projection.js';
+
 import type Transform from '../geo/transform.js';
 import type Projection from '../geo/projection/projection.js';
 import type SymbolBucket, {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
-import type {
-    GlyphOffsetArray,
-    SymbolLineVertexArray
-} from '../data/array_types.js';
+import type {GlyphOffsetArray, SymbolLineVertexArray, PlacedSymbol} from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Vec3, Mat4} from 'gl-matrix';
 
@@ -101,17 +97,18 @@ class CollisionIndex {
         // Apply elevation vector to the anchor point
         const elevation = collisionBox.elevation;
         const tileID = collisionBox.tileID;
+        const projection = bucket.getProjection();
         if (elevation && tileID) {
-            const up = bucket.getProjection().upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
-            const upScale = bucket.getProjection().upVectorScale(tileID.canonical, this.transform.center.lat, this.transform.worldSize).metersToTile;
+            const [ux, uy, uz] = projection.upVector(tileID.canonical, collisionBox.tileAnchorX, collisionBox.tileAnchorY);
+            const upScale = projection.upVectorScale(tileID.canonical, this.transform.center.lat, this.transform.worldSize).metersToTile;
 
-            anchorX += up[0] * elevation * upScale;
-            anchorY += up[1] * elevation * upScale;
-            anchorZ += up[2] * elevation * upScale;
+            anchorX += ux * elevation * upScale;
+            anchorY += uy * elevation * upScale;
+            anchorZ += uz * elevation * upScale;
         }
 
-        const checkOcclusion = bucket.projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
-        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, [anchorX, anchorY, anchorZ], collisionBox.tileID, checkOcclusion, bucket.getProjection());
+        const checkOcclusion = projection.name === 'globe' || !!elevation || this.transform.pitch > 0;
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, collisionBox.tileID, checkOcclusion, projection);
 
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = (collisionBox.x1 * scale + shift.x - collisionBox.padding) * tileToViewport + projectedPoint.point.x;
@@ -144,7 +141,7 @@ class CollisionIndex {
 
     placeCollisionCircles(bucket: SymbolBucket,
                           allowOverlap: boolean,
-                          symbol: any,
+                          symbol: PlacedSymbol,
                           lineVertexArray: SymbolLineVertexArray,
                           glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
@@ -159,24 +156,29 @@ class CollisionIndex {
                           tileID: OverscaledTileID): PlacedCollisionCircles {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
-        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, bucket.getProjection()) : (_ => [0, 0, 0]);
+        const projection = bucket.getProjection();
+        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, projection) : null;
+
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
-        const projectedAnchor = bucket.getProjection().projectTilePoint(symbol.tileAnchorX, symbol.tileAnchorY, tileID.canonical);
-        const anchorElevation = getElevation(tileUnitAnchorPoint);
-        const elevatedAnchor = [projectedAnchor.x + anchorElevation[0], projectedAnchor.y + anchorElevation[1], projectedAnchor.z + anchorElevation[2]];
-        const isGlobe = bucket.projection.name === 'globe';
+        let {x: anchorX, y: anchorY, z: anchorZ} = projection.projectTilePoint(tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, tileID.canonical);
+        if (getElevation) {
+            const [dx, dy, dz] = getElevation(tileUnitAnchorPoint);
+            anchorX += dx;
+            anchorY += dy;
+            anchorZ += dz;
+        }
+        const isGlobe = projection.name === 'globe';
         const checkOcclusion = isGlobe || !!elevation || this.transform.pitch > 0;
-        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, [elevatedAnchor[0], elevatedAnchor[1], elevatedAnchor[2]], tileID, checkOcclusion, bucket.getProjection());
+        const screenAnchorPoint = this.projectAndGetPerspectiveRatio(posMatrix, anchorX, anchorY, anchorZ, tileID, checkOcclusion, projection);
         const {perspectiveRatio} = screenAnchorPoint;
-        const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
-        const labelPlaneFontScale = labelPlaneFontSize / ONE_EM;
-        const labelPlaneAnchorPoint = projection.project(new Point(elevatedAnchor[0], elevatedAnchor[1]), labelPlaneMatrix, elevatedAnchor[2]).point;
+        const labelPlaneFontScale = (pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio) / ONE_EM;
+        const labelPlaneAnchorPoint = symbolProjection.project(anchorX, anchorY, anchorZ, labelPlaneMatrix);
 
         const projectionCache = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
-        const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? projection.placeFirstAndLastGlyph(
+        const firstAndLastGlyph = screenAnchorPoint.signedDistanceFromCamera > 0 ? symbolProjection.placeFirstAndLastGlyph(
             labelPlaneFontScale,
             glyphOffsetArray,
             lineOffsetX,
@@ -190,7 +192,7 @@ class CollisionIndex {
             projectionCache,
             elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
             pitchWithMap && !!elevation,
-            bucket.getProjection(),
+            projection,
             tileID,
             pitchWithMap
         ) : null;
@@ -206,11 +208,11 @@ class CollisionIndex {
             const interpolator = new PathInterpolator();
 
             // Construct a projected path from projected line vertices. Anchor points are ignored and removed
-            const first = firstAndLastGlyph.first;
-            const last = firstAndLastGlyph.last;
+            const {first, last} = firstAndLastGlyph;
+            const firstLen = first.path.length;
 
             let projectedPath: Vec3[] = [];
-            for (let i = first.path.length - 1; i >= 1; i--) {
+            for (let i = firstLen - 1; i >= 1; i--) {
                 projectedPath.push(first.path[i]);
             }
             for (let i = 1; i < last.path.length; i++) {
@@ -224,28 +226,23 @@ class CollisionIndex {
             // The path might need to be converted into screen space if a pitched map is used as the label space
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
-                const screenSpacePath = (elevation && !isGlobe) ?
-                    projectedPath.map((p, index) => {
-                        const elevation = getElevation(index < first.path.length - 1 ? first.tilePath[first.path.length - 1 - index] : last.tilePath[index - first.path.length + 2]);
-                        p[2] = elevation[2];
-                        return projection.projectVector((p: any), labelToScreenMatrix);
-                    }) :
-                    projectedPath.map(p => projection.projectVector((p: any), labelToScreenMatrix));
+                projectedPath = projectedPath.map(([x, y, z], index) => {
+                    if (getElevation && !isGlobe) {
+                        z = getElevation(index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2])[2];
+                    }
+                    return symbolProjection.project(x, y, z, labelToScreenMatrix);
+                });
 
                 // Do not try to place collision circles if even of the points is behind the camera.
                 // This is a plausible scenario with big camera pitch angles
-                if (screenSpacePath.some(point => point.signedDistanceFromCamera <= 0)) {
+                if (projectedPath.some(point => point[3] <= 0)) {
                     projectedPath = [];
-                } else {
-                    projectedPath = screenSpacePath.map(p => p.point);
                 }
             }
 
             let segments = [];
 
             if (projectedPath.length > 0) {
-                const screenSpacePath = projectedPath.map(p => new Point(p[0], p[1]));
-
                 // Quickly check if the path is fully inside or outside of the padded collision region.
                 // For overlapping paths we'll only create collision circles for the visible segments
                 let minx = Infinity;
@@ -253,23 +250,24 @@ class CollisionIndex {
                 let miny = Infinity;
                 let maxy = -Infinity;
 
-                for (let i = 0; i < screenSpacePath.length; i++) {
-                    minx = Math.min(minx, screenSpacePath[i].x);
-                    miny = Math.min(miny, screenSpacePath[i].y);
-                    maxx = Math.max(maxx, screenSpacePath[i].x);
-                    maxy = Math.max(maxy, screenSpacePath[i].y);
+                for (const p of projectedPath) {
+                    minx = Math.min(minx, p[0]);
+                    miny = Math.min(miny, p[1]);
+                    maxx = Math.max(maxx, p[0]);
+                    maxy = Math.max(maxy, p[1]);
                 }
 
-                if (minx >= screenPlaneMin.x && maxx <= screenPlaneMax.x &&
-                    miny >= screenPlaneMin.y && maxy <= screenPlaneMax.y) {
-                    // Quad fully visible
-                    segments = [screenSpacePath];
-                } else if (maxx < screenPlaneMin.x || minx > screenPlaneMax.x ||
-                    maxy < screenPlaneMin.y || miny > screenPlaneMax.y) {
-                    // Not visible
-                    segments = [];
-                } else {
-                    segments = clipLine([screenSpacePath], screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                // Path visible
+                if (maxx >= screenPlaneMin.x && minx <= screenPlaneMax.x &&
+                    maxy >= screenPlaneMin.y && miny <= screenPlaneMax.y) {
+
+                    segments = [projectedPath.map(p => new Point(p[0], p[1]))];
+
+                    if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
+                        miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
+                        // Path partially visible, clip
+                        segments = clipLine(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                    }
                 }
             }
 
@@ -414,33 +412,33 @@ class CollisionIndex {
         }
     }
 
-    projectAndGetPerspectiveRatio(posMatrix: Mat4, point: Vec3, tileID: ?OverscaledTileID, checkOcclusion: boolean, bucketProjection: Projection): ScreenAnchorPoint {
-        const p = [point[0], point[1], point[2], 1];
+    projectAndGetPerspectiveRatio(posMatrix: Mat4, x: number, y: number, z: number, tileID: ?OverscaledTileID, checkOcclusion: boolean, bucketProjection: Projection): ScreenAnchorPoint {
+        const p = [x, y, z, 1];
         let behindFog = false;
-        if (point[2] || this.transform.pitch > 0) {
+        if (z || this.transform.pitch > 0) {
             vec4.transformMat4(p, p, posMatrix);
             // Do not perform symbol occlusion on globe due to fog fixed range
             const isGlobe = bucketProjection.name === 'globe';
             if (this.fogState && tileID && !isGlobe) {
-                const fogOpacity = getFogOpacityAtTileCoord(this.fogState, point[0], point[1], point[2], tileID.toUnwrapped(), this.transform);
+                const fogOpacity = getFogOpacityAtTileCoord(this.fogState, x, y, z, tileID.toUnwrapped(), this.transform);
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
         } else {
-            projection.xyTransformMat4(p, p, posMatrix);
+            symbolProjection.xyTransformMat4(p, p, posMatrix);
         }
+        const w = p[3];
         const a = new Point(
-            (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
-            (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
+            (((p[0] / w + 1) / 2) * this.transform.width) + viewportPadding,
+            (((-p[1] / w + 1) / 2) * this.transform.height) + viewportPadding
         );
-
         return {
             point: a,
             // See perspective ratio comment in symbol_sdf.vertex
             // We're doing collision detection in viewport space so we need
             // to scale down boxes in the distance
-            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.getCameraToCenterDistance(bucketProjection) / p[3]), 1.5),
-            signedDistanceFromCamera: p[3],
-            occluded: (checkOcclusion && p[2] > p[3]) || behindFog // Occluded by the far plane
+            perspectiveRatio: Math.min(0.5 + 0.5 * (this.transform.getCameraToCenterDistance(bucketProjection) / w), 1.5),
+            signedDistanceFromCamera: w,
+            occluded: (checkOcclusion && p[2] > w) || behindFog // Occluded by the far plane
         };
     }
 

@@ -32,12 +32,12 @@ global.flowType = function (property) {
         case 'formatted':
             return `Formatted`;
         case 'resolvedImage':
-            return `ResolvedImage`;
+            return `${property.name.endsWith('pattern') ? '?' : ''}ResolvedImage`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
             } else {
-                return `Array<${flowType({type: property.value, values: property.values})}>`;
+                return `${property.name === 'line-dasharray' ? '?' : ''}Array<${flowType({type: property.value, values: property.values})}>`;
             }
         default: throw new Error(`unknown type for ${property.name}`)
     }
@@ -47,10 +47,6 @@ global.propertyType = function (property) {
     switch (property['property-type']) {
         case 'data-driven':
             return `DataDrivenProperty<${flowType(property)}>`;
-        case 'cross-faded':
-            return `CrossFadedProperty<${flowType(property)}>`;
-        case 'cross-faded-data-driven':
-            return `CrossFadedDataDrivenProperty<${flowType(property)}>`;
         case 'color-ramp':
             return `ColorRampProperty`;
         case 'data-constant':
@@ -117,10 +113,6 @@ global.propertyValue = function (property, type) {
             } else {
                 return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
             }
-        case 'cross-faded':
-            return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-        case 'cross-faded-data-driven':
-            return `new CrossFadedDataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'color-ramp':
             return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'data-constant':

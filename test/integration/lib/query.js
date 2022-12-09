@@ -73,7 +73,12 @@ async function runTest(t) {
             throw new Error(`Error occured while parsing expected.json: ${style.message}`);
         }
 
-        options = style.metadata.test;
+        options = {
+            width: 512,
+            height: 512,
+            pixelRatio: 1,
+            ...((style.metadata && style.metadata.test) || {})
+        };
         const skipLayerDelete = style.metadata.skipLayerDelete;
 
         window.devicePixelRatio = options.pixelRatio;
@@ -93,10 +98,13 @@ async function runTest(t) {
             skew: options.skew || [0, 0],
             fadeDuration: options.fadeDuration || 0,
             localIdeographFontFamily: options.localIdeographFontFamily || false,
-            crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
+            crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
+            performanceMetricsCollection: false
         });
 
         map.repaint = true;
+        map._authenticate = () => {};
+
         await map.once('load');
         //3. Run the operations on the map
         await applyOperations(map, options);

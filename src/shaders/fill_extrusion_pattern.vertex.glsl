@@ -2,7 +2,7 @@ uniform mat4 u_matrix;
 uniform vec2 u_pixel_coord_upper;
 uniform vec2 u_pixel_coord_lower;
 uniform float u_height_factor;
-uniform vec3 u_scale;
+uniform float u_tile_units_to_pixels;
 uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 
@@ -25,8 +25,7 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
-varying vec2 v_pos_a;
-varying vec2 v_pos_b;
+varying vec2 v_pos;
 varying vec4 v_lighting;
 
 #ifdef FAUX_AO
@@ -34,29 +33,23 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+#ifdef LIGHTING_3D_MODE
+varying float v_NdotL;
+#endif
+
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
-#pragma mapbox: define lowp vec4 pattern_from
-#pragma mapbox: define lowp vec4 pattern_to
-#pragma mapbox: define lowp float pixel_ratio_from
-#pragma mapbox: define lowp float pixel_ratio_to
+#pragma mapbox: define lowp vec4 pattern
+#pragma mapbox: define lowp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize lowp float base
     #pragma mapbox: initialize lowp float height
-    #pragma mapbox: initialize mediump vec4 pattern_from
-    #pragma mapbox: initialize mediump vec4 pattern_to
-    #pragma mapbox: initialize lowp float pixel_ratio_from
-    #pragma mapbox: initialize lowp float pixel_ratio_to
+    #pragma mapbox: initialize mediump vec4 pattern
+    #pragma mapbox: initialize lowp float pixel_ratio
 
-    vec2 pattern_tl_a = pattern_from.xy;
-    vec2 pattern_br_a = pattern_from.zw;
-    vec2 pattern_tl_b = pattern_to.xy;
-    vec2 pattern_br_b = pattern_to.zw;
-
-    float tileRatio = u_scale.x;
-    float fromScale = u_scale.y;
-    float toScale = u_scale.z;
+    vec2 pattern_tl = pattern.xy;
+    vec2 pattern_br = pattern.zw;
 
     vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:
@@ -71,8 +64,7 @@ void main() {
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
     float edgedistance = a_pos_normal_ed.w;
 
-    vec2 display_size_a = (pattern_br_a - pattern_tl_a) / pixel_ratio_from;
-    vec2 display_size_b = (pattern_br_b - pattern_tl_b) / pixel_ratio_to;
+    vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
     base = max(0.0, base);
     height = max(0.0, height);
@@ -117,19 +109,27 @@ void main() {
         ? pos_nx.xy // extrusion top
         : vec2(edgedistance, z * u_height_factor); // extrusion side
 
-    v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, fromScale * display_size_a, tileRatio, pos);
-    v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, toScale * display_size_b, tileRatio, pos);
+    v_pos = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, display_size, u_tile_units_to_pixels, pos);
 
     v_lighting = vec4(0.0, 0.0, 0.0, 1.0);
-    float directional = clamp(dot(normal, u_lightpos), 0.0, 1.0);
-    directional = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), directional);
+    float NdotL = 0.0;
+#ifdef LIGHTING_3D_MODE
+    NdotL = calculate_NdotL(normal);
+#else
+    NdotL = clamp(dot(normal, u_lightpos), 0.0, 1.0);
+    NdotL = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), NdotL);
+#endif
 
     if (normal.y != 0.0) {
+        float r = 0.84;
+#ifndef LIGHTING_3D_MODE
+        r = mix(0.7, 0.98, 1.0 - u_lightintensity);
+#endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
-        directional *= (
+        NdotL *= (
             (1.0 - u_vertical_gradient) +
-            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0)));
+            (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), r, 1.0)));
     }
 
 #ifdef FAUX_AO
@@ -143,7 +143,7 @@ void main() {
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
     v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
-    directional *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
+    NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
@@ -151,8 +151,12 @@ void main() {
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
 #endif
 
-    v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
+#ifdef LIGHTING_3D_MODE
+    v_NdotL = NdotL;
+#else
+    v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;
+#endif 
 
 #ifdef FOG
     v_fog_pos = fog_position(p);
