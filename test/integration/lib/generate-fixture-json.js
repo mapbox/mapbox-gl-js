@@ -22,13 +22,11 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
         }
     }
 
-    const allFiles = {};
+    const testCases = {};
 
     for (const stylePath of stylePaths) {
-        // eslint-disable-next-line no-warning-comments
-        // TODO: use concatenation instead of replace
-        // const fileName = path.basename(stylePath);
-        // const extension = path.extname(stylePath);
+        const dirName = path.dirname(stylePath);
+        const testName = dirName.replace(rootDirectory, '');
         try {
             const json = parseJsonFromFile(stylePath);
 
@@ -36,37 +34,37 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
             // 7357 is testem's default port
             localizeURLs(json, 7357);
 
-            const actualPath = stylePath.replace("style.json", "actual.png");
-            const expectedPath = stylePath.replace("style.json", "expected.png");
-            const diffPath = stylePath.replace("style.json", "diff.png");
+            const testObject = {};
 
-            if (includeImages) {
-                allFiles[stylePath] = json;
-                allFiles[actualPath] = true;
-                allFiles[expectedPath] = true;
-                allFiles[diffPath] = true;
+            const filenames = fs.readdirSync(dirName);
+            for (const file of filenames) {
+                const [name, extension] = file.split(".");
+                if (extension === 'json') {
+                    const json = parseJsonFromFile(path.join(dirName, file));
+                    //Special case for style json which needs some preprocessing
+                    if (file === 'style.json') {
+                        // 7357 is testem's default port
+                        localizeURLs(json, 7357);
+                    }
+                    testObject[name] = json;
+                } else if (extension === 'png') {
+                    if (includeImages) {
+                        testObject[name] = true;
+                    }
+                } else {
+                    throw new Error(`${extension} is incompatible , file path ${path.join(dirName, file)}`);
+                }
             }
+            testCases[testName] = testObject;
+
         } catch (e) {
             console.log(`Error parsing file: ${stylePath}`);
             console.log(e.message);
-            allFiles[stylePath] = {PARSE_ERROR: true, message: e.message};
+            testCases[testName] = {PARSE_ERROR: true, message: e.message};
         }
     }
 
-    // Re-nest by directory path, each directory path defines a testcase.
-    const result = {};
-    for (const fullPath in allFiles) {
-        const testName = path.dirname(fullPath).replace(rootDirectory, '');
-        //Lazily initialize an object to store each file wihin a particular testName
-        if (result[testName] == null) {
-            result[testName] = {};
-        }
-        //Trim extension from filename
-        const fileName = path.basename(fullPath, path.extname(fullPath));
-        result[testName][fileName] = allFiles[fullPath];
-    }
-
-    const outputStr = JSON.stringify(result, null, 4);
+    const outputStr = JSON.stringify(testCases, null, 4);
     const outputFile = `${suiteDirectory.split('-')[0]}-fixtures.json`;
     const outputPath = path.join(outputDirectory, outputFile);
 
