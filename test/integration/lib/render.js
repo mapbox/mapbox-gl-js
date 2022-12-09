@@ -230,7 +230,8 @@ async function renderMap(style, options) {
 
     //3. Run the operations on the map
     await applyOperations(map, options);
-    await map.on('idle');
+    map.repaint = false;
+    await map.once('idle');
 
     return map;
 }
