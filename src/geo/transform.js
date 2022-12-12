@@ -1691,11 +1691,10 @@ class Transform {
 
                 vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
                 this._camera.position = [pos[0], pos[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
+                this._updateStateFromCamera();
             } else {
                 this._isCameraConstrained = true;
-                this._camera.position = pos;
             }
-            this._updateStateFromCamera();
         }
     }
 
