@@ -286,7 +286,7 @@ export class Terrain extends Elevation {
      * Explicitly pass transform to update elevation (Transform.updateElevation)
      * before using transform for source cache update.
      */
-    update(style: Style, transform: Transform, isDragging: boolean) {
+    update(style: Style, transform: Transform, adaptCameraAltitude: boolean) {
         if (style && style.terrain) {
             if (this._style !== style) {
                 this.style = style;
@@ -325,7 +325,7 @@ export class Terrain extends Elevation {
             updateSourceCache();
             // Camera gets constrained over terrain. Issue constrainCameraOverTerrain = true
             // here to cover potential under terrain situation on data, style, or other camera changes.
-            transform.updateElevation(true, isDragging);
+            transform.updateElevation(true, adaptCameraAltitude);
 
             // Reset tile lookup cache and update draped tiles coordinates.
             this.resetTileLookupCache(this.proxySourceCache.id);

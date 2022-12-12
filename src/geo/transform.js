@@ -227,13 +227,13 @@ class Transform {
         this._calcMatrices();
     }
 
-    updateElevation(constrainCameraOverTerrain: boolean, isDragging: boolean = false) {
+    updateElevation(constrainCameraOverTerrain: boolean, adaptCameraAltitude: boolean = false) {
         const centerAltitudeChanged = this._elevation && this._elevation.exaggeration() !== this._centerAltitudeValidForExaggeration;
         if (this._seaLevelZoom == null || centerAltitudeChanged) {
             this._updateCameraOnTerrain();
         }
         if (constrainCameraOverTerrain || centerAltitudeChanged) {
-            this._constrainCamera(isDragging);
+            this._constrainCamera(adaptCameraAltitude);
         }
         this._calcMatrices();
     }
@@ -1622,7 +1622,6 @@ class Transform {
     }
 
     recenterOnTerrain() {
-
         if (!this._elevation || this.projection.name === 'globe')
             return;
 
@@ -1661,28 +1660,25 @@ class Transform {
         }
     }
 
-    _constrainCamera(isDragging: boolean = false) {
+    _constrainCamera(adaptCameraAltitude: boolean = false) {
         if (!this._elevation)
             return;
 
         const elevation: Elevation = this._elevation;
-        this._updateCameraState();
 
         // Find uncompensated camera position for elevation sampling.
         // The default camera position might have been compensated by the active projection model.
         const mercPixelsPerMeter = mercatorZfromAltitude(1, this._center.lat) * this.worldSize;
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
-
-        const minHeight = this._minimumHeightOverTerrain();
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
-        const cameraHeight = this._camera.position[2] - terrainElevation;
+        const minHeight = this._minimumHeightOverTerrain();
+        const cameraHeight = pos[2] - terrainElevation;
 
-        if (cameraHeight < minHeight) {
-            // If camera is under terrain or dragging at unsafe distance from terrain, force camera position above terrain
-            if (cameraHeight <= 0 || isDragging) {
+        if (cameraHeight <= minHeight) {
+            if (cameraHeight < 0 || adaptCameraAltitude) {
                 const center = this.locationCoordinate(this._center, this._centerAltitude);
-                const cameraToCenter = [center.x - pos[0], center.y - pos[1], center.z - pos[2]];
+                const cameraToCenter = [pos[0], pos[1], center.z - pos[2]];
 
                 const prevDistToCamera = vec3.length(cameraToCenter);
                 // Adjust the camera vector so that the camera is placed above the terrain.
@@ -1694,13 +1690,12 @@ class Transform {
                     return;
 
                 vec3.scale(cameraToCenter, cameraToCenter, prevDistToCamera / newDistToCamera * this._pixelsPerMercatorPixel);
-                this._camera.position = [center.x - cameraToCenter[0], center.y - cameraToCenter[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
-                this._updateStateFromCamera();
-
-            // Set camera as constrained to keep zoom at safe distance from terrain
+                this._camera.position = [pos[0], pos[1], center.z * this._pixelsPerMercatorPixel - cameraToCenter[2]];
             } else {
                 this._isCameraConstrained = true;
+                this._camera.position = pos;
             }
+            this._updateStateFromCamera();
         }
     }
 

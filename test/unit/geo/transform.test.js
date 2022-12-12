@@ -719,18 +719,15 @@ test('transform', (t) => {
         transform.resize(200, 200);
         transform.maxPitch = 85;
 
-        transform.elevation = createCollisionElevation(10);
+        transform._elevation = createCollisionElevation(10);
         transform.bearing = -45;
         transform.pitch = 85;
 
-        // Set camera altitude to 5 meters
         const altitudeZ = mercatorZfromAltitude(5, transform.center.lat) / Math.cos(degToRad(85));
-        const zoom = transform._zoomFromMercatorZ(altitudeZ);
+        const zoom = transform._zoomFromMercatorZ(altitudeZ * 2);
         transform.zoom = zoom;
 
-        const cameraAltitude = altitudeFromMercatorZ(transform.getFreeCameraOptions().position.z, transform.getFreeCameraOptions().position.y);
-        transform.updateElevation(false);
-
+        const cameraAltitude = transform.getFreeCameraOptions().position.z / mercatorZfromAltitude(1, transform.center.lat);
         t.ok(cameraAltitude > 10);
         t.equal(fixedNum(transform.bearing), -45);
         t.equal(fixedNum(transform.pitch), 85);

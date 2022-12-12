@@ -185,7 +185,7 @@ class Painter {
         this._backgroundTiles = {};
     }
 
-    updateTerrain(style: Style, isDragging: boolean) {
+    updateTerrain(style: Style, adaptCameraAltitude: boolean) {
         const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
         if (!this._terrain) {
@@ -193,7 +193,7 @@ class Painter {
         }
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
-        terrain.update(style, this.transform, isDragging);
+        terrain.update(style, this.transform, adaptCameraAltitude);
     }
 
     _updateFog(style: Style) {
