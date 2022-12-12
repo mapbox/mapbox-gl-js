@@ -65,6 +65,17 @@ test("mapbox", (t) => {
         t.end();
     });
 
+    t.test('.isMapboxHTTPCDNURL', (t) => {
+        t.ok(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js'));
+        t.ok(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css'));
+        t.ok(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.com/mapbox-gl-js/v2.11.0-beta.1/mapbox-gl.js'));
+        t.ok(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.cn/mapbox-gl-js/v2.11.0/mapbox-gl.js'));
+        t.notOk(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.com/other-project/v2.11.0/mapbox-gl.js'));
+        t.notOk(mapbox.isMapboxHTTPCDNURL('https://api.mapbox.cn/v4/mapbox.mapbox-streets-v8.json'));
+        t.notOk(mapbox.isMapboxHTTPCDNURL('http://example.com/mapbox-gl-js/v2.11.0/mapbox-gl.js'));
+        t.end();
+    });
+
     t.test('.isMapboxHTTPSpriteURL', (t) => {
         t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v1/mapbox/streets-v11/sprite@2x.json'));
         t.ok(mapbox.isMapboxHTTPSpriteURL('https://api.mapbox.com/styles/v52/mapbox/streets-v11/sprite@2x.json'));

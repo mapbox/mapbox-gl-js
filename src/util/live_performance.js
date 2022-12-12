@@ -6,7 +6,8 @@ import {
     isMapboxHTTPStyleURL,
     isMapboxHTTPTileJSONURL,
     isMapboxHTTPSpriteURL,
-    isMapboxHTTPFontsURL
+    isMapboxHTTPFontsURL,
+    isMapboxHTTPCDNURL
 } from './mapbox.js';
 
 type LivePerformanceMetrics = {
@@ -63,19 +64,31 @@ function getCountersPerResourceType(resourceTimers) {
         for (const category in resourceTimers) {
             if (category !== 'other') {
                 for (const timer of resourceTimers[category]) {
-                    const req = `${category}RequestCount`;
                     const min = `${category}ResolveRangeMin`;
                     const max = `${category}ResolveRangeMax`;
+                    const reqCount = `${category}RequestCount`;
+                    const reqCachedCount = `${category}RequestCachedCount`;
 
                     // Resource -TransferStart and -TransferEnd represent the wall time
                     // between the start of a request to when the data is available
                     obj[min] = Math.min(obj[min] || +Infinity, timer.startTime);
                     obj[max] = Math.max(obj[max] || -Infinity, timer.responseEnd);
 
-                    if (obj[req] === undefined) {
-                        obj[req] = 0;
+                    const increment = (key) => {
+                        if (obj[key] === undefined) {
+                            obj[key] = 0;
+                        }
+                        ++obj[key];
+                    };
+
+                    const transferSizeSupported = timer.transferSize !== undefined;
+                    if (transferSizeSupported) {
+                        const resourceFetchedFromCache = (timer.transferSize === 0);
+                        if (resourceFetchedFromCache) {
+                            increment(reqCachedCount);
+                        }
                     }
-                    ++obj[req];
+                    increment(reqCount);
                 }
             }
         }
@@ -86,11 +99,8 @@ function getCountersPerResourceType(resourceTimers) {
 function getResourceCategory(entry: PerformanceResourceTiming): string {
     const url = entry.name.split('?')[0];
 
-    // Code may be hosted on various endpoints: CDN, self-hosted,
-    // from unpkg... so this check doesn't include mapbox HTTP URL
-    if (url.includes('mapbox-gl.js')) return 'javascript';
-    if (url.includes('mapbox-gl.css')) return 'css';
-
+    if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.js')) return 'javascript';
+    if (isMapboxHTTPCDNURL(url) && url.includes('mapbox-gl.css')) return 'css';
     if (isMapboxHTTPFontsURL(url)) return 'fontRange';
     if (isMapboxHTTPSpriteURL(url)) return 'sprite';
     if (isMapboxHTTPStyleURL(url)) return 'style';
@@ -122,6 +132,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
     const metrics = {counters: [], metadata: [], attributes: []};
 
+    // Please read carefully before adding or modifying the following metrics:
+    // https://github.com/mapbox/gl-js-team/blob/main/docs/live_performance_metrics.md
     const addMetric = (arr, name, value) => {
         if (value !== undefined && value !== null) {
             arr.push({name, value: value.toString()});

@@ -7,6 +7,7 @@ type Config = {|
   API_FONTS_REGEX: RegExp,
   API_SPRITE_REGEX: RegExp,
   API_STYLE_REGEX: RegExp,
+  API_CDN_URL_REGEX: RegExp,
   EVENTS_URL: ?string,
   SESSION_PATH: string,
   FEEDBACK_URL: string,
@@ -48,6 +49,9 @@ const config: Config = {
     get API_STYLE_REGEX() {
         // https://docs.mapbox.com/api/maps/styles/#retrieve-a-style
         return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/styles\/v[0-9]*\/)(.*$)/i;
+    },
+    get API_CDN_URL_REGEX() {
+        return /^((https?:)?\/\/)?api\.mapbox\.c(n|om)(\/mapbox-gl-js\/)(.*$)/i;
     },
     get EVENTS_URL() {
         if (!this.API_URL) { return null; }

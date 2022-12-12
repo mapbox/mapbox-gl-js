@@ -230,6 +230,10 @@ export function isMapboxHTTPURL(url: string): boolean {
     return config.API_URL_REGEX.test(url);
 }
 
+export function isMapboxHTTPCDNURL(url: string): boolean {
+    return config.API_CDN_URL_REGEX.test(url);
+}
+
 export function isMapboxHTTPStyleURL(url: string): boolean {
     return config.API_STYLE_REGEX.test(url) && !isMapboxHTTPSpriteURL(url);
 }
