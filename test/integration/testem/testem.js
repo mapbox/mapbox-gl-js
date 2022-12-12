@@ -5,15 +5,15 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
+const middleware = require('../lib/middleware.cjs');
 
 // hack to be able to import ES modules inside a CommonJS one
-let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
+let generateFixtureJson, getAllFixtureGlobs, buildTape, rollupDevConfig, rollupTestConfig;
 async function loadModules() {
     const generateFixture = await import('../lib/generate-fixture-json.js');
     generateFixtureJson = generateFixture.generateFixtureJson;
     getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
 
-    createServer = (await import('../lib/server.js')).default;
     buildTape = (await import('../../../build/test/build-tape.js')).default;
     rollupDevConfig = (await import('../../../rollup.config.js')).default;
     rollupTestConfig = (await import('../rollup.config.test.js')).default;
@@ -55,7 +55,6 @@ const buildJob =
     process.env.BUILD === "csp" ? "build-csp" : null;
 
 let beforeHookInvoked = false;
-let server;
 
 let fixtureWatcher;
 const rollupWatchers = {};
@@ -74,59 +73,19 @@ function getQueryParams() {
 }
 
 const testemConfig = {
+    middleware: [middleware],
     "test_page": testPage,
     "query_params": getQueryParams(),
-    "proxies": {
-        "/image":{
-            "target": "http://localhost:2900"
-        },
-        "/geojson":{
-            "target": "http://localhost:2900"
-        },
-        "/video":{
-            "target": "http://localhost:2900"
-        },
-        "/tiles":{
-            "target": "http://localhost:2900"
-        },
-        "/glyphs":{
-            "target": "http://localhost:2900"
-        },
-        "/tilesets":{
-            "target": "http://localhost:2900"
-        },
-        "/sprites":{
-            "target": "http://localhost:2900"
-        },
-        "/data":{
-            "target": "http://localhost:2900"
-        },
-        "/write-file":{
-            "target": "http://localhost:2900"
-        },
-        "/mvt-fixtures":{
-            "target": "http://localhost:2900"
-        }
-    },
-    "before_tests"(config, data, callback) {
-        if (!beforeHookInvoked) {
-            loadModules().then(() => {
-                server = createServer();
-                const buildPromise = ci ? buildArtifactsCi() : buildArtifactsDev();
-                buildPromise.then(() => {
-                    server.listen(callback);
-                }).catch((e) => {
-                    callback(e);
-                });
-            });
+    "on_start"(config, data, callback) {
+        if (beforeHookInvoked) return;
+        beforeHookInvoked = true;
 
-            beforeHookInvoked = true;
-        }
-    },
-    "after_tests"(config, data, callback) {
-        if (config.appMode === 'ci') {
-            server.close(callback);
-        }
+        loadModules().then(() => {
+            const buildArtifacts = ci ? buildArtifactsCi() : buildArtifactsDev();
+            buildArtifacts
+                .then(() => callback())
+                .catch(callback);
+        });
     }
 };
 

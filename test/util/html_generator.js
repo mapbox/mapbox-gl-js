@@ -12,7 +12,7 @@ const generateResultHTML = template(`
     <% } %>
     <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> - diff: <%- r.minDiff %></p></label>
     <div class="tab-content">
-      <% if (r.status !== 'errored') { %>
+      <% if (r.actual) { %>
           <img title="actual" src="<%- r.actual %>">
       <% } %>
       <% if (r.expected) { %>
@@ -21,9 +21,11 @@ const generateResultHTML = template(`
       <% if (r.imgDiff) { %>
           <img title="diff" src="<%- r.imgDiff %>">
       <% } %>
-      <% if (r.error) { %><p style="color: red"><strong>Error:</strong> <%- r.error.message %></p><% } %>
-      <% if (r.jsonDiff) { %>
-          <pre><%- r.jsonDiff.trim() %></pre>
+      <% if (r.error) { %>
+          <p style="color: red">
+            <strong>Error:</strong>
+            <pre><%- r.error.stack %></pre>
+          </p>
       <% } %>
       <% if (r.status === 'failed') { %>
           <pre><%- JSON.stringify(r.style, null, 2) %></pre>
