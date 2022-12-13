@@ -191,6 +191,7 @@ jobs:
             - v0-linux-yarn-{{ .Branch }}-
             - v0-linux-yarn-
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - run: yarn run build-dev
       - save_cache:
           key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
@@ -242,7 +243,6 @@ jobs:
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
-      - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
@@ -389,7 +389,6 @@ jobs:
           at: ~/
       - browser-tools/install-browser-tools:
           chrome-version: 91.0.4472.164
-      - run: yarn run build-dev
       - run: yarn run build-token
       - run:
           name: Test Chrome
@@ -484,11 +483,14 @@ jobs:
     steps:
       - checkout
       - run: yarn --frozen-lockfile
-      # speed up persisting to workspace
-      - run: Remove-Item .git -Recurse -Force
-      - run: Remove-Item node_modules/flow-bin -Recurse -Force
-      - run: Remove-Item node_modules/tap -Recurse -Force
-      - run: Remove-Item node_modules/gl -Recurse -Force
+      - run: yarn run build-dev
+      - run:
+          name: Clean up workspace to persist faster
+          command: |
+            Remove-Item .git -Recurse -Force;
+            Remove-Item node_modules/flow-bin -Recurse -Force;
+            Remove-Item node_modules/tap -Recurse -Force;
+            Remove-Item node_modules/gl -Recurse -Force;
       - persist_to_workspace:
           root: ~/
           paths:
