@@ -51,6 +51,21 @@ const skip = [
     // Tracked in https://github.com/mapbox/mapbox-gl-js/issues/12407
     "render-tests/skybox/atmosphere-terrain",
     "render-tests/terrain/decrease-exaggeration-fog",
-    "render-tests/terrain/error-overlap/initializing-no-terrain-at-center"
+    "render-tests/terrain/error-overlap/initializing-no-terrain-at-center",
+
+    // Flaky tests:
+
+    "render-tests/dynamic-filter/symbols/line/pitch-low-show", // Test is occasionally blank
+    "render-tests/fog/disable bottom", // Terrain sometimes doesn't load
+    "render-tests/globe/globe-antialiasing/high-exaggeration", // Globe is sometimes missing
+
+    // Occasionally crashing with 'Error occured during ["wait"]':
+    "render-tests/debug/terrain/collision-pitch-with-map-text-and-icon",
+    "render-tests/globe/globe-antialiasing/default",
+    "render-tests/globe/globe-circle/change-projection/set-projection",
+    "render-tests/globe/globe-circle/change-projection/set-projection",
+    "render-tests/globe/globe-circle/vertical-viewport-scaled-viewport-aligned/style.json",
+    "render-tests/free-camera/default/style.json",
+    "render-tests/fit-screen-coordinates/terrain"
 ];
 export default {todo, skip};

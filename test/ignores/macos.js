@@ -42,6 +42,21 @@ const todo = [
     "render-tests/terrain/wireframe"
 ];
 
-const skip = [];
+const skip = [
+    // Flaky tests:
+
+    // Test is occasionally blank:
+    "render-tests/debug/collision-pitched-wrapped-fractional-zoom",
+    "render-tests/debug/collision-pitched-wrapped-fractional-zoom",
+
+    "render-tests/debug/collision-overscaled", // Missing icons
+
+    // Globe sometimes missing
+    "render-tests/globe/globe-antialiasing/horizon-blend",
+    "render-tests/globe/globe-antialiasing/default",
+    "render-tests/globe/globe-antialiasing/tilted",
+
+    "render-tests/free-camera/terrain" // Occasionally subtly different camera position
+];
 
 export default {todo, skip};
