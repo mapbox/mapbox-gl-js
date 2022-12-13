@@ -126,13 +126,6 @@ class KeyboardHandler {
             cameraAnimation: (map: Map) => {
                 const zoom = map.getZoom();
 
-                // Camera is constrained to control zooming too close to terrain
-                if (map.transform._isCameraConstrained) {
-                    if (zoomDir && zoomDir > 0) zoomDir = 0;
-                    if (yDir && yDir < 0) yDir = 0;
-                    map.transform._isCameraConstrained = false;
-                }
-
                 map.easeTo({
                     duration: 300,
                     easeId: 'keyboardHandler',
