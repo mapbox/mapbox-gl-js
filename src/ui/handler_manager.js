@@ -322,6 +322,10 @@ class HandlerManager {
         return !!isMoving(this._eventsInProgress) || this.isZooming();
     }
 
+    _isDragging(): boolean {
+        return !!this._eventsInProgress.drag;
+    }
+
     _blockedByActive(activeHandlers: { [string]: Handler }, allowed: Array<string>, myName: string): boolean {
         for (const name in activeHandlers) {
             if (name === myName) continue;
@@ -491,11 +495,21 @@ class HandlerManager {
             if (preZoom !== tr.zoom) this._map._update(true);
         }
 
+        // Catches double click and double tap zooms when camera is constrained over terrain
+        if (tr._isCameraConstrained) map._stop(true);
+
         if (!hasChange(combinedResult)) {
             this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
             return;
         }
+
         let {panDelta, zoomDelta, bearingDelta, pitchDelta, around, aroundCoord, pinchAround} = combinedResult;
+
+        if (tr._isCameraConstrained) {
+            // Catches wheel zoom events when camera is constrained over terrain
+            if (zoomDelta > 0) zoomDelta = 0;
+            tr._isCameraConstrained = false;
+        }
 
         if (pinchAround !== undefined) {
             around = pinchAround;
@@ -582,7 +596,6 @@ class HandlerManager {
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
-
     }
 
     _fireEvents(newEventsInProgress: { [string]: Object }, deactivatedHandlers: Object, allowEndAnimation: boolean) {

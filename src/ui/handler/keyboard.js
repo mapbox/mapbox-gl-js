@@ -125,11 +125,11 @@ class KeyboardHandler {
         return {
             cameraAnimation: (map: Map) => {
                 const zoom = map.getZoom();
+
                 map.easeTo({
                     duration: 300,
                     easeId: 'keyboardHandler',
                     easing: easeOut,
-
                     zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
                     bearing: map.getBearing() + bearingDir * this._bearingStep,
                     pitch: map.getPitch() + pitchDir * this._pitchStep,

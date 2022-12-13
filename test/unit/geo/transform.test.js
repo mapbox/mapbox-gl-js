@@ -5,7 +5,7 @@ import LngLat from '../../../src/geo/lng_lat.js';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id.js';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed.js';
 import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
-import MercatorCoordinate, {mercatorZfromAltitude, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
+import MercatorCoordinate, {mercatorZfromAltitude, altitudeFromMercatorZ, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import {degToRad, radToDeg} from '../../../src/util/util.js';
@@ -714,13 +714,33 @@ test('transform', (t) => {
         };
     };
 
-    test('Constrained camera height over terrain', (t) => {
+    test('Pitch does not change when camera collides with terrain', (t) => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.maxPitch = 85;
 
-        transform.elevation = createCollisionElevation(10);
-        transform.constantCameraHeight = false;
+        transform._elevation = createCollisionElevation(10);
+        transform.bearing = -45;
+        transform.pitch = 85;
+
+        const altitudeZ = mercatorZfromAltitude(5, transform.center.lat) / Math.cos(degToRad(85));
+        const zoom = transform._zoomFromMercatorZ(altitudeZ * 2);
+        transform.zoom = zoom;
+
+        const cameraAltitude = transform.getFreeCameraOptions().position.z / mercatorZfromAltitude(1, transform.center.lat);
+        t.ok(cameraAltitude > 10);
+        t.equal(fixedNum(transform.bearing), -45);
+        t.equal(fixedNum(transform.pitch), 85);
+
+        t.end();
+    });
+
+    test('Camera height is above terrain with constant elevation', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.maxPitch = 85;
+
+        transform.elevation = createConstantElevation(10);
         transform.bearing = -45;
         transform.pitch = 85;
 
@@ -729,13 +749,12 @@ test('transform', (t) => {
         const zoom = transform._zoomFromMercatorZ(altitudeZ);
         transform.zoom = zoom;
 
-        // Pitch should have been adjusted so that the camera isn't under the terrain
-        const pixelsPerMeter = mercatorZfromAltitude(1, transform.center.lat) * transform.worldSize;
-        const updatedAltitude = transform.cameraToCenterDistance / pixelsPerMeter * Math.cos(degToRad(transform.pitch));
+        const cameraAltitude = altitudeFromMercatorZ(transform.getFreeCameraOptions().position.z, transform.getFreeCameraOptions().position.y);
 
-        t.true(updatedAltitude > 10);
+        t.ok(cameraAltitude > 10);
         t.equal(fixedNum(transform.zoom), fixedNum(zoom));
         t.equal(fixedNum(transform.bearing), -45);
+        t.equal(fixedNum(transform.pitch), 85);
 
         t.end();
     });
@@ -763,24 +782,30 @@ test('transform', (t) => {
 
         t.equal(fixedNum(cameraAltitude()), 5);
         t.equal(transform._centerAltitude, 0);
+
         // increase exaggeration to lift the center (and camera that follows it) up.
         transform.elevation._exaggeration = 1;
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 10);
+
         const cameraAltitudeAfterLift = cameraAltitude();
         t.equal(fixedNum(cameraAltitudeAfterLift), 15);
+
         transform.elevation._exaggeration = 15;
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 150);
         t.equal(fixedNum(cameraAltitude()), 155);
+
         transform.elevation._exaggeration = 0;
         transform.updateElevation(false);
         t.equal(fixedNum(cameraAltitude()), 5);
+
         // zoom out to 10 meters and back to 5
         transform.zoom = transform._zoomFromMercatorZ(altitudeZ * 2);
         t.equal(fixedNum(cameraAltitude()), 10);
         transform.zoom = zoom;
         t.equal(fixedNum(cameraAltitude()), 5);
+        t.equal(fixedNum(transform.pitch), 85);
 
         transform.elevation = null;
         t.ok(cameraAltitude() < 10);
@@ -788,6 +813,7 @@ test('transform', (t) => {
         // collision elevation keeps center at 0 but pushes camera up.
         const elevation1 = createCollisionElevation(10);
         elevation1._exaggeration = 0;
+
         transform.elevation = elevation1;
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 0);
@@ -796,7 +822,8 @@ test('transform', (t) => {
         elevation1._exaggeration = 1;
         transform.updateElevation(false);
         t.equal(transform._centerAltitude, 0);
-        t.ok(cameraAltitude() > 11 && cameraAltitude() < 12);
+        t.ok(cameraAltitude() > 10);
+        t.equal(fixedNum(transform.pitch), 85);
 
         t.end();
     });
@@ -1058,6 +1085,8 @@ test('transform', (t) => {
             tilesDefaultElevation = null;
             centerElevation = 1600;
             tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+            transform.pitch = 0;
+            transform.bearing = 0;
             transform.resize(768, 768);
             transform.zoom = options.maxzoom = 22;
             transform.center = {lng: -104.99813327, lat: 39.72784465999999};
