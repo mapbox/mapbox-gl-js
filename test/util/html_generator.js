@@ -27,8 +27,8 @@ const generateResultHTML = template(`
             <pre><%- r.error.stack %></pre>
           </p>
       <% } %>
-      <% if (r.status === 'failed') { %>
-          <pre><%- JSON.stringify(r.style, null, 2) %></pre>
+      <% if (r.eventStream) { %>
+          <pre><%- JSON.stringify(r.eventStream, null, 2) %></pre>
       <% } %>
     </div>
   </div>

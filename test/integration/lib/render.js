@@ -47,6 +47,7 @@ const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
 const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
+let eventStream = [];
 
 tape.onFinish(() => {
     document.body.removeChild(container);
@@ -172,6 +173,7 @@ async function getExpectedImages(currentTestName, currentFixture) {
 }
 
 async function renderMap(style, options) {
+    eventStream = [];
     map = new mapboxgl.Map({
         container,
         style,
@@ -198,6 +200,17 @@ async function renderMap(style, options) {
                 };
             }
         }
+    });
+
+    map.on('data', (e) => {
+        const {coord, dataType, isSourceLoaded, sourceDataType, sourceId, type} = e;
+        const tileID = coord ? coord.canonical.toString() : undefined;
+        eventStream.push({tileID, dataType, isSourceLoaded, sourceDataType, sourceId, type});
+    });
+
+    const events = ['load', 'render', 'idle', 'error', 'webglcontextlost', 'webglcontextrestored'];
+    events.forEach(event => {
+        map.on(event, () => eventStream.push(event));
     });
 
     map._authenticate = () => {};
@@ -335,7 +348,7 @@ async function runTest(t) {
             name: currentTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
-            style: map.getStyle(),
+            eventStream
         };
 
         t.ok(pass || t._todo, t.name);
@@ -375,7 +388,7 @@ async function runTest(t) {
         updateHTML(testMetaData);
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', error: e});
+        updateHTML({name: t.name, status:'failed', error: e, eventStream});
     }
 }
 
