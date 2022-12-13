@@ -5,6 +5,7 @@
       "fadeDuration": 1000,
       "width": 64,
       "height": 64,
+      "allowed": 0.0008,
       "description": "Tests that fill-pattern cross-fading completes, by checking the rendering after the fade duration has elapsed.",
       "operations": [
         [

@@ -5,7 +5,7 @@
       "collisionDebug": true,
       "height": 160,
       "width": 160,
-      "allowed": 0.0005,
+      "allowed": 0.005,
       "description": "Collision debug and occlusion test for text and icons.",
       "operations": [
         ["wait", 1500]

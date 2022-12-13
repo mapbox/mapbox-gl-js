@@ -1,7 +1,8 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@1.4.0
-  browser-tools: circleci/browser-tools@1.2.3
+  browser-tools: circleci/browser-tools@1.4.0
+  win: circleci/windows@4.1.1
 
 workflows:
   version: 2
@@ -55,19 +56,33 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render:
+      - test-render-linux-chrome-dev:
           requires:
             - prepare
           filters:
             tags:
               only: /.*/
-      - test-render-prod:
+      - test-render-linux-firefox-dev:
           requires:
             - prepare
           filters:
             tags:
               only: /.*/
-      - test-render-csp:
+      - test-render-macos-chrome-dev:
+          filters:
+            tags:
+              only: /.*/
+      - test-render-windows-chrome-dev:
+          filters:
+            tags:
+              only: /.*/
+      - test-render-linux-chrome-prod:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
+      - test-render-linux-chrome-csp:
           requires:
             - prepare
           filters:
@@ -119,8 +134,11 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render
-            - test-render-prod
+            - test-render-linux-chrome-dev
+            - test-render-linux-chrome-prod
+            - test-render-linux-firefox-dev
+            - test-render-macos-chrome-dev
+            - test-render-windows-chrome-dev
             - test-query
             - test-expressions
           filters:
@@ -137,8 +155,11 @@ workflows:
             - build
             - test-flow
             - test-unit
-            - test-render
-            - test-render-prod
+            - test-render-linux-chrome-dev
+            - test-render-linux-chrome-prod
+            - test-render-linux-firefox-dev
+            - test-render-macos-chrome-dev
+            - test-render-windows-chrome-dev
             - test-query
             - test-expressions
           filters:
@@ -160,13 +181,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v4-yarn-{{ checksum "yarn.lock" }}
-      - run: yarn
+            - v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-linux-yarn-{{ .Branch }}-
+            - v0-linux-yarn-
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
-          key: v4-yarn-{{ checksum "yarn.lock" }}
+          key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
-            - '~/.yarn'
-            - 'node_modules'
+           - ~/.cache/yarn
       - persist_to_workspace:
           root: ~/
           paths:
@@ -253,19 +275,36 @@ jobs:
           at: ~/
       - run: yarn run test-unit
 
-  test-render:
+  test-render-linux-chrome-dev:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      - run: yarn run test-render
+      # - run: yarn run test-render
+      - run:
+          name: Running tests in parallel
+          command: |
+            yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-prod:
+  test-render-linux-firefox-dev:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-firefox
+      - run: yarn run test-render-firefox
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+
+  test-render-linux-chrome-prod:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -277,7 +316,7 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-csp:
+  test-render-linux-chrome-csp:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -401,3 +440,68 @@ jobs:
           name: Deploy release
           command: |
             bash ./build/upload.sh
+
+  test-render-macos-chrome-dev:
+    macos:
+      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
+    parallelism: 3
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-mac-yarn-{{ .Branch }}-
+            - v0-mac-yarn-
+      - browser-tools/install-chrome
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+           - ~/.cache/yarn
+      - run:
+          name: Creating test list
+          command: |
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
+      - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+
+  test-render-windows-chrome-dev:
+    executor:
+      name: win/default
+    parallelism: 5
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      # The browser-tools orb doesn't work on Windows, so we install chrome manually.
+      - run:
+          name: Installing Chrome on Windows
+          command: |
+            $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+            $path = "$PSScriptRoot\ChromeSetup.exe";
+            Invoke-WebRequest -Uri $uri -OutFile $path;
+            Start-Process $path /install -NoNewWindow -Wait; 
+            Remove-Item $path;
+
+            $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
+            if ($chromeInstalled.FileName -eq $null) {
+              Write-Host "Chrome failed to install";
+            }
+      - run: yarn --frozen-lockfile
+      - run:
+          name: Creating test list
+          command: |
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8 -FilePath tests-to-run.txt
+      - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"

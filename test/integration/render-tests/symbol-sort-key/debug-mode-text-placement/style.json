@@ -5,7 +5,7 @@
       "collisionDebug" : true,
       "height": 150,
       "width": 150,
-      "allowed": 0.0003
+      "allowed": 0.008
     }
   },
   "center": [0, 0],

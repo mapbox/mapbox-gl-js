@@ -5,7 +5,7 @@
         "collisionDebug": true,
         "height": 264,
         "width": 400,
-        "operations": [["wait"]]
+        "allowed": 0.0012
       }
     },
     "center": [-120.30344797631889, 38.11726797649675],

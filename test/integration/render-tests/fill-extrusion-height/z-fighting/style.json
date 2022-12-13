@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "height": 512,
+      "allowed": 0.008,
       "operations": [
         ["wait"],
         ["setPaintProperty", "extrusion", "fill-extrusion-ambient-occlusion-intensity", 0.001],

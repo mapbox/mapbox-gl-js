@@ -4,7 +4,7 @@
     "test": {
       "collisionDebug": true,
       "height": 256,
-      "allowed": 0.0004
+      "allowed": 0.003
     }
   },
   "center": [

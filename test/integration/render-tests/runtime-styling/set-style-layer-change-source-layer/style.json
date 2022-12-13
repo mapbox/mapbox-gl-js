@@ -4,6 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
+      "allowed": 0.002,
       "operations": [
         [
           "setStyle",

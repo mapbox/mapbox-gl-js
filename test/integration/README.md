@@ -64,18 +64,6 @@ Results at: ./test/integration/render-tests/index.html
 Done in 2.32s.
 ```
 
-
-### Enable ANGLE configuration on render tests
-
-Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
-
-To configure the ANGLE backend, you can set the `--use-angle` input value to `USE_ANGLE` in CLI like so:
-```
-USE_ANGLE={INPUT} yarn run test-render
-```
-
-Accepted inputs for `USE_ANGLE` are `metal`, `gl`, `vulkan`, `swiftshader`, and `gles`. See `chrome://flags/#use-angle` for more information on the `--use-angle` flag.
-
 ### Viewing test results
 
 During a test run, the test harness will use Mapbox GL JS to create an `actual.png` image from the given `style.json`, and will then use [pixelmatch](https://github.com/mapbox/pixelmatch) to compare that image to `expected.png`, generating a `diff.png` highlighting the mismatched pixels (if any) in red.
@@ -119,6 +107,17 @@ You can run a specific test by as follows
 ?filter=circle-radius/antimeridian
 ```
 
+### Enable ANGLE configuration on render tests
+
+Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use OpenGL.
+
+To configure the ANGLE backend, you can set the `--use-angle` input value to `USE_ANGLE` in CLI like so:
+```
+USE_ANGLE={INPUT} yarn run test-render
+```
+
+Accepted inputs for `USE_ANGLE` are `metal`, `gl`, `vulkan`, `swiftshader`, and `gles`. See `chrome://flags/#use-angle` for more information on the `--use-angle` flag.
+
 ### Build Notifications
 
 The terminal window can be very noisy with both the build and the test servers running in the same session.
@@ -147,7 +146,25 @@ To add a new render test:
 
 5. Commit the new `style.json` and `expected.png` :rocket:
 
+## Tests on CircleCI
 
+Every pushed commit triggers test runs on the CircleCI server. These catch regressions and prevent platform-specific bugs.
+
+Render tests often fail due to minor antialiasing differences between platforms. In these cases, you can add an "allowed" property under "test" in the test's `style.json` to tell the test runner the degree of difference that is acceptable. This is the fraction of pixels that can differ between `expected.png` and `actual.png`, ignoring some antialiasing, that will still allow the test to pass.
+
+How much to adjust the "allowed" is acceptable depends on the test, but alloweds >= .01 are usually much too high. Especially with larger test images, alloweds should generally be negligable, since a too-high allowed will fail to catch regressions and significant rendering differences suggest a bug.
+
+Larger alloweds are acceptable for testing debug features that will not be directly used by customers.
+
+## Ignores
+
+If a test fails on a run with too large a difference to adjust the "allowed," it can be added to the corresponding [ignore file](../ignore) for the browser or operating system.
+
+Ignores include tests under `"todo"` and `"skip"`. `"todo"` tests show up in test results but do not trigger a failing run. Most tests failing on one pltaform should be marked as "ignore." This allows us to notice if the tests start passing.
+
+Tests under `"skip"` will not run at all. Tests should be skipped if they trigger crashes or if they are flaky (to prevent falsely concluding that the test is a non-issue).
+
+Ignored tests should link to an issue explaining the reason for ignoring the test.
 ## Reading Vector Tile Fixtures
 
 Install `vt2geojson`, a command line utility which turns vector tiles into geojson, and `harp`, a simple file server.

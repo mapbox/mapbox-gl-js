@@ -4,6 +4,7 @@
     "description": "Verifies there is no assert mapbox-gl-js-internal#134",
     "test": {
       "height": 256,
+      "allowed": 0.0003,
       "operations": [
         ["wait"]
       ]

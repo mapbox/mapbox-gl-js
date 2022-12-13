@@ -1,4 +1,5 @@
-import path from 'path';
+// Use linux 'path' syntax on all operating systems to preserve compatability with 'glob'
+import {posix as path} from "path";
 import fs from 'fs';
 import glob from 'glob';
 import localizeURLs from './localize-urls.js';
@@ -12,56 +13,58 @@ import localizeURLs from './localize-urls.js';
  * @param {string} suiteDirectory
  * @param {boolean} includeImages
  */
-export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false) {
-    const globs = getAllFixtureGlobs(rootDirectory, suiteDirectory);
-    const jsonPaths = globs[0];
-    const imagePaths = globs[1];
-    //Extract the filedata into a flat dictionary
-    const allFiles = {};
-    let allPaths = glob.sync(jsonPaths);
-    if (includeImages) {
-        allPaths = allPaths.concat(glob.sync(imagePaths));
+export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
+    if (!stylePaths.length) {
+        const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
+        stylePaths = glob.sync(pathGlob);
+        if (!stylePaths.length) {
+            console.error(`Found no tests matching the pattern ${pathGlob}`);
+        }
     }
 
-    for (const fixturePath of allPaths) {
-        const fileName = path.basename(fixturePath);
-        const extension = path.extname(fixturePath);
+    const testCases = {};
+
+    for (const stylePath of stylePaths) {
+        const dirName = path.dirname(stylePath);
+        const testName = dirName.replace(rootDirectory, '');
         try {
-            if (extension === '.json') {
-                const json = parseJsonFromFile(fixturePath);
+            const json = parseJsonFromFile(stylePath);
 
-                //Special case for style json which needs some preprocessing
-                if (fileName === 'style.json') {
-                    // 7357 is testem's default port
-                    localizeURLs(json, 7357);
+            // Special case for style json which needs some preprocessing
+            // 7357 is testem's default port
+            localizeURLs(json, 7357);
+
+            const testObject = {};
+
+            const filenames = fs.readdirSync(dirName);
+            for (const file of filenames) {
+                const [name, extension] = file.split(".");
+                if (extension === 'json') {
+                    const json = parseJsonFromFile(path.join(dirName, file));
+                    //Special case for style json which needs some preprocessing
+                    if (file === 'style.json') {
+                        // 7357 is testem's default port
+                        localizeURLs(json, 7357);
+                    }
+                    testObject[name] = json;
+                } else if (extension === 'png') {
+                    if (includeImages) {
+                        testObject[name] = true;
+                    }
+                } else {
+                    throw new Error(`${extension} is incompatible , file path ${path.join(dirName, file)}`);
                 }
-
-                allFiles[fixturePath] = json;
-            } else if (extension === '.png') {
-                allFiles[fixturePath] = true;
-            } else {
-                throw new Error(`${extension} is incompatible , file path ${fixturePath}`);
             }
+            testCases[testName] = testObject;
+
         } catch (e) {
-            console.log(`Error parsing file: ${fixturePath}`);
-            allFiles[fixturePath] = {PARSE_ERROR: true, message: e.message};
+            console.log(`Error parsing file: ${stylePath}`);
+            console.log(e.message);
+            testCases[testName] = {PARSE_ERROR: true, message: e.message};
         }
     }
 
-    // Re-nest by directory path, each directory path defines a testcase.
-    const result = {};
-    for (const fullPath in allFiles) {
-        const testName = path.dirname(fullPath).replace(rootDirectory, '');
-        //Lazily initialize an object to store each file wihin a particular testName
-        if (result[testName] == null) {
-            result[testName] = {};
-        }
-        //Trim extension from filename
-        const fileName = path.basename(fullPath, path.extname(fullPath));
-        result[testName][fileName] = allFiles[fullPath];
-    }
-
-    const outputStr = JSON.stringify(result, null, 4);
+    const outputStr = JSON.stringify(testCases, null, 4);
     const outputFile = `${suiteDirectory.split('-')[0]}-fixtures.json`;
     const outputPath = path.join(outputDirectory, outputFile);
 

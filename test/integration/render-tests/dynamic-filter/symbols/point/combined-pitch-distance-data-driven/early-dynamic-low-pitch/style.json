@@ -5,6 +5,7 @@
         "collisionDebug": true,
         "height": 264,
         "width": 400,
+        "allowed": 0.0005,
         "operations": [["wait"]]
       }
     },
