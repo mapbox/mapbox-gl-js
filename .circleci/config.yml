@@ -72,7 +72,13 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - prepare-windows:
+          filters:
+            tags:
+              only: /.*/
       - test-render-windows-chrome-dev:
+          requires:
+            - prepare-windows
           filters:
             tags:
               only: /.*/
@@ -471,6 +477,17 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
+  prepare-windows:
+    executor:
+      name: win/default
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - run: yarn --frozen-lockfile
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mapbox-gl-js
 
   test-render-windows-chrome-dev:
     executor:
@@ -478,7 +495,6 @@ jobs:
     parallelism: 5
     working_directory: ~/mapbox-gl-js
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
@@ -488,14 +504,13 @@ jobs:
             $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
             $path = "$PSScriptRoot\ChromeSetup.exe";
             Invoke-WebRequest -Uri $uri -OutFile $path;
-            Start-Process $path /install -NoNewWindow -Wait; 
+            Start-Process $path /install -NoNewWindow -Wait;
             Remove-Item $path;
 
             $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
             if ($chromeInstalled.FileName -eq $null) {
               Write-Host "Chrome failed to install";
             }
-      - run: yarn --frozen-lockfile
       - run:
           name: Creating test list
           command: |
