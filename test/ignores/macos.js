@@ -55,6 +55,7 @@ const skip = [
     "render-tests/globe/globe-antialiasing/horizon-blend",
     "render-tests/globe/globe-antialiasing/default",
     "render-tests/globe/globe-antialiasing/tilted",
+    "render-tests/globe/globe-camera/reset-north",
 
     "render-tests/free-camera/terrain" // Occasionally subtly different camera position
 ];
