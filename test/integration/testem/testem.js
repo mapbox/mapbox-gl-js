@@ -177,6 +177,7 @@ module.exports = async function() {
     await (ci ? buildArtifactsCi() : buildArtifactsDev());
 
     const testemConfig = {
+        debug: true,
         middleware: [middleware],
         "test_page": testPage,
         "query_params": getQueryParams(),
