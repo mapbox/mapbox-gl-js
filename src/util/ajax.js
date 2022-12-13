@@ -148,16 +148,17 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             if (response.ok) {
                 const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
                 return finishRequest(response, cacheableResponse, requestTime);
-
             } else {
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
         }).catch(error => {
-            if (error.code === 20) {
+            if (error.name === 'AbortError') {
                 // silence expected AbortError
                 return;
             }
-            callback(new Error(`${error.message}, ${JSON.stringify(error, Object.getOwnPropertyNames(error))}, ${requestParameters.url}`));
+
+            // $FlowFixMe
+            callback(new Error(`${error.message}, ${requestParameters.url}, ${{complete, aborted}}`));
         });
     };
 
