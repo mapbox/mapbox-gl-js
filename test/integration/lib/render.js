@@ -208,8 +208,8 @@ async function renderMap(style, options) {
         eventStream.push({tileID, dataType, isSourceLoaded, sourceDataType, sourceId, type});
     });
 
-    map.on('error', (e) => {
-        eventStream.push({type: 'error', message: e.message});
+    map.on('error', (event) => {
+        eventStream.push({type: 'error', event});
     });
 
     const events = ['load', 'render', 'idle', 'webglcontextlost', 'webglcontextrestored'];
