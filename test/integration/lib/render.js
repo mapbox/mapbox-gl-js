@@ -202,14 +202,15 @@ async function renderMap(style, options) {
         }
     });
 
+    map.on('error', (e) => {
+        eventStream.push({type: 'error', error: e.error.message, stack: e.error.stack});
+        throw e.error;
+    });
+
     map.on('data', (e) => {
         const {coord, dataType, isSourceLoaded, sourceDataType, sourceId, type} = e;
         const tileID = coord ? coord.canonical.toString() : undefined;
         eventStream.push({tileID, dataType, isSourceLoaded, sourceDataType, sourceId, type});
-    });
-
-    map.on('error', (e) => {
-        eventStream.push({type: 'error', error: e.error.message, stack: e.error.stack});
     });
 
     const events = ['load', 'render', 'idle', 'webglcontextlost', 'webglcontextrestored'];
