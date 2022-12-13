@@ -484,6 +484,11 @@ jobs:
     steps:
       - checkout
       - run: yarn --frozen-lockfile
+      # speed up persisting to workspace
+      - run: Remove-Item .git -Recurse -Force
+      - run: Remove-Item node_modules/flow-bin -Recurse -Force
+      - run: Remove-Item node_modules/tap -Recurse -Force
+      - run: Remove-Item node_modules/gl -Recurse -Force
       - persist_to_workspace:
           root: ~/
           paths:
