@@ -157,7 +157,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 // silence expected AbortError
                 return;
             }
-            callback(new Error(error.message));
+            callback(new Error(`${error.message}, ${error.code}, ${requestParameters.url}`));
         });
     };
 
