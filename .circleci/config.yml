@@ -466,6 +466,7 @@ jobs:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
+      - run: yarn run build-dev
       - run:
           name: Creating test list
           command: |
@@ -499,7 +500,7 @@ jobs:
   test-render-windows-chrome-dev:
     executor:
       name: win/default
-    parallelism: 5
+    parallelism: 4
     working_directory: ~/mapbox-gl-js
     steps:
       - attach_workspace:
