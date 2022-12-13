@@ -1,24 +1,14 @@
 /* eslint-disable import/no-commonjs */
 const fs = require('fs');
 const path = require('path');
-const st = require('st');
+const serveStatic = require('serve-static');
 
 const middleware = (app) => {
-    app.use((req, res, next) => {
-        console.log('Request URL:', req.originalUrl);
-        next();
-    });
-
-    app.use('/mvt-fixtures', st({
-        path: path.dirname(require.resolve('@mapbox/mvt-fixtures'))
-    }));
-
-    app.use('/mapbox-gl-styles', st({
-        path: path.dirname(require.resolve('mapbox-gl-styles'))
-    }));
+    app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures'))));
+    app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles'))));
 
     ['image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data'].forEach(p => {
-        app.use(`/${p}`, st({path: path.join(__dirname, '..', p)}));
+        app.use(`/${p}`, serveStatic(path.join(__dirname, '..', p)));
     });
 
     app.post('/write-file', (req, res) => {
