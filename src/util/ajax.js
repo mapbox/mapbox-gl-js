@@ -157,7 +157,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 return;
             }
 
-            callback(new Error(`${error.message}, ${requestParameters.url}, ${JSON.stringify({complete, aborted})}`));
+            callback(new Error(`${error.name}: ${error.message}, ${requestParameters.url}, ${JSON.stringify({complete, aborted})}`));
         });
     };
 
