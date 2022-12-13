@@ -492,6 +492,9 @@ jobs:
             Remove-Item node_modules/flow-bin -Recurse -Force;
             Remove-Item node_modules/tap -Recurse -Force;
             Remove-Item node_modules/gl -Recurse -Force;
+            Remove-Item node_modules/@mapbox/mvt-fixtures/real-world/osm-qa-* -Recurse -Force;
+            Remove-Item node_modules/react-devtools-core -Recurse -Force;
+            Remove-Item node_modules/@octokit -Recurse -Force;
       - persist_to_workspace:
           root: ~/
           paths:
