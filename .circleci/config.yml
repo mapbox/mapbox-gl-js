@@ -465,9 +465,6 @@ jobs:
           name: Creating test list
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
-      # TODO: Remove this testing artifact
-      - store_artifacts:
-          path: "tests-to-run.txt"
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
@@ -503,9 +500,6 @@ jobs:
           name: Creating test list
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8 -FilePath tests-to-run.txt
-      # TODO: Remove this testing artifact
-      - store_artifacts:
-          path: "tests-to-run.txt"
       - run: yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
