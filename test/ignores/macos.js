@@ -57,7 +57,8 @@ const skip = [
     "render-tests/globe/globe-antialiasing/tilted",
     "render-tests/globe/globe-camera/reset-north",
 
-    "render-tests/free-camera/terrain" // Occasionally subtly different camera position
+    "render-tests/free-camera/terrain", // Occasionally subtly different camera position
+    "render-tests/fog/terrain/equal-range" // Ground sometimes missing (sky renders)
 ];
 
 export default {todo, skip};
