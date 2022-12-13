@@ -157,8 +157,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 return;
             }
 
-            // $FlowFixMe
-            callback(new Error(`${error.message}, ${requestParameters.url}, ${{complete, aborted}}`));
+            callback(new Error(`${error.message}, ${requestParameters.url}, ${JSON.stringify({complete, aborted})}`));
         });
     };
 
