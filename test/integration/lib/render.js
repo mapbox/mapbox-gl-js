@@ -204,7 +204,6 @@ async function renderMap(style, options) {
 
     map.on('error', (e) => {
         eventStream.push({type: 'error', error: e.error.message, stack: e.error.stack});
-        throw (e.error);
     });
 
     map.on('data', (e) => {
