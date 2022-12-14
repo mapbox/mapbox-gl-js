@@ -62,6 +62,7 @@ void main() {
     out_color = color;
 #endif
 
+    float trimmed = 1.0;
 #ifdef RENDER_LINE_TRIM_OFFSET
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     highp float start = v_uv[2];
@@ -80,6 +81,7 @@ void main() {
     if (trim_end > trim_start) {
         if (line_progress <= trim_end && line_progress >= trim_start) {
             out_color = vec4(0, 0, 0, 0);
+            trimmed = 0.0;
         }
     }
 #endif
@@ -112,7 +114,7 @@ void main() {
             out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
         }
 #else  // use user-provided border color
-        out_color.rgb = mix(u_border_color.rgb, out_color.rgb, smoothAlpha);
+        out_color.rgb = mix(u_border_color.rgb * u_border_color.a * trimmed, out_color.rgb, smoothAlpha);
 #endif // RENDER_LINE_BORDER_AUTO
     }
 #endif
