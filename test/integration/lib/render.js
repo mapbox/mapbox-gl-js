@@ -355,6 +355,7 @@ async function runTest(t) {
             eventStream
         };
 
+        eventStream.push(`diff ${pass ? 'passed' : 'failed'}`);
         t.ok(pass || t._todo, t.name);
 
         // only display results locally, or on CI if it's failing

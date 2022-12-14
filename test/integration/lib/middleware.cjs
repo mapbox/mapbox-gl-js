@@ -3,12 +3,22 @@ const fs = require('fs');
 const path = require('path');
 const serveStatic = require('serve-static');
 
-const middleware = (app) => {
-    app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures'))));
-    app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles'))));
+const options = {
+    index: false,
+    maxAge: '1h',
+    immutable: true,
+    // Last-Modified is a weak caching header, as the browser applies a heuristic to determine
+    // whether to fetch the item from the cache or not., and heuristics vary between browsers.
+    etag: false,
+    lastModified: false
+};
 
-    ['image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data'].forEach(p => {
-        app.use(`/${p}`, serveStatic(path.join(__dirname, '..', p)));
+const middleware = (app) => {
+    app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
+    app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
+
+    ['image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data'].forEach(dir => {
+        app.use(`/${dir}`, serveStatic(path.join(__dirname, '..', dir), options));
     });
 
     app.post('/write-file', (req, res) => {
