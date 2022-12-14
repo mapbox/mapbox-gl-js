@@ -196,7 +196,7 @@ module.exports = async function() {
     if (ci) Object.assign(testemConfig, ciTestemConfig);
 
     if (browser === "Chrome") {
-        Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows"]));
+        Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows", "--disable-background-networking"]));
         if (process.platform === "linux") {
             // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
             // This allows for more consistent behavior with MacOS development machines.
