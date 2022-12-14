@@ -482,6 +482,7 @@ jobs:
       name: win/default
     working_directory: ~/mapbox-gl-js
     steps:
+      - run: Set-MpPreference -DisableRealtimeMonitoring $true
       - checkout
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
@@ -494,7 +495,6 @@ jobs:
             Remove-Item node_modules/gl -Recurse -Force;
             Remove-Item node_modules/@mapbox/mvt-fixtures/real-world/osm-qa-* -Recurse -Force;
             Remove-Item node_modules/react-devtools-core -Recurse -Force;
-            Remove-Item node_modules/@babel -Recurse -Force;
             Remove-Item node_modules/@octokit -Recurse -Force;
             Remove-Item node_modules/puppeteer-core -Recurse -Force;
             Remove-Item node_modules/lodash -Recurse -Force;
@@ -509,6 +509,7 @@ jobs:
     parallelism: 4
     working_directory: ~/mapbox-gl-js
     steps:
+      - run: Set-MpPreference -DisableRealtimeMonitoring $true
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
