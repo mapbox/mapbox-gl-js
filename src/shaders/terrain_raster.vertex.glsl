@@ -26,7 +26,7 @@ void main() {
     float skirt = float(a_pos.x >= skirtOffset);
     float elevation = elevation(a_texture_pos) - skirt * u_skirt_height;
 #ifdef TERRAIN_WIREFRAME
-    elevation += u_skirt_height * u_skirt_height * wireframeOffset;
+    elevation += wireframeOffset;
 #endif
     vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
