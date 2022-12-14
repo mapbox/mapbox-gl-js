@@ -10,7 +10,8 @@ const options = {
     // Last-Modified is a weak caching header, as the browser applies a heuristic to determine
     // whether to fetch the item from the cache or not., and heuristics vary between browsers.
     etag: false,
-    lastModified: false
+    lastModified: false,
+    acceptRanges: false,
 };
 
 const middleware = (app) => {
