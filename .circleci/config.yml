@@ -482,7 +482,6 @@ jobs:
       name: win/default
     working_directory: ~/mapbox-gl-js
     steps:
-      - run: Set-MpPreference -DisableRealtimeMonitoring $true
       - checkout
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
@@ -509,7 +508,6 @@ jobs:
     parallelism: 4
     working_directory: ~/mapbox-gl-js
     steps:
-      - run: Set-MpPreference -DisableRealtimeMonitoring $true
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
