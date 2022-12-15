@@ -2,7 +2,7 @@
 
 ## Features ✨ and improvements 🏁
 
-* Improve performance of patterns and line dashes, also improving their appearance when zooming ([#12326](https://github.com/mapbox/mapbox-gl-js/pull/12326))
+* Improve performance of patterns and line dashes and improve their appearance when zooming. ([#12326](https://github.com/mapbox/mapbox-gl-js/pull/12326))
 * Improve performance of text and icon placement. ([#12351](https://github.com/mapbox/mapbox-gl-js/pull/12351))
 * Improve performance of loading terrain data ([#12397](https://github.com/mapbox/mapbox-gl-js/pull/12397))
 * Improve poles support in `getBounds` when projection is set to globe ([#12315](https://github.com/mapbox/mapbox-gl-js/pull/12315))
