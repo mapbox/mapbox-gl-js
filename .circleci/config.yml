@@ -284,6 +284,8 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
 
   test-render-linux-firefox-dev:
     <<: *use_ramdisk
@@ -298,6 +300,8 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
 
   test-render-linux-chrome-prod:
     <<: *use_ramdisk
@@ -312,6 +316,8 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
 
   test-render-linux-chrome-csp:
     <<: *use_ramdisk
@@ -326,6 +332,8 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
 
   test-query:
     <<: *use_ramdisk
@@ -471,6 +479,8 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
 
   prepare-windows:
     executor:
@@ -530,3 +540,5 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "testem.log"
+    environment:
+      DEBUG: express:*
