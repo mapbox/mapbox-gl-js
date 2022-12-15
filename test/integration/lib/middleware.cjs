@@ -1,7 +1,10 @@
 /* eslint-disable import/no-commonjs */
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 const serveStatic = require('serve-static');
+
+http.globalAgent.maxSockets = 100;
 
 const options = {
     index: false,
