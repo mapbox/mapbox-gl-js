@@ -38,7 +38,6 @@ workflows:
               only: /.*/
       - check-bundle-size:
           requires:
-            - prepare
             - install-mbx-ci
             - build
           filters:
@@ -136,17 +135,7 @@ workflows:
       - deploy-benchmarks:
           requires:
             - install-mbx-ci
-            - lint
             - build
-            - test-flow
-            - test-unit
-            - test-render-linux-chrome-dev
-            - test-render-linux-chrome-prod
-            - test-render-linux-firefox-dev
-            - test-render-macos-chrome-dev
-            - test-render-windows-chrome-dev
-            - test-query
-            - test-expressions
           filters:
             tags:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
@@ -157,17 +146,7 @@ workflows:
       - deploy-release:
           requires:
             - install-mbx-ci
-            - lint
             - build
-            - test-flow
-            - test-unit
-            - test-render-linux-chrome-dev
-            - test-render-linux-chrome-prod
-            - test-render-linux-firefox-dev
-            - test-render-macos-chrome-dev
-            - test-render-windows-chrome-dev
-            - test-query
-            - test-expressions
           filters:
             tags:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
