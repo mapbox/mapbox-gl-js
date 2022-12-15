@@ -7,7 +7,7 @@
 * Improve performance of loading terrain data ([#12397](https://github.com/mapbox/mapbox-gl-js/pull/12397))
 * Improve poles support in `getBounds` when projection is set to globe ([#12315](https://github.com/mapbox/mapbox-gl-js/pull/12315))
 * Allow zooming towards terrain at a safe distance without pitching the camera ([#12354](https://github.com/mapbox/mapbox-gl-js/pull/12354))
-* Allow for pitch override in cameraForBounds, `fitBounds` and `fitScreenCoordiantes` camera APIs ([#12367](https://github.com/mapbox/mapbox-gl-js/pull/12367))
+* Allow for pitch override in cameraForBounds, `fitBounds` and `fitScreenCoordinates` camera APIs ([#12367](https://github.com/mapbox/mapbox-gl-js/pull/12367))
 
 ## Bug fixes 🐞
 
