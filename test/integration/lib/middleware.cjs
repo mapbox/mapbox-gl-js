@@ -5,6 +5,7 @@ const serveStatic = require('serve-static');
 
 const options = {
     index: false,
+    fallthrough: false,
     maxAge: '1h',
     immutable: true,
     // Last-Modified is a weak caching header, as the browser applies a heuristic to determine
