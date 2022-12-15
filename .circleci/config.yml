@@ -287,15 +287,13 @@ jobs:
     <<: *use_ramdisk
     <<: *defaults
     steps:
-      - attach_workspace:
-          at: ~/
+      - <<: *attach_workspace_at_ramdisk
       - browser-tools/install-firefox
       - run: yarn run test-render-firefox
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-
 
   test-render-linux-chrome-prod:
     <<: *use_ramdisk
