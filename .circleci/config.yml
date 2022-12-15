@@ -72,7 +72,13 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - prepare-windows:
+          filters:
+            tags:
+              only: /.*/
       - test-render-windows-chrome-dev:
+          requires:
+            - prepare-windows
           filters:
             tags:
               only: /.*/
@@ -185,6 +191,7 @@ jobs:
             - v0-linux-yarn-{{ .Branch }}-
             - v0-linux-yarn-
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - run: yarn run build-dev
       - save_cache:
           key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
@@ -236,7 +243,6 @@ jobs:
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
-      - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
@@ -383,7 +389,6 @@ jobs:
           at: ~/
       - browser-tools/install-browser-tools:
           chrome-version: 91.0.4472.164
-      - run: yarn run build-dev
       - run: yarn run build-token
       - run:
           name: Test Chrome
@@ -461,6 +466,7 @@ jobs:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
+      - run: yarn run build-dev
       - run:
           name: Creating test list
           command: |
@@ -471,14 +477,37 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
+  prepare-windows:
+    executor:
+      name: win/default
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - run: yarn --frozen-lockfile
+      - run: yarn run build-dev
+      - run:
+          name: Clean up workspace to persist faster
+          command: |
+            Remove-Item .git -Recurse -Force;
+            Remove-Item node_modules/flow-bin -Recurse -Force;
+            Remove-Item node_modules/tap -Recurse -Force;
+            Remove-Item node_modules/gl -Recurse -Force;
+            Remove-Item node_modules/@mapbox/mvt-fixtures/real-world/osm-qa-* -Recurse -Force;
+            Remove-Item node_modules/react-devtools-core -Recurse -Force;
+            Remove-Item node_modules/@octokit -Recurse -Force;
+            Remove-Item node_modules/puppeteer-core -Recurse -Force;
+            Remove-Item node_modules/lodash -Recurse -Force;
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mapbox-gl-js
 
   test-render-windows-chrome-dev:
     executor:
       name: win/default
-    parallelism: 5
+    parallelism: 4
     working_directory: ~/mapbox-gl-js
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
@@ -488,14 +517,13 @@ jobs:
             $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
             $path = "$PSScriptRoot\ChromeSetup.exe";
             Invoke-WebRequest -Uri $uri -OutFile $path;
-            Start-Process $path /install -NoNewWindow -Wait; 
+            Start-Process $path /install -NoNewWindow -Wait;
             Remove-Item $path;
 
             $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
             if ($chromeInstalled.FileName -eq $null) {
               Write-Host "Chrome failed to install";
             }
-      - run: yarn --frozen-lockfile
       - run:
           name: Creating test list
           command: |

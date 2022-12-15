@@ -52,7 +52,7 @@ const testPage = `test/integration/testem_page_${
 
 const buildJob =
     process.env.BUILD === "production" ? "build-prod-min" :
-    process.env.BUILD === "csp" ? "build-csp" : "build-dev";
+    process.env.BUILD === "csp" ? "build-csp" : null;
 
 let beforeHookInvoked = false;
 let server;
@@ -183,7 +183,7 @@ function buildArtifactsCi() {
     //2. Build tape
     const tapePromise = buildTape();
     //3. Build test artifacts in parallel
-    const rollupPromise = runAll([`build-test-suite`, buildJob], {parallel: true});
+    const rollupPromise = runAll(['build-test-suite', buildJob].filter(Boolean), {parallel: true});
 
     return Promise.all([tapePromise, rollupPromise]);
 }
