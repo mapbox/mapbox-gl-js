@@ -55,6 +55,7 @@ tape.onFinish(() => {
 
 let osIgnore;
 let timeout = 30000;
+let maxRetryOnFail = 10;
 
 if (process.env.CI) {
     // On CI, MacOS and Windows run on virtual machines.
@@ -315,28 +316,36 @@ async function runTest(t) {
         const options = parseOptions(currentFixture, style);
         await setupLayout(options);
 
-        //2. Initialize the Map
-        map = await renderMap(style, options);
-        const {w, h} = getViewportSize(map);
-        const actualImageData = getActualImageData(map, {w, h}, options);
+        let pass = false;
+        let viewportSize;
+        let actualImageData;
+        let runs = 0;
+        let diff;
+        let testMetaData;
+        for (; runs < maxRetryOnFail && !pass; ++runs) {
+            //2. Initialize the Map
+            map = await renderMap(style, options);
+            viewportSize = getViewportSize(map);
+            actualImageData = getActualImageData(map, viewportSize, options);
 
-        if (process.env.UPDATE) {
-            browserWriteFile.postMessage([{
-                path: `${writeFileBasePath}/expected.png`,
-                data: getActualImageDataURL(actualImageData, map, {w, h}, options).split(',')[1]
-            }]);
+            if (process.env.UPDATE) {
+                browserWriteFile.postMessage([{
+                    path: `${writeFileBasePath}/expected.png`,
+                    data: getActualImageDataURL(actualImageData, map, viewportSize, options).split(',')[1]
+                }]);
 
-            return;
+                return;
+            }
+
+            diff = calculateDiff(map, viewportSize, actualImageData, expectedImages);
+            pass = diff.minDiff <= options.allowed;
+            testMetaData = {
+                name: currentTestName,
+                minDiff: Math.round(100000 * diff.minDiff) / 100000,
+                status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
+                style: map.getStyle(),
+            };
         }
-
-        const {minDiff, minDiffImage, minExpectedCanvas} = calculateDiff(map, {w, h}, actualImageData, expectedImages);
-        const pass = minDiff <= options.allowed;
-        const testMetaData = {
-            name: currentTestName,
-            minDiff: Math.round(100000 * minDiff) / 100000,
-            status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
-            style: map.getStyle(),
-        };
 
         t.ok(pass || t._todo, t.name);
 
@@ -344,12 +353,12 @@ async function runTest(t) {
         if (!process.env.CI || !pass) {
             // 5. Convert diff Uint8Array to ImageData and write to canvas
             // so we can get a base64 string to display the diff in the browser
-            diffCanvas.width = w;
-            diffCanvas.height = h;
-            const diffImageData = new ImageData(minDiffImage, w, h);
+            diffCanvas.width = viewportSize.w;
+            diffCanvas.height = viewportSize.h;
+            const diffImageData = new ImageData(diff.minDiffImage, viewportSize.w, viewportSize.h);
             diffCtx.putImageData(diffImageData, 0, 0);
 
-            const actual = getActualImageDataURL(actualImageData, map, {w, h}, options);
+            const actual = getActualImageDataURL(actualImageData, map, viewportSize, options);
             const imgDiff = diffCanvas.toDataURL();
 
             // 6. use browserWriteFile to write actual and diff to disk (convert image back to base64)
@@ -368,8 +377,9 @@ async function runTest(t) {
 
             // 7. pass image paths to testMetaData so the UI can render them
             testMetaData.actual = actual;
-            testMetaData.expected = minExpectedCanvas.toDataURL();
+            testMetaData.expected = diff.minExpectedCanvas.toDataURL();
             testMetaData.imgDiff = imgDiff;
+            testMetaData.runs = runs;
         }
 
         updateHTML(testMetaData);
