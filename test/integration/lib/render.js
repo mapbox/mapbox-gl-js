@@ -47,6 +47,7 @@ const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
 const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
+let eventStream = [];
 
 tape.onFinish(() => {
     document.body.removeChild(container);
@@ -147,9 +148,7 @@ async function setupLayout(options) {
     }
 }
 
-async function getExpectedImages(currentTestName) {
-    const currentFixture = fixtures[currentTestName];
-
+async function getExpectedImages(currentTestName, currentFixture) {
     // there may be multiple expected images, covering different platforms
     const expectedPaths = [];
     for (const prop in currentFixture) {
@@ -167,14 +166,14 @@ async function getExpectedImages(currentTestName) {
     const expectedImages = await Promise.all(expectedPaths.map((path) => drawImage(expectedCanvas, expectedCtx, path)));
 
     if (!process.env.UPDATE && expectedImages.length === 0) {
-        throw new Error('No expected*.png files found; did you mean to run tests with UPDATE=true?');
+        throw new Error(`No expected*.png files found for "${currentTestName}"; did you mean to run tests with UPDATE=true?`);
     }
 
     return expectedImages;
 }
 
 async function renderMap(style, options) {
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ';
+    eventStream = [];
     map = new mapboxgl.Map({
         container,
         style,
@@ -201,6 +200,21 @@ async function renderMap(style, options) {
                 };
             }
         }
+    });
+
+    map.on('error', (e) => {
+        eventStream.push({type: 'error', error: e.error.message, stack: e.error.stack});
+    });
+
+    map.on('data', (e) => {
+        const {coord, dataType, isSourceLoaded, sourceDataType, sourceId, type} = e;
+        const tileID = coord ? coord.canonical.toString() : undefined;
+        eventStream.push({tileID, dataType, isSourceLoaded, sourceDataType, sourceId, type});
+    });
+
+    const events = ['load', 'render', 'idle', 'webglcontextlost', 'webglcontextrestored'];
+    events.forEach(event => {
+        map.on(event, () => eventStream.push(event));
     });
 
     map._authenticate = () => {};
@@ -277,7 +291,7 @@ function getActualImageDataURL(actualImageData, map, {w, h}, options) {
     return map.getCanvas().toDataURL();
 }
 
-function calculateDiff(map, {w, h}, actualImageData, expectedImages) {
+function calculateDiff(actualImageData, expectedImages, {w, h}) {
     // 2. draw expected.png into a canvas and extract ImageData
     let minDiffImage;
     let minExpectedCanvas;
@@ -301,24 +315,27 @@ function calculateDiff(map, {w, h}, actualImageData, expectedImages) {
     return {minDiff, minDiffImage, minExpectedCanvas};
 }
 
+async function getActualImage(style, options) {
+    await setupLayout(options);
+    map = await renderMap(style, options);
+    const {w, h} = getViewportSize(map);
+    const actualImageData = getActualImageData(map, {w, h}, options);
+    return {actualImageData, w, h};
+}
+
 async function runTest(t) {
     t.teardown(ensureTeardown);
 
     // This needs to be read from the `t` object because this function runs async in a closure.
     const currentTestName = t.name;
-    const writeFileBasePath = `test/integration/${currentTestName}`;
     const currentFixture = fixtures[currentTestName];
+    const writeFileBasePath = `test/integration/${currentTestName}`;
     try {
-        const expectedImages = await getExpectedImages(currentTestName);
+        const expectedImages = await getExpectedImages(currentTestName, currentFixture);
 
         const style = parseStyle(currentFixture);
         const options = parseOptions(currentFixture, style);
-        await setupLayout(options);
-
-        //2. Initialize the Map
-        map = await renderMap(style, options);
-        const {w, h} = getViewportSize(map);
-        const actualImageData = getActualImageData(map, {w, h}, options);
+        const {actualImageData, w, h} = await getActualImage(style, options);
 
         if (process.env.UPDATE) {
             browserWriteFile.postMessage([{
@@ -329,15 +346,16 @@ async function runTest(t) {
             return;
         }
 
-        const {minDiff, minDiffImage, minExpectedCanvas} = calculateDiff(map, {w, h}, actualImageData, expectedImages);
+        const {minDiff, minDiffImage, minExpectedCanvas} = calculateDiff(actualImageData, expectedImages, {w, h});
         const pass = minDiff <= options.allowed;
         const testMetaData = {
             name: currentTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
-            style: map.getStyle(),
+            eventStream
         };
 
+        eventStream.push(`diff ${pass ? 'passed' : 'failed'}`);
         t.ok(pass || t._todo, t.name);
 
         // only display results locally, or on CI if it's failing
@@ -375,7 +393,7 @@ async function runTest(t) {
         updateHTML(testMetaData);
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
+        updateHTML({name: t.name, status:'failed', error: e, eventStream});
     }
 }
 

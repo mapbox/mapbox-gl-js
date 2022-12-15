@@ -1,0 +1,51 @@
+/* eslint-disable import/no-commonjs */
+const fs = require('fs');
+const http = require('http');
+const path = require('path');
+const serveStatic = require('serve-static');
+
+http.globalAgent.maxSockets = 100;
+
+const options = {
+    index: false,
+    fallthrough: false,
+    maxAge: '1h',
+    immutable: true,
+    // Last-Modified is a weak caching header, as the browser applies a heuristic to determine
+    // whether to fetch the item from the cache or not., and heuristics vary between browsers.
+    etag: false,
+    lastModified: false,
+    acceptRanges: false,
+};
+
+const middleware = (app) => {
+    app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
+    app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
+
+    ['image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data'].forEach(dir => {
+        app.use(`/${dir}`, serveStatic(path.join(__dirname, '..', dir), options));
+    });
+
+    app.post('/write-file', (req, res) => {
+        let body = '';
+        req.on('data', (data) => {
+            body += data;
+        });
+
+        return req.on('end', () => {
+            const {filePath, data} = JSON.parse(body);
+
+            let encoding;
+            if (filePath.split('.')[1] !== 'json') {
+                encoding = 'base64';
+            }
+
+            fs.writeFile(path.join(process.cwd(), filePath), data, encoding, () => {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.end('ok');
+            });
+        });
+    });
+};
+
+module.exports = middleware;
