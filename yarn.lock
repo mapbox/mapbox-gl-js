@@ -225,13 +225,6 @@
     "@babel/plugin-syntax-object-rest-spread" "^7.8.3"
     "@babel/plugin-transform-parameters" "^7.18.8"
 
-"@babel/plugin-syntax-flow@^7.18.6":
-  version "7.18.6"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-flow/-/plugin-syntax-flow-7.18.6.tgz#774d825256f2379d06139be0c723c4dd444f3ca1"
-  integrity sha512-LUbR+KNTBWCUAqRG9ex5Gnzu2IOkt8jRJbHHXFT9q+L9zm7M/QQbEqXyw1n1pohYvOyWC8CjeyjrSaIwiYjK7A==
-  dependencies:
-    "@babel/helper-plugin-utils" "^7.18.6"
-
 "@babel/plugin-syntax-jsx@^7.18.6":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-jsx/-/plugin-syntax-jsx-7.18.6.tgz#a8feef63b010150abd97f1649ec296e849943ca0"
@@ -253,14 +246,6 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.18.9"
 
-"@babel/plugin-transform-flow-strip-types@^7.18.6":
-  version "7.18.9"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-transform-flow-strip-types/-/plugin-transform-flow-strip-types-7.18.9.tgz#5b4cc521426263b5ce08893a2db41097ceba35bf"
-  integrity sha512-+G6rp2zRuOAInY5wcggsx4+QVao1qPM0osC9fTUVlAV3zOrzTCnrMAFVnR6+a3T8wz1wFIH7KhYMcMB3u1n80A==
-  dependencies:
-    "@babel/helper-plugin-utils" "^7.18.9"
-    "@babel/plugin-syntax-flow" "^7.18.6"
-
 "@babel/plugin-transform-parameters@^7.18.8":
   version "7.18.8"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-parameters/-/plugin-transform-parameters-7.18.8.tgz#ee9f1a0ce6d78af58d0956a9378ea3427cccb48a"
@@ -278,15 +263,6 @@
     "@babel/helper-plugin-utils" "^7.18.9"
     "@babel/plugin-syntax-jsx" "^7.18.6"
     "@babel/types" "^7.18.10"
-
-"@babel/preset-flow@^7.18.6":
-  version "7.18.6"
-  resolved "https://registry.yarnpkg.com/@babel/preset-flow/-/preset-flow-7.18.6.tgz#83f7602ba566e72a9918beefafef8ef16d2810cb"
-  integrity sha512-E7BDhL64W6OUqpuyHnSroLnqyRTcG6ZdOBl1OKI/QK/HJfplqK/S3sq1Cckx7oTodJ5yOXyfw7rEADJ6UjoQDQ==
-  dependencies:
-    "@babel/helper-plugin-utils" "^7.18.6"
-    "@babel/helper-validator-option" "^7.18.6"
-    "@babel/plugin-transform-flow-strip-types" "^7.18.6"
 
 "@babel/template@^7.18.10":
   version "7.18.10"
