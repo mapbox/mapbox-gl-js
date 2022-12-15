@@ -153,9 +153,12 @@ async function getExpectedImages(currentTestName, currentFixture) {
     const expectedPaths = [];
     for (const prop in currentFixture) {
         if (prop.indexOf('expected') > -1) {
-            let path = `${currentTestName}/${prop}.png`;
-            // regression tests with # in the name need to be sanitized
-            path = encodeURIComponent(path);
+            const path = `/${currentTestName}/${prop}.png`
+                .split('/')
+                // regression tests with # in the name need to be sanitized
+                .map(p => encodeURIComponent(p))
+                .join('/');
+
             expectedPaths.push(path);
         }
     }
