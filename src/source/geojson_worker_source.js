@@ -132,7 +132,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             if (err || !data) {
                 return callback(err);
             } else if (typeof data !== 'object') {
-                return callback(new Error(`Input data given to '${params.source}' source is not a valid GeoJSON object. data=${data}`));
+                return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
             } else {
                 rewind(data, true);
 
@@ -214,10 +214,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             try {
                 return callback(null, JSON.parse(params.data));
             } catch (e) {
-                return callback(new Error(`Input data given to '${params.source}' source is not a valid GeoJSON object. params.data=${JSON.stringify(params.data)}`));
+                return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
             }
         } else {
-            return callback(new Error(`Input data given to '${params.source}' source is not a valid GeoJSON object. params=${JSON.stringify(params)}`));
+            return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
         }
     }
 

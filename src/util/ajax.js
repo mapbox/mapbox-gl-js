@@ -156,8 +156,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 // silence expected AbortError
                 return;
             }
-
-            callback(new Error(`${error.name}: ${error.message}, ${requestParameters.url}, ${JSON.stringify({complete, aborted, err, cachedResponse, responseIsFresh})}`));
+            callback(new Error(error.message));
         });
     };
 

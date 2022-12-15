@@ -27,8 +27,15 @@ const generateResultHTML = template(`
             <pre><%- r.error.stack %></pre>
           </p>
       <% } %>
-      <% if (r.eventStream) { %>
-          <pre><%- JSON.stringify(r.eventStream, null, 2) %></pre>
+      <% if (r.errors) { %>
+          <p style="color: red">
+            <strong>Errors:</strong>
+            <dl>
+                <% r.errors.forEach(function(error) { %>
+                    <dt><%- error.message %></dt>
+                    <dd><pre><%- error.stack %></pre></dd>
+                <% }); %>
+            </dl>
       <% } %>
     </div>
   </div>

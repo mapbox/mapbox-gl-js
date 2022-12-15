@@ -47,7 +47,7 @@ const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
 const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
-let eventStream = [];
+let errors = [];
 
 tape.onFinish(() => {
     document.body.removeChild(container);
@@ -173,7 +173,7 @@ async function getExpectedImages(currentTestName, currentFixture) {
 }
 
 async function renderMap(style, options) {
-    eventStream = [];
+    errors = [];
     map = new mapboxgl.Map({
         container,
         style,
@@ -203,18 +203,7 @@ async function renderMap(style, options) {
     });
 
     map.on('error', (e) => {
-        eventStream.push({type: 'error', error: e.error.message, stack: e.error.stack});
-    });
-
-    map.on('data', (e) => {
-        const {coord, dataType, isSourceLoaded, sourceDataType, sourceId, type} = e;
-        const tileID = coord ? coord.canonical.toString() : undefined;
-        eventStream.push({tileID, dataType, isSourceLoaded, sourceDataType, sourceId, type});
-    });
-
-    const events = ['load', 'render', 'idle', 'webglcontextlost', 'webglcontextrestored'];
-    events.forEach(event => {
-        map.on(event, () => eventStream.push(event));
+        errors.push({error: e.error.message, stack: e.error.stack});
     });
 
     map._authenticate = () => {};
@@ -352,10 +341,9 @@ async function runTest(t) {
             name: currentTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
             status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
-            eventStream
+            errors
         };
 
-        eventStream.push(`diff ${pass ? 'passed' : 'failed'}`);
         t.ok(pass || t._todo, t.name);
 
         // only display results locally, or on CI if it's failing
@@ -393,7 +381,7 @@ async function runTest(t) {
         updateHTML(testMetaData);
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', error: e, eventStream});
+        updateHTML({name: t.name, status:'failed', error: e, errors});
     }
 }
 
