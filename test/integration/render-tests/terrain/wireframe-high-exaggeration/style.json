@@ -4,7 +4,7 @@
     "test": {
       "height": 256,
       "width": 256,
-      "description": "Check terrain wireframe overlay",
+      "description": "Check highly exaggerated terrain wireframe overlay",
       "showTerrainWireframe": true,
       "allowed": 0.02,
       "operations": [
@@ -12,9 +12,10 @@
         ["setTerrain", null],
         ["wait"],
         ["setTerrain", {
-          "source": "rgbterrain"
+          "source": "rgbterrain",
+          "exaggeration": 30.0
         }],
-        ["wait"]
+        ["wait", 500]
       ]
     }
   },
