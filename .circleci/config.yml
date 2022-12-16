@@ -285,7 +285,7 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
 
   test-render-linux-firefox-dev:
     <<: *use_ramdisk
@@ -301,7 +301,7 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
 
   test-render-linux-chrome-prod:
     <<: *use_ramdisk
@@ -317,7 +317,7 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
 
   test-render-linux-chrome-csp:
     <<: *use_ramdisk
@@ -333,7 +333,7 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
 
   test-query:
     <<: *use_ramdisk
@@ -480,7 +480,7 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
 
   prepare-windows:
     executor:
@@ -541,4 +541,4 @@ jobs:
       - store_artifacts:
           path: "testem.log"
     environment:
-      DEBUG: express:*
+      DEBUG: send
