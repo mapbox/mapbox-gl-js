@@ -1,0 +1,13 @@
+diff --git a/node_modules/testem/lib/server/index.js b/node_modules/testem/lib/server/index.js
+index a1baf70..e3545f7 100644
+--- a/node_modules/testem/lib/server/index.js
++++ b/node_modules/testem/lib/server/index.js
+@@ -177,7 +177,7 @@ class Server extends EventEmitter {
+       }
+       next();
+     });
+-    app.use(express.static(`${__dirname}/../../public`));
++    app.use('/testem', express.static(`${__dirname}/../../public/testem`));
+   }
+ 
+   injectMiddleware(app) {
