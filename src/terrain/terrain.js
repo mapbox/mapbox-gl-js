@@ -4,8 +4,8 @@ import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import Tile from '../source/tile.js';
-import boundsAttributes from '../data/bounds_attributes.js';
-import {RasterBoundsArray, TriangleIndexArray, LineIndexArray} from '../data/array_types.js';
+import posAttributes from '../data/pos_attributes.js';
+import {TriangleIndexArray, LineIndexArray, PosArray} from '../data/array_types.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
@@ -249,7 +249,7 @@ export class Terrain extends Elevation {
         // edge vertices from neighboring tiles evaluate to the same 3D point.
         const [triangleGridArray, triangleGridIndices, skirtIndicesOffset] = createGrid(GRID_DIM + 1);
         const context = painter.context;
-        this.gridBuffer = context.createVertexBuffer(triangleGridArray, boundsAttributes.members);
+        this.gridBuffer = context.createVertexBuffer(triangleGridArray, posAttributes.members);
         this.gridIndexBuffer = context.createIndexBuffer(triangleGridIndices);
         this.gridSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, triangleGridIndices.length);
         this.gridNoSkirtSegments = SegmentVector.simpleSegment(0, 0, triangleGridArray.length, skirtIndicesOffset);
@@ -1489,8 +1489,8 @@ function sortByDistanceToCamera(tileIDs, painter) {
  * @param {number} count Count of rows and columns
  * @private
  */
-function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, number] {
-    const boundsArray = new RasterBoundsArray();
+function createGrid(count: number): [PosArray, TriangleIndexArray, number] {
+    const boundsArray = new PosArray();
     // Around the grid, add one more row/column padding for "skirt".
     const indexArray = new TriangleIndexArray();
     const size = count + 2;
@@ -1508,7 +1508,7 @@ function createGrid(count: number): [RasterBoundsArray, TriangleIndexArray, numb
             const offset = (x < 0 || x > gridBound || y < 0 || y > gridBound) ? skirtOffset : 0;
             const xi = clamp(Math.round(x), 0, EXTENT);
             const yi = clamp(Math.round(y), 0, EXTENT);
-            boundsArray.emplaceBack(xi + offset, yi, xi, yi);
+            boundsArray.emplaceBack(xi + offset, yi);
         }
     }
 
