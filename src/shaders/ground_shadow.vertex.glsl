@@ -3,7 +3,6 @@ uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 
 attribute vec2 a_pos;
-attribute vec2 a_texture_pos;
 
 varying vec4 v_pos_light_view_0;
 varying vec4 v_pos_light_view_1;
