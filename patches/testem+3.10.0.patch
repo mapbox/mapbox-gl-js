@@ -7,7 +7,7 @@ index a1baf70..e3545f7 100644
        next();
      });
 -    app.use(express.static(`${__dirname}/../../public`));
-+    app.use('/testem', express.static(`${__dirname}/../../public/testem`));
++    app.use('/testem', express.static(`${__dirname}/../../public/testem`, {fallthrough: false}));
    }
- 
+
    injectMiddleware(app) {
