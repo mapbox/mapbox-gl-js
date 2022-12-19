@@ -159,16 +159,6 @@ defaults: &defaults
     - image: cimg/node:14.16-browsers
   working_directory: ~/mapbox-gl-js
 
-use_ramdisk: &use_ramdisk
-  working_directory: /mnt/ramdisk/mapbox-gl-js
-
-attach_workspace_at_ramdisk: &attach_workspace_at_ramdisk
-  attach_workspace:
-    at: /mnt/ramdisk/
-
-persist_from_ramdisk: &persist_from_ramdisk
-  root: /mnt/ramdisk/
-
 jobs:
   prepare:
     <<: *defaults
@@ -188,8 +178,8 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - .ssh
             - mapbox-gl-js
+            - .ssh
 
   install-mbx-ci:
     <<: *defaults
@@ -209,10 +199,10 @@ jobs:
             - mbx-ci
 
   lint:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - restore_cache:
           keys:
             - v2-lint-{{ .Branch }}
@@ -225,10 +215,10 @@ jobs:
             - '.eslintcache'
 
   build:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod
       - run: yarn run build-csp
@@ -242,7 +232,7 @@ jobs:
       - store_artifacts:
           path: "test/release"
       - persist_to_workspace:
-          root: /mnt/ramdisk/
+          root: ~/
           paths:
             - mapbox-gl-js/dist
 
@@ -251,27 +241,30 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run test-bundle-size
+      - run:
+          name: Check bundle size
+          command: |
+            node build/check-bundle-size.js
 
   test-flow:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run: yarn run test-flow
 
   test-unit:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run: yarn run test-unit
 
   test-render-linux-chrome-dev:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-chrome
       # - run: yarn run test-render
       - run:
@@ -288,10 +281,10 @@ jobs:
       DEBUG: send
 
   test-render-linux-firefox-dev:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-firefox
       - run: yarn run test-render-firefox
       - store_test_results:
@@ -304,10 +297,10 @@ jobs:
       DEBUG: send
 
   test-render-linux-chrome-prod:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-prod
       - store_test_results:
@@ -320,10 +313,10 @@ jobs:
       DEBUG: send
 
   test-render-linux-chrome-csp:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-render-csp
       - store_test_results:
@@ -336,10 +329,10 @@ jobs:
       DEBUG: send
 
   test-query:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-chrome
       - run: yarn run test-query
       - store_test_results:
@@ -348,10 +341,10 @@ jobs:
           path: "test/integration/query-tests/index.html"
 
   test-webpack:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run:
           name: Build Webpack
           command: |
@@ -363,10 +356,10 @@ jobs:
           path: "test/build/transpilation"
 
   test-style-spec:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run: yarn run test-style-spec
 
   collect-stats:
@@ -384,10 +377,10 @@ jobs:
           command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-browser:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - browser-tools/install-browser-tools:
           chrome-version: 91.0.4472.164
       - run: yarn run build-token
@@ -405,10 +398,10 @@ jobs:
           command: yarn run test-browser
 
   test-expressions:
-    <<: *use_ramdisk
     <<: *defaults
     steps:
-      - <<: *attach_workspace_at_ramdisk
+      - attach_workspace:
+          at: ~/
       - run: yarn run test-expressions
 
   deploy-benchmarks:
