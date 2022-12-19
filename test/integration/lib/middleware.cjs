@@ -1,21 +1,18 @@
 /* eslint-disable import/no-commonjs */
 const fs = require('fs');
-const http = require('http');
 const path = require('path');
 const serveStatic = require('serve-static');
-
-http.globalAgent.maxSockets = 100;
 
 const options = {
     index: false,
     fallthrough: false,
+    // Explicitly indicate that revalidation is not required because the content never changes.
     maxAge: '1h',
     immutable: true,
     // Last-Modified is a weak caching header, as the browser applies a heuristic to determine
     // whether to fetch the item from the cache or not., and heuristics vary between browsers.
     etag: false,
     lastModified: false,
-    acceptRanges: false,
 };
 
 const middleware = (app) => {

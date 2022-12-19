@@ -130,8 +130,9 @@ export const operationHandlers = {
     }
 };
 
-export function applyOperations(map, options) {
-    const operations = options.operations || [['wait']];
+export async function applyOperations(map, {operations}) {
+    if (!operations) return Promise.resolve();
+
     return new Promise((resolve, reject) => {
         let currentOperation = null;
         // Start recursive chain

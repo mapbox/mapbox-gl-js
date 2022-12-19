@@ -27,7 +27,7 @@ const generateResultHTML = template(`
             <pre><%- r.error.stack %></pre>
           </p>
       <% } %>
-      <% if (r.errors) { %>
+      <% if (r.errors && r.errors.length !== 0) { %>
           <p style="color: red">
             <strong>Errors:</strong>
             <dl>

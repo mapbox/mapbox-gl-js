@@ -192,17 +192,6 @@ async function renderMap(style, options) {
         projection: options.projection,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
-        transformRequest: (url, resourceType) => {
-            // some tests have the port hardcoded to 2900
-            // this makes that backwards compatible
-            if (resourceType === 'Tile') {
-                const transformedUrl = new URL(url);
-                transformedUrl.port = '7357';
-                return {
-                    url: transformedUrl.toString()
-                };
-            }
-        }
     });
 
     map.on('error', (e) => {
