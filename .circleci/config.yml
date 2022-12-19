@@ -275,10 +275,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
 
   test-render-linux-firefox-dev:
     <<: *defaults
@@ -291,10 +287,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
 
   test-render-linux-chrome-prod:
     <<: *defaults
@@ -307,10 +299,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
 
   test-render-linux-chrome-csp:
     <<: *defaults
@@ -323,10 +311,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
 
   test-query:
     <<: *defaults
@@ -470,10 +454,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
 
   prepare-windows:
     executor:
@@ -531,7 +511,3 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "testem.log"
-    environment:
-      DEBUG: send
