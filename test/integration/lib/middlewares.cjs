@@ -15,7 +15,7 @@ const options = {
     lastModified: false,
 };
 
-const middleware = (app) => {
+const injectMiddlewares = (app) => {
     app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
     app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
 
@@ -45,4 +45,4 @@ const middleware = (app) => {
     });
 };
 
-module.exports = middleware;
+module.exports = {injectMiddlewares};

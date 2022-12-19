@@ -5,7 +5,7 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
-const middleware = require('../lib/middleware.cjs');
+const {injectMiddlewares} = require('../lib/middlewares.cjs');
 
 // hack to be able to import ES modules inside a CommonJS one
 let generateFixtureJson, getAllFixtureGlobs, buildTape, rollupDevConfig, rollupTestConfig;
@@ -177,7 +177,7 @@ module.exports = async function() {
     await (ci ? buildArtifactsCi() : buildArtifactsDev());
 
     const testemConfig = {
-        middleware: [middleware],
+        middleware: [injectMiddlewares],
         "test_page": testPage,
         "query_params": getQueryParams(),
     };
