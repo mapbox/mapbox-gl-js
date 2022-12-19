@@ -56,8 +56,13 @@ async function getMapCanvas(url) {
 let server = null;
 
 tap.test('start server', t => {
-    const serve = serveStatic(process.cwd());
-    server = http.createServer(serve).listen(port, ip, err => {
+    const serve = serveStatic(process.cwd(), {fallthrough: false});
+    server = http.createServer((req, res) => {
+        serve(req, res, (err) => {
+            if (err) res.writeHead(404);
+            res.end();
+        });
+    }).listen(port, ip, err => {
         if (err) {
             t.error(err);
             t.bailout();
