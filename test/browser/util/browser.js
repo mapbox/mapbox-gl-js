@@ -1,7 +1,7 @@
 import tap from 'tap';
 import address from 'address';
-import st from 'st';
 import http from 'http';
+import serveStatic from 'serve-static';
 
 import webdriver from 'selenium-webdriver';
 const {Builder, By} = webdriver;
@@ -56,9 +56,13 @@ async function getMapCanvas(url) {
 let server = null;
 
 tap.test('start server', t => {
-    server = http.createServer(
-        st(process.cwd())
-    ).listen(port, ip, err => {
+    const serve = serveStatic(process.cwd(), {fallthrough: false});
+    server = http.createServer((req, res) => {
+        serve(req, res, (err) => {
+            if (err) res.writeHead(404);
+            res.end();
+        });
+    }).listen(port, ip, err => {
         if (err) {
             t.error(err);
             t.bailout();

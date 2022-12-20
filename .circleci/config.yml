@@ -266,7 +266,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      # - run: yarn run test-render
       - run:
           name: Running tests in parallel
           command: |
@@ -287,7 +286,6 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
-
 
   test-render-linux-chrome-prod:
     <<: *defaults

@@ -2,8 +2,7 @@
 /* global mapboxgl:readonly */
 import customLayerImplementations from '../custom_layer_implementations.js';
 
-function handleOperation(map, options, opIndex, doneCb) {
-    const operations = options.operations;
+function handleOperation(map, operations, opIndex, doneCb) {
     const operation = operations[opIndex];
     const opName = operation[0];
     //Delegate to special handler if one is available
@@ -131,14 +130,10 @@ export const operationHandlers = {
     }
 };
 
-export function applyOperations(map, options) {
+export async function applyOperations(map, {operations}) {
+    if (!operations) return Promise.resolve();
+
     return new Promise((resolve, reject) => {
-        const operations = options.operations;
-        // No operations specified, end immediately and invoke doneCb.
-        if (!operations || operations.length === 0) {
-            resolve();
-            return;
-        }
         let currentOperation = null;
         // Start recursive chain
         const scheduleNextOperation = (lastOpIndex) => {
@@ -147,8 +142,8 @@ export function applyOperations(map, options) {
                 resolve();
                 return;
             }
-            currentOperation = options.operations[lastOpIndex + 1];
-            handleOperation(map, options, ++lastOpIndex, scheduleNextOperation);
+            currentOperation = operations[lastOpIndex + 1];
+            handleOperation(map, operations, ++lastOpIndex, scheduleNextOperation);
         };
         map.once('error', (e) => {
             reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));

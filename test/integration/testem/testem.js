@@ -5,15 +5,15 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
+const {injectMiddlewares} = require('../lib/middlewares.cjs');
 
 // hack to be able to import ES modules inside a CommonJS one
-let generateFixtureJson, getAllFixtureGlobs, createServer, buildTape, rollupDevConfig, rollupTestConfig;
+let generateFixtureJson, getAllFixtureGlobs, buildTape, rollupDevConfig, rollupTestConfig;
 async function loadModules() {
     const generateFixture = await import('../lib/generate-fixture-json.js');
     generateFixtureJson = generateFixture.generateFixtureJson;
     getAllFixtureGlobs = generateFixture.getAllFixtureGlobs;
 
-    createServer = (await import('../lib/server.js')).default;
     buildTape = (await import('../../../build/test/build-tape.js')).default;
     rollupDevConfig = (await import('../../../rollup.config.js')).default;
     rollupTestConfig = (await import('../rollup.config.test.js')).default;
@@ -54,9 +54,6 @@ const buildJob =
     process.env.BUILD === "production" ? "build-prod-min" :
     process.env.BUILD === "csp" ? "build-csp" : null;
 
-let beforeHookInvoked = false;
-let server;
-
 let fixtureWatcher;
 const rollupWatchers = {};
 
@@ -73,73 +70,6 @@ function getQueryParams() {
     return queryParams;
 }
 
-const testemConfig = {
-    "test_page": testPage,
-    "query_params": getQueryParams(),
-    "proxies": {
-        "/image":{
-            "target": "http://localhost:2900"
-        },
-        "/geojson":{
-            "target": "http://localhost:2900"
-        },
-        "/video":{
-            "target": "http://localhost:2900"
-        },
-        "/tiles":{
-            "target": "http://localhost:2900"
-        },
-        "/glyphs":{
-            "target": "http://localhost:2900"
-        },
-        "/tilesets":{
-            "target": "http://localhost:2900"
-        },
-        "/sprites":{
-            "target": "http://localhost:2900"
-        },
-        "/data":{
-            "target": "http://localhost:2900"
-        },
-        "/write-file":{
-            "target": "http://localhost:2900"
-        },
-        "/mvt-fixtures":{
-            "target": "http://localhost:2900"
-        }
-    },
-    "before_tests"(config, data, callback) {
-        if (!beforeHookInvoked) {
-            loadModules().then(() => {
-                server = createServer();
-                const buildPromise = ci ? buildArtifactsCi() : buildArtifactsDev();
-                buildPromise.then(() => {
-                    server.listen(callback);
-                }).catch((e) => {
-                    callback(e);
-                });
-            });
-
-            beforeHookInvoked = true;
-        }
-    },
-    "after_tests"(config, data, callback) {
-        if (config.appMode === 'ci') {
-            server.close(callback);
-        }
-    }
-};
-
-// Configuration for tests running in CI mode (i.e. test-... not watch-...)
-const ciTestemConfig = {
-    "launch_in_ci": [ browser ],
-    "reporter": "xunit",
-    "report_file": ciOutputFile,
-    "xunit_intermediate_output": true,
-    "tap_quiet_logs": true,
-    "browser_disconnect_timeout": 90 // A longer disconnect time out prevents crashes on Windows Virtual Machines.
-};
-
 function setChromeFlags(flags) {
     return {
         "browser_args": {
@@ -149,31 +79,6 @@ function setChromeFlags(flags) {
         }
     };
 }
-
-if (ci) Object.assign(testemConfig, ciTestemConfig);
-
-if (browser === "Chrome") {
-    Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows"]));
-    if (process.platform === "linux") {
-        // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
-        // This allows for more consistent behavior with MacOS development machines.
-        // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-        const useOpenGL = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
-        Object.assign(testemConfig, useOpenGL);
-    } if (process.env.USE_ANGLE) {
-        // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
-        // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
-        // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
-        if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
-            throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
-        }
-        console.log(`Chrome webgl using '${process.env.USE_ANGLE}'`);
-        const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
-        Object.assign(testemConfig, angleTestemConfig);
-    }
-}
-
-module.exports = testemConfig;
 
 // helper method that builds test artifacts when in CI mode.
 // Retuns a promise that resolves when all artifacts are built
@@ -266,3 +171,49 @@ function notify(title, message) {
         notifier.notify({title, message});
     }
 }
+
+module.exports = async function() {
+    await loadModules();
+    await (ci ? buildArtifactsCi() : buildArtifactsDev());
+
+    const testemConfig = {
+        middleware: [injectMiddlewares],
+        "test_page": testPage,
+        "query_params": getQueryParams(),
+    };
+
+    // Configuration for tests running in CI mode (i.e. test-... not watch-...)
+    const ciTestemConfig = {
+        "launch_in_ci": [ browser ],
+        "reporter": "xunit",
+        "report_file": ciOutputFile,
+        "xunit_intermediate_output": true,
+        "tap_quiet_logs": true,
+        "browser_disconnect_timeout": 90 // A longer disconnect time out prevents crashes on Windows Virtual Machines.
+    };
+
+    if (ci) Object.assign(testemConfig, ciTestemConfig);
+
+    if (browser === "Chrome") {
+        Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows", "--disable-background-networking"]));
+        if (process.platform === "linux") {
+            // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
+            // This allows for more consistent behavior with MacOS development machines.
+            // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
+            const useOpenGL = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
+            Object.assign(testemConfig, useOpenGL);
+        } if (process.env.USE_ANGLE) {
+            // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
+            // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
+            // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
+            if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
+                throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
+            }
+            console.log(`Chrome webgl using '${process.env.USE_ANGLE}'`);
+            const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
+            Object.assign(testemConfig, angleTestemConfig);
+        }
+    }
+
+    return testemConfig;
+};
