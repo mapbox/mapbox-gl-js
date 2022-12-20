@@ -702,13 +702,13 @@
     magic-string "^0.27.0"
 
 "@rollup/plugin-strip@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@rollup/plugin-strip/-/plugin-strip-3.0.1.tgz#45486508b01c2149aadbf7d47449a519285a95c4"
-  integrity sha512-mG6dHXVhNzU2i5qsS7RNtKuXf4zfDyel4G/RoT1wxaLblHeNSssjgSjWPfkp6ZhXYxFPdZQfkyZ5IpXlfTL8yQ==
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-strip/-/plugin-strip-3.0.2.tgz#49018633e713df4488f056d2454bba2682314799"
+  integrity sha512-L8Whin/DB5XsLE586+xcud6yX/pMVUlfalA999uAsC+dtwmBHSiUwtAxMl3eVvykX3N5BhdeAjStqDlzMmfUXw==
   dependencies:
     "@rollup/pluginutils" "^5.0.1"
     estree-walker "^2.0.2"
-    magic-string "^0.26.4"
+    magic-string "^0.27.0"
 
 "@rollup/pluginutils@^3.0.9":
   version "3.1.0"
