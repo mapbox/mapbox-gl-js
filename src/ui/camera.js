@@ -729,7 +729,7 @@ class Camera extends Evented {
         const meterPerECEF = earthRadius / GLOBE_RADIUS;
         const altitudeECEF = vec3.length(cameraPosition);
         const altitudeMeter = altitudeECEF * meterPerECEF - earthRadius;
-        const mercatorZ = mercatorZfromAltitude(altitudeMeter, 0);
+        const mercatorZ = mercatorZfromAltitude(Math.max(altitudeMeter, Number.EPSILON), 0);
 
         const zoom = Math.min(tr.zoomFromMercatorZAdjusted(mercatorZ), eOptions.maxZoom);
 
