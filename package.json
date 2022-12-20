@@ -76,12 +76,10 @@
     "npm-font-open-sans": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
-    "patch-package": "^6.5.0",
     "pixelmatch": "^5.3.0",
     "postcss": "^8.4.16",
     "postcss-cli": "^10.1.0",
     "postcss-inline-svg": "^5.0.0",
-    "postinstall-postinstall": "^2.1.0",
     "pretty-bytes": "^6.0.0",
     "puppeteer-core": "^19.3.0",
     "qrcode-terminal": "^0.12.0",
@@ -93,12 +91,13 @@
     "serve-static": "^1.15.0",
     "shuffle-seed": "^1.1.6",
     "sinon": "^15.0.0",
+    "st": "^3.0.0",
     "stylelint": "^14.11.0",
     "stylelint-config-standard": "^29.0.0",
     "tap": "~16.3.2",
     "tape": "^5.6.1",
     "tape-filter": "^1.0.4",
-    "testem": "^3.10.0"
+    "testem": "^3.10.1"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
@@ -146,8 +145,7 @@
     "test-style-spec": "cd src/style-spec && npm test",
     "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-csp build-css build-style-spec",
     "print-release-url": "node build/print-release-url.js",
-    "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js",
-    "postinstall": "patch-package"
+    "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
     "build/",
