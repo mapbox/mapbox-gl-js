@@ -1726,6 +1726,22 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test("zoomFromMercatorZAdjusted", (t) => {
+        const transform = new Transform();
+        transform.resize(500, 500);
+        t.ok(transform.setProjection({name: 'globe'}));
+        transform.zoom = 0;
+
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e3, 0)), 3), 6);
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e6, 0)), 3), 5.874);
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(4e6, 0)), 3), 3.87);
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e7, 0)), 3), 2.054);
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(2e7, 0)), 3), 1.052);
+        t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(5e7, 0)), 3), 0);
+
+        t.end();
+    });
+
     t.test("ZoomDeltaToMovement", (t) => {
         const transform = new Transform();
         transform.resize(100, 100);

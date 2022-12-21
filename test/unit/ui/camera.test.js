@@ -8,6 +8,7 @@ import {fixedLngLat, fixedNum, fixedVec3} from '../../util/fixed.js';
 import {equalWithPrecision} from '../../util/index.js';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
 import LngLat from '../../../src/geo/lng_lat.js';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import {vec3, quat} from 'gl-matrix';
 
 test('camera', (t) => {
@@ -2302,6 +2303,21 @@ test('camera', (t) => {
                 top: 0,
                 bottom: 0
             });
+            t.end();
+        });
+
+        t.test('#12450', (t) => {
+            const camera = createCamera();
+
+            camera.setCenter([-115.6288447, 35.1509267]);
+            camera.setZoom(5);
+
+            const bounds = new LngLatBounds();
+            bounds.extend([-115.6288447, 35.1509267]);
+            camera.fitBounds(bounds, {padding: 75, duration: 0});
+
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), {lng: -115.6288, lat: 35.1509});
+            t.equal(camera.getZoom(), 20);
             t.end();
         });
 

@@ -2065,11 +2065,14 @@ class Transform {
     // latitude and the center's latitude as you zoom in, camera to center distance varies dynamically.
     // As the cameraToCenterDistance is a function of zoom, we need to approximate the true zoom
     // given a mercator meter value in order to eliminate the zoom/cameraToCenterDistance dependency.
-    zoomFromMercatorZAdjusted(z: number): number {
-        const getZoom = (zoom) => {
+    zoomFromMercatorZAdjusted(mercatorZ: number): number {
+        assert(this.projection.name === 'globe');
+
+        const zoomFromMercatorZ = (zoom, mercatorZ) => {
+            assert(mercatorZ !== 0);
             const worldSize = this.tileSize * Math.pow(2, zoom);
             const d = this.getCameraToCenterDistance(this.projection, zoom, worldSize);
-            return this.scaleZoom(d / (z * this.tileSize));
+            return this.scaleZoom(d / (mercatorZ * this.tileSize));
         };
 
         let zoomLow = 0;
@@ -2077,16 +2080,19 @@ class Transform {
         let zoom = 0;
         let minZoomDiff = Infinity;
 
-        while (zoomHigh - zoomLow > 1e-6) {
+        const epsilon = 1e-6;
+
+        while (zoomHigh - zoomLow > epsilon && zoomHigh > zoomLow) {
             const zoomMid = zoomLow + (zoomHigh - zoomLow) * 0.5;
-            const diff = Math.abs(zoomMid - getZoom(zoomMid));
+            const newZoom = zoomFromMercatorZ(zoomMid, mercatorZ);
+            const diff = Math.abs(zoomMid - newZoom);
 
             if (diff < minZoomDiff) {
                 minZoomDiff = diff;
                 zoom = zoomMid;
             }
 
-            if (zoomMid < getZoom(zoomMid)) {
+            if (zoomMid < newZoom) {
                 zoomLow = zoomMid;
             } else {
                 zoomHigh = zoomMid;
