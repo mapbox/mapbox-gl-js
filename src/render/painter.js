@@ -163,8 +163,10 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[key: number]: Tile};
 
-    constructor(gl: WebGLRenderingContext, transform: Transform) {
-        this.context = new Context(gl);
+    constructor(gl: WebGLRenderingContext, transform: Transform, ctx: ?Context, cache: ?{[_: string]: Program<*> }) {
+        this.context = ctx || new Context(gl);
+        this.context.gl = gl;
+        this.cache = cache || {};
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
@@ -877,7 +879,6 @@ class Painter {
     }
 
     useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
-        this.cache = this.cache || {};
         const defines = (((fixedDefines || []): any): string[]);
 
         const globalDefines = this.currentGlobalDefines();

@@ -28,6 +28,8 @@ import webpSupported from '../util/webp_supported.js';
 import {PerformanceUtils} from '../util/performance.js';
 import {PerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
 import Marker from '../ui/marker.js';
+import Program from '../render/program.js';
+import Context from '../gl/context.js';
 import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
 import SourceCache from '../source/source_cache.js';
@@ -549,8 +551,8 @@ class Map extends Camera {
             '_contextRestored'
         ], this);
 
-        this._setupContainer();
-        this._setupPainter();
+        this._setupContainer(options.canvas, options.canvasContainer);
+        this._setupPainter(options.ctx, options.cache);
         if (this.painter === undefined) {
             throw new Error(`Failed to initialize WebGL.`);
         }
@@ -2891,7 +2893,7 @@ class Map extends Camera {
         }
     }
 
-    _setupContainer() {
+    _setupContainer(canvas: ?HTMLCanvasElement, canvasContainer: ?HTMLElement) {
         const container = this._container;
         container.classList.add('mapboxgl-map');
 
@@ -2899,17 +2901,22 @@ class Map extends Camera {
         missingCSSCanary.style.visibility = 'hidden';
         this._detectMissingCSS();
 
-        const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
-        if (this._interactive) {
-            canvasContainer.classList.add('mapboxgl-interactive');
-        }
+        if (canvas && canvasContainer) {
+            this._canvas = canvas;
+            this._canvasContainer = canvasContainer;
+        } else {
+            const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+            if (this._interactive) {
+                canvasContainer.classList.add('mapboxgl-interactive');
+            }
 
-        this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
-        this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
-        this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
-        this._canvas.setAttribute('tabindex', '0');
-        this._canvas.setAttribute('aria-label', this._getUIString('Map.Title'));
-        this._canvas.setAttribute('role', 'region');
+            this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
+            this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
+            this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
+            this._canvas.setAttribute('tabindex', '0');
+            this._canvas.setAttribute('aria-label', this._getUIString('Map.Title'));
+            this._canvas.setAttribute('role', 'region');
+        }
 
         this._updateContainerDimensions();
         this._resizeCanvas(this._containerWidth, this._containerHeight);
@@ -2957,14 +2964,14 @@ class Map extends Camera {
         }
     }
 
-    _setupPainter() {
+    _setupPainter(ctx: ?Context, cache: ?{[_: string]: Program<*> }) {
         const attributes = extend({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer,
             antialias: this._antialias || false
         });
 
-        const gl = this._canvas.getContext('webgl', attributes) ||
+        const gl = (ctx && ctx.gl) || this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
         if (!gl) {
@@ -2974,7 +2981,7 @@ class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this.transform);
+        this.painter = new Painter(gl, this.transform, ctx, cache);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -3500,8 +3507,8 @@ class Map extends Camera {
             window.removeEventListener('visibilitychange', this._onVisibilityChange, false);
         }
 
-        const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
-        if (extension) extension.loseContext();
+        // const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
+        // if (extension) extension.loseContext();
 
         this._canvas.removeEventListener('webglcontextlost', this._contextLost, false);
         this._canvas.removeEventListener('webglcontextrestored', this._contextRestored, false);

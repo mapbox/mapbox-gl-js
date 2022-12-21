@@ -174,7 +174,10 @@ async function getExpectedImages(currentTestName, currentFixture) {
 
     return expectedImages;
 }
-
+let ctx;
+let canvas;
+let canvasContainer;
+let cache;
 async function renderMap(style, options) {
     errors = [];
     map = new mapboxgl.Map({
@@ -192,11 +195,20 @@ async function renderMap(style, options) {
         projection: options.projection,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
+        canvas,
+        canvasContainer,
+        ctx,
+        cache
     });
 
     map.on('error', (e) => {
         errors.push({error: e.error.message, stack: e.error.stack});
     });
+
+    canvas = map.getCanvas();
+    canvasContainer = map.getCanvasContainer();
+    ctx = map.painter.context;
+    cache = map.painter.cache;
 
     map._authenticate = () => {};
 
@@ -272,6 +284,7 @@ function getActualImageDataURL(actualImageData, map, {w, h}, options) {
     return map.getCanvas().toDataURL();
 }
 
+let diffBuffer;
 function calculateDiff(actualImageData, expectedImages, {w, h}) {
     // 2. draw expected.png into a canvas and extract ImageData
     let minDiffImage;
@@ -280,7 +293,7 @@ function calculateDiff(actualImageData, expectedImages, {w, h}) {
 
     for (let i = 0; i < expectedImages.length; i++) {
         // 3. set up Uint8ClampedArray to write diff into
-        const diffImage = new Uint8ClampedArray(w * h * 4);
+        const diffImage = diffBuffer && diffBuffer.length >= w * h * 4 ? diffBuffer : new Uint8ClampedArray(w * h * 4);
 
         // 4. Use pixelmatch to compare actual and expected images and write diff
         // all inputs must be Uint8Array or Uint8ClampedArray
@@ -304,6 +317,7 @@ async function getActualImage(style, options) {
     return {actualImageData, w, h};
 }
 
+let imageData;
 async function runTest(t) {
     t.teardown(ensureTeardown);
 
@@ -344,7 +358,7 @@ async function runTest(t) {
             // so we can get a base64 string to display the diff in the browser
             diffCanvas.width = w;
             diffCanvas.height = h;
-            const diffImageData = new ImageData(minDiffImage, w, h);
+            const diffImageData = imageData && imageData.width >= w && imageData.height >= h ? imageData : new ImageData(minDiffImage, w, h);
             diffCtx.putImageData(diffImageData, 0, 0);
 
             const actual = getActualImageDataURL(actualImageData, map, {w, h}, options);
