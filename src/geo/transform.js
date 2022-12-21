@@ -17,7 +17,13 @@ import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments.js';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
-import {calculateGlobeMatrix, polesInViewport, GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
+import {
+    calculateGlobeMatrix,
+    polesInViewport,
+    GLOBE_ZOOM_THRESHOLD_MIN,
+    GLOBE_ZOOM_THRESHOLD_MAX,
+    GLOBE_SCALE_MATCH_LATITUDE
+} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -2059,19 +2065,36 @@ class Transform {
     // latitude and the center's latitude as you zoom in, camera to center distance varies dynamically.
     // As the cameraToCenterDistance is a function of zoom, we need to approximate the true zoom
     // given a mercator meter value in order to eliminate the zoom/cameraToCenterDistance dependency.
-    zoomFromMercatorZAdjusted(z: number): number {
-        const getZoom = (zoom) => {
-            const d = this.getCameraToCenterDistance(this.projection, zoom);
-            return this.scaleZoom(d / (z * this.tileSize));
-        };
+    zoomFromMercatorZAdjusted(mercatorZ: number): number {
+        assert(this.projection.name === 'globe');
+        assert(mercatorZ !== 0);
 
-        let zoom = getZoom(this.zoom);
-        let diff = Math.abs(zoom - getZoom(zoom));
-        let lastdiff;
-        while (lastdiff !== diff) {
-            zoom = getZoom(zoom);
-            lastdiff = diff;
-            diff = Math.abs(zoom - getZoom(zoom));
+        let zoomLow = 0;
+        let zoomHigh = GLOBE_ZOOM_THRESHOLD_MAX;
+        let zoom = 0;
+        let minZoomDiff = Infinity;
+
+        const epsilon = 1e-6;
+
+        while (zoomHigh - zoomLow > epsilon && zoomHigh > zoomLow) {
+            const zoomMid = zoomLow + (zoomHigh - zoomLow) * 0.5;
+
+            const worldSize = this.tileSize * Math.pow(2, zoomMid);
+            const d = this.getCameraToCenterDistance(this.projection, zoomMid, worldSize);
+            const newZoom = this.scaleZoom(d / (mercatorZ * this.tileSize));
+
+            const diff = Math.abs(zoomMid - newZoom);
+
+            if (diff < minZoomDiff) {
+                minZoomDiff = diff;
+                zoom = zoomMid;
+            }
+
+            if (zoomMid < newZoom) {
+                zoomLow = zoomMid;
+            } else {
+                zoomHigh = zoomMid;
+            }
         }
 
         return zoom;
@@ -2183,9 +2206,9 @@ class Transform {
         }
     }
 
-    getCameraToCenterDistance(projection: Projection, zoom: number = this.zoom): number {
+    getCameraToCenterDistance(projection: Projection, zoom: number = this.zoom, worldSize: number = this.worldSize): number {
         const t = getProjectionInterpolationT(projection, zoom, this.width, this.height, 1024);
-        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, this.worldSize, t);
+        const projectionScaler = projection.pixelSpaceConversion(this.center.lat, worldSize, t);
         return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
     }
 
