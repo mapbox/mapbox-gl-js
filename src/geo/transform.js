@@ -2067,13 +2067,7 @@ class Transform {
     // given a mercator meter value in order to eliminate the zoom/cameraToCenterDistance dependency.
     zoomFromMercatorZAdjusted(mercatorZ: number): number {
         assert(this.projection.name === 'globe');
-
-        const zoomFromMercatorZ = (zoom, mercatorZ) => {
-            assert(mercatorZ !== 0);
-            const worldSize = this.tileSize * Math.pow(2, zoom);
-            const d = this.getCameraToCenterDistance(this.projection, zoom, worldSize);
-            return this.scaleZoom(d / (mercatorZ * this.tileSize));
-        };
+        assert(mercatorZ !== 0);
 
         let zoomLow = 0;
         let zoomHigh = GLOBE_ZOOM_THRESHOLD_MAX;
@@ -2084,7 +2078,11 @@ class Transform {
 
         while (zoomHigh - zoomLow > epsilon && zoomHigh > zoomLow) {
             const zoomMid = zoomLow + (zoomHigh - zoomLow) * 0.5;
-            const newZoom = zoomFromMercatorZ(zoomMid, mercatorZ);
+
+            const worldSize = this.tileSize * Math.pow(2, zoomMid);
+            const d = this.getCameraToCenterDistance(this.projection, zoomMid, worldSize);
+            const newZoom = this.scaleZoom(d / (mercatorZ * this.tileSize));
+
             const diff = Math.abs(zoomMid - newZoom);
 
             if (diff < minZoomDiff) {
