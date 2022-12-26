@@ -2460,9 +2460,9 @@ d3-zoom@3:
     d3-transition "2 - 3"
 
 d3@^7.6.1:
-  version "7.7.0"
-  resolved "https://registry.yarnpkg.com/d3/-/d3-7.7.0.tgz#e7779a74ea7c807b432fdfd8128de062b19c62eb"
-  integrity sha512-VEwHCMgMjD2WBsxeRGUE18RmzxT9Bn7ghDpzvTEvkLSBAKgTMydJjouZTjspgQfRHpPt/PB3EHWBa6SSyFQq4g==
+  version "7.8.0"
+  resolved "https://registry.yarnpkg.com/d3/-/d3-7.8.0.tgz#c9441f0ea9266b1003a97c2ffd53e79e9e14b1fc"
+  integrity sha512-a5rNemRadWkEfqnY5NsD4RdCP9vn8EIJ4I5Rl14U0uKH1SXqcNmk/h9aGaAF1O98lz6L9M0IeUcuPa9GUYbI5A==
   dependencies:
     d3-array "3"
     d3-axis "3"
@@ -5015,13 +5015,6 @@ lru-cache@^7.7.1:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.14.0.tgz#21be64954a4680e303a09e9468f880b98a0b3c7f"
   integrity sha512-EIRtP1GrSJny0dqb50QXRUNBxHJhcpxHC++M5tD7RYbvLLn5KVWKsbyswSSqDuU15UFi3bgTQIY8nhDMeF6aDQ==
 
-magic-string@^0.26.4:
-  version "0.26.7"
-  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.26.7.tgz#caf7daf61b34e9982f8228c4527474dac8981d6f"
-  integrity sha512-hX9XH3ziStPoPhJxLq1syWuZMxbDvGNbVchfrdCtanC7D13888bMFow61x8axrx+GfHLtVeAx2kxL7tTGRl+Ow==
-  dependencies:
-    sourcemap-codec "^1.4.8"
-
 magic-string@^0.27.0:
   version "0.27.0"
   resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.27.0.tgz#e4a3413b4bab6d98d2becffd48b4a257effdbbf3"
@@ -7152,11 +7145,6 @@ source-map@~0.5.3:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ==
-
-sourcemap-codec@^1.4.8:
-  version "1.4.8"
-  resolved "https://registry.yarnpkg.com/sourcemap-codec/-/sourcemap-codec-1.4.8.tgz#ea804bd94857402e6992d05a38ef1ae35a9ab4c4"
-  integrity sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==
 
 spawn-args@^0.2.0:
   version "0.2.0"
