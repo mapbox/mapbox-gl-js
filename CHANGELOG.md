@@ -1,6 +1,6 @@
 ## 2.12.0
 
-## Features ✨ and improvements 🏁
+### Features ✨ and improvements 🏁
 
 * Improve performance of patterns and line dashes and improve their appearance when zooming. ([#12326](https://github.com/mapbox/mapbox-gl-js/pull/12326))
 * Improve performance of text and icon placement. ([#12351](https://github.com/mapbox/mapbox-gl-js/pull/12351))
@@ -8,7 +8,7 @@
 * Allow zooming towards terrain at a safe distance without pitching the camera ([#12354](https://github.com/mapbox/mapbox-gl-js/pull/12354))
 * Allow for pitch override in `cameraForBounds`, `fitBounds` and `fitScreenCoordinates` camera APIs. ([#12367](https://github.com/mapbox/mapbox-gl-js/pull/12367))
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Fix `getBounds` when used around the poles with a globe projection. ([#12315](https://github.com/mapbox/mapbox-gl-js/pull/12315))
 * Fix incorrect transition flag in `*-pattern` and `line-dasharray` properties ([#12372](https://github.com/mapbox/mapbox-gl-js/pull/12372))
