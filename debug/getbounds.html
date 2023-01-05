@@ -140,13 +140,26 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
+const projectionInput = document.getElementById('projection');
+const styleInput = document.getElementById('style');
+const debugInput = document.getElementById('debug');
+const conicParamInputs = document.getElementsByClassName('conic-param-input');
+const lngInput = document.getElementById('lng');
+const lngValue = document.getElementById('lng-value');
+const latInput = document.getElementById('lat');
+const latValue = document.getElementById('lat-value');
+const lat1Input = document.getElementById('lat1');
+const lat1Value = document.getElementById('lat1-value');
+const lat2Input = document.getElementById('lat2');
+const lat2Value = document.getElementById('lat2-value');
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 2,
     center: [0, 0],
     style: 'mapbox://styles/mapbox/streets-v12',
     hash: true,
-    projection: 'albers'
+    projection: projectionInput.value
 });
 
 var map2 = new mapboxgl.Map({
@@ -233,20 +246,6 @@ const marker = new mapboxgl.Marker();
 map.on('mousemove', (e) => {
     marker.setLngLat(e.lngLat).addTo(map2);
 });
-
-const projectionInput = document.getElementById('projection');
-const styleInput = document.getElementById('style');
-const debugInput = document.getElementById('debug');
-const conicParamInputs =
-    document.getElementsByClassName('conic-param-input');
-const lngInput = document.getElementById('lng');
-const lngValue = document.getElementById('lng-value');
-const latInput = document.getElementById('lat');
-const latValue = document.getElementById('lat-value');
-const lat1Input = document.getElementById('lat1');
-const lat1Value = document.getElementById('lat1-value');
-const lat2Input = document.getElementById('lat2');
-const lat2Value = document.getElementById('lat2-value');
 
 projectionInput.addEventListener('change', (e) => {
     const isConic = ['albers', 'lambertConformalConic'].includes(
