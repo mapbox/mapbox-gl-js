@@ -1419,7 +1419,8 @@ class Transform {
 
     // Gets minimum bounding lngLats for non-Mercator and non-globe projections.
     _getBoundsProjection(): LngLatBounds {
-        assert(!this.projection.supportsTerrain);
+        assert(!this.projection.supportsTerrain, "This function doesn't account for terrain");
+        assert(!this.projection.supportsWorldCopies, "Projections that support world copies are rectangular and should the simpler _getProjection");
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
         const right = this.width - this._edgeInsets.right;
@@ -1456,7 +1457,7 @@ class Transform {
             return this._getGlobeBounds();
         }
 
-        assert(this.projection.name === 'mercator');
+        assert(this.projection.supportsWorldCopies, "_getBounds only accounst for corners and thus needs a rectangular projection. Other projections should use _getBoundsProjection or _getGlobeBounds");
 
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
@@ -1513,7 +1514,7 @@ class Transform {
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
-        if (!this.projection.supportsTerrain) return this._getBoundsProjection();
+        if (this.projection.name !== "mercator" && this.projection.name !== "globe" && this.projection.name !== "equirectangular") return this._getBoundsProjection();
         if (this._terrainEnabled()) return this._getBounds3D();
         return this._getBounds(0, 0);
     }
