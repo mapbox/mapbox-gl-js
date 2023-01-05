@@ -1417,15 +1417,55 @@ class Transform {
         return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
+    // Gets minimum bounding lngLats for non-Mercator and non-globe projections.
+    _getBoundsProjection(): LngLatBounds {
+        assert(!this.projection.supportsTerrain);
+        const {top, left} = this._edgeInsets;
+        const bottom = this.height - this._edgeInsets.bottom;
+        const right = this.width - this._edgeInsets.right;
+
+        const res = 20; // Number of points to sample along each edge
+        const w = right - left;
+        const h = bottom - top;
+
+        let west = 180;
+        let east = -180;
+        let south = 90;
+        let north = -90;
+
+        const checkExtreme = (x: number, y: number) => {
+            const {lng, lat} = this.pointLocation(new Point(x, y));
+            west = Math.min(west, lng);
+            east = Math.max(east, lng);
+            south = Math.min(south, lat);
+            north = Math.max(north, lat);
+        };
+
+        for (let i = 0; i <= res; i++) {
+            checkExtreme(left + w * i / res, top);
+            checkExtreme(right, top + h * i / res);
+            checkExtreme(right - w * i / res, bottom);
+            checkExtreme(left, bottom - h * i / res);
+        }
+
+        return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
+    }
+
     _getBounds(min: number, max: number): LngLatBounds {
         if (this.projection.name === 'globe') {
             return this._getGlobeBounds();
         }
 
-        const topLeft = new Point(this._edgeInsets.left, this._edgeInsets.top);
-        const topRight = new Point(this.width - this._edgeInsets.right, this._edgeInsets.top);
-        const bottomRight = new Point(this.width - this._edgeInsets.right, this.height - this._edgeInsets.bottom);
-        const bottomLeft = new Point(this._edgeInsets.left, this.height - this._edgeInsets.bottom);
+        assert(this.projection.name === 'mercator');
+
+        const {top, left} = this._edgeInsets;
+        const bottom = this.height - this._edgeInsets.bottom;
+        const right = this.width - this._edgeInsets.right;
+
+        const topLeft = new Point(left, top);
+        const topRight = new Point(right, top);
+        const bottomRight = new Point(right, bottom);
+        const bottomLeft = new Point(left, bottom);
 
         // Consider far points at the maximum possible elevation
         // and near points at the minimum to ensure full coverage.
@@ -1473,6 +1513,7 @@ class Transform {
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
+        if (!this.projection.supportsTerrain) return this._getBoundsProjection();
         if (this._terrainEnabled()) return this._getBounds3D();
         return this._getBounds(0, 0);
     }
