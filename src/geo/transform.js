@@ -2,7 +2,7 @@
 
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, lngFromMercatorX, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
+import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
 import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
@@ -1360,41 +1360,44 @@ class Transform {
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
-    _getBoundsGlobe(): LngLatBounds {
-        assert(this.projection.name === 'globe');
+    // In Globe, conic and thematic projections, Lng/Lat extremes are not always at corners.
+    // This function additionally checks each screen edge midpoint.
+    // While midpoints continue to be extremes, it recursively checks midpoints of smaller segments.
+    _getBoundsNonRectangular(): LngLatBounds {
+        assert(!this.projection.supportsWorldCopies, "Rectangular projections should use the simpler _getBoundsRectangular");
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
         const right = this.width - this._edgeInsets.right;
 
-        const tl = this.pointCoordinate3D(new Point(left, top));
-        const tr = this.pointCoordinate3D(new Point(right, top));
-        const br = this.pointCoordinate3D(new Point(right, bottom));
-        const bl = this.pointCoordinate3D(new Point(left, bottom));
+        const tl = this.pointLocation3D(new Point(left, top));
+        const tr = this.pointLocation3D(new Point(right, top));
+        const br = this.pointLocation3D(new Point(right, bottom));
+        const bl = this.pointLocation3D(new Point(left, bottom));
 
-        let minX = Math.min(tl.x, bl.x);
-        let maxX = Math.max(tr.x, br.x);
-        let minY = Math.min(tl.y, tr.y);
-        let maxY = Math.max(bl.y, br.y);
+        let west = Math.min(tl.lng, tr.lng, br.lng, bl.lng);
+        let east = Math.max(tl.lng, tr.lng, br.lng, bl.lng);
+        let south = Math.min(tl.lat, tr.lat, br.lat, bl.lat);
+        let north = Math.max(tl.lat, tr.lat, br.lat, bl.lat);
 
         // we pick an error threshold for calculating the bbox that balances between performance and precision
+        // Roughly emulating behavior of maxErr in tile_transform.js
         const s = Math.pow(2, -this.zoom);
-        const maxErr = s / 16;
+        const maxErr = s / 16 * 270; // 270 = avg(180, 360) i.e. rough conversion between Mercator coords and Lat/Lng
 
         const processSegment = (ax, ay, bx, by) => {
             const mx = (ax + bx) / 2;
             const my = (ay + by) / 2;
 
             const p = new Point(mx, my);
-            const pm = this.pointCoordinate3D(p);
+            const {lng, lat} = this.pointLocation3D(p);
 
-            // The error metric is the maximum distance between the midpoint
-            // and each of the currently calculated bounds
-            const err = Math.max(0, minX - pm.x, minY - pm.y, pm.x - maxX, pm.y - maxY);
+            // The error metric is the maximum change to bounds from a given point
+            const err = Math.max(0, west - lng, south - lat, lng - east, lat - north);
 
-            minX = Math.min(minX, pm.x);
-            maxX = Math.max(maxX, pm.x);
-            minY = Math.min(minY, pm.y);
-            maxY = Math.max(maxY, pm.y);
+            west = Math.min(west, lng);
+            east = Math.max(east, lng);
+            south = Math.min(south, lat);
+            north = Math.max(north, lat);
 
             if (err > maxErr) {
                 processSegment(ax, ay, mx, my);
@@ -1407,56 +1410,24 @@ class Transform {
         processSegment(right, bottom, left, bottom);
         processSegment(left, bottom, left, top);
 
-        const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
-        const poleIsVisible = northPoleIsVisible || southPoleIsVisible;
-
-        const north = northPoleIsVisible ? 90 : latFromMercatorY(minY);
-        const east = poleIsVisible ? 180 : lngFromMercatorX(maxX);
-        const south = southPoleIsVisible ? -90 : latFromMercatorY(maxY);
-        const west = poleIsVisible ? -180 : lngFromMercatorX(minX);
-
-        return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
-    }
-
-    // Gets minimum bounding lngLats for conic and thematic projections i.e. all but Globe, Mercator and Equirectangular.
-    // In these projections, a Lat/Lng extremum can be in an edge, not only at corners.
-    // Projecting a screen point in globe requires raytracing, so it uses the optimized approach in _getBoundsGlobe() above.
-    _getBoundsNonRectangular(): LngLatBounds {
-        assert(!this.projection.supportsTerrain, "This function doesn't account for terrain");
-        assert(!this.projection.supportsWorldCopies, "Rectangular projection should use _getBoundsRectangular");
-        const {top, left} = this._edgeInsets;
-        const bottom = this.height - this._edgeInsets.bottom;
-        const right = this.width - this._edgeInsets.right;
-
-        const res = 20; // Number of points to sample along each edge
-        const w = right - left;
-        const h = bottom - top;
-
-        let west = 180;
-        let east = -180;
-        let south = 90;
-        let north = -90;
-
-        const checkExtreme = (x: number, y: number) => {
-            const {lng, lat} = this.pointLocation(new Point(x, y));
-            west = Math.min(west, lng);
-            east = Math.max(east, lng);
-            south = Math.min(south, lat);
-            north = Math.max(north, lat);
-        };
-
-        for (let i = 0; i <= res; i++) {
-            checkExtreme(left + w * i / res, top);
-            checkExtreme(right, top + h * i / res);
-            checkExtreme(right - w * i / res, bottom);
-            checkExtreme(left, bottom - h * i / res);
+        if (this.projection.name === "globe") {
+            const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
+            if (northPoleIsVisible) {
+                north = 90;
+                east = 180;
+                west = -180;
+            } else if (southPoleIsVisible) {
+                south = -90;
+                east = 180;
+                west = -180;
+            }
         }
 
         return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
     _getBoundsRectangular(min: number, max: number): LngLatBounds {
-        assert(this.projection.supportsWorldCopies, "_getBoundsRectangular only checks corners and works only on rectangular projections. Other projections should use _getBoundsNonRectangular or _getBoundsGlobe");
+        assert(this.projection.supportsWorldCopies, "_getBoundsRectangular only checks corners and works only on rectangular projections. Other projections should use _getBoundsNonRectangular");
 
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
@@ -1514,10 +1485,11 @@ class Transform {
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
-        if (this.projection.name === 'globe') return this._getBoundsGlobe();
-        if (this.projection.name !== 'mercator' && this.projection.name !== 'equirectangular') return this._getBoundsNonRectangular();
-        if (this._terrainEnabled()) return this._getBoundsRectangularTerrain();
-        return this._getBoundsRectangular(0, 0);
+        if (this.projection.name === 'mercator' || this.projection.name === 'equirectangular') {
+            if (this._terrainEnabled()) return this._getBoundsRectangularTerrain();
+            return this._getBoundsRectangular(0, 0);
+        }
+        return this._getBoundsNonRectangular();
     }
 
     /**
