@@ -1360,7 +1360,8 @@ class Transform {
             new Point(Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
-    _getGlobeBounds(): LngLatBounds {
+    _getBoundsGlobe(): LngLatBounds {
+        assert(this.projection.name === 'globe');
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
         const right = this.width - this._edgeInsets.right;
@@ -1417,10 +1418,12 @@ class Transform {
         return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
-    // Gets minimum bounding lngLats for non-Mercator and non-globe projections.
-    _getBoundsProjection(): LngLatBounds {
+    // Gets minimum bounding lngLats for conic and thematic projections i.e. all but Globe, Mercator and Equirectangular.
+    // In these projections, a Lat/Lng extremum can be in an edge, not only at corners.
+    // Projecting a screen point in globe requires raytracing, so it uses the optimized approach in _getBoundsGlobe() above.
+    _getBoundsNonRectangular(): LngLatBounds {
         assert(!this.projection.supportsTerrain, "This function doesn't account for terrain");
-        assert(!this.projection.supportsWorldCopies, "Projections that support world copies are rectangular and should the simpler _getProjection");
+        assert(!this.projection.supportsWorldCopies, "Rectangular projection should use _getBoundsRectangular");
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
         const right = this.width - this._edgeInsets.right;
@@ -1452,12 +1455,8 @@ class Transform {
         return new LngLatBounds(new LngLat(west, south), new LngLat(east, north));
     }
 
-    _getBounds(min: number, max: number): LngLatBounds {
-        if (this.projection.name === 'globe') {
-            return this._getGlobeBounds();
-        }
-
-        assert(this.projection.supportsWorldCopies, "_getBounds only accounst for corners and thus needs a rectangular projection. Other projections should use _getBoundsProjection or _getGlobeBounds");
+    _getBoundsRectangular(min: number, max: number): LngLatBounds {
+        assert(this.projection.supportsWorldCopies, "_getBoundsRectangular only checks corners and works only on rectangular projections. Other projections should use _getBoundsNonRectangular or _getBoundsGlobe");
 
         const {top, left} = this._edgeInsets;
         const bottom = this.height - this._edgeInsets.bottom;
@@ -1475,7 +1474,8 @@ class Transform {
         const br = this.pointCoordinate(bottomRight, max);
         const bl = this.pointCoordinate(bottomLeft, max);
 
-        // Snap points if off the edges of map (Latitude is too high or low).
+        // If map pitch places top corners off map edge (latitude > 90 or < -90),
+        // place them at the intersection between the left/right screen edge and map edge.
         const slope = (p1, p2) => (p2.y - p1.y) / (p2.x - p1.x);
 
         if (tl.y > 1 && tr.y >= 0) tl = new MercatorCoordinate((1 - bl.y) / slope(bl, tl) + bl.x, 1);
@@ -1491,10 +1491,10 @@ class Transform {
             .extend(this.coordinateLocation(br));
     }
 
-    _getBounds3D(): LngLatBounds {
+    _getBoundsRectangularTerrain(): LngLatBounds {
         assert(this.elevation);
         const elevation = ((this.elevation: any): Elevation);
-        if (!elevation.visibleDemTiles.length || elevation.isUsingMockSource()) { return this._getBounds(0, 0); }
+        if (!elevation.visibleDemTiles.length || elevation.isUsingMockSource()) { return this._getBoundsRectangular(0, 0); }
         const minmax = elevation.visibleDemTiles.reduce((acc, t) => {
             if (t.dem) {
                 const tree = t.dem.tree;
@@ -1504,7 +1504,7 @@ class Transform {
             return acc;
         }, {min: Number.MAX_VALUE, max: 0});
         assert(minmax.min !== Number.MAX_VALUE);
-        return this._getBounds(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration());
+        return this._getBoundsRectangular(minmax.min * elevation.exaggeration(), minmax.max * elevation.exaggeration());
     }
 
     /**
@@ -1514,9 +1514,10 @@ class Transform {
      * @returns {LngLatBounds} Returns a {@link LngLatBounds} object describing the map's geographical bounds.
      */
     getBounds(): LngLatBounds {
-        if (this.projection.name !== "mercator" && this.projection.name !== "globe" && this.projection.name !== "equirectangular") return this._getBoundsProjection();
-        if (this._terrainEnabled()) return this._getBounds3D();
-        return this._getBounds(0, 0);
+        if (this.projection.name === 'globe') return this._getBoundsGlobe();
+        if (this.projection.name !== 'mercator' && this.projection.name !== 'equirectangular') return this._getBoundsNonRectangular();
+        if (this._terrainEnabled()) return this._getBoundsRectangularTerrain();
+        return this._getBoundsRectangular(0, 0);
     }
 
     /**
