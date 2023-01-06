@@ -1384,7 +1384,13 @@ class Transform {
         const s = Math.pow(2, -this.zoom);
         const maxErr = s / 16 * 270; // 270 = avg(180, 360) i.e. rough conversion between Mercator coords and Lat/Lng
 
-        const processSegment = (ax, ay, bx, by) => {
+        // We check a minimum of 15 points on each side for Albers, etc.
+        // We check a minmum of one midpoint on each side per globe.
+        // Globe checks require raytracing and are slower
+        // and mising area near the horizon is highly compressed so not noticeable
+        const minRecursions = this.projection.name === "globe" ? 1 : 4;
+
+        const processSegment = (ax, ay, bx, by, depth) => {
             const mx = (ax + bx) / 2;
             const my = (ay + by) / 2;
 
@@ -1399,16 +1405,16 @@ class Transform {
             south = Math.min(south, lat);
             north = Math.max(north, lat);
 
-            if (err > maxErr) {
-                processSegment(ax, ay, mx, my);
-                processSegment(mx, my, bx, by);
+            if (depth < minRecursions || err > maxErr) {
+                processSegment(ax, ay, mx, my, depth + 1);
+                processSegment(mx, my, bx, by, depth + 1);
             }
         };
 
-        processSegment(left, top, right, top);
-        processSegment(right, top, right, bottom);
-        processSegment(right, bottom, left, bottom);
-        processSegment(left, bottom, left, top);
+        processSegment(left, top, right, top, 1);
+        processSegment(right, top, right, bottom, 1);
+        processSegment(right, bottom, left, bottom, 1);
+        processSegment(left, bottom, left, top, 1);
 
         if (this.projection.name === "globe") {
             const [northPoleIsVisible, southPoleIsVisible] = polesInViewport(this);
