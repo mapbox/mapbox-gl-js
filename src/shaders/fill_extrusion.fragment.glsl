@@ -66,6 +66,10 @@ vec4 color;
 
 #ifdef INDICATOR_HOLE
     vec2 screenCoord = gl_FragCoord.xy / u_viewport_size;
+    float aspectRatio = u_viewport_size.x / u_viewport_size.y;
+    screenCoord -= 0.5;
+    screenCoord /= vec2(1.0, aspectRatio);
+    screenCoord += 0.5;
     float dist = distance(screenCoord, u_hole_center);
     float holeMinOpacity = u_hole_alpha_radius.x;
     float holeRadius = max(u_hole_alpha_radius.y, 0.0001);
