@@ -2,6 +2,7 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@1.4.0
   browser-tools: circleci/browser-tools@1.4.0
+  macos: circleci/macos@2.3.4
   win: circleci/windows@4.1.1
 
 workflows:
@@ -67,7 +68,11 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-macos-chrome-dev:
+      - test-render-mac-chrome-dev:
+          filters:
+            tags:
+              only: /.*/
+      - test-render-mac-safari-dev:
           filters:
             tags:
               only: /.*/
@@ -423,7 +428,7 @@ jobs:
           command: |
             bash ./build/upload.sh
 
-  test-render-macos-chrome-dev:
+  test-render-mac-chrome-dev:
     macos:
       xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
     parallelism: 3
@@ -449,6 +454,37 @@ jobs:
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
       - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-mac-safari-dev:
+    macos:
+      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
+    parallelism: 3
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-mac-yarn-{{ .Branch }}-
+            - v0-mac-yarn-
+      - browser-tools/install-chrome
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+           - ~/.cache/yarn
+      - run: yarn run build-dev
+      - run:
+          name: Creating test list
+          command: |
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
+      - run: yarn run test-render-safari
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:

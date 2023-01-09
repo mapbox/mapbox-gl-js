@@ -189,7 +189,21 @@ module.exports = async function() {
         "report_file": ciOutputFile,
         "xunit_intermediate_output": true,
         "tap_quiet_logs": true,
-        "browser_disconnect_timeout": 90 // A longer disconnect time out prevents crashes on Windows Virtual Machines.
+        "browser_disconnect_timeout": 90, // A longer disconnect time out prevents crashes on Windows Virtual Machines.
+        "launchers": { // Allow safari to proceed without user interention. See https://github.com/testem/testem/issues/1387
+            "Safari": {
+                "protocol": 'browser',
+                "exe": 'osascript',
+                "args": [
+                    '-e',
+                    `tell application "Safari"
+                  activate
+                  open location "<url>"
+                 end tell
+                 delay 3000`,
+                ],
+            },
+        },
     };
 
     if (ci) Object.assign(testemConfig, ciTestemConfig);
