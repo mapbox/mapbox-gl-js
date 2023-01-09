@@ -15,6 +15,7 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import browser from '../util/browser.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -68,6 +69,10 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const baseDefines = ([]: any);
+    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
+    const holeCenter = [0.5, 0.5];
+    const holeAlphaRadius = [0.2, 0.3];
+
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
         if (painter.style.terrainSetForDrapingOnly()) {
@@ -77,6 +82,8 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
     if (ao[0] > 0) { // intensity
         baseDefines.push('FAUX_AO');
     }
+    // TODO: also force transparency
+    baseDefines.push('INDICATOR_HOLE');
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
@@ -123,9 +130,9 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, viewport, holeCenter, holeAlphaRadius, coord,
                 tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius,  viewport, holeCenter, holeAlphaRadius, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
         painter.prepareDrawProgram(context, program, coord.toUnwrapped());

@@ -1,5 +1,9 @@
 varying vec4 v_color;
 
+uniform vec2 u_viewport_size;
+uniform vec2 u_hole_center;
+uniform vec2 u_hole_alpha_radius;
+
 #ifdef RENDER_SHADOWS
 varying highp vec4 v_pos_light_view_0;
 varying highp vec4 v_pos_light_view_1;
@@ -59,6 +63,15 @@ vec4 color;
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
+
+#ifdef INDICATOR_HOLE
+    vec2 screenCoord = gl_FragCoord.xy / u_viewport_size;
+    float dist = distance(screenCoord, u_hole_center);
+    float holeMinOpacity = u_hole_alpha_radius.x;
+    float holeRadius = max(u_hole_alpha_radius.y, 0.0001);
+    color *= min(dist / holeRadius + holeMinOpacity, 1.0);
+#endif
+
     gl_FragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR

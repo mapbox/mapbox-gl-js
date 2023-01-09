@@ -32,7 +32,10 @@ export type FillExtrusionUniformsType = {|
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
     'u_ao': Uniform2f,
-    'u_edge_radius': Uniform1f
+    'u_edge_radius': Uniform1f,
+    'u_viewport_size': Uniform2f,
+    'u_hole_center': Uniform2f,
+    'u_hole_alpha_radius': Uniform2f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -44,6 +47,9 @@ export type FillExtrusionPatternUniformsType = {|
     'u_vertical_gradient': Uniform1f,
     'u_ao': Uniform2f,
     'u_edge_radius': Uniform1f,
+    'u_viewport_size': Uniform2f,
+    'u_hole_center': Uniform2f,
+    'u_hole_alpha_radius': Uniform2f,
     // globe uniforms:
     'u_tile_id': Uniform3f,
     'u_zoom_transition': Uniform1f,
@@ -69,6 +75,9 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_opacity': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
     'u_ao': new Uniform2f(context),
+    'u_viewport_size': new Uniform2f(context),
+    'u_hole_center': new Uniform2f(context),
+    'u_hole_alpha_radius': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
     'u_zoom_transition': new Uniform1f(context),
@@ -87,6 +96,9 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
     'u_height_factor': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
     'u_ao': new Uniform2f(context),
+    'u_viewport_size': new Uniform2f(context),
+    'u_hole_center': new Uniform2f(context),
+    'u_hole_alpha_radius': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
     'u_zoom_transition': new Uniform1f(context),
@@ -112,6 +124,9 @@ const fillExtrusionUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
+    viewport: [number, number],
+    holeCenter: [number, number],
+    holeAlphaRadius: [number, number],
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -145,7 +160,10 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': edgeRadius
+        'u_edge_radius': edgeRadius,
+        'u_viewport_size': viewport,
+        'u_hole_center': holeCenter,
+        'u_hole_alpha_radius': holeAlphaRadius
     };
 
     if (tr.projection.name === 'globe') {
@@ -167,6 +185,9 @@ const fillExtrusionPatternUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
+    viewport: [number, number],
+    holeCenter: [number, number],
+    holeAlphaRadius: [number, number],
     coord: OverscaledTileID,
     tile: Tile,
     heightLift: number,
@@ -175,7 +196,7 @@ const fillExtrusionPatternUniformValues = (
     invMatrix: Float32Array
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
-        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, coord,
+        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, viewport, holeCenter, holeAlphaRadius, coord,
         heightLift, zoomTransition, mercatorCenter, invMatrix);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
