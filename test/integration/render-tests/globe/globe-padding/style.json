@@ -4,6 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
+      "allowed": 0.0007,
       "operations": [
         ["setProjection", "globe"],
         ["setPadding", {
