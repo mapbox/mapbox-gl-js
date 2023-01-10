@@ -7,10 +7,10 @@
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
-    </style>
-    <style>
-    .map-overlay {
+        #map, #map2 { position: absolute; top: 0; bottom: 0; }
+        #map { left: 0; right: 50%; }
+        #map2 { left: 50%; right: 0; }
+        .map-overlay {
         font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
         position: absolute;
         width: 200px;
@@ -20,7 +20,7 @@
     }
 
     .map-overlay .map-overlay-inner {
-        background-color: #fff;
+        background-color: #fff8;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         border-radius: 3px;
         padding: 10px;
@@ -51,7 +51,9 @@
 </head>
 
 <body>
+
 <div id='map'></div>
+<div id='map2'></div>
 <div class="map-overlay top">
     <details open>
     <summary>Toggle controls</summary>
@@ -138,22 +140,10 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-const map = new mapboxgl.Map({
-    container: 'map',
-    hash: true,
-    style: 'mapbox://styles/mapbox/streets-v12',
-    zoom: 0,
-    center: [0, 1],
-    projection: {
-        name: 'albers'
-    }
-});
-
 const projectionInput = document.getElementById('projection');
 const styleInput = document.getElementById('style');
 const debugInput = document.getElementById('debug');
-const conicParamInputs =
-    document.getElementsByClassName('conic-param-input');
+const conicParamInputs = document.getElementsByClassName('conic-param-input');
 const lngInput = document.getElementById('lng');
 const lngValue = document.getElementById('lng-value');
 const latInput = document.getElementById('lat');
@@ -162,6 +152,100 @@ const lat1Input = document.getElementById('lat1');
 const lat1Value = document.getElementById('lat1-value');
 const lat2Input = document.getElementById('lat2');
 const lat2Value = document.getElementById('lat2-value');
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/streets-v12',
+    hash: true,
+    projection: projectionInput.value
+});
+
+var map2 = new mapboxgl.Map({
+    container: 'map2',
+    zoom: 0.1,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/streets-v12',
+    projection: 'mercator'
+});
+
+var lineData = {
+    type: 'LineString',
+    coordinates: []
+};
+var boundsData = {
+    'type': 'LineString',
+    coordinates: []
+};
+
+map2.on('load', () => {
+    map2.addSource('bounds', {
+        'type': 'geojson',
+        'data': lineData
+    });
+    map2.addLayer({
+        'id': 'bounds',
+        'type': 'line',
+        'source': 'bounds',
+        'paint': {
+            'line-color': 'blue',
+            'line-width': 5
+        }
+    });
+
+    map2.addSource('abounds', {
+        'type': 'geojson',
+        'data': boundsData
+    });
+    map2.addLayer({
+        'id': 'abounds',
+        'type': 'line',
+        'source': 'abounds',
+        'paint': {
+            'line-color': 'red',
+            'line-width': 5
+        }
+    });
+
+    updateBounds();
+});
+
+map.on('move', () => {
+    updateBounds();
+});
+
+function updateBounds() {
+    const points = [];
+    const w = map._containerWidth;
+    const h = map._containerHeight;
+    const res = 49;
+    for (let i = 0; i <= res; i++) points.push([w * i / res, 0]);
+    for (let i = 0; i <= res; i++) points.push([w, h * i / res]);
+    for (let i = 0; i <= res; i++) points.push([w * (1 - i / res), h]);
+    for (let i = 0; i <= res; i++) points.push([0, h * (1 - i / res)]);
+
+    lineData.coordinates = points.map(p => map.unproject(p).toArray());
+
+    const bounds = map.getBounds();
+
+    boundsData.coordinates = [
+        bounds.getSouthWest().toArray(),
+        bounds.getSouthEast().toArray(),
+        bounds.getNorthEast().toArray(),
+        bounds.getNorthWest().toArray(),
+        bounds.getSouthWest().toArray(),
+    ];
+
+    map2.getSource('bounds').setData(lineData);
+    map2.getSource('abounds').setData(boundsData);
+}
+
+const marker = new mapboxgl.Marker();
+
+map.on('mousemove', (e) => {
+    marker.setLngLat(e.lngLat).addTo(map2);
+});
 
 projectionInput.addEventListener('change', (e) => {
     const isConic = ['albers', 'lambertConformalConic'].includes(
