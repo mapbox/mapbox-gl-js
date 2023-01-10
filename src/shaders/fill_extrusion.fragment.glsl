@@ -1,5 +1,10 @@
 varying vec4 v_color;
 
+// Note: 3x3 used instead of 2x2 to prevent a padding related bug in Metal
+// Could be changed after we update our cross-compiler toolchain
+uniform mat3 u_hole_centers;
+uniform vec2 u_hole_opacity_radius;
+
 #ifdef RENDER_SHADOWS
 varying highp vec4 v_pos_light_view_0;
 varying highp vec4 v_pos_light_view_1;
@@ -59,6 +64,17 @@ vec4 color;
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
+
+#ifdef INDICATOR_HOLE
+    float holeMinOpacity = u_hole_opacity_radius.x;
+    float holeRadius = max(u_hole_opacity_radius.y, 0.0);
+    
+    float distA = distance(gl_FragCoord.xy, vec2(u_hole_centers[0][0], u_hole_centers[0][1]));
+    float distB = distance(gl_FragCoord.xy, vec2(u_hole_centers[1][0], u_hole_centers[1][1]));
+    color *= min(pow(distA / holeRadius, 2.0) + holeMinOpacity, 1.0);
+    color *= min(pow(distB / holeRadius, 2.0) + holeMinOpacity, 1.0);
+#endif
+
     gl_FragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR
