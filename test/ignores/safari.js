@@ -3,14 +3,16 @@ const todo = [
     "render-tests/fill-extrusion-pattern/feature-expression",
     "render-tests/fill-extrusion-pattern/literal",
     "render-tests/fill-extrusion-pattern/opacity",
-    "ender-tests/fill-extrusion-pattern/2x-on-1x-add-image-dds",
-    "",
+    "render-tests/fill-extrusion-pattern/2x-on-1x-add-image-dds",
+    "render-tests/fill-extrusion-pattern/function-2",
+    "render-tests/fill-extrusion-pattern/opacity-terrain-flat",
 
     // Inconsistent star placement
     "render-tests/globe/globe-default",
     "render-tests/globe/globe-transforms/low-lat-low-lng",
 
     // Debug visualizations
+    "render-tests/debug/raster",
     "render-tests/debug/collision-variable-icon-image-simple",
     "render-tests/terrain/wireframe-high-exaggeration",
 

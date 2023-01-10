@@ -76,8 +76,6 @@ const browserIgnore = navigator.userAgent.includes("Firefox") ? ignoreFirefox :
     navigator.userAgent.includes("Safari") ? ignoreSafari :
     null;
 
-console.log("browserIgnore is", browserIgnore);
-
 function checkIgnore(ignoreConfig, testName, options) {
     if (ignoreConfig.skip.includes(testName)) {
         options.skip = true;
