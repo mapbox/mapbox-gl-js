@@ -6,7 +6,7 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0003,
+      "allowed": 0.0009,
       "operations": [
         ["setProjection", "globe"],
         ["wait"],

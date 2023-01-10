@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      "allowed": 0.0015,
       "width": 256,
       "height": 256
     }

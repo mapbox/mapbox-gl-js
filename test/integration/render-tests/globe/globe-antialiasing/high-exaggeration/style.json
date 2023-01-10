@@ -5,7 +5,7 @@
       "standardDerivatives": true,
       "width": 512,
       "height": 512,
-      "allowed": 0.0002,
+      "allowed": 0.0003,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]

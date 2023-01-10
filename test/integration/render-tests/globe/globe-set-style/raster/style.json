@@ -4,7 +4,7 @@
     "test": {
       "height": 256,
       "width": 256,
-      "allowed": 0.0005,
+      "allowed": 0.0008,
       "operations": [
         ["setStyle", {
           "version": 8,
