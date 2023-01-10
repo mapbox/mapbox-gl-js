@@ -199,7 +199,6 @@ module.exports = async function() {
     if (ci) Object.assign(testemConfig, ciTestemConfig);
 
     const browserFlags = [];
-    console.log("browser is", browser);
     if (browser === "Chrome") {
         browserFlags.push("--disable-backgrounding-occluded-windows", "--disable-background-networking");
         if (process.platform === "linux") {
@@ -208,24 +207,20 @@ module.exports = async function() {
             // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
             browserFlags.push("--ignore-gpu-blocklist", "--use-gl=desktop");
         }
-    }
-    if (process.env.USE_ANGLE) {
-        // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
-        // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
-        // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
-        if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
-            throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
+        if (process.env.USE_ANGLE) {
+            // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
+            // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
+            // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
+            if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
+                throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
+            }
+            browserFlags.push(`--use-angle=${process.env.USE_ANGLE}`);
         }
-        console.log(`webgl using '${process.env.USE_ANGLE}'`);
-        browserFlags.push(`--use-angle=${process.env.USE_ANGLE}`);
     }
-    console.log("browserFlags is", browserFlags);
     if (browserFlags) {
         testemConfig["browser_args"] = {
             [browser]: {"ci": browserFlags}
         };
     }
-    console.log(testemConfig);
-
     return testemConfig;
 };
