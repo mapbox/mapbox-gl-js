@@ -1,8 +1,9 @@
 varying vec4 v_color;
 
-uniform vec2 u_viewport_size;
-uniform vec2 u_hole_center;
-uniform vec2 u_hole_alpha_radius;
+// Note: 3x3 used instead of 2x2 to prevent a padding related bug in Metal
+// Could be changed after we update our cross-compiler toolchain
+uniform mat3 u_hole_centers;
+uniform vec2 u_hole_opacity_radius;
 
 #ifdef RENDER_SHADOWS
 varying highp vec4 v_pos_light_view_0;
@@ -65,15 +66,13 @@ vec4 color;
 #endif
 
 #ifdef INDICATOR_HOLE
-    vec2 screenCoord = gl_FragCoord.xy / u_viewport_size;
-    float aspectRatio = u_viewport_size.x / u_viewport_size.y;
-    screenCoord -= 0.5;
-    screenCoord /= vec2(1.0, aspectRatio);
-    screenCoord += 0.5;
-    float dist = distance(screenCoord, u_hole_center);
-    float holeMinOpacity = u_hole_alpha_radius.x;
-    float holeRadius = max(u_hole_alpha_radius.y, 0.0001);
-    color *= min(dist / holeRadius + holeMinOpacity, 1.0);
+    float holeMinOpacity = u_hole_opacity_radius.x;
+    float holeRadius = max(u_hole_opacity_radius.y, 0.0);
+    
+    float distA = distance(gl_FragCoord.xy, vec2(u_hole_centers[0][0], u_hole_centers[0][1]));
+    float distB = distance(gl_FragCoord.xy, vec2(u_hole_centers[1][0], u_hole_centers[1][1]));
+    color *= min(pow(distA / holeRadius, 2.0) + holeMinOpacity, 1.0);
+    color *= min(pow(distB / holeRadius, 2.0) + holeMinOpacity, 1.0);
 #endif
 
     gl_FragColor = color;
