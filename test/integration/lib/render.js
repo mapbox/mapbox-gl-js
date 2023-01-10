@@ -7,6 +7,7 @@ import fixtures from '../dist/render-fixtures.json';
 import ignores from '../../ignores/all.js';
 import ignoreWindows from '../../ignores/windows.js';
 import ignoreMac from '../../ignores/macos.js';
+import ignoreSafari from '../../ignores/safari.js';
 import ignoreFirefox from '../../ignores/firefox.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
@@ -71,6 +72,12 @@ if (process.env.CI) {
     } else { console.warn("Unrecognized OS:", os); }
 }
 
+const browserIgnore = navigator.userAgent.includes("Firefox") ? ignoreFirefox :
+    navigator.userAgent.includes("Safari") ? ignoreSafari :
+    null;
+
+console.log("browserIgnore is", browserIgnore);
+
 function checkIgnore(ignoreConfig, testName, options) {
     if (ignoreConfig.skip.includes(testName)) {
         options.skip = true;
@@ -85,8 +92,8 @@ for (const testName in fixtures) {
     if (osIgnore) {
         checkIgnore(osIgnore, testName, options);
     }
-    if (navigator.userAgent.includes("Firefox")) {
-        checkIgnore(ignoreFirefox, testName, options);
+    if (browserIgnore) {
+        checkIgnore(browserIgnore, testName, options);
     }
     tape(testName, options, runTest);
 }
