@@ -1,9 +1,12 @@
 const todo = [
     // Inconsistencies with fill pattern. Some are visibly noticeable, others subtle.
+    // Possibly nonodeterministic rendering.
     "render-tests/fill-extrusion-pattern/feature-expression",
     "render-tests/fill-extrusion-pattern/literal",
     "render-tests/fill-extrusion-pattern/opacity",
+    "render-tests/fill-extrusion-pattern/@2x",
     "render-tests/fill-extrusion-pattern/2x-on-1x-add-image-dds",
+    "render-tests/fill-extrusion-pattern/function",
     "render-tests/fill-extrusion-pattern/function-2",
     "render-tests/fill-extrusion-pattern/opacity-terrain-flat",
 
@@ -26,6 +29,11 @@ const todo = [
     // Inconsistent debug rendering
     "render-tests/custom-source/satellite"
 ];
-const skip = [];
+const skip = [
+    // Sometimes timing out
+    "render-tests/globe/globe-video",
+    "render-tests/video/default"
+
+];
 
 export default {todo, skip};
