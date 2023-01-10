@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 512,
-      "height": 768
+      "height": 768,
+      "allowed": 0.008
     }
   },
   "center": [0, 48.7],
