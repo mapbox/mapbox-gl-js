@@ -21,6 +21,7 @@ import GeoJSONSource from '../source/geojson_source.js';
 import ImageSource from '../source/image_source.js';
 import RasterDEMTileSource from '../source/raster_dem_tile_source.js';
 import RasterTileSource from '../source/raster_tile_source.js';
+import VectorTileSource from '../source/vector_tile_source.js';
 import Color from '../style-spec/util/color.js';
 import type {Callback} from '../types/callback.js';
 import StencilMode from '../gl/stencil_mode.js';
@@ -28,6 +29,7 @@ import {DepthStencilAttachment} from '../gl/value.js';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
+import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import {Elevation} from './elevation.js';
 import Framebuffer from '../gl/framebuffer.js';
 import ColorMode from '../gl/color_mode.js';
@@ -42,6 +44,7 @@ import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 import {RGBAImage} from '../util/image.js';
 import {globeMetersToEcef} from '../geo/projection/globe_util.js';
+import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -981,6 +984,41 @@ export class Terrain extends Elevation {
         }
     }
 
+    _clearZoomDependentLineWidthFromRenderCache() {
+        let hasVectorSource = false;
+        for (const id in this._style._sourceCaches) {
+            if (this._style._sourceCaches[id]._source instanceof VectorTileSource) {
+                hasVectorSource = true;
+                break;
+            }
+        }
+
+        if (!hasVectorSource) {
+            return;
+        }
+
+        // Check if any "line-width" is a zoom dependent expression
+        for (let i = 0; i < this._style.order.length; ++i) {
+            const layer = this._style._layers[this._style.order[i]];
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
+            const sourceCache = this._style._getLayerSourceCache(layer);
+            if (layer.type !== 'line' || isHidden || !sourceCache) { continue; }
+
+            const lineLayer = ((layer: any): LineStyleLayer);
+            const widthExpression = lineLayer.widthExpression();
+            if (!(widthExpression instanceof ZoomDependentExpression)) { continue; }
+
+            for (const proxy of this.proxyCoords) {
+                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                if (!coords) { continue; }
+                for (const coord of coords) {
+                    this._clearRenderCacheForTile(sourceCache.id, coord);
+                }
+            }
+        }
+    }
+
     _setupDrapedRenderBatches() {
         const layerIds = this._style.order;
         const layerCount = layerIds.length;
@@ -1043,6 +1081,7 @@ export class Terrain extends Elevation {
         }
 
         this._clearRasterFadeFromRenderCache();
+        this._clearZoomDependentLineWidthFromRenderCache();
 
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
