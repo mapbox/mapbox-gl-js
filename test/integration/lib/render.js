@@ -58,22 +58,22 @@ tape.onFinish(() => {
 let ignoreList;
 let timeout = 30000;
 
-const ua = navigator.userAgent;
-const browser = ua.includes("Firefox") ? "firefox" :
-    ua.includes("Edge") ? "edge" :
-    ua.includes("Chrome") ? "chrome" :
-    ua.includes("Safari") ? "safari" :
-    null;
-
 if (process.env.CI) {
+
+    const ua = navigator.userAgent;
+    const browser = ua.includes("Firefox") ? "firefox" :
+        ua.includes("Edge") ? "edge" :
+        ua.includes("Chrome") ? "chrome" :
+        ua.includes("Safari") ? "safari" :
+        null;
+
     // On CI, MacOS and Windows run on virtual machines.
     // Windows runs are especially slow so we increase the timeout.
-    const os = navigator.appVersion;
-    if (os.includes("Macintosh")) {
+    if (ua.includes("Macintosh")) {
         ignoreList = browser === "safari" ? ignoreMacSafari : ignoreMacChrome;
-    } else if (os.includes("Linux")) {
+    } else if (ua.includes("Linux")) {
         ignoreList = browser === "firefox" ? ignoreLinuxFirefox : null;
-    } else if (os.includes("Windows")) {
+    } else if (ua.includes("Windows")) {
         ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30
     } else { console.warn("Unrecognized OS:", os); }
