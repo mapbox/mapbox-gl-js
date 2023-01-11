@@ -1419,16 +1419,23 @@ test('Map', (t) => {
     });
 
     t.test('#getBounds', (t) => {
-        const map = createMap(t, {zoom: 0});
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
-        t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-            [ -70.31249999999976, -57.326521225216965 ],
-            [ 70.31249999999977, 57.32652122521695 ] ]));
+        t.test('default bounds', (t) => {
+            const map = createMap(t, {zoom: 0});
+            t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
+            t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
+
+            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
+                [ -70.31249999999976, -57.326521225216965 ],
+                [ 70.31249999999977, 57.32652122521695 ] ])
+            );
+
+            t.end();
+
+        });
 
         t.test('rotated bounds', (t) => {
-            const map = createMap(t, {zoom: 1, bearing: 45, skipCSSStub: true});
+            const map = createMap(t, {zoom: 1, bearing: 45});
             t.deepEqual(
                 toFixed([[-49.718445552178764, -44.44541580601936], [49.7184455522, 44.445415806019355]]),
                 toFixed(map.getBounds().toArray())
@@ -1444,7 +1451,7 @@ test('Map', (t) => {
         });
 
         t.test('padded bounds', (t) => {
-            const map = createMap(t, {zoom: 1, bearing: 45, skipCSSStub: true});
+            const map = createMap(t, {zoom: 1, bearing: 45});
 
             map.setPadding({
                 left: 100,
@@ -1463,7 +1470,7 @@ test('Map', (t) => {
 
         t.test('bounds cut off at poles (#10261)', (t) => {
             const map = createMap(t,
-                {zoom: 2, center: [0, 90], pitch: 80, skipCSSStub: true});
+                {zoom: 2, center: [0, 90], pitch: 80});
             const bounds = map.getBounds();
             t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
             t.same(
@@ -1484,8 +1491,8 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('globe bounds', (t) => {
-            const map = createMap(t, {zoom: 0, projection: 'globe', skipCSSStub: true});
+        t.test('on globe', (t) => {
+            const map = createMap(t, {zoom: 0, projection: 'globe'});
 
             let bounds = map.getBounds();
             t.same(
@@ -1516,6 +1523,105 @@ test('Map', (t) => {
             map.jumpTo({zoom: 2, center: [0, -45], bearing: 180, pitch: -20});
             bounds = map.getBounds();
             t.notSame(bounds.getSouth(), -90);
+
+            t.end();
+        });
+
+        t.test('on Albers', (t) => {
+            const map = createMap(t, {projection: 'albers'});
+
+            let bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -65.1780745470, -85.0511290000, ],
+                    [ 51.0506680427, 79.9819510537 ]
+                ]
+            );
+
+            map.jumpTo({zoom: 0, center: [-96, 37.5]});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -180, -45.1620125974 ],
+                    [ 21.1488460355, 85.0511290000 ]
+                ]
+            );
+
+            map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -108.2217655978, 34.8501901832 ],
+                    [ -88.9997447442, 49.1066330318 ]
+                ]
+            );
+
+            map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -108.2217655978, 34.8501901832 ],
+                    [ -88.9997447442, 49.1066330318 ]
+                ]
+            );
+
+            map.setPitch(50);
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -106.5868397979, 34.9358140751 ],
+                    [ -77.8438130022, 58.8683265070 ]
+                ]
+            );
+            t.end();
+        });
+
+        t.test('on Winkel Tripel', (t) => {
+            const map = createMap(t, {projection: 'winkelTripel'});
+
+            let bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -89.7369085165, -57.5374138724 ],
+                    [ 89.7369085165, 57.5374138724 ]
+                ]
+            );
+
+            map.jumpTo({zoom: 2, center: [-20, -70]});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -58.0047683883, -82.4864361385 ],
+                    [ 7.3269895739, -57.3283436312 ]
+                ]
+            );
+
+            map.jumpTo({zoom: 2, center: [-70, -20]});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -92.4701297641, -34.6981068954 ],
+                    [ -51.1668245330, -5.6697541071 ]
+                ]
+            );
+
+            map.jumpTo({pitch: 50, bearing: -20});
+            bounds = map.getBounds();
+            t.same(
+                toFixed(bounds.toArray()),
+                [
+                    [ -111.9596616309, -38.1908385183 ],
+                    [ -52.4906377771, 22.9304574207 ]
+                ]
+            );
 
             t.end();
         });
