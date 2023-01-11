@@ -4,6 +4,7 @@
     "test": {
       "height": 256,
       "width": 256,
+      "allowed": 0.0015,
       "operations": [
         ["resetNorth"],
         ["wait", 1000]

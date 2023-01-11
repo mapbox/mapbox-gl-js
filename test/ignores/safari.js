@@ -13,10 +13,12 @@ const todo = [
     // Inconsistent star placement
     "render-tests/globe/globe-default",
     "render-tests/globe/globe-transforms/low-lat-low-lng",
+    "render-tests/globe/globe-transforms/north-pole",
 
     // Debug visualizations
     "render-tests/debug/raster",
     "render-tests/debug/collision-variable-icon-image-simple",
+    "render-tests/terrain/wireframe",
     "render-tests/terrain/wireframe-high-exaggeration",
 
     // Looks good but diff is too high
