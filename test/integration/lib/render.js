@@ -87,12 +87,14 @@ function checkIgnore(ignoreConfig, testName, options) {
 for (const testName in fixtures) {
     const options = {timeout};
     checkIgnore(ignores, testName, options);
-    if (osIgnore) {
-        checkIgnore(osIgnore, testName, options);
-    }
+    // Browser ignore overrides platform ignore.
+    // i.e. macos.js only for macos chrome, not safari.
     if (browserIgnore) {
         checkIgnore(browserIgnore, testName, options);
+    } else if (osIgnore) {
+        checkIgnore(osIgnore, testName, options);
     }
+
     tape(testName, options, runTest);
 }
 
