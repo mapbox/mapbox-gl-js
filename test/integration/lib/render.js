@@ -5,10 +5,10 @@
 // refer testem.js#before_tests()
 import fixtures from '../dist/render-fixtures.json';
 import ignores from '../../ignores/all.js';
-import ignoreWindows from '../../ignores/windows.js';
-import ignoreMac from '../../ignores/macos.js';
-import ignoreSafari from '../../ignores/safari.js';
-import ignoreFirefox from '../../ignores/firefox.js';
+import ignoreWindowsChrome from '../../ignores/windows-chrome.js';
+import ignoreMacChrome from '../../ignores/mac-chrome.js';
+import ignoreMacSafari from '../../ignores/mac-safari.js';
+import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
 import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
@@ -55,32 +55,32 @@ tape.onFinish(() => {
     mapboxgl.clearPrewarmedResources();
 });
 
-let osIgnore;
+let ignoreList;
 let timeout = 30000;
+
+const ua = navigator.userAgent;
+const browser = ua.includes("Firefox") ? "firefox" :
+    ua.includes("Edge") ? "edge" :
+    ua.includes("Chrome") ? "chrome" :
+    ua.includes("Safari") ? "safari" :
+    null;
 
 if (process.env.CI) {
     // On CI, MacOS and Windows run on virtual machines.
     // Windows runs are especially slow so we increase the timeout.
     const os = navigator.appVersion;
     if (os.includes("Macintosh")) {
-        osIgnore = ignoreMac;
+        ignoreList = browser === "safari" ? ignoreMacSafari : ignoreMacChrome;
     } else if (os.includes("Linux")) {
-        osIgnore = null;
+        ignoreList = browser === "firefox" ? ignoreLinuxFirefox : null;
     } else if (os.includes("Windows")) {
-        osIgnore = ignoreWindows;
+        ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30
     } else { console.warn("Unrecognized OS:", os); }
 }
 
-const ua = navigator.userAgent;
-const browserIgnore = ua.includes("Firefox") ? ignoreFirefox :
-    ua.includes("Edge") ? ignoreSafari :
-    ua.includes("Chrome") ? null :
-    ua.includes("Safari") ? ignoreSafari :
-    null;
-
 console.log("navigator.userAgent is", navigator.userAgent);
-console.log("browserIgnore is", browserIgnore);
+console.log("ignore is", ignoreList);
 
 function checkIgnore(ignoreConfig, testName, options) {
     if (ignoreConfig.skip.includes(testName)) {
@@ -93,12 +93,8 @@ function checkIgnore(ignoreConfig, testName, options) {
 for (const testName in fixtures) {
     const options = {timeout};
     checkIgnore(ignores, testName, options);
-    // Browser ignore overrides platform ignore.
-    // i.e. macos.js only for macos chrome, not safari.
-    if (browserIgnore) {
-        checkIgnore(browserIgnore, testName, options);
-    } else if (osIgnore) {
-        checkIgnore(osIgnore, testName, options);
+    if (ignoreList) {
+        checkIgnore(ignoreList, testName, options);
     }
 
     tape(testName, options, runTest);
