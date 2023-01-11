@@ -72,9 +72,15 @@ if (process.env.CI) {
     } else { console.warn("Unrecognized OS:", os); }
 }
 
-const browserIgnore = navigator.userAgent.includes("Firefox") ? ignoreFirefox :
-    navigator.userAgent.includes("Safari") ? ignoreSafari :
+const ua = navigator.userAgent;
+const browserIgnore = ua.includes("Firefox") ? ignoreFirefox :
+    ua.includes("Edge") ? ignoreSafari :
+    ua.includes("Chrome") ? null :
+    ua.includes("Safari") ? ignoreSafari :
     null;
+
+console.log("navigator.userAgent is", navigator.userAgent);
+console.log("browserIgnore is", browserIgnore);
 
 function checkIgnore(ignoreConfig, testName, options) {
     if (ignoreConfig.skip.includes(testName)) {
