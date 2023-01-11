@@ -88,20 +88,33 @@ class Program<Us: UniformBindings> {
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
 
-        const fragmentSource = defines.concat(
+        let fragmentSource = defines.concat(
             context.extStandardDerivatives ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
             source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(
+        let vertexSource = defines.concat(
             preludeVertPrecisionQualifiers,
             preludeCommonSource,
             prelude.vertexSource,
             preludeFog.vertexSource,
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
+        if (gl instanceof WebGL2RenderingContext) {
+            vertexSource = vertexSource.replaceAll('attribute ', 'in ');
+            vertexSource = vertexSource.replaceAll('varying ', 'out ');
+            fragmentSource = fragmentSource.replaceAll('varying ', 'in ');
+            fragmentSource = fragmentSource.replaceAll('gl_FragColor', 'glFragColor');
+            vertexSource = vertexSource.replaceAll('texture2D(', 'texture(');
+            fragmentSource = fragmentSource.replaceAll('texture2D(', 'texture(');
+            fragmentSource = fragmentSource.replace('textureCube(', 'texture('); // one only in skybox: textureCube(u_cubemap
+            fragmentSource = fragmentSource.replace('#define EPSILON 0.0000001\n', 'out vec4 glFragColor;\n\n#define EPSILON 0.0000001\n'); 
+
+            fragmentSource = '#version 300 es\n' + fragmentSource;
+            vertexSource = '#version 300 es\n' + vertexSource;
+        }
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         if (gl.isContextLost()) {
