@@ -59,28 +59,24 @@ let ignoreList;
 let timeout = 30000;
 
 if (process.env.CI) {
-
     const ua = navigator.userAgent;
-    const browser = ua.includes("Firefox") ? "firefox" :
-        ua.includes("Edge") ? "edge" :
-        ua.includes("Chrome") ? "chrome" :
-        ua.includes("Safari") ? "safari" :
+    const browser = ua.includes('Firefox') ? 'firefox' :
+        ua.includes('Edge') ? 'edge' :
+        ua.includes('Chrome') ? 'chrome' :
+        ua.includes('Safari') ? 'safari' :
         null;
 
     // On CI, MacOS and Windows run on virtual machines.
     // Windows runs are especially slow so we increase the timeout.
-    if (ua.includes("Macintosh")) {
-        ignoreList = browser === "safari" ? ignoreMacSafari : ignoreMacChrome;
-    } else if (ua.includes("Linux")) {
-        ignoreList = browser === "firefox" ? ignoreLinuxFirefox : null;
-    } else if (ua.includes("Windows")) {
+    if (ua.includes('Macintosh')) {
+        ignoreList = browser === 'safari' ? ignoreMacSafari : ignoreMacChrome;
+    } else if (ua.includes('Linux')) {
+        ignoreList = browser === 'firefox' ? ignoreLinuxFirefox : null;
+    } else if (ua.includes('Windows')) {
         ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30
-    } else { console.warn("Unrecognized OS:", os); }
+    } else {  throw new Error('Cant determine OS with user agent:', ua); }
 }
-
-console.log("navigator.userAgent is", navigator.userAgent);
-console.log("ignore is", ignoreList);
 
 function checkIgnore(ignoreConfig, testName, options) {
     if (ignoreConfig.skip.includes(testName)) {

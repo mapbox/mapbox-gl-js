@@ -30,8 +30,7 @@ Testem.handleConsoleMessage = function(msg) {
     // Send output over ws to testem server
     Testem.emit('tap', msg);
     // Return true and log output only when not in CI mode. (yarn run watch-render).
-    return true; // TODO: switch back to remove logs
-    // return !process.env.CI;
+    return !process.env.CI;
 };
 
 // Persist the current html on the page as an artifact once tests finish
