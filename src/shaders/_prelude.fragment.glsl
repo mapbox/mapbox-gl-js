@@ -1,5 +1,13 @@
 // NOTE: This prelude is injected in the fragment shader only
 
+#if __VERSION__ >= 300
+#define varying in
+#define gl_FragColor glFragColor
+#define texture2D texture
+#define textureCube texture
+out vec4 glFragColor;
+#endif
+
 highp vec3 hash(highp vec2 p) {
     highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
     p3 += dot(p3, p3.yxz + 19.19);

@@ -239,6 +239,7 @@ const defaultOptions = {
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox GL JS would be dramatically worse than expected (a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
  * @param {boolean} [options.antialias=false] If `true`, the gl context will be created with [MSAA antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing), which can be useful for antialiasing custom layers. This is `false` by default as a performance optimization.
+ * @param {boolean} [options.useWebGL2=false] If true and device's capabilities support it, WebGL 2 context will be created.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds=null] If set, the map will be constrained to the given bounds.
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
@@ -359,6 +360,7 @@ class Map extends Camera {
     _preserveDrawingBuffer: boolean;
     _failIfMajorPerformanceCaveat: boolean;
     _antialias: boolean;
+    _useWebGL2: boolean;
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
@@ -485,6 +487,7 @@ class Map extends Camera {
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._antialias = options.antialias;
+        this._useWebGL2 = options.useWebGL2;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
@@ -2964,7 +2967,7 @@ class Map extends Camera {
             antialias: this._antialias || false
         });
 
-        const gl = this._canvas.getContext('webgl2', attributes) ||
+        const gl = (this._useWebGL2 && ((this._canvas.getContext("webgl2", attributes): any): WebGLRenderingContext)) ||
             this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
@@ -2973,6 +2976,10 @@ class Map extends Camera {
             return;
         }
 
+        /* $FlowFixMe[cannot-resolve-name] */
+        if (this._useWebGL2 && (typeof WebGL2RenderingContext !== 'function' || !(gl instanceof WebGL2RenderingContext))) { // eslint-disable-line no-undef
+            warnOnce('Failed to create WebGL 2 context. Using WebGL 1.');
+        }
         storeAuthState(gl, true);
 
         this.painter = new Painter(gl, this.transform);
