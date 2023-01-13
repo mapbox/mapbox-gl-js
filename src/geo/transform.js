@@ -1649,13 +1649,14 @@ class Transform {
         return this.mercatorMatrix.slice();
     }
 
-    ecefToMercatorMatrix(): ?Array<number> {
+    globeToMercatorMatrix(): ?Array<number> {
         if (this.projection.name === 'globe') {
-            const m = this.globeMatrix;
-
-            const s = mat4.create();
-            mat4.fromScaling(s, [1.0 / this.worldSize, 1.0 / this.worldSize, this.pixelsPerMeter / this.worldSize]);
-            return mat4.multiply([], s, m);
+            const pixelsToMerc = 1 / this.worldSize;
+            const metersToMerc = this.pixelsPerMeter / this.worldSize;
+            const m = mat4.create();
+            mat4.fromScaling(m, [pixelsToMerc, pixelsToMerc, metersToMerc]);
+            mat4.multiply(m, m, this.globeMatrix);
+            return m;
         }
         return null;
     }
