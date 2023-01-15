@@ -316,6 +316,21 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
+  test-render-linux-chrome-webgl2:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run:
+          name: Running tests in parallel
+          command: |
+            USE_WEBGL2=true yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
   test-query:
     <<: *defaults
     steps:
