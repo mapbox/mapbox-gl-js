@@ -51,14 +51,14 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
                     if (includeImages) {
                         testObject[name] = true;
                     }
-                } else {
-                    throw new Error(`${extension} is incompatible , file path ${path.join(dirName, file)}`);
+                } else if (extension !== "DS_Store") {
+                    throw new Error(`File name extension "${extension}" is incompatible , file path ${path.join(dirName, file)}`);
                 }
             }
             testCases[testName] = testObject;
 
         } catch (e) {
-            console.log(`Error parsing file: ${stylePath}`);
+            console.log(`Error reading directory: ${dirName}`);
             console.log(e.message);
             testCases[testName] = {PARSE_ERROR: true, message: e.message};
         }

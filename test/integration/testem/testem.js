@@ -70,16 +70,6 @@ function getQueryParams() {
     return queryParams;
 }
 
-function setChromeFlags(flags) {
-    return {
-        "browser_args": {
-            "Chrome": {
-                "ci": flags
-            }
-        }
-    };
-}
-
 // helper method that builds test artifacts when in CI mode.
 // Retuns a promise that resolves when all artifacts are built
 function buildArtifactsCi() {
@@ -189,31 +179,48 @@ module.exports = async function() {
         "report_file": ciOutputFile,
         "xunit_intermediate_output": true,
         "tap_quiet_logs": true,
-        "browser_disconnect_timeout": 90 // A longer disconnect time out prevents crashes on Windows Virtual Machines.
+        "browser_disconnect_timeout": 90, // A longer disconnect time out prevents crashes on Windows Virtual Machines.
+        "launchers": { // Allow safari to proceed without user interention. See https://github.com/testem/testem/issues/1387
+            "Safari": {
+                "protocol": 'browser',
+                "exe": 'osascript',
+                "args": [
+                    '-e',
+                    `tell application "Safari"
+                  activate
+                  open location "<url>"
+                 end tell
+                 delay 3000`,
+                ],
+            },
+        },
     };
 
     if (ci) Object.assign(testemConfig, ciTestemConfig);
 
+    const browserFlags = [];
     if (browser === "Chrome") {
-        Object.assign(testemConfig, setChromeFlags([ "--disable-backgrounding-occluded-windows", "--disable-background-networking"]));
+        browserFlags.push("--disable-backgrounding-occluded-windows", "--disable-background-networking");
         if (process.platform === "linux") {
             // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
             // This allows for more consistent behavior with MacOS development machines.
             // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-            const useOpenGL = setChromeFlags([ "--ignore-gpu-blocklist", "--use-gl=desktop" ]);
-            Object.assign(testemConfig, useOpenGL);
-        } if (process.env.USE_ANGLE) {
+            browserFlags.push("--ignore-gpu-blocklist", "--use-gl=desktop");
+        }
+        if (process.env.USE_ANGLE) {
             // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
             // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
             // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
             if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
                 throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
             }
-            console.log(`Chrome webgl using '${process.env.USE_ANGLE}'`);
-            const angleTestemConfig = setChromeFlags([ `--use-angle=${process.env.USE_ANGLE}` ]);
-            Object.assign(testemConfig, angleTestemConfig);
+            browserFlags.push(`--use-angle=${process.env.USE_ANGLE}`);
         }
     }
-
+    if (browserFlags) {
+        testemConfig["browser_args"] = {
+            [browser]: {"ci": browserFlags}
+        };
+    }
     return testemConfig;
 };
