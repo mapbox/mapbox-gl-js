@@ -1,5 +1,3 @@
-const THREE = window.THREE;
-
 const EARTH_RADIUS_METERS = 6371008.8;
 const EARTH_CIRCUMFERENCE_METERS = 2 * Math.PI * EARTH_RADIUS_METERS;
 const GLOBE_CIRCUMFERENCE_ECEF = 8192;
@@ -7,34 +5,102 @@ const METERS_TO_ECEF = GLOBE_CIRCUMFERENCE_ECEF / EARTH_CIRCUMFERENCE_METERS;
 
 const KM_TO_M = 1000;
 const TIME_STEP = 3 * 1000;
-const SATELLITE_SIZE_KM = 60;
 
-function getModelToGlobeMatrix(lat, lon, altKm, sizeKm) {
-    const [x, y, z] = mapboxgl.MercatorCoordinate.lngLatToEcef([lon, lat], altKm * KM_TO_M);
-    const sizeEcefScaler = sizeKm * KM_TO_M * METERS_TO_ECEF;
-    const modelToEcef = new THREE.Matrix4()
-    .makeTranslation(x, y, z)
-    .scale(
-        new THREE.Vector3(sizeEcefScaler, -sizeEcefScaler, sizeEcefScaler)
-    )
-    return modelToEcef;
-}
+const globeVertCode = `
+    attribute vec3 a_pos_ecef;
+    attribute vec3 a_pos_merc;
+
+    uniform mat4 u_projection;
+
+    uniform mat4 u_globeMatrix;
+    uniform mat4 u_mercMatrix;
+
+    uniform float u_globeToMercatorTransition;
+
+    void main() {
+        vec4 p = u_globeMatrix * vec4(a_pos_ecef, 1.);
+        if (u_globeToMercatorTransition > 0.) {
+            vec4 q = vec4(a_pos_merc, 1.);
+            p.xyz = mix(p.xyz, q.xyz, u_globeToMercatorTransition);
+        }
+        gl_PointSize = 30.;
+        gl_Position = u_projection * p;
+    }
+`;
+
+const mercVertCode = `
+    precision highp float;
+    attribute vec3 a_pos_merc;
+    uniform mat4 u_projection;
+
+    void main() {
+        gl_PointSize = 30.;
+        gl_Position = u_projection * vec4(a_pos_merc, 1.);
+    }
+`;
+
+const fragCode = `
+    precision highp float;
+    uniform vec4 u_color;
+
+    void main() {
+        gl_FragColor = vec4(1., 0., 0., 1.);
+    }
+`;
 
 let time = new Date();
+
+function createShader(gl, src, type) {
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    const message = gl.getShaderInfoLog(shader);
+    if (message.length > 0) {
+        console.error(message);
+    }
+    return shader;
+};
+
+function createProgram(gl, vert, frag) {
+    var vertShader = this.createShader(gl, vert, gl.VERTEX_SHADER);
+    var fragShader = this.createShader(gl, frag, gl.FRAGMENT_SHADER);
+
+    var program = gl.createProgram();
+    gl.attachShader(program, vertShader);
+    gl.attachShader(program, fragShader);
+    gl.linkProgram(program);
+    gl.validateProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const info = gl.getProgramInfoLog(program);
+        console.error(`Could not compile WebGL program. \n\n${info}`);
+    }
+
+    return program;
+};
+
+function updateVboAndActivateAttrib(gl, prog, vbo, data, attribName) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+    const attribLoc = gl.getAttribLocation(prog, attribName);
+    gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribLoc);
+}
 
 const satellitesLayer = {
     id: 'satellites',
     type: 'custom',
     onAdd (map, gl) {
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: map.getCanvas(),
-            context: gl,
-            antialias: true
-        });
-        this.renderer.autoClear = false;
-        this.camera = new THREE.Camera();
-        this.scene = new THREE.Scene();
         this.map = map;
+
+        this.posEcef = [];
+        this.posMerc = [];
+
+        this.posEcefVbo = gl.createBuffer();
+        this.posMercVbo = gl.createBuffer();
+
+        this.globeProgram = createProgram(gl, globeVertCode, fragCode);
+        this.mercProgram = createProgram(gl, mercVertCode, fragCode);
 
         fetch('space-track-leo.txt').then(r => r.text()).then(rawData => {
             const tleData = rawData.replace(/\r/g, '')
@@ -47,44 +113,64 @@ const satellitesLayer = {
             }))
             // exclude those that can't be propagated
             .filter(d => !!satellite.propagate(d.satrec, new Date()).position)
-            .slice(0, 500);
+            .slice(0, 10);
 
-            const geometry = new THREE.OctahedronGeometry(1, 1);
-            const material = new THREE.MeshBasicMaterial({color: '#ff0000', transparent: true, opacity: 0.8});
-            this.mesh = new THREE.InstancedMesh(geometry, material, this.satData.length);
-            this.scene.add(this.mesh);
+            this.updateBuffers();
         });
     },
 
-    render (gl, projectionMatrix, globeMatrix) {
-        if (this.satData && globeMatrix !== null) {
-            time = new Date(+time + TIME_STEP);
-            const gmst = satellite.gstime(time);
-            
+    updateBuffers() {
+        time = new Date(+time + TIME_STEP);
+        const gmst = satellite.gstime(time);
+        this.posEcef = [];
+        this.posMerc = [];
+        for (let i = 0; i < this.satData.length; ++i) {
+            const satrec = this.satData[i].satrec;
+            const eci = satellite.propagate(satrec, time);
+            if (eci.position) {
+                const geodetic = satellite.eciToGeodetic(eci.position, gmst);
 
-            for (let i = 0; i < this.satData.length; ++i) {
-                const satrec = this.satData[i].satrec;
-                const eci = satellite.propagate(satrec, time);
-                if (eci.position) {
-                    const geodetic = satellite.eciToGeodetic(eci.position, gmst);
-                    const modelToGlobe = getModelToGlobeMatrix(
-                        satellite.degreesLat(geodetic.latitude),
-                        satellite.degreesLong(geodetic.longitude),
-                        geodetic.height,
-                        SATELLITE_SIZE_KM);
-                    const globeToMerc = new THREE.Matrix4().fromArray(globeMatrix);
-                    const final = globeToMerc.multiply(modelToGlobe);
-                    this.mesh.setMatrixAt(i, final);
-                }
+                const lngLat = [satellite.degreesLong(geodetic.longitude), satellite.degreesLat(geodetic.latitude)];
+                const altitude = geodetic.height * KM_TO_M / 20;
+
+                const merc = mapboxgl.MercatorCoordinate.fromLngLat(lngLat, altitude);
+                const ecef = mapboxgl.LngLat.convert(lngLat).toEcef(altitude);
+
+                this.posEcef.push(...ecef);
+                this.posMerc.push(...[merc.x, merc.y, merc.z]);
             }
+        }
+    },
 
-            this.mesh.instanceMatrix.needsUpdate = true;
+    render (gl, projectionMatrix, globeMatrix) {
+        if (this.satData) {
+            this.updateBuffers();
 
-            const projection = new THREE.Matrix4().fromArray(projectionMatrix);
-            this.camera.projectionMatrix = projection;
+            gl.enable(gl.DEPTH_TEST);
+            if (globeMatrix !== null) { // globe projection
+                gl.useProgram(this.globeProgram);
+    
+                updateVboAndActivateAttrib(gl, this.globeProgram, this.posEcefVbo, this.posEcef, "a_pos_ecef");
+                updateVboAndActivateAttrib(gl, this.globeProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
 
-            this.renderer.resetState();
-            this.renderer.render(this.scene, this.camera);
+                // expose these from interface
+                const z = this.map.transform.zoom
+                const transition = z > 5 ? z % 1 : 0; 
+    
+                gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_projection"), false, projectionMatrix);
+                gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeMatrix"), false, globeMatrix);
+                // gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeToMercatorMatrix"), false, globeMatrix);
+                gl.uniform1f(gl.getUniformLocation(this.globeProgram, "u_globeToMercatorTransition"), transition);
+
+                const count = this.posEcef.length / 3;
+                gl.drawArrays(gl.POINTS, 0, count);
+            }
+            else { // mercator projection
+                gl.useProgram(this.mercProgram);
+                updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
+                gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
+                gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
+            }
         }
     }
 };

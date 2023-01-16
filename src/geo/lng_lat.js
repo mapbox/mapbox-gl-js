@@ -2,6 +2,14 @@
 
 import {wrap} from '../util/util.js';
 import LngLatBounds from './lng_lat_bounds.js';
+import {mercatorZfromAltitude} from './mercator_coordinate.js'
+import EXTENT from '../data/extent.js';
+
+const DEG_TO_RAD = Math.PI / 180;
+
+function degToRad(x: number): number {
+    return x * DEG_TO_RAD;
+}
 
 /*
 * Approximate radius of the earth in meters.
@@ -9,6 +17,25 @@ import LngLatBounds from './lng_lat_bounds.js';
 * 6371008.8 is one published "average radius" see https://en.wikipedia.org/wiki/Earth_radius#Mean_radius, or ftp://athena.fsv.cvut.cz/ZFG/grs80-Moritz.pdf p.4
 */
 export const earthRadius = 6371008.8;
+
+/*
+*/
+export const globeRadius = EXTENT / Math.PI / 2.0;
+
+export function latLngToEcef(lat: number, lng: number, radius: number = globeRadius): [number, number, number] {
+    lat = degToRad(lat);
+    lng = degToRad(lng);
+
+    const cosLat = Math.cos(lat);
+    const sinLat = Math.sin(lat);
+
+    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
+    const sx = cosLat * Math.sin(lng) * radius;
+    const sy = -sinLat * radius;
+    const sz = cosLat * Math.cos(lng) * radius;
+
+    return [sx, sy, sz];
+}
 
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
@@ -119,6 +146,13 @@ class LngLat {
 
         return new LngLatBounds(new LngLat(this.lng - lngAccuracy, this.lat - latAccuracy),
             new LngLat(this.lng + lngAccuracy, this.lat + latAccuracy));
+    }
+
+    toEcef(altitude: number): [number, number, number] {
+        const globeMetersToEcef = mercatorZfromAltitude(1, 0.0) * 2.0 * globeRadius * Math.PI;
+        const altInEcef = altitude * globeMetersToEcef;
+        const radius = globeRadius + altInEcef;
+        return latLngToEcef(this.lat, this.lng, radius);
     }
 
     /**
