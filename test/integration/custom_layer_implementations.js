@@ -1,5 +1,3 @@
-import G from "glob";
-
 class NullIsland {
     constructor() {
         this.id = 'null-island';
@@ -123,19 +121,19 @@ class TriangleDraped {
     constructor() {
         this.id = 'triangle-draped';
         this.type = 'custom';
-        this.renderingMode = '2d';
+        this.renderingMode = '3d';
     }
 
     onAdd(map, gl) {
         const vertexSource = `
         attribute vec2 aPos;
         void main() {
-            gl_Position = vec4(a_pos, 1.0, 1.0);
+            gl_Position = vec4(aPos, 1.0, 1.0);
         }`;
 
         const fragmentSource = `
         void main() {
-            gl_FragColor = vec4(0, 0.5, 0, 0.5);;
+            gl_FragColor = vec4(0.0, 0.5, 0.0, 0.5);
         }`;
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -168,6 +166,9 @@ class TriangleDraped {
         gl.enableVertexAttribArray(this.program.aPos);
         gl.vertexAttribPointer(this.program.aPos, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+    }
+
+    render(gl, matrix) {
     }
 }
 

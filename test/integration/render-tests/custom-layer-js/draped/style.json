@@ -2,44 +2,49 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 64,
-      "height": 64,
+      "width": 1500,
+      "height": 1000,
       "operations": [
-          [
-              "addCustomLayer",
-              "triangle-draped"
+        ["wait"],
+        ["setStyle", {
+          "version": 8,
+          "projection": {
+            "name": "globe"
+          },
+          "sources": {
+            "mapbox": {
+              "type": "vector",
+              "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
+            }
+          },
+          "layers": [
+            {
+              "id": "water",
+              "type": "fill",
+              "source": "mapbox",
+              "source-layer": "water",
+              "paint": {
+                "fill-color": "blue"
+              }
+            }
           ]
+        }],
+        ["wait"],
+        ["addCustomLayer", "triangle-draped"],
+        ["wait"]
       ]
     }
   },
-  "sources": {
-    "mapbox": {
-      "type": "vector",
-      "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
-    }
-  },
   "center": [
-    -122.5,
-    37.8
+    0,
+    45
   ],
-  "zoom": 10.1,
-  "pitch": 70,
+  "zoom": 2.9,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+  },
   "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "red"
-      }
-    }, 
-    {
-      "id": "water",
-      "type": "fill",
-      "source": "mapbox",
-      "source-layer": "water",
-      "paint": {
-        "fill-color": "blue"
-      }
-    }
   ]
 }
