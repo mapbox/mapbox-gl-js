@@ -152,6 +152,7 @@ class MercatorCoordinate {
         // 1 meter / circumference at equator in meters * Mercator projection scale factor at this latitude
         return 1 / earthCircumference * mercatorScale(latFromMercatorY(this.y));
     }
+
 }
 
 export default MercatorCoordinate;

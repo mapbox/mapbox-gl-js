@@ -7,10 +7,6 @@ import EXTENT from '../data/extent.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 
-function degToRad(x: number): number {
-    return x * DEG_TO_RAD;
-}
-
 /*
 * Approximate radius of the earth in meters.
 * Uses the WGS-84 approximation. The radius at the equator is ~6378137 and at the poles is ~6356752. https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84
@@ -23,8 +19,8 @@ export const earthRadius = 6371008.8;
 export const globeRadius = EXTENT / Math.PI / 2.0;
 
 export function latLngToEcef(lat: number, lng: number, radius: number = globeRadius): [number, number, number] {
-    lat = degToRad(lat);
-    lng = degToRad(lng);
+    lat = lat * DEG_TO_RAD;
+    lng = lng * DEG_TO_RAD;
 
     const cosLat = Math.cos(lat);
     const sinLat = Math.sin(lat);
