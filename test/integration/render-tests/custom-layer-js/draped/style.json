@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+          [
+              "addCustomLayer",
+              "triangle-draped"
+          ]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
+    }
+  },
+  "center": [
+    -122.5,
+    37.8
+  ],
+  "zoom": 10.1,
+  "pitch": 70,
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "red"
+      }
+    }, 
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "blue"
+      }
+    }
+  ]
+}
