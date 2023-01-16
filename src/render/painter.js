@@ -163,8 +163,8 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[key: number]: Tile};
 
-    constructor(gl: WebGLRenderingContext, transform: Transform) {
-        this.context = new Context(gl);
+    constructor(gl: WebGLRenderingContext, transform: Transform, isWebGL2: boolean = false) {
+        this.context = new Context(gl, isWebGL2);
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];

@@ -87,8 +87,7 @@ class Program<Us: UniformBindings> {
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
-        /* $FlowFixMe[cannot-resolve-name] */
-        const version = (typeof WebGL2RenderingContext === 'function' && gl instanceof WebGL2RenderingContext) ? '#version 300 es\n' : ''; // eslint-disable-line no-undef
+        const version = context.isWebGL2 ? '#version 300 es\n' : '';
 
         const fragmentSource = version + defines.concat(
             context.extStandardDerivatives && version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,

@@ -2967,7 +2967,8 @@ class Map extends Camera {
             antialias: this._antialias || false
         });
 
-        const gl = (this._useWebGL2 && ((this._canvas.getContext("webgl2", attributes): any): WebGLRenderingContext)) ||
+        const gl2 = this._useWebGL2 && ((this._canvas.getContext("webgl2", attributes): any): WebGLRenderingContext);
+        const gl = gl2 ||
             this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
@@ -2976,13 +2977,12 @@ class Map extends Camera {
             return;
         }
 
-        /* $FlowFixMe[cannot-resolve-name] */
-        if (this._useWebGL2 && (typeof WebGL2RenderingContext !== 'function' || !(gl instanceof WebGL2RenderingContext))) { // eslint-disable-line no-undef
+        if (this._useWebGL2 && !gl2) {
             warnOnce('Failed to create WebGL 2 context. Using WebGL 1.');
         }
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this.transform);
+        this.painter = new Painter(gl, this.transform, !!gl2);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);

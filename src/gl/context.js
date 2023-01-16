@@ -25,6 +25,7 @@ type ClearArgs = {
 
 class Context {
     gl: WebGLRenderingContext;
+    isWebGL2: boolean;
     extVertexArrayObject: any;
     currentNumAttributes: ?number;
     maxTextureSize: number;
@@ -74,8 +75,9 @@ class Context {
     extTextureFilterAnisotropicForceOff: boolean;
     extStandardDerivativesForceOff: boolean;
 
-    constructor(gl: WebGLRenderingContext) {
+    constructor(gl: WebGLRenderingContext, isWebGL2: boolean = false) {
         this.gl = gl;
+        this.isWebGL2 = isWebGL2;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
 
         this.clearColor = new ClearColor(this);
@@ -127,12 +129,12 @@ class Context {
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
-        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        this.extTextureHalfFloat = isWebGL2 ? {HALF_FLOAT_OES: 0x140B, RGBA16F: 0x881A} : gl.getExtension('OES_texture_half_float');
         if (this.extTextureHalfFloat) {
             gl.getExtension('OES_texture_half_float_linear');
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
-        this.extStandardDerivatives = gl.getExtension('OES_standard_derivatives');
+        this.extStandardDerivatives = isWebGL2 || gl.getExtension('OES_standard_derivatives');
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
