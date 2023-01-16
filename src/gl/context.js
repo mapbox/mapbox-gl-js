@@ -80,6 +80,16 @@ class Context {
         this.isWebGL2 = isWebGL2;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
 
+        if (isWebGL2) {
+            /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
+            const gl2 = (gl: WebGL2RenderingContext);
+            this.extVertexArrayObject = {
+                createVertexArrayOES: gl2.createVertexArray.bind(gl),
+                deleteVertexArrayOES: gl2.deleteVertexArray.bind(gl),
+                bindVertexArrayOES: gl2.bindVertexArray.bind(gl)
+            };
+        }
+
         this.clearColor = new ClearColor(this);
         this.clearDepth = new ClearDepth(this);
         this.clearStencil = new ClearStencil(this);
