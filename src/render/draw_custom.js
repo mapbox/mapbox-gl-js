@@ -18,8 +18,8 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
     const context = painter.context;
     const implementation = layer.implementation;
 
-    if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom")
-        && !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isLayerDraped())) {
+    if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom") &&
+        !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isLayerDraped())) {
         warnOnce('Custom layers are not yet supported with non-mercator projections. Use mercator to enable custom layers.');
         return;
     }
@@ -46,11 +46,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             if (renderToTile) {
                 const c = coords[0].canonical;
                 const unwrapped = new MercatorCoordinate(c.x + coords[0].wrap * (1 << c.z), c.y, c.z);
-                
+
                 context.setDepthMode(DepthMode.disabled);
                 context.setColorMode(painter.colorModeForRenderPass());
                 painter.setCustomLayerDefaults();
-        
+
                 renderToTile.call(implementation, context.gl, unwrapped);
                 context.setDirty();
                 painter.setBaseState();

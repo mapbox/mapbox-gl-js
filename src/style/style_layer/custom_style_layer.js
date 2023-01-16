@@ -156,7 +156,7 @@ export type CustomLayerInterface = {
     prerender: ?CustomRenderMethod,
     renderToTile: ?(gl: WebGLRenderingContext, tileId: MercatorCoordinate) => void,
     shouldRerenderTiles: ?() => boolean,
-    onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,  
+    onAdd: ?(map: Map, gl: WebGLRenderingContext) => void,
     onRemove: ?(map: Map, gl: WebGLRenderingContext) => void
 }
 

@@ -2,7 +2,7 @@
 
 import {wrap} from '../util/util.js';
 import LngLatBounds from './lng_lat_bounds.js';
-import {mercatorZfromAltitude} from './mercator_coordinate.js'
+import {mercatorZfromAltitude} from './mercator_coordinate.js';
 import EXTENT from '../data/extent.js';
 
 const DEG_TO_RAD = Math.PI / 180;

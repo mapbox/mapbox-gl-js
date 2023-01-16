@@ -131,7 +131,7 @@ const satellitesLayer = {
                 const geodetic = satellite.eciToGeodetic(eci.position, gmst);
 
                 const lngLat = [satellite.degreesLong(geodetic.longitude), satellite.degreesLat(geodetic.latitude)];
-                const altitude = geodetic.height * KM_TO_M / 20;
+                const altitude = geodetic.height * KM_TO_M;
 
                 const merc = mapboxgl.MercatorCoordinate.fromLngLat(lngLat, altitude);
                 const ecef = mapboxgl.LngLat.convert(lngLat).toEcef(altitude);
@@ -166,10 +166,10 @@ const satellitesLayer = {
                 gl.drawArrays(gl.POINTS, 0, count);
             }
             else { // mercator projection
-                gl.useProgram(this.mercProgram);
-                updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
-                gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
-                gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
+                // gl.useProgram(this.mercProgram);
+                // updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
+                // gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
+                // gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
             }
         }
     }
