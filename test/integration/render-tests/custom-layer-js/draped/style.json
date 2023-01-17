@@ -19,6 +19,13 @@
           },
           "layers": [
             {
+              "id": "background",
+              "type": "background",
+              "paint": {
+                "background-color": "transparent"
+              }
+            },
+            {
               "id": "water",
               "type": "fill",
               "source": "mapbox",
@@ -39,7 +46,7 @@
     0,
     45
   ],
-  "zoom": 2.9,
+  "zoom": 2.5,
   "projection": {
     "name": "globe"
   },
