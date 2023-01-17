@@ -114,6 +114,7 @@ export const getVideo = function(urls, callback) {
                 if (err) return callback(err);
                 callback(null, {
                     readyState: 4, // HAVE_ENOUGH_DATA
+                    setAttribute() {},
                     addEventListener() {},
                     play() {},
                     width: png.width,
