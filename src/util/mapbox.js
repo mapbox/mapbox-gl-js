@@ -385,14 +385,13 @@ export class MapLoadEvent extends TelemetryEvent {
     }
 
     postMapLoadEvent(tileUrls: Array<string>, mapId: number, skuToken: string, customAccessToken: string) {
-        //Enabled only when Mapbox Access Token is set and a source uses
-        // mapbox tiles.
         this.skuToken = skuToken;
 
-        if (config.EVENTS_URL &&
-            customAccessToken || config.ACCESS_TOKEN &&
-            Array.isArray(tileUrls) &&
-            tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
+        const accessTokenIsSet = !!(customAccessToken || config.ACCESS_TOKEN);
+        const usesMapboxTiles = Array.isArray(tileUrls) && tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url));
+
+        // Enabled only when Mapbox Access Token is set and a source uses mapbox tiles.
+        if (config.EVENTS_URL && accessTokenIsSet && usesMapboxTiles) {
             this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
         }
     }

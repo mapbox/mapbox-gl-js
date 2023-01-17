@@ -750,6 +750,7 @@ test("mapbox", (t) => {
 
         t.end();
     });
+
     t.test('MapLoadEvent', (t) => {
         let event;
         let turnstileEvent;
@@ -792,8 +793,11 @@ test("mapbox", (t) => {
 
         t.test('does not POST when url does not point to mapbox.com', (t) => {
             event.postMapLoadEvent(nonMapboxTileURLs, 1, skuToken);
-
             t.equal(window.server.requests.length, 0);
+
+            event.postMapLoadEvent(nonMapboxTileURLs, 1, skuToken, 'customAccessToken');
+            t.equal(window.server.requests.length, 0);
+
             t.end();
         });
 
