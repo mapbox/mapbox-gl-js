@@ -28,8 +28,7 @@
 <script src="//unpkg.com/satellite.js/dist/satellite.min.js"></script>
 <script src="satellites-custom-layer.js"></script>
 
-<script src="webgl-wind-dist/dist/wind-gl.js"></script>
-<script src="wind-custom-layer.js"></script>
+<script src="color-earth-custom-layer.js"></script>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -47,7 +46,7 @@ const map = new mapboxgl.Map({
 
 map.on('style.load', () => {
     map.addLayer(satellitesLayer);
-    map.addLayer(windLayer);
+    map.addLayer(coloredEarthLayer);
 
     document.getElementById('immediate-checkbox').onclick();
     document.getElementById('draped-checkbox').onclick();
@@ -58,7 +57,7 @@ document.getElementById('immediate-checkbox').onclick = function() {
 };
 
 document.getElementById('draped-checkbox').onclick = function() {
-    map.setLayoutProperty('wind', 'visibility', this.checked ? 'visible' : 'none');
+    map.setLayoutProperty('coloredEarth', 'visibility', this.checked ? 'visible' : 'none');
 };
 
 document.getElementById('repaint-checkbox').onclick = function() {
