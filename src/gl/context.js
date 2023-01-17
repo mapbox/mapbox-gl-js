@@ -121,7 +121,7 @@ class Context {
         this.extTextureFilterAnisotropicForceOff = false;
         this.extStandardDerivativesForceOff = false;
 
-        this.extDebugRendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        this.extDebugRendererInfo = gl.getParameter(gl.RENDERER);
         if (this.extDebugRendererInfo) {
             this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
