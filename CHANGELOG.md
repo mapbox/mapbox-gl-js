@@ -1,3 +1,10 @@
+## 1.13.3
+
+### 🐞 Bug fixes
+
+* Fix incorrect billing when `customAccessToken` is provided along with non-Mapbox tiles ([#12520](https://github.com/mapbox/mapbox-gl-js/issues/12520))
+* Upgrade minimist to ^1.2.7 to avoid [CVE-2021-44906](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44906) ([#12442](https://github.com/mapbox/mapbox-gl-js/issues/12442)) (h/t @Spasfonx)
+
 ## 1.13.2
 
 ### 🐞 Bug fixes
