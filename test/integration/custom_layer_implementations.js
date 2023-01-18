@@ -160,7 +160,7 @@ class TriangleDraped {
         return true;
     }
 
-    renderToTile(gl, tileId) {
+    renderToTile(gl) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.enableVertexAttribArray(this.program.aPos);
@@ -168,7 +168,7 @@ class TriangleDraped {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
     }
 
-    render(gl, matrix) {
+    render() {
     }
 }
 

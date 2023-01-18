@@ -48,7 +48,6 @@ export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 export const GLOBE_SCALE_MATCH_LATITUDE = 45;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
-export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -67,6 +66,10 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
+
+export function globeMetersToEcef(d: number): number {
+    return d * mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
+}
 
 export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): ?MercatorCoordinate {
     const point0 = vec3.scale([], tr._camera.position, tr.worldSize);
@@ -635,7 +638,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     mat4.fromRotation(rotation, -tr._pitch, axis);
 
     const pivotToCamera = vec3.normalize([], centerToPivot);
-    vec3.scale(pivotToCamera, pivotToCamera, tr.cameraToCenterDistance / tr.pixelsPerMeter * GLOBE_METERS_TO_ECEF);
+    vec3.scale(pivotToCamera, pivotToCamera, globeMetersToEcef(tr.cameraToCenterDistance / tr.pixelsPerMeter));
     vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
 
     return vec3.add([], centerToPivot, pivotToCamera);

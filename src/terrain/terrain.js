@@ -40,7 +40,7 @@ import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 import {RGBAImage} from '../util/image.js';
-import {GLOBE_METERS_TO_ECEF} from '../geo/projection/globe_util.js';
+import {globeMetersToEcef} from '../geo/projection/globe_util.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -666,7 +666,7 @@ export class Terrain extends Elevation {
             'u_tile_tr_up': (projection.upVector(id, EXTENT, 0): any),
             'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT): any),
             'u_tile_bl_up': (projection.upVector(id, 0, EXTENT): any),
-            'u_tile_up_scale': (useDenormalizedUpVectorScale ? GLOBE_METERS_TO_ECEF : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile: any)
+            'u_tile_up_scale': (useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile: any)
         };
     }
 
