@@ -53,7 +53,6 @@ var coloredEarthLayer = {
     },
 
     renderToTile: (gl, tileId) => {
-        gl.disable(gl.STENCIL_TEST); // todo: reset state in gl-js side.
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.enableVertexAttribArray(this.program.aPos);

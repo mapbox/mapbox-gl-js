@@ -48,6 +48,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                 const unwrapped = new MercatorCoordinate(c.x + coords[0].wrap * (1 << c.z), c.y, c.z);
 
                 context.setDepthMode(DepthMode.disabled);
+                context.setStencilMode(StencilMode.disabled);
                 context.setColorMode(painter.colorModeForRenderPass());
                 painter.setCustomLayerDefaults();
 
