@@ -190,7 +190,7 @@ module.exports = async function() {
                   activate
                   open location "<url>"
                  end tell
-                 delay 3000`,
+                 delay 10000`,
                 ],
             },
         },
