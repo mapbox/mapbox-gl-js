@@ -36,7 +36,7 @@ class RasterTileSource extends Evented implements Source {
 
     bounds: ?[number, number, number, number];
     tileBounds: TileBounds;
-    roundZoom: boolean;
+    roundZoom: boolean | void;
     dispatcher: Dispatcher;
     map: Map;
     tiles: Array<string>;

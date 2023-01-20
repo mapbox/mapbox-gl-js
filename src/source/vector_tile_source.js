@@ -65,8 +65,8 @@ class VectorTileSource extends Evented implements Source {
     bounds: ?[number, number, number, number];
     tiles: Array<string>;
     tileBounds: TileBounds;
-    reparseOverscaled: boolean;
-    isTileClipped: boolean;
+    reparseOverscaled: boolean | void;
+    isTileClipped: boolean | void;
     _tileJSONRequest: ?Cancelable;
     _loaded: boolean;
     _tileWorkers: {[string]: Actor};

@@ -79,7 +79,7 @@ class Program<Us: UniformBindings> {
                 fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {
         const gl = context.gl;
-        this.program = gl.createProgram();
+        this.program = ((gl.createProgram(): any): WebGLProgram);
 
         const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
@@ -104,7 +104,7 @@ class Program<Us: UniformBindings> {
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
 
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        const fragmentShader = ((gl.createShader(gl.FRAGMENT_SHADER): any): WebGLShader);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             return;
@@ -114,7 +114,7 @@ class Program<Us: UniformBindings> {
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        const vertexShader = ((gl.createShader(gl.VERTEX_SHADER): any): WebGLShader);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             return;

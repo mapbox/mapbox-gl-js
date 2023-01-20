@@ -109,6 +109,7 @@ class ImageSource extends Evented implements Source {
     map: Map;
     texture: Texture | null;
     image: HTMLImageElement | ImageBitmap | ImageData;
+    // $FlowFixMe
     tileID: CanonicalTileID;
     _boundsArray: ?RasterBoundsArray;
     boundsBuffer: ?VertexBuffer;

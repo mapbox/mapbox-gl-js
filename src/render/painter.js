@@ -987,7 +987,9 @@ class Painter {
     }
 
     saveCanvasCopy() {
-        this.frameCopies.push(this.canvasCopy());
+        const canvas = this.canvasCopy();
+        if (!canvas) return;
+        this.frameCopies.push(canvas);
         this.tileLoaded = false;
     }
 
