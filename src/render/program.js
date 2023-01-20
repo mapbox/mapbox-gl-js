@@ -87,15 +87,16 @@ class Program<Us: UniformBindings> {
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
+        const version = context.isWebGL2 ? '#version 300 es\n' : '';
 
-        const fragmentSource = defines.concat(
-            context.extStandardDerivatives ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
+        const fragmentSource = version + defines.concat(
+            context.extStandardDerivatives && version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
             source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(
+        const vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
             preludeCommonSource,
             prelude.vertexSource,
