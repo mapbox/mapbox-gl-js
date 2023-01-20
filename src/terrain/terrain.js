@@ -283,6 +283,9 @@ export class Terrain extends Elevation {
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
+        this._style.map.on('moveend', () => {
+            this._clearTilesFromRenderCache();
+        });
     }
 
     /*
@@ -1073,8 +1076,6 @@ export class Terrain extends Elevation {
             }
             return;
         }
-
-        this._clearTilesFromRenderCache();
 
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
