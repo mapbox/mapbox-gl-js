@@ -139,9 +139,8 @@ class Context {
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
-        this.extTextureHalfFloat = isWebGL2 ? {HALF_FLOAT_OES: 0x140B, RGBA16F: 0x881A} : gl.getExtension('OES_texture_half_float');
-        if (this.extTextureHalfFloat) {
-            gl.getExtension('OES_texture_half_float_linear');
+        if (!isWebGL2) this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        if (isWebGL2 || (this.extTextureHalfFloat && gl.getExtension('OES_texture_half_float_linear'))) {
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
         }
         this.extStandardDerivatives = isWebGL2 || gl.getExtension('OES_standard_derivatives');
