@@ -70,11 +70,11 @@ class GeoJSONSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    attribution: string;
+    attribution: string | void;
     promoteId: ?PromoteIdSpecification;
 
-    isTileClipped: boolean;
-    reparseOverscaled: boolean;
+    isTileClipped: boolean | void;
+    reparseOverscaled: boolean | void;
     _data: GeoJSON | string;
     _options: GeoJSONSourceSpecification;
     workerOptions: GeoJSONWorkerOptions;

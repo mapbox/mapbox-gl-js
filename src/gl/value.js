@@ -321,7 +321,7 @@ export class FrontFace extends BaseValue<FrontFaceType> {
 }
 
 export class Program extends BaseValue<?WebGLProgram> {
-    getDefault(): WebGLProgram {
+    getDefault(): WebGLProgram | null {
         return null;
     }
     set(v: ?WebGLProgram) {
@@ -359,7 +359,7 @@ export class Viewport extends BaseValue<ViewportType> {
 }
 
 export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
-    getDefault(): WebGLFramebuffer {
+    getDefault(): WebGLFramebuffer | null {
         return null;
     }
     set(v: ?WebGLFramebuffer) {
@@ -372,7 +372,7 @@ export class BindFramebuffer extends BaseValue<?WebGLFramebuffer> {
 }
 
 export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
-    getDefault(): WebGLRenderbuffer {
+    getDefault(): WebGLRenderbuffer | null {
         return null;
     }
     set(v: ?WebGLRenderbuffer) {
@@ -385,7 +385,7 @@ export class BindRenderbuffer extends BaseValue<?WebGLRenderbuffer> {
 }
 
 export class BindTexture extends BaseValue<?WebGLTexture> {
-    getDefault(): WebGLTexture {
+    getDefault(): WebGLTexture | null {
         return null;
     }
     set(v: ?WebGLTexture) {
@@ -398,7 +398,7 @@ export class BindTexture extends BaseValue<?WebGLTexture> {
 }
 
 export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
-    getDefault(): WebGLBuffer {
+    getDefault(): WebGLBuffer | null {
         return null;
     }
     set(v: ?WebGLBuffer) {
@@ -411,7 +411,7 @@ export class BindVertexBuffer extends BaseValue<?WebGLBuffer> {
 }
 
 export class BindElementBuffer extends BaseValue<?WebGLBuffer> {
-    getDefault(): WebGLBuffer {
+    getDefault(): WebGLBuffer | null {
         return null;
     }
     set(v: ?WebGLBuffer) {

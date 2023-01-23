@@ -224,7 +224,7 @@ export class Terrain extends Elevation {
     pool: Array<FBO>;
     renderedToTile: boolean;
     _drapedRenderBatches: Array<RenderBatch>;
-    _sharedDepthStencil: WebGLRenderbuffer;
+    _sharedDepthStencil: ?WebGLRenderbuffer;
 
     _findCoveringTileCache: {[string]: {[number]: ?number}};
 

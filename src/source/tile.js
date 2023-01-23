@@ -386,7 +386,7 @@ class Tile {
         const gl = context.gl;
         if (this.imageAtlas && !this.imageAtlas.uploaded) {
             this.imageAtlasTexture = new Texture(context, this.imageAtlas.image, gl.RGBA);
-            this.imageAtlas.uploaded = true;
+            ((this.imageAtlas: any): ImageAtlas).uploaded = true;
         }
 
         if (this.glyphAtlasImage) {
@@ -396,7 +396,7 @@ class Tile {
 
         if (this.lineAtlas && !this.lineAtlas.uploaded) {
             this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.ALPHA);
-            this.lineAtlas.uploaded = true;
+            ((this.lineAtlas: any): LineAtlas).uploaded = true;
         }
     }
 
