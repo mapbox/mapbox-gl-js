@@ -87,7 +87,7 @@ window.onload = function() {
     enableTerrain.onFinishChange((value) => {
         map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": demo3d.terrainExaggeration} : null);
     });
-    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0, 2);
+    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0, 100);
     terrainExaggeration.onFinishChange((value) => {
         if (demo3d.enableTerrain) {
             map.setTerrain({"source": "mapbox-dem", "exaggeration": value});

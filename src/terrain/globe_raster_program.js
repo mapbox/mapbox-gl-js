@@ -24,6 +24,7 @@ export type GlobeRasterUniformsType = {|
     'u_merc_center': Uniform2f,
     'u_image0': Uniform1i,
     'u_grid_matrix': UniformMatrix3f,
+    'u_skirt_height': Uniform1f,
     'u_frustum_tl': Uniform3f,
     'u_frustum_tr': Uniform3f,
     'u_frustum_br': Uniform3f,
@@ -61,6 +62,7 @@ const globeRasterUniforms = (context: Context): GlobeRasterUniformsType => ({
     'u_merc_center': new Uniform2f(context),
     'u_image0': new Uniform1i(context),
     'u_grid_matrix': new UniformMatrix3f(context),
+    'u_skirt_height': new Uniform1f(context),
     'u_frustum_tl': new Uniform3f(context),
     'u_frustum_tr': new Uniform3f(context),
     'u_frustum_br': new Uniform3f(context),
@@ -103,6 +105,7 @@ const globeRasterUniformValues = (
     globePosition: [number, number, number],
     globeRadius: number,
     viewport: [number, number],
+    skirtHeight: number,
     gridMatrix: ?Mat4
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
@@ -119,7 +122,8 @@ const globeRasterUniformValues = (
     'u_globe_pos': globePosition,
     'u_globe_radius': globeRadius,
     'u_viewport': viewport,
-    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9)
+    'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9),
+    'u_skirt_height': skirtHeight
 });
 
 const atmosphereUniformValues = (

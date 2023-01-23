@@ -17,12 +17,12 @@ varying vec4 v_pos_light_view_1;
 varying float v_depth;
 #endif
 
-const float skirtOffset = 24575.0;
 const float wireframeOffset = 0.00015;
 
 void main() {
-    float skirt = float(a_pos.x >= skirtOffset);
-    vec2 decodedPos = a_pos - vec2(skirt * skirtOffset, 0.0);
+    vec3 decomposedPosAndSkirt = decomposeToPosAndSkirt(a_pos);
+    float skirt = decomposedPosAndSkirt.z;
+    vec2 decodedPos = decomposedPosAndSkirt.xy;
     float elevation = elevation(decodedPos) - skirt * u_skirt_height;
 #ifdef TERRAIN_WIREFRAME
     elevation += wireframeOffset;

@@ -2,22 +2,23 @@
   "version": 8,
   "metadata": {
     "test": {
-      "standardDerivatives": true,
-      "width": 512,
+      "width": 1000,
       "height": 512,
-      "allowed": 0.002,
+      "allowed": 0.0004,
       "operations": [
         ["setProjection", "globe"],
-        ["wait"]
+        ["wait", 500]
       ]
-      }
+    }
   },
-  "zoom": 1.3,
+  "zoom": 5.13,
   "terrain": {
     "source": "rgbterrain",
-    "exaggeration": 240.0
+    "exaggeration": 100.0
   },
-  "center": [-113.4, 13.2],
+  "pitch": 45,
+  "bearing": -48,
+  "center": [99.13, 47.46],
   "sources": {
     "satellite": {
       "type": "raster",
