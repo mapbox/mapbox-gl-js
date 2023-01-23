@@ -13,7 +13,7 @@ import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
 
-type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
+type SerializedObject = {[_: string]: Serialized };
 export type Serialized =
     | null
     | void
@@ -252,6 +252,7 @@ export function deserialize(input: Serialized): mixed {
 
         for (const key of Object.keys(input)) {
             if (key === '$name') continue;
+            // $FlowFixMe[class-object-subtyping]
             const value = (input: SerializedObject)[key];
             result[key] = deserialize(value);
         }

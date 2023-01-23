@@ -211,14 +211,14 @@ export type CameraExpression = {
     interpolationType: ?InterpolationType
 };
 
-export type CompositeExpression = {
-    kind: 'composite',
-    isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
-    +interpolationFactor: (input: number, lower: number, upper: number) => number,
-    zoomStops: Array<number>,
-    interpolationType: ?InterpolationType
-};
+export interface CompositeExpression {
+    kind: 'composite';
+    isStateDependent: boolean;
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any;
+    +interpolationFactor: (input: number, lower: number, upper: number) => number;
+    zoomStops: Array<number>;
+    interpolationType: ?InterpolationType;
+}
 
 export type StylePropertyExpression =
     | ConstantExpression

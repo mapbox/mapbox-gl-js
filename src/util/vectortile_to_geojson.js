@@ -6,6 +6,7 @@ import type {IVectorTileFeature} from '@mapbox/vector-tile';
 // we augment GeoJSON with custom properties in query*Features results
 export interface QueryFeature extends GeoJSONFeature {
     layer?: ?LayerSpecification;
+    state: ?mixed;
     [key: string]: mixed;
 }
 
