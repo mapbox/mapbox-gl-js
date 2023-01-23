@@ -29,25 +29,25 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {FeatureDistanceData} from '../feature_filter/index.js';
 
-export type Feature = {
-    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
-    +id?: number | null,
-    +properties: {[_: string]: any},
-    +patterns?: {[_: string]: string},
-    +geometry?: Array<Array<Point>>
-};
+export interface Feature {
+    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    +id?: number | null;
+    +properties: {[_: string]: any};
+    +patterns?: {[_: string]: string};
+    +geometry?: Array<Array<Point>>;
+}
 
 export type FeatureState = {[_: string]: any};
 
-export type GlobalProperties = $ReadOnly<{
-    zoom: number,
-    pitch?: number,
-    heatmapDensity?: number,
-    lineProgress?: number,
-    skyRadialProgress?: number,
-    isSupportedScript?: (_: string) => boolean,
-    accumulated?: Value
-}>;
+export interface GlobalProperties {
+    +zoom: number;
+    +pitch?: number;
+    +heatmapDensity?: number;
+    +lineProgress?: number;
+    +skyRadialProgress?: number;
+    +isSupportedScript?: (_: string) => boolean;
+    +accumulated?: Value;
+}
 
 export class StyleExpression {
     expression: Expression;
