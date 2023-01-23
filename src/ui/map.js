@@ -74,7 +74,7 @@ import type {QueryResult} from '../data/feature_index.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
-type IControl = {
+interface IControl {
     onAdd(map: Map): HTMLElement;
     onRemove(map: Map): void;
 
