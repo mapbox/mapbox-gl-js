@@ -103,7 +103,6 @@ class Transform {
 
     // globe coordinate transformation matrix
     globeMatrix: Float64Array;
-    customLayerGlobeMatrix: Float64Array;
 
     globeCenterInViewSpace: [number, number, number];
     globeRadius: number;
@@ -1652,9 +1651,8 @@ class Transform {
     globeToMercatorMatrix(): ?Array<number> {
         if (this.projection.name === 'globe') {
             const pixelsToMerc = 1 / this.worldSize;
-            const metersToMerc = this.pixelsPerMeter / this.worldSize;
             const m = mat4.create();
-            mat4.fromScaling(m, [pixelsToMerc, pixelsToMerc, metersToMerc]);
+            mat4.fromScaling(m, [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
             mat4.multiply(m, m, this.globeMatrix);
             return m;
         }
@@ -1884,8 +1882,8 @@ class Transform {
         }
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
-        // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter, 1.0]);
+        // ([0, 0] nw, [1, 1] se) to GL coordinates. / zUnit compensates for scaling done in worldToCamera.
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0]);
 
         this.projMatrix = m;
 

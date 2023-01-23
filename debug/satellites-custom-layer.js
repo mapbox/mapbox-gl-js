@@ -11,20 +11,19 @@ const globeVertCode = `
     attribute vec3 a_pos_merc;
 
     uniform mat4 u_projection;
-
-    uniform mat4 u_globeMatrix;
-    uniform mat4 u_mercMatrix;
-
+    uniform mat4 u_globeToMercMatrix;
     uniform float u_globeToMercatorTransition;
 
     void main() {
-        vec4 p = u_globeMatrix * vec4(a_pos_ecef, 1.);
+        vec4 p = u_projection * u_globeToMercMatrix * vec4(a_pos_ecef, 1.);
+        p /= p.w;
         if (u_globeToMercatorTransition > 0.) {
-            vec4 q = vec4(a_pos_merc, 1.);
-            p.xyz = mix(p.xyz, q.xyz, u_globeToMercatorTransition);
+            vec4 merc = u_projection * vec4(a_pos_merc, 1.);
+            merc /= merc.w;
+            p = mix(p, merc, u_globeToMercatorTransition);
         }
         gl_PointSize = 30.;
-        gl_Position = u_projection * p;
+        gl_Position = p;
     }
 `;
 
@@ -142,34 +141,28 @@ const satellitesLayer = {
         }
     },
 
-    render (gl, projectionMatrix, globeMatrix) {
+    render (gl, projectionMatrix, projection, globeToMercMatrix, transition) {
         if (this.satData) {
             this.updateBuffers();
 
             gl.enable(gl.DEPTH_TEST);
-            if (globeMatrix !== null) { // globe projection
+            if (projection && projection.name === 'globe') { // globe projection and globe to mercator transition
                 gl.useProgram(this.globeProgram);
     
                 updateVboAndActivateAttrib(gl, this.globeProgram, this.posEcefVbo, this.posEcef, "a_pos_ecef");
                 updateVboAndActivateAttrib(gl, this.globeProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
-
-                // expose these from interface
-                const z = this.map.transform.zoom
-                const transition = z > 5 ? z % 1 : 0; 
     
                 gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_projection"), false, projectionMatrix);
-                gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeMatrix"), false, globeMatrix);
-                // gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeToMercatorMatrix"), false, globeMatrix);
+                gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeToMercMatrix"), false, globeToMercMatrix);
                 gl.uniform1f(gl.getUniformLocation(this.globeProgram, "u_globeToMercatorTransition"), transition);
 
                 const count = this.posEcef.length / 3;
                 gl.drawArrays(gl.POINTS, 0, count);
-            }
-            else { // mercator projection
-                // gl.useProgram(this.mercProgram);
-                // updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
-                // gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
-                // gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
+            } else { // mercator projection
+                gl.useProgram(this.mercProgram);
+                updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
+                gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
+                gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
             }
         }
     }

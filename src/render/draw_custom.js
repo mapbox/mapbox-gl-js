@@ -5,6 +5,7 @@ export default drawCustom;
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import {warnOnce} from '../util/util.js';
+import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
 
 import type Painter from './painter.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
@@ -20,7 +21,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
     if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom") &&
         !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isLayerDraped())) {
-        warnOnce('Custom layers are not yet supported with non-mercator projections. Use mercator to enable custom layers.');
+        warnOnce('Custom layers are not yet supported with this projection. Use mercator or globe to enable usage of custom layers.');
         return;
     }
 
@@ -32,6 +33,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             context.setColorMode(painter.colorModeForRenderPass());
 
             prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
+            if (painter.transform.projection.name === "globe") {
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition());
+            } else {
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
+            }
 
             context.setDirty();
             painter.setBaseState();
@@ -70,7 +76,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         context.setDepthMode(depthMode);
 
-        implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.globeToMercatorMatrix());
+        if (painter.transform.projection.name === "globe") {
+            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition());
+        } else {
+            implementation.render(context.gl, painter.transform.customLayerMatrix());
+        }
 
         context.setDirty();
         painter.setBaseState();

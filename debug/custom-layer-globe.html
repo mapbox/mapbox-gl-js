@@ -45,8 +45,8 @@ const map = new mapboxgl.Map({
 });
 
 map.on('style.load', () => {
-    map.addLayer(satellitesLayer);
-    map.addLayer(coloredEarthLayer);
+    map.addLayer(satellitesLayer); // eslint-disable-line no-undef
+    map.addLayer(coloredEarthLayer); // eslint-disable-line no-undef
 
     document.getElementById('immediate-checkbox').onclick();
     document.getElementById('draped-checkbox').onclick();
