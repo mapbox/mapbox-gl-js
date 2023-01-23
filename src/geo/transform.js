@@ -1651,12 +1651,11 @@ class Transform {
     globeToMercatorMatrix(): ?Array<number> {
         if (this.projection.name === 'globe') {
             const pixelsToMerc = 1 / this.worldSize;
-            const m = mat4.create();
-            mat4.fromScaling(m, [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
+            const m = mat4.fromScaling([], [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
             mat4.multiply(m, m, this.globeMatrix);
             return m;
         }
-        return null;
+        return undefined;
     }
 
     recenterOnTerrain() {

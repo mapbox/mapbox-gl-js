@@ -704,7 +704,7 @@ class Painter {
 
         this.gpuTimingStart(layer);
         if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.isLayerDraped)) {
+            (painter.terrain && layer.type === 'custom')) {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         this.gpuTimingEnd();

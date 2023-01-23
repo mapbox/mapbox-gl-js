@@ -34,7 +34,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
             prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
             if (painter.transform.projection.name === "globe") {
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition());
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom));
             } else {
                 prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
             }
@@ -77,7 +77,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         context.setDepthMode(depthMode);
 
         if (painter.transform.projection.name === "globe") {
-            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition());
+            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition(painter.transform.zoom));
         } else {
             implementation.render(context.gl, painter.transform.customLayerMatrix());
         }

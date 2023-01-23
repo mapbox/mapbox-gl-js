@@ -27,6 +27,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import {DepthStencilAttachment} from '../gl/value.js';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
+import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
 import {Elevation} from './elevation.js';
 import Framebuffer from '../gl/framebuffer.js';
 import ColorMode from '../gl/color_mode.js';
@@ -934,7 +935,7 @@ export class Terrain extends Elevation {
             const layer = this._style._layers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
             if (layer.type === 'custom') {
-                return !isHidden && layer.shouldRedrape();
+                return !isHidden && ((layer: any): CustomStyleLayer).shouldRedrape();
             }
             return !isHidden && layer.hasTransition();
         };
