@@ -53,7 +53,12 @@ vec4 color;
 #ifdef ZERO_ROOF_RADIUS
     normal = mix(normal, vec3(0.0, 0.0, 1.0), z);
 #endif
+#ifdef LIGHTING_3D_MODE
+    float shadow_factor = shadowed_light_factor_normal(normalize(normal), v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb = apply_lighting(color.rgb, shadow_factor);
+#else
     color.xyz = shadowed_color_normal(color.xyz, normalize(normal), v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#endif
 #endif
 
 #ifdef FOG

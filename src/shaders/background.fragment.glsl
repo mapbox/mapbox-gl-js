@@ -1,14 +1,11 @@
 uniform vec4 u_color;
 uniform float u_opacity;
 
-#ifdef LIGHTING_3D_MODE
-varying vec4 v_color;
-#endif
-
 void main() {
     vec4 out_color;
+
 #ifdef LIGHTING_3D_MODE
-    out_color = v_color;
+    out_color = apply_lighting(u_color);
 #else
     out_color = u_color;
 #endif

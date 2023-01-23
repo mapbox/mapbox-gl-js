@@ -139,6 +139,7 @@ void main() {
     NdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), NdotL);
 #endif
 
+/*
     // Add gradient along z axis of side surfaces
     if (normal.y != 0.0) {
         float r = 0.84;
@@ -151,7 +152,7 @@ void main() {
             (1.0 - u_vertical_gradient) +
             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), r, 1.0)));
     }
-
+*/
     v_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 #ifdef FAUX_AO
@@ -174,7 +175,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    v_color = apply_lighting(color, NdotL);
+    v_color = color;
 #else
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
@@ -188,7 +189,7 @@ void main() {
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 #ifdef LIGHTING_3D_MODE
-    v_roof_color = apply_lighting(color, calculate_NdotL(vec3(0.0, 0.0, 1.0)));
+    v_roof_color = color;
 #else
     float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);

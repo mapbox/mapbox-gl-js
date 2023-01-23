@@ -15,7 +15,12 @@ void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 
 #ifdef RENDER_SHADOWS
+#ifdef LIGHTING_3D_MODE
+    float light_factor = shadowed_light_factor_normal(vec3(0.0, 0.0, 1.0), v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb = apply_lighting(color.rgb, light_factor);
+#else
     color.xyz = shadowed_color(color.xyz, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#endif
 #endif
 
 #ifdef FOG

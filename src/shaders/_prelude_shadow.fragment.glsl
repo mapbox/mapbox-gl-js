@@ -178,12 +178,33 @@ vec3 shadowed_color_normal(
     return color;
 }
 
+float shadowed_light_factor_normal(highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    highp float NDotL = dot(N, u_shadow_direction);
+    if (NDotL < 0.0)
+        return 1.0 - u_shadow_intensity;
+
+    NDotL = clamp(NDotL, 0.0, 1.0);
+
+    // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+    highp float bias = u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z);
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
+
+    return (1.0 - (u_shadow_intensity * occlusion)) * NDotL;
+}
+
 vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
     color *= 1.0 - (u_shadow_intensity * occlusion);
     return color;
+}
+
+float shadowed_light_factor(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    float bias = 0.0;
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
+    
+    return 1.0 - (u_shadow_intensity * occlusion);
 }
 
 #endif
