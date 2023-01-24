@@ -32,7 +32,6 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             painter.setCustomLayerDefaults();
             context.setColorMode(painter.colorModeForRenderPass());
 
-            prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
             if (painter.transform.projection.name === "globe") {
                 prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom));
             } else {
