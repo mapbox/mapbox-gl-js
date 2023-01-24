@@ -145,6 +145,7 @@ const satellitesLayer = {
         if (this.satData) {
             this.updateBuffers();
 
+            const primitiveCount = this.posEcef.length / 3;
             gl.enable(gl.DEPTH_TEST);
             if (projection && projection.name === 'globe') { // globe projection and globe to mercator transition
                 gl.useProgram(this.globeProgram);
@@ -156,13 +157,12 @@ const satellitesLayer = {
                 gl.uniformMatrix4fv(gl.getUniformLocation(this.globeProgram, "u_globeToMercMatrix"), false, globeToMercMatrix);
                 gl.uniform1f(gl.getUniformLocation(this.globeProgram, "u_globeToMercatorTransition"), transition);
 
-                const count = this.posEcef.length / 3;
-                gl.drawArrays(gl.POINTS, 0, count);
+                gl.drawArrays(gl.POINTS, 0, primitiveCount);
             } else { // mercator projection
                 gl.useProgram(this.mercProgram);
                 updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
                 gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
-                gl.drawArrays(gl.POINTS, 0, this.posEcef.length / 3);
+                gl.drawArrays(gl.POINTS, 0, primitiveCount);
             }
         }
     }

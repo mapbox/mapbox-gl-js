@@ -11,6 +11,11 @@ import {GLOBE_RADIUS, globeMetersToEcef, latLngToECEF} from '../geo/projection/g
 */
 export const earthRadius = 6371008.8;
 
+/*
+ * The average circumference of the earth in meters.
+ */
+export const earthCircumference = 2 * Math.PI * earthRadius;
+
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
  * These coordinates use longitude, latitude coordinate order (as opposed to latitude, longitude)
