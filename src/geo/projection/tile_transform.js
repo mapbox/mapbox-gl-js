@@ -114,7 +114,7 @@ export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, 
         [(wrap  + tx2) * numTiles, numTiles * ty2, max]);
 }
 
-export function getTilePoint(tileTransform: TileTransform, {x, y}: {x: number, y: number}, wrap: number = 0): Point {
+export function getTilePoint(tileTransform: TileTransform, {x, y}: interface { x: number, y: number }, wrap: number = 0): Point {
     return new Point(
         ((x - wrap) * tileTransform.scale - tileTransform.x) * EXTENT,
         (y * tileTransform.scale - tileTransform.y) * EXTENT);

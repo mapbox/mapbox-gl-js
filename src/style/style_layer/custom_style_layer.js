@@ -189,18 +189,18 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     return errors;
 }
 
-class CustomStyleLayer extends StyleLayer {
+class CustomStyleLayer
+    extends StyleLayer {
+  implementation: CustomLayerInterface;
 
-    implementation: CustomLayerInterface;
+  constructor(implementation: CustomLayerInterface) {
+      super(implementation, {});
+      this.implementation = implementation;
+  }
 
-    constructor(implementation: CustomLayerInterface) {
-        super(implementation, {});
-        this.implementation = implementation;
-    }
-
-    is3D(): boolean {
-        return this.implementation.renderingMode === '3d';
-    }
+  is3D(): boolean {
+      return this.implementation.renderingMode === '3d';
+  }
 
     hasOffscreenPass(): boolean {
         return this.implementation.prerender !== undefined;
@@ -214,28 +214,28 @@ class CustomStyleLayer extends StyleLayer {
         return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
     }
 
-    recalculate() {}
-    updateTransitions() {}
-    hasTransition(): boolean {
-        return false;
-    }
+  recalculate() {}
+  updateTransitions() {}
+  hasTransition(): boolean {
+      return false;
+  }
 
-    // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
-    serialize() {
-        assert(false, "Custom layers cannot be serialized");
-    }
+  // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
+  serialize() {
+      assert(false, "Custom layers cannot be serialized");
+  }
 
-    onAdd(map: Map) {
-        if (this.implementation.onAdd) {
-            this.implementation.onAdd(map, map.painter.context.gl);
-        }
-    }
+  onAdd = (map: Map) => {
+      if (this.implementation.onAdd) {
+          this.implementation.onAdd(map, map.painter.context.gl);
+      }
+  };
 
-    onRemove(map: Map) {
-        if (this.implementation.onRemove) {
-            this.implementation.onRemove(map, map.painter.context.gl);
-        }
-    }
+  onRemove(map: Map) {
+      if (this.implementation.onRemove) {
+          this.implementation.onRemove(map, map.painter.context.gl);
+      }
+  }
 }
 
 export default CustomStyleLayer;

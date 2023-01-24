@@ -13,7 +13,7 @@ import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
 
-type SerializedObject = {[_: string]: Serialized };
+type SerializedObject = interface { [_: string]: Serialized };
 export type Serialized =
     | null
     | void
