@@ -16,7 +16,7 @@ import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.j
 import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb, Ray} from '../../util/primitives.js';
-import LngLat from '../lng_lat.js';
+import LngLat, {earthRadius} from '../lng_lat.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
 import type Painter from '../../render/painter.js';
@@ -68,7 +68,7 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
 ];
 
 export function globeMetersToEcef(d: number): number {
-    return d * mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
+    return d * GLOBE_RADIUS / earthRadius;
 }
 
 export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): ?MercatorCoordinate {
