@@ -130,7 +130,7 @@ class LngLat {
     toEcef(altitude: number): [number, number, number] {
         const altInEcef = globeMetersToEcef(altitude);
         const radius = GLOBE_RADIUS + altInEcef;
-        return latLngToECEF(this.lat, this.lng, radius);
+        return (latLngToECEF(this.lat, this.lng, radius): any);
     }
 
     /**
