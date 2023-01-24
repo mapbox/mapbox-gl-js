@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-gl",
+  "name": "@mapbox/mapbox-gl-private",
   "description": "A WebGL interactive maps library",
   "version": "2.13.0-dev",
   "main": "dist/mapbox-gl.js",

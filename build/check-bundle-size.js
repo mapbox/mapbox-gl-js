@@ -23,11 +23,13 @@ if (!PK) {
     process.exit(0);
 }
 const owner = 'mapbox';
-const repo = 'mapbox-gl-js';
+const repo = 'mapbox-gl-js-internal';
 
 (async () => {
-    // Initialize github client
-    const github = new Octokit({
+    const githubReader = new Octokit({
+        auth: execSync('~/mbx-ci github reader token').toString().trim()
+    });
+    const githubNotifier = new Octokit({
         auth: execSync('~/mbx-ci github notifier token').toString().trim()
     });
 
@@ -40,7 +42,7 @@ const repo = 'mapbox-gl-js';
         const pr = process.env['CIRCLE_PULL_REQUEST'];
         if (pr) {
             const number = +pr.match(/\/(\d+)\/?$/)[1];
-            return github.pulls.get({
+            return githubReader.pulls.get({
                 owner,
                 repo,
                 pull_number: number
@@ -53,7 +55,7 @@ const repo = 'mapbox-gl-js';
             // finding a commit on either master or release-*; assume that's the
             // base branch.
             for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
-                const base = execSync(`git branch -r --contains ${sha} origin/main origin/release-*`).toString().split('\n')[0].trim();
+                const base = execSync(`git branch -r --contains ${sha} origin/internal origin/release-*`).toString().split('\n')[0].trim();
                 if (base) {
                     return Promise.resolve(execSync(`git merge-base ${base} ${head}`).toString().trim());
                 }
@@ -69,7 +71,7 @@ const repo = 'mapbox-gl-js';
             return Promise.resolve(null);
         }
 
-        return github.checks.listForRef({
+        return githubReader.checks.listForRef({
             owner,
             repo,
             ref: mergeBase
@@ -109,7 +111,7 @@ const repo = 'mapbox-gl-js';
         console.log(`Title: ${title}`);
         console.log(`Summary: ${summary}`);
 
-        await github.checks.create({
+        await githubNotifier.checks.create({
             owner,
             repo,
             name,

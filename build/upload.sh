@@ -83,8 +83,12 @@ do
 
 	if [ "$2" = "dry-run" ]
 	then
-		echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}"
+		echo "aws s3 cp --acl private --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js-internal/${tag}/${file}"
+		echo "aws s3 cp --region cn-north-1 --acl private --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js-internal-cn-north-1/${tag}/${file}"
 	else
-		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}
+		aws s3 cp --acl private --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js-internal/${tag}/${file}
+		AWS_ACCESS_KEY_ID=$AWSCN_ACCESS_KEY_ID \
+        AWS_SECRET_ACCESS_KEY=$AWSCN_SECRET_ACCESS_KEY \
+        aws s3 cp --region cn-north-1 --acl private --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js-internal-cn-north-1/${tag}/${file}
 	fi
 done

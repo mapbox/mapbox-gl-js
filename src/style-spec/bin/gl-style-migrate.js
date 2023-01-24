@@ -6,9 +6,9 @@
 import fs from 'fs';
 import minimist from 'minimist';
 
-/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
+/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec-private$'] }] */
 /* $FlowFixMe[cannot-resolve-module] */
-import {format, migrate} from '@mapbox/mapbox-gl-style-spec';
+import {format, migrate} from '@mapbox/mapbox-gl-style-spec-private';
 
 const argv = minimist(process.argv.slice(2));
 

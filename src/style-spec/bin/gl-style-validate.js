@@ -6,9 +6,9 @@
 import rw from 'rw';
 import minimist from 'minimist';
 
-/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
+/* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec-private$'] }] */
 /* $FlowFixMe[cannot-resolve-module] */
-import {validate, validateMapboxApiSupported} from '@mapbox/mapbox-gl-style-spec';
+import {validate, validateMapboxApiSupported} from '@mapbox/mapbox-gl-style-spec-private';
 
 const argv = minimist(process.argv.slice(2), {
     boolean: ['json', 'mapbox-api-supported'],
