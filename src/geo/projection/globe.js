@@ -11,7 +11,6 @@ import Point from '@mapbox/point-geometry';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {
-    GLOBE_METERS_TO_ECEF,
     GLOBE_SCALE_MATCH_LATITUDE,
     latLngToECEF,
     globeTileBounds,
@@ -20,7 +19,8 @@ import {
     globeECEFNormalizationScale,
     globeToMercatorTransition,
     globePointCoordinate,
-    tileCoordToECEF
+    tileCoordToECEF,
+    globeMetersToEcef
 } from './globe_util.js';
 
 import type Transform from '../transform.js';
@@ -37,7 +37,7 @@ export default class Globe extends Mercator {
         this.supportsWorldCopies = false;
         this.supportsFog = true;
         this.zAxisUnit = "pixels";
-        this.unsupportedLayers = ['debug', 'custom'];
+        this.unsupportedLayers = ['debug'];
         this.range = [3, 5];
     }
 
@@ -140,6 +140,6 @@ export default class Globe extends Mercator {
     }
 
     upVectorScale(id: CanonicalTileID): ElevationScale {
-        return {metersToTile: GLOBE_METERS_TO_ECEF * globeECEFNormalizationScale(globeTileBounds(id))};
+        return {metersToTile: globeMetersToEcef(globeECEFNormalizationScale(globeTileBounds(id)))};
     }
 }
