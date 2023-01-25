@@ -284,7 +284,7 @@ export class Terrain extends Elevation {
         this._style = style;
         this._checkRenderCacheEfficiency();
         this._style.map.on('moveend', () => {
-            this._clearTilesFromRenderCache();
+            this._clearLineLayersFromRenderCache();
         });
     }
 
@@ -948,16 +948,16 @@ export class Terrain extends Elevation {
         return this._style.order.some(isTransitioning);
     }
 
-    _clearTilesFromRenderCache() {
-        let hasVectorOrRasterSource = false;
+    _clearLineLayersFromRenderCache() {
+        let hasVectorSource = false;
         for (const source of this._style._getSources()) {
-            if (source instanceof VectorTileSource || source instanceof RasterTileSource) {
-                hasVectorOrRasterSource = true;
+            if (source instanceof VectorTileSource) {
+                hasVectorSource = true;
                 break;
             }
         }
 
-        if (!hasVectorOrRasterSource) return;
+        if (!hasVectorSource) return;
 
         const clearSourceCaches = {};
         for (let i = 0; i < this._style.order.length; ++i) {
@@ -966,51 +966,61 @@ export class Terrain extends Elevation {
             if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
 
             const isHidden = layer.isHidden(this.painter.transform.zoom);
-            if (isHidden) continue;
+            if (isHidden || layer.type !== 'line') continue;
 
-            if (layer.type === 'line') {
-                clearSourceCaches[sourceCache.id] = true;
-                const lineLayer = ((layer: any): LineStyleLayer);
-                this._clearLineLayerFromRenderCache(lineLayer, sourceCache);
-            } else if (layer.type === 'raster') {
-                clearSourceCaches[sourceCache.id] = true;
-                const rasterLayer = ((layer: any): RasterStyleLayer);
-                this._clearRasterLayerFromRenderCache(rasterLayer, sourceCache);
-            }
-        }
-    }
+            // Check if layer has a zoom dependent "line-width" expression
+            const widthExpression = ((layer: any): LineStyleLayer).widthExpression();
+            if (!(widthExpression instanceof ZoomDependentExpression)) continue;
 
-    _clearLineLayerFromRenderCache(layer: LineStyleLayer, sourceCache: SourceCache) {
-        // Check if layer has a zoom dependent "line-width" expression
-        const widthExpression = layer.widthExpression();
-        if (!(widthExpression instanceof ZoomDependentExpression)) return;
+            // Mark sourceCache as cleared
+            clearSourceCaches[sourceCache.id] = true;
+            for (const proxy of this.proxyCoords) {
+                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                if (!coords) continue;
 
-        for (const proxy of this.proxyCoords) {
-            const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
-            const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-            if (!coords) continue;
-
-            for (const coord of coords) {
-                this._clearRenderCacheForTile(sourceCache.id, coord);
-            }
-        }
-    }
-
-    _clearRasterLayerFromRenderCache(layer: RasterStyleLayer, sourceCache: SourceCache) {
-        // Check if any raster tile is in a fading state
-        const fadeDuration = layer.paint.get('raster-fade-duration');
-        for (const proxy of this.proxyCoords) {
-            const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
-            const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-            if (!coords) continue;
-
-            for (const coord of coords) {
-                const tile = sourceCache.getTile(coord);
-                const parent = sourceCache.findLoadedParent(coord, 0);
-                const fade = rasterFade(tile, parent, sourceCache, this.painter.transform, fadeDuration);
-                const isFading = fade.opacity !== 1 || fade.mix !== 0;
-                if (isFading) {
+                for (const coord of coords) {
                     this._clearRenderCacheForTile(sourceCache.id, coord);
+                }
+            }
+        }
+    }
+
+    _clearRasterLayersFromRenderCache() {
+        let hasRasterSource = false;
+        for (const id in this._style._sourceCaches) {
+            if (this._style._sourceCaches[id]._source instanceof RasterTileSource) {
+                hasRasterSource = true;
+                break;
+            }
+        }
+
+        if (!hasRasterSource) return;
+
+        const clearSourceCaches = {};
+        for (let i = 0; i < this._style.order.length; ++i) {
+            const layer = this._style._layers[this._style.order[i]];
+            const sourceCache = this._style._getLayerSourceCache(layer);
+            if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
+
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
+            if (isHidden || layer.type !== 'raster') continue;
+
+            // Check if any raster tile is in a fading state
+            const fadeDuration = ((layer: any): RasterStyleLayer).paint.get('raster-fade-duration');
+            for (const proxy of this.proxyCoords) {
+                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                if (!coords) continue;
+
+                for (const coord of coords) {
+                    const tile = sourceCache.getTile(coord);
+                    const parent = sourceCache.findLoadedParent(coord, 0);
+                    const fade = rasterFade(tile, parent, sourceCache, this.painter.transform, fadeDuration);
+                    const isFading = fade.opacity !== 1 || fade.mix !== 0;
+                    if (isFading) {
+                        this._clearRenderCacheForTile(sourceCache.id, coord);
+                    }
                 }
             }
         }
@@ -1076,6 +1086,8 @@ export class Terrain extends Elevation {
             }
             return;
         }
+
+        this._clearRasterLayersFromRenderCache();
 
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
