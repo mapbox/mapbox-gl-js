@@ -86,13 +86,6 @@ void main() {
     }
 #endif
 
-#ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color);
-#endif
-#ifdef FOG
-    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
-#endif
-
 #ifdef RENDER_LINE_ALPHA_DISCARD
     if (alpha < u_alpha_discard_threshold) {
         discard;
@@ -118,8 +111,16 @@ void main() {
 #endif // RENDER_LINE_BORDER_AUTO
     }
 #endif
-    gl_FragColor = out_color * (alpha * opacity);
 
+#ifdef LIGHTING_3D_MODE
+    out_color = apply_lighting(out_color);
+#endif
+
+#ifdef FOG
+    out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
+#endif
+
+    gl_FragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
