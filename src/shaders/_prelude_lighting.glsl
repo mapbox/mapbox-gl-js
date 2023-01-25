@@ -28,4 +28,9 @@ vec4 apply_lighting(vec4 color, float NdotL) {
     return vec4(apply_lighting(color.rgb, NdotL), color.a);
 }
 
+vec4 apply_lighting_with_emission(vec4 color, float emissive_strength)
+{
+    return mix(apply_lighting(color), color, emissive_strength);
+}
+
 #endif
