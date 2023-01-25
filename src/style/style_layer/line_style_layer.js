@@ -70,6 +70,10 @@ class LineStyleLayer extends StyleLayer {
         return this._transitionablePaint._values['line-gradient'].value.expression;
     }
 
+    widthExpression(): StylePropertyExpression {
+        return this._transitionablePaint._values['line-width'].value.expression;
+    }
+
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
 

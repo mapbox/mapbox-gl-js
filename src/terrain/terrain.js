@@ -21,6 +21,7 @@ import GeoJSONSource from '../source/geojson_source.js';
 import ImageSource from '../source/image_source.js';
 import RasterDEMTileSource from '../source/raster_dem_tile_source.js';
 import RasterTileSource from '../source/raster_tile_source.js';
+import VectorTileSource from '../source/vector_tile_source.js';
 import Color from '../style-spec/util/color.js';
 import type {Callback} from '../types/callback.js';
 import StencilMode from '../gl/stencil_mode.js';
@@ -28,6 +29,7 @@ import {DepthStencilAttachment} from '../gl/value.js';
 import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
+import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import {Elevation} from './elevation.js';
 import Framebuffer from '../gl/framebuffer.js';
 import ColorMode from '../gl/color_mode.js';
@@ -42,6 +44,7 @@ import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
 import {RGBAImage} from '../util/image.js';
 import {globeMetersToEcef} from '../geo/projection/globe_util.js';
+import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -280,6 +283,9 @@ export class Terrain extends Elevation {
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
+        this._style.map.on('moveend', () => {
+            this._clearLineLayersFromRenderCache();
+        });
     }
 
     /*
@@ -942,7 +948,45 @@ export class Terrain extends Elevation {
         return this._style.order.some(isTransitioning);
     }
 
-    _clearRasterFadeFromRenderCache() {
+    _clearLineLayersFromRenderCache() {
+        let hasVectorSource = false;
+        for (const source of this._style._getSources()) {
+            if (source instanceof VectorTileSource) {
+                hasVectorSource = true;
+                break;
+            }
+        }
+
+        if (!hasVectorSource) return;
+
+        const clearSourceCaches = {};
+        for (let i = 0; i < this._style.order.length; ++i) {
+            const layer = this._style._layers[this._style.order[i]];
+            const sourceCache = this._style._getLayerSourceCache(layer);
+            if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
+
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
+            if (isHidden || layer.type !== 'line') continue;
+
+            // Check if layer has a zoom dependent "line-width" expression
+            const widthExpression = ((layer: any): LineStyleLayer).widthExpression();
+            if (!(widthExpression instanceof ZoomDependentExpression)) continue;
+
+            // Mark sourceCache as cleared
+            clearSourceCaches[sourceCache.id] = true;
+            for (const proxy of this.proxyCoords) {
+                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                if (!coords) continue;
+
+                for (const coord of coords) {
+                    this._clearRenderCacheForTile(sourceCache.id, coord);
+                }
+            }
+        }
+    }
+
+    _clearRasterLayersFromRenderCache() {
         let hasRasterSource = false;
         for (const id in this._style._sourceCaches) {
             if (this._style._sourceCaches[id]._source instanceof RasterTileSource) {
@@ -950,23 +994,24 @@ export class Terrain extends Elevation {
                 break;
             }
         }
-        if (!hasRasterSource) {
-            return;
-        }
 
-        // Check if any raster tile is in a fading state
+        if (!hasRasterSource) return;
+
+        const clearSourceCaches = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._layers[this._style.order[i]];
-            const isHidden = layer.isHidden(this.painter.transform.zoom);
             const sourceCache = this._style._getLayerSourceCache(layer);
-            if (layer.type !== 'raster' || isHidden || !sourceCache) { continue; }
+            if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
 
-            const rasterLayer = ((layer: any): RasterStyleLayer);
-            const fadeDuration = rasterLayer.paint.get('raster-fade-duration');
+            const isHidden = layer.isHidden(this.painter.transform.zoom);
+            if (isHidden || layer.type !== 'raster') continue;
+
+            // Check if any raster tile is in a fading state
+            const fadeDuration = ((layer: any): RasterStyleLayer).paint.get('raster-fade-duration');
             for (const proxy of this.proxyCoords) {
                 const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
                 const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-                if (!coords) { continue; }
+                if (!coords) continue;
 
                 for (const coord of coords) {
                     const tile = sourceCache.getTile(coord);
@@ -1042,7 +1087,7 @@ export class Terrain extends Elevation {
             return;
         }
 
-        this._clearRasterFadeFromRenderCache();
+        this._clearRasterLayersFromRenderCache();
 
         const coords = this.proxyCoords;
         const dirty = this._tilesDirty;
