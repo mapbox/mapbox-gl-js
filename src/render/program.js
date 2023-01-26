@@ -79,7 +79,7 @@ class Program<Us: UniformBindings> {
                 fixedUniforms: (Context) => Us,
                 fixedDefines: string[]) {
         const gl = context.gl;
-        this.program = gl.createProgram();
+        this.program = ((gl.createProgram(): any): WebGLProgram);
 
         const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
@@ -87,15 +87,16 @@ class Program<Us: UniformBindings> {
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
+        const version = context.isWebGL2 ? '#version 300 es\n' : '';
 
-        const fragmentSource = defines.concat(
-            context.extStandardDerivatives ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
+        const fragmentSource = version + defines.concat(
+            context.extStandardDerivatives && version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
             source.fragmentSource).join('\n');
-        const vertexSource = defines.concat(
+        const vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
             preludeCommonSource,
             prelude.vertexSource,
@@ -103,7 +104,7 @@ class Program<Us: UniformBindings> {
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
 
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        const fragmentShader = ((gl.createShader(gl.FRAGMENT_SHADER): any): WebGLShader);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             return;
@@ -113,7 +114,7 @@ class Program<Us: UniformBindings> {
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(this.program, fragmentShader);
 
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        const vertexShader = ((gl.createShader(gl.VERTEX_SHADER): any): WebGLShader);
         if (gl.isContextLost()) {
             this.failedToCreate = true;
             return;

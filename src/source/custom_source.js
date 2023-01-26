@@ -155,9 +155,9 @@ class CustomSource<T> extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    attribution: string;
+    attribution: string | void;
 
-    roundZoom: boolean;
+    roundZoom: boolean | void;
     tileBounds: ?TileBounds;
     minTileCacheSize: ?number;
     maxTileCacheSize: ?number;

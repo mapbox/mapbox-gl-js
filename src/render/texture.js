@@ -45,7 +45,7 @@ class Texture {
     constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
         this.context = context;
         this.format = format;
-        this.texture = context.gl.createTexture();
+        this.texture = ((context.gl.createTexture(): any): WebGLTexture);
         this.update(image, options);
     }
 

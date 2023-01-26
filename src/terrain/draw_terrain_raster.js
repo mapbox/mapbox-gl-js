@@ -171,6 +171,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const elevationOptions = {useDenormalizedUpVectorScale: true};
 
     batches.forEach(isWireframe => {
+        const tr = painter.transform;
+        const skirtHeightValue = skirtHeight(tr.zoom) * terrain.exaggeration();
+
         // This code assumes the rendering is batched into mesh terrain and then wireframe
         // terrain (if applicable) so that this is enough to ensure the correct program is
         // set when we switch from one to the other.
@@ -207,7 +210,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const uniformValues = globeRasterUniformValues(
                 tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
-                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, gridMatrix);
+                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, gridMatrix);
 
             setShaderMode(shaderMode, isWireframe);
 
@@ -218,7 +221,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             if (sharedBuffers) {
                 const [buffer, indexBuffer, segments] = isWireframe ?
                     sharedBuffers.getWirefameBuffers(painter.context, latitudinalLod) :
-                    sharedBuffers.getGridBuffers(latitudinalLod);
+                    sharedBuffers.getGridBuffers(latitudinalLod, skirtHeightValue !== 0);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "globe_raster", buffer, indexBuffer, segments);
@@ -254,7 +257,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
-                    tr.globeCenterInViewSpace, tr.globeRadius, viewport), "globe_pole_raster", vertexBuffer,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);

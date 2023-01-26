@@ -2,6 +2,7 @@
 
 import {wrap} from '../util/util.js';
 import LngLatBounds from './lng_lat_bounds.js';
+import {GLOBE_RADIUS, globeMetersToEcef, latLngToECEF} from '../geo/projection/globe_util.js';
 
 /*
 * Approximate radius of the earth in meters.
@@ -9,6 +10,11 @@ import LngLatBounds from './lng_lat_bounds.js';
 * 6371008.8 is one published "average radius" see https://en.wikipedia.org/wiki/Earth_radius#Mean_radius, or ftp://athena.fsv.cvut.cz/ZFG/grs80-Moritz.pdf p.4
 */
 export const earthRadius = 6371008.8;
+
+/*
+ * The average circumference of the earth in meters.
+ */
+export const earthCircumference = 2 * Math.PI * earthRadius;
 
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
@@ -119,6 +125,12 @@ class LngLat {
 
         return new LngLatBounds(new LngLat(this.lng - lngAccuracy, this.lat - latAccuracy),
             new LngLat(this.lng + lngAccuracy, this.lat + latAccuracy));
+    }
+
+    toEcef(altitude: number): [number, number, number] {
+        const altInEcef = globeMetersToEcef(altitude);
+        const radius = GLOBE_RADIUS + altInEcef;
+        return (latLngToECEF(this.lat, this.lng, radius): any);
     }
 
     /**

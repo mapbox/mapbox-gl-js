@@ -16,7 +16,7 @@ import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.j
 import posAttributes from '../../data/pos_attributes.js';
 import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
 import {Aabb, Ray} from '../../util/primitives.js';
-import LngLat from '../lng_lat.js';
+import LngLat, {earthRadius} from '../lng_lat.js';
 import LngLatBounds from '../lng_lat_bounds.js';
 
 import type Painter from '../../render/painter.js';
@@ -48,7 +48,6 @@ export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 export const GLOBE_SCALE_MATCH_LATITUDE = 45;
 
 export const GLOBE_RADIUS = EXTENT / Math.PI / 2.0;
-export const GLOBE_METERS_TO_ECEF = mercatorZfromAltitude(1, 0.0) * 2.0 * GLOBE_RADIUS * Math.PI;
 const GLOBE_NORMALIZATION_BIT_RANGE = 15;
 const GLOBE_NORMALIZATION_MASK = (1 << (GLOBE_NORMALIZATION_BIT_RANGE - 1)) - 1;
 const GLOBE_VERTEX_GRID_SIZE = 64;
@@ -67,6 +66,10 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
     new Aabb([GLOBE_MIN, 0, GLOBE_MIN], [0, GLOBE_MAX, GLOBE_MAX]), // x=0, y=1
     new Aabb([0, 0, GLOBE_MIN], [GLOBE_MAX, GLOBE_MAX, GLOBE_MAX])  // x=1, y=1
 ];
+
+export function globeMetersToEcef(d: number): number {
+    return d * GLOBE_RADIUS / earthRadius;
+}
 
 export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): ?MercatorCoordinate {
     const point0 = vec3.scale([], tr._camera.position, tr.worldSize);
@@ -378,7 +381,7 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
 
     // // Ensure that the tile viewed is the nearest when across the antimeridian
     let wrap = 0;
-    const tileCenterXFromCamera = (w + e) / 2  - camX;
+    const tileCenterXFromCamera = (w + e) / 2 - camX;
     if (tileCenterXFromCamera > .5) {
         wrap = -1;
     } else if (tileCenterXFromCamera < -.5) {
@@ -389,10 +392,10 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
     camY *= numTiles;
 
     //  Transform Mercator coordinates to points on the plane tangent to the globe at cameraCenter.
-    w  = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
-    e  = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
-    n  = (n * numTiles - camY) * mercatorScale + camY;
-    s  = (s * numTiles - camY) * mercatorScale + camY;
+    w = ((w + wrap) * numTiles - camX) * mercatorScale + camX;
+    e = ((e + wrap) * numTiles - camX) * mercatorScale + camX;
+    n = (n * numTiles - camY) * mercatorScale + camY;
+    s = (s * numTiles - camY) * mercatorScale + camY;
 
     return [[w, s, 0],
         [e, s, 0],
@@ -635,7 +638,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     mat4.fromRotation(rotation, -tr._pitch, axis);
 
     const pivotToCamera = vec3.normalize([], centerToPivot);
-    vec3.scale(pivotToCamera, pivotToCamera, tr.cameraToCenterDistance / tr.pixelsPerMeter * GLOBE_METERS_TO_ECEF);
+    vec3.scale(pivotToCamera, pivotToCamera, globeMetersToEcef(tr.cameraToCenterDistance / tr.pixelsPerMeter));
     vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
 
     return vec3.add([], centerToPivot, pivotToCamera);
@@ -691,6 +694,20 @@ const POLE_RAD = degToRad(85.0);
 const POLE_COS = Math.cos(POLE_RAD);
 const POLE_SIN = Math.sin(POLE_RAD);
 
+// Generate terrain grid with embedded skirts
+const EMBED_SKIRTS = true;
+
+type GridLodSegments = {
+    withoutSkirts: SegmentVector,
+    withSkirts: SegmentVector
+};
+
+type GridWithLods = {
+    vertices: PosArray,
+    indices: TriangleIndexArray,
+    segments: Array<GridLodSegments>
+};
+
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;
     _poleSouthVertexBuffer: VertexBuffer;
@@ -699,7 +716,7 @@ export class GlobeSharedBuffers {
 
     _gridBuffer: VertexBuffer;
     _gridIndexBuffer: IndexBuffer;
-    _gridSegments: Array<SegmentVector>;
+    _gridSegments: Array<GridLodSegments>;
 
     _wireframeIndexBuffer: IndexBuffer;
     _wireframeSegments: Array<SegmentVector>;
@@ -716,7 +733,10 @@ export class GlobeSharedBuffers {
         this._poleNorthVertexBuffer.destroy();
         this._poleSouthVertexBuffer.destroy();
         for (const segments of this._poleSegments) segments.destroy();
-        for (const segments of this._gridSegments) segments.destroy();
+        for (const segments of this._gridSegments) {
+            segments.withSkirts.destroy();
+            segments.withoutSkirts.destroy();
+        }
 
         if (this._wireframeIndexBuffer) {
             this._wireframeIndexBuffer.destroy();
@@ -724,37 +744,134 @@ export class GlobeSharedBuffers {
         }
     }
 
-    _createGrid(context: Context) {
-        const gridVertices = new PosArray();
-        const gridIndices = new TriangleIndexArray();
+    // Generate terrain grid vertices and indices for all LOD's
+    //
+    // Grid vertices memory layout:
+    //
+    //          First line Skirt
+    //          ┌───────────────┐
+    //          │┌─────────────┐│
+    // Left     ││┼┼┼┼┼┼┼┼┼┼┼┼┼││ Right
+    // Border   ││┼┼┼┼┼┼┼┼┼┼┼┼┼││ Border
+    // Skirt    │├─────────────┤│ Skirt
+    //          ││  Main Grid  ││
+    //          │├─────────────┤│
+    //          ││┼┼┼┼┼┼┼┼┼┼┼┼┼││
+    //          ││┼┼┼┼┼┼┼┼┼┼┼┼┼││
+    //          │└─────────────┘│
+    //          ├───────────────┤
+    //          ├───────────────┤
+    //          └───────────────┘
+    //      Bottom Skirt = Number of LOD's
+    //
+    _fillGridMeshWithLods(longitudinalCellsCount: number, latitudinalLods: number[]): GridWithLods {
+        const vertices = new PosArray();
+        const indices = new TriangleIndexArray();
+        const segments: Array<GridLodSegments> = [];
 
-        const quadExt = GLOBE_VERTEX_GRID_SIZE;
-        const vertexExt = quadExt + 1;
+        const xVertices = longitudinalCellsCount + 1 + 2 * (EMBED_SKIRTS ? 1 : 0);
+        const yVerticesHighLodNoStrip = latitudinalLods[0] + 1;
+        const yVerticesHighLodWithStrip = latitudinalLods[0] + 1 + (EMBED_SKIRTS ? 1 + latitudinalLods.length : 0);
 
-        for (let j = 0; j < vertexExt; j++)
-            for (let i = 0; i < vertexExt; i++)
-                gridVertices.emplaceBack(i, j);
+        // Index adjustment, used to make strip (x, y) vertex input attribute data
+        // to match same data on ordinary grid edges
+        const prepareVertex = (x: number, y: number, isSkirt: boolean) => {
+            if (!EMBED_SKIRTS) return [x, y];
 
-        this._gridSegments = [];
-        for (let k = 0, primitiveOffset = 0; k < GLOBE_LATITUDINAL_GRID_LOD_TABLE.length; k++) {
-            const latitudinalLod = GLOBE_LATITUDINAL_GRID_LOD_TABLE[k];
-            for (let j = 0; j < latitudinalLod; j++) {
-                for (let i = 0; i < quadExt; i++) {
-                    const index = j * vertexExt + i;
-                    gridIndices.emplaceBack(index + 1, index, index + vertexExt);
-                    gridIndices.emplaceBack(index + vertexExt, index + vertexExt + 1, index + 1);
+            let adjustedX = (() => {
+                if (x === xVertices - 1) {
+                    return x - 2;
+                } else if (x === 0) {
+                    return x;
+                } else {
+                    return x - 1;
+                }
+            })();
+
+            // Skirt factor is introduces as an offset to the .x coordinate, similar to how it's done for mercator grids
+            const skirtOffset = 24575;
+            adjustedX += isSkirt ? skirtOffset : 0;
+
+            return [adjustedX, y];
+        };
+
+        // Add first horizontal strip if present
+        if (EMBED_SKIRTS) {
+            for (let x = 0; x < xVertices; ++x) {
+                vertices.emplaceBack(...prepareVertex(x, 0, true));
+            }
+        }
+
+        // Add main grid part with vertices strips embedded
+        for (let y = 0; y < yVerticesHighLodNoStrip; ++y) {
+            for (let x = 0; x < xVertices; ++x) {
+                const isSideBorder = (x === 0 || x === xVertices - 1);
+
+                vertices.emplaceBack(...prepareVertex(x, y, isSideBorder && EMBED_SKIRTS));
+            }
+        }
+
+        // Add bottom strips for each LOD
+        if (EMBED_SKIRTS) {
+            for (let lodIdx = 0; lodIdx < latitudinalLods.length; ++lodIdx) {
+                const lastYRowForLod = latitudinalLods[lodIdx];
+                for (let x = 0; x < xVertices; ++x) {
+                    vertices.emplaceBack(...prepareVertex(x, lastYRowForLod, true));
+                }
+            }
+        }
+
+        // Fill triangles
+        for (let lodIdx = 0; lodIdx < latitudinalLods.length; ++lodIdx) {
+            const indexOffset = indices.length;
+
+            const yVerticesLod = latitudinalLods[lodIdx] + 1 + 2 * (EMBED_SKIRTS ? 1 : 0);
+
+            const skirtsOnlyIndices = new TriangleIndexArray();
+
+            for (let y = 0; y < yVerticesLod - 1; y++) {
+                const isLastLine = (y === yVerticesLod - 2);
+                const offsetToNextRow =
+                    (isLastLine && EMBED_SKIRTS ?
+                        (xVertices * (yVerticesHighLodWithStrip - latitudinalLods.length + lodIdx - y)) :
+                        xVertices);
+
+                for (let x = 0; x < xVertices - 1; x++) {
+                    const idx = y * xVertices + x;
+
+                    const isSkirt = EMBED_SKIRTS && (y === 0 || isLastLine || x === 0 || x === xVertices - 2);
+
+                    if (isSkirt) {
+                        skirtsOnlyIndices.emplaceBack(idx + 1, idx, idx + offsetToNextRow);
+                        skirtsOnlyIndices.emplaceBack(idx + offsetToNextRow, idx + offsetToNextRow + 1, idx + 1);
+                    } else {
+                        indices.emplaceBack(idx + 1, idx, idx + offsetToNextRow);
+                        indices.emplaceBack(idx + offsetToNextRow, idx + offsetToNextRow + 1, idx + 1);
+                    }
                 }
             }
 
-            const numVertices = (latitudinalLod + 1) * vertexExt;
-            const numPrimitives = latitudinalLod * quadExt * 2;
+            // Segments grid only
+            const withoutSkirts = SegmentVector.simpleSegment(0, indexOffset, vertices.length, indices.length - indexOffset);
 
-            this._gridSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
-            primitiveOffset += numPrimitives;
+            for (let i = 0; i < skirtsOnlyIndices.uint16.length; i += 3) {
+                indices.emplaceBack(skirtsOnlyIndices.uint16[i], skirtsOnlyIndices.uint16[i + 1], skirtsOnlyIndices.uint16[i + 2]);
+            }
+
+            // Segments grid + skirts only
+            const withSkirts = SegmentVector.simpleSegment(0, indexOffset, vertices.length, indices.length - indexOffset);
+            segments.push({withoutSkirts, withSkirts});
         }
 
-        this._gridBuffer = context.createVertexBuffer(gridVertices, posAttributes.members);
-        this._gridIndexBuffer = context.createIndexBuffer(gridIndices, true);
+        return {vertices, indices, segments};
+    }
+
+    _createGrid(context: Context) {
+        const gridWithLods = this._fillGridMeshWithLods(GLOBE_VERTEX_GRID_SIZE, GLOBE_LATITUDINAL_GRID_LOD_TABLE);
+        this._gridSegments = gridWithLods.segments;
+
+        this._gridBuffer = context.createVertexBuffer(gridWithLods.vertices, posAttributes.members);
+        this._gridIndexBuffer = context.createIndexBuffer(gridWithLods.indices, true);
     }
 
     _createPoles(context: Context) {
@@ -794,8 +911,8 @@ export class GlobeSharedBuffers {
         this._poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
     }
 
-    getGridBuffers(latitudinalLod: number): [VertexBuffer, IndexBuffer, SegmentVector] {
-        return [this._gridBuffer, this._gridIndexBuffer, this._gridSegments[latitudinalLod]];
+    getGridBuffers(latitudinalLod: number, withSkirts: boolean): [VertexBuffer, IndexBuffer, SegmentVector] {
+        return [this._gridBuffer, this._gridIndexBuffer, withSkirts ? this._gridSegments[latitudinalLod].withSkirts : this._gridSegments[latitudinalLod].withoutSkirts];
     }
 
     getPoleBuffers(z: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
@@ -806,13 +923,15 @@ export class GlobeSharedBuffers {
         if (!this._wireframeSegments) {
             const wireframeIndices = new LineIndexArray();
             const quadExt = GLOBE_VERTEX_GRID_SIZE;
-            const vertexExt = quadExt + 1;
+            const vertexExt = quadExt + 1 + (EMBED_SKIRTS ? 2 : 0);
+
+            const iterOffset = EMBED_SKIRTS ? 1 : 0;
 
             this._wireframeSegments = [];
             for (let k = 0, primitiveOffset = 0; k < GLOBE_LATITUDINAL_GRID_LOD_TABLE.length; k++) {
                 const latitudinalLod = GLOBE_LATITUDINAL_GRID_LOD_TABLE[k];
-                for (let j = 0; j < latitudinalLod; j++) {
-                    for (let i = 0; i < quadExt; i++) {
+                for (let j = iterOffset; j < latitudinalLod + iterOffset; j++) {
+                    for (let i = iterOffset; i < quadExt + iterOffset; i++) {
                         const index = j * vertexExt + i;
                         wireframeIndices.emplaceBack(index, index + 1);
                         wireframeIndices.emplaceBack(index, index + vertexExt);

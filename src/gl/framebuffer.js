@@ -17,7 +17,7 @@ class Framebuffer {
         this.width = width;
         this.height = height;
         const gl = context.gl;
-        const fbo = this.framebuffer = gl.createFramebuffer();
+        const fbo = this.framebuffer = ((gl.createFramebuffer(): any): WebGLFramebuffer);
 
         this.colorAttachment = new ColorAttachment(context, fbo);
         if (hasDepth) {

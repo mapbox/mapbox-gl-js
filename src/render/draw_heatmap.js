@@ -120,8 +120,10 @@ function bindTextureToFramebuffer(context, painter, texture, fbo, width, height)
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     // Otherwise, fall back to a low precision texture
-    const internalFormat = context.extRenderToTextureHalfFloat ? context.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, internalFormat, null);
+    /* $FlowFixMe[prop-missing] WebGL2 */
+    const type = context.extRenderToTextureHalfFloat ? (context.isWebGL2 ? gl.HALF_FLOAT : context.extTextureHalfFloat.HALF_FLOAT_OES) : gl.UNSIGNED_BYTE;
+    /* $FlowFixMe[prop-missing] WebGL2 */
+    gl.texImage2D(gl.TEXTURE_2D, 0, (context.isWebGL2 && context.extRenderToTextureHalfFloat) ? gl.RGBA16F : gl.RGBA, width, height, 0, gl.RGBA, type, null);
     fbo.colorAttachment.set(texture);
 }
 

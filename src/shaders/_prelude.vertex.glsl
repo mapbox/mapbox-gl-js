@@ -1,5 +1,11 @@
 // NOTE: This prelude is injected in the vertex shader only
 
+#if __VERSION__ >= 300
+#define attribute in
+#define varying out
+#define texture2D texture
+#endif
+
 float wrap(float n, float min, float max) {
     float d = max - min;
     float w = mod(mod(n - min, d) + d, d) + min;

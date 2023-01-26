@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1500,
+      "height": 1000,
+      "allowed": 0.0012,
+      "operations": [
+        ["wait"],
+        ["setStyle", {
+          "version": 8,
+          "projection": {
+            "name": "globe"
+          },
+          "sources": {
+            "mapbox": {
+              "type": "vector",
+              "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
+            }
+          },
+          "layers": [
+            {
+              "id": "background",
+              "type": "background",
+              "paint": {
+                "background-color": "transparent"
+              }
+            },
+            {
+              "id": "water",
+              "type": "fill",
+              "source": "mapbox",
+              "source-layer": "water",
+              "paint": {
+                "fill-color": "blue"
+              }
+            }
+          ]
+        }],
+        ["wait"],
+        ["addCustomLayer", "triangle-draped"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    0,
+    45
+  ],
+  "zoom": 2.5,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+  },
+  "layers": [
+  ]
+}

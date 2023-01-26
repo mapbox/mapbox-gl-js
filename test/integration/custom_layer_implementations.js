@@ -110,14 +110,70 @@ class Tent3D {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.enableVertexAttribArray(this.program.a_pos);
+        gl.enableVertexAttribArray(this.program.aPos);
         gl.vertexAttribPointer(this.program.aPos, 3, gl.FLOAT, false, 0, 0);
         gl.uniformMatrix4fv(this.program.uMatrix, false, matrix);
         gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
     }
 }
 
+class TriangleDraped {
+    constructor() {
+        this.id = 'triangle-draped';
+        this.type = 'custom';
+        this.renderingMode = '3d';
+    }
+
+    onAdd(map, gl) {
+        const vertexSource = `
+        attribute vec2 aPos;
+        void main() {
+            gl_Position = vec4(aPos, 1.0, 1.0);
+        }`;
+
+        const fragmentSource = `
+        void main() {
+            gl_FragColor = vec4(0.0, 0.5, 0.0, 0.5);
+        }`;
+
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexSource);
+        gl.compileShader(vertexShader);
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentSource);
+        gl.compileShader(fragmentShader);
+
+        this.program = gl.createProgram();
+        gl.attachShader(this.program, vertexShader);
+        gl.attachShader(this.program, fragmentShader);
+        gl.linkProgram(this.program);
+
+        this.program.aPos = gl.getAttribLocation(this.program, "aPos");
+
+        const verts = new Float32Array([0, 0.5, 0.5, -0.5, -0.5, -0.5]);
+        this.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+    }
+
+    shouldRerenderTiles() {
+        return true;
+    }
+
+    renderToTile(gl) {
+        gl.useProgram(this.program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.enableVertexAttribArray(this.program.aPos);
+        gl.vertexAttribPointer(this.program.aPos, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+    }
+
+    render() {
+    }
+}
+
 export default {
+    "triangle-draped": TriangleDraped,
     "tent-3d": Tent3D,
     "null-island": NullIsland
 };
