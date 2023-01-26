@@ -4,6 +4,7 @@
     "test": {
       "width": 1500,
       "height": 1000,
+      "allowed": 0.0012,
       "operations": [
         ["wait"],
         ["setStyle", {
