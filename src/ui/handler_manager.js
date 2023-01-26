@@ -515,9 +515,9 @@ class HandlerManager {
             around = pinchAround;
         }
 
-        if (eventStarted("drag") && around) {
+        if ((zoomDelta || eventStarted("drag")) && around) {
             this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
-            // Construct the tracking ellipsoid every time user changes the drag origin.
+            // Construct the tracking ellipsoid every time user changes the zoom or drag origin.
             // Direction of the ray will define size of the shape and hence defining the available range of movement
             this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
         }
