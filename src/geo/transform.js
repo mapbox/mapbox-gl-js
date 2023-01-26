@@ -1648,6 +1648,16 @@ class Transform {
         return this.mercatorMatrix.slice();
     }
 
+    globeToMercatorMatrix(): ?Array<number> {
+        if (this.projection.name === 'globe') {
+            const pixelsToMerc = 1 / this.worldSize;
+            const m = mat4.fromScaling([], [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
+            mat4.multiply(m, m, this.globeMatrix);
+            return m;
+        }
+        return undefined;
+    }
+
     recenterOnTerrain() {
         if (!this._elevation || this.projection.name === 'globe')
             return;
@@ -1871,8 +1881,8 @@ class Transform {
         }
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
-        // ([0, 0] nw, [1, 1] se) to GL coordinates.
-        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / pixelsPerMeter, 1.0]);
+        // ([0, 0] nw, [1, 1] se) to GL coordinates. / zUnit compensates for scaling done in worldToCamera.
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0]);
 
         this.projMatrix = m;
 

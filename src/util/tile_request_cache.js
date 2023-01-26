@@ -128,7 +128,7 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
 
     const strippedURL = stripQueryParameters(request.url);
 
-    sharedCache
+    ((sharedCache: any): Promise<Cache>)
         .then(cache => {
             // manually strip URL instead of `ignoreSearch: true` because of a known
             // performance issue in Chrome https://github.com/mapbox/mapbox-gl-js/issues/8431

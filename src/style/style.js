@@ -485,6 +485,9 @@ class Style extends Evented {
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
+        // $FlowFixMe[prop-missing]
+        // $FlowFixMe[incompatible-use]
+        if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped();
         return drapedLayers[layer.type];
     }
 

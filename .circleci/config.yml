@@ -72,6 +72,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-mac-chrome-webgl2-dev:
+          filters:
+            tags:
+              only: /.*/
       - test-render-mac-safari-dev:
           filters:
             tags:
@@ -453,6 +457,37 @@ jobs:
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
       - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-mac-chrome-webgl2-dev:
+    macos:
+      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
+    parallelism: 3
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v0-mac-yarn-{{ .Branch }}-
+            - v0-mac-yarn-
+      - browser-tools/install-chrome
+      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+           - ~/.cache/yarn
+      - run: yarn run build-dev
+      - run:
+          name: Creating test list
+          command: |
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
+      - run: USE_WEBGL2=true yarn run test-render
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:

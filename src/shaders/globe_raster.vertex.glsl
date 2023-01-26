@@ -5,12 +5,13 @@ uniform mat4 u_merc_matrix;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 uniform mat3 u_grid_matrix;
+uniform float u_skirt_height;
 
 #ifdef GLOBE_POLES
 attribute vec3 a_globe_pos;
 attribute vec2 a_uv;
 #else
-attribute vec2 a_pos;
+attribute vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 #endif
 
 varying vec2 v_pos0;
@@ -52,7 +53,9 @@ void main() {
     float idx = u_grid_matrix[1][2];
     float idy = u_grid_matrix[2][2];
 
-    vec3 latLng = u_grid_matrix * vec3(a_pos, 1.0);
+    vec3 decomposed_pos_and_skirt = decomposeToPosAndSkirt(a_pos);
+
+    vec3 latLng = u_grid_matrix * vec3(decomposed_pos_and_skirt.xy, 1.0);
 
     float mercatorY = mercatorYfromLat(latLng[0]);
     float uvY = mercatorY * tiles - idy;
@@ -68,13 +71,16 @@ void main() {
     v_pos0 = uv;
     vec2 tile_pos = uv * EXTENT;
 
+    // Used for poles and skirts
+    vec3 globe_derived_up_vector = normalize(globe_pos) * u_tile_up_scale;
 #ifdef GLOBE_POLES
     // Normal vector can be derived from the ecef position
     // as "elevationVector" can't be queried outside of the tile
-    vec3 up_vector = normalize(globe_pos) * u_tile_up_scale;
+    vec3 up_vector = globe_derived_up_vector;
 #else
     vec3 up_vector = elevationVector(tile_pos);
 #endif
+
     float height = elevation(tile_pos);
 
 #ifdef TERRAIN_WIREFRAME
@@ -83,13 +89,18 @@ void main() {
 
     globe_pos += up_vector * height;
 
+#ifndef GLOBE_POLES
+    // Apply skirts for grid and only by offsetting via globe_pos derived normal
+    globe_pos -= globe_derived_up_vector * u_skirt_height * decomposed_pos_and_skirt.z;
+#endif
+
 #ifdef GLOBE_POLES
     vec4 interpolated_pos = u_globe_matrix * vec4(globe_pos, 1.0);
 #else
     vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);
     vec4 merc_world_pos = vec4(0.0);
     if (u_zoom_transition > 0.0) {
-        merc_world_pos = vec4(merc_pos, height, 1.0);
+        merc_world_pos = vec4(merc_pos, height - u_skirt_height * decomposed_pos_and_skirt.z, 1.0);
         merc_world_pos.xy -= u_merc_center;
         merc_world_pos.x = wrap(merc_world_pos.x, -0.5, 0.5);
         merc_world_pos = u_merc_matrix * merc_world_pos;

@@ -26,7 +26,8 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     production || bench ? unassert() : false,
     test ? replace({
         'process.env.CI': JSON.stringify(process.env.CI),
-        'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
+        'process.env.UPDATE': JSON.stringify(process.env.UPDATE),
+        'process.env.USE_WEBGL2': JSON.stringify(process.env.USE_WEBGL2)
     }) : false,
     glsl('./src/shaders/*.glsl', production),
     minified ? terser({

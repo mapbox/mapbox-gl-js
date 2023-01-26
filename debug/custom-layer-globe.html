@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS custom layers on globe page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='immediate-checkbox' type='checkbox' checked> add a custom layer with immediate rendering</label><br />
+    <label><input id='draped-checkbox' type='checkbox'> add a custom layer with draped rendering</label><br />
+    <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
+</div>
+
+<script src="//unpkg.com/satellite.js/dist/satellite.min.js"></script>
+<script src="satellites-custom-layer.js"></script>
+
+<script src="color-earth-custom-layer.js"></script>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+
+<script>
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    center: [0, 0],
+    zoom: 10,
+    antialias: true, // create the gl context with MSAA antialiasing, so custom layers are antialiased
+    hash:true,
+    projection: 'globe'
+});
+
+map.on('style.load', () => {
+    map.addLayer(satellitesLayer); // eslint-disable-line no-undef
+    map.addLayer(coloredEarthLayer); // eslint-disable-line no-undef
+
+    document.getElementById('immediate-checkbox').onclick();
+    document.getElementById('draped-checkbox').onclick();
+});
+
+document.getElementById('immediate-checkbox').onclick = function() {
+    map.setLayoutProperty('satellites', 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('draped-checkbox').onclick = function() {
+    map.setLayoutProperty('coloredEarth', 'visibility', this.checked ? 'visible' : 'none');
+};
+
+document.getElementById('repaint-checkbox').onclick = function() {
+    map.repaint = !!this.checked;
+    if (this.checked) {
+        this['frameCounter'] = map.painter.frameCounter;
+        this['fpsTimer'] = window.setInterval(() => {
+            document.getElementById('fps').innerHTML = `${(map.painter.frameCounter - this.frameCounter) / 2}`;
+            this.frameCounter = map.painter.frameCounter;
+        }, 2000);
+    } else {
+        window.clearInterval(this.fpsTimer);
+        document.getElementById('fps').innerHTML = `0`;
+    }
+};
+
+</script>
+</body>
+</html>
