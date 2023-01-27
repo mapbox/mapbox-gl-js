@@ -4068,17 +4068,17 @@ class Map
       return this;
   }
 
-  _onWindowOnline = () => {
+  _onWindowOnline: () => void = () => {
       this._update();
   };
 
-  _onWindowResize = (event: Event) => {
+  _onWindowResize: (event: Event) => void = (event: Event) => {
       if (this._trackResize) {
           this.resize({originalEvent: event})._update();
       }
   };
 
-  _onVisibilityChange = () => {
+  _onVisibilityChange: () => void = () => {
       if (window.document.visibilityState === 'hidden') {
           this._visibilityHidden++;
       }

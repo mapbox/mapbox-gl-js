@@ -419,7 +419,7 @@ export class PerformanceEvent
         super('gljs.performance');
     }
 
-  postPerformanceEvent = (
+  postPerformanceEvent: ((customAccessToken: ?string, performanceData: LivePerformanceData) => void) = (
     customAccessToken: ?string,
     performanceData: LivePerformanceData,
   ) => {
@@ -469,7 +469,12 @@ export class MapLoadEvent
       this.skuToken = '';
   }
 
-  postMapLoadEvent = (
+  postMapLoadEvent: ((
+  mapId: number,
+  skuToken: string,
+  customAccessToken: ?string,
+  callback: EventCallback
+) => void) = (
     mapId: number,
     skuToken: string,
     customAccessToken: ?string,
@@ -574,7 +579,12 @@ export class MapSessionAPI
       );
   }
 
-  getSessionAPI = (
+  getSessionAPI: ((
+  mapId: number,
+  skuToken: string,
+  customAccessToken: ?string,
+  callback: EventCallback
+) => void) = (
     mapId: number,
     skuToken: string,
     customAccessToken: ?string,
@@ -624,7 +634,7 @@ export class TurnstileEvent
         this._customAccessToken = customAccessToken;
     }
 
-  postTurnstileEvent = (tileUrls: Array<string>, customAccessToken?: ?string) => {
+  postTurnstileEvent: ((tileUrls: Array<string>, customAccessToken?: ?string) => void) = (tileUrls: Array<string>, customAccessToken?: ?string) => {
       //Enabled only when Mapbox Access Token is set and a source uses
       // mapbox tiles.
       if (

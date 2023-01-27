@@ -253,7 +253,7 @@ class GeolocateControl
      * @param {Position} position the Geolocation API Position
      * @private
      */
-  _onSuccess = (position: Position) => {
+  _onSuccess: ((position: Position) => void) = (position: Position) => {
       if (!this._map) {
       // control has since been removed
           return;
@@ -387,7 +387,7 @@ class GeolocateControl
       this._circleElement.style.height = `${circleDiameter}px`;
   }
 
-  _onZoom = () => {
+  _onZoom: (() => void) = () => {
       if (this.options.showUserLocation && this.options.showAccuracyCircle) {
           this._updateCircleRadius();
       }
@@ -398,7 +398,7 @@ class GeolocateControl
      *
      * @private
      */
-  _updateMarkerRotation = () => {
+  _updateMarkerRotation: (() => void) = () => {
       if (this._userLocationDotMarker && typeof this._heading === 'number') {
           this._userLocationDotMarker.setRotation(this._heading);
           this._dotElement.classList.add('mapboxgl-user-location-show-heading');
@@ -408,7 +408,7 @@ class GeolocateControl
       }
   };
 
-  _onError = (error: PositionError) => {
+  _onError: ((error: PositionError) => void) = (error: PositionError) => {
       if (!this._map) {
       // control has since been removed
           return;
@@ -462,14 +462,14 @@ class GeolocateControl
       this._finish();
   };
 
-  _finish = () => {
+  _finish: (() => void) = () => {
       if (this._timeoutId) {
           clearTimeout(this._timeoutId);
       }
       this._timeoutId = undefined;
   };
 
-  _setupUI = (supported: boolean) => {
+  _setupUI: ((supported: boolean) => void) = (supported: boolean) => {
       if (this._map === undefined) {
       // This control was removed from the map before geolocation
       // support was determined.
@@ -598,7 +598,7 @@ class GeolocateControl
     *   geolocate.trigger();
     * });
     */
-  _onDeviceOrientation = (deviceOrientationEvent: DeviceOrientationEvent) => {
+  _onDeviceOrientation: ((deviceOrientationEvent: DeviceOrientationEvent) => void) = (deviceOrientationEvent: DeviceOrientationEvent) => {
       // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
       if (this._userLocationDotMarker) {
           if (deviceOrientationEvent.webkitCompassHeading) {
@@ -630,7 +630,7 @@ class GeolocateControl
      * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
      */
-  trigger = (): boolean => {
+  trigger: (() => boolean) = (): boolean => {
       if (!this._setup) {
           warnOnce('Geolocate control triggered before added to a map');
           return false;

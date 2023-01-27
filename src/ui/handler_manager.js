@@ -374,7 +374,7 @@ class HandlerManager {
       return false;
   }
 
-  handleWindowEvent = (e: InputEvent) => {
+  handleWindowEvent: ((e: InputEvent) => void) = (e: InputEvent) => {
       this.handleEvent(e, `${e.type}Window`);
   };
 
@@ -389,7 +389,7 @@ class HandlerManager {
       return ((mapTouches: any): TouchList);
   }
 
-  handleEvent = (e: InputEvent | RenderFrameEvent, eventName?: string) => {
+  handleEvent: ((e: InputEvent | RenderFrameEvent, eventName?: string) => void) = (e: InputEvent | RenderFrameEvent, eventName?: string) => {
       this._updatingCamera = true;
       assert(e.timeStamp !== undefined);
 

@@ -105,7 +105,7 @@ class NavigationControl {
       }
   }
 
-  _updateZoomButtons = () => {
+  _updateZoomButtons: (() => void) = () => {
       const map = this._map;
       if (!map) return;
 
@@ -118,7 +118,7 @@ class NavigationControl {
       this._zoomOutButton.setAttribute('aria-disabled', isMin.toString());
   };
 
-  _rotateCompassArrow = () => {
+  _rotateCompassArrow: (() => void) = () => {
       const map = this._map;
       if (!map) return;
 
@@ -274,7 +274,7 @@ class MouseRotateWrapper {
       window.removeEventListener('mouseup', this.mouseup);
   }
 
-  mousedown = (e: MouseEvent) => {
+  mousedown: ((e: MouseEvent) => void) = (e: MouseEvent) => {
       this.down(
       extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}),
       DOM.mousePos(this.element, e),
@@ -283,17 +283,17 @@ class MouseRotateWrapper {
       window.addEventListener('mouseup', this.mouseup);
   };
 
-  mousemove = (e: MouseEvent) => {
+  mousemove: ((e: MouseEvent) => void) = (e: MouseEvent) => {
       this.move(e, DOM.mousePos(this.element, e));
   };
 
-  mouseup = (e: MouseEvent) => {
+  mouseup: ((e: MouseEvent) => void) = (e: MouseEvent) => {
       this.mouseRotate.mouseupWindow(e);
       if (this.mousePitch) this.mousePitch.mouseupWindow(e);
       this.offTemp();
   };
 
-  touchstart = (e: TouchEvent) => {
+  touchstart: ((e: TouchEvent) => void) = (e: TouchEvent) => {
       if (e.targetTouches.length !== 1) {
           this.reset();
       } else {
@@ -313,7 +313,7 @@ class MouseRotateWrapper {
       }
   };
 
-  touchmove = (e: TouchEvent) => {
+  touchmove: ((e: TouchEvent) => void) = (e: TouchEvent) => {
       if (e.targetTouches.length !== 1) {
           this.reset();
       } else {
@@ -325,7 +325,7 @@ class MouseRotateWrapper {
       }
   };
 
-  touchend = (e: TouchEvent) => {
+  touchend: ((e: TouchEvent) => void) = (e: TouchEvent) => {
       if (
           e.targetTouches.length === 0 && this._startPos && this._lastPos &&
         this._startPos.dist(this._lastPos) < this._clickTolerance
@@ -335,7 +335,7 @@ class MouseRotateWrapper {
       this.reset();
   };
 
-  reset = () => {
+  reset: (() => void) = () => {
       this.mouseRotate.reset();
       if (this.mousePitch) this.mousePitch.reset();
       delete this._startPos;

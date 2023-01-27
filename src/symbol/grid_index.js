@@ -94,27 +94,41 @@ class GridIndex {
       this.circles.push(radius);
   }
 
-  _insertBoxCell = (
+  _insertBoxCell: ((
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cellIndex: number,
+  uid: number
+) => void) = (
     x1: number,
     y1: number,
     x2: number,
     y2: number,
     cellIndex: number,
     uid: number,
-  ) => {
-      this.boxCells[cellIndex].push(uid);
-  };
+) => {
+    this.boxCells[cellIndex].push(uid);
+};
 
-  _insertCircleCell = (
+  _insertCircleCell: ((
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cellIndex: number,
+  uid: number
+) => void) = (
     x1: number,
     y1: number,
     x2: number,
     y2: number,
     cellIndex: number,
     uid: number,
-  ) => {
-      this.circleCells[cellIndex].push(uid);
-  };
+) => {
+    this.circleCells[cellIndex].push(uid);
+};
 
   _query(
     x1: number,
@@ -240,7 +254,16 @@ class GridIndex {
       return (this._queryCircle(x, y, radius, true, predicate): any);
   }
 
-  _queryCell = (
+  _queryCell: ((
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cellIndex: number,
+  result: any,
+  queryArgs: any,
+  predicate?: any
+) => void | boolean) = (
     x1: number,
     y1: number,
     x2: number,
@@ -249,26 +272,26 @@ class GridIndex {
     result: any,
     queryArgs: any,
     predicate?: any,
-  ): void | boolean => {
-      const seenUids = queryArgs.seenUids;
-      const boxCell = this.boxCells[cellIndex];
-      if (boxCell !== null) {
-          const bboxes = this.bboxes;
-          for (const boxUid of boxCell) {
-              if (!seenUids.box[boxUid]) {
-                  seenUids.box[boxUid] = true;
-                  const offset = boxUid * 4;
-                  if (
-                      x1 <= bboxes[offset + 2] && y1 <= bboxes[offset + 3] &&
+): void | boolean => {
+    const seenUids = queryArgs.seenUids;
+    const boxCell = this.boxCells[cellIndex];
+    if (boxCell !== null) {
+        const bboxes = this.bboxes;
+        for (const boxUid of boxCell) {
+            if (!seenUids.box[boxUid]) {
+                seenUids.box[boxUid] = true;
+                const offset = boxUid * 4;
+                if (
+                    x1 <= bboxes[offset + 2] && y1 <= bboxes[offset + 3] &&
               x2 >= bboxes[offset + 0] &&
               y2 >= bboxes[offset + 1] &&
               (!predicate || predicate(this.boxKeys[boxUid]))
-                  ) {
-                      if (queryArgs.hitTest) {
-                          result.push(true);
-                          return true;
-                      } else {
-                          result.push(
+                ) {
+                    if (queryArgs.hitTest) {
+                        result.push(true);
+                        return true;
+                    } else {
+                        result.push(
                 {
                     key: this.boxKeys[boxUid],
                     x1: bboxes[offset],
@@ -276,21 +299,21 @@ class GridIndex {
                     x2: bboxes[offset + 2],
                     y2: bboxes[offset + 3],
                 },
-                          );
-                      }
-                  }
-              }
-          }
-      }
-      const circleCell = this.circleCells[cellIndex];
-      if (circleCell !== null) {
-          const circles = this.circles;
-          for (const circleUid of circleCell) {
-              if (!seenUids.circle[circleUid]) {
-                  seenUids.circle[circleUid] = true;
-                  const offset = circleUid * 3;
-                  if (
-                      this._circleAndRectCollide(
+                        );
+                    }
+                }
+            }
+        }
+    }
+    const circleCell = this.circleCells[cellIndex];
+    if (circleCell !== null) {
+        const circles = this.circles;
+        for (const circleUid of circleCell) {
+            if (!seenUids.circle[circleUid]) {
+                seenUids.circle[circleUid] = true;
+                const offset = circleUid * 3;
+                if (
+                    this._circleAndRectCollide(
               circles[offset],
               circles[offset + 1],
               circles[offset + 2],
@@ -298,17 +321,17 @@ class GridIndex {
               y1,
               x2,
               y2,
-                      ) &&
+                    ) &&
               (!predicate || predicate(this.circleKeys[circleUid]))
-                  ) {
-                      if (queryArgs.hitTest) {
-                          result.push(true);
-                          return true;
-                      } else {
-                          const x = circles[offset];
-                          const y = circles[offset + 1];
-                          const radius = circles[offset + 2];
-                          result.push(
+                ) {
+                    if (queryArgs.hitTest) {
+                        result.push(true);
+                        return true;
+                    } else {
+                        const x = circles[offset];
+                        const y = circles[offset + 1];
+                        const radius = circles[offset + 2];
+                        result.push(
                 {
                     key: this.circleKeys[circleUid],
                     x1: x - radius,
@@ -316,15 +339,24 @@ class GridIndex {
                     x2: x + radius,
                     y2: y + radius,
                 },
-                          );
-                      }
-                  }
-              }
-          }
-      }
-  };
+                        );
+                    }
+                }
+            }
+        }
+    }
+};
 
-  _queryCellCircle = (
+  _queryCellCircle: ((
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cellIndex: number,
+  result: any,
+  queryArgs: any,
+  predicate?: any
+) => void | boolean) = (
     x1: number,
     y1: number,
     x2: number,
@@ -333,18 +365,18 @@ class GridIndex {
     result: any,
     queryArgs: any,
     predicate?: any,
-  ): void | boolean => {
-      const circle = queryArgs.circle;
-      const seenUids = queryArgs.seenUids;
-      const boxCell = this.boxCells[cellIndex];
-      if (boxCell !== null) {
-          const bboxes = this.bboxes;
-          for (const boxUid of boxCell) {
-              if (!seenUids.box[boxUid]) {
-                  seenUids.box[boxUid] = true;
-                  const offset = boxUid * 4;
-                  if (
-                      this._circleAndRectCollide(
+): void | boolean => {
+    const circle = queryArgs.circle;
+    const seenUids = queryArgs.seenUids;
+    const boxCell = this.boxCells[cellIndex];
+    if (boxCell !== null) {
+        const bboxes = this.bboxes;
+        for (const boxUid of boxCell) {
+            if (!seenUids.box[boxUid]) {
+                seenUids.box[boxUid] = true;
+                const offset = boxUid * 4;
+                if (
+                    this._circleAndRectCollide(
               circle.x,
               circle.y,
               circle.radius,
@@ -352,41 +384,41 @@ class GridIndex {
               bboxes[offset + 1],
               bboxes[offset + 2],
               bboxes[offset + 3],
-                      ) &&
+                    ) &&
               (!predicate || predicate(this.boxKeys[boxUid]))
-                  ) {
-                      result.push(true);
-                      return true;
-                  }
-              }
-          }
-      }
+                ) {
+                    result.push(true);
+                    return true;
+                }
+            }
+        }
+    }
 
-      const circleCell = this.circleCells[cellIndex];
-      if (circleCell !== null) {
-          const circles = this.circles;
-          for (const circleUid of circleCell) {
-              if (!seenUids.circle[circleUid]) {
-                  seenUids.circle[circleUid] = true;
-                  const offset = circleUid * 3;
-                  if (
-                      this._circlesCollide(
+    const circleCell = this.circleCells[cellIndex];
+    if (circleCell !== null) {
+        const circles = this.circles;
+        for (const circleUid of circleCell) {
+            if (!seenUids.circle[circleUid]) {
+                seenUids.circle[circleUid] = true;
+                const offset = circleUid * 3;
+                if (
+                    this._circlesCollide(
               circles[offset],
               circles[offset + 1],
               circles[offset + 2],
               circle.x,
               circle.y,
               circle.radius,
-                      ) &&
+                    ) &&
               (!predicate || predicate(this.circleKeys[circleUid]))
-                  ) {
-                      result.push(true);
-                      return true;
-                  }
-              }
-          }
-      }
-  };
+                ) {
+                    result.push(true);
+                    return true;
+                }
+            }
+        }
+    }
+};
 
   _forEachCell(
     x1: number,

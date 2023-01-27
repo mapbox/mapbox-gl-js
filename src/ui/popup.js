@@ -208,7 +208,7 @@ export default class Popup
      * popup.remove();
      * @returns {Popup} Returns itself to allow for method chaining.
      */
-  remove = (): this => {
+  remove: (() => any) = (): this => {
       if (this._content) {
           this._content.remove();
       }
@@ -553,7 +553,7 @@ export default class Popup
       return finalState;
   }
 
-  _onMouseEvent = (event: MapMouseEvent) => {
+  _onMouseEvent: ((event: MapMouseEvent) => void) = (event: MapMouseEvent) => {
       this._update(event.point);
   };
 
@@ -606,7 +606,7 @@ export default class Popup
       container.className = classes.join(' ');
   }
 
-  _update = (cursor?: Point) => {
+  _update: ((cursor?: Point) => void) = (cursor?: Point) => {
       const hasPosition = this._lngLat || this._trackPointer;
       const map = this._map;
       const content = this._content;
@@ -673,7 +673,7 @@ export default class Popup
       if (firstFocusable) firstFocusable.focus();
   }
 
-  _onClose = () => {
+  _onClose: (() => void) = () => {
       this.remove();
   };
 

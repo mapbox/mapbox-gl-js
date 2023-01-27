@@ -114,7 +114,7 @@ class FullscreenControl {
       return this._fullscreen;
   }
 
-  _changeIcon = () => {
+  _changeIcon: (() => void) = () => {
       const fullscreenElement = window.document.fullscreenElement ||
       (window.document: any).webkitFullscreenElement;
 
@@ -126,7 +126,7 @@ class FullscreenControl {
       }
   };
 
-  _onClickFullscreen = () => {
+  _onClickFullscreen: (() => void) = () => {
       if (this._isFullscreen()) {
           if (window.document.exitFullscreen) {
               (window.document: any).exitFullscreen();
