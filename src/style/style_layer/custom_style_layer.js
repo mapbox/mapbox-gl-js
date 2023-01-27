@@ -155,6 +155,7 @@ export type CustomLayerInterface = {
     type: "custom",
     renderingMode: "2d" | "3d",
     render: CustomRenderMethod,
+    getShaderProgram: ?(projection: ?ProjectionSpecification) => ?WebGLProgram,
     prerender: ?CustomRenderMethod,
     renderToTile: ?(gl: WebGLRenderingContext, tileId: MercatorCoordinate) => void,
     shouldRerenderTiles: ?() => boolean,
@@ -187,6 +188,33 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     }
 
     return errors;
+}
+
+export function globeCustomLayerVertexHeader(): string {
+    return `
+        uniform mat4 u_projection;
+        uniform mat4 u_globeToMercMatrix;
+        uniform float u_globeToMercatorTransition;
+        uniform vec2 u_centerInMerc;
+        uniform float u_pixelsPerMeterRatio;
+
+        vec4 project_custom_layer(vec3 pos_ecef, vec3 pos_merc) {
+            vec4 projected_pos = u_projection * u_globeToMercMatrix * vec4(pos_ecef, 1.);
+            projected_pos /= projected_pos.w;
+
+            if (u_globeToMercatorTransition > 0.) {
+                vec4 merc = vec4(pos_merc, 1.);
+                merc.xy = (merc.xy - u_centerInMerc) * u_pixelsPerMeterRatio + u_centerInMerc;
+                merc.z *= u_pixelsPerMeterRatio;
+
+                merc = u_projection * merc;
+                merc /= merc.w;
+                projected_pos = mix(projected_pos, merc, u_globeToMercatorTransition);
+            }
+
+            return projected_pos;
+        }
+    `;
 }
 
 class CustomStyleLayer extends StyleLayer {

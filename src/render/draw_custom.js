@@ -77,8 +77,18 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
         context.setDepthMode(depthMode);
 
         if (painter.transform.projection.name === "globe") {
-            const center = painter.transform.pointMerc;
-            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(), globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio);
+            const shaderProgram = implementation.getShaderProgram(painter.transform.getProjection());
+            if (shaderProgram) {
+                context.gl.useProgram(shaderProgram);
+                const center = painter.transform.pointMerc;
+                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
+                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_globeToMercMatrix"), false, painter.transform.globeToMercatorMatrix());
+                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_globeToMercatorTransition"), globeToMercatorTransition(painter.transform.zoom));
+                context.gl.uniform2f(context.gl.getUniformLocation(shaderProgram, "u_centerInMerc"), center.x, center.y);
+                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_pixelsPerMeterRatio"), painter.transform.pixelsPerMeterRatio);
+            }
+
+            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());
         } else {
             implementation.render(context.gl, painter.transform.customLayerMatrix());
         }
