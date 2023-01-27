@@ -34,7 +34,7 @@ import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 import {setCacheLimits} from '../util/tile_request_cache.js';
 import {Debug} from '../util/debug.js';
-import {globeCustomLayerVertexHeader} from '../style/style_layer/custom_style_layer.js';
+import {customLayerVertexHeader} from '../style/style_layer/custom_style_layer.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
@@ -3766,8 +3766,8 @@ class Map extends Camera {
 
     get version(): string { return version; }
 
-    get globeCustomLayerVertexHeader(): string {
-        return globeCustomLayerVertexHeader();
+    get customLayerVertexHeader(): string {
+        return customLayerVertexHeader();
     }
 }
 

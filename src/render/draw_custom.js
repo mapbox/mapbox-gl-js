@@ -76,8 +76,8 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         context.setDepthMode(depthMode);
 
+        const shaderProgram = implementation.getShaderProgram && implementation.getShaderProgram(painter.transform.getProjection());
         if (painter.transform.projection.name === "globe") {
-            const shaderProgram = implementation.getShaderProgram(painter.transform.getProjection());
             if (shaderProgram) {
                 context.gl.useProgram(shaderProgram);
                 const center = painter.transform.pointMerc;
@@ -90,7 +90,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
             implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());
         } else {
-            implementation.render(context.gl, painter.transform.customLayerMatrix());
+            if (shaderProgram) {
+                context.gl.useProgram(shaderProgram);
+                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
+            }
+            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());
         }
 
         context.setDirty();

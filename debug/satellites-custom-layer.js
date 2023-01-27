@@ -7,18 +7,17 @@ const globeVertCode = `
 
     void main() {
         gl_PointSize = 30.;
-        gl_Position = project_custom_layer(a_pos_ecef, a_pos_merc);
+        gl_Position = project_custom_layer(a_pos_merc, a_pos_ecef);
     }
 `;
 
 const mercVertCode = `
     precision highp float;
     attribute vec3 a_pos_merc;
-    uniform mat4 u_projection;
 
     void main() {
         gl_PointSize = 30.;
-        gl_Position = u_projection * vec4(a_pos_merc, 1.);
+        gl_Position = project_custom_layer(a_pos_merc);
     }
 `;
 
@@ -63,11 +62,13 @@ function createProgram(gl, vert, frag) {
 };
 
 function updateVboAndActivateAttrib(gl, prog, vbo, data, attribName) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
     const attribLoc = gl.getAttribLocation(prog, attribName);
-    gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attribLoc);
+    if (attribLoc !== -1) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(attribLoc);
+    }
 }
 
 const satellitesLayer = {
@@ -82,8 +83,8 @@ const satellitesLayer = {
         this.posEcefVbo = gl.createBuffer();
         this.posMercVbo = gl.createBuffer();
 
-        this.globeProgram = createProgram(gl, map.globeCustomLayerVertexHeader.concat(globeVertCode), fragCode);
-        this.mercProgram = createProgram(gl, mercVertCode, fragCode);
+        this.globeProgram = createProgram(gl, map.customLayerVertexHeader.concat(globeVertCode), fragCode);
+        this.mercProgram = createProgram(gl, map.customLayerVertexHeader.concat(mercVertCode), fragCode);
 
         fetch('space-track-leo.txt').then(r => r.text()).then(rawData => {
             const tleData = rawData.replace(/\r/g, '')
@@ -133,23 +134,15 @@ const satellitesLayer = {
         if (this.satData) {
             this.updateBuffers();
 
+            const program = this.getShaderProgram(projection);
             const primitiveCount = this.posEcef.length / 3;
             gl.disable(gl.DEPTH_TEST);
-            if (projection && projection.name === 'globe') {
-                // globe projection and globe to mercator transition
-                gl.useProgram(this.globeProgram);
-    
-                updateVboAndActivateAttrib(gl, this.globeProgram, this.posEcefVbo, this.posEcef, "a_pos_ecef");
-                updateVboAndActivateAttrib(gl, this.globeProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
+            gl.useProgram(program);
 
-                gl.drawArrays(gl.POINTS, 0, primitiveCount);
-            } else {
-                // mercator projection
-                gl.useProgram(this.mercProgram);
-                updateVboAndActivateAttrib(gl, this.mercProgram, this.posMercVbo, this.posMerc, "a_pos_merc");
-                gl.uniformMatrix4fv(gl.getUniformLocation(this.mercProgram, "u_projection"), false, projectionMatrix);
-                gl.drawArrays(gl.POINTS, 0, primitiveCount);
-            }
+            updateVboAndActivateAttrib(gl, program, this.posEcefVbo, this.posEcef, "a_pos_ecef");
+            updateVboAndActivateAttrib(gl, program, this.posMercVbo, this.posMerc, "a_pos_merc");
+
+            gl.drawArrays(gl.POINTS, 0, primitiveCount);
         }
     }
 };

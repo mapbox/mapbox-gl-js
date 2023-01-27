@@ -7,7 +7,7 @@ import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
-type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number, centerInMercator: ?Array<number>, pixelsPerMeterRatio: ?number) => void;
+type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification) => void;
 
 /**
  * Interface for custom style layers. This is a specification for
@@ -190,7 +190,7 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     return errors;
 }
 
-export function globeCustomLayerVertexHeader(): string {
+export function customLayerVertexHeader(): string {
     return `
         uniform mat4 u_projection;
         uniform mat4 u_globeToMercMatrix;
@@ -198,7 +198,7 @@ export function globeCustomLayerVertexHeader(): string {
         uniform vec2 u_centerInMerc;
         uniform float u_pixelsPerMeterRatio;
 
-        vec4 project_custom_layer(vec3 pos_ecef, vec3 pos_merc) {
+        vec4 project_custom_layer(vec3 pos_merc, vec3 pos_ecef) {
             vec4 projected_pos = u_projection * u_globeToMercMatrix * vec4(pos_ecef, 1.);
             projected_pos /= projected_pos.w;
 
@@ -213,6 +213,10 @@ export function globeCustomLayerVertexHeader(): string {
             }
 
             return projected_pos;
+        }
+
+        vec4 project_custom_layer(vec3 pos_merc) {
+            return u_projection * vec4(pos_merc, 1.);
         }
     `;
 }
