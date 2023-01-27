@@ -57,7 +57,7 @@ class LogoControl {
       return 'bottom-left';
   }
 
-  _updateLogo = (e: any) => {
+  _updateLogo: ((e: any) => void) = (e: any) => {
       if (!e || e.sourceDataType === 'metadata') {
           this._container.style.display = this._logoRequired() ? 'block' : 'none';
       }
@@ -77,7 +77,7 @@ class LogoControl {
       return true;
   }
 
-  _updateCompact = () => {
+  _updateCompact: (() => void) = () => {
       const containerChildren = this._container.children;
       if (containerChildren.length) {
           const anchor = containerChildren[0];

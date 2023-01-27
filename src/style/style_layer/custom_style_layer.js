@@ -225,7 +225,7 @@ class CustomStyleLayer
       assert(false, "Custom layers cannot be serialized");
   }
 
-  onAdd = (map: Map) => {
+  onAdd: ((map: Map) => void) = (map: Map) => {
       if (this.implementation.onAdd) {
           this.implementation.onAdd(map, map.painter.context.gl);
       }

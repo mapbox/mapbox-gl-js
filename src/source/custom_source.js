@@ -382,7 +382,7 @@ class CustomSource<T>
       return false;
   }
 
-  _coveringTiles = (): Array<{ z: number, x: number, y: number }> => {
+  _coveringTiles: (() => Array<{ x: number, y: number, z: number, ... }>) = (): Array<{ z: number, x: number, y: number }> => {
       const tileIDs = this._map.transform.coveringTiles(
       {
           tileSize: this.tileSize,
@@ -401,11 +401,11 @@ class CustomSource<T>
       );
   };
 
-  _clearTiles = () => {
+  _clearTiles: (() => void) = () => {
       this._map.style._clearSource(this.id);
   };
 
-  _update = () => {
+  _update: (() => void) = () => {
       this.fire(
       new Event('data', {dataType: 'source', sourceDataType: 'content'}),
       );

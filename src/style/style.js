@@ -2210,7 +2210,7 @@ class Style
       return this._otherSourceCaches[source];
   }
 
-  _getLayerSourceCache = (layer: StyleLayer): SourceCache | void => {
+  _getLayerSourceCache: ((layer: StyleLayer) => SourceCache | void) = (layer: StyleLayer): SourceCache | void => {
       return layer.type === 'symbol' ?
           this._symbolSourceCaches[layer.source] :
           this._otherSourceCaches[layer.source];

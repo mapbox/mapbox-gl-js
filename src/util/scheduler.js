@@ -65,7 +65,7 @@ class Scheduler {
       };
   }
 
-  process = () => {
+  process: (() => void) = () => {
       const m = isWorker() ?
           PerformanceUtils.beginMeasure('workerTask') :
           undefined;

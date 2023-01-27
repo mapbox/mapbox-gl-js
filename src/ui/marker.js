@@ -399,7 +399,7 @@ export default class Marker
       return this;
   }
 
-  _onKeyPress = (e: KeyboardEvent) => {
+  _onKeyPress: ((e: KeyboardEvent) => void) = (e: KeyboardEvent) => {
       const code = e.code;
       const legacyCode = e.charCode || e.keyCode;
 
@@ -412,7 +412,7 @@ export default class Marker
       }
   };
 
-  _onMapClick = (e: MapMouseEvent) => {
+  _onMapClick: ((e: MapMouseEvent) => void) = (e: MapMouseEvent) => {
       const targetElement = e.originalEvent.target;
       const element = this._element;
 
@@ -479,7 +479,7 @@ export default class Marker
       return toClosestSurface < toMarker * 0.9;
   }
 
-  _evaluateOpacity = () => {
+  _evaluateOpacity: (() => void) = () => {
       const map = this._map;
       if (!map) return;
 
@@ -515,7 +515,7 @@ export default class Marker
       this._fadeTimer = null;
   };
 
-  _clearFadeTimer = () => {
+  _clearFadeTimer: (() => void) = () => {
       if (this._fadeTimer) {
           clearTimeout(this._fadeTimer);
           this._fadeTimer = null;
@@ -618,7 +618,7 @@ export default class Marker
       return rotation ? `rotateZ(${rotation}deg)` : '';
   }
 
-  _update = (delaySnap?: boolean) => {
+  _update: ((delaySnap?: boolean) => void) = (delaySnap?: boolean) => {
       window.cancelAnimationFrame(this._updateFrameId);
       const map = this._map;
       if (!map) return;
@@ -688,7 +688,7 @@ export default class Marker
       return this;
   }
 
-  _onMove = (e: MapMouseEvent | MapTouchEvent) => {
+  _onMove: ((e: MapMouseEvent | MapTouchEvent) => void) = (e: MapMouseEvent | MapTouchEvent) => {
       const map = this._map;
       if (!map) return;
 
@@ -738,7 +738,7 @@ export default class Marker
       this.fire(new Event('drag'));
   };
 
-  _onUp = () => {
+  _onUp: (() => void) = () => {
       // revert to normal pointer event handling
       this._element.style.pointerEvents = 'auto';
       this._positionDelta = null;
@@ -768,7 +768,7 @@ export default class Marker
       this._state = 'inactive';
   };
 
-  _addDragHandler = (e: MapMouseEvent | MapTouchEvent) => {
+  _addDragHandler: ((e: MapMouseEvent | MapTouchEvent) => void) = (e: MapMouseEvent | MapTouchEvent) => {
       const map = this._map;
       const pos = this._pos;
       if (!map || !pos) return;

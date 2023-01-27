@@ -1957,7 +1957,7 @@ class Camera
   }
 
   // Callback for map._requestRenderFrame
-  _renderFrameCallback = () => {
+  _renderFrameCallback: (() => void) = () => {
       const t = Math.min(
       (browser.now() - this._easeStart) / this._easeOptions.duration,
       1,

@@ -17,7 +17,7 @@ class Uniform<T> {
       this.initialized = false;
   }
 
-  fetchUniformLocation = (program: WebGLProgram, name: string): boolean => {
+  fetchUniformLocation: ((program: WebGLProgram, name: string) => boolean) = (program: WebGLProgram, name: string): boolean => {
       if (!this.location && !this.initialized) {
           this.location = this.gl.getUniformLocation(program, name);
           this.initialized = true;

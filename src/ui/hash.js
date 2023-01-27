@@ -103,7 +103,7 @@ export default class Hash {
       return hash.split('/');
   }
 
-  _onHashChange = (): boolean => {
+  _onHashChange: (() => boolean) = (): boolean => {
       const map = this._map;
       if (!map) return false;
       const loc = this._getCurrentHash();
@@ -125,7 +125,7 @@ export default class Hash {
       return false;
   };
 
-  _updateHashUnthrottled = () => {
+  _updateHashUnthrottled: (() => void) = () => {
       // Replace if already present, else append the updated hash string
       const location = window.location.href.replace(
       /(#.+)?$/,

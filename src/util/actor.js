@@ -99,7 +99,7 @@ class Actor {
       };
   }
 
-  receive = (message: Object) => {
+  receive: ((message: any) => void) = (message: Object) => {
       const data = message.data,
           id = data.id;
 

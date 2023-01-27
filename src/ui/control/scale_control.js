@@ -57,7 +57,7 @@ class ScaleControl {
       return 'bottom-left';
   }
 
-  _update = () => {
+  _update: () => void = () => {
       // A horizontal scale is imagined to be present at center of the map
       // container with maximum length (Default) as 100px.
       // Using spherical law of cosines approximation, the real distance is
@@ -95,8 +95,7 @@ class ScaleControl {
       const distance = getRoundNum(maxDistance);
       const ratio = distance / maxDistance;
 
-      this._map._requestDomTask(
-      () => {
+      this._map._requestDomTask(() => {
           this._container.style.width = `${maxWidth * ratio}px`;
 
           // Intl.NumberFormat doesn't support nautical-mile as a unit,
@@ -106,13 +105,9 @@ class ScaleControl {
               return;
           }
 
-          // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
-          this._container.innerHTML = new Intl.NumberFormat(
-          this._language,
-          {style: 'unit', unitDisplay: 'narrow', unit},
-          ).format(distance);
-      },
-      );
+          // $FlowFixMe — flow v0.153.0 doesn't support optional `locales` argument and `unit` style option
+          this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+      });
   }
 
   onAdd(map: Map): HTMLElement {
