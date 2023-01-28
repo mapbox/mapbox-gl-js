@@ -52,13 +52,11 @@ function createProgram(gl, vert, frag) {
 };
 
 function updateVboAndActivateAttrib(gl, prog, vbo, data, attribName) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
     const attribLoc = gl.getAttribLocation(prog, attribName);
-    if (attribLoc !== -1) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(attribLoc);
-    }
+    gl.vertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribLoc);
 }
 
 const satellitesLayer = {
