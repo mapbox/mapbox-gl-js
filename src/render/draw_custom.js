@@ -90,26 +90,24 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         context.setDepthMode(depthMode);
 
-        const shaderProgram = implementation.getShaderProgram && implementation.getShaderProgram(painter.transform.getProjection());
-        if (painter.transform.projection.name === "globe") {
-            if (shaderProgram) {
-                context.gl.useProgram(shaderProgram);
+        const shaderProgram = implementation.getShaderProgram && implementation.getShaderProgram();
+        if (shaderProgram) {
+            context.gl.useProgram(shaderProgram);
+            context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_isGlobe"), +(painter.transform.projection.name === "globe"));
+            context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_transition"), globeToMercatorTransition(painter.transform.zoom));
+
+            if (painter.transform.projection.name === "globe") {
                 const center = painter.transform.pointMerc;
                 const globeProjection = mat4.multiply([], painter.transform.customLayerMatrix(), painter.transform.globeToMercatorMatrix());
-                const mercatorProjection = createMercatorGlobeMatrix(painter.transform.customLayerMatrix(), painter.transform.pixelsPerMeterRatio, center)
+                const mercatorProjection = createMercatorGlobeMatrix(painter.transform.customLayerMatrix(), painter.transform.pixelsPerMeterRatio, center);
                 context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, globeProjection);
                 context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_mercatorProjection"), false, mercatorProjection);
-                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_transition"), globeToMercatorTransition(painter.transform.zoom));
-            }
-
-            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());
-        } else {
-            if (shaderProgram) {
-                context.gl.useProgram(shaderProgram);
+            } else {
                 context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
             }
-            implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());
         }
+        
+        implementation.render(context.gl, painter.transform.customLayerMatrix());
 
         context.setDirty();
         painter.setBaseState();

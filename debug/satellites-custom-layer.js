@@ -1,23 +1,13 @@
 const KM_TO_M = 1000;
 const TIME_STEP = 3 * 1000;
 
-const globeVertCode = `
+const vertCode = `
     attribute vec3 a_pos_ecef;
     attribute vec3 a_pos_merc;
 
     void main() {
         gl_PointSize = 30.;
         gl_Position = project_custom_layer(a_pos_merc, a_pos_ecef);
-    }
-`;
-
-const mercVertCode = `
-    precision highp float;
-    attribute vec3 a_pos_merc;
-
-    void main() {
-        gl_PointSize = 30.;
-        gl_Position = project_custom_layer(a_pos_merc);
     }
 `;
 
@@ -83,8 +73,7 @@ const satellitesLayer = {
         this.posEcefVbo = gl.createBuffer();
         this.posMercVbo = gl.createBuffer();
 
-        this.globeProgram = createProgram(gl, map.customLayerVertexHeader.concat(globeVertCode), fragCode);
-        this.mercProgram = createProgram(gl, map.customLayerVertexHeader.concat(mercVertCode), fragCode);
+        this.program = createProgram(gl, map.customLayerVertexHeader.concat(vertCode), fragCode);
 
         fetch('space-track-leo.txt').then(r => r.text()).then(rawData => {
             const tleData = rawData.replace(/\r/g, '')
@@ -126,21 +115,20 @@ const satellitesLayer = {
         }
     },
 
-    getShaderProgram (projection) {
-        return projection && projection.name === 'globe' ? this.globeProgram : this.mercProgram;
+    getShaderProgram () {
+        return this.program;
     },
 
-    render (gl, projectionMatrix, projection) {
+    render (gl, projectionMatrix) {
         if (this.satData) {
             this.updateBuffers();
 
-            const program = this.getShaderProgram(projection);
             const primitiveCount = this.posEcef.length / 3;
             gl.disable(gl.DEPTH_TEST);
-            gl.useProgram(program);
+            gl.useProgram(this.program);
 
-            updateVboAndActivateAttrib(gl, program, this.posEcefVbo, this.posEcef, "a_pos_ecef");
-            updateVboAndActivateAttrib(gl, program, this.posMercVbo, this.posMerc, "a_pos_merc");
+            updateVboAndActivateAttrib(gl, this.program, this.posEcefVbo, this.posEcef, "a_pos_ecef");
+            updateVboAndActivateAttrib(gl, this.program, this.posMercVbo, this.posMerc, "a_pos_merc");
 
             gl.drawArrays(gl.POINTS, 0, primitiveCount);
         }

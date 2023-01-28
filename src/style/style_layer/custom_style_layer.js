@@ -7,7 +7,7 @@ import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
-type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification) => void;
+type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
 
 /**
  * Interface for custom style layers. This is a specification for
@@ -194,23 +194,24 @@ export function customLayerVertexHeader(): string {
     return `
         uniform mat4 u_projection;
         uniform mat4 u_mercatorProjection;
+        uniform float u_isGlobe;
         uniform float u_transition;
 
         vec4 project_custom_layer(vec3 pos_merc, vec3 pos_ecef) {
-            vec4 projected_pos = u_projection * vec4(pos_ecef, 1.0);
-            projected_pos /= projected_pos.w;
+            if (u_isGlobe == 1.0) {
+                vec4 projected_pos = u_projection * vec4(pos_ecef, 1.0);
+                projected_pos /= projected_pos.w;
 
-            if (u_transition > 0.0) {
-                vec4 mercator = u_mercatorProjection * vec4(pos_merc, 1.0);
-                mercator /= mercator.w;
-                projected_pos = mix(projected_pos, mercator, u_transition);
+                if (u_transition > 0.0) {
+                    vec4 mercator = u_mercatorProjection * vec4(pos_merc, 1.0);
+                    mercator /= mercator.w;
+                    projected_pos = mix(projected_pos, mercator, u_transition);
+                }
+
+                return projected_pos;
+            } else {
+                return u_projection * vec4(pos_merc, 1.0);
             }
-
-            return projected_pos;
-        }
-
-        vec4 project_custom_layer(vec3 pos_merc) {
-            return u_projection * vec4(pos_merc, 1.0);
         }
     `;
 }
