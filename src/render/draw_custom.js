@@ -6,13 +6,27 @@ import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import {warnOnce} from '../util/util.js';
 import {globeToMercatorTransition} from './../geo/projection/globe_util.js';
-
+import {mat4} from 'gl-matrix';
 import type Painter from './painter.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type SourceCache from '../source/source_cache.js';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer.js';
 import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import assert from 'assert';
+
+function createMercatorGlobeMatrix(projection, pixelsPerMeterRatio, centerInMerc) {
+    var mercToPixelMatrix = mat4.create();
+    mat4.identity(mercToPixelMatrix);
+
+    mercToPixelMatrix[0] = pixelsPerMeterRatio;
+    mercToPixelMatrix[5] = pixelsPerMeterRatio;
+    mercToPixelMatrix[10] = pixelsPerMeterRatio;
+    mercToPixelMatrix[12] = centerInMerc.x * (1.0 - pixelsPerMeterRatio);
+    mercToPixelMatrix[13] = centerInMerc.y * (1.0 - pixelsPerMeterRatio);
+
+    return mat4.multiply([], projection, mercToPixelMatrix);
+}
+
 
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer, coords: Array<OverscaledTileID>) {
 
@@ -81,11 +95,11 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             if (shaderProgram) {
                 context.gl.useProgram(shaderProgram);
                 const center = painter.transform.pointMerc;
-                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
-                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_globeToMercMatrix"), false, painter.transform.globeToMercatorMatrix());
-                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_globeToMercatorTransition"), globeToMercatorTransition(painter.transform.zoom));
-                context.gl.uniform2f(context.gl.getUniformLocation(shaderProgram, "u_centerInMerc"), center.x, center.y);
-                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_pixelsPerMeterRatio"), painter.transform.pixelsPerMeterRatio);
+                const globeProjection = mat4.multiply([], painter.transform.customLayerMatrix(), painter.transform.globeToMercatorMatrix());
+                const mercatorProjection = createMercatorGlobeMatrix(painter.transform.customLayerMatrix(), painter.transform.pixelsPerMeterRatio, center)
+                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, globeProjection);
+                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_mercatorProjection"), false, mercatorProjection);
+                context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_transition"), globeToMercatorTransition(painter.transform.zoom));
             }
 
             implementation.render(context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection());

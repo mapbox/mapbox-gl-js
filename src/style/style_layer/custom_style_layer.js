@@ -193,30 +193,24 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
 export function customLayerVertexHeader(): string {
     return `
         uniform mat4 u_projection;
-        uniform mat4 u_globeToMercMatrix;
-        uniform float u_globeToMercatorTransition;
-        uniform vec2 u_centerInMerc;
-        uniform float u_pixelsPerMeterRatio;
+        uniform mat4 u_mercatorProjection;
+        uniform float u_transition;
 
         vec4 project_custom_layer(vec3 pos_merc, vec3 pos_ecef) {
-            vec4 projected_pos = u_projection * u_globeToMercMatrix * vec4(pos_ecef, 1.);
+            vec4 projected_pos = u_projection * vec4(pos_ecef, 1.0);
             projected_pos /= projected_pos.w;
 
-            if (u_globeToMercatorTransition > 0.) {
-                vec4 merc = vec4(pos_merc, 1.);
-                merc.xy = (merc.xy - u_centerInMerc) * u_pixelsPerMeterRatio + u_centerInMerc;
-                merc.z *= u_pixelsPerMeterRatio;
-
-                merc = u_projection * merc;
-                merc /= merc.w;
-                projected_pos = mix(projected_pos, merc, u_globeToMercatorTransition);
+            if (u_transition > 0.0) {
+                vec4 mercator = u_mercatorProjection * vec4(pos_merc, 1.0);
+                mercator /= mercator.w;
+                projected_pos = mix(projected_pos, mercator, u_transition);
             }
 
             return projected_pos;
         }
 
         vec4 project_custom_layer(vec3 pos_merc) {
-            return u_projection * vec4(pos_merc, 1.);
+            return u_projection * vec4(pos_merc, 1.0);
         }
     `;
 }
