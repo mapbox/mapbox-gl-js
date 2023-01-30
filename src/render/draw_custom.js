@@ -84,20 +84,20 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
         context.setDepthMode(depthMode);
 
-        const shaderProgram = implementation.getShaderProgram && implementation.getShaderProgram();
-        if (shaderProgram) {
-            context.gl.useProgram(shaderProgram);
-            context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_isGlobe"), +(painter.transform.projection.name === "globe"));
-            context.gl.uniform1f(context.gl.getUniformLocation(shaderProgram, "u_transition"), globeToMercatorTransition(painter.transform.zoom));
+        const program = implementation.getShaderProgram && implementation.getShaderProgram();
+        if (program) {
+            context.gl.useProgram(program);
+            layer.setUniform(context.gl, program, "u_isGlobe", +(painter.transform.projection.name === "globe"));
+            layer.setUniform(context.gl, program, "u_transition", globeToMercatorTransition(painter.transform.zoom));
 
             if (painter.transform.projection.name === "globe") {
                 const center = painter.transform.pointMerc;
                 const globeProjection = mat4.multiply([], painter.transform.customLayerMatrix(), painter.transform.globeToMercatorMatrix());
                 const mercatorProjection = createMercatorGlobeMatrix(painter.transform.customLayerMatrix(), painter.transform.pixelsPerMeterRatio, center);
-                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, globeProjection);
-                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_mercatorProjection"), false, mercatorProjection);
+                layer.setUniform(context.gl, program, "u_projection", globeProjection);
+                layer.setUniform(context.gl, program, "u_mercatorProjection", mercatorProjection);
             } else {
-                context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
+                layer.setUniform(context.gl, program, "u_projection", painter.transform.customLayerMatrix());
             }
         }
 

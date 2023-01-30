@@ -5,6 +5,7 @@ import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type Map from '../../ui/map.js';
 import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
+import {warnOnce} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
 type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
@@ -220,9 +221,27 @@ class CustomStyleLayer extends StyleLayer {
 
     implementation: CustomLayerInterface;
 
+    uniformLocation: {string: WebGLUniformLocation};
+
     constructor(implementation: CustomLayerInterface) {
         super(implementation, {});
         this.implementation = implementation;
+        this.uniformLocation = {};
+    }
+
+    setUniform(gl: WebGLRenderingContext, program: WebGLProgram, name: string, value: number | Array<number>) {
+        this.uniformLocation[name] = this.uniformLocation[name] || gl.getUniformLocation(program, name);
+        if (this.uniformLocation[name]) {
+            if (Array.isArray(value)) {
+                gl.uniformMatrix4fv(this.uniformLocation[name], false, value);
+            } else if (typeof value === 'number') {
+                gl.uniform1f(this.uniformLocation[name], value);
+            } else {
+                assert(false, "Unimplemented custom uniform type");
+            }
+        } else {
+            warnOnce(`Layer "${this.id}" is missing uniform location "${name}", make sure to include shader prelude with map.customLayerVertexHeader as part of your custom layer shader source`);
+        }
     }
 
     is3D(): boolean {
