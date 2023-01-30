@@ -15,7 +15,7 @@ import MercatorCoordinate from '../geo/mercator_coordinate.js';
 import assert from 'assert';
 
 function createMercatorGlobeMatrix(projection, pixelsPerMeterRatio, centerInMerc) {
-    var mercToPixelMatrix = mat4.create();
+    const mercToPixelMatrix = mat4.create();
     mat4.identity(mercToPixelMatrix);
 
     mercToPixelMatrix[0] = pixelsPerMeterRatio;
@@ -26,7 +26,6 @@ function createMercatorGlobeMatrix(projection, pixelsPerMeterRatio, centerInMerc
 
     return mat4.multiply([], projection, mercToPixelMatrix);
 }
-
 
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer, coords: Array<OverscaledTileID>) {
 
@@ -46,12 +45,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             painter.setCustomLayerDefaults();
             context.setColorMode(painter.colorModeForRenderPass());
 
-            if (painter.transform.projection.name === "globe") {
-                const center = painter.transform.pointMerc;
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio);
-            } else {
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
-            }
+            prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
 
             context.setDirty();
             painter.setBaseState();
@@ -106,7 +100,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
                 context.gl.uniformMatrix4fv(context.gl.getUniformLocation(shaderProgram, "u_projection"), false, painter.transform.customLayerMatrix());
             }
         }
-        
+
         implementation.render(context.gl, painter.transform.customLayerMatrix());
 
         context.setDirty();
