@@ -33,6 +33,7 @@ varying float v_visibility;
 #pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
+#pragma mapbox: define lowp float emissive_strength
 
 vec2 calc_offset(vec2 extrusion, float radius, float stroke_width,  float view_scale) {
     return extrusion * (radius + stroke_width) * u_extrude_scale * view_scale;
@@ -89,6 +90,7 @@ void main(void) {
     #pragma mapbox: initialize highp vec4 stroke_color
     #pragma mapbox: initialize mediump float stroke_width
     #pragma mapbox: initialize lowp float stroke_opacity
+    #pragma mapbox: initialize lowp float emissive_strength
 
     // unencode the extrusion vector that we snuck into the a_pos vector
     vec2 extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
