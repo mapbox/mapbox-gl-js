@@ -28,6 +28,7 @@ float luminance(vec3 c) {
 #pragma mapbox: define lowp vec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float emissive_strength
 
 float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -39,6 +40,7 @@ void main() {
     #pragma mapbox: initialize lowp vec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float emissive_strength
 
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2.s;
@@ -113,7 +115,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color);
+    out_color = apply_lighting_with_emission(out_color, emissive_strength);
 #endif
 
 #ifdef FOG

@@ -17,6 +17,7 @@ varying vec4 v_data1;
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
+#pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -24,6 +25,7 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
+    #pragma mapbox: initialize lowp float emissive_strength
 
     float fade_opacity = v_data1[2];
 
@@ -60,7 +62,13 @@ void main() {
     highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist);
 
-    gl_FragColor = color * (alpha * opacity * fade_opacity);
+    vec4 out_color = color * (alpha * opacity * fade_opacity);
+
+#ifdef LIGHTING_3D_MODE
+    out_color = apply_lighting_with_emission(out_color, emissive_strength);
+#endif
+
+    gl_FragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
