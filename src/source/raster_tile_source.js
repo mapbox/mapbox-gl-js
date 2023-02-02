@@ -118,14 +118,15 @@ class RasterTileSource extends Evented implements Source {
         this.load();
     }
 
+    /**
+     * Reloads the source data and re-renders the map.
+     *
+     * @example
+     * map.getSource('source-id').reload();
+     */
     reload() {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
-    }
-
-    setSourceProperty(callback: Function) {
-        callback();
-        this.reload();
     }
 
     /**
@@ -134,16 +135,14 @@ class RasterTileSource extends Evented implements Source {
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
      * @returns {RasterTileSource} Returns itself to allow for method chaining.
      * @example
-     * map.addSource('raster_source_id', {
+     * map.addSource('source-id', {
      *     type: 'raster',
      *     tiles: ['https://some_end_point.net/{z}/{x}/{y}.png'],
      *     tileSize: 256
      * });
      *
-     * const rasterTileSource = map.getSource('raster_source_id');
-     *
      * // Set the endpoint associated with a raster tile source.
-     * rasterTileSource.setTiles(['https://another_end_point.net/{z}/{x}/{y}.png']);
+     * map.getSource('source-id').setTiles(['https://another_end_point.net/{z}/{x}/{y}.png']);
      */
     setTiles(tiles: Array<string>): this {
         this._options.tiles = tiles;
@@ -158,15 +157,13 @@ class RasterTileSource extends Evented implements Source {
      * @param {string} url A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<Tileset ID>`.
      * @returns {RasterTileSource} Returns itself to allow for method chaining.
      * @example
-     * map.addSource('raster_source_id', {
+     * map.addSource('source-id', {
      *     type: 'raster',
      *     url: 'mapbox://mapbox.satellite'
      * });
      *
-     * const rasterTileSource = map.getSource('raster_source_id');
-     *
      * // Update raster tile source to a new URL endpoint
-     * rasterTileSource.setUrl('mapbox://mapbox.satellite');
+     * map.getSource('source-id').setUrl('mapbox://mapbox.satellite');
      */
     setUrl(url: string): this {
         this.url = url;

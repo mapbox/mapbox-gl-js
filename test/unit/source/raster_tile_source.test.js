@@ -206,9 +206,8 @@ test('RasterTileSource', (t) => {
 
         window.server.respondWith('/source.json', responseSpy);
 
-        source.setSourceProperty(() => {
-            source.attribution = 'OpenStreetMap';
-        });
+        source.attribution = 'OpenStreetMap';
+        source.reload();
 
         t.ok(loadSpy.calledOnce);
         t.ok(responseSpy.calledOnce);
