@@ -10,23 +10,180 @@
         html, body, #map { height: 100%; }
     </style>
 </head>
-
 <body>
 <div id='map'></div>
+<script src="https://unpkg.com/three@0.149.0/build/three.min.js"></script>
+<script type="module">
+    const vertexShader = `
+         varying vec2 vUv;
+         varying mat4 vPosition;
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script>
+         void main() {
+         vUv = uv;
 
-var map = window.map = new mapboxgl.Map({
-    container: 'map',
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
-    style: 'mapbox://styles/mapbox/streets-v11',
-    hash: true,
-    projection: 'globe'
-});
+         vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+         #ifdef USE_INSTANCING
+
+         gl_Position = projectionMatrix * instanceMatrix * mvPosition;
+
+         #endif
+         }
+         `
+    const fragmentShader = `
+         precision highp float;
+         uniform sampler2D map;
+         varying vec2 vUv;
+
+         void main() {
+            gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+         }
+         `;
+
+
+    const planeSize = 1;
+    const planeBufferGeometry = new THREE.PlaneBufferGeometry(planeSize, planeSize, 2, 2);
+
+    const material =new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        vertexShader,
+        fragmentShader,
+    });
+
+    const mapCenter = mapboxgl.MercatorCoordinate.fromLngLat([0, 0], 0);
+
+    const Threejscustomlayer = {
+        type:"custom",
+        renderingMode:"3d",
+        id:"three-js",
+
+        onAdd:function (map,gl) {
+            this.map = map;
+            const mapCanvas = map.getCanvas();
+            this.scene = new THREE.Scene();
+
+            const { x, y, z } = mapCenter;
+            this.cameraTransform = new THREE.Matrix4().makeTranslation(x, y, z || 0);
+
+            this.camera = new THREE.PerspectiveCamera(45, mapCanvas.width / mapCanvas.height, 0.1, 1000);
+
+            this.renderer = new THREE.WebGLRenderer({
+                canvas: mapCanvas,
+                context: gl,
+            });
+
+            this.renderer.autoClear = false;
+
+            const helper = new THREE.CameraHelper(this.camera);
+            this.scene.add(helper);
+
+            // [-120,40]
+            const dir = new THREE.Vector3(-864.9573102976779, -838.0647460031414, -499.3833359378987);
+
+            //normalize the direction vector (convert to vector of length 1)
+            dir.normalize();
+
+            const origin = new THREE.Vector3( 0, 0, 0 );
+            const length = 10000;
+            const hex = 0xffff00;
+
+            const arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+            this.scene.add( arrowHelper );
+
+        },
+        render:function (gl, matrix) {
+            const projectionMatrix = new THREE.Matrix4().fromArray(this.map.painter.transform.customLayerMatrix());
+            if (this.map.transform.projection.name === 'globe') {
+                const globeProjection = new THREE.Matrix4().fromArray(this.map.painter.transform.globeToMercatorMatrix());
+                this.camera.projectionMatrix = projectionMatrix.multiply(globeProjection);
+            }else{
+                this.camera.projectionMatrix = projectionMatrix.multiply(this.cameraTransform);
+            }
+            this.renderer.state.reset();
+            this.renderer.render(this.scene, this.camera);
+            this.map.triggerRepaint();
+        },
+    }
+
+
+    const mapbox = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        projection: 'globe',
+        center: [-105.3913669, 38.8429922],
+        fadeDuration: 0,
+        zoom: 2,
+        attributionControl: false,
+        maxZoom: 22,
+        minZoom: 0,
+        pitchWithRotate: true,
+        dragRotate: true,
+        touchZoomRotate: true,
+        touchPitch: true,
+        antialias:true,
+    });
+
+    const clearInstancedMesh = () =>{
+        const meshes = Threejscustomlayer.scene.children.filter(objects=>{
+            return objects.isInstancedMesh;
+        })
+        meshes.forEach(mesh=>mesh.removeFromParent())
+    }
+
+    const createInstancedMesh = () =>{
+        const quantity = 1;
+        const mesh = new THREE.InstancedMesh(planeBufferGeometry, material, quantity);
+        const isGlobe = Threejscustomlayer.map.transform.projection.name === 'globe';
+
+        for(let i = 0 ; i < quantity ; i++){
+            const matrix = new THREE.Matrix4();
+
+            const coordinates = [-120, 40];
+            const ECEFPosition = mapboxgl.LngLat.convert(coordinates).toEcef(0);
+            const ECEFVectorPosition = new THREE.Vector3(ECEFPosition[0],ECEFPosition[1],ECEFPosition[2]);
+            const mercatorCoordinates = mapboxgl.MercatorCoordinate.fromLngLat(coordinates, 0);
+            const {x,y,z} = mercatorCoordinates;
+            const adjustedMercatorCoords = new THREE.Vector3(x - mapCenter.x, y - mapCenter.y, z || 0 - (mapCenter.z || 0));
+
+
+            const dir = new THREE.Vector3().copy(isGlobe ? ECEFVectorPosition : adjustedMercatorCoords);
+            dir.normalize();
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+
+            if(isGlobe){
+                matrix.makeRotationFromQuaternion(quaternion);
+            }
+
+            matrix.scale(isGlobe ? new THREE.Vector3(10,10,10) : new THREE.Vector3(0.001,0.001,0.001));
+            matrix.setPosition(isGlobe ? ECEFVectorPosition : adjustedMercatorCoords);
+
+            const color = new THREE.Color("red")
+
+            mesh.setMatrixAt(i,matrix);
+            mesh.setColorAt(i,color);
+        }
+
+        mesh.needsUpdate = true;
+
+        Threejscustomlayer.scene.add(mesh)
+    }
+
+    mapbox.on("load",()=>{
+        mapbox.addLayer(Threejscustomlayer);
+
+        mapbox.on("zoom",()=>{
+            clearInstancedMesh();
+            createInstancedMesh();
+        })
+    })
 
 </script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script></script>
 </body>
 </html>
