@@ -1,0 +1,10 @@
+[
+  {
+    "message": "light-3d: Invalid light type ambient_light",
+    "line": 6
+  },
+  {
+    "message": "light-3d: Invalid light type directional_light",
+    "line": 14
+  }
+]

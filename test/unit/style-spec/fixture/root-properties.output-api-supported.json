@@ -16,6 +16,10 @@
     "line": 10
   },
   {
+    "message": "lights: array expected, string found",
+    "line": 11
+  },
+  {
     "message": "version: Style version must be 8",
     "line": 2
   }

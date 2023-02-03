@@ -39,6 +39,9 @@ export {
     validateLight as light,
     validateLayer as layer,
     validateFilter as filter,
+    validateLights as lights,
+    validateTerrain as terrain,
+    validateFog as fog,
     validatePaintProperty as paintProperty,
     validateLayoutProperty as layoutProperty
 } from './validate_style.min.js';

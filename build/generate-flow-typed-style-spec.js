@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties.js';
 import spec from '../src/style-spec/reference/v8.json';
+import assert from 'assert';
 
 function flowEnum(values) {
     if (Array.isArray(values)) {
@@ -26,6 +27,9 @@ function flowType(property) {
             case 'enum':
                 return flowEnum(property.values);
             case 'array':
+                if (property.value === 'light-3d') {
+                    return 'LightsSpecification';
+                }
                 const elementType = flowType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value)
                 if (property.length) {
                     return `[${Array(property.length).fill(elementType).join(', ')}]`;
@@ -61,10 +65,12 @@ function flowType(property) {
 }
 
 function flowProperty(key, property) {
+    assert(property, `Property not found in the style-specification for ${key}`);
     return `"${key}"${property.required ? '' : '?'}: ${flowType(property)}`;
 }
 
 function flowObjectDeclaration(key, properties) {
+    assert(properties, `Properties not found in the style-specification for ${key}`);
     return `export type ${key} = ${flowObject(properties, '', '*' in properties ? '' : '|')}`;
 }
 
@@ -81,6 +87,10 @@ function flowSourceTypeName(key) {
     return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}SourceSpecification`)
         .replace(/_dem/, 'DEM')
         .replace(/Geojson/, 'GeoJSON');
+}
+
+function flowLightTypeName(key) {
+    return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).concat('LightSpecification').join('');
 }
 
 function flowLayerTypeName(key) {
@@ -117,6 +127,24 @@ function flowLayer(key) {
 
     return flowObjectDeclaration(flowLayerTypeName(key), layer);
 }
+
+function flowLight(key) {
+    const light = spec['light-3d'];
+
+    light.type = {
+        type: 'enum',
+        values: [key],
+        required: true
+    }
+
+    light.properties.type = () => {
+        return flowObject(spec[`properties_light_${key}`], '    ', '|');
+    };
+
+    return flowObjectDeclaration(flowLightTypeName(key), light);
+}
+
+const lightTypes = Object.keys(spec['light-3d'].type.values);
 
 const layerTypes = Object.keys(spec.layer.type.values);
 
@@ -193,6 +221,11 @@ ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key
 
 export type SourceSpecification =
 ${spec.source.map(key => `    | ${flowSourceTypeName(key)}`).join('\n')}
+
+${lightTypes.map(key => flowLight(key)).join('\n\n')}
+
+export type LightsSpecification =
+${lightTypes.map(key => `    | ${flowLightTypeName(key)}`).join('\n')};
 
 ${layerTypes.map(key => flowLayer(key)).join('\n\n')}
 

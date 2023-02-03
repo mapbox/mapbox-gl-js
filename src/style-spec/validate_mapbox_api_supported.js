@@ -110,7 +110,8 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<ValidationErr
         'modified',
         'visibility',
         'protected',
-        'models'
+        'models',
+        'lights'
     ];
 
     const allowedKeyErrors = getAllowedKeyErrors(style, [...specKeys, ...optionalRootProperties]);

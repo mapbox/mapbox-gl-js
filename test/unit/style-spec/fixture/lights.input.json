@@ -1,0 +1,24 @@
+{
+    "version": 8,
+    "sources": {},
+    "layers": [],
+    "lights": [
+        {
+            "id": ["environment"],
+            "type": "ambient",
+            "properties": {
+                "color": [],
+                "intensity": "0.4"
+            }
+        },
+        {
+            "id": ["sun_light"],
+            "type": "directional",
+            "color": true,
+            "intensity": "0.4",
+            "direction": "[200.0, 40.0]",
+            "cast-shadows": "true",
+            "shadow-intensity": "0.2"
+        }
+    ]
+}

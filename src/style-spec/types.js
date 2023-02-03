@@ -66,6 +66,7 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
+    "lights"?: LightsSpecification,
     "terrain"?: TerrainSpecification,
     "fog"?: FogSpecification,
     "sources": {[_: string]: SourceSpecification},
@@ -185,6 +186,31 @@ export type SourceSpecification =
     | VideoSourceSpecification
     | ImageSourceSpecification
     | ModelSourceSpecification
+
+export type AmbientLightSpecification = {|
+    "id": string,
+    "properties"?: {|
+        "color"?: PropertyValueSpecification<ColorSpecification>,
+        "intensity"?: PropertyValueSpecification<number>
+    |},
+    "type": "ambient"
+|}
+
+export type DirectionalLightSpecification = {|
+    "id": string,
+    "properties"?: {|
+        "direction"?: PropertyValueSpecification<[number, number]>,
+        "color"?: PropertyValueSpecification<ColorSpecification>,
+        "intensity"?: PropertyValueSpecification<number>,
+        "cast-shadows"?: ExpressionSpecification,
+        "shadow-intensity"?: PropertyValueSpecification<number>
+    |},
+    "type": "directional"
+|}
+
+export type LightsSpecification =
+    | AmbientLightSpecification
+    | DirectionalLightSpecification;
 
 export type FillLayerSpecification = {|
     "id": string,

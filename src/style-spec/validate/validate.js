@@ -17,6 +17,7 @@ import validateFilter from './validate_filter.js';
 import validateLayer from './validate_layer.js';
 import validateSource from './validate_source.js';
 import validateLight from './validate_light.js';
+import validateLights from './validate_lights.js';
 import validateTerrain from './validate_terrain.js';
 import validateFog from './validate_fog.js';
 import validateString from './validate_string.js';
@@ -43,6 +44,7 @@ const VALIDATORS = {
     'object': validateObject,
     'source': validateSource,
     'light': validateLight,
+    'light-3d': validateLights,
     'terrain': validateTerrain,
     'fog': validateFog,
     'string': validateString,
@@ -75,13 +77,10 @@ export default function validate(options: ValidationOptions): Array<ValidationEr
 
     if (valueSpec.expression && isFunction(unbundle(value))) {
         return validateFunction(options);
-
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
-
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);
-
     } else {
         const valid = validateObject(extend({}, options, {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec

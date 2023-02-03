@@ -14,5 +14,9 @@
   {
     "message": "light: object expected, boolean found",
     "line": 10
+  },
+  {
+    "message": "lights: array expected, string found",
+    "line": 11
   }
 ]
