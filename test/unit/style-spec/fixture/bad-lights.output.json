@@ -1,0 +1,10 @@
+[
+  {
+    "message": "properties: object expected, array found",
+    "line": 28
+  },
+  {
+    "message": "light-3d: missing property type on light",
+    "line": 30
+  }
+]

@@ -7,7 +7,7 @@ export function supportsPropertyExpression(spec: StylePropertySpecification): bo
 }
 
 export function supportsZoomExpression(spec: StylePropertySpecification): boolean {
-    return !!spec.expression && spec.expression.parameters.indexOf('zoom') > -1;
+    return !!spec.expression && !!spec.expression.parameters && spec.expression.parameters.indexOf('zoom') > -1;
 }
 
 export function supportsInterpolation(spec: StylePropertySpecification): boolean {

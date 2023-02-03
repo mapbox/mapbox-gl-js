@@ -1,0 +1,38 @@
+[
+  {
+    "message": "id: string expected, array found",
+    "line": 7
+  },
+  {
+    "message": "color: color expected, array found",
+    "line": 10
+  },
+  {
+    "message": "intensity: number expected, string found",
+    "line": 11
+  },
+  {
+    "message": "id: string expected, array found",
+    "line": 15
+  },
+  {
+    "message": "color: unknown property \"color\"",
+    "line": 17
+  },
+  {
+    "message": "intensity: unknown property \"intensity\"",
+    "line": 18
+  },
+  {
+    "message": "direction: unknown property \"direction\"",
+    "line": 19
+  },
+  {
+    "message": "cast-shadows: unknown property \"cast-shadows\"",
+    "line": 20
+  },
+  {
+    "message": "shadow-intensity: unknown property \"shadow-intensity\"",
+    "line": 21
+  }
+]
