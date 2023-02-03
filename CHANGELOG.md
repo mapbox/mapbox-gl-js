@@ -1,3 +1,9 @@
+## 2.12.1
+
+## Bug fixes 🐞
+
+* Fix negative-width diacritics handling. ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
+
 ## 2.12.0
 
 ## Features ✨ and improvements 🏁
