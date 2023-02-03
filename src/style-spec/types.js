@@ -73,7 +73,8 @@ export type StyleSpecification = {|
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
     "projection"?: ProjectionSpecification,
-    "layers": Array<LayerSpecification>
+    "layers": Array<LayerSpecification>,
+    "models"?: mixed
 |}
 
 export type LightSpecification = {|
@@ -172,6 +173,10 @@ export type ImageSourceSpecification = {|
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
+export type ModelSourceSpecification = {|
+    "type": "model" | "batched-model"
+|}
+
 export type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
@@ -179,6 +184,7 @@ export type SourceSpecification =
     | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
+    | ModelSourceSpecification
 
 export type FillLayerSpecification = {|
     "id": string,
@@ -430,6 +436,35 @@ export type HillshadeLayerSpecification = {|
     |}
 |}
 
+export type ModelLayerSpecification = {|
+    "id": string,
+    "type": "model",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "visibility"?: "visible" | "none",
+        "model-id"?: DataDrivenPropertyValueSpecification<string>
+    |},
+    "paint"?: {|
+        "model-opacity"?: PropertyValueSpecification<number>,
+        "model-rotation"?: DataDrivenPropertyValueSpecification<[number, number, number]>,
+        "model-scale"?: DataDrivenPropertyValueSpecification<[number, number, number]>,
+        "model-translation"?: DataDrivenPropertyValueSpecification<[number, number, number]>,
+        "model-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "model-color-mix-intensity"?: DataDrivenPropertyValueSpecification<number>,
+        "model-type"?: "common-3d" | "location-indicator",
+        "model-cast-shadows"?: ExpressionSpecification,
+        "model-receive-shadows"?: ExpressionSpecification,
+        "model-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
+        "model-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
+        "model-roughness"?: DataDrivenPropertyValueSpecification<number>
+    |}
+|}
+
 export type BackgroundLayerSpecification = {|
     "id": string,
     "type": "background",
@@ -477,6 +512,7 @@ export type LayerSpecification =
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
     | HillshadeLayerSpecification
+    | ModelLayerSpecification
     | BackgroundLayerSpecification
     | SkyLayerSpecification;
 

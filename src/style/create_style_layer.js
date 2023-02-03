@@ -13,6 +13,7 @@ import raster from './style_layer/raster_style_layer.js';
 import CustomStyleLayer from './style_layer/custom_style_layer.js';
 import sky from './style_layer/sky_style_layer.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
+import model from '../../3d-style/style/style_layer/model_style_layer.js';
 
 import type {LayerSpecification} from '../style-spec/types.js';
 
@@ -26,7 +27,8 @@ const subclasses = {
     symbol,
     background,
     raster,
-    sky
+    sky,
+    model
 };
 
 export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface): StyleLayer | CustomStyleLayer {

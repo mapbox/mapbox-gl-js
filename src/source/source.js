@@ -102,7 +102,8 @@ import video from '../source/video_source.js';
 import image from '../source/image_source.js';
 import canvas from '../source/canvas_source.js';
 import custom from '../source/custom_source.js';
-
+import model from '../../3d-style/source/model_source.js';
+import tiled3DModel from '../../3d-style/source/tiled_3d_model_source.js';
 import type {SourceSpecification} from '../style-spec/types.js';
 
 const sourceTypes = {
@@ -112,6 +113,8 @@ const sourceTypes = {
     geojson,
     video,
     image,
+    model,
+    'batched-model': tiled3DModel,
     canvas,
     custom
 };
