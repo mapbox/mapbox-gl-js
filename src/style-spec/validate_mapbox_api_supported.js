@@ -36,7 +36,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
     return errors;
 }
 
-const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem"]);
+const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem", "model", "batched-model"]);
 function getSourceErrors(source: Object, i: number): Array<ValidationError> {
     const errors = [];
 
@@ -109,7 +109,8 @@ function getRootErrors(style: Object, specKeys: Array<any>): Array<ValidationErr
         'created',
         'modified',
         'visibility',
-        'protected'
+        'protected',
+        'models'
     ];
 
     const allowedKeyErrors = getAllowedKeyErrors(style, [...specKeys, ...optionalRootProperties]);

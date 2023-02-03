@@ -119,7 +119,26 @@
           }
         }
       ]
+    },
+    "models": {
+      "type": "*",
+      "doc": "specific models used in the style",
+      "example": {
+        "spruce1-lod0": "asset://spruce1-lod0.glb",
+        "spruce1-lod1": "asset://spruce1-lod1.glb",
+        "spruce1-lod2": "asset://spruce1-lod2.glb"
+      }
     }
+  },
+  "models" : {
+    "type" : "*",
+    "value": "models",
+    "doc": "Specific models used in the style",
+    "example": {
+        "spruce1-lod0": "asset://spruce1-lod0.glb",
+        "spruce1-lod1": "asset://spruce1-lod1.glb",
+        "spruce1-lod2": "asset://spruce1-lod2.glb"
+      }
   },
   "sources": {
     "*": {
@@ -133,7 +152,8 @@
     "source_raster_dem",
     "source_geojson",
     "source_video",
-    "source_image"
+    "source_image",
+    "source_model"
   ],
   "source_vector": {
     "type": {
@@ -513,6 +533,21 @@
       }
     }
   },
+  "source_model" : {
+    "type": {
+      "required": true,
+        "type": "enum",
+        "values": {
+          "model": {
+            "doc": "A collection of 3D models"
+          },
+          "batched-model": {
+            "doc": "A collection of 3D models with anchor data"
+          }
+       },
+      "doc": ""
+    }
+  },
   "layer": {
     "id": {
       "type": "string",
@@ -610,6 +645,16 @@
             }
           }
         },
+        "model": {
+          "doc": "A 3D model",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "",
+              "ios": "",
+              "android": ""
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -682,7 +727,8 @@
     "layout_raster",
     "layout_hillshade",
     "layout_background",
-    "layout_sky"
+    "layout_sky",
+    "layout_model"
   ],
   "layout_background": {
     "visibility": {
@@ -729,6 +775,61 @@
         }
       },
       "property-type": "constant"
+    }
+  },
+  "layout_model": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "constant"
+    },
+    "model-id": {
+      "type": "string",
+      "doc": "Model to render.",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": false,
+      "requires": [
+        {
+          "source": [
+            "geojson",
+            "vector"
+          ]
+        }]
     }
   },
   "layout_fill": {
@@ -4247,7 +4348,8 @@
     "paint_raster",
     "paint_hillshade",
     "paint_background",
-    "paint_sky"
+    "paint_sky",
+    "paint_model"
   ],
   "paint_fill": {
     "fill-antialias": {
@@ -6693,6 +6795,281 @@
         ]
       },
       "property-type": "data-constant"
+    }
+  },
+  "paint_model" : {
+    "model-opacity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the model layer.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "model-rotation": {
+      "type": "array",
+      "value": "number",
+      "length": 3,
+      "default": [0, 0, 0],
+      "period": 360,
+      "units": "degrees",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+         "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true,
+      "doc": "The rotation of the model in euler angles [lon, lat, z]."
+    },
+    "model-scale": {
+      "type": "array",
+      "value": "number",
+      "length": 3,
+      "default": [1, 1, 1],
+      "doc": "The scale of the model.",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
+    },
+    "model-translation": {
+      "type": "array",
+      "value": "number",
+      "length": 3,
+      "default": [0, 0, 0],
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true,
+      "doc": "The translation of the model in meters in form of [longitudal, latitudal, altitude] offsets."
+    },
+    "model-color": {
+      "type": "color",
+      "default": "#ffffff",
+      "doc": "The tint color of the model layer. model-color-mix-intensity (defaults to 0) defines tint(mix) intensity - this means that, this color is not used unless model-color-mix-intensity gets value greater than 0.",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
+    },
+    "model-color-mix-intensity": {
+      "type": "number",
+      "property-type": "data-driven",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Intensity of model-color (on a scale from 0 to 1) in color mix with original 3D model's colors. Higher number will present a higher model-color contribution in mix.",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
+    },
+    "model-type": {
+      "type": "enum",
+      "values": {
+        "common-3d": {
+          "doc": "Integrated to 3D scene, using depth testing, along with terrain, fill-extrusions and custom layer."
+        },
+        "location-indicator": {
+          "doc": "Displayed over other 3D content, occluded by terrain."
+        }
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "default": "common-3d",
+      "doc": "Defines rendering behavior of model in respect to other 3D scene objects.",
+      "property-type": "data-constant"
+    },
+    "model-cast-shadows": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Enable/Disable shadow casting for this layer",
+      "transition": false,
+      "expression": {
+        "interpolated": false,
+        "parameters": []
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "model-receive-shadows": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Enable/Disable shadow receiving for this layer",
+      "transition": false,
+      "expression": {
+        "interpolated": false,
+        "parameters": []
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "model-ambient-occlusion-intensity": {
+      "type": "number",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Intensity of the ambient occlusion if present in the 3D model.",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant",
+      "transition": true
+    },
+    "model-emissive-strength": {
+      "type": "number",
+      "property-type": "data-driven",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 5,
+      "units": "number",
+      "doc": "Strength of the emission. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors)",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
+    },
+    "model-roughness": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Material roughness. Material is fully smooth for value 0, and fully rough for value 1. Affects only layers using batched-model source.",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["zoom", "feature", "feature-state"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
     }
   },
   "transition": {

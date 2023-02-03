@@ -56,7 +56,7 @@
     "line": 83
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, background, sky], \"invalid\" found",
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, model, background, sky], \"invalid\" found",
     "line": 90
   },
   {
@@ -76,7 +76,7 @@
     "line": 14
   },
   {
-    "message": "sources[2].type: Expected one of [vector, raster, raster-dem]",
+    "message": "sources[2].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
     "line": 13
   },
   {
@@ -91,7 +91,7 @@
     "line": 19
   },
   {
-    "message": "sources[3].type: Expected one of [vector, raster, raster-dem]",
+    "message": "sources[3].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
     "line": 17
   },
   {
