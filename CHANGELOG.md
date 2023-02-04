@@ -2,7 +2,7 @@
 
 ## Bug fixes 🐞
 
-* Fix negative-width diacritics handling. ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
+* Fix a rare bug where certain diacritical characters could break rendering of a symbol layer. ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
 
 ## 2.12.0
 
