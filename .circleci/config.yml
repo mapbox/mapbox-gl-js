@@ -383,6 +383,7 @@ jobs:
           at: ~/
       - browser-tools/install-browser-tools
       - run: yarn run build-token
+      - run: yarn run build-dev
       - run:
           name: Test Chrome
           environment:
