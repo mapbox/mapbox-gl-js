@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "2.12.0",
+  "version": "2.12.1",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -15,7 +15,7 @@
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^2.0.1",
     "@mapbox/point-geometry": "^0.1.0",
-    "@mapbox/tiny-sdf": "^2.0.5",
+    "@mapbox/tiny-sdf": "^2.0.6",
     "@mapbox/unitbezier": "^0.0.1",
     "@mapbox/vector-tile": "^1.3.1",
     "@mapbox/whoots-js": "^3.1.0",

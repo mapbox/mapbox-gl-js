@@ -381,10 +381,9 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-browser-tools:
-          chrome-version: 91.0.4472.164
-      - run: yarn run build-dev
+      - browser-tools/install-browser-tools
       - run: yarn run build-token
+      - run: yarn run build-dev
       - run:
           name: Test Chrome
           environment:
@@ -488,7 +487,7 @@ jobs:
             $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
             $path = "$PSScriptRoot\ChromeSetup.exe";
             Invoke-WebRequest -Uri $uri -OutFile $path;
-            Start-Process $path /install -NoNewWindow -Wait; 
+            Start-Process $path /install -NoNewWindow -Wait;
             Remove-Item $path;
 
             $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
