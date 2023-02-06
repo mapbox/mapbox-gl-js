@@ -3,7 +3,7 @@ attribute vec2 a_pos;
 uniform mat4 u_matrix;
 
 #ifdef LIGHTING_3D_MODE
-uniform vec4 u_color;
+uniform mediump vec4 u_color;
 varying vec4 v_color;
 #endif
 
