@@ -18,7 +18,7 @@
 
 ## 2.12.1
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Fix a rare bug where certain diacritical characters could break the rendering of a symbol layer. ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
 
