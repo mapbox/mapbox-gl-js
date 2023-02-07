@@ -29,6 +29,31 @@ export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): string | 
     return null;
 }
 
+export function validateHSLA(h: mixed, s: mixed, l: mixed, a?: mixed): string | null {
+    if (!(
+        typeof h === 'number' && h >= 0 && h <= 360
+    )) {
+        const value = typeof a === 'number' ? [h, s, l, a] : [h, s, l];
+        return `Invalid hsla value [${value.join(', ')}]: 'h' must be between 0 and 360.`;
+    }
+
+    if (!(
+        typeof s === 'number' && s >= 0 && s <= 100 &&
+        typeof l === 'number' && l >= 0 && l <= 100
+    )) {
+        const value = typeof a === 'number' ? [h, s, l, a] : [h, s, l];
+        return `Invalid hsla value [${value.join(', ')}]: 's', and 'l' must be between 0 and 100.`;
+    }
+
+    if (!(
+        typeof a === 'undefined' || (typeof a === 'number' && a >= 0 && a <= 1)
+    )) {
+        return `Invalid hsla value [${[h, s, l, a].join(', ')}]: 'a' must be between 0 and 1.`;
+    }
+
+    return null;
+}
+
 export type Value = null | string | boolean | number | Color | Collator | Formatted | ResolvedImage | $ReadOnlyArray<Value> | { +[string]: Value }
 
 export function isValue(mixed: mixed): boolean {

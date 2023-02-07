@@ -1,0 +1,52 @@
+{
+  "expression": [
+    "hsla",
+    ["number", ["get", "h"]],
+    ["number", ["get", "s"]],
+    ["number", ["get", "l"]],
+    ["number", ["get", "a"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"h": 0, "s": 0, "l": -1, "a": 1}}],
+    [{}, {"properties": {"h": 0, "s": 0, "l": 101, "a": 1}}],
+    [{}, {"properties": {"h": 0, "s": 101, "l": 0, "a": 1}}],
+    [{}, {"properties": {"h": 0, "s": 0, "l": 50, "a": -0.5}}],
+    [{}, {"properties": {"h": 0, "s": 0, "l": -1, "a": 1.5}}],
+    [{}, {"properties": {"h": 370, "s": 0, "l": 50, "a": 0.5}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      {
+        "error": "Invalid hsla value [0, 0, -1, 1]: 's', and 'l' must be between 0 and 100."
+      },
+      {
+        "error": "Invalid hsla value [0, 0, 101, 1]: 's', and 'l' must be between 0 and 100."
+      },
+      {
+        "error": "Invalid hsla value [0, 101, 0, 1]: 's', and 'l' must be between 0 and 100."
+      },
+      {
+        "error": "Invalid hsla value [0, 0, 50, -0.5]: 'a' must be between 0 and 1."
+      },
+      {
+        "error": "Invalid hsla value [0, 0, -1, 1.5]: 's', and 'l' must be between 0 and 100."
+      },
+      {
+        "error": "Invalid hsla value [370, 0, 50, 0.5]: 'h' must be between 0 and 360."
+      }
+    ],
+    "serialized": [
+      "hsla",
+      ["number", ["get", "h"]],
+      ["number", ["get", "s"]],
+      ["number", ["get", "l"]],
+      ["number", ["get", "a"]]
+    ]
+  }
+}
