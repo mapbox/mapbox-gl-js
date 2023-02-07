@@ -1,0 +1,14 @@
+{
+  "expression": ["hsla", 180, 100, 50, 1],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [[0, 1, 1, 1]],
+    "serialized": ["rgba", 0, 255, 255, 1]
+  }
+}

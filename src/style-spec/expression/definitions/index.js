@@ -14,7 +14,7 @@ import {
     toString as typeToString
 } from '../types.js';
 
-import {typeOf, Color, validateRGBA, toString as valueToString} from '../values.js';
+import {typeOf, Color, validateRGBA, validateHSLA, toString as valueToString} from '../values.js';
 import CompoundExpression from '../compound_expression.js';
 import RuntimeError from '../runtime_error.js';
 import Let from './let.js';
@@ -98,6 +98,19 @@ function rgba(ctx, [r, g, b, a]) {
     return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
+function hsla(ctx, [h, s, l, a]) {
+    h = h.evaluate(ctx);
+    s = s.evaluate(ctx);
+    l = l.evaluate(ctx);
+    const alpha = a ? a.evaluate(ctx) : 1;
+    const error = validateHSLA(h, s, l, alpha);
+    if (error) throw new RuntimeError(error);
+    const colorFunction = `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+    const color = Color.parse(colorFunction);
+    if (!color) throw new RuntimeError(`Failed to parse HSLA color: ${colorFunction}`);
+    return color;
+}
+
 function has(key, obj) {
     return key in obj;
 }
@@ -151,6 +164,16 @@ CompoundExpression.register(expressions, {
         ColorType,
         [NumberType, NumberType, NumberType, NumberType],
         rgba
+    ],
+    'hsl': [
+        ColorType,
+        [NumberType, NumberType, NumberType],
+        hsla
+    ],
+    'hsla': [
+        ColorType,
+        [NumberType, NumberType, NumberType, NumberType],
+        hsla
     ],
     'has': {
         type: BooleanType,

@@ -258,15 +258,7 @@ map.on('style.load', function() {
         }
     };
 
-    map.setFog({
-        "color": [
-            "rgba",
-            ["*", 9.0, ["zoom"]],
-            0,
-            0,
-            1.0
-        ]
-    });
+    map.setFog({});
 
     map.addLayer(highlightLayer);
 

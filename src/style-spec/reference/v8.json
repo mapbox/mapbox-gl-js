@@ -3441,6 +3441,28 @@
           }
         }
       },
+      "hsl": {
+        "doc": "Creates a color value from hue (range 0-360), saturation and lightness components (range 0-100), and an alpha component of 1. If any component is out of range, the expression is an error.",
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.12.1",
+            "android": "10.11.0",
+            "ios": "10.11.0"
+          }
+        }
+      },
+      "hsla": {
+        "doc": "Creates a color value from hue (range 0-360), saturation and lightness components (range 0-100), and an alpha component (range 0-1). If any component is out of range, the expression is an error.",
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "2.12.1",
+            "android": "10.11.0",
+            "ios": "10.11.0"
+          }
+        }
+      },
       "get": {
         "doc": "Retrieves a property value from the current feature's properties, or from another object if a second argument is provided. Returns `null` if the requested property is missing.",
         "group": "Lookup",
