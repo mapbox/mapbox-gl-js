@@ -5,7 +5,8 @@ type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatma
 
 type ExpressionSpecification = {
     interpolated: boolean,
-    parameters: ExpressionParameters
+    parameters: ExpressionParameters,
+    relaxZoomRestriction: boolean
 }
 
 export type StylePropertySpecification = {

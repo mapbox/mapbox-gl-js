@@ -244,9 +244,10 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
+    const canRelaxZoomRestriction = propertySpec.expression && propertySpec.expression.relaxZoomRestriction;
     const zoomCurve = findZoomCurve(parsed);
-    if (!zoomCurve && !isZoomConstant) {
-        return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]);
+    if (!zoomCurve && !isZoomConstant && !canRelaxZoomRestriction) {
+        return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression, or in the properties of atmosphere.')]);
     } else if (zoomCurve instanceof ParsingError) {
         return error([zoomCurve]);
     } else if (zoomCurve instanceof Interpolate && !supportsInterpolation(propertySpec)) {
@@ -353,8 +354,6 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
         const childResult = findZoomCurve(child);
         if (childResult instanceof ParsingError) {
             result = childResult;
-        } else if (!result && childResult) {
-            result = new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.');
         } else if (result && childResult && result !== childResult) {
             result = new ParsingError('', 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.');
         }

@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 256
+    }
+  },
+  "zoom": 20,
+  "pitch": 85,
+  "sources": {},
+  "fog": {
+    "color": [
+      "rgba",
+      ["*", 9.0, ["zoom"]],
+      ["*", 9.0, ["-", 22.0, ["zoom"]]],
+      0,
+      1.0 
+    ],
+    "horizon-blend": 0.05,
+    "high-color": [
+      "rgba",
+      0,
+      0,
+      ["*", 9.0, ["zoom"]],
+      1.0 
+    ],
+    "star-intensity": 0.0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}
