@@ -161,8 +161,7 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
 }
 
 vec3 shadowed_color_normal(
-    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
+    vec3 color, float NDotL, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     if (NDotL < 0.0)
         return color * (1.0 - u_shadow_intensity);
 
@@ -176,6 +175,12 @@ vec3 shadowed_color_normal(
     occlusion = mix(occlusion, 1.0, backfacing);
     color *= 1.0 - (u_shadow_intensity * occlusion);
     return color;
+}
+
+vec3 shadowed_color_normal(
+    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    highp float NDotL = dot(N, u_shadow_direction);
+    return shadowed_color_normal(color, NDotL, light_view_pos0, light_view_pos1, view_depth);
 }
 
 vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
