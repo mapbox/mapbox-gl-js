@@ -7,6 +7,9 @@ attribute float a_fade_opacity;
 attribute vec3 a_globe_anchor;
 attribute vec3 a_globe_normal;
 #endif
+#ifdef ICON_TRANSITION
+attribute vec2 a_texb;
+#endif
 
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
@@ -37,7 +40,10 @@ uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
-varying vec2 v_tex;
+varying vec2 v_tex_a;
+#ifdef ICON_TRANSITION
+varying vec2 v_tex_b;
+#endif
 varying float v_fade_opacity;
 
 #pragma mapbox: define lowp float opacity
@@ -157,7 +163,10 @@ void main() {
     projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
 #endif
 
-    v_tex = a_tex / u_texsize;
+    v_tex_a = a_tex / u_texsize;
+#ifdef ICON_TRANSITION
+    v_tex_b = a_texb / u_texsize;
+#endif
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     v_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change)) * projection_transition_fade;
