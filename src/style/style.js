@@ -22,6 +22,7 @@ import {
     validateLayer,
     validateFilter,
     validateTerrain,
+    validateLights,
     emitValidationErrors as _emitValidationErrors
 } from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
@@ -71,6 +72,7 @@ import type {
     LightSpecification,
     SourceSpecification,
     TerrainSpecification,
+    LightsSpecification,
     FogSpecification,
     ProjectionSpecification,
     TransitionSpecification,
@@ -89,6 +91,8 @@ import type {TransitionParameters} from './properties.js';
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
     'removeLayer',
+    'addLight',
+    'removeLight',
     'setPaintProperty',
     'setLayoutProperty',
     'setFilter',
@@ -143,6 +147,7 @@ class Style extends Evented {
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
+    _lights: {[_: string]: LightsSpecification};
     _num3DLayers: number;
     _numSymbolLayers: number;
     _numCircleLayers: number;
@@ -189,6 +194,7 @@ class Style extends Evented {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
+        this._lights = {};
         this._num3DLayers = 0;
         this._numSymbolLayers = 0;
         this._numCircleLayers = 0;
@@ -332,6 +338,13 @@ class Style extends Evented {
             this._layers[layer.id] = layer;
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
+        }
+
+        this._lights = {};
+        if (this.stylesheet.lights) {
+            for (let i = 0; i < this.stylesheet.lights.length; i++) {
+                this.addLight(this.stylesheet.lights[i]);
+            }
         }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
@@ -829,6 +842,26 @@ class Style extends Evented {
         }
 
         return sources;
+    }
+
+    addLight(light: LightsSpecification) {
+        this._checkLoaded();
+
+        if (this._validate(validateLights, 'lights', light)) {
+            return;
+        }
+
+        this._lights[light.id] = light;
+    }
+
+    removeLight(id: string) {
+        const light = this._lights[id];
+        if (!light) {
+            this.fire(new ErrorEvent(new Error(`The light '${id}' does not exist in the map's style and cannot be removed.`)));
+            return;
+        }
+
+        delete this._lights[id];
     }
 
     /**
@@ -1430,7 +1463,10 @@ class Style extends Evented {
         }, callback);
     }
 
-    getLight(): LightSpecification {
+    getLight(id: ?string): LightSpecification | ?LightsSpecification {
+        if (id) {
+            return this._lights[id];
+        }
         return this.light.getLight();
     }
 

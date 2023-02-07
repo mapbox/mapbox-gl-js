@@ -28,7 +28,7 @@ function flowType(property) {
                 return flowEnum(property.values);
             case 'array':
                 if (property.value === 'light-3d') {
-                    return 'LightsSpecification';
+                    return 'Array<LightsSpecification>';
                 }
                 const elementType = flowType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value)
                 if (property.length) {
@@ -36,14 +36,6 @@ function flowType(property) {
                 } else {
                     return `Array<${elementType}>`;
                 }
-            case 'light':
-                return 'LightSpecification';
-            case 'terrain':
-                return 'TerrainSpecification';
-            case 'fog':
-                return 'FogSpecification';
-            case 'projection':
-                return 'ProjectionSpecification';
             case 'sources':
                 return '{[_: string]: SourceSpecification}';
             case '*':

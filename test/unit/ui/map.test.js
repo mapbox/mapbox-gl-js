@@ -3922,6 +3922,53 @@ test('Map', (t) => {
         });
     });
 
+    t.test('map#addLight map#getLight map#removeLight', (t) => {
+        const map = createMap(t);
+
+        map.on('load', () =>  {
+            const light = {
+                id: "sun_light",
+                type: "directional",
+                properties: {
+                    "color": "rgba(255.0, 0.0, 0.0, 1.0)",
+                    "intensity": 0.4,
+                    "direction": [200.0, 40.0],
+                    "cast-shadows": true,
+                    "shadow-intensity": 0.2
+                }
+            };
+
+            map.addLight(light);
+            t.deepEqual(map.getLight("sun_light"), light);
+            map.removeLight("sun_light");
+            t.equal(map.getLight("sun_light"), undefined);
+
+            t.end();
+        });
+    });
+
+    t.test('map#addLight map#getLight map#removeLight missing id and light type throws error', (t) => {
+        const map = createMap(t);
+
+        map.on('load', () =>  {
+            const light = {
+                properties: {
+                    "color": "rgba(255.0, 0.0, 0.0, 1.0)",
+                    "intensity": 0.4,
+                    "direction": [200.0, 40.0],
+                    "cast-shadows": true,
+                    "shadow-intensity": 0.2
+                }
+            };
+
+            const stub = t.stub(console, 'error');
+            map.addLight(light);
+
+            t.ok(stub.calledOnce);
+            t.end();
+        });
+    });
+
     t.test('#snapToNorth', (t) => {
 
         t.test('snaps when less than < 7 degrees', (t) => {

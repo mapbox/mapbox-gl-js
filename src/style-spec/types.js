@@ -66,7 +66,7 @@ export type StyleSpecification = {|
     "bearing"?: number,
     "pitch"?: number,
     "light"?: LightSpecification,
-    "lights"?: LightsSpecification,
+    "lights"?: Array<LightsSpecification>,
     "terrain"?: TerrainSpecification,
     "fog"?: FogSpecification,
     "sources": {[_: string]: SourceSpecification},
