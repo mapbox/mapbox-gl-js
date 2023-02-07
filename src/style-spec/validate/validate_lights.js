@@ -23,9 +23,12 @@ export default function validateLights(options: ValidationOptions): Array<Valida
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec['light-3d'];
     const style = options.style;
-    if (!('type' in light)) {
-        errors = errors.concat([new ValidationError('light-3d', light, `missing property type on light`)]);
-        return errors;
+
+    for (const key of ['type', 'id']) {
+        if (!(key in light)) {
+            errors = errors.concat([new ValidationError('light-3d', light, `missing property ${key} on light`)]);
+            return errors;
+        }
     }
 
     const lightType = `properties_light_${light['type']}`;

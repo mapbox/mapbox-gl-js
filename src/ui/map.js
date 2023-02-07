@@ -60,6 +60,7 @@ import type {
     FilterSpecification,
     StyleSpecification,
     LightSpecification,
+    LightsSpecification,
     TerrainSpecification,
     FogSpecification,
     SourceSpecification,
@@ -2481,6 +2482,60 @@ class Map extends Camera {
     }
 
     /**
+     * Adds a Mapbox style light to the map's style.
+     *
+     * _Note: This light is not to confuse with our legacy light API used through {@link Map#setLight} and {@link Map#getLight}_.
+     *
+     * @param {LightsSpecification} light The light to add, conforming to either the Mapbox Style Specification's light definition.
+     *
+     * @param {string} light.id A unique identifier that you define.
+     * @param {string} light.type The type of light (for example `ambient` or `directional`).
+     * @param {Object} [light.properties] (optional) Properties for the light.
+     * Available properties vary by `light.type`.
+     * A full list of light properties for each light type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/lights/).
+     * If no properties are specified, default values will be used.
+     *
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Add a directional light
+     * map.addLight({
+     *     "id": "sun_light",
+     *     "type": "directional",
+     *     "properties": {
+     *         "color": "rgba(255.0, 0.0, 0.0, 1.0)",
+     *         "intensity": 0.4,
+     *         "direction": [200.0, 40.0],
+     *         "cast-shadows": true,
+     *         "shadow-intensity": 0.2
+     *     }
+     * });
+     */
+    addLight(light: LightsSpecification): this {
+        this._lazyInitEmptyStyle();
+        this.style.addLight(light);
+        return this._update(true);
+    }
+
+    /**
+     * Removes the light with the given ID from the map's style.
+     *
+     * If no such light exists, an `error` event is fired.
+     *
+     * @param {string} id ID of the light to remove.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @fires Map.event:error
+     *
+     * @example
+     * // If a light with ID 'ambient-light' exists, remove it.
+     * if (map.getLight('ambient-light')) map.removeLight('ambient-light');
+     */
+    removeLight(id: string): this {
+        this.style.removeLight(id);
+        return this._update(true);
+    }
+
+    /**
      * Returns the layer with the specified ID in the map's style.
      *
      * @param {string} id The ID of the layer to get.
@@ -2641,6 +2696,8 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
+     * _Note: that this API is part of the legacy light API, prefer using {@link Map#addLight} and {@link Map#removeLight}_.
+     *
      * @param {LightSpecification} light Light properties to set. Must conform to the [Light Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @param {Object} [options] Options object.
      * @param {boolean} [options.validate=true] Whether to check if the filter conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
@@ -2661,12 +2718,13 @@ class Map extends Camera {
     /**
      * Returns the value of the light object.
      *
+     * @param {string} id The ID of the light to get. If no ID is provided, this API will return the legacy light.
      * @returns {LightSpecification} Light properties of the style.
      * @example
      * const light = map.getLight();
      */
-    getLight(): LightSpecification {
-        return this.style.getLight();
+    getLight(id: ?string): LightSpecification | ?LightsSpecification {
+        return this.style.getLight(id);
     }
 
     // eslint-disable-next-line jsdoc/require-returns
