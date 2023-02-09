@@ -2,7 +2,7 @@
 
 import styleSpec from '../style-spec/reference/latest.js';
 
-import {endsWith, extend, degToRad} from '../util/util.js';
+import {extend, degToRad} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {
     validateStyle,
@@ -88,10 +88,9 @@ const properties: Properties<Props> = new Properties({
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
 });
 
-const TRANSITION_SUFFIX = '-transition';
-
 /*
  * Represents the light used to light extruded features.
+ * Note that these lights are part of the legacy light API.
  */
 class Light extends Evented {
     _transitionable: Transitionable<Props>;
@@ -113,15 +112,7 @@ class Light extends Evented {
         if (this._validate(validateLight, light, options)) {
             return;
         }
-
-        for (const name in light) {
-            const value = light[name];
-            if (endsWith(name, TRANSITION_SUFFIX)) {
-                this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
-            } else {
-                this._transitionable.setValue(name, value);
-            }
-        }
+        this._transitionable.setTransitionOrValue<LightSpecification>(light);
     }
 
     updateTransitions(parameters: TransitionParameters) {

@@ -16,6 +16,11 @@ import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
+import Lights from '../../3d-style/style/lights.js';
+import {properties as ambientProps} from '../../3d-style/style/ambient_light_properties.js';
+import {properties as directionalProps} from '../../3d-style/style/directional_light_properties.js';
+import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
+import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
 import {
     validateStyle,
     validateSource,
@@ -147,7 +152,7 @@ class Style extends Evented {
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
-    _lights: {[_: string]: LightsSpecification};
+    _lights: {[_: string]: Lights<Directional> | Lights<Ambient>};
     _num3DLayers: number;
     _numSymbolLayers: number;
     _numCircleLayers: number;
@@ -851,7 +856,19 @@ class Style extends Evented {
             return;
         }
 
-        this._lights[light.id] = light;
+        switch (light.type) {
+        case 'ambient':
+            this._lights[light.id] = new Lights<Ambient>(light, ambientProps);
+            break;
+        case 'directional':
+            this._lights[light.id] = new Lights<Directional>(light, directionalProps);
+            break;
+        default:
+            assert(false, "Unknown light type");
+        }
+
+        const parameters = this._getTransitionParameters({duration: 0});
+        this._lights[light.id].updateTransitions(parameters);
     }
 
     removeLight(id: string) {
@@ -1465,9 +1482,12 @@ class Style extends Evented {
 
     getLight(id: ?string): LightSpecification | ?LightsSpecification {
         if (id) {
-            return this._lights[id];
+            if (this._lights[id]) {
+                return this._lights[id].get();
+            }
+        } else {
+            return this.light.getLight();
         }
-        return this.light.getLight();
     }
 
     setLight(lightOptions: LightSpecification, options: StyleSetterOptions = {}) {
@@ -1483,7 +1503,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = this._setTransitionParameters({duration: 300, delay: 0});
+        const parameters = this._getTransitionParameters({duration: 300, delay: 0});
 
         this.light.setLight(lightOptions, options);
         this.light.updateTransitions(parameters);
@@ -1545,7 +1565,7 @@ class Style extends Evented {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions);
                     this.stylesheet.terrain = terrainOptions;
-                    const parameters = this._setTransitionParameters({duration: 0});
+                    const parameters = this._getTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
                     break;
                 }
@@ -1559,7 +1579,7 @@ class Style extends Evented {
     _createFog(fogOptions: FogSpecification) {
         const fog = this.fog = new Fog(fogOptions, this.map.transform);
         this.stylesheet.fog = fogOptions;
-        const parameters = this._setTransitionParameters({duration: 0});
+        const parameters = this._getTransitionParameters({duration: 0});
         fog.updateTransitions(parameters);
     }
 
@@ -1604,7 +1624,7 @@ class Style extends Evented {
                 if (!deepEqual(fogOptions[key], currSpec[key])) {
                     fog.set(fogOptions);
                     this.stylesheet.fog = fogOptions;
-                    const parameters = this._setTransitionParameters({duration: 0});
+                    const parameters = this._getTransitionParameters({duration: 0});
                     fog.updateTransitions(parameters);
                     break;
                 }
@@ -1614,7 +1634,7 @@ class Style extends Evented {
         this._markersNeedUpdate = true;
     }
 
-    _setTransitionParameters(transitionOptions: Object): TransitionParameters {
+    _getTransitionParameters(transitionOptions: Object): TransitionParameters {
         return {
             now: browser.now(),
             transition: extend(
@@ -1645,7 +1665,7 @@ class Style extends Evented {
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this._force3DLayerUpdate();
-        const parameters = this._setTransitionParameters({duration: 0});
+        const parameters = this._getTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
     }
 

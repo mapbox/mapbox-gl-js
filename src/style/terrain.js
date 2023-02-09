@@ -1,7 +1,6 @@
 // @flow
 
 import styleSpec from '../style-spec/reference/latest.js';
-import {endsWith} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 
@@ -24,8 +23,6 @@ const properties: Properties<Props> = new Properties({
     "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
 });
 
-const TRANSITION_SUFFIX = '-transition';
-
 class Terrain extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
@@ -45,14 +42,7 @@ class Terrain extends Evented {
     }
 
     set(terrain: TerrainSpecification) {
-        for (const name in terrain) {
-            const value = terrain[name];
-            if (endsWith(name, TRANSITION_SUFFIX)) {
-                this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
-            } else {
-                this._transitionable.setValue(name, value);
-            }
-        }
+        this._transitionable.setTransitionOrValue<TerrainSpecification>(terrain);
     }
 
     updateTransitions(parameters: TransitionParameters) {
