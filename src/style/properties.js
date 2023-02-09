@@ -1,13 +1,12 @@
 // @flow
 
 import assert from 'assert';
-import {clone, extend, easeCubicInOut} from '../util/util.js';
+import {clone, extend, endsWith, easeCubicInOut} from '../util/util.js';
 import * as interpolate from '../style-spec/util/interpolate.js';
 import {normalizePropertyExpression} from '../style-spec/expression/index.js';
 import Color from '../style-spec/util/color.js';
 import {register} from '../util/web_worker_transfer.js';
 import EvaluationParameters from './evaluation_parameters.js';
-
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {StylePropertySpecification} from '../style-spec/style-spec.js';
 import type {
@@ -180,6 +179,19 @@ export class Transitionable<Props: Object> {
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
         this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
+    }
+
+    setTransitionOrValue<P: Object>(properties: ?P) {
+        if (properties) {
+            for (const name in properties) {
+                const value = properties[name];
+                if (endsWith(name, '-transition')) {
+                    this.setTransition(name.slice(0, -'-transition'.length), value);
+                } else {
+                    this.setValue(name, value);
+                }
+            }
+        }
     }
 
     getTransition<S: string>(name: S): TransitionSpecification | void {

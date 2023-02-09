@@ -109,27 +109,27 @@ global.propertyValue = function (property, type) {
     switch (property['property-type']) {
         case 'data-driven':
             if (property.overridable) {
-                return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"], ${overrides(property)})`;
+                return `new DataDrivenProperty(styleSpec["${type}_${property.type_}"]["${property.name}"], ${overrides(property)})`;
             } else {
-                return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+                return `new DataDrivenProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
             }
         case 'color-ramp':
-            return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+            return `new ColorRampProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
         case 'data-constant':
         case 'constant':
-            return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+            return `new DataConstantProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
         default:
             throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
-const propertiesJs = ejs.compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'), {strict: true});
+const layerPropertiesJs = ejs.compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'), {strict: true});
 
 const layers = Object.keys(spec.layer.type.values).map((type) => {
     const layoutProperties = Object.keys(spec[`layout_${type}`]).reduce((memo, name) => {
         if (name !== 'visibility') {
             spec[`layout_${type}`][name].name = name;
-            spec[`layout_${type}`][name].layerType = type;
+            spec[`layout_${type}`][name].type_ = type;
             memo.push(spec[`layout_${type}`][name]);
         }
         return memo;
@@ -137,7 +137,7 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 
     const paintProperties = Object.keys(spec[`paint_${type}`]).reduce((memo, name) => {
         spec[`paint_${type}`][name].name = name;
-        spec[`paint_${type}`][name].layerType = type;
+        spec[`paint_${type}`][name].type_ = type;
         memo.push(spec[`paint_${type}`][name]);
         return memo;
     }, []);
@@ -146,5 +146,22 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 });
 
 for (const layer of layers) {
-    fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, propertiesJs(layer))
+    fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, layerPropertiesJs(layer))
+}
+
+const lightPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/light_properties.js.ejs', 'utf8'), {strict: true});
+
+const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
+    const properties = Object.keys(spec[`properties_light_${type}`]).reduce((memo, name) => {
+        spec[`properties_light_${type}`][name].name = name;
+        spec[`properties_light_${type}`][name].type_ = 'light_' + type;
+        memo.push(spec[`properties_light_${type}`][name]);
+        return memo;
+    }, []);
+
+    return { type, properties };
+});
+
+for (const light of lights) {
+    fs.writeFileSync(`3d-style/style/${light.type}_light_properties.js`, lightPropertiesJs(light))
 }

@@ -1,7 +1,7 @@
 // @flow
 
 import styleSpec from '../style-spec/reference/latest.js';
-import {endsWith, extend, smoothstep} from '../util/util.js';
+import {extend, smoothstep} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
@@ -34,8 +34,6 @@ const fogProperties: Properties<Props> = new Properties({
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
     "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
 });
-
-const TRANSITION_SUFFIX = '-transition';
 
 class Fog extends Evented {
     _transitionable: Transitionable<Props>;
@@ -87,14 +85,7 @@ class Fog extends Evented {
             }
         }
 
-        for (const name in fog) {
-            const value = fog[name];
-            if (endsWith(name, TRANSITION_SUFFIX)) {
-                this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
-            } else {
-                this._transitionable.setValue(name, value);
-            }
-        }
+        this._transitionable.setTransitionOrValue<FogSpecification>(fog);
     }
 
     getOpacity(pitch: number): number {

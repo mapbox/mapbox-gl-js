@@ -1,6 +1,13 @@
+// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
+/* eslint-disable */
 
-import {DataConstantProperty} from '../../src/style/properties.js';
+import styleSpec from '../../src/style-spec/reference/latest.js';
+
+import {
+    Properties,
+    DataConstantProperty
+} from '../../src/style/properties.js';
 
 import type Color from '../../src/style-spec/util/color.js';
 
@@ -11,3 +18,13 @@ export type LightProps = {|
     "cast-shadows": DataConstantProperty<boolean>,
     "shadow-intensity": DataConstantProperty<number>,
 |};
+
+const properties: Properties<LightProps> = new Properties({
+    "direction": new DataConstantProperty(styleSpec["properties_light_directional"]["direction"]),
+    "color": new DataConstantProperty(styleSpec["properties_light_directional"]["color"]),
+    "intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["intensity"]),
+    "cast-shadows": new DataConstantProperty(styleSpec["properties_light_directional"]["cast-shadows"]),
+    "shadow-intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-intensity"]),
+});
+
+export {properties}

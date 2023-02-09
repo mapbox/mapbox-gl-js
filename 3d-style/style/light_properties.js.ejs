@@ -1,3 +1,7 @@
+<%
+  const type = locals.type;
+  const properties = locals.properties;
+-%>
 // This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
 /* eslint-disable */
@@ -11,14 +15,18 @@ import {
 
 import type Color from '../../src/style-spec/util/color.js';
 
+<% if (properties.length) { -%>
 export type LightProps = {|
-    "color": DataConstantProperty<Color>,
-    "intensity": DataConstantProperty<number>,
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyType(property) %>,
+<% } -%>
 |};
 
 const properties: Properties<LightProps> = new Properties({
-    "color": new DataConstantProperty(styleSpec["properties_light_ambient"]["color"]),
-    "intensity": new DataConstantProperty(styleSpec["properties_light_ambient"]["intensity"]),
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyValue(property, 'properties') %>,
+<% } -%>
 });
+<% } -%>
 
 export {properties}
