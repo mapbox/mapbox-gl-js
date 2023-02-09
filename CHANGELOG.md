@@ -1,3 +1,27 @@
+## 2.13.0-beta.1
+
+### Features ✨ and improvements 🏁
+
+* Improve rendering performance of terrain slightly by reducing its GPU memory footprint. ([#12472](https://github.com/mapbox/mapbox-gl-js/pull/12472))
+* Add methods for changing a raster tile source dynamically (e.g. `setTiles`, `setUrl`). ([#12352](https://github.com/mapbox/mapbox-gl-js/pull/12352))
+
+### Bug fixes 🐞
+
+* Fix `line-border-color` when used with `line-trim-offset` ([#12461](https://github.com/mapbox/mapbox-gl-js/pull/12461))
+* Fix potential infinite loop when calling `fitBounds` with globe projection ([#12488](https://github.com/mapbox/mapbox-gl-js/pull/12488))
+* Fix `map.getBounds()` returning incorrect bounds with adaptive projections. ([#12503](https://github.com/mapbox/mapbox-gl-js/pull/12503))
+* Introduce skirts for terrain globe mode ([#12523](https://github.com/mapbox/mapbox-gl-js/pull/12523))
+* Fix blur on draped lines while zoom-in ([#12510](https://github.com/mapbox/mapbox-gl-js/pull/12510))
+* Fix map pan speed while pinching in ([#12543](https://github.com/mapbox/mapbox-gl-js/pull/12543))
+* Fix negative-width diacritics handling ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
+* Fixes `undefined is not an object` in `coalesceChanges` ([#12497](https://github.com/mapbox/mapbox-gl-js/pull/12497)) (h/t [nick-romano](https://github.com/nick-romano))
+
+## 2.12.1
+
+### Bug fixes 🐞
+
+* Fix a rare bug where certain diacritical characters could break the rendering of a symbol layer. ([#12554](https://github.com/mapbox/mapbox-gl-js/pull/12554))
+
 ## 2.12.0
 
 ### Features ✨ and improvements 🏁

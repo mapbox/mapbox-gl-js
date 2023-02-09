@@ -743,12 +743,15 @@ class Camera extends Evented {
         return {center: tr.center, zoom, bearing, pitch};
     }
 
+    /** @section {Querying features} */
+
     /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
      * Returns `null` if `terrain` is disabled or if terrain data for the location hasn't been loaded yet.
      *
      * In order to guarantee that the terrain data is loaded ensure that the geographical location is visible and wait for the `idle` event to occur.
      *
+     * @memberof Map#
      * @param {LngLatLike} lnglat The geographical location at which to query.
      * @param {ElevationQueryOptions} [options] Options object.
      * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
@@ -767,6 +770,11 @@ class Camera extends Evented {
         }
         return null;
     }
+
+    /** @section {Camera}
+     * @method
+     * @instance
+     * @memberof Map */
 
     /**
      * Calculate the center of these two points in the viewport and use
