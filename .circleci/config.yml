@@ -184,7 +184,7 @@ workflows:
 
 linux-defaults: &linux-defaults
   docker:
-    - image: cimg/node:14.21-browsers
+    - image: cimg/node:14.16-browsers
   working_directory: ~/mapbox-gl-js
 
 mac-defaults: &mac-defaults
@@ -474,11 +474,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-firefox
-      - run:
-          name: test-render-firefox
-          environment:
-            LIBGL_ALWAYS_SOFTWARE: 1
-          command: yarn run test-render-firefox
+      - run: yarn run test-render-firefox
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
