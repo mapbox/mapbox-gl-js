@@ -608,6 +608,7 @@ class Tile {
 
             if (context.extTextureFilterAnisotropic) {
                 gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
+                this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             }
         }
     }
