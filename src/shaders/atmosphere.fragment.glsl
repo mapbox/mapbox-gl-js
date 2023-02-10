@@ -117,10 +117,10 @@ void main() {
 
     vec3 D = vec3(uv_remap, 1.0);
 
-    // Accumulate star field
-    highp float star_field = 0.0;
+    #ifdef ATMOSPHERE_WITH_STARS
+        // Accumulate star field
+        highp float star_field = 0.0;
 
-    if (u_star_intensity > 0.0) {
         // Create stars of various scales and offset to improve randomness
         star_field += stars(D, 1.2, vec2(0.0, 0.0));
         star_field += stars(D, 1.0, vec2(1.0, 0.0));
@@ -133,7 +133,7 @@ void main() {
 
         // Additive star field
         c += star_field * alpha_2;
-    }
+    #endif
 
     // Dither
     c = dither(c, gl_FragCoord.xy + u_temporal_offset);
