@@ -418,10 +418,7 @@ jobs:
             - v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
             - v0-linux-yarn-{{ .Branch }}-
             - v0-linux-yarn-
-      - browser-tools/install-chrome
-      - browser-tools/install-firefox
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
-      - run: yarn run build-dev
       - save_cache:
           key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
@@ -430,13 +427,13 @@ jobs:
           root: ~/
           paths:
             - mapbox-gl-js
-            - .ssh
 
   test-render-linux-chrome-dev:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
+      - browser-tools/install-chrome
       - run:
           name: Running tests in parallel
           command: |
@@ -451,6 +448,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - browser-tools/install-chrome
       - run: yarn run test-render-prod
       - store_test_results:
           path: test/integration/render-tests
@@ -491,13 +489,11 @@ jobs:
             - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
             - v0-mac-yarn-{{ .Branch }}-
             - v0-mac-yarn-
-      - browser-tools/install-chrome
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
-      - run: yarn run build-dev
       - persist_to_workspace:
           root: ~/
           paths:
@@ -509,6 +505,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - browser-tools/install-chrome
       - run:
           name: Creating test list
           command: |
@@ -525,6 +522,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - browser-tools/install-chrome
       - run:
           name: Creating test list
           command: |
