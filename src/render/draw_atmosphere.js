@@ -23,7 +23,6 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const tr = painter.transform;
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, [0, 1]);
     const defines = tr.projection.name === 'globe' ? ['PROJECTION_GLOBE_VIEW', 'FOG'] : ['FOG'];
-    const program = painter.useProgram('globeAtmosphere', null, ((defines: any): DynamicDefinesType[]));
 
     const transitionT = globeToMercatorTransition(tr.zoom);
 
@@ -42,6 +41,12 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
     const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
 
     const starIntensity = mapValue(fog.properties.get('star-intensity'), 0.0, 1.0, 0.0, 0.25);
+
+    if (starIntensity > 0) {
+        defines.push('ATMOSPHERE_WITH_STARS');
+    }
+    const program = painter.useProgram('globeAtmosphere', null, ((defines: any): DynamicDefinesType[]));
+
     // https://www.desmos.com/calculator/oanvvpr36d
     // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader
     const minHorizonBlend = 0.0005;

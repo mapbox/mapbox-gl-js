@@ -51,6 +51,7 @@ var Demo3D = function() {
     this.animateSky = false;
     this.sunHaloColor = [ 255, 255, 255 ];
     this.skyColor = [ 255, 255, 255 ];
+    this.starIntensity = 1.0;
     this.sunIntensity = 30.0;
     this.verticalGradient = false;
     this.lightIntensity = 0.26;
@@ -130,6 +131,10 @@ window.onload = function() {
     skyColor.onFinishChange((value) => {
         map.setPaintProperty('sky', 'sky-atmosphere-color',
             'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunAtmosphereIntensity + ')');
+    });
+    var starIntensity = sky.add(demo3d, 'starIntensity', 0.0, 1.0);
+    starIntensity.onFinishChange((value) => {
+        map.setFog({'star-intensity': demo3d.starIntensity});
     });
 
     var buildings = gui.addFolder('Buildings');
