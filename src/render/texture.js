@@ -87,12 +87,12 @@ class Texture {
         }
     }
 
-    bind(filter: TextureFilter, wrap: TextureWrap, forceFilterUpdate: boolean = false) {
+    bind(filter: TextureFilter, wrap: TextureWrap) {
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if ((filter !== this.filter) || forceFilterUpdate) {
+        if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
                 this.useMipmap ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : filter
