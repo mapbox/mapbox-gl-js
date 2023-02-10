@@ -7,7 +7,7 @@ import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
-type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number) => void;
+type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number, centerInMercator: ?Array<number>, pixelsPerMeterRatio: ?number) => void;
 
 /**
  * Interface for custom style layers. This is a specification for

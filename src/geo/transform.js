@@ -1114,6 +1114,12 @@ class Transform {
     // Point at center in world coordinates.
     get point(): Point { return this.project(this.center); }
 
+    // Point at center in Mercator coordinates.
+    get pointMerc(): Point { return this.point._div(this.worldSize); }
+
+    // Ratio of pixelsPerMeter in the current projection to Mercator's.
+    get pixelsPerMeterRatio(): number { return this.pixelsPerMeter / mercatorZfromAltitude(1, this.center.lat) / this.worldSize; }
+
     setLocationAtPoint(lnglat: LngLat, point: Point) {
         let x, y;
         const centerPoint = this.centerPoint;
