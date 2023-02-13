@@ -139,7 +139,7 @@ class Tile {
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
     hasRTLText: boolean;
-    dependencies: Object;
+    dependencies: ?Set<string>;
     projection: Projection;
 
     queryGeometryDebugViz: ?TileSpaceDebugBuffer;
@@ -173,7 +173,6 @@ class Tile {
         this.queryPadding = 0;
         this.hasSymbolBuckets = false;
         this.hasRTLText = false;
-        this.dependencies = {};
         this.isRaster = isRaster;
 
         // Counts the number of times a response was already expired when
@@ -612,22 +611,16 @@ class Tile {
         }
     }
 
-    setDependencies(namespace: string, dependencies: Array<string>) {
-        const index = {};
-        for (const dep of dependencies) {
-            index[dep] = true;
-        }
-        this.dependencies[namespace] = index;
+    setDependencies(dependencies: Array<string>) {
+        this.dependencies = new Set(dependencies);
     }
 
-    hasDependency(namespaces: Array<string>, keys: Array<string>): boolean {
-        for (const namespace of namespaces) {
-            const dependencies = this.dependencies[namespace];
-            if (dependencies) {
-                for (const key of keys) {
-                    if (dependencies[key]) {
-                        return true;
-                    }
+    hasDependency(keys: Array<string>): boolean {
+        const dependencies = this.dependencies;
+        if (dependencies) {
+            for (const key of keys) {
+                if (dependencies.has(key)) {
+                    return true;
                 }
             }
         }

@@ -964,10 +964,10 @@ class SourceCache extends Evented {
      * be reloaded when their dependencies change.
      * @private
      */
-    setDependencies(tileKey: number, namespace: string, dependencies: Array<string>) {
+    setDependencies(tileKey: number, dependencies: Array<string>) {
         const tile = this._tiles[tileKey];
         if (tile) {
-            tile.setDependencies(namespace, dependencies);
+            tile.setDependencies(dependencies);
         }
     }
 
@@ -975,14 +975,14 @@ class SourceCache extends Evented {
      * Reloads all tiles that depend on the given keys.
      * @private
      */
-    reloadTilesForDependencies(namespaces: Array<string>, keys: Array<string>) {
+    reloadTilesForDependencies(keys: Array<string>) {
         for (const id in this._tiles) {
             const tile = this._tiles[id];
-            if (tile.hasDependency(namespaces, keys)) {
+            if (tile.hasDependency(keys)) {
                 this._reloadTile(+id, 'reloading');
             }
         }
-        this._cache.filter(tile => !tile.hasDependency(namespaces, keys));
+        this._cache.filter(tile => !tile.hasDependency(keys));
     }
 
     /**

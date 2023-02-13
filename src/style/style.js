@@ -77,7 +77,6 @@ import type {
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator, ValidationErrors} from './validate_style.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
@@ -600,7 +599,7 @@ class Style extends Evented {
         const changedImages = Object.keys(this._changedImages);
         if (changedImages.length) {
             for (const name in this._sourceCaches) {
-                this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
+                this._sourceCaches[name].reloadTilesForDependencies(changedImages);
             }
             this._changedImages = {};
         }
@@ -1786,9 +1785,9 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[_: string]: StyleImage}>) {
+    getImages(mapId: string, {icons, source, tileKey}: {icons: Array<string>, source: string, tileKey: number}, callback: Callback<{[_: string]: StyleImage}>) {
 
-        this.imageManager.getImages(params.icons, callback);
+        this.imageManager.getImages(icons, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
         // is not reloaded unecessarily. Without this forced update the reload could happen in cases
@@ -1800,13 +1799,9 @@ class Style extends Evented {
         // - the next frame triggers a reload of this tile even though it already has the latest version
         this._updateTilesForChangedImages();
 
-        const setDependencies = (sourceCache: SourceCache) => {
-            if (sourceCache) {
-                sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
-            }
-        };
-        setDependencies(this._otherSourceCaches[params.source]);
-        setDependencies(this._symbolSourceCaches[params.source]);
+        for (const sourceCache of this._getSourceCaches(source)) {
+            sourceCache.setDependencies(tileKey, icons);
+        }
     }
 
     getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
