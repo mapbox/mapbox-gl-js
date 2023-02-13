@@ -239,14 +239,9 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
     //   we dispatch the request to the main thread so that we can get an accurate referrer header.
     // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
     //   this case we unconditionally use XHR on the current thread since referrers don't matter.
-    if (!isFileURL(requestParameters.url)) {
-        if (window.fetch && window.Request && window.AbortController && window.Request.prototype.hasOwnProperty('signal')) {
-            return makeFetchRequest(requestParameters, callback);
-        }
-        if (isWorker() && self.worker && self.worker.actor) {
-            const queueOnMainThread = true;
-            return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
-        }
+    if (!isFileURL(requestParameters.url) && window.fetch && window.Request &&
+            window.AbortController && window.Request.prototype.hasOwnProperty('signal')) {
+        return makeFetchRequest(requestParameters, callback);
     }
     return makeXMLHttpRequest(requestParameters, callback);
 };

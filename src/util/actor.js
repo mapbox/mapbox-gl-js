@@ -49,7 +49,7 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, mustQueue: boolean = false, callbackMetadata?: Object): ?Cancelable {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string, callbackMetadata?: Object): ?Cancelable {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
@@ -65,7 +65,6 @@ class Actor {
             type,
             hasCallback: !!callback,
             targetMapId,
-            mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
         }, buffers);
@@ -107,7 +106,7 @@ class Actor {
                 cancel.cancel();
             }
         } else {
-            if (data.mustQueue || isWorker()) {
+            if (isWorker()) {
                 // for worker tasks that are often cancelled, such as loadTile, store them before actually
                 // processing them. This is necessary because we want to keep receiving <cancel> messages.
                 // Some tasks may take a while in the worker thread, so before executing the next task

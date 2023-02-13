@@ -12,7 +12,7 @@ import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
 import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
-import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
+import {getJSON, getReferrer, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
@@ -62,7 +62,6 @@ import type {Callback} from '../types/callback.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type {Placement} from '../symbol/placement.js';
 import type {Cancelable} from '../types/cancelable.js';
-import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
 import type {GeoJSON} from '@mapbox/geojson-types';
 import type {
     LayerSpecification,
@@ -1812,10 +1811,6 @@ class Style extends Evented {
 
     getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         this.glyphManager.getGlyphs(params.stacks, callback);
-    }
-
-    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
-        return makeRequest(params, callback);
     }
 
     _getSourceCache(source: string): SourceCache | void {

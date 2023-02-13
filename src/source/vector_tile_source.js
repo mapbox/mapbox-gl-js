@@ -244,13 +244,13 @@ class VectorTileSource extends Evented implements Source {
                             expires: data.expires,
                             rawData: data.rawData.slice(0)
                         };
-                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+                        if (tile.actor) tile.actor.send('loadTile', params, done.bind(this));
                     }
                 }, true);
                 tile.request = {cancel};
 
             } else {
-                tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+                tile.request = tile.actor.send('loadTile', params, done.bind(this));
             }
 
         } else if (tile.state === 'loading') {

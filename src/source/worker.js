@@ -256,8 +256,8 @@ export default class Worker {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: (type, data, callback, _, mustQueue, metadata) => {
-                    this.actor.send(type, data, callback, mapId, mustQueue, metadata);
+                send: (type, data, callback, _, metadata) => {
+                    this.actor.send(type, data, callback, mapId, metadata);
                 },
                 scheduler: this.actor.scheduler
             };

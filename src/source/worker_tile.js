@@ -190,7 +190,7 @@ class WorkerTile {
                     glyphMap = result;
                     maybePrepare.call(this);
                 }
-            }, undefined, false, taskMetadata);
+            }, undefined, taskMetadata);
         } else {
             glyphMap = {};
         }
@@ -203,7 +203,7 @@ class WorkerTile {
                     iconMap = result;
                     maybePrepare.call(this);
                 }
-            }, undefined, false, taskMetadata);
+            }, undefined, taskMetadata);
         } else {
             iconMap = {};
         }
@@ -216,7 +216,7 @@ class WorkerTile {
                     patternMap = result;
                     maybePrepare.call(this);
                 }
-            }, undefined, false, taskMetadata);
+            }, undefined, taskMetadata);
         } else {
             patternMap = {};
         }
