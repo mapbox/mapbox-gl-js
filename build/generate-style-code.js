@@ -124,6 +124,8 @@ global.propertyValue = function (property, type) {
 };
 
 const layerPropertiesJs = ejs.compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'), {strict: true});
+const layerPropertiesJs3Dstyle = ejs.compile(fs.readFileSync('src/style/style_layer/layer_properties.js.ejs', 'utf8'), {strict: true});
+
 
 const layers = Object.keys(spec.layer.type.values).map((type) => {
     const layoutProperties = Object.keys(spec[`layout_${type}`]).reduce((memo, name) => {
@@ -146,7 +148,18 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 });
 
 for (const layer of layers) {
-    fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, layerPropertiesJs(layer))
+    let srcDir = '../..'
+    let styleDir = '..'
+    let outputDir = `src/style/style_layer`;
+    let properties = layerPropertiesJs;
+    if (layer.type === 'model')
+    {
+        srcDir = '../../../src'
+        styleDir = '../../../src/style'
+        outputDir = `3d-style/style/style_layer`;
+        properties = layerPropertiesJs3Dstyle;
+    }
+    fs.writeFileSync(`${outputDir}/${layer.type.replace('-', '_')}_style_layer_properties.js`, properties({layer: layer, srcDir: srcDir, styleDir: styleDir}));
 }
 
 const lightPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/light_properties.js.ejs', 'utf8'), {strict: true});

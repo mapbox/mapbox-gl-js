@@ -26,6 +26,7 @@ const todo = [
     // Needs port from Native
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
     "render-tests/terrain/symbol-draping/style.json",
+
 ];
 
 const skip = [
@@ -134,7 +135,10 @@ const skip = [
     "render-tests/symbol-spacing/point-close",
     "render-tests/symbol-spacing/point-far",
     "render-tests/symbol-visibility/visible",
-    "render-tests/terrain/wireframe"
+    "render-tests/terrain/wireframe",
+
+    // model-layer tests still not ready
+    "render-tests/model-layer/default"
 ];
 
 export default {todo, skip};

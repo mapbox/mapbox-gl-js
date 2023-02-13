@@ -39,7 +39,8 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     }) : false,
     resolve({
         browser: true,
-        preferBuiltins: false
+        preferBuiltins: false,
+        mainFields: ['browser','main']
     }),
     commonjs({
         // global keyword handling causes Webpack compatibility issues, so we disabled it:

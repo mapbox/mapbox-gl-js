@@ -11,6 +11,8 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
+    "@loaders.gl/core": "^3.2.13",
+    "@loaders.gl/gltf": "^3.2.13",
     "@mapbox/geojson-rewind": "^0.5.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^2.0.1",
@@ -42,7 +44,7 @@
     "@octokit/rest": "^20.0.1",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-replace": "^5.0.0",
     "@rollup/plugin-strip": "^3.0.0",
     "@rollup/plugin-terser": "^0.4.3",
