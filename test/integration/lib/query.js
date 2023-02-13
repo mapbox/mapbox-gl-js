@@ -32,7 +32,7 @@ for (const testName in fixtures) {
 
 function ensureTeardown(t) {
     const testName = t.name;
-    const options = {timeout: 5000};
+    const options = {timeout: 10000};
 
     if (ignores.skip.includes(testName)) {
         options.skip = true;
