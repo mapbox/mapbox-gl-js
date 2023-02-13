@@ -19,7 +19,7 @@ const injectMiddlewares = (app) => {
     app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
     app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
 
-    ['render-tests', 'image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data'].forEach(dir => {
+    ['render-tests', 'image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data', 'models'].forEach(dir => {
         app.use(`/${dir}`, serveStatic(path.join(__dirname, '..', dir), options));
     });
 

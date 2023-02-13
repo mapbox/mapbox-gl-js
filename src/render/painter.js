@@ -48,6 +48,9 @@ import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
 
+// 3D-style related
+import model from '../../3d-style/render/draw_model.js';
+
 const draw = {
     symbol,
     circle,
@@ -60,7 +63,8 @@ const draw = {
     background,
     sky,
     debug,
-    custom
+    custom,
+    model
 };
 
 import type Transform from '../geo/transform.js';

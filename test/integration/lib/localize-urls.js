@@ -89,6 +89,10 @@ function localizeSourceURLs(source, port) {
     if (source.data && typeof source.data == 'string') {
         source.data = localizeURL(source.data, port);
     }
+
+    for (const model in source.models) {
+        source.models[model].uri = localizeURL(source.models[model].uri, port);
+    }
 }
 
 function localizeStyleURLs (style, port) {
