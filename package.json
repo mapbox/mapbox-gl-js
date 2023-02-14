@@ -78,7 +78,7 @@
     "pixelmatch": "^5.3.0",
     "postcss": "^8.4.16",
     "postcss-cli": "^10.1.0",
-    "postcss-inline-svg": "^5.0.0",
+    "postcss-inline-svg": "^6.0.0",
     "pretty-bytes": "^6.0.0",
     "puppeteer-core": "^19.3.0",
     "qrcode-terminal": "^0.12.0",
