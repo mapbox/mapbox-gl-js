@@ -61,6 +61,7 @@ import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
+import preludeLighting from './_prelude_lighting.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
@@ -73,6 +74,7 @@ export let preludeFog = {};
 
 const commonDefines = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
+parseUsedPreprocessorDefines(preludeLighting, commonDefines);
 parseUsedPreprocessorDefines(preludeTerrainVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogFrag, commonDefines);
@@ -82,7 +84,7 @@ preludeFog = compile(preludeFogFrag, preludeFogVert);
 // Shadow prelude is not compiled until GL-JS implements shadows
 
 export const prelude = compile(preludeFrag, preludeVert);
-export const preludeCommonSource = preludeCommon;
+export const preludeCommonSource = preludeCommon.concat(preludeLighting);
 
 export const preludeVertPrecisionQualifiers = `
 #ifdef GL_ES

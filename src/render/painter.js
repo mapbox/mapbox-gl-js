@@ -20,6 +20,7 @@ import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
 import {fogUniformValues} from '../render/fog.js';
+import {lightsUniformValues} from '../../3d-style/render/lights.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -868,6 +869,10 @@ class Painter {
         const fog = this.style && this.style.fog;
         const defines = [];
 
+        if (this.style && this.style.enable3dLights()) {
+            defines.push('LIGHTING_3D_MODE');
+            defines.push('LIGHTING_3D_MODE_NO_EMISSION');
+        }
         if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
@@ -959,6 +964,15 @@ class Painter {
     }
 
     prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
+        if (this.style.enable3dLights()) {
+            const directionalLight = this.style.directionalLight;
+            const ambientLight = this.style.ambientLight;
+
+            if (directionalLight && ambientLight) {
+                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight);
+                program.setLightsUniformValues(context, lightsUniforms);
+            }
+        }
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case

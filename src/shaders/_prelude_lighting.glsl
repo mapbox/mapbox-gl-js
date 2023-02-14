@@ -1,3 +1,7 @@
+// IMPORTANT:
+// This prelude is injected in both vertex and fragment shader be wary
+// of precision qualifiers as vertex and fragment precision may differ
+
 #ifdef LIGHTING_3D_MODE
 
 uniform mediump vec3 u_lighting_ambient_color;
@@ -28,9 +32,20 @@ vec4 apply_lighting(vec4 color, float NdotL) {
     return vec4(apply_lighting(color.rgb, NdotL), color.a);
 }
 
-vec4 apply_lighting_with_emission(vec4 color, float emissive_strength)
-{
+#ifdef LIGHTING_3D_MODE_NO_EMISSION
+
+// Note: To be removed once emission is supported in GL-JS
+// - https://mapbox.atlassian.net/browse/MAPS3D-697
+vec4 apply_lighting_with_emission(vec4 color, float emissive_strength) {
+    return apply_lighting(color);
+}
+
+#else
+
+vec4 apply_lighting_with_emission(vec4 color, float emissive_strength) {
     return mix(apply_lighting(color), color, emissive_strength);
 }
+
+#endif
 
 #endif

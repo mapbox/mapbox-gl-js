@@ -2,7 +2,7 @@
 
 import styleSpec from '../style-spec/reference/latest.js';
 
-import {extend, degToRad} from '../util/util.js';
+import {extend} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import {
     validateStyle,
@@ -10,80 +10,31 @@ import {
     emitValidationErrors
 } from './validate_style.js';
 import Color from '../style-spec/util/color.js';
-import {number as interpolate} from '../style-spec/util/interpolate.js';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
+import {
+    Properties,
+    Transitionable,
+    Transitioning,
+    PossiblyEvaluated,
+    DataConstantProperty,
+    PositionProperty
+} from './properties.js';
 
-import type {StylePropertySpecification} from '../style-spec/style-spec.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type {StyleSetterOptions} from '../style/style.js';
-import type {
-    Property,
-    PropertyValue,
-    TransitionParameters
-} from './properties.js';
+import type {TransitionParameters} from './properties.js';
 
 import type {LightSpecification} from '../style-spec/types.js';
 
-export type LightPosition = {
-    x: number,
-    y: number,
-    z: number,
-    azimuthal: number,
-    polar: number,
-};
-
-/**
- * Converts spherical coordinates to cartesian LightPosition coordinates.
- *
- * @private
- * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
- * @return LightPosition cartesian coordinates
- */
-export function sphericalToCartesian([r, azimuthal, polar]: [number, number, number]): LightPosition {
-    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
-    // correct for that here
-    const a = degToRad(azimuthal + 90), p = degToRad(polar);
-
-    return {
-        x: r * Math.cos(a) * Math.sin(p),
-        y: r * Math.sin(a) * Math.sin(p),
-        z: r * Math.cos(p),
-        azimuthal, polar
-    };
-}
-
-class LightPositionProperty implements Property<[number, number, number], LightPosition> {
-    specification: StylePropertySpecification;
-
-    constructor() {
-        this.specification = styleSpec.light.position;
-    }
-
-    possiblyEvaluate(value: PropertyValue<[number, number, number], LightPosition>, parameters: EvaluationParameters): LightPosition {
-        return sphericalToCartesian(value.expression.evaluate(parameters));
-    }
-
-    interpolate(a: LightPosition, b: LightPosition, t: number): LightPosition {
-        return {
-            x: interpolate(a.x, b.x, t),
-            y: interpolate(a.y, b.y, t),
-            z: interpolate(a.z, b.z, t),
-            azimuthal: interpolate(a.azimuthal, b.azimuthal, t),
-            polar: interpolate(a.polar, b.polar, t),
-        };
-    }
-}
-
 type Props = {|
     "anchor": DataConstantProperty<"map" | "viewport">,
-    "position": LightPositionProperty,
+    "position": PositionProperty,
     "color": DataConstantProperty<Color>,
     "intensity": DataConstantProperty<number>,
 |};
 
 const properties: Properties<Props> = new Properties({
     "anchor": new DataConstantProperty(styleSpec.light.anchor),
-    "position": new LightPositionProperty(),
+    "position": new PositionProperty(styleSpec.light.position),
     "color": new DataConstantProperty(styleSpec.light.color),
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
 });

@@ -1,8 +1,10 @@
 // @flow
 
 import assert from 'assert';
-import {clone, extend, endsWith, easeCubicInOut} from '../util/util.js';
+import type {Direction, Position} from '../util/util.js';
+import {clone, extend, endsWith, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util.js';
 import * as interpolate from '../style-spec/util/interpolate.js';
+import {number as interpolateValue} from '../style-spec/util/interpolate.js';
 import {normalizePropertyExpression} from '../style-spec/expression/index.js';
 import Color from '../style-spec/util/color.js';
 import {register} from '../util/web_worker_transfer.js';
@@ -621,6 +623,48 @@ export class ColorRampProperty implements Property<Color, boolean> {
     }
 
     interpolate(): boolean { return false; }
+}
+
+export class DirectionProperty implements Property<[number, number], Direction> {
+    specification: StylePropertySpecification;
+
+    constructor(specification: StylePropertySpecification) {
+        this.specification = specification;
+    }
+
+    possiblyEvaluate(value: PropertyValue<[number, number], Direction>, parameters: EvaluationParameters): Direction {
+        return sphericalDirectionToCartesian(value.expression.evaluate(parameters));
+    }
+
+    interpolate(a: Direction, b: Direction, t: number): Direction {
+        return {
+            x: interpolateValue(a.x, b.x, t),
+            y: interpolateValue(a.y, b.y, t),
+            z: interpolateValue(a.z, b.z, t)
+        };
+    }
+}
+
+export class PositionProperty implements Property<[number, number, number], Position> {
+    specification: StylePropertySpecification;
+
+    constructor(specification: StylePropertySpecification) {
+        this.specification = specification;
+    }
+
+    possiblyEvaluate(value: PropertyValue<[number, number, number], Position>, parameters: EvaluationParameters): Position {
+        return sphericalPositionToCartesian(value.expression.evaluate(parameters));
+    }
+
+    interpolate(a: Position, b: Position, t: number): Position {
+        return {
+            x: interpolateValue(a.x, b.x, t),
+            y: interpolateValue(a.y, b.y, t),
+            z: interpolateValue(a.z, b.z, t),
+            azimuthal: interpolateValue(a.azimuthal, b.azimuthal, t),
+            polar: interpolateValue(a.polar, b.polar, t),
+        };
+    }
 }
 
 /**

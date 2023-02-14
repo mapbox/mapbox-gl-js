@@ -108,6 +108,21 @@ class Color {
     }
 
     /**
+     * Returns an RGB array of values representing the color, unpremultiplied by A and multiplied by a scalar.
+     *
+     * @param {number} scale A scale to apply to the unpremultiplied-alpha values.
+     * @returns An array of RGB color values in the range [0, 1].
+     */
+    toArray01Scaled(scale: number): [number, number, number] {
+        const {r, g, b, a} = this;
+        return a === 0 ? [0, 0, 0] : [
+            (r / a) * scale,
+            (g / a) * scale,
+            (b / a) * scale
+        ];
+    }
+
+    /**
      * Returns an RGBA array of values representing the color, premultiplied by A.
      *
      * @returns An array of RGBA color values in the range [0, 1].

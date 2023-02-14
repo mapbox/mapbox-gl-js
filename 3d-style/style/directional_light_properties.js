@@ -6,13 +6,14 @@ import styleSpec from '../../src/style-spec/reference/latest.js';
 
 import {
     Properties,
-    DataConstantProperty
+    DataConstantProperty,
+    DirectionProperty,
 } from '../../src/style/properties.js';
 
 import type Color from '../../src/style-spec/util/color.js';
 
 export type LightProps = {|
-    "direction": DataConstantProperty<[number, number]>,
+    "direction": DirectionProperty,
     "color": DataConstantProperty<Color>,
     "intensity": DataConstantProperty<number>,
     "cast-shadows": DataConstantProperty<boolean>,
@@ -20,7 +21,7 @@ export type LightProps = {|
 |};
 
 const properties: Properties<LightProps> = new Properties({
-    "direction": new DataConstantProperty(styleSpec["properties_light_directional"]["direction"]),
+    "direction": new DirectionProperty(styleSpec["properties_light_directional"]["direction"]),
     "color": new DataConstantProperty(styleSpec["properties_light_directional"]["color"]),
     "intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["intensity"]),
     "cast-shadows": new DataConstantProperty(styleSpec["properties_light_directional"]["cast-shadows"]),

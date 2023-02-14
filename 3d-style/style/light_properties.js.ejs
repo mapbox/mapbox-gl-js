@@ -10,7 +10,8 @@ import styleSpec from '../../src/style-spec/reference/latest.js';
 
 import {
     Properties,
-    DataConstantProperty
+    DataConstantProperty,
+    DirectionProperty,
 } from '../../src/style/properties.js';
 
 import type Color from '../../src/style-spec/util/color.js';
@@ -18,13 +19,13 @@ import type Color from '../../src/style-spec/util/color.js';
 <% if (properties.length) { -%>
 export type LightProps = {|
 <% for (const property of properties) { -%>
-    "<%= property.name %>": <%- propertyType(property) %>,
+    "<%= property.name %>": <%- propertyType(type, property) %>,
 <% } -%>
 |};
 
 const properties: Properties<LightProps> = new Properties({
 <% for (const property of properties) { -%>
-    "<%= property.name %>": <%- propertyValue(property, 'properties') %>,
+    "<%= property.name %>": <%- propertyValue(type, property, 'properties') %>,
 <% } -%>
 });
 <% } -%>

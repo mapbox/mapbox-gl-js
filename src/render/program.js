@@ -17,6 +17,8 @@ import {terrainUniforms, globeUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
 import type {FogUniformsType} from './fog.js';
+import {lightsUniforms} from '../../3d-style/render/lights.js';
+import type {LightsUniformsType} from '../../3d-style/render/lights.js';
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -60,6 +62,7 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
+    lightsUniforms: ?LightsUniformsType;
     globeUniforms: ?GlobeUniformsType;
 
     static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
@@ -152,6 +155,9 @@ class Program<Us: UniformBindings> {
         if (fixedDefines.includes('FOG')) {
             this.fogUniforms = fogUniforms(context);
         }
+        if (fixedDefines.includes('LIGHTING_3D_MODE')) {
+            this.lightsUniforms = lightsUniforms(context);
+        }
     }
 
     setTerrainUniformValues(context: Context, terrainUniformValues: UniformValues<TerrainUniformsType>) {
@@ -182,15 +188,27 @@ class Program<Us: UniformBindings> {
         }
     }
 
-    setFogUniformValues(context: Context, fogUniformsValues: UniformValues<FogUniformsType>) {
+    setFogUniformValues(context: Context, fogUniformValues: UniformValues<FogUniformsType>) {
         if (!this.fogUniforms) return;
         const uniforms: FogUniformsType = this.fogUniforms;
 
         if (this.failedToCreate) return;
         context.program.set(this.program);
 
-        for (const name in fogUniformsValues) {
-            uniforms[name].set(this.program, name, fogUniformsValues[name]);
+        for (const name in fogUniformValues) {
+            uniforms[name].set(this.program, name, fogUniformValues[name]);
+        }
+    }
+
+    setLightsUniformValues(context: Context, lightsUniformValues: UniformValues<LightsUniformsType>) {
+        if (!this.lightsUniforms) return;
+        const uniforms: LightsUniformsType = this.lightsUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in lightsUniformValues) {
+            uniforms[name].set(this.program, name, lightsUniformValues[name]);
         }
     }
 

@@ -569,6 +569,57 @@ export function calculateSignedArea(ring: Array<Point>): number {
     return sum;
 }
 
+export type Position = {
+    x: number,
+    y: number,
+    z: number,
+    azimuthal: number,
+    polar: number,
+};
+
+export type Direction = {
+    x: number,
+    y: number,
+    z: number
+};
+
+/**
+ * Converts spherical coordinates to cartesian position coordinates.
+ *
+ * @private
+ * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
+ * @return Position cartesian coordinates
+ */
+export function sphericalPositionToCartesian([r, azimuthal, polar]: [number, number, number]): Position {
+    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
+    // correct for that here
+    const a = degToRad(azimuthal + 90), p = degToRad(polar);
+
+    return {
+        x: r * Math.cos(a) * Math.sin(p),
+        y: r * Math.sin(a) * Math.sin(p),
+        z: r * Math.cos(p),
+        azimuthal, polar
+    };
+}
+
+/**
+ * Converts spherical direction to cartesian coordinates.
+ *
+ * @private
+ * @param spherical Spherical direction, in [azimuthal, polar]
+ * @return Direction cartesian direction
+ */
+export function sphericalDirectionToCartesian([azimuthal, polar]: [number, number, number]): Direction {
+    const position = sphericalPositionToCartesian([1.0, azimuthal, polar]);
+
+    return {
+        x: position.x,
+        y: position.y,
+        z: position.z
+    };
+}
+
 /* global self, WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.

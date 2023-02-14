@@ -6,7 +6,8 @@ import styleSpec from '../../src/style-spec/reference/latest.js';
 
 import {
     Properties,
-    DataConstantProperty
+    DataConstantProperty,
+    DirectionProperty,
 } from '../../src/style/properties.js';
 
 import type Color from '../../src/style-spec/util/color.js';

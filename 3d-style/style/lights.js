@@ -10,7 +10,7 @@ import type EvaluationParameters from '../../src/style/evaluation_parameters.js'
 class Lights<P: Object> extends Evented {
     _transitionable: Transitionable<P>;
     _transitioning: Transitioning<P>;
-    _properties: PossiblyEvaluated<P>;
+    properties: PossiblyEvaluated<P>;
     _options: LightsSpecification;
 
     constructor(options: LightsSpecification, properties: Properties<P>) {
@@ -30,7 +30,7 @@ class Lights<P: Object> extends Evented {
     }
 
     recalculate(parameters: EvaluationParameters) {
-        this._properties = this._transitioning.possiblyEvaluate(parameters);
+        this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
     get(): LightsSpecification {

@@ -152,7 +152,8 @@ class Style extends Evented {
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
-    _lights: {[_: string]: Lights<Directional> | Lights<Ambient>};
+    ambientLight: ?Lights<Ambient>;
+    directionalLight: ?Lights<Directional>;
     _num3DLayers: number;
     _numSymbolLayers: number;
     _numCircleLayers: number;
@@ -199,7 +200,6 @@ class Style extends Evented {
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
-        this._lights = {};
         this._num3DLayers = 0;
         this._numSymbolLayers = 0;
         this._numCircleLayers = 0;
@@ -345,7 +345,6 @@ class Style extends Evented {
             this._updateLayerCount(layer, true);
         }
 
-        this._lights = {};
         if (this.stylesheet.lights) {
             for (let i = 0; i < this.stylesheet.lights.length; i++) {
                 this.addLight(this.stylesheet.lights[i]);
@@ -599,6 +598,12 @@ class Style extends Evented {
         }
         if (this.fog) {
             this.fog.recalculate(parameters);
+        }
+        if (this.ambientLight) {
+            this.ambientLight.recalculate(parameters);
+        }
+        if (this.directionalLight) {
+            this.directionalLight.recalculate(parameters);
         }
         this.z = parameters.zoom;
 
@@ -856,29 +861,34 @@ class Style extends Evented {
             return;
         }
 
+        const parameters = this._getTransitionParameters({duration: 0});
+
         switch (light.type) {
         case 'ambient':
-            this._lights[light.id] = new Lights<Ambient>(light, ambientProps);
+            this.ambientLight = new Lights<Ambient>(light, ambientProps);
+            this.ambientLight.updateTransitions(parameters);
             break;
         case 'directional':
-            this._lights[light.id] = new Lights<Directional>(light, directionalProps);
+            this.directionalLight = new Lights<Directional>(light, directionalProps);
+            this.directionalLight.updateTransitions(parameters);
             break;
         default:
             assert(false, "Unknown light type");
         }
+    }
 
-        const parameters = this._getTransitionParameters({duration: 0});
-        this._lights[light.id].updateTransitions(parameters);
+    enable3dLights(): boolean {
+        return !!this.ambientLight && !!this.directionalLight;
     }
 
     removeLight(id: string) {
-        const light = this._lights[id];
-        if (!light) {
+        if (this.ambientLight && this.ambientLight.get().id === id) {
+            delete this.ambientLight;
+        } else if (this.directionalLight && this.directionalLight.get().id === id) {
+            delete this.directionalLight;
+        } else {
             this.fire(new ErrorEvent(new Error(`The light '${id}' does not exist in the map's style and cannot be removed.`)));
-            return;
         }
-
-        delete this._lights[id];
     }
 
     /**
@@ -1482,9 +1492,12 @@ class Style extends Evented {
 
     getLight(id: ?string): LightSpecification | ?LightsSpecification {
         if (id) {
-            if (this._lights[id]) {
-                return this._lights[id].get();
+            if (this.ambientLight && this.ambientLight._options.id === id) {
+                return this.ambientLight.get();
+            } else if (this.directionalLight && this.directionalLight._options.id === id) {
+                return this.directionalLight.get();
             }
+            return undefined;
         } else {
             return this.light.getLight();
         }

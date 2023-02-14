@@ -5,6 +5,10 @@ import ejs from 'ejs';
 import spec from '../src/style-spec/reference/v8.json';
 import Color from '../src/style-spec/util/color.js';
 
+const customTypeBindings = {
+    "directional.direction": "DirectionProperty",
+};
+
 global.camelize = function (str) {
     return str.replace(/(?:^|-)(.)/g, function (_, x) {
         return x.toUpperCase();
@@ -43,7 +47,10 @@ global.flowType = function (property) {
     }
 };
 
-global.propertyType = function (property) {
+global.propertyType = function (type, property) {
+    if (customTypeBindings[`${type}.${property.name}`]) {
+        return `${customTypeBindings[`${type}.${property.name}`]}`;
+    }
     switch (property['property-type']) {
         case 'data-driven':
             return `DataDrivenProperty<${flowType(property)}>`;
@@ -105,19 +112,23 @@ global.overrides = function (property) {
     return `{ runtimeType: ${runtimeType(property)}, getOverride: (o) => o.${camelizeWithLeadingLowercase(property.name)}, hasOverride: (o) => !!o.${camelizeWithLeadingLowercase(property.name)} }`;
 }
 
-global.propertyValue = function (property, type) {
+global.propertyValue = function (type, property, valueType) {
+    const spec = `styleSpec["${valueType}_${property.type_}"]["${property.name}"]`;
+    if (customTypeBindings[`${type}.${property.name}`]) {
+        return `new ${customTypeBindings[`${type}.${property.name}`]}(${spec})`;
+    }
     switch (property['property-type']) {
         case 'data-driven':
             if (property.overridable) {
-                return `new DataDrivenProperty(styleSpec["${type}_${property.type_}"]["${property.name}"], ${overrides(property)})`;
+                return `new DataDrivenProperty(${spec}, ${overrides(property)})`;
             } else {
-                return `new DataDrivenProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
+                return `new DataDrivenProperty(${spec})`;
             }
         case 'color-ramp':
-            return `new ColorRampProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
+            return `new ColorRampProperty(${spec})`;
         case 'data-constant':
         case 'constant':
-            return `new DataConstantProperty(styleSpec["${type}_${property.type_}"]["${property.name}"])`;
+            return `new DataConstantProperty(${spec})`;
         default:
             throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
