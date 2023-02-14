@@ -11,7 +11,7 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type Framebuffer from '../../gl/framebuffer.js';
 import type {RGBAImage} from '../../util/image.js';
 import type SkyboxGeometry from '../../render/skybox_geometry.js';
-import type {LightPosition} from '../light.js';
+import type {Position} from '../../util/util.js';
 import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
 import assert from 'assert';
@@ -31,7 +31,7 @@ class SkyLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
-    _lightPosition: LightPosition;
+    _lightPosition: Position;
 
     skyboxFbo: ?Framebuffer;
     skyboxTexture: ?WebGLTexture;

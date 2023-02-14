@@ -1,5 +1,6 @@
 import {test} from '../../util/test.js';
-import Light, {sphericalToCartesian} from '../../../src/style/light.js';
+import {sphericalPositionToCartesian} from '../../../src/util/util.js';
+import Light from '../../../src/style/light.js';
 import styleSpec from '../../../src/style-spec/reference/latest.js';
 import Color from '../../../src/style-spec/util/color.js';
 
@@ -10,7 +11,7 @@ test('Light with defaults', (t) => {
     light.recalculate({zoom: 0});
 
     t.deepEqual(light.properties.get('anchor'), spec.anchor.default);
-    t.deepEqual(light.properties.get('position'), sphericalToCartesian(spec.position.default));
+    t.deepEqual(light.properties.get('position'), sphericalPositionToCartesian(spec.position.default));
     t.deepEqual(light.properties.get('intensity'), spec.intensity.default);
     t.deepEqual(light.properties.get('color'), Color.parse(spec.color.default));
 
@@ -26,7 +27,7 @@ test('Light with options', (t) => {
     light.recalculate({zoom: 0});
 
     t.deepEqual(light.properties.get('anchor'), 'map');
-    t.deepEqual(light.properties.get('position'), sphericalToCartesian([2, 30, 30]));
+    t.deepEqual(light.properties.get('position'), sphericalPositionToCartesian([2, 30, 30]));
     t.deepEqual(light.properties.get('intensity'), 1);
     t.deepEqual(light.properties.get('color'), Color.parse(spec.color.default));
 
