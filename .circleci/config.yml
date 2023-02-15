@@ -504,7 +504,6 @@ jobs:
     steps:
       - checkout
       - run: $NodeVersion = Get-Content -Path .\.nvmrc; nvm install $NodeVersion; nvm use $NodeVersion
-      - run: npm install --global yarn
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
       - run:
