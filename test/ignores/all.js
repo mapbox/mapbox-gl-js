@@ -25,8 +25,7 @@ const todo = [
 
     // Needs port from Native
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
-    "render-tests/terrain/symbol-draping/style.json",
-
+    "render-tests/terrain/symbol-draping/style.json"
 ];
 
 const skip = [
@@ -138,7 +137,32 @@ const skip = [
     "render-tests/terrain/wireframe",
 
     // model-layer tests still not ready
-    "render-tests/model-layer/default"
+    "render-tests/model-layer/default",
+
+    // Unimplemented in -js:
+    // https://mapbox.atlassian.net/browse/MAPS3D-697
+    "render-tests/lighting-3d-mode/emissive-strength/circle-data-driven",
+    "render-tests/lighting-3d-mode/emissive-strength/circle",
+    "render-tests/lighting-3d-mode/emissive-strength/fill",
+    "render-tests/lighting-3d-mode/emissive-strength/line",
+    "render-tests/lighting-3d-mode/emissive-strength/symbol",
+
+    // Unimplemented in -js:
+    // https://mapbox.atlassian.net/browse/MAPS3D-671
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
+
+    // To fully support 3d lights:
+    // https://mapbox.atlassian.net/browse/MAPS3D-672
+    "render-tests/lighting-3d-mode/terrain",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion",
+    "render-tests/lighting-3d-mode/render-cache",
+    "render-tests/lighting-3d-mode/real-world",
+    "render-tests/lighting-3d-mode/hillshade",
+    "render-tests/lighting-3d-mode/fog",
+    "render-tests/lighting-3d-mode/fill-extrusion/default",
+    "render-tests/lighting-3d-mode/fill-extrusion-pattern",
+    "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
+    "render-tests/lighting-3d-mode/line-with-fog"
 ];
 
 export default {todo, skip};

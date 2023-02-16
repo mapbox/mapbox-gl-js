@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.002,
+      "width": 64,
+      "height": 64
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 255, 0, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 255, 1)",
+        "intensity": 1.0,
+        "direction": [
+          100,
+          30
+        ]
+      }
+    }
+  ],
+  "zoom": 2,
+  "pitch": 40,
+  "sources": {},
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "cemetery_icon"
+      }
+    }
+  ]
+}

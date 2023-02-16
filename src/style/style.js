@@ -95,8 +95,7 @@ import type {TransitionParameters} from './properties.js';
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
     'removeLayer',
-    'addLight',
-    'removeLight',
+    'setLights',
     'setPaintProperty',
     'setLayoutProperty',
     'setFilter',
@@ -345,9 +344,7 @@ class Style extends Evented {
         }
 
         if (this.stylesheet.lights) {
-            for (let i = 0; i < this.stylesheet.lights.length; i++) {
-                this.addLight(this.stylesheet.lights[i]);
-            }
+            this.setLights(this.stylesheet.lights);
         }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
@@ -854,41 +851,50 @@ class Style extends Evented {
         return sources;
     }
 
-    addLight(light: LightsSpecification) {
+    setLights(lights: ?Array<LightsSpecification>) {
         this._checkLoaded();
 
-        if (this._validate(validateLights, 'lights', light)) {
-            return;
-        }
+        delete this.ambientLight;
+        delete this.directionalLight;
 
-        const parameters = this._getTransitionParameters({duration: 0});
+        if (lights) {
+            for (const light of lights) {
+                if (this._validate(validateLights, 'lights', light)) {
+                    return;
+                }
 
-        switch (light.type) {
-        case 'ambient':
-            this.ambientLight = new Lights<Ambient>(light, ambientProps);
-            this.ambientLight.updateTransitions(parameters);
-            break;
-        case 'directional':
-            this.directionalLight = new Lights<Directional>(light, directionalProps);
-            this.directionalLight.updateTransitions(parameters);
-            break;
-        default:
-            assert(false, "Unknown light type");
+                const parameters = this._getTransitionParameters({duration: 0});
+
+                switch (light.type) {
+                case 'ambient':
+                    this.ambientLight = new Lights<Ambient>(light, ambientProps);
+                    this.ambientLight.updateTransitions(parameters);
+                    break;
+                case 'directional':
+                    this.directionalLight = new Lights<Directional>(light, directionalProps);
+                    this.directionalLight.updateTransitions(parameters);
+                    break;
+                default:
+                    assert(false, "Unknown light type");
+                }
+            }
         }
+    }
+
+    getLights(): ?Array<LightsSpecification> {
+        if (!this.enable3dLights()) return null;
+        const lights = [];
+        if (this.directionalLight) {
+            lights.push(this.directionalLight.get());
+        }
+        if (this.ambientLight) {
+            lights.push(this.ambientLight.get());
+        }
+        return lights;
     }
 
     enable3dLights(): boolean {
         return !!this.ambientLight && !!this.directionalLight;
-    }
-
-    removeLight(id: string) {
-        if (this.ambientLight && this.ambientLight.get().id === id) {
-            delete this.ambientLight;
-        } else if (this.directionalLight && this.directionalLight.get().id === id) {
-            delete this.directionalLight;
-        } else {
-            this.fire(new ErrorEvent(new Error(`The light '${id}' does not exist in the map's style and cannot be removed.`)));
-        }
     }
 
     /**
@@ -1492,17 +1498,8 @@ class Style extends Evented {
         }, callback);
     }
 
-    getLight(id: ?string): LightSpecification | ?LightsSpecification {
-        if (id) {
-            if (this.ambientLight && this.ambientLight._options.id === id) {
-                return this.ambientLight.get();
-            } else if (this.directionalLight && this.directionalLight._options.id === id) {
-                return this.directionalLight.get();
-            }
-            return undefined;
-        } else {
-            return this.light.getLight();
-        }
+    getLight(): LightSpecification {
+        return this.light.getLight();
     }
 
     setLight(lightOptions: LightSpecification, options: StyleSetterOptions = {}) {
