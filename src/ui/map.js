@@ -2452,24 +2452,16 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a Mapbox style light to the map's style.
+     * Adds a set of Mapbox style light to the map's style.
      *
      * _Note: This light is not to confuse with our legacy light API used through {@link Map#setLight} and {@link Map#getLight}_.
      *
-     * @param {LightsSpecification} light The light to add, conforming to either the Mapbox Style Specification's light definition.
-     *
-     * @param {string} light.id A unique identifier that you define.
-     * @param {string} light.type The type of light (for example `ambient` or `directional`).
-     * @param {Object} [light.properties] (optional) Properties for the light.
-     * Available properties vary by `light.type`.
-     * A full list of light properties for each light type is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/lights/).
-     * If no properties are specified, default values will be used.
-     *
+     * @param {Array<LightsSpecification>} lights An array of lights to add, conforming to the Mapbox Style Specification's light definition.
      * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * // Add a directional light
-     * map.addLight({
+     * map.setLights([{
      *     "id": "sun_light",
      *     "type": "directional",
      *     "properties": {
@@ -2479,30 +2471,23 @@ class Map extends Camera {
      *         "cast-shadows": true,
      *         "shadow-intensity": 0.2
      *     }
-     * });
+     * }]);
      */
-    addLight(light: LightsSpecification): this {
+    setLights(lights: ?Array<LightsSpecification>): this {
         this._lazyInitEmptyStyle();
-        this.style.addLight(light);
+        this.style.setLights(lights);
         return this._update(true);
     }
 
     /**
-     * Removes the light with the given ID from the map's style.
+     * Returns the lights added to the map.
      *
-     * If no such light exists, an `error` event is fired.
-     *
-     * @param {string} id ID of the light to remove.
-     * @returns {Map} Returns itself to allow for method chaining.
-     * @fires Map.event:error
-     *
+     * @returns {Array<LightSpecification>} Lights added to the map.
      * @example
-     * // If a light with ID 'ambient-light' exists, remove it.
-     * if (map.getLight('ambient-light')) map.removeLight('ambient-light');
+     * const lights = map.getLights();
      */
-    removeLight(id: string): this {
-        this.style.removeLight(id);
-        return this._update(true);
+    getLights(): ?Array<LightsSpecification> {
+        return this.style.getLights();
     }
 
     /**
@@ -2689,13 +2674,12 @@ class Map extends Camera {
     /**
      * Returns the value of the light object.
      *
-     * @param {string} id The ID of the light to get. If no ID is provided, this API will return the legacy light.
      * @returns {LightSpecification} Light properties of the style.
      * @example
      * const light = map.getLight();
      */
-    getLight(id: ?string): LightSpecification | ?LightsSpecification {
-        return this.style.getLight(id);
+    getLight(): LightSpecification {
+        return this.style.getLight();
     }
 
     // eslint-disable-next-line jsdoc/require-returns

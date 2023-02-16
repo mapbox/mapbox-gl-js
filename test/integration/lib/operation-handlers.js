@@ -49,6 +49,10 @@ export const operationHandlers = {
         map.addLayer(params[0], params[1]);
         waitForRender(map, () => true, doneCb);
     },
+    setLights(map, params, doneCb) {
+        map.setLights(params[0]);
+        waitForRender(map, () => true, doneCb);
+    },
     addCustomLayer(map, params, doneCb) {
         map.addLayer(new customLayerImplementations[params[0]](), params[1]);
         waitForRender(map, () => true, doneCb);

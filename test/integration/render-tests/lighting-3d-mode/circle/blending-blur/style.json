@@ -1,0 +1,115 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 100, 100, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 255, 1)",
+        "intensity": 0.0,
+        "direction": [
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "red",
+              "blur": 0.5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -20,
+                20
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "green",
+              "blur": 0.5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                20,
+                20
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "blue",
+              "blur": 0.5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -20,
+                -20
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "white",
+              "blur": 0.5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                20,
+                -20
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 60,
+        "circle-color": [
+          "get",
+          "color"
+        ],
+        "circle-blur": [
+          "get",
+          "blur"
+        ]
+      }
+    }
+  ]
+}

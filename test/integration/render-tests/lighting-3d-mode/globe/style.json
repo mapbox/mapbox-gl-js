@@ -1,0 +1,62 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.002,
+      "operations": [
+        [
+          "setProjection",
+          "globe"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(100, 100, 100, 1)",
+        "intensity": 0.5
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 255, 255, 1)",
+        "intensity": 0.5
+      }
+    }
+  ],
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "tileSize": 256
+    }
+  },
+  "fog": {},
+  "center": [
+    0,
+    50
+  ],
+  "zoom": 1.5,
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

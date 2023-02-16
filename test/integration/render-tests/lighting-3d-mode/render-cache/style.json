@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "setStyle",
+          "local://styles/chicago.json"
+        ],
+        [
+          "setZoom",
+          13
+        ],
+        [
+          "setCenter",
+          [
+            -87.6942445,
+            41.8703965
+          ]
+        ],
+        [
+          "forceRenderCached",
+          true
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setFog",
+          {}
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "test_ambient",
+              "properties": {
+                "color": "rgba(200, 255, 255, 1)",
+                "intensity": 1.0
+              }
+            },
+            {
+              "type": "directional",
+              "id": "test_directional",
+              "properties": {
+                "color": "rgba(255, 255, 255, 1)",
+                "intensity": 0
+              }
+            }
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "pitch": 80,
+  "bearing": 42,
+  "sources": {},
+  "layers": []
+}

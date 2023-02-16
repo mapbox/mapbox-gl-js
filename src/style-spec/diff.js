@@ -117,6 +117,11 @@ export const operations: {[_: string]: string} = {
     setFog: 'setFog',
 
     /*
+     *  { command: 'setLights', args: [{light-3d},...] }
+     */
+    setLights: 'setLights',
+
+    /*
      *  { command: 'setProjection', args: [projectionProperties] }
      */
     setProjection: 'setProjection'
@@ -377,6 +382,9 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         }
         if (!isEqual(before.projection, after.projection)) {
             commands.push({command: operations.setProjection, args: [after.projection]});
+        }
+        if (!isEqual(before.lights, after.lights)) {
+            commands.push({command: operations.setLights, args: [after.lights]});
         }
 
         // Handle changes to `sources`

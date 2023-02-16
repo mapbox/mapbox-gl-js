@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.00075,
+      "operations": [
+        [
+          "setStyle",
+          "local://mapbox-gl-styles/styles/bright-v9.json"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "test_ambient",
+              "properties": {
+                "color": "rgba(230, 230, 255, 1)",
+                "intensity": 0.5
+              }
+            },
+            {
+              "type": "directional",
+              "id": "test_directional",
+              "properties": {
+                "color": "rgba(255, 255, 220, 1)",
+                "intensity": 0.75,
+                "direction": [
+                  0,
+                  65
+                ]
+              }
+            }
+          ]
+        ]
+      ]
+    }
+  },
+  "pitch": 50,
+  "bearing": 45,
+  "sources": {},
+  "layers": []
+}
