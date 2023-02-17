@@ -463,6 +463,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             }
         }
 
+        painter.uploadCommonLightUniforms(painter.context, state.program);
+
         if (state.isSDF) {
             const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
             if (state.hasHalo) {

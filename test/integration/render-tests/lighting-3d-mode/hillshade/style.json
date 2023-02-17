@@ -32,7 +32,7 @@
     "source": {
       "type": "raster-dem",
       "tiles": [
-        "asset://fixtures/dem/{z}-{x}-{y}.terrain.png"
+        "local://tiles/{z}-{x}-{y}.terrain.png"
       ],
       "maxzoom": 15,
       "tileSize": 256

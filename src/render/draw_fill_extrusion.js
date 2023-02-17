@@ -125,7 +125,7 @@ function drawExtrusionTiles(painter, source, layer, coords, depthMode, stencilMo
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
-        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 

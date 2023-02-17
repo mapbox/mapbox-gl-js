@@ -35,7 +35,7 @@
       "type": "vector",
       "maxzoom": 16,
       "tiles": [
-        "asset://fixtures/vector/{z}-{x}-{y}.mvt"
+        "local://tiles/{z}-{x}-{y}.mvt"
       ]
     }
   },

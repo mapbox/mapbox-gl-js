@@ -145,7 +145,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             programConfiguration.updatePaintBuffers();
         }
 
-        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         const renderLine = (stencilMode) => {
             program.draw(context, gl.TRIANGLES, depthMode,

@@ -83,7 +83,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
         temporalOffset
     );
 
-    painter.prepareDrawProgram(context, program);
+    painter.uploadCommonUniforms(context, program);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
@@ -103,7 +103,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
-    painter.prepareDrawProgram(context, program);
+    painter.uploadCommonUniforms(context, program);
 
     program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,

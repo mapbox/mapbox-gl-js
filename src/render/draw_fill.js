@@ -115,7 +115,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 
-        painter.prepareDrawProgram(painter.context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter.context, drawMode, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
