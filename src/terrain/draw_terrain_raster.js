@@ -218,7 +218,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             terrain.setupElevationDraw(tile, program, elevationOptions);
 
-            painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+            painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
             if (sharedBuffers) {
                 const [buffer, indexBuffer, segments] = isWireframe ?
@@ -264,7 +264,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
 
-                painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+                painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
                 if (topCap) {
                     drawPole(program, northPoleBuffer);
@@ -342,7 +342,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
 
-                painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+                painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);

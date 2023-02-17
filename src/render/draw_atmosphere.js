@@ -80,7 +80,7 @@ function drawAtmosphere(painter: Painter, fog: Fog) {
         horizonAngle,
         rotationMatrix);
 
-    painter.prepareDrawProgram(context, program);
+    painter.uploadCommonUniforms(context, program);
 
     const buffer = painter.atmosphereBuffer;
     if (buffer) {

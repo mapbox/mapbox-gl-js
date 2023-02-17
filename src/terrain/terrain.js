@@ -233,7 +233,7 @@ export class Terrain extends Elevation {
     _findCoveringTileCache: {[string]: {[number]: ?number}};
 
     _tilesDirty: {[string]: {[number]: boolean}};
-    _invalidateRenderCache: boolean;
+    invalidateRenderCache: boolean;
 
     _emptyDepthBufferTexture: ?Texture;
     _emptyDEMTexture: ?Texture;
@@ -371,7 +371,7 @@ export class Terrain extends Elevation {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
         } else if (event.dataType === 'style') {
-            this._invalidateRenderCache = true;
+            this.invalidateRenderCache = true;
         }
     }
 
@@ -1077,8 +1077,8 @@ export class Terrain extends Elevation {
 
     _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
         const psc = this.proxySourceCache;
-        if (this._shouldDisableRenderCache() || this._invalidateRenderCache) {
-            this._invalidateRenderCache = false;
+        if (this._shouldDisableRenderCache() || this.invalidateRenderCache) {
+            this.invalidateRenderCache = false;
             if (psc.renderCache.length > psc.renderCachePool.length) {
                 const used = ((Object.values(psc.proxyCachedFBO): any): Array<{[string | number]: number}>);
                 psc.proxyCachedFBO = {};

@@ -68,7 +68,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
-            painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+            painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 

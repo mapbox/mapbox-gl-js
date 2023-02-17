@@ -2506,6 +2506,9 @@ class Map extends Camera {
     setLights(lights: ?Array<LightsSpecification>): this {
         this._lazyInitEmptyStyle();
         this.style.setLights(lights);
+        if (this.painter.terrain) {
+            this.painter.terrain.invalidateRenderCache = true;
+        }
         return this._update(true);
     }
 

@@ -150,19 +150,10 @@ const skip = [
     // Unimplemented in -js:
     // https://mapbox.atlassian.net/browse/MAPS3D-671
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
-
-    // To fully support 3d lights:
-    // https://mapbox.atlassian.net/browse/MAPS3D-672
-    "render-tests/lighting-3d-mode/terrain",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion",
-    "render-tests/lighting-3d-mode/render-cache",
-    "render-tests/lighting-3d-mode/real-world",
-    "render-tests/lighting-3d-mode/hillshade",
-    "render-tests/lighting-3d-mode/fog",
-    "render-tests/lighting-3d-mode/fill-extrusion/default",
-    "render-tests/lighting-3d-mode/fill-extrusion-pattern",
-    "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
-    "render-tests/lighting-3d-mode/line-with-fog"
+
+    // fill-extrusion-rounded-roof not implemented in -js
+    "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof"
 ];
 
 export default {todo, skip};

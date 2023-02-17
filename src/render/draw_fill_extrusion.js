@@ -133,7 +133,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                 heightLift, globeToMercator, mercatorCenter, invMatrix);
 
-        painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 

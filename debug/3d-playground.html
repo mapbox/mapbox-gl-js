@@ -41,6 +41,7 @@
 
 var Demo3D = function() {
     this.enableTerrain = true;
+    this.enable3dLights = false;
     this.terrainExaggeration = 1.5;
     this.animateCamera = false;
     this.style = 'streets-v11';
@@ -60,9 +61,42 @@ var Demo3D = function() {
     this.aoGroundLine = true;
     this.buildingColor = [ 255, 255, 255 ];
     this.buildingOpacity = 1;
+    this.ambientLightColor = [ 255, 255, 255 ];
+    this.ambientLightIntensity = 1.0;
+    this.directionalLightColor = [ 255, 255, 255 ];
+    this.directionalLightIntensity = 1.0;
+    this.directionalLightAzimuth = 90;
+    this.directionalLightAltitude = 2;
 };
 
 var demo3d = new Demo3D();
+
+function updateLights(enable) {
+    map.setLights(enable ?
+        [
+            {
+                'type': 'ambient',
+                'id': 'ambient_light',
+                'properties': {
+                    'color': 'rgba(' + demo3d.ambientLightColor[0] + ', ' + demo3d.ambientLightColor[1] + ', ' + demo3d.ambientLightColor[2] + ', 1.0)',
+                    'intensity': demo3d.ambientLightIntensity
+                }
+            },
+            {
+                'type': 'directional',
+                'id': 'directional_ligh',
+                'properties': {
+                    'color': 'rgba(' + demo3d.directionalLightColor[0] + ', ' + demo3d.directionalLightColor[1] + ', ' + demo3d.directionalLightColor[2] + ', 1.0)',
+                    'intensity': demo3d.directionalLightIntensity,
+                    'direction': [
+                        demo3d.directionalLightAzimuth,
+                        demo3d.directionalLightAltitude
+                    ]
+                }
+            }
+        ] : null
+    );
+}
 
 window.onload = function() {
     var gui = new dat.GUI(); // eslint-disable-line
@@ -81,6 +115,36 @@ window.onload = function() {
     ]);
     style.onFinishChange((value) => {
         map.setStyle('mapbox://styles/' + value);
+    });
+
+    var lights = gui.addFolder('Lighting');
+    var enable3dLights = lights.add(demo3d, 'enable3dLights');
+    enable3dLights.onFinishChange((value) => {
+        updateLights(value);
+    });
+    var directionalLightAltitude = lights.add(demo3d, 'directionalLightAltitude', 0.0, 90.0);
+    directionalLightAltitude.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightAzimuth = lights.add(demo3d, 'directionalLightAzimuth', 0.0, 360.0);
+    directionalLightAzimuth.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightIntensity = lights.add(demo3d, 'directionalLightIntensity', 0.0, 1.0);
+    directionalLightIntensity.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightColor = lights.addColor(demo3d, 'directionalLightColor');
+    directionalLightColor.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var ambientLightIntensity = lights.add(demo3d, 'ambientLightIntensity', 0.0, 1.0);
+    ambientLightIntensity.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var ambientLightColor = lights.addColor(demo3d, 'ambientLightColor');
+    ambientLightColor.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
     });
 
     var terrain = gui.addFolder('Terrain');
@@ -102,11 +166,11 @@ window.onload = function() {
     sky.add(demo3d, 'animateSky');
     var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
     sunAltitude.onFinishChange((value) => {
-        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map', intensity: this.lightIntensity});
+        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map', intensity: demo3d.lightIntensity});
     });
     var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
     sunAzimuth.onFinishChange((value) => {
-        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map', intensity: this.lightIntensity});
+        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map', intensity: demo3d.lightIntensity});
     });
     var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
     sunIntensity.onFinishChange((value) => {

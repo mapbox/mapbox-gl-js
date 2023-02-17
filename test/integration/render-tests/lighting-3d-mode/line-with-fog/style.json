@@ -59,10 +59,7 @@
       "source-layer": "road",
       "paint": {
         "line-width": 7,
-        "line-color": "#000000",
-        "line-blur": 2,
-        "line-border-width": 3,
-        "line-border-color": "lightcoral"
+        "line-color": "#000000"
       }
     }
   ]

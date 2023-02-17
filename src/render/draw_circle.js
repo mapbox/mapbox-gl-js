@@ -125,7 +125,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
 
-        painter.prepareDrawProgram(context, program, tile.tileID.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, tile.tileID.toUnwrapped());
 
         program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, layoutVertexBuffer, indexBuffer, segments,

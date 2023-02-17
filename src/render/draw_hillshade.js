@@ -64,7 +64,7 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.projMatrix : null);
 
-    painter.prepareDrawProgram(context, program, coord.toUnwrapped());
+    painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 

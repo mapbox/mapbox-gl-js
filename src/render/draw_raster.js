@@ -87,7 +87,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
         const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform);
 
-        painter.prepareDrawProgram(context, program, unwrappedTileID);
+        painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
         if (source instanceof ImageSource) {
             if (source.boundsBuffer && source.boundsSegments) program.draw(

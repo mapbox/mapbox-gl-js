@@ -860,15 +860,20 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(): string[] {
+    currentGlobalDefines(name: string): string[] {
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const zeroExaggeration = this.terrain && this.terrain.exaggeration() === 0.0;
         const fog = this.style && this.style.fog;
         const defines = [];
 
         if (this.style && this.style.enable3dLights()) {
-            defines.push('LIGHTING_3D_MODE');
-            defines.push('LIGHTING_3D_MODE_NO_EMISSION');
+            // The following check is equivalent to emissive strength default of 1
+            // for paint_symbol internal property in gl-native, to be removed once
+            // https://mapbox.atlassian.net/browse/MAPS3D-697 is addressed
+            if (!name.startsWith('symbol')) {
+                defines.push('LIGHTING_3D_MODE');
+                defines.push('LIGHTING_3D_MODE_NO_EMISSION');
+            }
         }
         if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
@@ -887,7 +892,7 @@ class Painter {
         this.cache = this.cache || {};
         const defines = (((fixedDefines || []): any): string[]);
 
-        const globalDefines = this.currentGlobalDefines();
+        const globalDefines = this.currentGlobalDefines(name);
         const allDefines = globalDefines.concat(defines);
         const key = Program.cacheKey(shaders[name], name, allDefines, programConfiguration);
 
@@ -960,7 +965,7 @@ class Painter {
         }
     }
 
-    prepareDrawProgram(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
+    uploadCommonLightUniforms(context: Context, program: Program<*>) {
         if (this.style.enable3dLights()) {
             const directionalLight = this.style.directionalLight;
             const ambientLight = this.style.ambientLight;
@@ -970,6 +975,10 @@ class Painter {
                 program.setLightsUniformValues(context, lightsUniforms);
             }
         }
+    }
+
+    uploadCommonUniforms(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
+        this.uploadCommonLightUniforms(context, program);
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case

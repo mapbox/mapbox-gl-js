@@ -62,7 +62,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}) :
             backgroundUniformValues(matrix, opacity, color);
 
-        painter.prepareDrawProgram(context, program, unwrappedTileID);
+        painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
         const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
