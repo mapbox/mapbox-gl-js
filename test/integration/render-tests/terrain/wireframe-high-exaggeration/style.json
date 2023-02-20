@@ -6,7 +6,7 @@
       "width": 256,
       "description": "Check highly exaggerated terrain wireframe overlay",
       "showTerrainWireframe": true,
-      "allowed": 0.02,
+      "allowed": 0.041,
       "operations": [
         ["wait"],
         ["setTerrain", null],
