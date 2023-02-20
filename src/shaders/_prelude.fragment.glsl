@@ -36,3 +36,22 @@ highp vec4 pack_depth(highp float ndc_z) {
     res -= res.xxyz * bit_mask;
     return res;
 }
+
+#ifdef INDICATOR_CUTOUT
+uniform vec2 u_indicator_cutout_centers;
+uniform vec4 u_indicator_cutout_params;
+#endif
+
+// TODO: could be moved to a separate prelude
+vec4 applyCutout(vec4 color) {
+#ifdef INDICATOR_CUTOUT
+    float holeMinOpacity = u_indicator_cutout_params.x;
+    float holeRadius = max(u_indicator_cutout_params.y, 0.0);
+    float holeAspectRatio = u_indicator_cutout_params.z;
+    float fadeStart = u_indicator_cutout_params.w;
+    float distA = distance(vec2(gl_FragCoord.x, gl_FragCoord.y * holeAspectRatio), vec2(u_indicator_cutout_centers[0], u_indicator_cutout_centers[1] * holeAspectRatio));
+    return color * min(smoothstep(fadeStart, holeRadius, distA) + holeMinOpacity, 1.0);
+#else
+    return color;
+#endif
+}
