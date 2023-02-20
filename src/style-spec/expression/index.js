@@ -44,6 +44,7 @@ export interface GlobalProperties {
     +pitch?: number;
     +heatmapDensity?: number;
     +lineProgress?: number;
+    +rasterValue?: number;
     +skyRadialProgress?: number;
     +isSupportedScript?: (_: string) => boolean;
     +accumulated?: Value;

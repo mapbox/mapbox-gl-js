@@ -4117,6 +4117,17 @@
             "macos": "0.9.0"
           }
         }
+      },
+      "raster-value": {
+        "doc": "Returns the raster value of a pixel computed via `raster-color-mix`. Can only be used in the `raster-color` property.",
+        "group": "Raster Colorization",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.0.0",
+            "android": "11.0.0",
+            "ios": "11.0.0"
+          }
+        }
       }
     }
   },
@@ -6387,6 +6398,88 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "raster-color": {
+      "type": "color",
+      "doc": "Defines a color map by which to colorize a raster layer, parameterized by the `[\"raster-value\"]` expression and evaluated at 1024 uniformly spaced steps over the range specified by `raster-color-range`.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "raster-value"
+        ]
+      },
+      "property-type": "color-ramp"
+    },
+    "raster-color-mix": {
+      "type": "array",
+      "default": [
+        0.2126,
+        0.7152,
+        0.0722,
+        0.0
+      ],
+      "length": 4,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "When `raster-color` is active, specifies the combination of source RGB channels used to compute the raster value. Computed using the equation `mix.r * src.r + mix.g * src.g + mix.b * src.b + mix.a`. The first three components specify the mix of source red, green, and blue channels, respectively. The fourth component serves as a constant offset and is *not* multipled by source alpha. Source alpha is instead carried through and applied as opacity to the colorized result. Default value corresponds to RGB luminosity.",
+      "example": [
+        0.2126,
+        0.7152,
+        0.0722,
+        0.0
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
+    },
+    "raster-color-range": {
+      "type": "array",
+      "default": [
+        0,
+        1
+      ],
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "When `raster-color` is active, specifies the range over which `raster-color` is tabulated. Units correspond to the computed raster value via `raster-color-mix`.",
+      "example": [
+        0.5,
+        10
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "raster-hue-rotate": {
       "type": "number",

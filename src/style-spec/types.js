@@ -431,6 +431,9 @@ export type RasterLayerSpecification = {|
     |},
     "paint"?: {|
         "raster-opacity"?: PropertyValueSpecification<number>,
+        "raster-color"?: ExpressionSpecification,
+        "raster-color-mix"?: PropertyValueSpecification<[number, number, number, number]>,
+        "raster-color-range"?: PropertyValueSpecification<[number, number]>,
         "raster-hue-rotate"?: PropertyValueSpecification<number>,
         "raster-brightness-min"?: PropertyValueSpecification<number>,
         "raster-brightness-max"?: PropertyValueSpecification<number>,

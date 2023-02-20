@@ -4,8 +4,10 @@ import ImageSource from '../source/image_source.js';
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
+import Texture from './texture.js';
 import {rasterUniformValues} from './program/raster_program.js';
 
+import type Context from '../gl/context.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
@@ -13,6 +15,8 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import rasterFade from './raster_fade.js';
 
 export default drawRaster;
+
+const RASTER_COLOR_TEXTURE_UNIT = 2;
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
@@ -22,7 +26,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const context = painter.context;
     const gl = context.gl;
     const source = sourceCache.getSource();
-    const program = painter.useProgram('raster');
+
+    const rasterColor = configureRasterColor(layer, context, gl);
+
+    const program = painter.useProgram('raster', null, rasterColor.defines);
 
     const colorMode = painter.colorModeForRenderPass();
 
@@ -85,7 +92,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
-        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform);
+        const uniformValues = rasterUniformValues(projMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0]);
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
@@ -106,3 +113,21 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
+function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: WebGLRenderingContext) {
+    const defines = [];
+    let mix;
+    let range;
+
+    if (layer.paint.get('raster-color')) {
+        defines.push('RASTER_COLOR');
+        mix = layer.paint.get('raster-color-mix');
+        range = layer.paint.get('raster-color-range');
+
+        // Allocate a texture if not allocated
+        context.activeTexture.set(gl.TEXTURE2);
+        let tex = layer.colorRampTexture;
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
+    return {mix, range, defines};
+}
