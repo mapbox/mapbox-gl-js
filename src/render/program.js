@@ -7,6 +7,7 @@ import {
     preludeTerrain,
     preludeFog,
     preludeCommonSource,
+    preludeLightingSource,
     standardDerivativesExt
 } from '../shaders/shaders.js';
 import assert from 'assert';
@@ -96,12 +97,14 @@ class Program<Us: UniformBindings> {
             context.extStandardDerivatives && version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
+            preludeLightingSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
             source.fragmentSource).join('\n');
         const vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
             preludeCommonSource,
+            preludeLightingSource,
             prelude.vertexSource,
             preludeFog.vertexSource,
             preludeTerrain.vertexSource,
