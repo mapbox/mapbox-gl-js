@@ -84,7 +84,8 @@ preludeFog = compile(preludeFogFrag, preludeFogVert);
 // Shadow prelude is not compiled until GL-JS implements shadows
 
 export const prelude = compile(preludeFrag, preludeVert);
-export const preludeCommonSource = preludeCommon.concat(preludeLighting);
+export const preludeCommonSource = preludeCommon;
+export const preludeLightingSource = preludeLighting;
 
 export const preludeVertPrecisionQualifiers = `
 #ifdef GL_ES
