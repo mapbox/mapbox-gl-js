@@ -59,6 +59,11 @@ vec4 color;
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
+
+#ifdef INDICATOR_CUTOUT
+    color = applyCutout(color);
+#endif
+
     gl_FragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR
