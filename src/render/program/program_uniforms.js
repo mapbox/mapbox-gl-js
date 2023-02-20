@@ -1,6 +1,7 @@
 // @flow
 
 import type {CircleDefinesType} from './circle_program.js';
+import type {RasterDefinesType} from './raster_program.js';
 import type {SymbolDefinesType} from './symbol_program.js';
 import type {LineDefinesType} from './line_program.js';
 import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
@@ -23,7 +24,7 @@ import type {HeatmapDefinesType} from './heatmap_program.js';
 import type {DebugDefinesType} from './debug_program.js';
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType;
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

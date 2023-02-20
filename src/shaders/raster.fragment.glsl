@@ -12,18 +12,49 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
+#ifdef RASTER_COLOR
+uniform sampler2D u_color_ramp;
+uniform vec2 u_colorization_scale;
+uniform vec4 u_colorization_mix;
+
+vec4 colormap (float value) {
+  float scaled_value = value * u_colorization_scale.y + u_colorization_scale.x;
+  return texture2D(u_color_ramp, vec2(scaled_value, 0.5));
+}
+#endif
+
 void main() {
 
     // read and cross-fade colors from the main and parent tiles
     vec4 color0 = texture2D(u_image0, v_pos0);
     vec4 color1 = texture2D(u_image1, v_pos1);
+
+    vec4 color;
+
+#ifdef RASTER_COLOR
+    // In the case of raster colorization, interpolate the raster value first,
+    // then sample the color map. Otherwise we interpolate two tabulated colors
+    // and end up with a color *not* on the color map.
+    vec4 fadedColor = mix(color0, color1, u_fade_t);
+    color = colormap(dot(vec4(fadedColor.rgb, 1), u_colorization_mix));
+
+    // Apply input alpha on top of color ramp alpha
+    color.a *= fadedColor.a;
+
+    if (color.a > 0.0) {
+      color.rgb /= color.a;
+    }
+#else
     if (color0.a > 0.0) {
-        color0.rgb = color0.rgb / color0.a;
+        color0.rgb /= color0.a;
     }
     if (color1.a > 0.0) {
-        color1.rgb = color1.rgb / color1.a;
+        color1.rgb /= color1.a;
     }
-    vec4 color = mix(color0, color1, u_fade_t);
+    color = mix(color0, color1, u_fade_t);
+#endif
+
+
     color.a *= u_opacity;
     vec3 rgb = color.rgb;
 
