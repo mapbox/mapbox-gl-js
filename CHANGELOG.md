@@ -1,7 +1,8 @@
-## 2.13.0-beta.1
+## 2.13.0
 
 ### Features ✨ and improvements 🏁
 
+* Support draping over terrain and globe in CustomLayer API ([#12182](https://github.com/mapbox/mapbox-gl-js/pull/12182))
 * Improve rendering performance of terrain slightly by reducing its GPU memory footprint. ([#12472](https://github.com/mapbox/mapbox-gl-js/pull/12472))
 * Add methods for changing a raster tile source dynamically (e.g. `setTiles`, `setUrl`). ([#12352](https://github.com/mapbox/mapbox-gl-js/pull/12352))
 
