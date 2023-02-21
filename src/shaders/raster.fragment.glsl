@@ -14,12 +14,13 @@ uniform vec3 u_spin_weights;
 
 #ifdef RASTER_COLOR
 uniform sampler2D u_color_ramp;
-uniform vec2 u_colorization_scale;
-uniform vec4 u_colorization_mix;
+uniform highp vec2 u_colorization_scale;
+uniform highp vec4 u_colorization_mix;
 
-vec4 colormap (float value) {
-  float scaled_value = value * u_colorization_scale.y + u_colorization_scale.x;
-  return texture2D(u_color_ramp, vec2(scaled_value, 0.5));
+highp vec4 colormap (highp float value) {
+  highp float scaled_value = value * u_colorization_scale.y + u_colorization_scale.x;
+  highp vec2 coords = vec2(scaled_value, 0.5);
+  return texture2D(u_color_ramp, coords);
 }
 #endif
 
@@ -35,7 +36,7 @@ void main() {
     // In the case of raster colorization, interpolate the raster value first,
     // then sample the color map. Otherwise we interpolate two tabulated colors
     // and end up with a color *not* on the color map.
-    vec4 fadedColor = mix(color0, color1, u_fade_t);
+    highp vec4 fadedColor = mix(color0, color1, u_fade_t);
     color = colormap(dot(vec4(fadedColor.rgb, 1), u_colorization_mix));
 
     // Apply input alpha on top of color ramp alpha
