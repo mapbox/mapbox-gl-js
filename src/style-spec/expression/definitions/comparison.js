@@ -77,6 +77,7 @@ function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext
             this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
+        // $FlowFixMe[method-unbinding]
         static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);

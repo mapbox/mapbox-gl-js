@@ -57,34 +57,54 @@ const expressions: ExpressionRegistry = {
     '<': LessThan,
     '>=': GreaterThanOrEqual,
     '<=': LessThanOrEqual,
+    // $FlowFixMe[method-unbinding]
     'array': Assertion,
+    // $FlowFixMe[method-unbinding]
     'at': At,
     'boolean': Assertion,
+    // $FlowFixMe[method-unbinding]
     'case': Case,
+    // $FlowFixMe[method-unbinding]
     'coalesce': Coalesce,
+    // $FlowFixMe[method-unbinding]
     'collator': CollatorExpression,
+    // $FlowFixMe[method-unbinding]
     'format': FormatExpression,
+    // $FlowFixMe[method-unbinding]
     'image': ImageExpression,
+    // $FlowFixMe[method-unbinding]
     'in': In,
+    // $FlowFixMe[method-unbinding]
     'index-of': IndexOf,
+    // $FlowFixMe[method-unbinding]
     'interpolate': Interpolate,
     'interpolate-hcl': Interpolate,
     'interpolate-lab': Interpolate,
+    // $FlowFixMe[method-unbinding]
     'length': Length,
+    // $FlowFixMe[method-unbinding]
     'let': Let,
+    // $FlowFixMe[method-unbinding]
     'literal': Literal,
+    // $FlowFixMe[method-unbinding]
     'match': Match,
     'number': Assertion,
+    // $FlowFixMe[method-unbinding]
     'number-format': NumberFormat,
     'object': Assertion,
+    // $FlowFixMe[method-unbinding]
     'slice': Slice,
+    // $FlowFixMe[method-unbinding]
     'step': Step,
     'string': Assertion,
+    // $FlowFixMe[method-unbinding]
     'to-boolean': Coercion,
     'to-color': Coercion,
     'to-number': Coercion,
     'to-string': Coercion,
+    // $FlowFixMe[method-unbinding]
     'var': Var,
+    // $FlowFixMe[method-unbinding]
     'within': Within
 };
 

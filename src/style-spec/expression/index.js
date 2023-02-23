@@ -274,14 +274,18 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
 
     if (!zoomCurve) {
         return success(isFeatureConstant ?
+            // $FlowFixMe[method-unbinding]
             (new ZoomConstantExpression('constant', expression.value): ConstantExpression) :
+            // $FlowFixMe[method-unbinding]
             (new ZoomConstantExpression('source', expression.value): SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success(isFeatureConstant ?
+        // $FlowFixMe[method-unbinding]
         (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType): CameraExpression) :
+        // $FlowFixMe[method-unbinding]
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType): CompositeExpression));
 }
 
