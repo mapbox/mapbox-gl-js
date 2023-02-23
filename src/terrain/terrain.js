@@ -333,9 +333,8 @@ export class Terrain
 
           const updateSourceCache = (() => {
               if (this.sourceCache.used) {
-                  warnOnce(
-            `Raster DEM source '${this.sourceCache.id}' is used both for terrain and as layer source.\n` + 'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.',
-                  );
+                  warnOnce(`Raster DEM source '${this.sourceCache.id}' is used both for terrain and as layer source.\n` +
+                      'This leads to lower resolution of hillshade. For full hillshade resolution but higher memory consumption, define another raster DEM source.');
               }
               // Lower tile zoom is sufficient for terrain, given the size of terrain grid.
               const scaledDemTileSize = this.getScaledDemTileSize();
@@ -1213,15 +1212,12 @@ export class Terrain
       this._drapedRenderBatches = batches;
   }
 
-  _setupRenderCache(
-    previousProxyToSource: { [number]: { [string]: Array<ProxiedTileID> } },
-  ) {
+  _setupRenderCache(previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {
       const psc = this.proxySourceCache;
       if (this._shouldDisableRenderCache() || this._invalidateRenderCache) {
           this._invalidateRenderCache = false;
           if (psc.renderCache.length > psc.renderCachePool.length) {
-              const used = ((Object.values(psc.proxyCachedFBO): any): Array<
-          { [string | number]: number }, >);
+              const used = ((Object.values(psc.proxyCachedFBO): any): Array<{[string | number]: number}>);
               psc.proxyCachedFBO = {};
               for (let i = 0; i < used.length; ++i) {
                   const fbos = ((Object.values(used[i]): any): Array<number>);
@@ -1251,12 +1247,11 @@ export class Terrain
               for (const source in current) {
                   const tiles = current[source];
                   const prevTiles = prev[source];
-                  if (
-                      !prevTiles || prevTiles.length !== tiles.length ||
-              tiles.some(
-                (t, index) => t !== prevTiles[index] ||
-                  dirty[source] && dirty[source].hasOwnProperty(t.key),
-              )
+                  if (!prevTiles || prevTiles.length !== tiles.length ||
+                      tiles.some((t, index) =>
+                          (t !== prevTiles[index] ||
+                              (dirty[source] && dirty[source].hasOwnProperty(t.key)
+                              )))
                   ) {
                       equal = -1;
                       break;
@@ -1663,7 +1658,7 @@ export class Terrain
       const lookup = this._findCoveringTileCache[sourceCache.id];
       const key = lookup[tileID.key];
       tile = key ? sourceCache.getTileByID(key) : null;
-      if (tile && tile.hasData() || key === null) return tile;
+      if ((tile && tile.hasData()) || key === null) return tile;
 
       assert(!key || tile);
 
@@ -1760,15 +1755,8 @@ export class Terrain
   getWirefameBuffer(): [IndexBuffer, SegmentVector] {
       if (!this.wireframeSegments) {
           const wireframeGridIndices = createWireframeGrid(GRID_DIM + 1);
-          this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(
-        wireframeGridIndices,
-          );
-          this.wireframeSegments = SegmentVector.simpleSegment(
-        0,
-        0,
-        this.gridBuffer.length,
-        wireframeGridIndices.length,
-          );
+          this.wireframeIndexBuffer = this.painter.context.createIndexBuffer(wireframeGridIndices);
+          this.wireframeSegments = SegmentVector.simpleSegment(0, 0, this.gridBuffer.length, wireframeGridIndices.length);
       }
       return [this.wireframeIndexBuffer, this.wireframeSegments];
   }

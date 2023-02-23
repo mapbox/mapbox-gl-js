@@ -653,18 +653,11 @@ class Camera
     options?: CameraOptions,
   ): ?EasingOptions {
       bounds = LngLatBounds.convert(bounds);
-      const bearing = options && options.bearing || 0;
-      const pitch = options && options.pitch || 0;
+      const bearing = (options && options.bearing) || 0;
+      const pitch = (options && options.pitch) || 0;
       const lnglat0 = bounds.getNorthWest();
       const lnglat1 = bounds.getSouthEast();
-      return this._cameraForBounds(
-      this.transform,
-      lnglat0,
-      lnglat1,
-      bearing,
-      pitch,
-      options,
-      );
+      return this._cameraForBounds(this.transform, lnglat0, lnglat1, bearing, pitch, options);
   }
 
   _extendCameraOptions(options?: CameraOptions): FullCameraOptions {
@@ -674,14 +667,11 @@ class Camera
           right: 0,
           left: 0,
       };
-      options = extend(
-      {
+      options = extend({
           padding: defaultPadding,
           offset: [0, 0],
-          maxZoom: this.transform.maxZoom,
-      },
-      options,
-      );
+          maxZoom: this.transform.maxZoom
+      }, options);
 
       if (typeof options.padding === 'number') {
           const p = options.padding;
@@ -736,22 +726,10 @@ class Camera
       const yAxis = vec3.cross([], xAxis, zAxis);
 
       const aabbOrientation = [
-          xAxis[0],
-          xAxis[1],
-          xAxis[2],
-          0,
-          yAxis[0],
-          yAxis[1],
-          yAxis[2],
-          0,
-          zAxis[0],
-          zAxis[1],
-          zAxis[2],
-          0,
-          0,
-          0,
-          0,
-          1,
+          xAxis[0], xAxis[1], xAxis[2], 0,
+          yAxis[0], yAxis[1], yAxis[2], 0,
+          zAxis[0], zAxis[1], zAxis[2], 0,
+          0, 0, 0, 1
       ];
 
       const ecefCoords = [
@@ -768,11 +746,7 @@ class Camera
           latLngToECEF(coord1.lat, midLng),
       ];
 
-      let aabb = Aabb.fromPoints(
-      ecefCoords.map(
-        p => [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)],
-      ),
-      );
+      let aabb = Aabb.fromPoints(ecefCoords.map(p => [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)]));
 
       const center = vec3.transformMat4([], aabb.center, aabbOrientation);
 
@@ -787,10 +761,7 @@ class Camera
       const worldToCamera = tr.getWorldToCameraMatrix();
       const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
 
-      aabb = Aabb.applyTransform(
-      aabb,
-      mat4.multiply([], worldToCamera, aabbOrientation),
-      );
+      aabb = Aabb.applyTransform(aabb, mat4.multiply([], worldToCamera, aabbOrientation));
 
       vec3.transformMat4(center, center, worldToCamera);
 
@@ -804,11 +775,7 @@ class Camera
           vec3.distance(center, aabbClosestPoint));
 
       const globeCenter = tr.globeCenterInViewSpace;
-      const normal = vec3.sub(
-      [],
-      center,
-      [globeCenter[0], globeCenter[1], globeCenter[2]],
-      );
+      const normal = vec3.sub([], center, [globeCenter[0], globeCenter[1], globeCenter[2]]);
       vec3.normalize(normal, normal);
       vec3.scale(normal, normal, offsetDistance);
 
@@ -819,15 +786,8 @@ class Camera
       const meterPerECEF = earthRadius / GLOBE_RADIUS;
       const altitudeECEF = vec3.length(cameraPosition);
       const altitudeMeter = altitudeECEF * meterPerECEF - earthRadius;
-      const mercatorZ = mercatorZfromAltitude(
-      Math.max(altitudeMeter, Number.EPSILON),
-      0,
-      );
-
-      const zoom = Math.min(
-      tr.zoomFromMercatorZAdjusted(mercatorZ),
-      eOptions.maxZoom,
-      );
+      const mercatorZ = mercatorZfromAltitude(Math.max(altitudeMeter, Number.EPSILON), 0);
+      const zoom = Math.min(tr.zoomFromMercatorZAdjusted(mercatorZ), eOptions.maxZoom);
 
       const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
       if (zoom > halfZoomTransition) {
@@ -1417,20 +1377,13 @@ class Camera
   easeTo(options: EasingOptions & { easeId?: string }, eventData?: Object): this {
       this._stop(false, options.easeId);
 
-      options = extend(
-      {
+      options = extend({
           offset: [0, 0],
           duration: 500,
-          easing: defaultEasing,
-      },
-      options,
-      );
+          easing: defaultEasing
+      }, options);
 
-      if (
-          options.animate === false ||
-        !options.essential && browser.prefersReducedMotion
-      )
-          options.duration = 0;
+      if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) options.duration = 0;
 
       const tr = this.transform,
           startZoom = this.getZoom(),
@@ -1464,10 +1417,7 @@ class Camera
 
           pointAtOffset = tr.centerPoint.add(rotatedOffset);
           from = new Point(centerCoord.x, centerCoord.y).mult(tr.worldSize);
-          delta = new Point(
-        mercatorXfromLng(center.lng),
-        mercatorYfromLat(center.lat),
-          ).mult(tr.worldSize).sub(from);
+          delta = new Point(mercatorXfromLng(center.lng), mercatorYfromLat(center.lat)).mult(tr.worldSize).sub(from);
       } else {
           pointAtOffset = tr.centerPoint.add(offsetAsPoint);
           const locationAtOffset = tr.pointLocation(pointAtOffset);

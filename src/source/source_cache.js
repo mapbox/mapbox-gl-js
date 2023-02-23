@@ -110,10 +110,11 @@ class SourceCache
 
       this._coveredTiles = {};
       this._state = new SourceFeatureState();
-      this._isRaster = this._source.type === 'raster' ||
-      this._source.type === 'raster-dem' ||
-      // $FlowFixMe[prop-missing]
-      this._source.type === 'custom' && this._source._dataType === 'raster';
+      this._isRaster =
+          this._source.type === 'raster' ||
+          this._source.type === 'raster-dem' ||
+          // $FlowFixMe[prop-missing]
+          (this._source.type === 'custom' && this._source._dataType === 'raster');
   }
 
   onAdd(map: MapboxMap) {
@@ -610,7 +611,7 @@ class SourceCache
               assert(tileID.key === +id);
 
               const tile = this._tiles[id];
-              if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now())
+              if (!tile || (tile.fadeEndTime && tile.fadeEndTime <= browser.now()))
                   continue;
 
               // if the tile is loaded but still fading in, find parents to cross-fade with it
