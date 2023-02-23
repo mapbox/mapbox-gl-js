@@ -160,7 +160,7 @@ class ScrollZoomHandler {
       }
   }
 
-  wheel(e: WheelEvent) {
+  wheel: (e: WheelEvent) => void = (e) => {
       if (!this.isEnabled()) return;
 
       if (this._map._cooperativeGestures) {
@@ -263,7 +263,7 @@ class ScrollZoomHandler {
       }
   }
 
-  renderFrame(): ?HandlerResult {
+  renderFrame: () => ?HandlerResult = () => {
       if (!this._frameId) return;
       this._frameId = null;
 
