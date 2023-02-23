@@ -78,7 +78,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
 
 export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
                             serializedLayers: {[_: string]: StyleLayer},
-                            getLayerSourceCache: (layer: StyleLayer) => SourceCache,
+                            getLayerSourceCache: (layer: StyleLayer) => SourceCache | void,
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string>, availableImages: Array<string> },
                             collisionIndex: CollisionIndex,
@@ -137,6 +137,8 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
             const feature = featureWrapper.feature;
             const layer = styleLayers[layerName];
             const sourceCache = getLayerSourceCache(layer);
+            if (!sourceCache) return;
+
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
             if (feature.layer['source-layer']) {

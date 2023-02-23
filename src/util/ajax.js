@@ -325,6 +325,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             requestParameters,
             callback,
             cancelled: false,
+            // $FlowFixMe[object-this-reference]
             cancel() { this.cancelled = true; }
         };
         imageQueue.push(queued);
