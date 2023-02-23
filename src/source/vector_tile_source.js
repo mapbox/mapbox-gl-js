@@ -134,11 +134,11 @@ class VectorTileSource extends Evented implements Source {
         return this._loaded;
     }
 
-    hasTile(tileID: OverscaledTileID): boolean {
+    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
-    onAdd(map: Map) {
+    onAdd: (map: Map) => void = (map) => {
         this.map = map;
         this.load();
     }
@@ -149,7 +149,7 @@ class VectorTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
-    reload() {
+    reload: () => void = () => {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
     }
@@ -199,7 +199,7 @@ class VectorTileSource extends Evented implements Source {
         return this;
     }
 
-    onRemove() {
+    onRemove: () => void = () => {
         this.cancelTileJSONRequest();
     }
 
@@ -288,7 +288,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    abortTile(tile: Tile) {
+    abortTile: (tile: Tile) => void = (tile) => {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
@@ -298,7 +298,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    unloadTile(tile: Tile) {
+    unloadTile: (tile: Tile) => void = (tile) => {
         tile.unloadVectorData();
         if (tile.actor) {
             tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
@@ -309,7 +309,7 @@ class VectorTileSource extends Evented implements Source {
         return false;
     }
 
-    afterUpdate() {
+    afterUpdate: () => void = () => {
         this._tileWorkers = {};
     }
 

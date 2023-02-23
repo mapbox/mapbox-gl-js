@@ -148,7 +148,7 @@ class GeoJSONSource extends Evented implements Source {
         }, options.workerOptions);
     }
 
-    onAdd(map: Map) {
+    onAdd: (map: Map) => void = (map: Map) => {
         this.map = map;
         this.setData(this._data);
     }
@@ -375,7 +375,7 @@ class GeoJSONSource extends Evented implements Source {
         }, undefined, message === 'loadTile');
     }
 
-    abortTile(tile: Tile) {
+    abortTile: (tile: Tile) => void = (tile) => {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
@@ -383,12 +383,12 @@ class GeoJSONSource extends Evented implements Source {
         tile.aborted = true;
     }
 
-    unloadTile(tile: Tile) {
+    unloadTile: (tile: Tile) => void = (tile) => {
         tile.unloadVectorData();
         this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
     }
 
-    onRemove() {
+    onRemove: () => void = () => {
         if (this._pendingLoad) {
             this._pendingLoad.cancel();
         }
