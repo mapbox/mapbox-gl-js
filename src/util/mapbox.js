@@ -479,21 +479,21 @@ export class MapLoadEvent
     skuToken: string,
     customAccessToken: ?string,
     callback: EventCallback,
-  ) => {
-      this.skuToken = skuToken;
-      this.errorCb = callback;
+) => {
+    this.skuToken = skuToken;
+    this.errorCb = callback;
 
-      if (config.EVENTS_URL) {
-          if (customAccessToken || config.ACCESS_TOKEN) {
-              this.queueRequest(
+    if (config.EVENTS_URL) {
+        if (customAccessToken || config.ACCESS_TOKEN) {
+            this.queueRequest(
           {id: mapId, timestamp: Date.now()},
           customAccessToken,
-              );
-          } else {
-              this.errorCb(new Error(AUTH_ERR_MSG));
-          }
-      }
-  };
+            );
+        } else {
+            this.errorCb(new Error(AUTH_ERR_MSG));
+        }
+    }
+};
 
   processRequests(customAccessToken?: ?string) {
       if (this.pendingRequest || this.queue.length === 0) return;
@@ -589,21 +589,21 @@ export class MapSessionAPI
     skuToken: string,
     customAccessToken: ?string,
     callback: EventCallback,
-  ) => {
-      this.skuToken = skuToken;
-      this.errorCb = callback;
+) => {
+    this.skuToken = skuToken;
+    this.errorCb = callback;
 
-      if (config.SESSION_PATH && config.API_URL) {
-          if (customAccessToken || config.ACCESS_TOKEN) {
-              this.queueRequest(
+    if (config.SESSION_PATH && config.API_URL) {
+        if (customAccessToken || config.ACCESS_TOKEN) {
+            this.queueRequest(
           {id: mapId, timestamp: Date.now()},
           customAccessToken,
-              );
-          } else {
-              this.errorCb(new Error(AUTH_ERR_MSG));
-          }
-      }
-  };
+            );
+        } else {
+            this.errorCb(new Error(AUTH_ERR_MSG));
+        }
+    }
+};
 
   processRequests(customAccessToken?: ?string) {
       if (this.pendingRequest || this.queue.length === 0) return;

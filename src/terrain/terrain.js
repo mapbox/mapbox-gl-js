@@ -303,15 +303,15 @@ export class Terrain
       this._mockSourceCache = new MockSourceCache(style.map);
   }
 
-    set style(style: Style) {
-        style.on('data', this._onStyleDataEvent.bind(this));
-        style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
-        this._style = style;
-        this._checkRenderCacheEfficiency();
-        this._style.map.on('moveend', () => {
-            this._clearLineLayersFromRenderCache();
-        });
-    }
+  set style(style: Style) {
+      style.on('data', this._onStyleDataEvent.bind(this));
+      style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
+      this._style = style;
+      this._checkRenderCacheEfficiency();
+      this._style.map.on('moveend', () => {
+          this._clearLineLayersFromRenderCache();
+      });
+  }
 
   /*
      * Validate terrain and update source cache used for elevation.
@@ -755,16 +755,16 @@ export class Terrain
       }
   }
 
-    globeUniformValues(tr: Transform, id: CanonicalTileID, useDenormalizedUpVectorScale: ?boolean): UniformValues<GlobeUniformsType> {
-        const projection = tr.projection;
-        return {
-            'u_tile_tl_up': (projection.upVector(id, 0, 0): any),
-            'u_tile_tr_up': (projection.upVector(id, EXTENT, 0): any),
-            'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT): any),
-            'u_tile_bl_up': (projection.upVector(id, 0, EXTENT): any),
-            'u_tile_up_scale': (useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile: any)
-        };
-    }
+  globeUniformValues(tr: Transform, id: CanonicalTileID, useDenormalizedUpVectorScale: ?boolean): UniformValues<GlobeUniformsType> {
+      const projection = tr.projection;
+      return {
+          'u_tile_tl_up': (projection.upVector(id, 0, 0): any),
+          'u_tile_tr_up': (projection.upVector(id, EXTENT, 0): any),
+          'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT): any),
+          'u_tile_bl_up': (projection.upVector(id, 0, EXTENT): any),
+          'u_tile_up_scale': (useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile: any)
+      };
+  }
 
   renderToBackBuffer(accumulatedDrapes: Array<OverscaledTileID>) {
       const painter = this.painter;
@@ -1069,81 +1069,81 @@ export class Terrain
           }
       }
 
-        const isTransitioning = id => {
-            const layer = this._style._layers[id];
-            const isHidden = layer.isHidden(this.painter.transform.zoom);
-            if (layer.type === 'custom') {
-                return !isHidden && ((layer: any): CustomStyleLayer).shouldRedrape();
-            }
-            return !isHidden && layer.hasTransition();
-        };
-        return this._style.order.some(isTransitioning);
-    }
+      const isTransitioning = id => {
+          const layer = this._style._layers[id];
+          const isHidden = layer.isHidden(this.painter.transform.zoom);
+          if (layer.type === 'custom') {
+              return !isHidden && ((layer: any): CustomStyleLayer).shouldRedrape();
+          }
+          return !isHidden && layer.hasTransition();
+      };
+      return this._style.order.some(isTransitioning);
+  }
 
-    _clearLineLayersFromRenderCache() {
-        let hasVectorSource = false;
-        for (const source of this._style._getSources()) {
-            if (source instanceof VectorTileSource) {
-                hasVectorSource = true;
-                break;
-            }
-        }
+  _clearLineLayersFromRenderCache() {
+      let hasVectorSource = false;
+      for (const source of this._style._getSources()) {
+          if (source instanceof VectorTileSource) {
+              hasVectorSource = true;
+              break;
+          }
+      }
 
-        if (!hasVectorSource) return;
+      if (!hasVectorSource) return;
 
-        const clearSourceCaches = {};
-        for (let i = 0; i < this._style.order.length; ++i) {
-            const layer = this._style._layers[this._style.order[i]];
-            const sourceCache = this._style._getLayerSourceCache(layer);
-            if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
+      const clearSourceCaches = {};
+      for (let i = 0; i < this._style.order.length; ++i) {
+          const layer = this._style._layers[this._style.order[i]];
+          const sourceCache = this._style._getLayerSourceCache(layer);
+          if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
 
-            const isHidden = layer.isHidden(this.painter.transform.zoom);
-            if (isHidden || layer.type !== 'line') continue;
+          const isHidden = layer.isHidden(this.painter.transform.zoom);
+          if (isHidden || layer.type !== 'line') continue;
 
-            // Check if layer has a zoom dependent "line-width" expression
-            const widthExpression = ((layer: any): LineStyleLayer).widthExpression();
-            if (!(widthExpression instanceof ZoomDependentExpression)) continue;
+          // Check if layer has a zoom dependent "line-width" expression
+          const widthExpression = ((layer: any): LineStyleLayer).widthExpression();
+          if (!(widthExpression instanceof ZoomDependentExpression)) continue;
 
-            // Mark sourceCache as cleared
-            clearSourceCaches[sourceCache.id] = true;
-            for (const proxy of this.proxyCoords) {
-                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
-                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-                if (!coords) continue;
+          // Mark sourceCache as cleared
+          clearSourceCaches[sourceCache.id] = true;
+          for (const proxy of this.proxyCoords) {
+              const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+              const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+              if (!coords) continue;
 
-                for (const coord of coords) {
-                    this._clearRenderCacheForTile(sourceCache.id, coord);
-                }
-            }
-        }
-    }
+              for (const coord of coords) {
+                  this._clearRenderCacheForTile(sourceCache.id, coord);
+              }
+          }
+      }
+  }
 
-    _clearRasterLayersFromRenderCache() {
-        let hasRasterSource = false;
-        for (const id in this._style._sourceCaches) {
-            if (this._style._sourceCaches[id]._source instanceof RasterTileSource) {
-                hasRasterSource = true;
-                break;
-            }
-        }
+  _clearRasterLayersFromRenderCache() {
+      let hasRasterSource = false;
+      for (const id in this._style._sourceCaches) {
+          if (this._style._sourceCaches[id]._source instanceof RasterTileSource) {
+              hasRasterSource = true;
+              break;
+          }
+      }
 
-        if (!hasRasterSource) return;
+      if (!hasRasterSource) return;
 
-        const clearSourceCaches = {};
-        for (let i = 0; i < this._style.order.length; ++i) {
-            const layer = this._style._layers[this._style.order[i]];
-            const sourceCache = this._style._getLayerSourceCache(layer);
-            if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
+      const clearSourceCaches = {};
+      for (let i = 0; i < this._style.order.length; ++i) {
+          const layer = this._style._layers[this._style.order[i]];
+          const sourceCache = this._style._getLayerSourceCache(layer);
+          if (!sourceCache || clearSourceCaches[sourceCache.id]) continue;
 
-            const isHidden = layer.isHidden(this.painter.transform.zoom);
-            if (isHidden || layer.type !== 'raster') continue;
+          const isHidden = layer.isHidden(this.painter.transform.zoom);
+          if (isHidden || layer.type !== 'raster') continue;
 
-            // Check if any raster tile is in a fading state
-            const fadeDuration = ((layer: any): RasterStyleLayer).paint.get('raster-fade-duration');
-            for (const proxy of this.proxyCoords) {
-                const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
-                const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
-                if (!coords) continue;
+          // Check if any raster tile is in a fading state
+          const fadeDuration = ((layer: any): RasterStyleLayer).paint.get('raster-fade-duration');
+          for (const proxy of this.proxyCoords) {
+              const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
+              const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+              if (!coords) continue;
 
               for (const coord of coords) {
                   const tile = sourceCache.getTile(coord);
@@ -1232,7 +1232,7 @@ export class Terrain
           return;
       }
 
-        this._clearRasterLayersFromRenderCache();
+      this._clearRasterLayersFromRenderCache();
 
       const coords = this.proxyCoords;
       const dirty = this._tilesDirty;

@@ -596,12 +596,12 @@ class HandlerManager {
           around = pinchAround;
       }
 
-        if ((zoomDelta || eventStarted("drag")) && around) {
-            this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
-            // Construct the tracking ellipsoid every time user changes the zoom or drag origin.
-            // Direction of the ray will define size of the shape and hence defining the available range of movement
-            this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
-        }
+      if ((zoomDelta || eventStarted("drag")) && around) {
+          this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
+          // Construct the tracking ellipsoid every time user changes the zoom or drag origin.
+          // Direction of the ray will define size of the shape and hence defining the available range of movement
+          this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);
+      }
 
       // All movement of the camera is done relative to the sea level
       tr.cameraElevationReference = "sea";

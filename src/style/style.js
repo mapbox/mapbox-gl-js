@@ -526,13 +526,13 @@ class Style
       return this._order;
   }
 
-    isLayerDraped(layer: StyleLayer): boolean {
-        if (!this.terrain) return false;
-        // $FlowFixMe[prop-missing]
-        // $FlowFixMe[incompatible-use]
-        if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped();
-        return drapedLayers[layer.type];
-    }
+  isLayerDraped(layer: StyleLayer): boolean {
+      if (!this.terrain) return false;
+      // $FlowFixMe[prop-missing]
+      // $FlowFixMe[incompatible-use]
+      if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped();
+      return drapedLayers[layer.type];
+  }
 
   _checkLoaded() {
       if (!this._loaded) {

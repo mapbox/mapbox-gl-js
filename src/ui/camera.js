@@ -836,10 +836,10 @@ class Camera
           return this._cameraForBounds(tr, p0, p1, bearing, pitch, options);
       }
 
-        return {center: tr.center, zoom, bearing, pitch};
-    }
+      return {center: tr.center, zoom, bearing, pitch};
+  }
 
-    /** @section {Querying features} */
+  /** @section {Querying features} */
 
   /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
@@ -874,12 +874,12 @@ class Camera
       return null;
   }
 
-    /** @section {Camera}
+  /** @section {Camera}
      * @method
      * @instance
      * @memberof Map */
 
-    /**
+  /**
      * Calculate the center of these two points in the viewport and use
      * the highest zoom level up to and including `Map#getMaxZoom()` that fits
      * the points in the viewport at the specified bearing.
