@@ -56,6 +56,7 @@ class Feature {
     toJSON(): QueryFeature {
         const json: QueryFeature = {
             type: 'Feature',
+            state: undefined,
             geometry: this.geometry,
             properties: this.properties
         };

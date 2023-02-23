@@ -133,6 +133,7 @@ class FullscreenControl {
           } else if (window.document.webkitCancelFullScreen) {
               (window.document: any).webkitCancelFullScreen();
           }
+      // $FlowFixMe[method-unbinding]
       } else if (this._container.requestFullscreen) {
           this._container.requestFullscreen();
       } else if ((this._container: any).webkitRequestFullscreen) {

@@ -75,8 +75,8 @@ import type {QueryResult} from '../data/feature_index.js';
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
 interface IControl {
-    onAdd(map: Map): HTMLElement;
-    onRemove(map: Map): void;
+    +onAdd: (map: Map) => HTMLElement;
+    +onRemove: (map: Map) => void;
 
     +getDefaultPosition?: () => ControlPosition;
     +_setLanguage?: (language: ?string | ?string[]) => void;
@@ -3337,7 +3337,7 @@ class Map
       webpSupported.testSupport(gl);
   }
 
-  _contextLost = (event: *) => {
+  _contextLost: (event: *) => void = (event: *) => {
       event.preventDefault();
       if (this._frame) {
           this._frame.cancel();
@@ -3346,14 +3346,14 @@ class Map
       this.fire(new Event('webglcontextlost', {originalEvent: event}));
   };
 
-  _contextRestored = (event: *) => {
+  _contextRestored: (event: *) => void = (event: *) => {
       this._setupPainter();
       this.resize();
       this._update();
       this.fire(new Event('webglcontextrestored', {originalEvent: event}));
   };
 
-  _onMapScroll = (event: *): ?boolean => {
+  _onMapScroll: (event: *) => ?boolean = (event: *) => {
       if (event.target !== this._container) return;
 
       // Revert any scroll which would move the canvas outside of the view
