@@ -251,8 +251,8 @@ export function deserialize(input: Serialized): mixed {
         const result = Object.create(klass.prototype);
 
         for (const key of Object.keys(input)) {
+            // $FlowFixMe[incompatible-type]
             if (key === '$name') continue;
-            // $FlowFixMe[class-object-subtyping]
             const value = (input: SerializedObject)[key];
             result[key] = deserialize(value);
         }

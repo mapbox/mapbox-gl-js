@@ -5,6 +5,7 @@ import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
 import type {HandlerResult} from '../handler_manager.js';
 import {isFullscreen} from '../../util/util.js';
+import assert from 'assert';
 
 class TwoTouchHandler {
 
@@ -140,6 +141,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
 const ROTATION_THRESHOLD = 25; // pixels along circumference of touch circle
 
 function getBearingDelta(a, b) {
+    if (!a) throw new Error('Point in `getBearingDelta` is undefined');
     return a.angleWith(b) * 180 / Math.PI;
 }
 

@@ -252,6 +252,7 @@ class ImageManager extends Evented {
             this.dirty = false;
         }
 
+        if (!this.atlasTexture) return; // Flow can't infer that atlasTexture is defined here
         this.atlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
