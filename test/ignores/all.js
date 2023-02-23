@@ -136,9 +136,6 @@ const skip = [
     "render-tests/symbol-visibility/visible",
     "render-tests/terrain/wireframe",
 
-    // model-layer tests still not ready
-    "render-tests/model-layer/default",
-
     // Unimplemented in -js:
     // https://mapbox.atlassian.net/browse/MAPS3D-697
     "render-tests/lighting-3d-mode/emissive-strength/circle-data-driven",
@@ -153,7 +150,10 @@ const skip = [
     "render-tests/lighting-3d-mode/shadow/fill-extrusion",
 
     // fill-extrusion-rounded-roof not implemented in -js
-    "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof"
+    "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
+
+    // model-layer tests still not ready
+    "render-tests/model-layer/default",
 ];
 
 export default {todo, skip};

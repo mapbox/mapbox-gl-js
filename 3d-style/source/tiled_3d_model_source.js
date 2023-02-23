@@ -17,7 +17,11 @@ class Tiled3DModelSource extends Evented implements Source {
     /**
      * @private
      */
-    constructor(id: string, specification: ModelSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {}
+    // eslint-disable-next-line no-unused-vars
+    constructor(id: string, specification: ModelSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+        super();
+        this.id = id;
+    }
 
     hasTransition(): boolean {
         return false;
@@ -25,8 +29,8 @@ class Tiled3DModelSource extends Evented implements Source {
     loaded(): boolean {
         return false;
     }
-
-     loadTile(tile: Tile, callback: Callback<void>) {}
+    // eslint-disable-next-line no-unused-vars
+    loadTile(tile: Tile, callback: Callback<void>) {}
 
     serialize(): Object {
         return {

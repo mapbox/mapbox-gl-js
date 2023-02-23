@@ -287,6 +287,14 @@ class Aabb {
 
         return 1;
     }
+
+    encapsulate(aabb: Aabb) {
+        for (let i = 0; i < 3; i++) {
+            this.min[i] = Math.min(this.min[i], aabb.min[i]);
+            this.max[i] = Math.max(this.max[i], aabb.max[i]);
+        }
+    }
+
 }
 export {
     Aabb,

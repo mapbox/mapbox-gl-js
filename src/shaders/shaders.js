@@ -69,6 +69,10 @@ import globeVert from './globe_raster.vertex.glsl';
 import atmosphereFrag from './atmosphere.fragment.glsl';
 import atmosphereVert from './atmosphere.vertex.glsl';
 
+// 3d-style related shaders
+import modelVert from '../../3d-style/shaders/model.vertex.glsl';
+import modelFrag from '../../3d-style/shaders/model.fragment.glsl';
+
 export let preludeTerrain = {};
 export let preludeFog = {};
 
@@ -156,7 +160,8 @@ export default {
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     globeRaster: compile(globeFrag, globeVert),
-    globeAtmosphere: compile(atmosphereFrag, atmosphereVert)
+    globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
+    model: compile(modelFrag, modelVert)
 };
 
 export function parseUsedPreprocessorDefines(source, defines) {

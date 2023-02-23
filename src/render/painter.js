@@ -49,7 +49,7 @@ import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
 
 // 3D-style related
-import model from '../../3d-style/render/draw_model.js';
+import model, {upload as modelUpload} from '../../3d-style/render/draw_model.js';
 
 const draw = {
     symbol,
@@ -65,6 +65,10 @@ const draw = {
     debug,
     custom,
     model
+};
+
+const upload = {
+    modelUpload
 };
 
 import type Transform from '../geo/transform.js';
@@ -530,6 +534,14 @@ class Painter {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
         }
 
+        // upload pass
+        for (const layerId of layerIds) {
+            const layer = this.style._layers[layerId];
+            if (layer.isHidden(this.transform.zoom)) continue;
+            const sourceCache = style._getLayerSourceCache(layer);
+            this.uploadLayer(this, layer, sourceCache);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -699,9 +711,20 @@ class Painter {
         }
     }
 
+    uploadLayer(painter: Painter, layer: StyleLayer, sourceCache?: SourceCache) {
+        this.gpuTimingStart(layer);
+        if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
+            (painter.terrain && layer.type === 'custom')) {
+            if (upload[`${layer.type}Upload`]) {
+                upload[`${layer.type}Upload`](painter, sourceCache);
+            }
+        }
+        this.gpuTimingEnd();
+    }
+
     renderLayer(painter: Painter, sourceCache?: SourceCache, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && !(coords && coords.length)) return;
+        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && !(coords && coords.length)) return;
         this.id = layer.id;
 
         this.gpuTimingStart(layer);

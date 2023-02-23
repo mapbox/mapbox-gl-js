@@ -1,6 +1,5 @@
 // @flow
 
-import styleSpec from '../../src/style-spec/reference/latest.js';
 import type {LightsSpecification} from '../../src/style-spec/types.js';
 import {Evented} from '../../src/util/evented.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated} from '../../src/style/properties.js';
