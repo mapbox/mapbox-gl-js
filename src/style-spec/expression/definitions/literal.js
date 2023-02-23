@@ -18,7 +18,7 @@ class Literal implements Expression {
         this.value = value;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): void | Literal {
+    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => void | Literal = (args, context) => {
         if (args.length !== 2)
             return context.error(`'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
 

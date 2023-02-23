@@ -47,7 +47,7 @@ class CompoundExpression implements Expression {
         return [this.name].concat(this.args.map(arg => arg.serialize()));
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
+    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression = (args, context) => {
         const op: string = (args[0]: any);
         const definition = CompoundExpression.definitions[op];
         if (!definition) {

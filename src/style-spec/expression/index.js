@@ -78,7 +78,7 @@ export class StyleExpression {
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData): any {
+    evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => any = (globals, feature, featureState, canonical, availableImages, formattedSection, featureTileCoord, featureDistanceData) => {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;
@@ -154,7 +154,7 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any = (globals, feature, featureState, canonical, availableImages, formattedSection) => {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 }
@@ -175,15 +175,15 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         this.interpolationType = interpolationType;
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluateWithoutErrorHandling: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any = (globals, feature, featureState, canonical, availableImages, formattedSection) => {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
+    evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any = (globals, feature, featureState, canonical, availableImages, formattedSection) => {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
 
-    interpolationFactor(input: number, lower: number, upper: number): number {
+    interpolationFactor: (input: number, lower: number, upper: number) => number = (input, lower, upper) => {
         if (this.interpolationType) {
             return Interpolate.interpolationFactor(this.interpolationType, input, lower, upper);
         } else {

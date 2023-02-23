@@ -68,18 +68,18 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
-    queryRadius(bucket: Bucket): number {
+    queryRadius: (bucket: Bucket) => number = (bucket) => {
         return getMaximumPaintValue('heatmap-radius', this, ((bucket: any): CircleBucket<*>));
     }
 
-    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
                            pixelPosMatrix: Float32Array,
-                           elevationHelper: ?DEMSampler): boolean {
+                           elevationHelper: ?DEMSampler) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
 
         const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
         return queryIntersectsCircle(

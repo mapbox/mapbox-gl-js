@@ -19,7 +19,7 @@ class Length implements Expression {
         this.input = input;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Length {
+    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Length = (args, context) => {
         if (args.length !== 2)
             return context.error(`Expected 1 argument, but found ${args.length - 1} instead.`);
 

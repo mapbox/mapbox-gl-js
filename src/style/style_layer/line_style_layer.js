@@ -96,7 +96,7 @@ class LineStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
-    queryRadius(bucket: Bucket): number {
+    queryRadius: (bucket: Bucket) => number = (bucket) => {
         const lineBucket: LineBucket = (bucket: any);
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, lineBucket),
@@ -105,12 +105,12 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
-                           transform: Transform): boolean {
+                           transform: Transform) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
         if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
         const translatedPolygon = translate(queryGeometry.tilespaceGeometry,

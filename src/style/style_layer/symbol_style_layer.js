@@ -110,11 +110,11 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    queryRadius(): number {
+    queryRadius: () => number = () => {
         return 0;
     }
 
-    queryIntersectsFeature(): boolean {
+    queryIntersectsFeature: () => boolean = () => {
         assert(false); // Should take a different path in FeatureIndex
         return false;
     }
