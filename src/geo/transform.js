@@ -35,7 +35,8 @@ import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
 
 const NUM_WORLD_COPIES = 3;
-const DEFAULT_MIN_ZOOM = 0;
+export const DEFAULT_MIN_ZOOM = 0;
+export const DEFAULT_MAX_ZOOM = 25.5;
 
 type RayIntersectionResult = { p0: Vec4, p1: Vec4, t: number};
 type ElevationReference = "sea" | "ground";

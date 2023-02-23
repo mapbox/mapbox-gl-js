@@ -125,7 +125,7 @@
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks start-server",
     "start-release": "run-s build-token build-prod-min build-css print-release-url start-server",
-    "lint": "eslint --cache --ignore-path .gitignore src test bench debug/*.html",
+    "lint": "eslint --cache --ignore-path .gitignore src test bench 3d-style debug/*.html",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s test-render test-query test-expressions",
