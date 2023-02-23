@@ -34,7 +34,7 @@ class Uniform1i extends Uniform<number> {
         this.current = 0;
     }
 
-    set(program: WebGLProgram, name: string, v: number): void {
+    set: (program: WebGLProgram, name: string, v: number) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
             this.current = v;
@@ -49,7 +49,7 @@ class Uniform1f extends Uniform<number> {
         this.current = 0;
     }
 
-    set(program: WebGLProgram, name: string, v: number): void {
+    set: (program: WebGLProgram, name: string, v: number) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
             this.current = v;
@@ -64,7 +64,7 @@ class Uniform2f extends Uniform<[number, number]> {
         this.current = [0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number]): void {
+    set: (program: WebGLProgram, name: string, v: [number, number]) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1]) {
             this.current = v;
@@ -79,7 +79,7 @@ class Uniform3f extends Uniform<[number, number, number]> {
         this.current = [0, 0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number, number]): void {
+    set: (program: WebGLProgram, name: string, v: [number, number, number]) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] || v[2] !== this.current[2]) {
             this.current = v;
@@ -94,7 +94,7 @@ class Uniform4f extends Uniform<[number, number, number, number]> {
         this.current = [0, 0, 0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number, number, number]): void {
+    set: (program: WebGLProgram, name: string, v: [number, number, number, number]) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
             v[2] !== this.current[2] || v[3] !== this.current[3]) {
@@ -110,7 +110,7 @@ class UniformColor extends Uniform<Color> {
         this.current = Color.transparent;
     }
 
-    set(program: WebGLProgram, name: string, v: Color): void {
+    set: (program: WebGLProgram, name: string, v: Color) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v.r !== this.current.r || v.g !== this.current.g ||
             v.b !== this.current.b || v.a !== this.current.a) {
@@ -127,7 +127,7 @@ class UniformMatrix4f extends Uniform<Float32Array> {
         this.current = emptyMat4;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    set: (program: WebGLProgram, name: string, v: Float32Array) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         // The vast majority of matrix comparisons that will trip this set
         // happen at i=12 or i=0, so we check those first to avoid lots of
@@ -154,7 +154,7 @@ class UniformMatrix3f extends Uniform<Float32Array> {
         this.current = emptyMat3;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    set: (program: WebGLProgram, name: string, v: Float32Array) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 9; i++) {
             if (v[i] !== this.current[i]) {
@@ -173,7 +173,7 @@ class UniformMatrix2f extends Uniform<Float32Array> {
         this.current = emptyMat2;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    set: (program: WebGLProgram, name: string, v: Float32Array) => void = (program, name, v) => {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 4; i++) {
             if (v[i] !== this.current[i]) {
