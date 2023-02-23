@@ -14,7 +14,7 @@ export const WorkerPerformanceUtils = {
 
     getPerformanceMetricsAsync(callback: (error: ?Error, result: ?Object) => void) {
         const metrics = PerformanceUtils.getPerformanceMetrics();
-        const dispatcher = new Dispatcher(getWorkerPool(), this);
+        const dispatcher = new Dispatcher(getWorkerPool(), WorkerPerformanceUtils);
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;
 
