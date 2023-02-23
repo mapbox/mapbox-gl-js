@@ -111,22 +111,22 @@ class LineStyleLayer extends StyleLayer {
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
-        if (queryGeometry.queryGeometry.isAboveHorizon) return false;
+                               if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
-        const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
+                               const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
             this.paint.get('line-translate'),
             this.paint.get('line-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
-        const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
+                               const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
             this.paint.get('line-width').evaluate(feature, featureState),
             this.paint.get('line-gap-width').evaluate(feature, featureState));
-        const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
-        if (lineOffset) {
-            geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
-        }
+                               const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
+                               if (lineOffset) {
+                                   geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
+                               }
 
-        return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
-    }
+                               return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
+                           }
 
     isTileClipped(): boolean {
         return true;

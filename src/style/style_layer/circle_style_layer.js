@@ -56,18 +56,18 @@ class CircleStyleLayer extends StyleLayer {
                            pixelPosMatrix: Float32Array,
                            elevationHelper: ?DEMSampler) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
 
-        const translation = tilespaceTranslate(
+                               const translation = tilespaceTranslate(
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
 
-        const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
+                               const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);
 
-        return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
+                               return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
             this.paint.get('circle-pitch-alignment') === 'map',
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
-    }
+                           }
 
     getProgramIds(): Array<string> {
         return ['circle'];

@@ -81,11 +81,11 @@ class HeatmapStyleLayer extends StyleLayer {
                            pixelPosMatrix: Float32Array,
                            elevationHelper: ?DEMSampler) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
 
-        const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
-        return queryIntersectsCircle(
+                               const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
+                               return queryIntersectsCircle(
             queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
             true, true, new Point(0, 0), size);
-    }
+                           }
 
     hasOffscreenPass(): boolean {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';

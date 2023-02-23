@@ -73,47 +73,47 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            elevationHelper: ?DEMSampler,
                            layoutVertexArrayOffset: number) => boolean | number = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset) => {
 
-        const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
+                               const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
                                 this.paint.get('fill-extrusion-translate-anchor'),
                                 transform.angle,
                                 queryGeometry.pixelToTileUnitsFactor);
-        const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
-        const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
+                               const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
+                               const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
-        const centroid = [0, 0];
-        const terrainVisible = elevationHelper && transform.elevation;
-        const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
-        const bucket = queryGeometry.tile.getBucket(this);
-        if (terrainVisible && bucket instanceof FillExtrusionBucket) {
-            const centroidVertexArray = bucket.centroidVertexArray;
+                               const centroid = [0, 0];
+                               const terrainVisible = elevationHelper && transform.elevation;
+                               const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
+                               const bucket = queryGeometry.tile.getBucket(this);
+                               if (terrainVisible && bucket instanceof FillExtrusionBucket) {
+                                   const centroidVertexArray = bucket.centroidVertexArray;
 
-            // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
-            const centroidOffset = layoutVertexArrayOffset + 1;
-            if (centroidOffset < centroidVertexArray.length) {
-                centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
-                centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
-            }
-        }
+                                   // See FillExtrusionBucket#encodeCentroid(), centroid is inserted at vertexOffset + 1
+                                   const centroidOffset = layoutVertexArrayOffset + 1;
+                                   if (centroidOffset < centroidVertexArray.length) {
+                                       centroid[0] = centroidVertexArray.geta_centroid_pos0(centroidOffset);
+                                       centroid[1] = centroidVertexArray.geta_centroid_pos1(centroidOffset);
+                                   }
+                               }
 
-        // Early exit if fill extrusion is still hidden while waiting for backfill
-        const isHidden = centroid[0] === 0 && centroid[1] === 1;
-        if (isHidden) return false;
+                               // Early exit if fill extrusion is still hidden while waiting for backfill
+                               const isHidden = centroid[0] === 0 && centroid[1] === 1;
+                               if (isHidden) return false;
 
-        if (transform.projection.name === 'globe') {
-            // Fill extrusion geometry has to be resampled so that large planar polygons
-            // can be rendered on the curved surface
-            const bounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
-            const resampledGeometry = resampleFillExtrusionPolygonsForGlobe([geometry], bounds, queryGeometry.tileID.canonical);
-            geometry = resampledGeometry.map(clipped => clipped.polygon).flat();
-        }
+                               if (transform.projection.name === 'globe') {
+                                   // Fill extrusion geometry has to be resampled so that large planar polygons
+                                   // can be rendered on the curved surface
+                                   const bounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
+                                   const resampledGeometry = resampleFillExtrusionPolygonsForGlobe([geometry], bounds, queryGeometry.tileID.canonical);
+                                   geometry = resampledGeometry.map(clipped => clipped.polygon).flat();
+                               }
 
-        const demSampler = terrainVisible ? elevationHelper : null;
-        const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
+                               const demSampler = terrainVisible ? elevationHelper : null;
+                               const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
 
-        const screenQuery = queryGeometry.queryGeometry;
-        const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
-        return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
-    }
+                               const screenQuery = queryGeometry.queryGeometry;
+                               const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
+                               return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
+                           }
 }
 
 function dot(a, b) {
