@@ -128,7 +128,7 @@ class Actor {
               // in our queue, postMessage preempts this and <cancel> messages can be processed.
               // We're using a MessageChannel object to get throttle the process() flow to one at a time.
               const callback = this.callbacks[id];
-              const metadata = callback && callback.metadata || {type: "message"};
+              const metadata = (callback && callback.metadata) || {type: "message"};
               this.cancelCallbacks[id] = this.scheduler.add(
           () => this.processTask(id, data),
           metadata,
