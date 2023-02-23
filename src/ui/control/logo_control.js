@@ -23,7 +23,7 @@ class LogoControl {
       bindAll(['_updateLogo', '_updateCompact'], this);
   }
 
-  onAdd(map: Map): HTMLElement {
+  onAdd: (map: Map) => HTMLElement = (map) => {
       this._map = map;
       this._container = DOM.create('div', 'mapboxgl-ctrl');
       const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
@@ -47,13 +47,13 @@ class LogoControl {
       return this._container;
   }
 
-  onRemove() {
+  onRemove: () => void = () => {
       this._container.remove();
       this._map.off('sourcedata', this._updateLogo);
       this._map.off('resize', this._updateCompact);
   }
 
-  getDefaultPosition(): ControlPosition {
+  getDefaultPosition: () => ControlPosition = () => {
       return 'bottom-left';
   }
 

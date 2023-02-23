@@ -46,11 +46,11 @@ class AttributionControl {
       );
   }
 
-  getDefaultPosition(): ControlPosition {
+  getDefaultPosition: () => ControlPosition = () => {
       return 'bottom-right';
   }
 
-  onAdd(map: Map): HTMLElement {
+  onAdd: (map: Map) => HTMLElement = (map) => {
       const compact = this.options && this.options.compact;
 
       this._map = map;
@@ -93,7 +93,7 @@ class AttributionControl {
       return this._container;
   }
 
-  onRemove() {
+  onRemove: () => void = () => {
       this._container.remove();
 
       this._map.off('styledata', this._updateData);
