@@ -457,15 +457,18 @@ class Style
 
       if (
           source.type === 'geojson' ||
-        source.vectorLayerIds &&
-          source.vectorLayerIds.indexOf(sourceLayer) === -1
+          (
+              source.vectorLayerIds &&
+              source.vectorLayerIds.indexOf(sourceLayer) === -1
+          )
       ) {
           this.fire(
-        new ErrorEvent(
-          new Error(
-            `Source layer "${sourceLayer}" ` + `does not exist on source "${source.id}" ` + `as specified by style layer "${layer.id}"`,
-          ),
-        ),
+            new ErrorEvent(new Error(
+                `Source layer "${sourceLayer}" ` +
+                `does not exist on source "${source.id}" ` +
+                `as specified by style layer "${layer.id}"`,
+            ),
+            ),
           );
       }
   }
@@ -1790,13 +1793,9 @@ class Style
       }
 
       // Enabling
-      if (
-          !this.terrain ||
-        this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode
-      ) {
+      if (!this.terrain || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
           this._createTerrain(terrainOptions, drapeRenderMode);
-      } else {
-      // Updating
+      } else { // Updating
           const terrain = this.terrain;
           const currSpec = terrain.get();
 
@@ -2078,21 +2077,19 @@ class Style
 
       if (
           forceFullPlacement || !this.pauseablePlacement ||
-        this.pauseablePlacement.isDone() &&
-          !this.placement.stillRecent(browser.now(), transform.zoom)
+          (this.pauseablePlacement.isDone() &&
+          !this.placement.stillRecent(browser.now(), transform.zoom))
       ) {
-          const fogState = this.fog && transform.projection.supportsFog ?
-              this.fog.state :
-              null;
+          const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
           this.pauseablePlacement = new PauseablePlacement(
-        transform,
-        this._order,
-        forceFullPlacement,
-        showCollisionBoxes,
-        fadeDuration,
-        crossSourceCollisions,
-        this.placement,
-        fogState,
+              transform,
+              this._order,
+              forceFullPlacement,
+              showCollisionBoxes,
+              fadeDuration,
+              crossSourceCollisions,
+              this.placement,
+              fogState
           );
           this._layerOrderChanged = false;
       }
@@ -2104,11 +2101,7 @@ class Style
       // render frame
           this.placement.setStale();
       } else {
-          this.pauseablePlacement.continuePlacement(
-        this._order,
-        this._layers,
-        layerTiles,
-          );
+          this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
           if (this.pauseablePlacement.isDone()) {
               this.placement = this.pauseablePlacement.commit(browser.now());
@@ -2127,10 +2120,7 @@ class Style
           for (const layerID of this._order) {
               const styleLayer = this._layers[layerID];
               if (styleLayer.type !== 'symbol') continue;
-              this.placement.updateLayerOpacities(
-          styleLayer,
-          layerTiles[styleLayer.source],
-              );
+              this.placement.updateLayerOpacities(styleLayer, layerTiles[styleLayer.source]);
           }
       }
 
@@ -2183,18 +2173,7 @@ class Style
       setDependencies(this._symbolSourceCaches[params.source]);
   }
 
-  getGlyphs(
-    mapId: string,
-    params: { stacks: { [_: string]: Array<number> } },
-    callback: Callback<
-      {
-        [_: string]: {
-          glyphs: { [_: number]: ?StyleGlyph },
-          ascender?: number,
-          descender?: number,
-        },
-      }, >,
-  ) {
+  getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
       this.glyphManager.getGlyphs(params.stacks, callback);
   }
 

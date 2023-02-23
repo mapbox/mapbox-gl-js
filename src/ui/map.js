@@ -625,8 +625,7 @@ class Map
           this.setProjection(options.projection);
       }
 
-      const hashName = typeof options.hash === 'string' && options.hash ||
-      undefined;
+      const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
       this._hash = options.hash && new Hash(hashName).addTo(this);
       // don't set position from options if set through hash
       if (!this._hash || !this._hash._onHashChange()) {
@@ -1438,7 +1437,7 @@ class Map
      * const isMoving = map.isMoving();
      */
   isMoving(): boolean {
-      return this._moving || this.handlers && this.handlers.isMoving() || false;
+      return this._moving || (this.handlers && this.handlers.isMoving()) || false;
   }
 
   /**
@@ -1449,7 +1448,7 @@ class Map
      * const isZooming = map.isZooming();
      */
   isZooming(): boolean {
-      return this._zooming || this.handlers && this.handlers.isZooming() || false;
+      return this._zooming || (this.handlers && this.handlers.isZooming()) || false;
   }
 
   /**
@@ -1460,13 +1459,11 @@ class Map
      * map.isRotating();
      */
   isRotating(): boolean {
-      return (
-          this._rotating || this.handlers && this.handlers.isRotating() || false
-      );
+      return this._rotating || (this.handlers && this.handlers.isRotating()) || false;
   }
 
   _isDragging(): boolean {
-      return this.handlers && this.handlers._isDragging() || false;
+      return (this.handlers && this.handlers._isDragging()) || false;
   }
 
   _createDelegatedListener(
@@ -2348,49 +2345,28 @@ class Map
       this._lazyInitEmptyStyle();
       const version = 0;
 
-      if (
-          image instanceof window.HTMLImageElement ||
-        window.ImageBitmap && image instanceof window.ImageBitmap
-      ) {
+      if (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) {
           const {width, height, data} = browser.getImageData(image);
-          this.style.addImage(
-        id,
-        {
-            data: new RGBAImage({width, height}, data),
-            pixelRatio,
-            stretchX,
-            stretchY,
-            content,
-            sdf,
-            version,
-        },
-          );
+          this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
       } else if (image.width === undefined || image.height === undefined) {
-          this.fire(
-        new ErrorEvent(
-          new Error(
-            'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' + 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`',
-          ),
-        ),
-          );
+          this.fire(new ErrorEvent(new Error(
+              'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
+              'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
       } else {
           const {width, height} = image;
           const userImage = ((image: any): StyleImageInterface);
           const data = userImage.data;
 
-          this.style.addImage(
-        id,
-        {
-            data: new RGBAImage({width, height}, new Uint8Array(data)),
-            pixelRatio,
-            stretchX,
-            stretchY,
-            content,
-            sdf,
-            version,
-            userImage,
-        },
-          );
+          this.style.addImage(id, {
+              data: new RGBAImage({width, height}, new Uint8Array(data)),
+              pixelRatio,
+              stretchX,
+              stretchY,
+              content,
+              sdf,
+              version,
+              userImage
+          });
 
           if (userImage.onAdd) {
               userImage.onAdd(this, id);
@@ -2439,42 +2415,28 @@ class Map
           );
           return;
       }
-      const imageData = image instanceof window.HTMLImageElement ||
-      window.ImageBitmap && image instanceof window.ImageBitmap ?
-          browser.getImageData(image) :
-          image;
+      const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
+
       const {width, height} = imageData;
       // Flow can't refine the type enough to exclude ImageBitmap
       const data = ((imageData: any).data: Uint8Array | Uint8ClampedArray);
 
       if (width === undefined || height === undefined) {
-          this.fire(
-        new ErrorEvent(
-          new Error(
-            'Invalid arguments to map.updateImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' + 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`',
-          ),
-        ),
-          );
+          this.fire(new ErrorEvent(new Error(
+              'Invalid arguments to map.updateImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
+              'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
           return;
       }
 
-      if (
-          width !== existingImage.data.width || height !== existingImage.data.height
-      ) {
-          this.fire(
-        new ErrorEvent(
-          new Error(
-            `The width and height of the updated image (${width}, ${height})
+      if (width !== existingImage.data.width || height !== existingImage.data.height) {
+          this.fire(new ErrorEvent(new Error(
+              `The width and height of the updated image (${width}, ${height})
                 must be that same as the previous version of the image
-                (${existingImage.data.width}, ${existingImage.data.height})`,
-          ),
-        ),
-          );
+                (${existingImage.data.width}, ${existingImage.data.height})`)));
           return;
       }
 
-      const copy = !(image instanceof window.HTMLImageElement ||
-      window.ImageBitmap && image instanceof window.ImageBitmap);
+      const copy = !(image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap));
       existingImage.data.replace(data, copy);
 
       this.style.updateImage(id, existingImage);
@@ -3200,13 +3162,12 @@ class Map
   }
 
   _detectMissingCSS(): void {
-      const computedColor = window.getComputedStyle(this._missingCSSCanary).getPropertyValue(
-      'background-color',
-      );
+      const computedColor = window.getComputedStyle(this._missingCSSCanary).getPropertyValue('background-color');
       if (computedColor !== 'rgb(250, 128, 114)') {
-          warnOnce(
-        'This page appears to be missing CSS declarations for ' + 'Mapbox GL JS, which may cause the map to display incorrectly. ' + 'Please ensure your page includes mapbox-gl.css, as described ' + 'in https://www.mapbox.com/mapbox-gl-js/api/.',
-          );
+          warnOnce('This page appears to be missing CSS declarations for ' +
+              'Mapbox GL JS, which may cause the map to display incorrectly. ' +
+              'Please ensure your page includes mapbox-gl.css, as described ' +
+              'in https://www.mapbox.com/mapbox-gl-js/api/.');
       }
   }
 
@@ -3423,7 +3384,7 @@ class Map
   _requestDomTask(callback: () => void) {
       // This condition means that the map is idle: the callback needs to be called right now as
       // there won't be a triggered render to run the queue.
-      if (!this.loaded() || this.loaded() && !this.isMoving()) {
+      if (!this.loaded() || (this.loaded() && !this.isMoving())) {
           callback();
       } else {
           this._domRenderTaskQueue.add(callback);

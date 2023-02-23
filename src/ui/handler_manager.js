@@ -155,20 +155,11 @@ class HandlerManager {
   _updatingCamera: boolean;
   _changes: Array<[HandlerResult, Object, any]>;
   _previousActiveHandlers: { [string]: Handler };
-  _listeners: Array<
-    [HTMLElement, string, void | EventListenerOptionsOrUseCapture], >;
+  _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
   _trackingEllipsoid: TrackingEllipsoid;
   _dragOrigin: ?Vec3;
 
-  constructor(
-    map: Map,
-    options: {
-      interactive: boolean,
-      pitchWithRotate: boolean,
-      clickTolerance: number,
-      bearingSnap: number,
-    },
-  ) {
+  constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
       this._map = map;
       this._el = this._map.getCanvasContainer();
       this._handlers = [];
@@ -226,7 +217,7 @@ class HandlerManager {
           [el, 'wheel', {passive: false}],
           [el, 'contextmenu', undefined],
 
-          [window, 'blur', undefined],
+          [window, 'blur', undefined]
       ];
 
       for (const [target, type, listenerOptions] of this._listeners) {
@@ -246,13 +237,7 @@ class HandlerManager {
       }
   }
 
-  _addDefaultHandlers(
-    options: {
-      interactive: boolean,
-      pitchWithRotate: boolean,
-      clickTolerance: number,
-    },
-  ) {
+  _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
       const map = this._map;
       const el = map.getCanvasContainer();
       this._add('mapEvent', new MapEventHandler(map, options));
@@ -286,12 +271,7 @@ class HandlerManager {
 
       const touchRotate = new TouchRotateHandler();
       const touchZoom = new TouchZoomHandler();
-      map.touchZoomRotate = new TouchZoomRotateHandler(
-      el,
-      touchZoom,
-      touchRotate,
-      tapDragZoom,
-      );
+      map.touchZoomRotate = new TouchZoomRotateHandler(el, touchZoom, touchRotate, tapDragZoom);
       this._add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
       this._add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
 
