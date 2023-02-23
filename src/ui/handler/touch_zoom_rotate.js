@@ -27,7 +27,7 @@ class TwoTouchHandler {
     _start(points: [Point, Point]) {} //eslint-disable-line
     _move(points: [Point, Point], pinchAround: ?Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
 
-    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchstart: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
         //log('touchstart', points, e.target.innerHTML, e.targetTouches.length ? e.targetTouches[0].target.innerHTML: undefined);
         if (this._firstTwoTouches || mapTouches.length < 2) return;
@@ -41,7 +41,7 @@ class TwoTouchHandler {
         this._start([points[0], points[1]]);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
+    touchmove: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
         const firstTouches = this._firstTwoTouches;
         if (!firstTouches) return;
 
@@ -58,7 +58,7 @@ class TwoTouchHandler {
 
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         if (!this._firstTwoTouches) return;
 
         const [idA, idB] = this._firstTwoTouches;
@@ -71,7 +71,7 @@ class TwoTouchHandler {
         this.reset();
     }
 
-    touchcancel() {
+    touchcancel: () => void = () => {
         this.reset();
     }
 
