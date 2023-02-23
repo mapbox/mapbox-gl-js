@@ -51,7 +51,7 @@ class MouseHandler {
         return {}; // implemented by child
     }
 
-    mousedown: (e: MouseEvent, point: Point) => void = (e, point) => {
+    mousedown(e: MouseEvent, point: Point) {
         if (this._lastPoint) return;
 
         const eventButton = DOM.mouseButton(e);
@@ -113,7 +113,7 @@ class MouseHandler {
 
 export class MousePanHandler extends MouseHandler {
 
-    mousedown: (e: MouseEvent, point: Point) => void = (e, point) => {
+    mousedown(e: MouseEvent, point: Point) {
         super.mousedown(e, point);
         if (this._lastPoint) this._active = true;
     }

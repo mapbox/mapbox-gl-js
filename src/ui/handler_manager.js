@@ -260,12 +260,15 @@ class HandlerManager {
       const mouseRotate = new MouseRotateHandler(options);
       const mousePitch = new MousePitchHandler(options);
       map.dragRotate = new DragRotateHandler(options, mouseRotate, mousePitch);
+      // $FlowFixMe[method-unbinding]
       this._add('mouseRotate', mouseRotate, ['mousePitch']);
+      // $FlowFixMe[method-unbinding]
       this._add('mousePitch', mousePitch, ['mouseRotate']);
 
       const mousePan = new MousePanHandler(options);
       const touchPan = new TouchPanHandler(map, options);
       map.dragPan = new DragPanHandler(el, mousePan, touchPan);
+      // $FlowFixMe[method-unbinding]
       this._add('mousePan', mousePan);
       this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
 
