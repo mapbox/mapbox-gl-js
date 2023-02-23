@@ -20,7 +20,7 @@ class In implements Expression {
         this.haystack = haystack;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?In {
+    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?In = (args, context) => {
         if (args.length !== 3) {
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
         }

@@ -45,7 +45,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
-    queryRadius(): number {
+    queryRadius: () => number = () => {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
@@ -63,7 +63,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
-    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
@@ -71,7 +71,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            transform: Transform,
                            pixelPosMatrix: Float32Array,
                            elevationHelper: ?DEMSampler,
-                           layoutVertexArrayOffset: number): boolean | number {
+                           layoutVertexArrayOffset: number) => boolean | number = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset) => {
 
         const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
                                 this.paint.get('fill-extrusion-translate-anchor'),

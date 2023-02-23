@@ -231,7 +231,7 @@ class CustomStyleLayer
       }
   };
 
-  onRemove(map: Map) {
+  onRemove: (map: Map) => void = (map: Map) => {
       if (this.implementation.onRemove) {
           this.implementation.onRemove(map, map.painter.context.gl);
       }

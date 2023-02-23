@@ -17,7 +17,7 @@ export default class ImageExpression implements Expression {
         this.input = input;
     }
 
-    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
+    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression = (args, context) => {
         if (args.length !== 2) {
             return context.error(`Expected two arguments.`);
         }

@@ -61,16 +61,16 @@ class FillStyleLayer extends StyleLayer {
         return new FillBucket(parameters);
     }
 
-    queryRadius(): number {
+    queryRadius: () => number = () => {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
-    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
-                           transform: Transform): boolean {
+                           transform: Transform) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
         if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
         const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
