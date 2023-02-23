@@ -116,7 +116,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         return neighboringTiles;
     }
 
-    unloadTile: (tile: Tile) => void = (tile) => {
+    unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile) => {
         if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
         if (tile.fbo) {
             tile.fbo.destroy();
