@@ -35,11 +35,11 @@ export default class TouchPanHandler {
         this._sum = new Point(0, 0);
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
+    touchstart: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
         return this._calculateTransform(e, points, mapTouches);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
+    touchmove: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
         if (!this._active || mapTouches.length < this._minTouches) return;
 
         // if cooperative gesture handling is set to true, require two fingers to touch pan
@@ -61,7 +61,7 @@ export default class TouchPanHandler {
         return this._calculateTransform(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         this._calculateTransform(e, points, mapTouches);
 
         if (this._active && mapTouches.length < this._minTouches) {
@@ -69,7 +69,7 @@ export default class TouchPanHandler {
         }
     }
 
-    touchcancel() {
+    touchcancel: () => void = () => {
         this.reset();
     }
 

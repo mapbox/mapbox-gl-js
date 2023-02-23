@@ -54,7 +54,7 @@ class KeyboardHandler {
         this._active = false;
     }
 
-    keydown(e: KeyboardEvent): ?HandlerResult {
+    keydown: (e: KeyboardEvent) => ?HandlerResult = (e) => {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;

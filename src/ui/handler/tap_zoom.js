@@ -32,17 +32,17 @@ export default class TapZoomHandler {
         this._zoomOut.reset();
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchstart: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         this._zoomIn.touchstart(e, points, mapTouches);
         this._zoomOut.touchstart(e, points, mapTouches);
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchmove: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         this._zoomIn.touchmove(e, points, mapTouches);
         this._zoomOut.touchmove(e, points, mapTouches);
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
+    touchend: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
         const zoomInPoint = this._zoomIn.touchend(e, points, mapTouches);
         const zoomOutPoint = this._zoomOut.touchend(e, points, mapTouches);
 
@@ -71,7 +71,7 @@ export default class TapZoomHandler {
         }
     }
 
-    touchcancel() {
+    touchcancel: () => void = () => {
         this.reset();
     }
 

@@ -31,7 +31,7 @@ export default class TapDragZoomHandler {
         this._tap.reset();
     }
 
-    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchstart: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         if (this._swipePoint) return;
 
         if (this._tapTime && e.timeStamp - this._tapTime > MAX_TAP_INTERVAL) {
@@ -47,7 +47,7 @@ export default class TapDragZoomHandler {
 
     }
 
-    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
+    touchmove: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
         if (!this._tapTime) {
             this._tap.touchmove(e, points, mapTouches);
         } else if (this._swipePoint) {
@@ -68,7 +68,7 @@ export default class TapDragZoomHandler {
         }
     }
 
-    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
+    touchend: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
         if (!this._tapTime) {
             const point = this._tap.touchend(e, points, mapTouches);
             if (point) {
@@ -81,7 +81,7 @@ export default class TapDragZoomHandler {
         }
     }
 
-    touchcancel() {
+    touchcancel: () => void = () => {
         this.reset();
     }
 

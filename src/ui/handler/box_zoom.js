@@ -82,7 +82,7 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
-    mousedown(e: MouseEvent, point: Point) {
+    mousedown: (e: MouseEvent, point: Point) => void = (e, point) => {
         if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
@@ -146,7 +146,7 @@ class BoxZoomHandler {
         }
     }
 
-    keydown(e: KeyboardEvent) {
+    keydown: (e: KeyboardEvent) => void = (e) => {
         if (!this._active) return;
 
         if (e.keyCode === 27) {

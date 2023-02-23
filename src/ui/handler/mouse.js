@@ -51,7 +51,7 @@ class MouseHandler {
         return {}; // implemented by child
     }
 
-    mousedown(e: MouseEvent, point: Point) {
+    mousedown: (e: MouseEvent, point: Point) => void = (e, point) => {
         if (this._lastPoint) return;
 
         const eventButton = DOM.mouseButton(e);
@@ -61,7 +61,7 @@ class MouseHandler {
         this._eventButton = eventButton;
     }
 
-    mousemoveWindow(e: MouseEvent, point: Point): ?HandlerResult {
+    mousemoveWindow: (e: MouseEvent, point: Point) => ?HandlerResult = (e, point) => {
         const lastPoint = this._lastPoint;
         if (!lastPoint) return;
         e.preventDefault();
@@ -85,7 +85,7 @@ class MouseHandler {
         return this._move(lastPoint, point);
     }
 
-    mouseupWindow(e: MouseEvent) {
+    mouseupWindow: (e: MouseEvent) => void = (e) => {
         if (!this._lastPoint) return;
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
@@ -113,7 +113,7 @@ class MouseHandler {
 
 export class MousePanHandler extends MouseHandler {
 
-    mousedown(e: MouseEvent, point: Point) {
+    mousedown: (e: MouseEvent, point: Point) => void = (e, point) => {
         super.mousedown(e, point);
         if (this._lastPoint) this._active = true;
     }
@@ -143,7 +143,7 @@ export class MouseRotateHandler extends MouseHandler {
         }
     }
 
-    contextmenu(e: MouseEvent) {
+    contextmenu: (e: MouseEvent) => void = (e) => {
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();
@@ -164,7 +164,7 @@ export class MousePitchHandler extends MouseHandler {
         }
     }
 
-    contextmenu(e: MouseEvent) {
+    contextmenu: (e: MouseEvent) => void = (e) => {
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();
