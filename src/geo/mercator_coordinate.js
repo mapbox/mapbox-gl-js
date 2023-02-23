@@ -94,7 +94,7 @@ class MercatorCoordinate {
      * const coord = mapboxgl.MercatorCoordinate.fromLngLat({lng: 0, lat: 0}, 0);
      * console.log(coord); // MercatorCoordinate(0.5, 0.5, 0)
      */
-    static fromLngLat(lngLatLike: LngLatLike, altitude: number = 0): MercatorCoordinate {
+    static fromLngLat: (lngLatLike: LngLatLike, altitude?: number) => MercatorCoordinate = (lngLatLike, altitude = 0) => {
         const lngLat = LngLat.convert(lngLatLike);
 
         return new MercatorCoordinate(

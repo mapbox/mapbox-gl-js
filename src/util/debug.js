@@ -47,24 +47,24 @@ export const Debug: {
     aabbCorners: [],
 
     _initializeCanvas(tr: Transform) {
-        if (!this.debugCanvas) {
-            this.debugCanvas = window.document.createElement('canvas');
-            window.document.body.appendChild(this.debugCanvas);
-            this.debugCanvas.style.position = 'absolute';
-            this.debugCanvas.style.left = 0;
-            this.debugCanvas.style.top = 0;
-            this.debugCanvas.style.pointerEvents = 'none';
+        if (!Debug.debugCanvas) {
+            Debug.debugCanvas = window.document.createElement('canvas');
+            window.document.body.appendChild(Debug.debugCanvas);
+            Debug.debugCanvas.style.position = 'absolute';
+            Debug.debugCanvas.style.left = 0;
+            Debug.debugCanvas.style.top = 0;
+            Debug.debugCanvas.style.pointerEvents = 'none';
 
             const resize = () => {
-                if (!this.debugCanvas) { return; }
-                this.debugCanvas.width = tr.width;
-                this.debugCanvas.height = tr.height;
+                if (!Debug.debugCanvas) { return; }
+                Debug.debugCanvas.width = tr.width;
+                Debug.debugCanvas.height = tr.height;
             };
             resize();
 
             window.addEventListener("resize", resize);
         }
-        return this.debugCanvas;
+        return Debug.debugCanvas;
     },
 
     _drawLine(ctx: CanvasRenderingContext2D, start: ?Vec2, end: ?Vec2) {
@@ -74,21 +74,21 @@ export const Debug: {
     },
 
     _drawQuad(ctx: CanvasRenderingContext2D, corners: Array<?Vec2>) {
-        this._drawLine(ctx, corners[0], corners[1]);
-        this._drawLine(ctx, corners[1], corners[2]);
-        this._drawLine(ctx, corners[2], corners[3]);
-        this._drawLine(ctx, corners[3], corners[0]);
+        Debug._drawLine(ctx, corners[0], corners[1]);
+        Debug._drawLine(ctx, corners[1], corners[2]);
+        Debug._drawLine(ctx, corners[2], corners[3]);
+        Debug._drawLine(ctx, corners[3], corners[0]);
     },
 
     _drawBox(ctx: CanvasRenderingContext2D, corners: Array<?Vec3>) {
         assert(corners.length === 8, `AABB needs 8 corners, found ${corners.length}`);
         ctx.beginPath();
-        this._drawQuad(ctx, corners.slice(0, 4));
-        this._drawQuad(ctx, corners.slice(4));
-        this._drawLine(ctx, corners[0], corners[4]);
-        this._drawLine(ctx, corners[1], corners[5]);
-        this._drawLine(ctx, corners[2], corners[6]);
-        this._drawLine(ctx, corners[3], corners[7]);
+        Debug._drawQuad(ctx, corners.slice(0, 4));
+        Debug._drawQuad(ctx, corners.slice(4));
+        Debug._drawLine(ctx, corners[0], corners[4]);
+        Debug._drawLine(ctx, corners[1], corners[5]);
+        Debug._drawLine(ctx, corners[2], corners[6]);
+        Debug._drawLine(ctx, corners[3], corners[7]);
         ctx.stroke();
     },
 
@@ -100,7 +100,7 @@ export const Debug: {
         const ecefToCameraMatrix = mat4.multiply([],  tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
 
         if (!tr.freezeTileCoverage) {
-            this.aabbCorners = coords.map(coord => {
+            Debug.aabbCorners = coords.map(coord => {
                 // Get tile AABBs in world/pixel space scaled by worldSize
                 const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical);
                 const corners = aabb.getCorners();
@@ -113,17 +113,17 @@ export const Debug: {
             });
         }
 
-        const canvas = this._initializeCanvas(tr);
+        const canvas = Debug._initializeCanvas(tr);
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const tileCount = this.aabbCorners.length;
+        const tileCount = Debug.aabbCorners.length;
         ctx.shadowColor = '#000';
         ctx.shadowBlur = 2;
         ctx.lineWidth = 1.5;
 
         for (let i = 0; i <  tileCount; i++) {
-            const pixelCorners = this.aabbCorners[i].map(ecef => {
+            const pixelCorners = Debug.aabbCorners[i].map(ecef => {
                 // Clipping to prevent visual artifacts.
                 // We don't draw any lines if one of their points is behind the camera.
                 // This means that AABBs close to the camera may appear to be missing.
@@ -134,14 +134,14 @@ export const Debug: {
                 return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
-            this._drawBox(ctx, pixelCorners);
+            Debug._drawBox(ctx, pixelCorners);
         }
     },
 
     clearAabbs() {
-        if (!this.debugCanvas) { return; }
-        this.debugCanvas.getContext('2d').clearRect(0, 0, this.debugCanvas.width, this.debugCanvas.height);
-        this.aabbCorners = [];
+        if (!Debug.debugCanvas) { return; }
+        Debug.debugCanvas.getContext('2d').clearRect(0, 0, Debug.debugCanvas.width, Debug.debugCanvas.height);
+        Debug.aabbCorners = [];
     }
 
 };
