@@ -228,12 +228,12 @@ class ImageSource extends Evented implements Source {
         }
     }
 
-    onAdd(map: Map) {
+    onAdd: (map: Map) => void = (map) => {
         this.map = map;
         this.load();
     }
 
-    onRemove() {
+    onRemove: () => void = () => {
         if (this._imageRequest) {
             this._imageRequest.cancel();
             this._imageRequest = null;
@@ -293,7 +293,7 @@ class ImageSource extends Evented implements Source {
         return this;
     }
 
-    _clear() {
+    _clear: () => void = () => {
         this._boundsArray = undefined;
     }
 
@@ -332,7 +332,7 @@ class ImageSource extends Evented implements Source {
         this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
-    prepare() {
+    prepare: () => void = () => {
         if (Object.keys(this.tiles).length === 0 || !this.image) return;
 
         const context = this.map.painter.context;

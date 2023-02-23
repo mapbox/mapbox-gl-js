@@ -263,7 +263,7 @@ class CustomSource<T>
       return this._loaded;
   }
 
-  onAdd(map: Map): void {
+  onAdd: (map: Map) => void = (map) => {
       this._map = map;
       this._loaded = false;
       this.fire(new Event('dataloading', {dataType: 'source'}));
@@ -271,13 +271,13 @@ class CustomSource<T>
       this.load();
   }
 
-  onRemove(map: Map): void {
+  onRemove: (map: Map) => void = (map) => {
       if (this._implementation.onRemove) {
           this._implementation.onRemove(map);
       }
   }
 
-  hasTile(tileID: OverscaledTileID): boolean {
+  hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
       if (this._implementation.hasTile) {
           const {x, y, z} = tileID.canonical;
           return this._implementation.hasTile({x, y, z});
@@ -359,7 +359,7 @@ class CustomSource<T>
       RasterTileSource.unloadTileData(tile, this._map.painter);
   }
 
-  unloadTile(tile: Tile, callback: Callback<void>): void {
+  unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
       this.unloadTileData(tile);
       if (this._implementation.unloadTile) {
           const {x, y, z} = tile.tileID.canonical;
@@ -369,7 +369,7 @@ class CustomSource<T>
       callback();
   }
 
-  abortTile(tile: Tile, callback: Callback<void>): void {
+  abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
       if (tile.request && tile.request.cancel) {
           tile.request.cancel();
           delete tile.request;

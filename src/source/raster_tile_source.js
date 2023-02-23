@@ -113,7 +113,7 @@ class RasterTileSource extends Evented implements Source {
         return this._loaded;
     }
 
-    onAdd(map: Map) {
+    onAdd: (map: Map) => void = (map) => {
         this.map = map;
         this.load();
     }
@@ -124,7 +124,7 @@ class RasterTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
-    reload() {
+    reload: () => void = () => {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
     }
@@ -173,17 +173,17 @@ class RasterTileSource extends Evented implements Source {
         return this;
     }
 
-    onRemove() {
+    onRemove: () => void = () => {
         this.cancelTileJSONRequest();
-    }
+    };
 
     serialize(): RasterSourceSpecification | RasterDEMSourceSpecification {
         return extend({}, this._options);
     }
 
-    hasTile(tileID: OverscaledTileID): boolean {
+    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
-    }
+    };
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const use2x = browser.devicePixelRatio >= 2;
@@ -222,7 +222,7 @@ class RasterTileSource extends Evented implements Source {
         }
     }
 
-    abortTile(tile: Tile, callback: Callback<void>) {
+    abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
@@ -230,7 +230,7 @@ class RasterTileSource extends Evented implements Source {
         callback();
     }
 
-    unloadTile(tile: Tile, callback: Callback<void>) {
+    unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
     }
