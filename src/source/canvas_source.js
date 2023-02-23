@@ -162,7 +162,7 @@ class CanvasSource extends ImageSource {
         return this.canvas;
     }
 
-    onAdd(map: Map) {
+    onAdd: (map: Map) => void = (map) => {
         this.map = map;
         this.load();
         if (this.canvas) {
@@ -170,7 +170,7 @@ class CanvasSource extends ImageSource {
         }
     }
 
-    onRemove() {
+    onRemove: () => void = () => {
         this.pause();
     }
 
@@ -189,7 +189,7 @@ class CanvasSource extends ImageSource {
 
     // setCoordinates inherited from ImageSource
 
-    prepare() {
+    prepare: () => void = () => {
         let resize = false;
         if (this.canvas.width !== this.width) {
             this.width = this.canvas.width;
