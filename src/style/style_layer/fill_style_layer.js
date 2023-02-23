@@ -71,14 +71,14 @@ class FillStyleLayer extends StyleLayer {
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
-        if (queryGeometry.queryGeometry.isAboveHorizon) return false;
+                               if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
-        const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
+                               const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
             this.paint.get('fill-translate'),
             this.paint.get('fill-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
-        return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
-    }
+                               return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
+                           }
 
     isTileClipped(): boolean {
         return true;
