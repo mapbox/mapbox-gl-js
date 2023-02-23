@@ -101,8 +101,7 @@ const focusQuerySelector = [
  * @see [Example: Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
-export default class Popup
-    extends Evented {
+export default class Popup extends Evented {
   _map: ?Map;
   options: PopupOptions;
   _content: ?HTMLElement;
@@ -208,7 +207,7 @@ export default class Popup
      * popup.remove();
      * @returns {Popup} Returns itself to allow for method chaining.
      */
-  remove: (() => any) = (): this => {
+  remove: () => Popup = () => {
       if (this._content) {
           this._content.remove();
       }
@@ -553,7 +552,7 @@ export default class Popup
       return finalState;
   }
 
-  _onMouseEvent: ((event: MapMouseEvent) => void) = (event: MapMouseEvent) => {
+  _onMouseEvent: (event: MapMouseEvent) => void = (event: MapMouseEvent) => {
       this._update(event.point);
   };
 
@@ -606,7 +605,7 @@ export default class Popup
       container.className = classes.join(' ');
   }
 
-  _update: ((cursor?: Point) => void) = (cursor?: Point) => {
+  _update: (cursor?: Point) => void = (cursor?: Point) => {
       const hasPosition = this._lngLat || this._trackPointer;
       const map = this._map;
       const content = this._content;
@@ -673,7 +672,7 @@ export default class Popup
       if (firstFocusable) firstFocusable.focus();
   }
 
-  _onClose: (() => void) = () => {
+  _onClose: () => void = () => {
       this.remove();
   };
 
