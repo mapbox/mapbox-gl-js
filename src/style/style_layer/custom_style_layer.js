@@ -202,17 +202,17 @@ class CustomStyleLayer
       return this.implementation.renderingMode === '3d';
   }
 
-    hasOffscreenPass(): boolean {
-        return this.implementation.prerender !== undefined;
-    }
+  hasOffscreenPass(): boolean {
+      return this.implementation.prerender !== undefined;
+  }
 
-    isLayerDraped(): boolean {
-        return this.implementation.renderToTile !== undefined;
-    }
+  isLayerDraped(): boolean {
+      return this.implementation.renderToTile !== undefined;
+  }
 
-    shouldRedrape(): boolean {
-        return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
-    }
+  shouldRedrape(): boolean {
+      return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
+  }
 
   recalculate() {}
   updateTransitions() {}

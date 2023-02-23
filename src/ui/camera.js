@@ -836,10 +836,10 @@ class Camera
           return this._cameraForBounds(tr, p0, p1, bearing, pitch, options);
       }
 
-        return {center: tr.center, zoom, bearing, pitch};
-    }
+      return {center: tr.center, zoom, bearing, pitch};
+  }
 
-    /** @section {Querying features} */
+  /** @section {Querying features} */
 
   /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
