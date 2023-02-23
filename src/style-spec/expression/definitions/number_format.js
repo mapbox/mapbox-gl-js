@@ -59,7 +59,7 @@ export default class NumberFormat implements Expression {
         this.maxFractionDigits = maxFractionDigits;
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length !== 3)
             return context.error(`Expected two arguments.`);
 

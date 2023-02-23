@@ -23,7 +23,7 @@ class Slice implements Expression {
 
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Slice = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Slice {
         if (args.length <= 2 ||  args.length >= 5) {
             return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
         }

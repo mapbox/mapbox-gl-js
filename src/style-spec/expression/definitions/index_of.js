@@ -22,7 +22,7 @@ class IndexOf implements Expression {
         this.fromIndex = fromIndex;
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?IndexOf = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?IndexOf {
         if (args.length <= 2 ||  args.length >= 5) {
             return context.error(`Expected 3 or 4 arguments, but found ${args.length - 1} instead.`);
         }

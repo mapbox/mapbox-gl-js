@@ -23,7 +23,7 @@ class Case implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Case = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Case {
         if (args.length < 4)
             return context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 0)

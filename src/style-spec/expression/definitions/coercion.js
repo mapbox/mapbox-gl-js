@@ -38,7 +38,7 @@ class Coercion implements Expression {
         this.args = args;
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Expression = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 

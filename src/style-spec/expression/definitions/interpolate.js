@@ -56,7 +56,7 @@ class Interpolate implements Expression {
         return t;
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Interpolate = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Interpolate {
         let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {

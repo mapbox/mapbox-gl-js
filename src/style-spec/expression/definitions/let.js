@@ -27,7 +27,7 @@ class Let implements Expression {
         fn(this.result);
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Let = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Let {
         if (args.length < 4)
             return context.error(`Expected at least 3 arguments, but found ${args.length - 1} instead.`);
 

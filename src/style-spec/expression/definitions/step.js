@@ -29,7 +29,7 @@ class Step implements Expression {
         }
     }
 
-    static parse: (args: $ReadOnlyArray<mixed>, context: ParsingContext) => ?Step = (args, context) => {
+    static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Step {
         if (args.length - 1 < 4) {
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         }
