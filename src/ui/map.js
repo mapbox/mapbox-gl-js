@@ -3368,12 +3368,12 @@ class Map
      * @returns An id that can be used to cancel the callback
      * @private
      */
-  _requestRenderFrame(callback: () => void): TaskID {
+  _requestRenderFrame: (callback: () => void) => TaskID = (callback) => {
       this._update();
       return this._renderTaskQueue.add(callback);
   }
 
-  _cancelRenderFrame(id: TaskID) {
+  _cancelRenderFrame: (id: TaskID) => void = (id) => {
       this._renderTaskQueue.remove(id);
   }
 
@@ -4014,7 +4014,7 @@ class Map
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-  _preloadTiles(transform: Transform | Array<Transform>): this {
+  _preloadTiles: (transform: Transform | Array<Transform>) => Map = (transform) => {
       const sources: Array<SourceCache> = this.style ?
           (Object.values(this.style._sourceCaches): any) :
           [];
