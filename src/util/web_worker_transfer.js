@@ -194,18 +194,18 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
                 properties[key] = serialize(property, transferables);
             }
             if (input instanceof Error) {
-                properties.message = input.message;
+                properties['message'] = input.message;
             }
         } else {
             // make sure statically serialized object survives transfer of $name property
             assert(!transferables || properties !== transferables[transferables.length - 1]);
         }
 
-        if (properties.$name) {
+        if (properties['$name']) {
             throw new Error('$name property is reserved for worker serialization logic.');
         }
         if (name !== 'Object') {
-            properties.$name = name;
+            properties['$name'] = name;
         }
 
         return properties;

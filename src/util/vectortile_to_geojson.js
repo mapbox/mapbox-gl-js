@@ -1,11 +1,13 @@
 // @flow
-import type {LayerSpecification} from '../style-spec/types.js';
+import type {LayerSpecification, SourceSpecification} from '../style-spec/types.js';
 import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 // we augment GeoJSON with custom properties in query*Features results
 export interface QueryFeature extends GeoJSONFeature {
     layer?: ?LayerSpecification;
+    source?: ?SourceSpecification | ?mixed;
+    sourceLayer?: ?string | ?mixed;
     state: ?mixed;
     [key: string]: mixed;
 }
