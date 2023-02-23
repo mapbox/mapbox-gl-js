@@ -23,7 +23,11 @@ export const Debug: {
     run: Function,
     logToElement: Function,
     drawAabbs: Function,
-    clearAabbs: Function
+    clearAabbs: Function,
+    _drawBox: Function,
+    _drawLine: Function,
+    _drawQuad: Function,
+    _initializeCanvas: Function,
 } =
 {
     extend(dest: Object, ...sources: Array<?Object>): Object {
@@ -50,9 +54,12 @@ export const Debug: {
         if (!Debug.debugCanvas) {
             Debug.debugCanvas = window.document.createElement('canvas');
             window.document.body.appendChild(Debug.debugCanvas);
+            // Supress Flow check because we're checking for null above
+            if (!Debug.debugCanvas) return;
+
             Debug.debugCanvas.style.position = 'absolute';
-            Debug.debugCanvas.style.left = 0;
-            Debug.debugCanvas.style.top = 0;
+            Debug.debugCanvas.style.left = '0';
+            Debug.debugCanvas.style.top = '0';
             Debug.debugCanvas.style.pointerEvents = 'none';
 
             const resize = () => {
@@ -109,6 +116,7 @@ export const Debug: {
                 for (const pos of corners) {
                     vec3.transformMat4(pos, pos, worldToECEFMatrix);
                 }
+                // $FlowFixMe[incompatible-type]
                 return corners;
             });
         }
@@ -129,8 +137,13 @@ export const Debug: {
                 // This means that AABBs close to the camera may appear to be missing.
                 // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
                 // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
+                // $FlowFixMe[incompatible-call]
                 const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
+
+                // $FlowFixMe[incompatible-call]
                 if (cameraPos[2] > 0) { return null; }
+
+                // $FlowFixMe[incompatible-call]
                 return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
@@ -139,9 +152,9 @@ export const Debug: {
     },
 
     clearAabbs() {
-        if (!Debug.debugCanvas) { return; }
+        if (!Debug.debugCanvas) return;
+        // $FlowFixMe[incompatible-use] - Flow doesn't know that debugCanvas is non-null here
         Debug.debugCanvas.getContext('2d').clearRect(0, 0, Debug.debugCanvas.width, Debug.debugCanvas.height);
         Debug.aabbCorners = [];
     }
-
 };
