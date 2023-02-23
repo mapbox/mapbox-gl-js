@@ -29,25 +29,25 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {FeatureDistanceData} from '../feature_filter/index.js';
 
-export type Feature = {
-    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
-    +id?: number | null,
-    +properties: {[_: string]: any},
-    +patterns?: {[_: string]: string},
-    +geometry?: Array<Array<Point>>
-};
+export interface Feature {
+    +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    +id?: number | null;
+    +properties: {[_: string]: any};
+    +patterns?: {[_: string]: string};
+    +geometry?: Array<Array<Point>>;
+}
 
 export type FeatureState = {[_: string]: any};
 
-export type GlobalProperties = $ReadOnly<{
-    zoom: number,
-    pitch?: number,
-    heatmapDensity?: number,
-    lineProgress?: number,
-    skyRadialProgress?: number,
-    isSupportedScript?: (_: string) => boolean,
-    accumulated?: Value
-}>;
+export interface GlobalProperties {
+    +zoom: number;
+    +pitch?: number;
+    +heatmapDensity?: number;
+    +lineProgress?: number;
+    +skyRadialProgress?: number;
+    +isSupportedScript?: (_: string) => boolean;
+    +accumulated?: Value;
+}
 
 export class StyleExpression {
     expression: Expression;
@@ -192,33 +192,52 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     }
 }
 
-export type ConstantExpression = {
-    kind: 'constant',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
+export type ConstantExpression = interface {
+  kind: 'constant',
+  +evaluate: (
+    globals: GlobalProperties,
+    feature?: Feature,
+    featureState?: FeatureState,
+    canonical?: CanonicalTileID,
+    availableImages?: Array<string>
+  ) => any,
 }
 
-export type SourceExpression = {
-    kind: 'source',
-    isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
+export type SourceExpression = interface {
+  kind: 'source',
+  isStateDependent: boolean,
+  +evaluate: (
+    globals: GlobalProperties,
+    feature?: Feature,
+    featureState?: FeatureState,
+    canonical?: CanonicalTileID,
+    availableImages?: Array<string>,
+    formattedSection?: FormattedSection
+  ) => any,
 };
 
-export type CameraExpression = {
-    kind: 'camera',
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
-    +interpolationFactor: (input: number, lower: number, upper: number) => number,
-    zoomStops: Array<number>,
-    interpolationType: ?InterpolationType
+export type CameraExpression = interface {
+  kind: 'camera',
+  +evaluate: (
+    globals: GlobalProperties,
+    feature?: Feature,
+    featureState?: FeatureState,
+    canonical?: CanonicalTileID,
+    availableImages?: Array<string>
+  ) => any,
+  +interpolationFactor: (input: number, lower: number, upper: number) => number,
+  zoomStops: Array<number>,
+  interpolationType: ?InterpolationType,
 };
 
-export type CompositeExpression = {
-    kind: 'composite',
-    isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
-    +interpolationFactor: (input: number, lower: number, upper: number) => number,
-    zoomStops: Array<number>,
-    interpolationType: ?InterpolationType
-};
+export interface CompositeExpression {
+    kind: 'composite';
+    isStateDependent: boolean;
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any;
+    +interpolationFactor: (input: number, lower: number, upper: number) => number;
+    zoomStops: Array<number>;
+    interpolationType: ?InterpolationType;
+}
 
 export type StylePropertyExpression =
     | ConstantExpression
