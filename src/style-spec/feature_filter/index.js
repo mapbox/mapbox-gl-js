@@ -73,6 +73,7 @@ function createFilter(filter: any, layerType?: string = 'fill'): FeatureFilter {
     }
 
     if (!isExpressionFilter(filter)) {
+        // $FlowFixMe[incompatible-call]
         filter = convertFilter(filter);
     }
     const filterExp = ((filter: any): string[] | string | boolean);
