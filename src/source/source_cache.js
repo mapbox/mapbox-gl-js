@@ -54,7 +54,6 @@ class SourceCache
   _shouldReloadOnResume: boolean;
   _coveredTiles: { [_: number | string]: boolean };
   transform: Transform;
-  _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
   used: boolean;
   usedForTerrain: boolean;
   _state: SourceFeatureState;

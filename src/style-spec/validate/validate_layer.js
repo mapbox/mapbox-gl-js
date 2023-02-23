@@ -58,6 +58,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         if (!parent) {
             if (typeof ref === 'string')
                 errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
+        // $FlowFixMe[prop-missing] - ref is not defined on the LayerSpecification subtypes
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {

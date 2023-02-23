@@ -203,6 +203,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      * @private
      */
+    // $FlowFixMe[duplicate-class-member]
     loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<Object>): void {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
