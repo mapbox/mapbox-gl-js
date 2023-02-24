@@ -81,7 +81,7 @@ class Transform {
     mercatorFogMatrix: Float32Array;
 
     // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
-    projMatrix: Float32Array | Float64Array;
+    projMatrix: Array<number> | Float32Array | Float64Array;
     invProjMatrix: Float64Array;
 
     // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
@@ -1875,7 +1875,7 @@ class Transform {
         cameraToClip[8] = -offset.x * 2 / this.width;
         cameraToClip[9] = offset.y * 2 / this.height;
 
-        let m: Float32Array | Float64Array = mat4.mul(new Float64Array([]), cameraToClip, worldToCamera);
+        let m: Array<number> | Float32Array | Float64Array = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
