@@ -295,7 +295,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const mercatorCameraUp = [0, -1, 0];
 
-    let globeCameraUp = mercatorCameraUp;
+    let globeCameraUp: [number, number, number] = mercatorCameraUp;
     if ((isGlobeProjection || tr.mercatorFromTransition) && !rotateWithMap) {
         // Each symbol rotating with the viewport requires per-instance information about
         // how to align with the viewport. In 2D case rotation is shared between all of the symbols and

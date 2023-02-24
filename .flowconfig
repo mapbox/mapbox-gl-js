@@ -33,6 +33,7 @@
 0.184.0
 
 [options]
+inference_mode=constrain_writes
 
 [strict]
 nonstrict-import

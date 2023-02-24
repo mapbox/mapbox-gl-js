@@ -2870,7 +2870,7 @@ class Map extends Camera {
         let transformValues;
         let transformScaleWidth;
         let transformScaleHeight;
-        let el = this._container;
+        let el: ?Element = this._container;
         while (el && (!transformScaleWidth || !transformScaleHeight)) {
             const transformMatrix = window.getComputedStyle(el).transform;
             if (transformMatrix && transformMatrix !== 'none') {

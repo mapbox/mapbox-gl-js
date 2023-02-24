@@ -1033,7 +1033,7 @@ export class Terrain extends Elevation {
             return;
         }
 
-        const batches = [];
+        const batches: Array<RenderBatch> = [];
 
         let currentLayer = 0;
         let layer = this._style._layers[layerIds[currentLayer]];
@@ -1041,7 +1041,7 @@ export class Terrain extends Elevation {
             layer = this._style._layers[layerIds[currentLayer]];
         }
 
-        let batchStart;
+        let batchStart: number | void;
         for (; currentLayer < layerCount; ++currentLayer) {
             const layer = this._style._layers[layerIds[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
@@ -1414,7 +1414,7 @@ export class Terrain extends Elevation {
     // caching "not found" results along the lookup, to leave the lookup early.
     // Not found is cached by this._findCoveringTileCache[key] = null;
     _findTileCoveringTileID(tileID: OverscaledTileID, sourceCache: SourceCache): ?Tile {
-        let tile = sourceCache.getTile(tileID);
+        let tile: ?Tile = sourceCache.getTile(tileID);
         if (tile && tile.hasData()) return tile;
 
         const lookup = this._findCoveringTileCache[sourceCache.id];

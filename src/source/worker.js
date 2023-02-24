@@ -291,5 +291,6 @@ export default class Worker {
 if (typeof WorkerGlobalScope !== 'undefined' &&
     typeof self !== 'undefined' &&
     self instanceof WorkerGlobalScope) {
+    // $FlowFixMe[prop-missing]
     self.worker = new Worker(self);
 }

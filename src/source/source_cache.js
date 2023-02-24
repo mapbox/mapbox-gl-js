@@ -742,7 +742,7 @@ class SourceCache extends Evented {
      * @private
      */
     _addTile(tileID: OverscaledTileID): Tile {
-        let tile = this._tiles[tileID.key];
+        let tile: ?Tile = this._tiles[tileID.key];
         if (tile) return tile;
 
         tile = this._cache.getAndRemove(tileID);

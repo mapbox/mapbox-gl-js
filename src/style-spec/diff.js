@@ -170,11 +170,12 @@ function diffSources(before, after, commands, sourcesRemoved) {
     // look for sources to add/update
     for (sourceId in after) {
         if (!after.hasOwnProperty(sourceId)) continue;
+        const source = after[sourceId];
         if (!before.hasOwnProperty(sourceId)) {
             addSource(sourceId, after, commands);
-        } else if (!isEqual(before[sourceId], after[sourceId])) {
-            if (before[sourceId].type === 'geojson' && after[sourceId].type === 'geojson' && canUpdateGeoJSON(before, after, sourceId)) {
-                commands.push({command: operations.setGeoJSONSourceData, args: [sourceId, after[sourceId].data]});
+        } else if (!isEqual(before[sourceId], source)) {
+            if (before[sourceId].type === 'geojson' && source.type === 'geojson' && canUpdateGeoJSON(before, after, sourceId)) {
+                commands.push({command: operations.setGeoJSONSourceData, args: [sourceId, source.data]});
             } else {
                 // no update command, must remove then add
                 updateSource(sourceId, after, commands, sourcesRemoved);

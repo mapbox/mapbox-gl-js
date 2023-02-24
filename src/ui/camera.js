@@ -762,7 +762,7 @@ class Camera extends Evented {
      * const elevation = map.queryTerrainElevation(coordinate);
      * @see [Example: Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
      */
-    queryTerrainElevation(lnglat: LngLatLike, options: ?ElevationQueryOptions): number | null {
+    queryTerrainElevation(lnglat: LngLatLike, options: ?ElevationQueryOptions): ?number {
         const elevation = this.transform.elevation;
         if (elevation) {
             options = extend({}, {exaggerated: true}, options);
