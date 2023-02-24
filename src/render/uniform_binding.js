@@ -7,25 +7,25 @@ export type UniformValues<Us: Object>
     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
 
 class Uniform<T> {
-  gl: WebGLRenderingContext;
-  location: ?WebGLUniformLocation;
-  current: T;
-  initialized: boolean;
+    gl: WebGLRenderingContext;
+    location: ?WebGLUniformLocation;
+    current: T;
+    initialized: boolean;
 
-  constructor(context: Context) {
-      this.gl = context.gl;
-      this.initialized = false;
-  }
+    constructor(context: Context) {
+        this.gl = context.gl;
+        this.initialized = false;
+    }
 
-  fetchUniformLocation: ((program: WebGLProgram, name: string) => boolean) = (program: WebGLProgram, name: string): boolean => {
-      if (!this.location && !this.initialized) {
-          this.location = this.gl.getUniformLocation(program, name);
-          this.initialized = true;
-      }
-      return !!this.location;
-  };
+    fetchUniformLocation: ((program: WebGLProgram, name: string) => boolean) = (program: WebGLProgram, name: string): boolean => {
+        if (!this.location && !this.initialized) {
+            this.location = this.gl.getUniformLocation(program, name);
+            this.initialized = true;
+        }
+        return !!this.location;
+    };
 
-  +set: (program: WebGLProgram, name: string, v: T) => void;
+    +set: (program: WebGLProgram, name: string, v: T) => void;
 }
 
 class Uniform1i extends Uniform<number> {
