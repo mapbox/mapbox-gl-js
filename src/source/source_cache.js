@@ -150,7 +150,7 @@ class SourceCache extends Evented {
         return this._source.loadTile(tile, callback);
     }
 
-    _unloadTile: ((tile: Tile) => void) = (tile: Tile): void => {
+    _unloadTile: (tile: Tile) => void = (tile) => {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile, () => {});
     }
@@ -248,7 +248,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded: ((tile: Tile, id: number, previousState: TileState, err: ?Error) => void) = (tile: Tile, id: number, previousState: TileState, err: ?Error) => {
+    _tileLoaded: (tile: Tile, id: number, previousState: TileState, err: ?Error) => void = (tile, id, previousState, err) => {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));

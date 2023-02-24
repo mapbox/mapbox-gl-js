@@ -24,6 +24,17 @@ import type Transform from '../../geo/transform.js';
 import type CircleBucket from '../../data/bucket/circle_bucket.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
+type QueryIntersectsFeatureFn = (
+    queryGeometry: TilespaceQueryGeometry,
+    feature: IVectorTileFeature,
+    featureState: FeatureState,
+    geometry: Array<Array<Point>>,
+    zoom: number,
+    transform: Transform,
+    pixelPosMatrix: Float32Array,
+    elevationHelper: ?DEMSampler
+) => boolean;
+
 class HeatmapStyleLayer extends StyleLayer {
 
     heatmapFbo: ?Framebuffer;
@@ -72,20 +83,12 @@ class HeatmapStyleLayer extends StyleLayer {
         return getMaximumPaintValue('heatmap-radius', this, ((bucket: any): CircleBucket<*>));
     }
 
-    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
-                           feature: IVectorTileFeature,
-                           featureState: FeatureState,
-                           geometry: Array<Array<Point>>,
-                           zoom: number,
-                           transform: Transform,
-                           pixelPosMatrix: Float32Array,
-                           elevationHelper: ?DEMSampler) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
-
-                               const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
-                               return queryIntersectsCircle(
+    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
+        const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
+        return queryIntersectsCircle(
             queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
             true, true, new Point(0, 0), size);
-                           }
+    }
 
     hasOffscreenPass(): boolean {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';

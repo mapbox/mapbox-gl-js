@@ -107,8 +107,8 @@ export class PropertyValue<T, R> {
 // ------- Transitionable -------
 
 export type TransitionParameters = interface {
-  now: TimePoint,
-  transition: TransitionSpecification,
+    now: TimePoint,
+    transition: TransitionSpecification,
 };
 
 /**

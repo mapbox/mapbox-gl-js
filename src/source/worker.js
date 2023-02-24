@@ -126,7 +126,7 @@ export default class Worker {
         callback();
     }
 
-    enableTerrain: ((mapId: string, enable: boolean, callback: WorkerTileCallback) => void) = (mapId: string, enable: boolean, callback: WorkerTileCallback) => {
+    enableTerrain: (mapId: string, enable: boolean, callback: WorkerTileCallback) => void = (mapId, enable, callback) => {
         this.terrain = enable;
         callback();
     };

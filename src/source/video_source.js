@@ -154,7 +154,7 @@ class VideoSource extends ImageSource {
         return this.video;
     }
 
-    onAdd: (map: Map) => void = (map: Map) => {
+    onAdd: (map: Map) => void = (map) => {
         if (this.map) return;
         this.map = map;
         this.load();

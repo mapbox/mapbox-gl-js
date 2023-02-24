@@ -335,7 +335,7 @@ class CustomSource<T> extends Evented implements Source {
         return false;
     }
 
-    _coveringTiles: (() => Array<{ x: number, y: number, z: number, ... }>) = (): Array<{ z: number, x: number, y: number }> => {
+    _coveringTiles: () => { z: number, x: number, y: number }[] = () => {
         const tileIDs = this._map.transform.coveringTiles({
             tileSize: this.tileSize,
             minzoom: this.minzoom,
@@ -346,11 +346,11 @@ class CustomSource<T> extends Evented implements Source {
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
     }
 
-    _clearTiles: (() => void) = () => {
+    _clearTiles: () => void = () => {
         this._map.style._clearSource(this.id);
     }
 
-    _update: (() => void) = () => {
+    _update: () => void = () => {
         this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
     }
 }

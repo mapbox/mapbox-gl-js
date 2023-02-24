@@ -24,6 +24,17 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
+type QueryIntersectsFeatureFn = (
+    queryGeometry: TilespaceQueryGeometry,
+    feature: IVectorTileFeature,
+    featureState: FeatureState,
+    geometry: Array<Array<Point>>,
+    zoom: number,
+    transform: Transform,
+    pixelPosMatrix: Float32Array,
+    elevationHelper: ?DEMSampler
+) => boolean;
+
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
     layout: PossiblyEvaluated<LayoutProps>;
@@ -47,27 +58,20 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
-                           feature: IVectorTileFeature,
-                           featureState: FeatureState,
-                           geometry: Array<Array<Point>>,
-                           zoom: number,
-                           transform: Transform,
-                           pixelPosMatrix: Float32Array,
-                           elevationHelper: ?DEMSampler) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
-
-                               const translation = tilespaceTranslate(
+    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
+        const translation = tilespaceTranslate(
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor);
+            transform.angle, queryGeometry.pixelToTileUnitsFactor
+        );
 
-                               const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
+        const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);
 
-                               return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
+        return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
             this.paint.get('circle-pitch-alignment') === 'map',
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
-                           }
+    }
 
     getProgramIds(): Array<string> {
         return ['circle'];

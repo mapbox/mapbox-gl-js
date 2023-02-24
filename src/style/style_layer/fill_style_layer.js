@@ -19,6 +19,15 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
+type QueryIntersectsFeatureFn = (
+    queryGeometry: TilespaceQueryGeometry,
+    feature: IVectorTileFeature,
+    featureState: FeatureState,
+    geometry: Array<Array<Point>>,
+    zoom: number,
+    transform: Transform
+) => boolean;
+
 class FillStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
     layout: PossiblyEvaluated<LayoutProps>;
@@ -65,20 +74,18 @@ class FillStyleLayer extends StyleLayer {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
-    queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
-                           feature: IVectorTileFeature,
-                           featureState: FeatureState,
-                           geometry: Array<Array<Point>>,
-                           zoom: number,
-                           transform: Transform) => boolean = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
-                               if (queryGeometry.queryGeometry.isAboveHorizon) return false;
+    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
+        if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
-                               const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
+        const translatedPolygon = translate(
+            queryGeometry.tilespaceGeometry,
             this.paint.get('fill-translate'),
             this.paint.get('fill-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor);
-                               return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
-                           }
+            transform.angle, queryGeometry.pixelToTileUnitsFactor
+        );
+
+        return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
+    }
 
     isTileClipped(): boolean {
         return true;

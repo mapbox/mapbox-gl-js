@@ -148,7 +148,7 @@ class GeoJSONSource extends Evented implements Source {
         }, options.workerOptions);
     }
 
-    onAdd: (map: Map) => void = (map: Map) => {
+    onAdd: (map: Map) => void = (map) => {
         this.map = map;
         this.setData(this._data);
     }

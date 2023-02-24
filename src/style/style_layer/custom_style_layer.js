@@ -225,13 +225,13 @@ class CustomStyleLayer extends StyleLayer {
         assert(false, "Custom layers cannot be serialized");
     }
 
-    onAdd: ((map: Map) => void) = (map: Map) => {
+    onAdd: (map: Map) => void = (map) => {
         if (this.implementation.onAdd) {
             this.implementation.onAdd(map, map.painter.context.gl);
         }
     }
 
-    onRemove: (map: Map) => void = (map: Map) => {
+    onRemove: (map: Map) => void = (map) => {
         if (this.implementation.onRemove) {
             this.implementation.onRemove(map, map.painter.context.gl);
         }
