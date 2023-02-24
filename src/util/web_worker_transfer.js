@@ -248,7 +248,7 @@ export function deserialize(input: Serialized): mixed {
             return (klass.deserialize: typeof deserialize)(input);
         }
 
-        const result = Object.create(klass.prototype);
+        const result: {[_: string]: any} = Object.create(klass.prototype);
 
         for (const key of Object.keys(input)) {
             // $FlowFixMe[incompatible-type]
