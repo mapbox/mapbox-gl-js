@@ -5,7 +5,6 @@ import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
 import type {HandlerResult} from '../handler_manager.js';
 import {isFullscreen} from '../../util/util.js';
-import assert from 'assert';
 
 class TwoTouchHandler {
 
