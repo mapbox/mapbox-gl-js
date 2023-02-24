@@ -35,117 +35,117 @@ const defaultOptions: Options = {
  * scale.setUnit('metric');
  */
 class ScaleControl {
-  _map: Map;
-  _container: HTMLElement;
-  _language: ?string | ?Array<string>;
-  options: Options;
+    _map: Map;
+    _container: HTMLElement;
+    _language: ?string | ?string[];
+    options: Options;
 
-  constructor(options: Options) {
-      this.options = extend({}, defaultOptions, options);
+    constructor(options: Options) {
+        this.options = extend({}, defaultOptions, options);
 
-      // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style.
-      // This is a workaround to display the scale without proper internationalization support.
-      if (!isNumberFormatSupported()) {
-      // $FlowIgnore[cannot-write]
-          this._setScale = legacySetScale.bind(this);
-      }
+        // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style.
+        // This is a workaround to display the scale without proper internationalization support.
+        if (!isNumberFormatSupported()) {
+            // $FlowIgnore[cannot-write]
+            this._setScale = legacySetScale.bind(this);
+        }
 
-      bindAll(['_update', '_setScale', 'setUnit'], this);
-  }
+        bindAll([
+            '_update',
+            '_setScale',
+            'setUnit'
+        ], this);
+    }
 
-  getDefaultPosition(): ControlPosition {
-      return 'bottom-left';
-  }
+    getDefaultPosition(): ControlPosition {
+        return 'bottom-left';
+    }
 
-  _update: () => void = () => {
-      // A horizontal scale is imagined to be present at center of the map
-      // container with maximum length (Default) as 100px.
-      // Using spherical law of cosines approximation, the real distance is
-      // found between the two coordinates.
-      const maxWidth = this.options.maxWidth || 100;
+    _update: () => void = () => {
+        // A horizontal scale is imagined to be present at center of the map
+        // container with maximum length (Default) as 100px.
+        // Using spherical law of cosines approximation, the real distance is
+        // found between the two coordinates.
+        const maxWidth = this.options.maxWidth || 100;
 
-      const map = this._map;
-      const y = map._containerHeight / 2;
-      const x = map._containerWidth / 2 - maxWidth / 2;
-      const left = map.unproject([x, y]);
-      const right = map.unproject([x + maxWidth, y]);
-      const maxMeters = left.distanceTo(right);
-      // The real distance corresponding to 100px scale length is rounded off to
-      // near pretty number and the scale length for the same is found out.
-      // Default unit of the scale is based on User's locale.
-      if (this.options.unit === 'imperial') {
-          const maxFeet = 3.2808 * maxMeters;
-          if (maxFeet > 5280) {
-              const maxMiles = maxFeet / 5280;
-              this._setScale(maxWidth, maxMiles, 'mile');
-          } else {
-              this._setScale(maxWidth, maxFeet, 'foot');
-          }
-      } else if (this.options.unit === 'nautical') {
-          const maxNauticals = maxMeters / 1852;
-          this._setScale(maxWidth, maxNauticals, 'nautical-mile');
-      } else if (maxMeters >= 1000) {
-          this._setScale(maxWidth, maxMeters / 1000, 'kilometer');
-      } else {
-          this._setScale(maxWidth, maxMeters, 'meter');
-      }
-  };
+        const map = this._map;
+        const y = map._containerHeight / 2;
+        const x = (map._containerWidth / 2) - maxWidth / 2;
+        const left = map.unproject([x, y]);
+        const right = map.unproject([x + maxWidth, y]);
+        const maxMeters = left.distanceTo(right);
+        // The real distance corresponding to 100px scale length is rounded off to
+        // near pretty number and the scale length for the same is found out.
+        // Default unit of the scale is based on User's locale.
+        if (this.options.unit === 'imperial') {
+            const maxFeet = 3.2808 * maxMeters;
+            if (maxFeet > 5280) {
+                const maxMiles = maxFeet / 5280;
+                this._setScale(maxWidth, maxMiles, 'mile');
+            } else {
+                this._setScale(maxWidth, maxFeet, 'foot');
+            }
+        } else if (this.options.unit === 'nautical') {
+            const maxNauticals = maxMeters / 1852;
+            this._setScale(maxWidth, maxNauticals, 'nautical-mile');
+        } else if (maxMeters >= 1000) {
+            this._setScale(maxWidth, maxMeters / 1000, 'kilometer');
+        } else {
+            this._setScale(maxWidth, maxMeters, 'meter');
+        }
+    };
 
-  _setScale(maxWidth: number, maxDistance: number, unit: string) {
-      const distance = getRoundNum(maxDistance);
-      const ratio = distance / maxDistance;
+    _setScale(maxWidth: number, maxDistance: number, unit: string) {
+        const distance = getRoundNum(maxDistance);
+        const ratio = distance / maxDistance;
 
-      this._map._requestDomTask(() => {
-          this._container.style.width = `${maxWidth * ratio}px`;
+        this._map._requestDomTask(() => {
+            this._container.style.width = `${maxWidth * ratio}px`;
 
-          // Intl.NumberFormat doesn't support nautical-mile as a unit,
-          // so we are hardcoding `nm` as a unit symbol for all locales
-          if (unit === 'nautical-mile') {
-              this._container.innerHTML = `${distance}&nbsp;nm`;
-              return;
-          }
+            // Intl.NumberFormat doesn't support nautical-mile as a unit,
+            // so we are hardcoding `nm` as a unit symbol for all locales
+            if (unit === 'nautical-mile') {
+                this._container.innerHTML = `${distance}&nbsp;nm`;
+                return;
+            }
 
-          // $FlowFixMe — flow v0.153.0 doesn't support optional `locales` argument and `unit` style option
-          this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
-      });
-  }
+            // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
+            this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+        });
+    }
 
-  onAdd(map: Map): HTMLElement {
-      this._map = map;
-      this._language = map.getLanguage();
-      this._container = DOM.create(
-      'div',
-      'mapboxgl-ctrl mapboxgl-ctrl-scale',
-      map.getContainer(),
-      );
-      this._container.dir = 'auto';
+    onAdd(map: Map): HTMLElement {
+        this._map = map;
+        this._language = map.getLanguage();
+        this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
+        this._container.dir = 'auto';
 
-      this._map.on('move', this._update);
-      this._update();
+        this._map.on('move', this._update);
+        this._update();
 
-      return this._container;
-  }
+        return this._container;
+    }
 
-  onRemove() {
-      this._container.remove();
-      this._map.off('move', this._update);
-      this._map = (undefined: any);
-  }
+    onRemove() {
+        this._container.remove();
+        this._map.off('move', this._update);
+        this._map = (undefined: any);
+    }
 
-  _setLanguage(language: string) {
-      this._language = language;
-      this._update();
-  }
+    _setLanguage(language: string) {
+        this._language = language;
+        this._update();
+    }
 
-  /**
+    /**
      * Set the scale's unit of the distance.
      *
      * @param {'imperial' | 'metric' | 'nautical'} unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
      */
-  setUnit(unit: Unit) {
-      this.options.unit = unit;
-      this._update();
-  }
+    setUnit(unit: Unit) {
+        this.options.unit = unit;
+        this._update();
+    }
 }
 
 export default ScaleControl;
