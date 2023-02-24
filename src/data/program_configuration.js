@@ -669,9 +669,8 @@ const defaultLayouts = {
 };
 
 function layoutType(property, type, binderType) {
-    assert(type === 'color' || type === 'number', `Unknown layout type: ${type}`);
     const layoutException = propertyExceptions[property];
-    // $FlowFixMe[prop-missing] - assert above ensures that type is a valid key
+    // $FlowFixMe[prop-missing] - we don't cover all types in defaultLayouts for some reason
     return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
 }
 
