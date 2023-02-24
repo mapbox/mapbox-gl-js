@@ -189,53 +189,53 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     return errors;
 }
 
-class CustomStyleLayer
-    extends StyleLayer {
-  implementation: CustomLayerInterface;
+class CustomStyleLayer extends StyleLayer {
 
-  constructor(implementation: CustomLayerInterface) {
-      super(implementation, {});
-      this.implementation = implementation;
-  }
+    implementation: CustomLayerInterface;
 
-  is3D(): boolean {
-      return this.implementation.renderingMode === '3d';
-  }
+    constructor(implementation: CustomLayerInterface) {
+        super(implementation, {});
+        this.implementation = implementation;
+    }
 
-  hasOffscreenPass(): boolean {
-      return this.implementation.prerender !== undefined;
-  }
+    is3D(): boolean {
+        return this.implementation.renderingMode === '3d';
+    }
 
-  isLayerDraped(): boolean {
-      return this.implementation.renderToTile !== undefined;
-  }
+    hasOffscreenPass(): boolean {
+        return this.implementation.prerender !== undefined;
+    }
 
-  shouldRedrape(): boolean {
-      return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
-  }
+    isLayerDraped(): boolean {
+        return this.implementation.renderToTile !== undefined;
+    }
 
-  recalculate() {}
-  updateTransitions() {}
-  hasTransition(): boolean {
-      return false;
-  }
+    shouldRedrape(): boolean {
+        return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
+    }
 
-  // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
-  serialize() {
-      assert(false, "Custom layers cannot be serialized");
-  }
+    recalculate() {}
+    updateTransitions() {}
+    hasTransition(): boolean {
+        return false;
+    }
 
-  onAdd: ((map: Map) => void) = (map: Map) => {
-      if (this.implementation.onAdd) {
-          this.implementation.onAdd(map, map.painter.context.gl);
-      }
-  };
+    // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
+    serialize() {
+        assert(false, "Custom layers cannot be serialized");
+    }
 
-  onRemove: (map: Map) => void = (map: Map) => {
-      if (this.implementation.onRemove) {
-          this.implementation.onRemove(map, map.painter.context.gl);
-      }
-  }
+    onAdd: ((map: Map) => void) = (map: Map) => {
+        if (this.implementation.onAdd) {
+            this.implementation.onAdd(map, map.painter.context.gl);
+        }
+    }
+
+    onRemove: (map: Map) => void = (map: Map) => {
+        if (this.implementation.onRemove) {
+            this.implementation.onRemove(map, map.painter.context.gl);
+        }
+    }
 }
 
 export default CustomStyleLayer;
