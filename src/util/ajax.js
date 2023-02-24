@@ -67,8 +67,9 @@ export type RequestParameters = {
     body?: string,
     type?: 'string' | 'json' | 'arrayBuffer',
     credentials?: 'same-origin' | 'include',
-    collectResourceTiming?: boolean
-};
+    collectResourceTiming?: boolean,
+    referrerPolicy?: ReferrerPolicyType
+}
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
 
@@ -111,6 +112,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         credentials: requestParameters.credentials,
         headers: requestParameters.headers,
         referrer: getReferrer(),
+        referrerPolicy: requestParameters.referrerPolicy,
         signal: controller.signal
     });
     let complete = false;
