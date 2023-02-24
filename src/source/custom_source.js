@@ -147,269 +147,212 @@ export type CustomSourceInterface<T> = {
     onRemove: ?(map: Map) => void,
 }
 
-class CustomSource<T>
-    extends Evented
-    implements Source {
-  id: string;
-  type: 'custom';
-  scheme: string;
-  minzoom: number;
-  maxzoom: number;
-  tileSize: number;
-  attribution: string | void;
+class CustomSource<T> extends Evented implements Source {
 
-  roundZoom: boolean | void;
-  tileBounds: ?TileBounds;
-  minTileCacheSize: ?number;
-  maxTileCacheSize: ?number;
+    id: string;
+    type: 'custom';
+    scheme: string;
+    minzoom: number;
+    maxzoom: number;
+    tileSize: number;
+    attribution: string | void;
 
-  _map: Map;
-  _loaded: boolean;
-  _dispatcher: Dispatcher;
-  _dataType: ?DataType;
-  _implementation: CustomSourceInterface<T>;
+    roundZoom: boolean | void;
+    tileBounds: ?TileBounds;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
 
-  constructor(
-    id: string,
-    implementation: CustomSourceInterface<T>,
-    dispatcher: Dispatcher,
-    eventedParent: Evented,
-  ) {
-      super();
-      this.id = id;
-      this.type = 'custom';
-      this._dataType = 'raster';
-      this._dispatcher = dispatcher;
-      this._implementation = implementation;
-      this.setEventedParent(eventedParent);
+    _map: Map;
+    _loaded: boolean;
+    _dispatcher: Dispatcher;
+    _dataType: ?DataType;
+    _implementation: CustomSourceInterface<T>;
 
-      this.scheme = 'xyz';
-      this.minzoom = 0;
-      this.maxzoom = 22;
-      this.tileSize = 512;
+    constructor(id: string, implementation: CustomSourceInterface<T>, dispatcher: Dispatcher, eventedParent: Evented) {
+        super();
+        this.id = id;
+        this.type = 'custom';
+        this._dataType = 'raster';
+        this._dispatcher = dispatcher;
+        this._implementation = implementation;
+        this.setEventedParent(eventedParent);
 
-      this._loaded = false;
-      this.roundZoom = true;
+        this.scheme = 'xyz';
+        this.minzoom = 0;
+        this.maxzoom = 22;
+        this.tileSize = 512;
 
-      if (!this._implementation) {
-          this.fire(
-        new ErrorEvent(
-          new Error(`Missing implementation for ${this.id} custom source`),
-        ),
-          );
-      }
+        this._loaded = false;
+        this.roundZoom = true;
 
-      if (!this._implementation.loadTile) {
-          this.fire(
-        new ErrorEvent(
-          new Error(`Missing loadTile implementation for ${this.id} custom source`,),
-        ),
-          );
-      }
+        if (!this._implementation) {
+            this.fire(new ErrorEvent(new Error(`Missing implementation for ${this.id} custom source`)));
+        }
 
-      if (this._implementation.bounds) {
-          this.tileBounds = new TileBounds(
-        this._implementation.bounds,
-        this.minzoom,
-        this.maxzoom,
-          );
-      }
+        if (!this._implementation.loadTile) {
+            this.fire(new ErrorEvent(new Error(`Missing loadTile implementation for ${this.id} custom source`)));
+        }
 
-      // $FlowFixMe[prop-missing]
-      implementation.update = this._update.bind(this);
+        if (this._implementation.bounds) {
+            this.tileBounds = new TileBounds(this._implementation.bounds, this.minzoom, this.maxzoom);
+        }
 
-      // $FlowFixMe[prop-missing]
-      implementation.clearTiles = this._clearTiles.bind(this);
+        // $FlowFixMe[prop-missing]
+        implementation.update = this._update.bind(this);
 
-      // $FlowFixMe[prop-missing]
-      implementation.coveringTiles = this._coveringTiles.bind(this);
+        // $FlowFixMe[prop-missing]
+        implementation.clearTiles = this._clearTiles.bind(this);
 
-      extend(
-      this,
-      pick(
-        implementation,
-        [
-            'dataType',
-            'scheme',
-            'minzoom',
-            'maxzoom',
-            'tileSize',
-            'attribution',
-            'minTileCacheSize',
-            'maxTileCacheSize',
-        ],
-      ),
-      );
-  }
+        // $FlowFixMe[prop-missing]
+        implementation.coveringTiles = this._coveringTiles.bind(this);
 
-  serialize(): Source {
-      return pick(
-      this,
-      ['type', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution'],
-      );
-  }
+        extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
+    }
 
-  load() {
-      this._loaded = true;
-      this.fire(
-      new Event('data', {dataType: 'source', sourceDataType: 'metadata'}),
-      );
-      this.fire(
-      new Event('data', {dataType: 'source', sourceDataType: 'content'}),
-      );
-  }
+    serialize(): Source {
+        return pick(this, ['type', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution']);
+    }
 
-  loaded(): boolean {
-      return this._loaded;
-  }
+    load() {
+        this._loaded = true;
+        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
+    }
 
-  onAdd: (map: Map) => void = (map) => {
-      this._map = map;
-      this._loaded = false;
-      this.fire(new Event('dataloading', {dataType: 'source'}));
-      if (this._implementation.onAdd) this._implementation.onAdd(map);
-      this.load();
-  }
+    loaded(): boolean {
+        return this._loaded;
+    }
 
-  onRemove: (map: Map) => void = (map) => {
-      if (this._implementation.onRemove) {
-          this._implementation.onRemove(map);
-      }
-  }
+    onAdd: (map: Map) => void = (map) => {
+        this._map = map;
+        this._loaded = false;
+        this.fire(new Event('dataloading', {dataType: 'source'}));
+        if (this._implementation.onAdd) this._implementation.onAdd(map);
+        this.load();
+    }
 
-  hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
-      if (this._implementation.hasTile) {
-          const {x, y, z} = tileID.canonical;
-          return this._implementation.hasTile({x, y, z});
-      }
+    onRemove: (map: Map) => void = (map) => {
+        if (this._implementation.onRemove) {
+            this._implementation.onRemove(map);
+        }
+    }
 
-      return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
-  }
+    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
+        if (this._implementation.hasTile) {
+            const {x, y, z} = tileID.canonical;
+            return this._implementation.hasTile({x, y, z});
+        }
 
-  loadTile(tile: Tile, callback: Callback<void>): void {
-      const {x, y, z} = tile.tileID.canonical;
-      const controller = new window.AbortController();
-      const signal = controller.signal;
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
+    }
 
-      // $FlowFixMe[prop-missing]
-      tile.request = Promise.resolve(
-      this._implementation.loadTile({x, y, z}, {signal}),
-      ).then(tileLoaded.bind(this)).catch(
-      error => {
-          // silence AbortError
-          if (error.code === 20) return;
-          tile.state = 'errored';
-          callback(error);
-      },
-      );
+    loadTile(tile: Tile, callback: Callback<void>): void {
+        const {x, y, z} = tile.tileID.canonical;
+        const controller = new window.AbortController();
+        const signal = controller.signal;
 
-      // $FlowFixMe[prop-missing]
-      tile.request.cancel = (() => controller.abort());
+        // $FlowFixMe[prop-missing]
+        tile.request = Promise
+            .resolve(this._implementation.loadTile({x, y, z}, {signal}))
+            .then(tileLoaded.bind(this))
+            .catch(error => {
+                // silence AbortError
+                if (error.code === 20) return;
+                tile.state = 'errored';
+                callback(error);
+            });
 
-      function tileLoaded(data) {
-          delete tile.request;
+        // $FlowFixMe[prop-missing]
+        tile.request.cancel = () => controller.abort();
 
-          if (tile.aborted) {
-              tile.state = 'unloaded';
-              return callback(null);
-          }
+        function tileLoaded(data) {
+            delete tile.request;
 
-          // If the implementation returned `undefined` as tile data,
-          // mark the tile as `errored` to indicate that we have no data for it.
-          // A map will render an overscaled parent tile in the tile’s space.
-          if (data === undefined) {
-              tile.state = 'errored';
-              return callback(null);
-          }
+            if (tile.aborted) {
+                tile.state = 'unloaded';
+                return callback(null);
+            }
 
-          // If the implementation returned `null` as tile data,
-          // mark the tile as `loaded` and use an an empty image as tile data.
-          // A map will render nothing in the tile’s space.
-          if (data === null) {
-              const emptyImage = {
-                  width: this.tileSize,
-                  height: this.tileSize,
-                  data: null,
-              };
-              this.loadTileData(tile, (emptyImage: any));
-              tile.state = 'loaded';
-              return callback(null);
-          }
+            // If the implementation returned `undefined` as tile data,
+            // mark the tile as `errored` to indicate that we have no data for it.
+            // A map will render an overscaled parent tile in the tile’s space.
+            if (data === undefined) {
+                tile.state = 'errored';
+                return callback(null);
+            }
 
-          if (!isRaster(data)) {
-              tile.state = 'errored';
-              return callback(
-          new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`,),
-              );
-          }
+            // If the implementation returned `null` as tile data,
+            // mark the tile as `loaded` and use an an empty image as tile data.
+            // A map will render nothing in the tile’s space.
+            if (data === null) {
+                const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
+                this.loadTileData(tile, (emptyImage: any));
+                tile.state = 'loaded';
+                return callback(null);
+            }
 
-          this.loadTileData(tile, data);
-          tile.state = 'loaded';
-          callback(null);
-      }
-  }
+            if (!isRaster(data)) {
+                tile.state = 'errored';
+                return callback(new Error(`Can't infer data type for ${this.id}, only raster data supported at the moment`));
+            }
 
-  loadTileData(tile: Tile, data: T): void {
-      // Only raster data supported at the moment
-      RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
-  }
+            this.loadTileData(tile, data);
+            tile.state = 'loaded';
+            callback(null);
+        }
+    }
 
-  unloadTileData(tile: Tile): void {
-      // Only raster data supported at the moment
-      RasterTileSource.unloadTileData(tile, this._map.painter);
-  }
+    loadTileData(tile: Tile, data: T): void {
+        // Only raster data supported at the moment
+        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
+    }
 
-  unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
-      this.unloadTileData(tile);
-      if (this._implementation.unloadTile) {
-          const {x, y, z} = tile.tileID.canonical;
-          this._implementation.unloadTile({x, y, z});
-      }
+    unloadTileData(tile: Tile): void {
+        // Only raster data supported at the moment
+        RasterTileSource.unloadTileData(tile, this._map.painter);
+    }
 
-      callback();
-  }
+    unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+        this.unloadTileData(tile);
+        if (this._implementation.unloadTile) {
+            const {x, y, z} = tile.tileID.canonical;
+            this._implementation.unloadTile({x, y, z});
+        }
 
-  abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
-      if (tile.request && tile.request.cancel) {
-          tile.request.cancel();
-          delete tile.request;
-      }
+        callback();
+    }
 
-      callback();
-  }
+    abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+        if (tile.request && tile.request.cancel) {
+            tile.request.cancel();
+            delete tile.request;
+        }
 
-  hasTransition(): boolean {
-      return false;
-  }
+        callback();
+    }
 
-  _coveringTiles: (() => Array<{ x: number, y: number, z: number, ... }>) = (): Array<{ z: number, x: number, y: number }> => {
-      const tileIDs = this._map.transform.coveringTiles(
-      {
-          tileSize: this.tileSize,
-          minzoom: this.minzoom,
-          maxzoom: this.maxzoom,
-          roundZoom: this.roundZoom,
-      },
-      );
+    hasTransition(): boolean {
+        return false;
+    }
 
-      return tileIDs.map(
-      tileID => ({
-          x: tileID.canonical.x,
-          y: tileID.canonical.y,
-          z: tileID.canonical.z,
-      }),
-      );
-  };
+    _coveringTiles: (() => Array<{ x: number, y: number, z: number, ... }>) = (): Array<{ z: number, x: number, y: number }> => {
+        const tileIDs = this._map.transform.coveringTiles({
+            tileSize: this.tileSize,
+            minzoom: this.minzoom,
+            maxzoom: this.maxzoom,
+            roundZoom: this.roundZoom
+        });
 
-  _clearTiles: (() => void) = () => {
-      this._map.style._clearSource(this.id);
-  };
+        return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
+    }
 
-  _update: (() => void) = () => {
-      this.fire(
-      new Event('data', {dataType: 'source', sourceDataType: 'content'}),
-      );
-  };
+    _clearTiles: (() => void) = () => {
+        this._map.style._clearSource(this.id);
+    }
+
+    _update: (() => void) = () => {
+        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
+    }
 }
 
 export default CustomSource;
