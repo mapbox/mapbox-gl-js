@@ -540,6 +540,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
 export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
     overrides: ?Object;
+    useIntegerZoom: ?boolean;
 
     constructor(specification: StylePropertySpecification, overrides?: Object) {
         this.specification = specification;

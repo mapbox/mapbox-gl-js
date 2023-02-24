@@ -387,7 +387,7 @@ export default class ProgramConfiguration {
             const names = paintAttributeNames(property, layer.type);
             const expression = value.value;
             const type = value.property.specification.type;
-            const useIntegerZoom = value.property.useIntegerZoom;
+            const useIntegerZoom = !!value.property.useIntegerZoom;
             const isPattern = property === 'line-dasharray' || property.endsWith('pattern');
             const sourceException = property === 'line-dasharray' && (layer.layout: any).get('line-cap').value.kind !== 'constant';
 
@@ -398,14 +398,24 @@ export default class ProgramConfiguration {
                 keys.push(`/u_${property}`);
 
             } else if (expression.kind === 'source' || sourceException || isPattern) {
+                assert(expression.kind === 'composite' || expression.kind === 'source', `Unexpected expression kind ${expression.kind} in program configuration`);
                 const StructArrayLayout = layoutType(property, type, 'source');
                 this.binders[property] = isPattern ?
+                    // $FlowFixMe[prop-missing]
+                    // $FlowFixMe[incompatible-call] - assert should refine kind
                     new PatternCompositeBinder(expression, names, type, StructArrayLayout, layer.id) :
+                    // $FlowFixMe[prop-missing]
+                    // $FlowFixMe[incompatible-call] - assert should refine kind
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
+
                 keys.push(`/a_${property}`);
 
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
+
+                assert(expression.kind === 'composite', `Unexpected expression kind ${expression.kind} in program configuration`);
+                // $FlowFixMe[prop-missing]
+                // $FlowFixMe[incompatible-call] - assert should refine kind
                 this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
@@ -659,7 +669,9 @@ const defaultLayouts = {
 };
 
 function layoutType(property, type, binderType) {
+    assert(type === 'color' || type === 'number', `Unknown layout type: ${type}`);
     const layoutException = propertyExceptions[property];
+    // $FlowFixMe[prop-missing] - assert above ensures that type is a valid key
     return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
 }
 
