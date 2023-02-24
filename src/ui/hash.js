@@ -13,126 +13,117 @@ import type Map from './map.js';
  * @returns {Hash} `this`
  */
 export default class Hash {
-  _map: ?Map;
-  _updateHash: () => ?TimeoutID;
-  _hashName: ?string;
+    _map: ?Map;
+    _updateHash: () => ?TimeoutID;
+    _hashName: ?string;
 
-  constructor(hashName: ?string) {
-      this._hashName = hashName && encodeURIComponent(hashName);
-      bindAll(['_getCurrentHash', '_onHashChange', '_updateHash'], this);
+    constructor(hashName: ?string) {
+        this._hashName = hashName && encodeURIComponent(hashName);
+        bindAll([
+            '_getCurrentHash',
+            '_onHashChange',
+            '_updateHash'
+        ], this);
 
-      // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
-      this._updateHash = throttle(
-      this._updateHashUnthrottled.bind(this),
-      30 * 1000 / 100,
-      );
-  }
+        // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
+        this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
+    }
 
-  /*
+    /*
      * Map element to listen for coordinate changes
      *
      * @param {Object} map
      * @returns {Hash} `this`
      */
-  addTo(map: Map): this {
-      this._map = map;
-      window.addEventListener('hashchange', this._onHashChange, false);
-      map.on('moveend', this._updateHash);
-      return this;
-  }
+    addTo(map: Map): this {
+        this._map = map;
+        window.addEventListener('hashchange', this._onHashChange, false);
+        map.on('moveend', this._updateHash);
+        return this;
+    }
 
-  /*
+    /*
      * Removes hash
      *
      * @returns {Popup} `this`
      */
-  remove(): this {
-      if (!this._map) return this;
+    remove(): this {
+        if (!this._map) return this;
 
-      this._map.off('moveend', this._updateHash);
-      window.removeEventListener('hashchange', this._onHashChange, false);
-      clearTimeout(this._updateHash());
+        this._map.off('moveend', this._updateHash);
+        window.removeEventListener('hashchange', this._onHashChange, false);
+        clearTimeout(this._updateHash());
 
-      this._map = undefined;
-      return this;
-  }
+        this._map = undefined;
+        return this;
+    }
 
-  getHashString(): string {
-      const map = this._map;
-      if (!map) return '';
+    getHashString(): string {
+        const map = this._map;
+        if (!map) return '';
 
-      const hash = getHashString(map);
+        const hash = getHashString(map);
 
-      if (this._hashName) {
-          const hashName = this._hashName;
-          let found = false;
-          const parts = window.location.hash.slice(1).split('&').map(
-        part => {
-            const key = part.split('=')[0];
-            if (key === hashName) {
-                found = true;
-                return `${key}=${hash}`;
+        if (this._hashName) {
+            const hashName = this._hashName;
+            let found = false;
+            const parts = window.location.hash.slice(1).split('&').map(part => {
+                const key = part.split('=')[0];
+                if (key === hashName) {
+                    found = true;
+                    return `${key}=${hash}`;
+                }
+                return part;
+            }).filter(a => a);
+            if (!found) {
+                parts.push(`${hashName}=${hash}`);
             }
-            return part;
-        },
-          ).filter(a => a);
-          if (!found) {
-              parts.push(`${hashName}=${hash}`);
-          }
-          return `#${parts.join('&')}`;
-      }
+            return `#${parts.join('&')}`;
+        }
 
-      return `#${hash}`;
-  }
+        return `#${hash}`;
+    }
 
-  _getCurrentHash(): Array<string> {
-      // Get the current hash from location, stripped from its number sign
-      const hash = window.location.hash.replace('#', '');
-      if (this._hashName) {
-      // Split the parameter-styled hash into parts and find the value we need
-          let keyval;
-          hash.split('&').map(part => part.split('=')).forEach(
-        part => {
-            if (part[0] === this._hashName) {
-                keyval = part;
-            }
-        },
-          );
-          return (keyval ? keyval[1] || '' : '').split('/');
-      }
-      return hash.split('/');
-  }
+    _getCurrentHash(): Array<string> {
+        // Get the current hash from location, stripped from its number sign
+        const hash = window.location.hash.replace('#', '');
+        if (this._hashName) {
+            // Split the parameter-styled hash into parts and find the value we need
+            let keyval;
+            hash.split('&').map(
+                part => part.split('=')
+            ).forEach(part => {
+                if (part[0] === this._hashName) {
+                    keyval = part;
+                }
+            });
+            return (keyval ? keyval[1] || '' : '').split('/');
+        }
+        return hash.split('/');
+    }
 
-  _onHashChange: (() => boolean) = (): boolean => {
-      const map = this._map;
-      if (!map) return false;
-      const loc = this._getCurrentHash();
-      if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
-          const bearing = map.dragRotate.isEnabled() &&
-        map.touchZoomRotate.isEnabled() ?
-              +(loc[3] || 0) :
-              map.getBearing();
-          map.jumpTo(
-        {
-            center: [+loc[2], +loc[1]],
-            zoom: +loc[0],
-            bearing,
-            pitch: +(loc[4] || 0),
-        },
-          );
-          return true;
-      }
-      return false;
-  };
+    _onHashChange: (() => boolean) = (): boolean => {
+        const map = this._map;
+        if (!map) return false;
+        const loc = this._getCurrentHash();
+        if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+            const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
+            map.jumpTo({
+                center: [+loc[2], +loc[1]],
+                zoom: +loc[0],
+                bearing,
+                pitch: +(loc[4] || 0)
+            });
+            return true;
+        }
+        return false;
+    }
 
-  _updateHashUnthrottled: (() => void) = () => {
-      // Replace if already present, else append the updated hash string
-      const location = window.location.href.replace(
-      /(#.+)?$/,
-      this.getHashString(),
-      );
-      window.history.replaceState(window.history.state, null, location);
-  };
+    _updateHashUnthrottled: (() => void) = () => {
+        // Replace if already present, else append the updated hash string
+        const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
+        window.history.replaceState(window.history.state, null, location);
+    }
 }
 
 export function getHashString(map: Map, mapFeedback?: boolean): string {
