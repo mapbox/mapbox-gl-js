@@ -413,295 +413,231 @@ class TelemetryEvent {
     }
 }
 
-export class PerformanceEvent
-    extends TelemetryEvent {
+export class PerformanceEvent extends TelemetryEvent {
     constructor() {
         super('gljs.performance');
     }
 
-  postPerformanceEvent: ((customAccessToken: ?string, performanceData: LivePerformanceData) => void) = (
-    customAccessToken: ?string,
-    performanceData: LivePerformanceData,
-  ) => {
-      if (config.EVENTS_URL) {
-          if (customAccessToken || config.ACCESS_TOKEN) {
-              this.queueRequest(
-          {timestamp: Date.now(), performanceData},
-          customAccessToken,
-              );
-          }
-      }
-  };
-
-  processRequests(customAccessToken?: ?string) {
-      if (this.pendingRequest || this.queue.length === 0) {
-          return;
-      }
-
-      const {timestamp, performanceData} = this.queue.shift();
-
-      const additionalPayload = getLivePerformanceMetrics(performanceData);
-
-      // Server will only process string for these entries
-      for (const metadata of additionalPayload.metadata) {
-          assert(typeof metadata.value === 'string');
-      }
-      for (const counter of additionalPayload.counters) {
-          assert(typeof counter.value === 'string');
-      }
-      for (const attribute of additionalPayload.attributes) {
-          assert(typeof attribute.value === 'string');
-      }
-
-      this.postEvent(timestamp, additionalPayload, () => {}, customAccessToken);
-  }
-}
-
-export class MapLoadEvent
-    extends TelemetryEvent {
-  +success: { [_: number]: boolean };
-  skuToken: string;
-  errorCb: EventCallback;
-
-  constructor() {
-      super('map.load');
-      this.success = {};
-      this.skuToken = '';
-  }
-
-  postMapLoadEvent: ((
-  mapId: number,
-  skuToken: string,
-  customAccessToken: ?string,
-  callback: EventCallback
-) => void) = (
-    mapId: number,
-    skuToken: string,
-    customAccessToken: ?string,
-    callback: EventCallback,
-) => {
-    this.skuToken = skuToken;
-    this.errorCb = callback;
-
-    if (config.EVENTS_URL) {
-        if (customAccessToken || config.ACCESS_TOKEN) {
-            this.queueRequest(
-          {id: mapId, timestamp: Date.now()},
-          customAccessToken,
-            );
-        } else {
-            this.errorCb(new Error(AUTH_ERR_MSG));
+    postPerformanceEvent: (customAccessToken: ?string, performanceData: LivePerformanceData) => void = (customAccessToken, performanceData) => {
+        if (config.EVENTS_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
+            }
         }
     }
-};
 
-  processRequests(customAccessToken?: ?string) {
-      if (this.pendingRequest || this.queue.length === 0) return;
-      const {id, timestamp} = this.queue.shift();
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
 
-      // Only one load event should fire per map
-      if (id && this.success[id]) return;
+        const {timestamp, performanceData} = this.queue.shift();
 
-      if (!this.anonId) {
-          this.fetchEventData();
-      }
+        const additionalPayload = getLivePerformanceMetrics(performanceData);
 
-      if (!validateUuid(this.anonId)) {
-          this.anonId = uuid();
-      }
+        // Server will only process string for these entries
+        for (const metadata of additionalPayload.metadata) {
+            assert(typeof metadata.value === 'string');
+        }
+        for (const counter of additionalPayload.counters) {
+            assert(typeof counter.value === 'string');
+        }
+        for (const attribute of additionalPayload.attributes) {
+            assert(typeof attribute.value === 'string');
+        }
 
-      const additionalPayload = {
-          sdkIdentifier: 'mapbox-gl-js',
-          sdkVersion,
-          skuId: SKU_ID,
-          skuToken: this.skuToken,
-          userId: this.anonId,
-      };
-
-      this.postEvent(
-      timestamp,
-      additionalPayload,
-      err => {
-          if (err) {
-              this.errorCb(err);
-          } else {
-              if (id) this.success[id] = true;
-          }
-      },
-      customAccessToken,
-      );
-  }
+        this.postEvent(timestamp, additionalPayload, () => {}, customAccessToken);
+    }
 }
 
-export class MapSessionAPI
-    extends TelemetryEvent {
-  +success: { [_: number]: boolean };
-  skuToken: string;
-  errorCb: EventCallback;
+export class MapLoadEvent extends TelemetryEvent {
+    +success: {[_: number]: boolean};
+    skuToken: string;
+    errorCb: EventCallback;
 
-  constructor() {
-      super('map.auth');
-      this.success = {};
-      this.skuToken = '';
-  }
+    constructor() {
+        super('map.load');
+        this.success = {};
+        this.skuToken = '';
+    }
 
-  getSession(
-    timestamp: number,
-    token: string,
-    callback: EventCallback,
-    customAccessToken?: ?string,
-  ) {
-      if (!config.API_URL || !config.SESSION_PATH) return;
-      const authUrlObject: UrlObject = parseUrl(
-      config.API_URL + config.SESSION_PATH,
-      );
-      authUrlObject.params.push(`sku=${token || ''}`);
-      authUrlObject.params.push(`access_token=${customAccessToken ||
-        config.ACCESS_TOKEN ||
-        ''}`,);
+    postMapLoadEvent: (mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) => void = (mapId, skuToken, customAccessToken, callback) => {
+        this.skuToken = skuToken;
+        this.errorCb = callback;
 
-      const request: RequestParameters = {
-          url: formatUrl(authUrlObject),
-          headers: {
-              'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
-              ,
-          },
-      };
-
-      this.pendingRequest = getData(
-      request,
-      error => {
-          this.pendingRequest = null;
-          callback(error);
-          this.saveEventData();
-          this.processRequests(customAccessToken);
-      },
-      );
-  }
-
-  getSessionAPI: ((
-  mapId: number,
-  skuToken: string,
-  customAccessToken: ?string,
-  callback: EventCallback
-) => void) = (
-    mapId: number,
-    skuToken: string,
-    customAccessToken: ?string,
-    callback: EventCallback,
-) => {
-    this.skuToken = skuToken;
-    this.errorCb = callback;
-
-    if (config.SESSION_PATH && config.API_URL) {
-        if (customAccessToken || config.ACCESS_TOKEN) {
-            this.queueRequest(
-          {id: mapId, timestamp: Date.now()},
-          customAccessToken,
-            );
-        } else {
-            this.errorCb(new Error(AUTH_ERR_MSG));
+        if (config.EVENTS_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
+            } else {
+                this.errorCb(new Error(AUTH_ERR_MSG));
+            }
         }
     }
-};
 
-  processRequests(customAccessToken?: ?string) {
-      if (this.pendingRequest || this.queue.length === 0) return;
-      const {id, timestamp} = this.queue.shift();
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) return;
+        const {id, timestamp} = this.queue.shift();
 
-      // Only one load event should fire per map
-      if (id && this.success[id]) return;
+        // Only one load event should fire per map
+        if (id && this.success[id]) return;
 
-      this.getSession(
-      timestamp,
-      this.skuToken,
-      err => {
-          if (err) {
-              this.errorCb(err);
-          } else {
-              if (id) this.success[id] = true;
-          }
-      },
-      customAccessToken,
-      );
-  }
+        if (!this.anonId) {
+            this.fetchEventData();
+        }
+
+        if (!validateUuid(this.anonId)) {
+            this.anonId = uuid();
+        }
+
+        const additionalPayload = {
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion,
+            skuId: SKU_ID,
+            skuToken: this.skuToken,
+            userId: this.anonId
+        };
+
+        this.postEvent(timestamp, additionalPayload, (err) => {
+            if (err) {
+                this.errorCb(err);
+            } else {
+                if (id) this.success[id] = true;
+            }
+
+        }, customAccessToken);
+    }
 }
 
-export class TurnstileEvent
-    extends TelemetryEvent {
+export class MapSessionAPI extends TelemetryEvent {
+    +success: {[_: number]: boolean};
+    skuToken: string;
+    errorCb: EventCallback;
+
+    constructor() {
+        super('map.auth');
+        this.success = {};
+        this.skuToken = '';
+    }
+
+    getSession(timestamp: number, token: string, callback: EventCallback, customAccessToken?: ?string) {
+        if (!config.API_URL || !config.SESSION_PATH) return;
+        const authUrlObject: UrlObject = parseUrl(config.API_URL + config.SESSION_PATH);
+        authUrlObject.params.push(`sku=${token || ''}`);
+        authUrlObject.params.push(`access_token=${customAccessToken || config.ACCESS_TOKEN || ''}`);
+
+        const request: RequestParameters = {
+            url: formatUrl(authUrlObject),
+            headers: {
+                'Content-Type': 'text/plain', //Skip the pre-flight OPTIONS request
+            }
+        };
+
+        this.pendingRequest = getData(request, (error) => {
+            this.pendingRequest = null;
+            callback(error);
+            this.saveEventData();
+            this.processRequests(customAccessToken);
+        });
+    }
+
+    getSessionAPI: (mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) => void = (mapId, skuToken, customAccessToken, callback) => {
+        this.skuToken = skuToken;
+        this.errorCb = callback;
+
+        if (config.SESSION_PATH && config.API_URL) {
+            if (customAccessToken || config.ACCESS_TOKEN) {
+                this.queueRequest({id: mapId, timestamp: Date.now()}, customAccessToken);
+            } else {
+                this.errorCb(new Error(AUTH_ERR_MSG));
+            }
+        }
+    }
+
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) return;
+        const {id, timestamp} = this.queue.shift();
+
+        // Only one load event should fire per map
+        if (id && this.success[id]) return;
+
+        this.getSession(timestamp, this.skuToken, (err) => {
+            if (err) {
+                this.errorCb(err);
+            } else {
+                if (id) this.success[id] = true;
+            }
+        }, customAccessToken);
+    }
+}
+
+export class TurnstileEvent extends TelemetryEvent {
     constructor(customAccessToken?: ?string) {
         super('appUserTurnstile');
         this._customAccessToken = customAccessToken;
     }
 
-  postTurnstileEvent: ((tileUrls: Array<string>, customAccessToken?: ?string) => void) = (tileUrls: Array<string>, customAccessToken?: ?string) => {
-      //Enabled only when Mapbox Access Token is set and a source uses
-      // mapbox tiles.
-      if (
-          config.EVENTS_URL && config.ACCESS_TOKEN && Array.isArray(tileUrls) &&
-        tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))
-      ) {
-          this.queueRequest(Date.now(), customAccessToken);
-      }
-  };
+    postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = (tileUrls, customAccessToken) => {
+        //Enabled only when Mapbox Access Token is set and a source uses
+        // mapbox tiles.
+        if (config.EVENTS_URL &&
+            config.ACCESS_TOKEN &&
+            Array.isArray(tileUrls) &&
+            tileUrls.some(url => isMapboxURL(url) || isMapboxHTTPURL(url))) {
+            this.queueRequest(Date.now(), customAccessToken);
+        }
+    }
 
-  processRequests(customAccessToken?: ?string) {
-      if (this.pendingRequest || this.queue.length === 0) {
-          return;
-      }
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
 
-      if (!this.anonId || !this.eventData.lastSuccess || !this.eventData.tokenU) {
-      //Retrieve cached data
-          this.fetchEventData();
-      }
+        if (!this.anonId || !this.eventData.lastSuccess || !this.eventData.tokenU) {
+            //Retrieve cached data
+            this.fetchEventData();
+        }
 
-      const tokenData = parseAccessToken(config.ACCESS_TOKEN);
-      const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
-      //Reset event data cache if the access token owner changed.
-      let dueForEvent = tokenU !== this.eventData.tokenU;
+        const tokenData = parseAccessToken(config.ACCESS_TOKEN);
+        const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
+        //Reset event data cache if the access token owner changed.
+        let dueForEvent = tokenU !== this.eventData.tokenU;
 
-      if (!validateUuid(this.anonId)) {
-          this.anonId = uuid();
-          dueForEvent = true;
-      }
+        if (!validateUuid(this.anonId)) {
+            this.anonId = uuid();
+            dueForEvent = true;
+        }
 
-      const nextUpdate = this.queue.shift();
-      // Record turnstile event once per calendar day.
-      if (this.eventData.lastSuccess) {
-          const lastUpdate = new Date(this.eventData.lastSuccess);
-          const nextDate = new Date(nextUpdate);
-          const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
-          dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 ||
-        lastUpdate.getDate() !== nextDate.getDate();
-      } else {
-          dueForEvent = true;
-      }
+        const nextUpdate = this.queue.shift();
+        // Record turnstile event once per calendar day.
+        if (this.eventData.lastSuccess) {
+            const lastUpdate = new Date(this.eventData.lastSuccess);
+            const nextDate = new Date(nextUpdate);
+            const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
+            dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
+        } else {
+            dueForEvent = true;
+        }
 
-      if (!dueForEvent) {
-          this.processRequests();
-          return;
-      }
+        if (!dueForEvent) {
+            this.processRequests();
+            return;
+        }
 
-      const additionalPayload = {
-          sdkIdentifier: 'mapbox-gl-js',
-          sdkVersion,
-          skuId: SKU_ID,
-          "enabled.telemetry": false,
-          userId: this.anonId,
-      };
+        const additionalPayload = {
+            sdkIdentifier: 'mapbox-gl-js',
+            sdkVersion,
+            skuId: SKU_ID,
+            "enabled.telemetry": false,
+            userId: this.anonId
+        };
 
-      this.postEvent(
-      nextUpdate,
-      additionalPayload,
-      err => {
-          if (!err) {
-              this.eventData.lastSuccess = nextUpdate;
-              this.eventData.tokenU = tokenU;
-          }
-      },
-      customAccessToken,
-      );
-  }
+        this.postEvent(nextUpdate, additionalPayload, (err) => {
+            if (!err) {
+                this.eventData.lastSuccess = nextUpdate;
+                this.eventData.tokenU = tokenU;
+            }
+        }, customAccessToken);
+    }
 }
 
 const turnstileEvent_ = new TurnstileEvent();
