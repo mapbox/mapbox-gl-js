@@ -580,6 +580,7 @@ class Transform {
 
         let changed = false;
         if (options.orientation && !quat.exactEquals(options.orientation, this._camera.orientation)) {
+            // $FlowFixMe[incompatible-call] - Flow can't infer that orientation is not null
             changed = this._setCameraOrientation(options.orientation);
         }
 

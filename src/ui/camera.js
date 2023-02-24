@@ -1066,6 +1066,7 @@ class Camera extends Evented {
         }
 
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
+            // $FlowFixMe[incompatible-type] - Flow can't infer that padding is not null here
             tr.padding = options.padding;
         }
 

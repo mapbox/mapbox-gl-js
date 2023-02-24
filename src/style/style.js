@@ -338,6 +338,7 @@ class Style extends Evented {
 
         this.light = new Light(this.stylesheet.light);
         if (this.stylesheet.terrain && !this.terrainSetForDrapingOnly()) {
+            // $FlowFixMe[incompatible-call] - Flow can't infer that terrain is not undefined
             this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
         }
         if (this.stylesheet.fog) {

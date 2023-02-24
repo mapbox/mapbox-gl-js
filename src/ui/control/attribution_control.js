@@ -161,6 +161,7 @@ class AttributionControl {
             if (sourceCache.used) {
                 const source = sourceCache.getSource();
                 if (source.attribution && attributions.indexOf(source.attribution) < 0) {
+                    // $FlowFixMe[incompatible-call] - Flow can't infer that attribution is a string
                     attributions.push(source.attribution);
                 }
             }
