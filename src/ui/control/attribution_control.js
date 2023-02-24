@@ -103,7 +103,7 @@ class AttributionControl {
         if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 
-    _toggleAttribution: (() => void) = () => {
+    _toggleAttribution: () => void = () => {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
             this._compactButton.setAttribute('aria-expanded', 'false');
@@ -113,7 +113,7 @@ class AttributionControl {
         }
     };
 
-    _updateEditLink: (() => void) = () => {
+    _updateEditLink: () => void = () => {
         let editLink = this._editLink;
         if (!editLink) {
             editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'): any);
@@ -201,7 +201,7 @@ class AttributionControl {
         this._editLink = null;
     }
 
-    _updateCompact: (() => void) = () => {
+    _updateCompact: () => void = () => {
         if (this._map.getCanvasContainer().offsetWidth <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {

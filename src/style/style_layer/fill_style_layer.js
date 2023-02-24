@@ -77,12 +77,10 @@ class FillStyleLayer extends StyleLayer {
     queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
         if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
-        const translatedPolygon = translate(
-            queryGeometry.tilespaceGeometry,
+        const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
             this.paint.get('fill-translate'),
             this.paint.get('fill-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor
-        );
+            transform.angle, queryGeometry.pixelToTileUnitsFactor);
 
         return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }

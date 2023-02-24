@@ -1724,7 +1724,7 @@ class Camera extends Evented {
     }
 
     // Callback for map._requestRenderFrame
-    _renderFrameCallback: (() => void) = () => {
+    _renderFrameCallback: () => void = () => {
         const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
         const frame = this._onEaseFrame;
         if (frame) frame(this._easeOptions.easing(t));

@@ -354,7 +354,7 @@ export class Terrain extends Elevation {
         return demScale * proxyTileSize;
     }
 
-    _checkRenderCacheEfficiency: (() => void) = () => {
+    _checkRenderCacheEfficiency: () => void = () => {
         const renderCacheInfo = this.renderCacheEfficiency(this._style);
         if (this._style.map._optimizeForTerrain) {
             assert(renderCacheInfo.efficiency === 100);
@@ -365,7 +365,7 @@ export class Terrain extends Elevation {
         }
     }
 
-    _onStyleDataEvent: ((event: any) => void) = (event: any) => {
+    _onStyleDataEvent: (event: any) => void = (event) => {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
         } else if (event.dataType === 'style') {

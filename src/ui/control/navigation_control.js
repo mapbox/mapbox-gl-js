@@ -84,7 +84,7 @@ class NavigationControl {
         }
     }
 
-    _updateZoomButtons: (() => void) = () => {
+    _updateZoomButtons: () => void = () => {
         const map = this._map;
         if (!map) return;
 
@@ -97,7 +97,7 @@ class NavigationControl {
         this._zoomOutButton.setAttribute('aria-disabled', isMin.toString());
     };
 
-    _rotateCompassArrow: (() => void) = () => {
+    _rotateCompassArrow: () => void = () => {
         const map = this._map;
         if (!map) return;
 
@@ -268,7 +268,7 @@ class MouseRotateWrapper {
         this.reset();
     };
 
-    reset: (() => void) = () => {
+    reset: () => void = () => {
         this.mouseRotate.reset();
         if (this.mousePitch) this.mousePitch.reset();
         delete this._startPos;

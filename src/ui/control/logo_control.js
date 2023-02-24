@@ -74,7 +74,7 @@ class LogoControl {
         return true;
     }
 
-    _updateCompact: (() => void) = () => {
+    _updateCompact: () => void = () => {
         const containerChildren = this._container.children;
         if (containerChildren.length) {
             const anchor = containerChildren[0];

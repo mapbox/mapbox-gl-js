@@ -76,12 +76,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset) => {
-        const translation = tilespaceTranslate(
-            this.paint.get('fill-extrusion-translate'),
-            this.paint.get('fill-extrusion-translate-anchor'),
-            transform.angle,
-            queryGeometry.pixelToTileUnitsFactor
-        );
+        const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
+                                this.paint.get('fill-extrusion-translate-anchor'),
+                                transform.angle,
+                                queryGeometry.pixelToTileUnitsFactor);
 
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);

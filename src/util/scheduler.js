@@ -64,7 +64,7 @@ class Scheduler {
         };
     }
 
-    process: (() => void) = () => {
+    process: () => void = () => {
         const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         try {
             this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);

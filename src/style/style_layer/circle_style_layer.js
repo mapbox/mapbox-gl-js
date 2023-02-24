@@ -62,8 +62,7 @@ class CircleStyleLayer extends StyleLayer {
         const translation = tilespaceTranslate(
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor
-        );
+            transform.angle, queryGeometry.pixelToTileUnitsFactor);
 
         const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);

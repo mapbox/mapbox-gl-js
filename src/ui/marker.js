@@ -429,7 +429,7 @@ export default class Marker extends Evented {
 
     }
 
-    _evaluateOpacity: (() => void) = () => {
+    _evaluateOpacity: () => void = () => {
         const map = this._map;
         if (!map) return;
 
@@ -459,7 +459,7 @@ export default class Marker extends Evented {
         this._fadeTimer = null;
     }
 
-    _clearFadeTimer: (() => void) = () => {
+    _clearFadeTimer: () => void = () => {
         if (this._fadeTimer) {
             clearTimeout(this._fadeTimer);
             this._fadeTimer = null;
@@ -658,7 +658,7 @@ export default class Marker extends Evented {
         this.fire(new Event('drag'));
     }
 
-    _onUp: (() => void) = () => {
+    _onUp: () => void = () => {
         // revert to normal pointer event handling
         this._element.style.pointerEvents = 'auto';
         this._positionDelta = null;

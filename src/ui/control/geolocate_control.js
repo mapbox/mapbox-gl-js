@@ -347,7 +347,7 @@ class GeolocateControl extends Evented {
         this._circleElement.style.height = `${circleDiameter}px`;
     }
 
-    _onZoom: (() => void) = () => {
+    _onZoom: () => void = () => {
         if (this.options.showUserLocation && this.options.showAccuracyCircle) {
             this._updateCircleRadius();
         }
@@ -358,7 +358,7 @@ class GeolocateControl extends Evented {
      *
      * @private
      */
-    _updateMarkerRotation: (() => void) = () => {
+    _updateMarkerRotation: () => void = () => {
         if (this._userLocationDotMarker && typeof this._heading === 'number') {
             this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
@@ -411,7 +411,7 @@ class GeolocateControl extends Evented {
         this._finish();
     }
 
-    _finish: (() => void) = () => {
+    _finish: () => void = () => {
         if (this._timeoutId) { clearTimeout(this._timeoutId); }
         this._timeoutId = undefined;
     };
