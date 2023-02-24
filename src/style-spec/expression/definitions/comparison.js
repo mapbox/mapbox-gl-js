@@ -62,6 +62,7 @@ function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { 
 function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext, any, any) => boolean, compareWithCollator: (EvaluationContext, any, any, any) => boolean): ExpressionRegistration {
     const isOrderComparison = op !== '==' && op !== '!=';
 
+    // $FlowFixMe[method-unbinding]
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
