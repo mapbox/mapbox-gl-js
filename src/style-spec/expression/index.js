@@ -193,41 +193,22 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
 }
 
 export type ConstantExpression = interface {
-  kind: 'constant',
-  +evaluate: (
-    globals: GlobalProperties,
-    feature?: Feature,
-    featureState?: FeatureState,
-    canonical?: CanonicalTileID,
-    availableImages?: Array<string>
-  ) => any,
+    kind: 'constant',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
 }
 
 export type SourceExpression = interface {
-  kind: 'source',
-  isStateDependent: boolean,
-  +evaluate: (
-    globals: GlobalProperties,
-    feature?: Feature,
-    featureState?: FeatureState,
-    canonical?: CanonicalTileID,
-    availableImages?: Array<string>,
-    formattedSection?: FormattedSection
-  ) => any,
+    kind: 'source',
+    isStateDependent: boolean,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
 };
 
 export type CameraExpression = interface {
-  kind: 'camera',
-  +evaluate: (
-    globals: GlobalProperties,
-    feature?: Feature,
-    featureState?: FeatureState,
-    canonical?: CanonicalTileID,
-    availableImages?: Array<string>
-  ) => any,
-  +interpolationFactor: (input: number, lower: number, upper: number) => number,
-  zoomStops: Array<number>,
-  interpolationType: ?InterpolationType,
+    kind: 'camera',
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
+    +interpolationFactor: (input: number, lower: number, upper: number) => number,
+    zoomStops: Array<number>,
+    interpolationType: ?InterpolationType
 };
 
 export interface CompositeExpression {
