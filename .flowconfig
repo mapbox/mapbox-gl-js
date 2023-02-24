@@ -30,7 +30,7 @@
 .*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.185.0
+0.186.0
 
 [options]
 
