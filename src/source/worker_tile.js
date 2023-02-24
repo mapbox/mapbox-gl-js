@@ -155,6 +155,7 @@ class WorkerTile {
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
+                    // $FlowFixMe[incompatible-call] - Flow can;t infer proper `family` type from `layer` above
                     layers: family,
                     zoom: this.zoom,
                     canonical: this.canonical,

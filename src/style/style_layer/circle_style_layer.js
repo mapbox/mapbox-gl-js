@@ -36,7 +36,7 @@ class CircleStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    createBucket(parameters: BucketParameters<*>): CircleBucket<CircleStyleLayer> {
+    createBucket(parameters: BucketParameters<CircleStyleLayer>): CircleBucket<CircleStyleLayer> {
         return new CircleBucket(parameters);
     }
 

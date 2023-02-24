@@ -34,7 +34,7 @@ class HeatmapStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    createBucket(parameters: BucketParameters<*>): HeatmapBucket {
+    createBucket(parameters: BucketParameters<HeatmapStyleLayer>): HeatmapBucket {
         return new HeatmapBucket(parameters);
     }
 

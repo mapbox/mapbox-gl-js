@@ -106,7 +106,7 @@ class SymbolStyleLayer extends StyleLayer {
         return value;
     }
 
-    createBucket(parameters: BucketParameters<*>): SymbolBucket {
+    createBucket(parameters: BucketParameters<SymbolStyleLayer>): SymbolBucket {
         return new SymbolBucket(parameters);
     }
 
