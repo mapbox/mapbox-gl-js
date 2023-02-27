@@ -398,24 +398,21 @@ export default class ProgramConfiguration {
                 keys.push(`/u_${property}`);
 
             } else if (expression.kind === 'source' || sourceException || isPattern) {
-                assert(expression.kind === 'composite' || expression.kind === 'source', `Unexpected expression kind ${expression.kind} in program configuration`);
                 const StructArrayLayout = layoutType(property, type, 'source');
                 this.binders[property] = isPattern ?
                     // $FlowFixMe[prop-missing]
-                    // $FlowFixMe[incompatible-call] - assert should refine kind
+                    // $FlowFixMe[incompatible-call] - expression can be a `composite` or `constant` kind expression
                     new PatternCompositeBinder(expression, names, type, StructArrayLayout, layer.id) :
                     // $FlowFixMe[prop-missing]
-                    // $FlowFixMe[incompatible-call] - assert should refine kind
+                    // $FlowFixMe[incompatible-call] - expression can be a `composite` or `constant` kind expression
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
 
                 keys.push(`/a_${property}`);
 
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
-
-                assert(expression.kind === 'composite', `Unexpected expression kind ${expression.kind} in program configuration`);
                 // $FlowFixMe[prop-missing]
-                // $FlowFixMe[incompatible-call] - assert should refine kind
+                // $FlowFixMe[incompatible-call] — expression can be a `constant` kind expression
                 this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
