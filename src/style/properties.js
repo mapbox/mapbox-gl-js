@@ -376,7 +376,7 @@ export class Layout<Props: Object> {
         return clone(this._values[name].value);
     }
 
-    setValue<S: string>(name: S, value: *) {
+    setValue<S: string>(name: S, value: any) {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
     }
 

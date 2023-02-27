@@ -224,23 +224,23 @@ class MouseRotateWrapper {
         window.removeEventListener('mouseup', this.mouseup);
     }
 
-    mousedown: ((e: MouseEvent) => void) = (e: MouseEvent) => {
+    mousedown: (e: MouseEvent) => void = (e) => {
         this.down(extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
         window.addEventListener('mousemove', this.mousemove);
         window.addEventListener('mouseup', this.mouseup);
     };
 
-    mousemove: ((e: MouseEvent) => void) = (e: MouseEvent) => {
+    mousemove: (e: MouseEvent) => void = (e) => {
         this.move(e, DOM.mousePos(this.element, e));
     };
 
-    mouseup: ((e: MouseEvent) => void) = (e: MouseEvent) => {
+    mouseup: (e: MouseEvent) => void = (e) => {
         this.mouseRotate.mouseupWindow(e);
         if (this.mousePitch) this.mousePitch.mouseupWindow(e);
         this.offTemp();
     };
 
-    touchstart: ((e: TouchEvent) => void) = (e: TouchEvent) => {
+    touchstart: (e: TouchEvent) => void = (e) => {
         if (e.targetTouches.length !== 1) {
             this.reset();
         } else {
@@ -249,7 +249,7 @@ class MouseRotateWrapper {
         }
     };
 
-    touchmove: ((e: TouchEvent) => void) = (e: TouchEvent) => {
+    touchmove: (e: TouchEvent) => void = (e) => {
         if (e.targetTouches.length !== 1) {
             this.reset();
         } else {
@@ -258,7 +258,7 @@ class MouseRotateWrapper {
         }
     };
 
-    touchend: ((e: TouchEvent) => void) = (e: TouchEvent) => {
+    touchend: (e: TouchEvent) => void = (e) => {
         if (e.targetTouches.length === 0 &&
             this._startPos &&
             this._lastPos &&

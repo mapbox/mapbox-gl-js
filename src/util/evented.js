@@ -1,6 +1,7 @@
 // @flow
 
 import {extend} from './util.js';
+import type {MapEvent} from '../ui/events.js';
 
 type Listener = (Object) => any;
 type Listeners = {[_: string]: Array<Listener> };
@@ -67,7 +68,7 @@ export class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    on(type: *, listener: Listener): this {
+    on(type: MapEvent, listener: Listener): this {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -81,7 +82,7 @@ export class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    off(type: *, listener: Listener): this {
+    off(type: MapEvent, listener: Listener): this {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -98,7 +99,7 @@ export class Evented {
      *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} Returns `this` | Promise.
      */
-    once(type: *, listener?: Listener): this | Promise<Event> {
+    once(type: MapEvent, listener?: Listener): this | Promise<Event> {
         if (!listener) {
             return new Promise(resolve => this.once(type, resolve));
         }

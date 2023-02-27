@@ -352,7 +352,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _onKeyPress: ((e: KeyboardEvent) => void) = (e: KeyboardEvent) => {
+    _onKeyPress: (e: KeyboardEvent) => void = (e) => {
         const code = e.code;
         const legacyCode = e.charCode || e.keyCode;
 
@@ -364,7 +364,7 @@ export default class Marker extends Evented {
         }
     }
 
-    _onMapClick: ((e: MapMouseEvent) => void) = (e: MapMouseEvent) => {
+    _onMapClick: (e: MapMouseEvent) => void = (e) => {
         const targetElement = e.originalEvent.target;
         const element = this._element;
 
@@ -545,7 +545,7 @@ export default class Marker extends Evented {
         return rotation ? `rotateZ(${rotation}deg)` : '';
     }
 
-    _update: ((delaySnap?: boolean) => void) = (delaySnap?: boolean) => {
+    _update: (delaySnap?: boolean) => void = (delaySnap) => {
         window.cancelAnimationFrame(this._updateFrameId);
         const map = this._map;
         if (!map) return;
@@ -608,7 +608,7 @@ export default class Marker extends Evented {
         return this;
     }
 
-    _onMove: ((e: MapMouseEvent | MapTouchEvent) => void) = (e: MapMouseEvent | MapTouchEvent) => {
+    _onMove: (e: MapMouseEvent | MapTouchEvent) => void = (e) => {
         const map = this._map;
         if (!map) return;
 
@@ -688,7 +688,7 @@ export default class Marker extends Evented {
         this._state = 'inactive';
     }
 
-    _addDragHandler: ((e: MapMouseEvent | MapTouchEvent) => void) = (e: MapMouseEvent | MapTouchEvent) => {
+    _addDragHandler: (e: MapMouseEvent | MapTouchEvent) => void = (e) => {
         const map = this._map;
         const pos = this._pos;
         if (!map || !pos) return;

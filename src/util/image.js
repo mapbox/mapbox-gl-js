@@ -5,8 +5,8 @@ import assert from 'assert';
 import {register} from './web_worker_transfer.js';
 
 export type Size = interface {
-  width: number,
-  height: number,
+    width: number,
+    height: number,
 };
 
 export interface SpritePosition {

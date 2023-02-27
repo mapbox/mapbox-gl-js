@@ -43,6 +43,7 @@ import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
+import type {MapEvent} from './events.js';
 
 /**
  * A helper type: converts all Object type values to non-maybe types.
@@ -1782,7 +1783,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
         ['drag', 'zoom', 'rotate', 'pitch', 'move'].forEach(name => {
             inProgress[name] = false;
 
-            camera.on(`${name}start`, () => {
+            camera.on(((`${name}start`: any): MapEvent), () => {
                 assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
                 inProgress[name] = true;
                 assert(inProgress.move);
@@ -1793,7 +1794,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
                 assert(inProgress.move);
             });
 
-            camera.on(`${name}end`, () => {
+            camera.on(((`${name}end`: any): MapEvent), () => {
                 assert(inProgress.move);
                 assert(inProgress[name]);
                 inProgress[name] = false;

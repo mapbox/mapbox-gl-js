@@ -339,7 +339,7 @@ class HandlerManager {
         return false;
     }
 
-    handleWindowEvent: ((e: InputEvent) => void) = (e: InputEvent) => {
+    handleWindowEvent: (e: InputEvent) => void = (e) => {
         this.handleEvent(e, `${e.type}Window`);
     }
 
@@ -354,7 +354,7 @@ class HandlerManager {
         return ((mapTouches: any): TouchList);
     }
 
-    handleEvent: ((e: InputEvent | RenderFrameEvent, eventName?: string) => void) = (e: InputEvent | RenderFrameEvent, eventName?: string) => {
+    handleEvent: (e: InputEvent | RenderFrameEvent, eventName?: string) => void = (e, eventName) => {
 
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
@@ -673,7 +673,7 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: string, e: *) {
+    _fireEvent(type: string, e: any) {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 

@@ -227,7 +227,7 @@ class ScrollZoomHandler {
         e.preventDefault();
     }
 
-    _onTimeout: ((initialEvent: WheelEvent) => void) = (initialEvent: WheelEvent) => {
+    _onTimeout: (initialEvent: WheelEvent) => void = (initialEvent) => {
         this._type = 'wheel';
         this._delta -= this._lastValue;
         if (!this._active) {

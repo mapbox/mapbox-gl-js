@@ -234,7 +234,7 @@ class GeolocateControl extends Evented {
      * @param {Position} position the Geolocation API Position
      * @private
      */
-    _onSuccess: ((position: Position) => void) = (position: Position) => {
+    _onSuccess: (position: Position) => void = (position) => {
         if (!this._map) {
             // control has since been removed
             return;
@@ -368,7 +368,7 @@ class GeolocateControl extends Evented {
         }
     };
 
-    _onError: ((error: PositionError) => void) = (error: PositionError) => {
+    _onError: (error: PositionError) => void = (error) => {
         if (!this._map) {
             // control has since been removed
             return;
@@ -416,7 +416,7 @@ class GeolocateControl extends Evented {
         this._timeoutId = undefined;
     };
 
-    _setupUI: ((supported: boolean) => void) = (supported: boolean) => {
+    _setupUI: (supported: boolean) => void = (supported) => {
         if (this._map === undefined) {
             // This control was removed from the map before geolocation
             // support was determined.
@@ -508,7 +508,7 @@ class GeolocateControl extends Evented {
     *   geolocate.trigger();
     * });
     */
-    _onDeviceOrientation: ((deviceOrientationEvent: DeviceOrientationEvent) => void) = (deviceOrientationEvent: DeviceOrientationEvent) => {
+    _onDeviceOrientation: (deviceOrientationEvent: DeviceOrientationEvent) => void = (deviceOrientationEvent) => {
         // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
         if (this._userLocationDotMarker) {
             if (deviceOrientationEvent.webkitCompassHeading) {

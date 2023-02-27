@@ -102,7 +102,7 @@ export default class Hash {
         return hash.split('/');
     }
 
-    _onHashChange: (() => boolean) = (): boolean => {
+    _onHashChange: () => boolean = () => {
         const map = this._map;
         if (!map) return false;
         const loc = this._getCurrentHash();

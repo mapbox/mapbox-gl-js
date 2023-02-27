@@ -54,7 +54,7 @@ class LogoControl {
         return 'bottom-left';
     };
 
-    _updateLogo: ((e: any) => void) = (e: any) => {
+    _updateLogo: (e: any) => void = (e) => {
         if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }

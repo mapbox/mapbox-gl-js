@@ -138,7 +138,7 @@ class AttributionControl {
         }
     };
 
-    _updateData: ((e: any) => void) = (e: any) => {
+    _updateData: (e: any) => void = (e) => {
         if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();

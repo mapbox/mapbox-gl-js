@@ -32,8 +32,8 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
     addListeners: Array<MessageListener>;
     postListeners: Array<MessageListener>;
     target: MessageBus;
-    registerWorkerSource: *;
-    registerRTLTextPlugin: *;
+    registerWorkerSource: any;
+    registerRTLTextPlugin: any;
 
     constructor(addListeners: Array<MessageListener>, postListeners: Array<MessageListener>) {
         this.addListeners = addListeners;

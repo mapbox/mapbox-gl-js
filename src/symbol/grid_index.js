@@ -87,39 +87,25 @@ class GridIndex {
         this.circles.push(radius);
     }
 
-    _insertBoxCell: ((
+    _insertBoxCell: (
         x1: number,
         y1: number,
         x2: number,
         y2: number,
         cellIndex: number,
         uid: number
-    ) => void) = (
-        x1: number,
-        y1: number,
-        x2: number,
-        y2: number,
-        cellIndex: number,
-        uid: number
-    ) => {
+    ) => void = (x1, y1, x2, y2, cellIndex, uid) => {
         this.boxCells[cellIndex].push(uid);
     };
 
-    _insertCircleCell: ((
+    _insertCircleCell: (
         x1: number,
         y1: number,
         x2: number,
         y2: number,
         cellIndex: number,
         uid: number
-    ) => void) = (
-        x1: number,
-        y1: number,
-        x2: number,
-        y2: number,
-        cellIndex: number,
-        uid: number
-    ) => {
+    ) => void = (x1, y1, x2, y2, cellIndex, uid) => {
         this.circleCells[cellIndex].push(uid);
     }
 
@@ -200,7 +186,7 @@ class GridIndex {
         return (this._queryCircle(x, y, radius, true, predicate): any);
     }
 
-    _queryCell: ((
+    _queryCell: (
         x1: number,
         y1: number,
         x2: number,
@@ -209,16 +195,7 @@ class GridIndex {
         result: any,
         queryArgs: any,
         predicate?: any
-    ) => void | boolean) = (
-        x1: number,
-        y1: number,
-        x2: number,
-        y2: number,
-        cellIndex: number,
-        result: any,
-        queryArgs: any,
-        predicate?: any,
-    ): void | boolean => {
+    ) => void | boolean = (x1, y1, x2, y2, cellIndex, result, queryArgs, predicate?) => {
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
         if (boxCell !== null) {
@@ -285,7 +262,7 @@ class GridIndex {
         }
     }
 
-    _queryCellCircle: ((
+    _queryCellCircle: (
         x1: number,
         y1: number,
         x2: number,
@@ -294,16 +271,7 @@ class GridIndex {
         result: any,
         queryArgs: any,
         predicate?: any
-    ) => void | boolean) = (
-        x1: number,
-        y1: number,
-        x2: number,
-        y2: number,
-        cellIndex: number,
-        result: any,
-        queryArgs: any,
-        predicate?: any,
-    ): void | boolean => {
+    ) => void | boolean = (x1, y1, x2, y2, cellIndex, result, queryArgs, predicate?) => {
         const circle = queryArgs.circle;
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];

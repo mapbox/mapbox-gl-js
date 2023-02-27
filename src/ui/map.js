@@ -2993,7 +2993,7 @@ class Map extends Camera {
         webpSupported.testSupport(gl);
     }
 
-    _contextLost: (event: *) => void = (event: *) => {
+    _contextLost: (event: any) => void = (event) => {
         event.preventDefault();
         if (this._frame) {
             this._frame.cancel();
@@ -3002,14 +3002,14 @@ class Map extends Camera {
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
-    _contextRestored: (event: *) => void = (event: *) => {
+    _contextRestored: (event: any) => void = (event) => {
         this._setupPainter();
         this.resize();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
-    _onMapScroll: (event: *) => ?boolean = (event: *) => {
+    _onMapScroll: (event: any) => ?boolean = (event) => {
         if (event.target !== this._container) return;
 
         // Revert any scroll which would move the canvas outside of the view

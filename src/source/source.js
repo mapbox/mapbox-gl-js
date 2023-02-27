@@ -8,6 +8,7 @@ import type Map from '../ui/map.js';
 import type Tile from './tile.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Callback} from '../types/callback.js';
+import type {MapEvent} from '../ui/events.js';
 import {CanonicalTileID} from './tile_id.js';
 
 /**
@@ -58,7 +59,7 @@ export interface Source {
     loaded(): boolean;
 
     fire(event: Event): mixed;
-    on(type: *, listener: (Object) => any): Evented;
+    on(type: MapEvent, listener: (Object) => any): Evented;
     setEventedParent(parent: ?Evented, data?: Object | () => Object): Evented;
 
     +onAdd?: (map: Map) => void;

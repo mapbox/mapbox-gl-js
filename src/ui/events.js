@@ -1521,4 +1521,31 @@ export type MapEvent =
      * });
      */
     | 'speedindexcompleted'
+
+    /**
+     * Fired after RTL text plugin state changes.
+     *
+     * @event pluginStateChange
+     * @instance
+     * @private
+     */
+    | 'pluginStateChange'
+
+    /**
+     * Fired in worker.js after sprite loaded.
+     *
+     * @event pluginStateChange
+     * @instance
+     * @private
+     */
+    | 'isSpriteLoaded'
+
+    /**
+     * Fired in style.js after layer order changed.
+     *
+     * @event pluginStateChange
+     * @instance
+     * @private
+     */
+    | 'neworder'
 ;
