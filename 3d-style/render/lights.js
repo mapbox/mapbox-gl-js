@@ -25,11 +25,23 @@ export const lightsUniformValues = (
     ambient: Lights<Ambient>
 ): UniformValues<LightsUniformsType> => {
     const direction = directional.properties.get('direction');
-    const directionalColor = directional.properties.get('color').toArray01Scaled(directional.properties.get('intensity'));
-    const ambientColor = ambient.properties.get('color').toArray01Scaled(ambient.properties.get('intensity'));
+
+    const directionalColor = directional.properties.get('color').toArray01();
+    const directionalIntensity = directional.properties.get('intensity');
+    const ambientColor = ambient.properties.get('color').toArray01();
+    const ambientIntensity = ambient.properties.get('intensity');
+
+    const sRGBToLinearAndScale = (v: [number, number, number, number], s: number): [number, number, number] => {
+        return [
+            Math.pow(v[0], 2.2) * s,
+            Math.pow(v[1], 2.2) * s,
+            Math.pow(v[2], 2.2) * s
+        ];
+    };
+
     return {
-        'u_lighting_ambient_color': ambientColor,
+        'u_lighting_ambient_color': sRGBToLinearAndScale(ambientColor, ambientIntensity),
         'u_lighting_directional_dir': [direction.x, direction.y, direction.z],
-        'u_lighting_directional_color': directionalColor
+        'u_lighting_directional_color': sRGBToLinearAndScale(directionalColor, directionalIntensity)
     };
 };

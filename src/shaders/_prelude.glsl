@@ -10,3 +10,15 @@
 #define RAD_TO_DEG 180.0 / PI
 #define DEG_TO_RAD PI / 180.0
 #define GLOBE_RADIUS EXTENT / PI / 2.0
+
+// linear to sRGB approximation
+vec3 linearTosRGB(vec3 color)
+{
+    return pow(color, vec3(1./2.2));
+}
+
+// sRGB to linear approximation
+vec3 sRGBToLinear(vec3 srgbIn)
+{
+    return vec3(pow(srgbIn.xyz, vec3(2.2)));
+}
