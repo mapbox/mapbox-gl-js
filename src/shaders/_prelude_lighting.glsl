@@ -4,17 +4,26 @@
 
 #ifdef LIGHTING_3D_MODE
 
+// All color values are expected to be in linear color space
 uniform mediump vec3 u_lighting_ambient_color;
 uniform mediump vec3 u_lighting_directional_dir;        // Direction towards the light source
 uniform mediump vec3 u_lighting_directional_color;
 
 vec3 apply_lighting(vec3 color) {
     float NdotL = u_lighting_directional_dir.z;
-    return color * (u_lighting_ambient_color + u_lighting_directional_color * NdotL);
+    return linearTosRGB(sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL));
 }
 
 vec4 apply_lighting(vec4 color) {
     return vec4(apply_lighting(color.rgb), color.a);
+}
+
+vec3 apply_lighting(vec3 color, float NdotL) {
+    return linearTosRGB(sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL));
+}
+
+vec4 apply_lighting(vec4 color, float NdotL) {
+    return vec4(apply_lighting(color.rgb, NdotL), color.a);
 }
 
 float calculate_NdotL(vec3 normal) {
@@ -22,14 +31,6 @@ float calculate_NdotL(vec3 normal) {
     // This allows us to trade some realism for performance/usability as a single light source is enough to shade the scene.
     const float ext = 0.70710678118; // acos(pi/4)
     return (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
-}
-
-vec3 apply_lighting(vec3 color, float NdotL) {
-    return color * (u_lighting_ambient_color + u_lighting_directional_color * NdotL);
-}
-
-vec4 apply_lighting(vec4 color, float NdotL) {
-    return vec4(apply_lighting(color.rgb, NdotL), color.a);
 }
 
 #ifdef LIGHTING_3D_MODE_NO_EMISSION
