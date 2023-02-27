@@ -55,11 +55,16 @@ const config: Config = {
     },
     get EVENTS_URL() {
         if (!config.API_URL) { return null; }
-        if (config.API_URL.indexOf('https://api.mapbox.cn') === 0) {
-            return 'https://events.mapbox.cn/events/v2';
-        } else if (config.API_URL.indexOf('https://api.mapbox.com') === 0) {
-            return 'https://events.mapbox.com/events/v2';
-        } else {
+        try {
+            const url = new URL(config.API_URL);
+            if (url.hostname === 'api.mapbox.cn') {
+                return 'https://events.mapbox.cn/events/v2';
+            } else if (url.hostname === 'api.mapbox.com') {
+                return 'https://events.mapbox.com/events/v2';
+            } else {
+                return null;
+            }
+        } catch (e) {
             return null;
         }
     },
