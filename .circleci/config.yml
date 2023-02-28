@@ -550,7 +550,7 @@ jobs:
                 path: test/integration/render-tests
             - store_artifacts:
                 path: "test/integration/render-tests/index.html"
-      - run: echo 0
+      - run: circleci-agent step halt
 
   prepare-windows:
     <<: *windows-defaults
