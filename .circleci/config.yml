@@ -115,8 +115,6 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
-  test-render-linux:
-    jobs:
       - prepare-linux:
           filters:
             tags:
@@ -145,8 +143,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-  test-render-mac:
-    jobs:
       - prepare-mac:
           filters:
             tags:
@@ -163,14 +159,17 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-mac-safari-dev-approval:
+          type: approval
+          requires:
+            - prepare-mac
       - test-render-mac-safari-dev:
           requires:
             - prepare-mac
+            - test-render-mac-safari-dev-approval
           filters:
             tags:
               only: /.*/
-  test-render-windows:
-    jobs:
       - prepare-windows:
           filters:
             tags:
@@ -189,6 +188,7 @@ linux-defaults: &linux-defaults
 
 mac-defaults: &mac-defaults
   macos:
+    # https://circleci.com/docs/using-macos/#supported-xcode-versions
     xcode: 14.2.0 # macOS 12.6 (Monterey)
   working_directory: ~/mapbox-gl-js
 
