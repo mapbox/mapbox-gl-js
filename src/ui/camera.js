@@ -771,11 +771,6 @@ class Camera extends Evented {
         return null;
     }
 
-    /** @section {Camera}
-     * @method
-     * @instance
-     * @memberof Map */
-
     /**
      * Calculate the center of these two points in the viewport and use
      * the highest zoom level up to and including `Map#getMaxZoom()` that fits
