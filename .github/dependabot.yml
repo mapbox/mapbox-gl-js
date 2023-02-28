@@ -17,3 +17,10 @@ updates:
         update-types: ["version-update:semver-minor"]
       - dependency-name: jsdom
         update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - skip changelog
