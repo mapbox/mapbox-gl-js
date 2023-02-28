@@ -165,7 +165,6 @@ workflows:
             - prepare-mac
       - test-render-mac-safari-dev:
           requires:
-            - prepare-mac
             - test-render-mac-safari-dev-approval
           filters:
             tags:
