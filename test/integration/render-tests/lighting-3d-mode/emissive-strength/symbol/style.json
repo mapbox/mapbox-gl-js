@@ -39,6 +39,7 @@
     }
   },
   "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
@@ -77,7 +78,7 @@
         "symbol-placement": "point"
       },
       "paint": {
-        "emissive-strength": 0.5
+        "icon-emissive-strength": 0.5
       }
     },
     {
@@ -95,7 +96,29 @@
         "symbol-placement": "point"
       },
       "paint": {
-        "emissive-strength": 0.0
+        "icon-emissive-strength": 0.0
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road_label",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 60,
+        "text-rotation-alignment": "viewport",
+        "text-pitch-alignment": "auto",
+        "text-field": "{class}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-opacity": 1,
+        "text-color":"rgba(255.0, 0.0, 0.0, 1.0)",
+        "text-emissive-strength": 0.88
       }
     }
   ]
