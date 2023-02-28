@@ -5,17 +5,22 @@ orbs:
   macos: circleci/macos@2.3.4
   win: circleci/windows@4.1.1
 
+parameters:
+  safari:
+    type: boolean
+    default: false
+
 workflows:
   version: 2
   default:
     jobs:
-      - prepare:
+      - prepare-linux:
           filters:
             tags:
               only: /.*/
       - install-mbx-ci:
           requires:
-              - prepare
+              - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -27,13 +32,13 @@ workflows:
               ignore: /pull\/[0-9]*/
       - lint:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - build:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -46,31 +51,31 @@ workflows:
               only: /.*/
       - test-flow:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-unit:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-query:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-expressions:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-browser:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -82,7 +87,7 @@ workflows:
               only: /.*/
       - test-style-spec:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -115,10 +120,6 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
-      - prepare-linux:
-          filters:
-            tags:
-              only: /.*/
       - test-render-linux-chrome-dev:
           requires:
             - prepare-linux
@@ -159,13 +160,9 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-mac-safari-dev-approval:
-          type: approval
-          requires:
-            - prepare-mac
       - test-render-mac-safari-dev:
           requires:
-            - test-render-mac-safari-dev-approval
+            - prepare-mac
           filters:
             tags:
               only: /.*/
@@ -537,7 +534,8 @@ jobs:
 
   test-render-mac-safari-dev:
     <<: *mac-defaults
-    parallelism: 2
+    # Use CircleCI web app to trigger this job with the `safari` parameter set to true
+    when: << pipeline.parameters.safari >>
     steps:
       - attach_workspace:
           at: ~/
