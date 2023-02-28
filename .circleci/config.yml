@@ -534,20 +534,23 @@ jobs:
 
   test-render-mac-safari-dev:
     <<: *mac-defaults
-    # Use CircleCI web app to trigger this job with the `safari` parameter set to true
-    when: << pipeline.parameters.safari >>
     steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Creating test list
-          command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
-      - run: yarn run test-render-safari
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+      # Use CircleCI web app to trigger this job with the `safari` parameter set to true
+      - when:
+          condition: << pipeline.parameters.safari >>
+          steps:
+            - attach_workspace:
+                at: ~/
+            - run:
+                name: Creating test list
+                command: |
+                  circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
+            - run: yarn run test-render-safari
+            - store_test_results:
+                path: test/integration/render-tests
+            - store_artifacts:
+                path: "test/integration/render-tests/index.html"
+      - run: echo 0
 
   prepare-windows:
     <<: *windows-defaults
