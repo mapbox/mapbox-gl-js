@@ -461,7 +461,7 @@ jobs:
             - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
             - v0-mac-yarn-{{ .Branch }}-
             - v0-mac-yarn-
-      - run: nvm install
+      - run: nvm install && nvm use
       - run: npm install -g yarn
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
