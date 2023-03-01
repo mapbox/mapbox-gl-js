@@ -174,6 +174,7 @@ class SourceExpressionBinder implements AttributeBinder {
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>) {
+        // TODO
         const value = this.expression.evaluate({zoom: 0}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, value);
     }
@@ -246,6 +247,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>) {
+        // TODO
         const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState, undefined, availableImages);
         const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, min, max);

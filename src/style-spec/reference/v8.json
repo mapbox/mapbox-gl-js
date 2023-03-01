@@ -3580,6 +3580,17 @@
           }
         }
       },
+      "measure-brightness": {
+        "doc": "",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "",
+            "android": "",
+            "ios": ""
+          }
+        }
+      },
       "heatmap-density": {
         "doc": "Returns the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
         "group": "Heatmap",

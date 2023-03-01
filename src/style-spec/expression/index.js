@@ -15,7 +15,12 @@ import definitions from './definitions/index.js';
 import * as isConstant from './is_constant.js';
 import RuntimeError from './runtime_error.js';
 import {success, error} from '../util/result.js';
-import {supportsPropertyExpression, supportsZoomExpression, supportsInterpolation} from '../util/properties.js';
+import {
+    supportsPropertyExpression,
+    supportsZoomExpression,
+    supportsLightExpression,
+    supportsInterpolation
+} from '../util/properties.js';
 
 import type {Type, EvaluationKind} from './types.js';
 import type {Value} from './values.js';
@@ -243,6 +248,11 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
+    }
+
+    const isLightConstant = isConstant.isGlobalPropertyConstant(parsed, ['measure-light']);
+    if (!isLightConstant && !supportsLightExpression(propertySpec)) {
+        return error([new ParsingError('', 'measure-light expression not supported')]);
     }
 
     const canRelaxZoomRestriction = propertySpec.expression && propertySpec.expression.relaxZoomRestriction;
