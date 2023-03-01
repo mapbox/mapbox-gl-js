@@ -541,10 +541,6 @@ jobs:
           steps:
             - attach_workspace:
                 at: ~/
-            - run:
-                name: Creating test list
-                command: |
-                  circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
             - run: yarn run test-render-safari
             - store_test_results:
                 path: test/integration/render-tests
