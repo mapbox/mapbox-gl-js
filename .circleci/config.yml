@@ -456,9 +456,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v0-mac-yarn-{{ .Branch }}-
-            - v0-mac-yarn-
+            - v1-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v1-mac-yarn-{{ .Branch }}-
+            - v1-mac-yarn-
       - run: nvm install && nvm use
       - run: npm install -g yarn
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
