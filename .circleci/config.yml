@@ -194,7 +194,7 @@ windows-defaults: &windows-defaults
   working_directory: ~/mapbox-gl-js
 
 jobs:
-  prepare:
+  prepare-linux:
     <<: *linux-defaults
     steps:
       - checkout
@@ -277,8 +277,7 @@ jobs:
           at: ~/
       - run:
           name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
+          command: yarn check-bundle-size
 
   test-flow:
     <<: *linux-defaults
@@ -404,26 +403,6 @@ jobs:
           name: Deploy release
           command: |
             bash ./build/upload.sh
-
-  prepare-linux:
-    <<: *linux-defaults
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v0-linux-yarn-{{ .Branch }}-
-            - v0-linux-yarn-
-      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
-      - run: yarn run build-dev
-      - save_cache:
-          key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-          paths:
-           - ~/.cache/yarn
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - mapbox-gl-js
 
   test-render-linux-chrome-dev:
     <<: *linux-defaults
