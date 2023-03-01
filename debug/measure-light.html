@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='mapbox-gl.css' />
+    <link href='main.css' rel='stylesheet' type="text/css"/>
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'><div id='elevationDebug'></div></div>
+
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var Demo3D = function() {
+    this.enableTerrain = false;
+    this.enable3dLights = false;
+    this.style = 'mapbox/streets-v12';
+    this.ambientLightColor = [ 255, 255, 255 ];
+    this.ambientLightIntensity = 0.5;
+    this.directionalLightColor = [ 255, 255, 255 ];
+    this.directionalLightIntensity = 0.5;
+    this.directionalLightAzimuth = 90;
+    this.directionalLightAltitude = 2;
+};
+
+var demo3d = new Demo3D();
+
+function updateLights(enable3dLights) {
+    map.setLights(enable3dLights ?
+        [
+            {
+                'type': 'ambient',
+                'id': 'ambient_light',
+                'properties': {
+                    'color': 'rgba(' + demo3d.ambientLightColor[0] + ', ' + demo3d.ambientLightColor[1] + ', ' + demo3d.ambientLightColor[2] + ', 1.0)',
+                    'intensity': demo3d.ambientLightIntensity
+                }
+            },
+            {
+                'type': 'directional',
+                'id': 'directional_ligh',
+                'properties': {
+                    'color': 'rgba(' + demo3d.directionalLightColor[0] + ', ' + demo3d.directionalLightColor[1] + ', ' + demo3d.directionalLightColor[2] + ', 1.0)',
+                    'intensity': demo3d.directionalLightIntensity,
+                    'direction': [
+                        demo3d.directionalLightAzimuth,
+                        demo3d.directionalLightAltitude
+                    ]
+                }
+            }
+        ] : null
+    );
+}
+
+window.onload = function() {
+    var gui = new dat.GUI(); // eslint-disable-line
+
+    var style = gui.add(demo3d, 'style', [
+        'mapbox/streets-v11',
+        'mapbox/streets-v12',
+        'mapbox/satellite-streets-v11',
+        'mapbox/satellite-streets-v12',
+        'mapbox/light-v10',
+        'mapbox/light-v11',
+        'mapbox/dark-v10',
+        'mapbox/dark-v11',
+        'mapbox/outdoors-v11',
+        'mapbox/outdoors-v12',
+        'mapbox/satellite-v9',
+        'mapbox/satellite-v10',
+        'mapbox/cjerxnqt3cgvp2rmyuxbeqme7',
+        'mapbox-map-design/ckhqrdj3q0q1y19ko8t70qtqu',
+        'mapbox-map-design/ckhqrf2tz0dt119ny6azh975y',
+        'mapbox-map-design/ckhqrbxlc1awj19svtb92m0bd'
+    ]);
+    style.onFinishChange((value) => {
+        map.setStyle('mapbox://styles/' + value);
+    });
+
+    var lights = gui.addFolder('3D Lights');
+    var enable3dLights = lights.add(demo3d, 'enable3dLights');
+    enable3dLights.onFinishChange((value) => {
+        updateLights(value);
+    });
+    var directionalLightAltitude = lights.add(demo3d, 'directionalLightAltitude', 0.0, 90.0);
+    directionalLightAltitude.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightAzimuth = lights.add(demo3d, 'directionalLightAzimuth', 0.0, 360.0);
+    directionalLightAzimuth.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightIntensity = lights.add(demo3d, 'directionalLightIntensity', 0.0, 1.0);
+    directionalLightIntensity.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var directionalLightColor = lights.addColor(demo3d, 'directionalLightColor');
+    directionalLightColor.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var ambientLightIntensity = lights.add(demo3d, 'ambientLightIntensity', 0.0, 1.0);
+    ambientLightIntensity.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    var ambientLightColor = lights.addColor(demo3d, 'ambientLightColor');
+    ambientLightColor.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+
+    var terrain = gui.addFolder('Terrain');
+    var enableTerrain = terrain.add(demo3d, 'enableTerrain');
+    enableTerrain.onFinishChange((value) => {
+        map.setTerrain(value ? {"source": 'mapbox-dem', "exaggeration": demo3d.terrainExaggeration} : null);
+    });
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 13.5,
+    center: [-122.45814, 37.76159],
+    style: 'mapbox://styles/' + demo3d.style,
+    hash: true
+});
+
+map.on('style.load', function() {
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': 'rgb(255, 255, 255)',
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.7
+        }
+    });
+    updateLights(demo3d.enable3dLights);
+    const geojsonData1 = {
+        "type": "FeatureCollection",
+        "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.50943869117671,
+                        37.84293894844477
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.31304029841957,
+                        37.809296236599025
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.48183249139171,
+                        37.74134108679195
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.41242261764609,
+                        37.79246912974514
+                    ],
+                    "type": "Point"
+                }
+            }
+        ]
+    };
+    const geojsonData2 = {
+        "type": "FeatureCollection",
+        "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.44282033862872,
+                        37.80189214418512
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.38993055000485,
+                        37.73851655715468
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.47220355453075,
+                        37.68206329128938
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -122.25224919549171,
+                        37.740508239567035
+                    ],
+                    "type": "Point"
+                }
+            }
+        ]
+    };
+
+    map.addSource('random-points-1', {
+        type: 'geojson',
+        data: geojsonData1
+    });
+    map.addSource('random-points-2', {
+        type: 'geojson',
+        data: geojsonData2
+    });
+    map.addLayer({
+        "id": "sample-symbol",
+        "type": "symbol",
+        "source": "random-points-1",
+        "layout": {
+            "text-field": "Sample",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-size": 20,
+        },
+        "paint": {
+            "text-color": [
+                "case",
+                ["<", ["measure-light", "brightness"], 0.5],
+                "white",
+                "black"
+            ]
+        }
+    });
+    map.addLayer({
+        "id": "sample-symbol-calculate",
+        "type": "symbol",
+        "source": "random-points-2",
+        "layout": {
+            "text-field": "Sample",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-size": 20,
+        },
+        "paint": {
+            "text-color": [
+                "rgba",
+                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                1.0
+            ]
+        }
+    });
+});
+
+</script>
+</body>
+</html>
