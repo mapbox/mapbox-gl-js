@@ -454,8 +454,6 @@ jobs:
     <<: *mac-defaults
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - restore_cache:
           keys:
             - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
