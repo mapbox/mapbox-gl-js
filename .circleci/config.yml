@@ -5,11 +5,6 @@ orbs:
   macos: circleci/macos@2.3.4
   win: circleci/windows@4.1.1
 
-parameters:
-  safari:
-    type: boolean
-    default: false
-
 workflows:
   version: 2
   default:
@@ -514,18 +509,13 @@ jobs:
   test-render-mac-safari-dev:
     <<: *mac-defaults
     steps:
-      # Use CircleCI web app to trigger this job with the `safari` parameter set to true
-      - when:
-          condition: << pipeline.parameters.safari >>
-          steps:
-            - attach_workspace:
-                at: ~/
-            - run: yarn run test-render-safari
-            - store_test_results:
-                path: test/integration/render-tests
-            - store_artifacts:
-                path: "test/integration/render-tests/index.html"
-      - run: circleci-agent step halt
+      - attach_workspace:
+          at: ~/
+      - run: yarn run test-render-safari
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
 
   prepare-windows:
     <<: *windows-defaults
