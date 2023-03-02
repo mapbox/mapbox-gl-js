@@ -62,7 +62,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        const textureFilter = layer.paint.get('raster-resampling') === 'nearest' ?  gl.NEAREST : gl.LINEAR;
+        const textureFilter = layer.paint.get('raster-resampling') === 'nearest' ? gl.NEAREST : gl.LINEAR;
 
         context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
@@ -76,6 +76,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         } else {
             tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+        }
+
+        // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
+        // to prevent it from compromising image crispness on flat or low tilted maps.
+        if (tile.texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
+            gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
         }
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
