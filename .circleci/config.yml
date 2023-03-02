@@ -9,13 +9,13 @@ workflows:
   version: 2
   default:
     jobs:
-      - prepare:
+      - prepare-linux:
           filters:
             tags:
               only: /.*/
       - install-mbx-ci:
           requires:
-              - prepare
+              - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -27,13 +27,13 @@ workflows:
               ignore: /pull\/[0-9]*/
       - lint:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - build:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -46,77 +46,31 @@ workflows:
               only: /.*/
       - test-flow:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-unit:
           requires:
-            - prepare
-          filters:
-            tags:
-              only: /.*/
-      - test-render-linux-chrome-dev:
-          requires:
-            - prepare
-          filters:
-            tags:
-              only: /.*/
-      - test-render-linux-firefox-dev:
-          requires:
-            - prepare
-          filters:
-            tags:
-              only: /.*/
-      - test-render-mac-chrome-dev:
-          filters:
-            tags:
-              only: /.*/
-      - test-render-mac-chrome-webgl2-dev:
-          filters:
-            tags:
-              only: /.*/
-      - test-render-mac-safari-dev:
-          filters:
-            tags:
-              only: /.*/
-      - prepare-windows:
-          filters:
-            tags:
-              only: /.*/
-      - test-render-windows-chrome-dev:
-          requires:
-            - prepare-windows
-          filters:
-            tags:
-              only: /.*/
-      - test-render-linux-chrome-prod:
-          requires:
-            - prepare
-          filters:
-            tags:
-              only: /.*/
-      - test-render-linux-chrome-csp:
-          requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-query:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-expressions:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
       - test-browser:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -128,7 +82,7 @@ workflows:
               only: /.*/
       - test-style-spec:
           requires:
-            - prepare
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -161,16 +115,76 @@ workflows:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
+      - test-render-linux-chrome-dev:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
+      - test-render-linux-firefox-dev:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
+      - test-render-linux-chrome-prod:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
+      - test-render-linux-chrome-csp:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
+      - prepare-mac:
+          filters:
+            tags:
+              only: /.*/
+      - test-render-mac-chrome-dev:
+          requires:
+            - prepare-mac
+          filters:
+            tags:
+              only: /.*/
+      - test-render-mac-chrome-webgl2-dev:
+          requires:
+            - prepare-mac
+          filters:
+            tags:
+              only: /.*/
+      - prepare-windows:
+          filters:
+            tags:
+              only: /.*/
+      - test-render-windows-chrome-dev:
+          requires:
+            - prepare-windows
+          filters:
+            tags:
+              only: /.*/
 
-
-defaults: &defaults
+linux-defaults: &linux-defaults
   docker:
     - image: cimg/node:14.16-browsers
   working_directory: ~/mapbox-gl-js
 
+mac-defaults: &mac-defaults
+  macos:
+    # https://circleci.com/docs/using-macos/#supported-xcode-versions
+    xcode: 14.2.0 # macOS 12.6 (Monterey)
+  working_directory: ~/mapbox-gl-js
+
+windows-defaults: &windows-defaults
+  executor:
+    name: win/default
+  working_directory: ~/mapbox-gl-js
+
 jobs:
-  prepare:
-    <<: *defaults
+  prepare-linux:
+    <<: *linux-defaults
     steps:
       - checkout
       - restore_cache:
@@ -191,7 +205,7 @@ jobs:
             - .ssh
 
   install-mbx-ci:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - run:
           name: Install mbx-ci
@@ -208,7 +222,7 @@ jobs:
             - mbx-ci
 
   lint:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -224,7 +238,7 @@ jobs:
             - '.eslintcache'
 
   build:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -246,82 +260,30 @@ jobs:
             - mapbox-gl-js/dist
 
   check-bundle-size:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - run:
           name: Check bundle size
-          command: |
-            node build/check-bundle-size.js
+          command: yarn check-bundle-size
 
   test-flow:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - run: yarn run test-flow
 
   test-unit:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - run: yarn run test-unit
 
-  test-render-linux-chrome-dev:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-chrome
-      - run:
-          name: Running tests in parallel
-          command: |
-            yarn run test-render
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-linux-firefox-dev:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-firefox
-      - run: yarn run test-render-firefox
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-linux-chrome-prod:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-chrome
-      - run: yarn run test-render-prod
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-linux-chrome-csp:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-chrome
-      - run: yarn run test-render-csp
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
   test-query:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -333,7 +295,7 @@ jobs:
           path: "test/integration/query-tests/index.html"
 
   test-webpack:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -348,14 +310,14 @@ jobs:
           path: "test/build/transpilation"
 
   test-style-spec:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - run: yarn run test-style-spec
 
   collect-stats:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -369,7 +331,7 @@ jobs:
           command: aws s3 cp data.json.gz s3://mapbox-loading-dock/raw/gl_js.perf_metrics_staging/ci/`git show -s --date=short --format=%cd-%h HEAD`.json.gz
 
   test-browser:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -389,14 +351,14 @@ jobs:
           command: yarn run test-browser
 
   test-expressions:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - run: yarn run test-expressions
 
   deploy-benchmarks:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -412,7 +374,7 @@ jobs:
           command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js.map s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js.map
 
   deploy-release:
-    <<: *defaults
+    <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
@@ -431,27 +393,85 @@ jobs:
           command: |
             bash ./build/upload.sh
 
-  test-render-mac-chrome-dev:
-    macos:
-      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
-    parallelism: 3
-    working_directory: ~/mapbox-gl-js
+  test-render-linux-chrome-dev:
+    <<: *linux-defaults
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
+      - browser-tools/install-chrome
+      - run:
+          name: Running tests in parallel
+          command: |
+            yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-linux-chrome-prod:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-render-prod
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-linux-chrome-csp:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
+      - run: yarn run test-render-csp
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-linux-firefox-dev:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-firefox
+      - run: yarn run test-render-firefox
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  prepare-mac:
+    <<: *mac-defaults
+    steps:
+      - checkout
       - restore_cache:
           keys:
             - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
             - v0-mac-yarn-{{ .Branch }}-
             - v0-mac-yarn-
-      - browser-tools/install-chrome
+      - run: nvm install && cat .nvmrc | nvm alias default `xargs`
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
       - run: yarn run build-dev
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mapbox-gl-js
+
+  test-render-mac-chrome-dev:
+    <<: *mac-defaults
+    parallelism: 3
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-chrome
       - run:
           name: Creating test list
           command: |
@@ -463,26 +483,12 @@ jobs:
           path: "test/integration/render-tests/index.html"
 
   test-render-mac-chrome-webgl2-dev:
-    macos:
-      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
+    <<: *mac-defaults
     parallelism: 3
-    working_directory: ~/mapbox-gl-js
     steps:
-      - checkout
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys:
-            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v0-mac-yarn-{{ .Branch }}-
-            - v0-mac-yarn-
       - browser-tools/install-chrome
-      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
-      - save_cache:
-          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-          paths:
-           - ~/.cache/yarn
-      - run: yarn run build-dev
       - run:
           name: Creating test list
           command: |
@@ -493,43 +499,12 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-mac-safari-dev:
-    macos:
-      xcode: 14.0.1 # macOS version 12.5.1 (Monterey)
-    parallelism: 3
-    working_directory: ~/mapbox-gl-js
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/
-      - restore_cache:
-          keys:
-            - v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v0-mac-yarn-{{ .Branch }}-
-            - v0-mac-yarn-
-      - browser-tools/install-chrome
-      - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
-      - save_cache:
-          key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-          paths:
-           - ~/.cache/yarn
-      - run: yarn run build-dev
-      - run:
-          name: Creating test list
-          command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
-      - run: yarn run test-render-safari
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
   prepare-windows:
-    executor:
-      name: win/default
-    working_directory: ~/mapbox-gl-js
+    <<: *windows-defaults
     steps:
       - checkout
+      - run: $NodeVersion = Get-Content -Path .\.nvmrc; nvm install $NodeVersion; nvm use $NodeVersion
+      - run: npm install --global yarn
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
       - run:
@@ -550,10 +525,8 @@ jobs:
             - mapbox-gl-js
 
   test-render-windows-chrome-dev:
-    executor:
-      name: win/default
+    <<: *windows-defaults
     parallelism: 4
-    working_directory: ~/mapbox-gl-js
     steps:
       - attach_workspace:
           at: ~/
