@@ -605,15 +605,6 @@ class Tile {
         } else {
             this.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-            // if greater it will mostly use mag filter
-            const mismatchingSizes = this.tileSize < img.width;
-
-            // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
-            // to prevent it from compromising image crispness on flat or low tilted maps.
-            if (context.extTextureFilterAnisotropic && (painter.transform.pitch > 20 || mismatchingSizes)) {
-                gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
-            }
         }
     }
 
