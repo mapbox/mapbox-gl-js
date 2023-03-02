@@ -155,12 +155,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-mac-safari-dev:
-          requires:
-            - prepare-mac
-          filters:
-            tags:
-              only: /.*/
       - prepare-windows:
           filters:
             tags:
@@ -500,17 +494,6 @@ jobs:
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
       - run: USE_WEBGL2=true yarn run test-render
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-mac-safari-dev:
-    <<: *mac-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: yarn run test-render-safari
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
