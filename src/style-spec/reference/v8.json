@@ -3580,7 +3580,7 @@
           }
         }
       },
-      "measure-brightness": {
+      "measure-light": {
         "doc": "",
         "group": "Lookup",
         "sdk-support": {
@@ -4625,7 +4625,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4659,7 +4660,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4695,7 +4697,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4839,7 +4842,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4955,7 +4959,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4989,7 +4994,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5091,7 +5097,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5125,7 +5132,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5214,7 +5222,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5245,7 +5254,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5275,7 +5285,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5306,7 +5317,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5457,7 +5469,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5486,7 +5499,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5515,7 +5529,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5546,7 +5561,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5691,7 +5707,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5720,7 +5737,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5751,7 +5769,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5784,7 +5803,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5814,7 +5834,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5937,7 +5958,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5969,7 +5991,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6001,7 +6024,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6035,7 +6059,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6069,7 +6094,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6165,7 +6191,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6198,7 +6225,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6230,7 +6258,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6264,7 +6293,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6298,7 +6328,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"

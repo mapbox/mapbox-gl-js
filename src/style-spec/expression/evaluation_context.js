@@ -56,7 +56,7 @@ class EvaluationContext {
         return (this.feature && this.feature.properties) || {};
     }
 
-    brightness(): number {
+    measureLight(type: string): number {
         return 0.0;
     }
 

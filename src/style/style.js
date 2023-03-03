@@ -881,6 +881,33 @@ class Style extends Evented {
         }
     }
 
+    calculateLightsBrightness(): ?number {
+        if (!this.ambientLight || !this.directionalLight) {
+            return;
+        }
+
+        // Based on: https://www.w3.org/WAI/GL/wiki/Relative_luminance
+        const relativeLuminance = (color) {
+            const r = color.r <= 0.03928 ? (color.r / 12.92) : Math.pow(((color.r + 0.055) / 1.055), 2.4);
+            const g = color.g <= 0.03928 ? (color.g / 12.92) : Math.pow(((color.g + 0.055) / 1.055), 2.4);
+            const b = color.b <= 0.03928 ? (color.b / 12.92) : Math.pow(((color.b + 0.055) / 1.055), 2.4);
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        };
+
+        const directionalColor = this.directional.properties.get('color').toArray01();
+        const directionalIntensity = this.directional.properties.get('intensity');
+        const direction = directional.properties.get('direction');
+
+        // const polarIntensity = 1.0 - (directionalDirection.getSpherical()[1] / 90.0);
+        const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
+
+        const ambientColor = this.ambient.properties.get('color').toArray01();
+        const ambientIntensity = this.ambient.properties.get('intensity');
+        const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
+
+        return (directionalBrightness + ambientBrightness) / 2.0;
+    }
+
     getLights(): ?Array<LightsSpecification> {
         if (!this.enable3dLights()) return null;
         const lights = [];
