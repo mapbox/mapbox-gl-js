@@ -43,6 +43,7 @@ if (typeof Object.freeze == 'function') {
  * @property {string} type Response body type to be returned `'string' | 'json' | 'arrayBuffer'`.
  * @property {string} credentials `'same-origin'|'include'` Use 'include' to send cookies with cross-origin requests.
  * @property {boolean} collectResourceTiming If true, Resource Timing API information will be collected for these transformed requests and returned in a resourceTiming property of relevant data events.
+ * @property {string} referrerPolicy A string representing the request's referrerPolicy. For more information and possible values, see the [Referrer-Policy HTTP header page](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy).
  * @example
  * // use transformRequest to modify requests that begin with `http://myHost`
  * const map = new Map({
@@ -67,8 +68,9 @@ export type RequestParameters = {
     body?: string,
     type?: 'string' | 'json' | 'arrayBuffer',
     credentials?: 'same-origin' | 'include',
-    collectResourceTiming?: boolean
-};
+    collectResourceTiming?: boolean,
+    referrerPolicy?: ReferrerPolicyType
+}
 
 export type ResponseCallback<T> = (error: ?Error, data: ?T, cacheControl: ?string, expires: ?string) => void;
 
@@ -111,6 +113,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         credentials: requestParameters.credentials,
         headers: requestParameters.headers,
         referrer: getReferrer(),
+        referrerPolicy: requestParameters.referrerPolicy,
         signal: controller.signal
     });
     let complete = false;

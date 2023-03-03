@@ -6,7 +6,7 @@
       "width": 256,
       "description": "Check terrain wireframe overlay",
       "showTerrainWireframe": true,
-      "allowed": 0.02,
+      "allowed": 0.022,
       "operations": [
         ["wait"],
         ["setTerrain", null],

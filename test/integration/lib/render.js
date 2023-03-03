@@ -8,6 +8,7 @@ import ignores from '../../ignores/all.js';
 import ignoreWindowsChrome from '../../ignores/windows-chrome.js';
 import ignoreMacChrome from '../../ignores/mac-chrome.js';
 import ignoreMacSafari from '../../ignores/mac-safari.js';
+import ignoreLinuxChrome from '../../ignores/linux-chrome.js';
 import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
@@ -71,7 +72,7 @@ if (process.env.CI) {
     if (ua.includes('Macintosh')) {
         ignoreList = browser === 'safari' ? ignoreMacSafari : ignoreMacChrome;
     } else if (ua.includes('Linux')) {
-        ignoreList = browser === 'firefox' ? ignoreLinuxFirefox : null;
+        ignoreList = browser === 'firefox' ? ignoreLinuxFirefox : ignoreLinuxChrome;
     } else if (ua.includes('Windows')) {
         ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30

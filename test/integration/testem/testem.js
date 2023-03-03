@@ -201,18 +201,13 @@ module.exports = async function() {
     const browserFlags = [];
     if (browser === "Chrome") {
         browserFlags.push("--disable-backgrounding-occluded-windows", "--disable-background-networking");
-        if (process.platform === "linux") {
-            // On Linux, set chrome flags for CircleCI to use llvmpipe driver instead of swiftshader
-            // This allows for more consistent behavior with MacOS development machines.
-            // (see https://github.com/mapbox/mapbox-gl-js/pull/10389).
-            browserFlags.push("--ignore-gpu-blocklist", "--use-gl=desktop");
-        }
         if (process.env.USE_ANGLE) {
             // Allow setting chrome flag `--use-angle` for local development on render/query tests only.
             // Some devices (e.g. M1 Macs) seem to run test with significantly less failures when forcing the ANGLE backend to use Metal or OpenGL.
             // Search accepted values for `--use-angle` here: https://source.chromium.org/search?q=%22--use-angle%3D%22
-            if (!(['metal', 'gl', 'vulkan', 'swiftshader', 'gles'].includes(process.env.USE_ANGLE))) {
-                throw new Error(`Unrecognized value for 'use-angle': '${process.env.USE_ANGLE}'. Should be 'metal', 'gl', 'vulkan', 'swiftshader', or 'gles.'`);
+            const angleBackends = ['metal', 'gl', 'vulkan', 'swiftshader', 'gles'];
+            if (!angleBackends.includes(process.env.USE_ANGLE)) {
+                throw new Error(`Unknown value for 'use-angle': '${process.env.USE_ANGLE}'. Should be one of: ${angleBackends.join(', ')}.`);
             }
             browserFlags.push(`--use-angle=${process.env.USE_ANGLE}`);
         }
