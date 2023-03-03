@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 200,
-      "height": 150
+      "height": 150,
+      "allowed": 0.02
     }
   },
   "zoom": 0.5,

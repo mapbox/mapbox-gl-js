@@ -1470,6 +1470,7 @@ class Map extends Camera {
      * | [`styledataloading`](#map.event:styledataloading)         |                           |
      * | [`sourcedataloading`](#map.event:sourcedataloading)       |                           |
      * | [`styleimagemissing`](#map.event:styleimagemissing)       |                           |
+     * | [`style.load`](#map.event:style.load)                     |                           |
      *
      * @param {string | Array<string>} layerIds (optional) The ID(s) of a style layer(s). If you provide a `layerId`,
      * the listener will be triggered only if its location is within a visible feature in these layers,

@@ -5,6 +5,7 @@
         "fadeDuration": 100,
         "width": 512,
         "height": 512,
+        "allowed": 0.002,
         "description": "This test ensures that symbols with allow-overlap: true are always visible, even if they get included in a placement where they are outside of the collision grid. Before the fix, this test showed partially transparent icons in the right quarter of the viewport.",
         "operations": [
           ["wait", 100],

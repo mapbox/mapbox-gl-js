@@ -80,7 +80,7 @@
     "pixelmatch": "^5.3.0",
     "postcss": "^8.4.16",
     "postcss-cli": "^10.1.0",
-    "postcss-inline-svg": "^5.0.0",
+    "postcss-inline-svg": "^6.0.0",
     "pretty-bytes": "^6.0.0",
     "puppeteer-core": "^19.3.0",
     "qrcode-terminal": "^0.12.0",
@@ -147,6 +147,7 @@
     "test-style-spec": "cd src/style-spec && npm test",
     "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-csp build-css build-style-spec",
     "print-release-url": "node build/print-release-url.js",
+    "check-bundle-size": "node build/check-bundle-size.js",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
