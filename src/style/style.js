@@ -11,7 +11,7 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
-import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
+import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
@@ -887,22 +887,23 @@ class Style extends Evented {
         }
 
         // Based on: https://www.w3.org/WAI/GL/wiki/Relative_luminance
-        const relativeLuminance = (color) {
-            const r = color.r <= 0.03928 ? (color.r / 12.92) : Math.pow(((color.r + 0.055) / 1.055), 2.4);
-            const g = color.g <= 0.03928 ? (color.g / 12.92) : Math.pow(((color.g + 0.055) / 1.055), 2.4);
-            const b = color.b <= 0.03928 ? (color.b / 12.92) : Math.pow(((color.b + 0.055) / 1.055), 2.4);
+        const relativeLuminance = (color) => {
+            const r = color[0] <= 0.03928 ? (color[0] / 12.92) : Math.pow(((color[0] + 0.055) / 1.055), 2.4);
+            const g = color[1] <= 0.03928 ? (color[1] / 12.92) : Math.pow(((color[1] + 0.055) / 1.055), 2.4);
+            const b = color[2] <= 0.03928 ? (color[2] / 12.92) : Math.pow(((color[2] + 0.055) / 1.055), 2.4);
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         };
 
-        const directionalColor = this.directional.properties.get('color').toArray01();
-        const directionalIntensity = this.directional.properties.get('intensity');
-        const direction = directional.properties.get('direction');
+        const directionalColor = this.directionalLight.properties.get('color').toArray01();
+        const directionalIntensity = this.directionalLight.properties.get('intensity');
+        const direction = this.directionalLight.properties.get('direction');
 
-        // const polarIntensity = 1.0 - (directionalDirection.getSpherical()[1] / 90.0);
+        const sphericalDirection = cartesianPositionToSpherical(direction.x, direction.x, direction.z);
+        const polarIntensity = 1.0 - sphericalDirection[2] / 90.0;
         const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
 
-        const ambientColor = this.ambient.properties.get('color').toArray01();
-        const ambientIntensity = this.ambient.properties.get('intensity');
+        const ambientColor = this.ambientLight.properties.get('color').toArray01();
+        const ambientIntensity = this.ambientLight.properties.get('intensity');
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
 
         return (directionalBrightness + ambientBrightness) / 2.0;
