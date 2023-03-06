@@ -149,6 +149,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-mac-safari-dev:
+          requires:
+            - prepare-mac
+          filters:
+            tags:
+              only: /.*/
       - test-render-mac-chrome-webgl2-dev:
           requires:
             - prepare-mac
@@ -175,6 +181,8 @@ mac-defaults: &mac-defaults
   macos:
     # https://circleci.com/docs/using-macos/#supported-xcode-versions
     xcode: 14.2.0 # macOS 12.6 (Monterey)
+  environment:
+    HOMEBREW_NO_AUTO_UPDATE: 1
   working_directory: ~/mapbox-gl-js
 
 windows-defaults: &windows-defaults
@@ -477,6 +485,23 @@ jobs:
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
       - run: yarn run test-render
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-mac-safari-dev:
+    <<: *mac-defaults
+    resource_class: macos.m1.large.gen1
+    parallelism: 3
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Creating test list
+          command: |
+            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
+      - run: yarn run test-render-safari
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
