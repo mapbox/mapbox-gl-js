@@ -4,7 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0015
+      "allowed": 0.0017
     }
   },
   "projection": {
