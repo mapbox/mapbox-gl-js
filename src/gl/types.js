@@ -82,3 +82,5 @@ export type CullFaceModeType =
 export type FrontFaceType =
     | $PropertyType<WebGLRenderingContext, 'CW'>
     | $PropertyType<WebGLRenderingContext, 'CCW'>
+
+export type DepthBufferType = 'renderbuffer' | 'texture';

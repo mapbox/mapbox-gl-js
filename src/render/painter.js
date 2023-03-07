@@ -19,7 +19,6 @@ import Program from './program.js';
 import {programUniforms} from './program/program_uniforms.js';
 import Context from '../gl/context.js';
 import {fogUniformValues} from '../render/fog.js';
-import {lightsUniformValues} from '../../3d-style/render/lights.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
@@ -50,6 +49,9 @@ import {RGBAImage} from '../util/image.js';
 
 // 3D-style related
 import model, {upload as modelUpload} from '../../3d-style/render/draw_model.js';
+import {lightsUniformValues} from '../../3d-style/render/lights.js';
+
+import {ShadowRenderer} from '../../3d-style/render/shadow_renderer.js';
 
 const draw = {
     symbol,
@@ -83,7 +85,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js'
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
-export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow';
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[],
     timeStamps: number[]
@@ -151,9 +153,11 @@ class Painter {
     renderPass: RenderPass;
     currentLayer: number;
     currentStencilSource: ?string;
+    currentShadowCascade: number;
     nextStencilID: number;
     id: string;
     _showOverdrawInspector: boolean;
+    _shadowMapDebug: boolean;
     cache: {[_: string]: Program<*> };
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
@@ -169,6 +173,8 @@ class Painter {
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[key: number]: Tile};
+
+    _shadowRenderer: ?ShadowRenderer;
 
     constructor(gl: WebGLRenderingContext, transform: Transform, isWebGL2: boolean = false) {
         this.context = new Context(gl, isWebGL2);
@@ -188,6 +194,8 @@ class Painter {
         this.gpuTimers = {};
         this.frameCounter = 0;
         this._backgroundTiles = {};
+
+        this._shadowRenderer = new ShadowRenderer(this);
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -229,6 +237,10 @@ class Painter {
 
     get terrain(): ?Terrain {
         return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
+    }
+
+    get shadowRenderer(): ?ShadowRenderer {
+        return this._shadowRenderer && this._shadowRenderer.enabled ? this._shadowRenderer : null;
     }
 
     /*
@@ -530,6 +542,10 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
+        if (this._shadowRenderer) {
+            this._shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight);
+        }
+
         if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
         }
@@ -570,6 +586,12 @@ class Painter {
         const terrain = this.terrain;
         if (terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
             terrain.drawDepth();
+        }
+
+        // Shadow pass ==================================================
+        if (this._shadowRenderer) {
+            this.renderPass = 'shadow';
+            this._shadowRenderer.drawShadowPass(this.style, coordsDescending);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -897,6 +919,11 @@ class Painter {
                 defines.push('LIGHTING_3D_MODE');
                 defines.push('LIGHTING_3D_MODE_NO_EMISSION');
             }
+        }
+        if (this.renderPass === 'shadow') {
+            if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
+        } else if (this.shadowRenderer) {
+            defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
         }
         if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');

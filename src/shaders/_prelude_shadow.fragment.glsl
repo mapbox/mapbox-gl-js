@@ -80,7 +80,7 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     highp float s = u_texel_size;
 
     // Perform brute force percentage-closer filtering with a 4x4 sample grid.
-    // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel, i.e. `weight = clamp(kernel, texel.bounds).area / texel.area`
+    // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
     highp vec2 uv00 = (texel - f + 0.5) * s;
     highp vec2 uv10 = uv00 + vec2(1.0 * s, 0);
     highp vec2 uv20 = uv00 + vec2(2.0 * s, 0);

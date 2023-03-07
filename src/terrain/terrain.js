@@ -901,7 +901,7 @@ export class Terrain extends Elevation {
         context.activeTexture.set(gl.TEXTURE0);
         const tex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], false);
+        const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], true, null);
         fb.colorAttachment.set(tex.texture);
         fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
 
@@ -1281,7 +1281,7 @@ export class Terrain extends Elevation {
         }
         if (!this._depthFBO) {
             const gl = context.gl;
-            const fbo = context.createFramebuffer(width, height, true);
+            const fbo = context.createFramebuffer(width, height, true, 'renderbuffer');
             context.activeTexture.set(gl.TEXTURE0);
             const texture = new Texture(context, {width, height, data: null}, gl.RGBA);
             texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);

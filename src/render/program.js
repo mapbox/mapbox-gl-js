@@ -6,6 +6,7 @@ import {
     preludeVertPrecisionQualifiers,
     preludeTerrain,
     preludeFog,
+    preludeShadow,
     preludeCommonSource,
     preludeLightingSource,
     standardDerivativesExt
@@ -20,6 +21,8 @@ import {fogUniforms} from './fog.js';
 import type {FogUniformsType} from './fog.js';
 import {lightsUniforms} from '../../3d-style/render/lights.js';
 import type {LightsUniformsType} from '../../3d-style/render/lights.js';
+import {shadowUniforms} from '../../3d-style/render/shadow_uniforms.js';
+import type {ShadowUniformsType} from '../../3d-style/render/shadow_uniforms.js';
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
@@ -65,6 +68,7 @@ class Program<Us: UniformBindings> {
     fogUniforms: ?FogUniformsType;
     lightsUniforms: ?LightsUniformsType;
     globeUniforms: ?GlobeUniformsType;
+    shadowUniforms: ?ShadowUniformsType;
 
     static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -100,6 +104,7 @@ class Program<Us: UniformBindings> {
             preludeLightingSource,
             prelude.fragmentSource,
             preludeFog.fragmentSource,
+            preludeShadow.fragmentSource,
             source.fragmentSource).join('\n');
         const vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
@@ -161,6 +166,9 @@ class Program<Us: UniformBindings> {
         if (fixedDefines.includes('LIGHTING_3D_MODE')) {
             this.lightsUniforms = lightsUniforms(context);
         }
+        if (fixedDefines.includes('RENDER_SHADOWS')) {
+            this.shadowUniforms = shadowUniforms(context);
+        }
     }
 
     setTerrainUniformValues(context: Context, terrainUniformValues: UniformValues<TerrainUniformsType>) {
@@ -212,6 +220,17 @@ class Program<Us: UniformBindings> {
 
         for (const name in lightsUniformValues) {
             uniforms[name].set(this.program, name, lightsUniformValues[name]);
+        }
+    }
+
+    setShadowUniformValues(context: Context, shadowUniformValues: UniformValues<ShadowUniformsType>) {
+        if (this.failedToCreate || !this.shadowUniforms) return;
+
+        const uniforms: ShadowUniformsType = this.shadowUniforms;
+        context.program.set(this.program);
+
+        for (const name in shadowUniformValues) {
+            uniforms[name].set(this.program, name, shadowUniformValues[name]);
         }
     }
 

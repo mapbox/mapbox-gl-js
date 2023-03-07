@@ -622,6 +622,19 @@ export function sphericalDirectionToCartesian([azimuthal, polar]: [number, numbe
     };
 }
 
+export function cartesianPositionToSpherical(x: number, y: number, z: number): [number, number, number] {
+    const radial = Math.sqrt(x * x + y * y + z * z);
+    const polar = radial > 0.0 ? Math.acos(z / radial) * RAD_TO_DEG : 0.0;
+    // Domain error may occur if x && y are both 0.0
+    let azimuthal = (x !== 0.0 || y !== 0.0) ? Math.atan2(-y, -x) * RAD_TO_DEG + 90.0 : 0.0;
+
+    if (azimuthal < 0.0) {
+        azimuthal += 360.0;
+    }
+
+    return [radial, azimuthal, polar];
+}
+
 /* global self, WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.

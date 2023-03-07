@@ -7,7 +7,8 @@ import type {RGBAImage, AlphaImage} from '../util/image.js';
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>
-    | $PropertyType<WebGLRenderingContext, 'ALPHA'>;
+    | $PropertyType<WebGLRenderingContext, 'ALPHA'>
+    | $PropertyType<WebGLRenderingContext, 'DEPTH_COMPONENT'>;
 export type TextureFilter =
     | $PropertyType<WebGLRenderingContext, 'LINEAR'>
     | $PropertyType<WebGLRenderingContext, 'LINEAR_MIPMAP_NEAREST'>
@@ -67,10 +68,17 @@ class Texture {
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
                 gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
             } else {
-                // $FlowFixMe prop-missing - Flow can't refine image type here
-                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
-            }
+                let internalFormat = this.format;
+                let type = gl.UNSIGNED_BYTE;
 
+                if (this.format === gl.DEPTH_COMPONENT) {
+                    internalFormat = gl.DEPTH_COMPONENT16;
+                    type = gl.UNSIGNED_SHORT;
+                }
+
+                // $FlowFixMe prop-missing - Flow can't refine image type here
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, this.format, type, image.data);
+            }
         } else {
             const {x, y} = position || {x: 0, y: 0};
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {

@@ -1,8 +1,8 @@
 // @flow
-import {ColorAttachment, DepthAttachment} from './value.js';
+import {ColorAttachment, DepthRenderbufferAttachment, DepthTextureAttachment} from './value.js';
 
 import type Context from './context.js';
-import assert from 'assert';
+import type {DepthBufferType} from './types.js';
 
 class Framebuffer {
     context: Context;
@@ -10,31 +10,46 @@ class Framebuffer {
     height: number;
     framebuffer: WebGLFramebuffer;
     colorAttachment: ColorAttachment;
-    depthAttachment: DepthAttachment;
+    depthAttachment: DepthRenderbufferAttachment | DepthTextureAttachment;
+    depthAttachmentType: ?DepthBufferType
 
-    constructor(context: Context, width: number, height: number, hasDepth: boolean) {
+    constructor(context: Context, width: number, height: number, hasColor: boolean, depthType: ?DepthBufferType) {
         this.context = context;
         this.width = width;
         this.height = height;
         const gl = context.gl;
         const fbo = this.framebuffer = ((gl.createFramebuffer(): any): WebGLFramebuffer);
 
-        this.colorAttachment = new ColorAttachment(context, fbo);
-        if (hasDepth) {
-            this.depthAttachment = new DepthAttachment(context, fbo);
+        if (hasColor) {
+            this.colorAttachment = new ColorAttachment(context, fbo);
         }
-        assert(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE);
+        if (depthType) {
+            this.depthAttachmentType = depthType;
+
+            if (depthType === 'renderbuffer') {
+                this.depthAttachment = new DepthRenderbufferAttachment(context, fbo);
+            } else {
+                this.depthAttachment = new DepthTextureAttachment(context, fbo);
+            }
+        }
     }
 
     destroy() {
         const gl = this.context.gl;
 
-        const texture = this.colorAttachment.get();
-        if (texture) gl.deleteTexture(texture);
+        if (this.colorAttachment) {
+            const texture = this.colorAttachment.get();
+            if (texture) gl.deleteTexture(texture);
+        }
 
-        if (this.depthAttachment) {
-            const renderbuffer = this.depthAttachment.get();
-            if (renderbuffer) gl.deleteRenderbuffer(renderbuffer);
+        if (this.depthAttachment && this.depthAttachmentType) {
+            if (this.depthAttachmentType === 'renderbuffer') {
+                const renderbuffer = this.depthAttachment.get();
+                if (renderbuffer) gl.deleteRenderbuffer(renderbuffer);
+            } else {
+                const texture = this.depthAttachment.get();
+                if (texture) gl.deleteTexture(texture);
+            }
         }
 
         gl.deleteFramebuffer(this.framebuffer);

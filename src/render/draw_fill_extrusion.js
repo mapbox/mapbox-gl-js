@@ -8,6 +8,7 @@ import EXTENT from '../data/extent.js';
 import FillExtrusionBucket, {fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
+    fillExtrusionDepthUniformValues,
     fillExtrusionPatternUniformValues,
 } from './program/fill_extrusion_program.js';
 import Point from '@mapbox/point-geometry';
@@ -31,7 +32,12 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         return;
     }
 
-    if (painter.renderPass === 'translucent') {
+    if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
+        const shadowRenderer = painter.shadowRenderer;
+        const depthMode = shadowRenderer.getShadowPassDepthMode();
+        const colorMode = shadowRenderer.getShadowPassColorMode();
+        drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+    } else if (painter.renderPass === 'translucent') {
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
         if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
@@ -83,13 +89,17 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         baseDefines.push('ZERO_ROOF_RADIUS');
     }
 
+    const isShadowPass = painter.renderPass === 'shadow';
+    const shadowRenderer = painter.shadowRenderer;
+    const drawDepth = isShadowPass && !!shadowRenderer;
+
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration, baseDefines);
+        const program = painter.useProgram(drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion'), programConfiguration, baseDefines);
 
         if (painter.terrain) {
             const terrain = painter.terrain;
@@ -106,6 +116,10 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             }
         }
 
+        if (!isShadowPass && shadowRenderer) {
+            shadowRenderer.setupShadows(tile, program);
+        }
+
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
             tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -118,20 +132,28 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
-        const matrix = painter.translatePosMatrix(
-            coord.projMatrix,
-            tile,
-            layer.paint.get('fill-extrusion-translate'),
-            layer.paint.get('fill-extrusion-translate-anchor'));
-
-        const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
-        const uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                heightLift, globeToMercator, mercatorCenter, invMatrix);
+        let uniformValues;
+        if (isShadowPass && shadowRenderer) {
+            const tileMatrix = shadowRenderer.calculateShadowPassTileMatrix(tile.tileID.toUnwrapped());
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, edgeRadius);
+        } else {
+            const matrix = painter.translatePosMatrix(
+                coord.projMatrix,
+                tile,
+                layer.paint.get('fill-extrusion-translate'),
+                layer.paint.get('fill-extrusion-translate-anchor'));
+
+            const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
+
+            if (image) {
+                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix);
+            } else {
+                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                    heightLift, globeToMercator, mercatorCenter, invMatrix);
+            }
+        }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 

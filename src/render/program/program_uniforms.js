@@ -4,7 +4,7 @@ import type {CircleDefinesType} from './circle_program.js';
 import type {RasterDefinesType} from './raster_program.js';
 import type {SymbolDefinesType} from './symbol_program.js';
 import type {LineDefinesType} from './line_program.js';
-import {fillExtrusionUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
+import {fillExtrusionUniforms, fillExtrusionDepthUniforms, fillExtrusionPatternUniforms} from './fill_extrusion_program.js';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} from './fill_program.js';
 import {circleUniforms} from './circle_program.js';
 import {collisionUniforms, collisionCircleUniforms} from './collision_program.js';
@@ -30,6 +30,7 @@ export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDef
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
+    fillExtrusionDepth: fillExtrusionDepthUniforms,
     fillExtrusionPattern: fillExtrusionPatternUniforms,
     fill: fillUniforms,
     fillPattern: fillPatternUniforms,
