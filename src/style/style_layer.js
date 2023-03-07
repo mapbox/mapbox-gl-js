@@ -275,6 +275,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    hasShadowPass(): boolean {
+        return false;
+    }
+
     resize() {
         // noop
     }

@@ -111,7 +111,7 @@ function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMod
         const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-        fbo = tile.fbo = context.createFramebuffer(tileSize, tileSize, true);
+        fbo = tile.fbo = context.createFramebuffer(tileSize, tileSize, true, 'renderbuffer');
         fbo.colorAttachment.set(renderTexture.texture);
     }
 

@@ -261,6 +261,10 @@ class FreeCamera {
         return cameraToWorld;
     }
 
+    getCameraToWorldMercator(): Mat4 {
+        return this._transform;
+    }
+
     getWorldToCameraPosition(worldSize: number, pixelsPerMeter: number, uniformScale: number): Float64Array {
         const invPosition = this.position;
 
@@ -314,6 +318,12 @@ class FreeCamera {
     getCameraToClipPerspective(fovy: number, aspectRatio: number, nearZ: number, farZ: number): Float64Array {
         const matrix = new Float64Array(16);
         mat4.perspective(matrix, fovy, aspectRatio, nearZ, farZ);
+        return matrix;
+    }
+
+    getCameraToClipOrthographic(left: number, right: number, bottom: number, top: number, nearZ: number, farZ: number): Float64Array {
+        const matrix = new Float64Array(16);
+        mat4.ortho(matrix, left, right, bottom, top, nearZ, farZ);
         return matrix;
     }
 

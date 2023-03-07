@@ -99,6 +99,8 @@ function restore(): Window {
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
+    window.WebGLTexture = window.WebGLTexture || Object;
+    window.WebGLRenderbuffer = window.WebGLRenderbuffer || Object;
     Object.assign(_window, window); // eslint-disable-line no-restricted-properties
 
     return window;

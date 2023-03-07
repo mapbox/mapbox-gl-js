@@ -106,7 +106,7 @@ function bindFramebuffer(context, painter, layer, scaling) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, false);
+        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, true, null);
 
         bindTextureToFramebuffer(context, painter, texture, fbo, width, height);
 

@@ -510,13 +510,11 @@ export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
     }
 }
 
-export class DepthAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
+export class DepthRenderbufferAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
     attachment(): number { return this.gl.DEPTH_ATTACHMENT; }
-    set(v: ?WebGLRenderbuffer): void {
+    set(v: ?WebGLRenderbuffer | ?WebGLTexture): void {
         if (v === this.current && !this.dirty) return;
         this.context.bindFramebuffer.set(this.parent);
-        // note: it's possible to attach a texture to the depth attachment
-        // point, but thus far MBGL only uses renderbuffers for depth
         const gl = this.gl;
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, this.attachment(), gl.RENDERBUFFER, v);
         this.current = v;
@@ -524,6 +522,18 @@ export class DepthAttachment extends FramebufferAttachment<WebGLRenderbuffer> {
     }
 }
 
-export class DepthStencilAttachment extends DepthAttachment {
+export class DepthTextureAttachment extends FramebufferAttachment<WebGLTexture> {
+    attachment(): number { return this.gl.DEPTH_ATTACHMENT; }
+    set(v: ?WebGLTexture): void {
+        if (v === this.current && !this.dirty) return;
+        this.context.bindFramebuffer.set(this.parent);
+        const gl = this.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachment(), gl.TEXTURE_2D, v, 0);
+        this.current = v;
+        this.dirty = false;
+    }
+}
+
+export class DepthStencilAttachment extends DepthRenderbufferAttachment {
     attachment(): number { return this.gl.DEPTH_STENCIL_ATTACHMENT; }
 }

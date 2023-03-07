@@ -285,6 +285,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
         let program, programMode;
         const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
+        const shadowRenderer = painter.shadowRenderer;
 
         const setShaderMode = (mode, isWireframe) => {
             if (programMode === mode)
@@ -339,6 +340,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 setShaderMode(shaderMode, isWireframe);
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
+
+                if (shadowRenderer) {
+                    shadowRenderer.setupShadows(tile, program);
+                }
 
                 painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 

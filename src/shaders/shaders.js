@@ -33,6 +33,8 @@ import fillPatternFrag from './fill_pattern.fragment.glsl';
 import fillPatternVert from './fill_pattern.vertex.glsl';
 import fillExtrusionFrag from './fill_extrusion.fragment.glsl';
 import fillExtrusionVert from './fill_extrusion.vertex.glsl';
+import fillExtrusionDepthFrag from './fill_extrusion_depth.fragment.glsl';
+import fillExtrusionDepthVert from './fill_extrusion_depth.vertex.glsl';
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
 import fillExtrusionPatternVert from './fill_extrusion_pattern.vertex.glsl';
 import hillshadePrepareFrag from './hillshade_prepare.fragment.glsl';
@@ -61,6 +63,7 @@ import terrainDepthVert from './terrain_depth.vertex.glsl';
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
+import preludeShadowFrag from './_prelude_shadow.fragment.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
@@ -75,6 +78,7 @@ import modelFrag from '../../3d-style/shaders/model.fragment.glsl';
 
 export let preludeTerrain = {};
 export let preludeFog = {};
+export let preludeShadow = {};
 
 const commonDefines = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
@@ -82,10 +86,11 @@ parseUsedPreprocessorDefines(preludeLighting, commonDefines);
 parseUsedPreprocessorDefines(preludeTerrainVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogFrag, commonDefines);
+parseUsedPreprocessorDefines(preludeShadowFrag, commonDefines);
 
 preludeTerrain = compile('', preludeTerrainVert);
 preludeFog = compile(preludeFogFrag, preludeFogVert);
-// Shadow prelude is not compiled until GL-JS implements shadows
+preludeShadow = compile(preludeShadowFrag, '');
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
@@ -145,6 +150,7 @@ export default {
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
     fillPattern: compile(fillPatternFrag, fillPatternVert),
     fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
+    fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
     hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
     hillshade: compile(hillshadeFrag, hillshadeVert),

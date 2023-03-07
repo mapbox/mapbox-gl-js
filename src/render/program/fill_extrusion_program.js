@@ -35,6 +35,11 @@ export type FillExtrusionUniformsType = {|
     'u_edge_radius': Uniform1f
 |};
 
+export type FillExtrusionDepthUniformsType = {|
+    'u_matrix': UniformMatrix4f,
+    'u_edge_radius': Uniform1f
+|};
+
 export type FillExtrusionPatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_lightpos': Uniform3f,
@@ -76,6 +81,11 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_merc_center': new Uniform2f(context),
     'u_up_dir': new Uniform3f(context),
     'u_height_lift': new Uniform1f(context)
+});
+
+const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_edge_radius': new Uniform1f(context)
 });
 
 const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUniformsType => ({
@@ -160,6 +170,16 @@ const fillExtrusionUniformValues = (
     return uniformValues;
 };
 
+const fillExtrusionDepthUniformValues = (
+    matrix: Float32Array,
+    edgeRadius: number
+): UniformValues<FillExtrusionDepthUniformsType> => {
+    return {
+        'u_matrix': matrix,
+        'u_edge_radius': edgeRadius
+    };
+};
+
 const fillExtrusionPatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
@@ -185,7 +205,9 @@ const fillExtrusionPatternUniformValues = (
 
 export {
     fillExtrusionUniforms,
+    fillExtrusionDepthUniforms,
     fillExtrusionPatternUniforms,
     fillExtrusionUniformValues,
+    fillExtrusionDepthUniformValues,
     fillExtrusionPatternUniformValues
 };
