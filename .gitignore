@@ -15,6 +15,7 @@ flow-coverage
 .nyc_output
 *_generated.js
 *_generated.js.map
+test/integration/**/diffs.json
 test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json

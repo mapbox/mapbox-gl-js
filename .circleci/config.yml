@@ -407,6 +407,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   test-render-linux-chrome-prod:
     <<: *linux-defaults
@@ -419,6 +421,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   test-render-linux-chrome-csp:
     <<: *linux-defaults
@@ -431,6 +435,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   test-render-linux-firefox-dev:
     <<: *linux-defaults
@@ -443,6 +449,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   prepare-mac:
     <<: *mac-defaults
@@ -481,6 +489,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   test-render-mac-chrome-webgl2-dev:
     <<: *mac-defaults
@@ -498,6 +508,8 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"
 
   prepare-windows:
     <<: *windows-defaults
@@ -553,3 +565,5 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/render-tests/diffs.json"

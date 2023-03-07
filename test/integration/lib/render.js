@@ -50,10 +50,17 @@ const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
 const {canvas: actualCanvas, ctx: actualCtx} = createCanvas();
 let map;
 let errors = [];
+const diffResults = {};
 
 tape.onFinish(() => {
     document.body.removeChild(container);
     mapboxgl.clearPrewarmedResources();
+
+    // Preserve the test results
+    browserWriteFile.postMessage([{
+        path: 'test/integration/render-tests/diffs.json',
+        data: JSON.stringify(diffResults, null, 2)
+    }]);
 });
 
 let ignoreList;
@@ -343,6 +350,13 @@ async function runTest(t) {
             status: t._todo ? 'todo' : pass ? 'passed' : 'failed',
             errors
         };
+
+        if (minDiff - options.allowed > 0) {
+            diffResults[currentTestName] = {
+                actualDiff: minDiff,
+                allowedDiff: options.allowed
+            };
+        }
 
         t.ok(pass || t._todo, t.name);
 
