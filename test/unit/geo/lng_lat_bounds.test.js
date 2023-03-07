@@ -114,6 +114,20 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('#extend with literal object LngLat', (t) => {
+        const bounds1 = new LngLatBounds([0, 0], [10, 10]);
+        const bounds2 = {lng: -10, lat: -10};
+
+        bounds1.extend(bounds2);
+
+        t.equal(bounds1.getSouth(), -10);
+        t.equal(bounds1.getWest(), -10);
+        t.equal(bounds1.getNorth(), 10);
+        t.equal(bounds1.getEast(), 10);
+
+        t.end();
+    });
+
     t.test('#extend with null', (t) => {
         const bounds = new LngLatBounds([0, 0], [10, 10]);
 
