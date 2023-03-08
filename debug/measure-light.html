@@ -123,61 +123,41 @@ window.onload = function() {
     });
 };
 
-// var map = window.map = new mapboxgl.Map({
-//     container: 'map',
-//     zoom: 13.5,
-//     center: [-122.45814, 37.76159],
-//     style: 'mapbox://styles/' + demo3d.style,
-//     hash: true
-// });
-
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 13.5,
     center: [-122.45814, 37.76159],
-    hash: true,
-    style: {
-        'version': 8,
-        'name': "Blank",
-        'sources': {},
-        'layers': [{
-            'id': "background",
-            'type': "background",
-            'paint': {
-                'background-color': "beige"
-            }
-        }],
-        'glyphs': 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
-        'id': 'blank'
-    }
+    style: 'mapbox://styles/' + demo3d.style,
+    hash: true
 });
 
 map.on('style.load', function() {
-    // map.addSource('mapbox-dem', {
-    //     "type": "raster-dem",
-    //     "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-    //     "tileSize": 512,
-    //     "maxzoom": 14
-    // });
-    // map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
-    // map.addLayer({
-    //     'id': '3d-buildings',
-    //     'source': 'composite',
-    //     'source-layer': 'building',
-    //     'filter': ['==', 'extrude', 'true'],
-    //     'type': 'fill-extrusion',
-    //     'minzoom': 15,
-    //     'paint': {
-    //         'fill-extrusion-color': 'rgb(255, 255, 255)',
-    //         'fill-extrusion-height': ["get", "height"],
-    //         'fill-extrusion-opacity': 0.7
-    //     }
-    // });
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        "tileSize": 512,
+        "maxzoom": 14
+    });
+    map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': 'rgb(255, 255, 255)',
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-opacity': 0.7
+        }
+    });
     updateLights(demo3d.enable3dLights);
     map.once('render', function() {
         const geojsonData1 = {
             "type": "FeatureCollection",
-            "features": [{
+            "features": [
+                {
                     "type": "Feature",
                     "properties": {},
                     "geometry": {
@@ -225,7 +205,8 @@ map.on('style.load', function() {
         };
         const geojsonData2 = {
             "type": "FeatureCollection",
-            "features": [{
+            "features": [
+                {
                     "type": "Feature",
                     "properties": {},
                     "geometry": {
@@ -271,7 +252,6 @@ map.on('style.load', function() {
                 }
             ]
         };
-
         map.addSource('random-points-1', {
             type: 'geojson',
             data: geojsonData1

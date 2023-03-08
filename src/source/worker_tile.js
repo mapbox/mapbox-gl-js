@@ -81,7 +81,7 @@ class WorkerTile {
         this.projection = params.projection;
     }
 
-    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, brightness: ?number, callback: WorkerTileCallback) {
+    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback, brightness: ?number) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;

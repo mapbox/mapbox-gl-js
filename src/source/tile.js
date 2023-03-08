@@ -567,7 +567,7 @@ class Tile {
 
             // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
+            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness || 0);
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {

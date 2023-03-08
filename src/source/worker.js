@@ -136,7 +136,7 @@ export default class Worker {
         this.projections[mapId] = getProjection(config);
     }
 
-    setBrightness(mapId: string, brightness?: number, callback: WorkerTileCallback) {
+    setBrightness(mapId: string, brightness: ?number, callback: WorkerTileCallback) {
         this.brightness = brightness;
         callback();
     }

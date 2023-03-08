@@ -142,13 +142,13 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
-    brightness: ?number;
     loadVectorData: LoadVectorData;
     loading: {[_: number]: WorkerTile };
     loaded: {[_: number]: WorkerTile };
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
     scheduler: ?Scheduler;
+    brightness: ?number;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -205,7 +205,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, this.brightness, (err, result) => {
+                const workerTileCallback = (err, result) => {
                     if (err || !result) return callback(err);
 
                     const resourceTiming = {};
@@ -219,7 +219,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                         }
                     }
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
-                });
+                };
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, workerTileCallback, this.brightness);
             };
 
             if (this.isSpriteLoaded) {
@@ -259,7 +260,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, this.brightness, reloadCallback);
+                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, reloadCallback, this.brightness);
                 }
                 callback(err, data);
             };
@@ -269,7 +270,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             } else if (workerTile.status === 'done') {
                 // if there was no vector tile data on the initial load, don't try and re-parse tile
                 if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, this.brightness, done);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done, this.brightness);
                 } else {
                     done();
                 }

@@ -19,7 +19,6 @@ class EvaluationContext {
     canonical: null | CanonicalTileID;
     featureTileCoord: ?Point;
     featureDistanceData: ?FeatureDistanceData;
-    brightness: ?number;
 
     _parseColorCache: {[_: string]: ?Color};
 
@@ -33,7 +32,6 @@ class EvaluationContext {
         this.canonical = null;
         this.featureTileCoord = null;
         this.featureDistanceData = null;
-        this.brightness = null;
     }
 
     id(): number | null {
@@ -56,7 +54,7 @@ class EvaluationContext {
         return (this.feature && this.feature.properties) || {};
     }
 
-    measureLight(type: string): number {
+    measureLight(_: string): number {
         return this.globals.brightness || 0;
     }
 

@@ -606,7 +606,7 @@ class Style extends Evented {
         this.z = parameters.zoom;
 
         const newBrightness = this.calculateLightsBrightness();
-        if (newBrightness != this._brightness) {
+        if (newBrightness !== this._brightness) {
             this._brightness = newBrightness;
             this.dispatcher.broadcast('setBrightness', newBrightness);
         }
@@ -877,16 +877,18 @@ class Style extends Evented {
                 });
 
                 switch (light.type) {
-                case 'ambient':
-                    this.ambientLight = new Lights<Ambient>(light, ambientProps);
-                    this.ambientLight.updateTransitions(parameters);
-                    this.ambientLight.recalculate(evaluationParameters);
-                    break;
-                case 'directional':
-                    this.directionalLight = new Lights<Directional>(light, directionalProps);
-                    this.directionalLight.updateTransitions(parameters);
-                    this.directionalLight.recalculate(evaluationParameters)
-                    break;
+                case 'ambient': {
+                    const ambient = new Lights<Ambient>(light, ambientProps);
+                    ambient.updateTransitions(parameters);
+                    ambient.recalculate(evaluationParameters);
+                    this.ambientLight = ambient;
+                } break;
+                case 'directional': {
+                    const directional = new Lights<Directional>(light, directionalProps);
+                    directional.updateTransitions(parameters);
+                    directional.recalculate(evaluationParameters);
+                    this.directionalLight = directional;
+                } break;
                 default:
                     assert(false, "Unknown light type");
                 }
@@ -898,11 +900,10 @@ class Style extends Evented {
     }
 
     calculateLightsBrightness(): ?number {
-        if (!this.ambientLight || !this.directionalLight) {
-            return;
-        }
+        const directional = this.directionalLight;
+        const ambient = this.ambientLight;
 
-        if (!this.ambientLight.properties || !this.directionalLight.properties) {
+        if (!directional || !ambient) {
             return;
         }
 
@@ -914,16 +915,16 @@ class Style extends Evented {
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         };
 
-        const directionalColor = this.directionalLight.properties.get('color').toArray01();
-        const directionalIntensity = this.directionalLight.properties.get('intensity');
-        const direction = this.directionalLight.properties.get('direction');
+        const directionalColor = directional.properties.get('color').toArray01();
+        const directionalIntensity = directional.properties.get('intensity');
+        const direction = directional.properties.get('direction');
 
         const sphericalDirection = cartesianPositionToSpherical(direction.x, direction.x, direction.z);
         const polarIntensity = 1.0 - sphericalDirection[2] / 90.0;
         const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
 
-        const ambientColor = this.ambientLight.properties.get('color').toArray01();
-        const ambientIntensity = this.ambientLight.properties.get('intensity');
+        const ambientColor = ambient.properties.get('color').toArray01();
+        const ambientIntensity = ambient.properties.get('intensity');
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
 
         return (directionalBrightness + ambientBrightness) / 2.0;

@@ -53,7 +53,7 @@ export type GlobalProperties = $ReadOnly<{
     skyRadialProgress?: number,
     isSupportedScript?: (_: string) => boolean,
     accumulated?: Value,
-    brightness?: number
+    brightness?: ?number
 }>;
 
 export class StyleExpression {
