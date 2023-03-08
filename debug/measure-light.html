@@ -22,12 +22,12 @@
 
 var Demo3D = function() {
     this.enableTerrain = false;
-    this.enable3dLights = false;
+    this.enable3dLights = true;
     this.style = 'mapbox/streets-v12';
     this.ambientLightColor = [ 255, 255, 255 ];
-    this.ambientLightIntensity = 0.5;
+    this.ambientLightIntensity = 0.2;
     this.directionalLightColor = [ 255, 255, 255 ];
-    this.directionalLightIntensity = 0.5;
+    this.directionalLightIntensity = 0.2;
     this.directionalLightAzimuth = 90;
     this.directionalLightAltitude = 2;
 };
@@ -123,177 +123,200 @@ window.onload = function() {
     });
 };
 
+// var map = window.map = new mapboxgl.Map({
+//     container: 'map',
+//     zoom: 13.5,
+//     center: [-122.45814, 37.76159],
+//     style: 'mapbox://styles/' + demo3d.style,
+//     hash: true
+// });
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 13.5,
     center: [-122.45814, 37.76159],
-    style: 'mapbox://styles/' + demo3d.style,
-    hash: true
+    hash: true,
+    style: {
+        'version': 8,
+        'name': "Blank",
+        'sources': {},
+        'layers': [{
+            'id': "background",
+            'type': "background",
+            'paint': {
+                'background-color': "beige"
+            }
+        }],
+        'glyphs': 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+        'id': 'blank'
+    }
 });
 
 map.on('style.load', function() {
-    map.addSource('mapbox-dem', {
-        "type": "raster-dem",
-        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-        "tileSize": 512,
-        "maxzoom": 14
-    });
-    map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
-    map.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 15,
-        'paint': {
-            'fill-extrusion-color': 'rgb(255, 255, 255)',
-            'fill-extrusion-height': ["get", "height"],
-            'fill-extrusion-opacity': 0.7
-        }
-    });
+    // map.addSource('mapbox-dem', {
+    //     "type": "raster-dem",
+    //     "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+    //     "tileSize": 512,
+    //     "maxzoom": 14
+    // });
+    // map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    // map.addLayer({
+    //     'id': '3d-buildings',
+    //     'source': 'composite',
+    //     'source-layer': 'building',
+    //     'filter': ['==', 'extrude', 'true'],
+    //     'type': 'fill-extrusion',
+    //     'minzoom': 15,
+    //     'paint': {
+    //         'fill-extrusion-color': 'rgb(255, 255, 255)',
+    //         'fill-extrusion-height': ["get", "height"],
+    //         'fill-extrusion-opacity': 0.7
+    //     }
+    // });
     updateLights(demo3d.enable3dLights);
-    const geojsonData1 = {
-        "type": "FeatureCollection",
-        "features": [{
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.50943869117671,
-                        37.84293894844477
-                    ],
-                    "type": "Point"
+    map.once('render', function() {
+        const geojsonData1 = {
+            "type": "FeatureCollection",
+            "features": [{
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.50943869117671,
+                            37.84293894844477
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.31304029841957,
+                            37.809296236599025
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.48183249139171,
+                            37.74134108679195
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.41242261764609,
+                            37.79246912974514
+                        ],
+                        "type": "Point"
+                    }
                 }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.31304029841957,
-                        37.809296236599025
-                    ],
-                    "type": "Point"
+            ]
+        };
+        const geojsonData2 = {
+            "type": "FeatureCollection",
+            "features": [{
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.44282033862872,
+                            37.80189214418512
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.38993055000485,
+                            37.73851655715468
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.47220355453075,
+                            37.68206329128938
+                        ],
+                        "type": "Point"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            -122.25224919549171,
+                            37.740508239567035
+                        ],
+                        "type": "Point"
+                    }
                 }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.48183249139171,
-                        37.74134108679195
-                    ],
-                    "type": "Point"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.41242261764609,
-                        37.79246912974514
-                    ],
-                    "type": "Point"
-                }
-            }
-        ]
-    };
-    const geojsonData2 = {
-        "type": "FeatureCollection",
-        "features": [{
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.44282033862872,
-                        37.80189214418512
-                    ],
-                    "type": "Point"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.38993055000485,
-                        37.73851655715468
-                    ],
-                    "type": "Point"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.47220355453075,
-                        37.68206329128938
-                    ],
-                    "type": "Point"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "coordinates": [
-                        -122.25224919549171,
-                        37.740508239567035
-                    ],
-                    "type": "Point"
-                }
-            }
-        ]
-    };
+            ]
+        };
 
-    map.addSource('random-points-1', {
-        type: 'geojson',
-        data: geojsonData1
-    });
-    map.addSource('random-points-2', {
-        type: 'geojson',
-        data: geojsonData2
-    });
-    map.addLayer({
-        "id": "sample-symbol",
-        "type": "symbol",
-        "source": "random-points-1",
-        "layout": {
-            "text-field": "Sample",
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-size": 20,
-        },
-        "paint": {
-            "text-color": [
-                "case",
-                ["<", ["measure-light", "brightness"], 0.5],
-                "white",
-                "black"
-            ]
-        }
-    });
-    map.addLayer({
-        "id": "sample-symbol-calculate",
-        "type": "symbol",
-        "source": "random-points-2",
-        "layout": {
-            "text-field": "Sample",
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-size": 20,
-        },
-        "paint": {
-            "text-color": [
-                "rgba",
-                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
-                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
-                ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
-                1.0
-            ]
-        }
+        map.addSource('random-points-1', {
+            type: 'geojson',
+            data: geojsonData1
+        });
+        map.addSource('random-points-2', {
+            type: 'geojson',
+            data: geojsonData2
+        });
+        map.addLayer({
+            "id": "sample-symbol",
+            "type": "symbol",
+            "source": "random-points-1",
+            "layout": {
+                "text-field": "Sample",
+                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                "text-size": 20,
+            },
+            "paint": {
+                "text-color": [
+                    "case",
+                    ["<", ["measure-light", "brightness"], 0.5],
+                    "white",
+                    "black"
+                ]
+            }
+        });
+        map.addLayer({
+            "id": "sample-symbol-calculate",
+            "type": "symbol",
+            "source": "random-points-2",
+            "layout": {
+                "text-field": "Sample",
+                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                "text-size": 20,
+            },
+            "paint": {
+                "text-color": [
+                    "rgba",
+                    ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                    ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                    ["*", 255.0, ["-", 1.0, ["measure-light", "brightness"]]],
+                    1.0
+                ]
+            }
+        });
     });
 });
 

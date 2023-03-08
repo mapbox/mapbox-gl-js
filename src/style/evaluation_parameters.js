@@ -10,6 +10,7 @@ class EvaluationParameters {
     pitch: number;
     now: number;
     fadeDuration: number;
+    brightness: ?number;
     transition: TransitionSpecification;
 
     // "options" may also be another EvaluationParameters to copy
@@ -21,6 +22,7 @@ class EvaluationParameters {
             this.fadeDuration = options.fadeDuration;
             this.transition = options.transition;
             this.pitch = options.pitch;
+            this.brightness = options.brightness;
         } else {
             this.now = 0;
             this.fadeDuration = 0;

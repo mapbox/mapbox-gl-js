@@ -57,7 +57,7 @@ class EvaluationContext {
     }
 
     measureLight(type: string): number {
-        return 0.0;
+        return this.globals.brightness || 0;
     }
 
     distanceFromCenter(): number {

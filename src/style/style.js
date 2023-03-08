@@ -173,6 +173,7 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
+    _brightness: ?number;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -604,6 +605,12 @@ class Style extends Evented {
         }
         this.z = parameters.zoom;
 
+        const newBrightness = this.calculateLightsBrightness();
+        if (newBrightness != this._brightness) {
+            this._brightness = newBrightness;
+            this.dispatcher.broadcast('setBrightness', newBrightness);
+        }
+
         if (this._markersNeedUpdate) {
             this._updateMarkersOpacity();
             this._markersNeedUpdate = false;
@@ -883,6 +890,10 @@ class Style extends Evented {
 
     calculateLightsBrightness(): ?number {
         if (!this.ambientLight || !this.directionalLight) {
+            return;
+        }
+
+        if (!this.ambientLight.properties || !this.directionalLight.properties) {
             return;
         }
 

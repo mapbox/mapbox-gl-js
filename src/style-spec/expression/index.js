@@ -52,7 +52,8 @@ export type GlobalProperties = $ReadOnly<{
     rasterValue?: number,
     skyRadialProgress?: number,
     isSupportedScript?: (_: string) => boolean,
-    accumulated?: Value
+    accumulated?: Value,
+    brightness?: number
 }>;
 
 export class StyleExpression {
