@@ -168,13 +168,13 @@ class SourceExpressionBinder implements AttributeBinder {
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness?: number, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
         assert(Array.isArray(availableImages));
-        const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, canonical, availableImages, brightness, formattedSection);
+        const value = this.expression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, brightness?: number) {
-        const value = this.expression.evaluate({zoom: 0}, feature, featureState, undefined, availableImages, brightness);
+        const value = this.expression.evaluate({zoom: 0, options: {brightness}}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, value);
     }
 
@@ -238,16 +238,16 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness?: number, formattedSection?: FormattedSection) {
-        const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, availableImages, brightness, formattedSection);
-        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, availableImages, brightness, formattedSection);
+        const min = this.expression.evaluate(new EvaluationParameters(this.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, min, max);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, brightness?: number) {
-        const min = this.expression.evaluate({zoom: this.zoom}, feature, featureState, undefined, availableImages, brightness);
-        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState, undefined, availableImages, brightness);
+        const min = this.expression.evaluate({zoom: this.zoom, options: {brightness}}, feature, featureState, undefined, availableImages);
+        const max = this.expression.evaluate({zoom: this.zoom + 1, options: {brightness}}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, min, max);
     }
 

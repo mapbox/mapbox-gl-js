@@ -65,7 +65,7 @@ import type Transform from '../geo/transform.js';
 import type {StyleImage} from './style_image.js';
 import type {StyleGlyph} from './style_glyph.js';
 import type {Callback} from '../types/callback.js';
-import type EvaluationParameters from './evaluation_parameters.js';
+import EvaluationParameters from './evaluation_parameters.js';
 import type {Placement} from '../symbol/placement.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
@@ -871,20 +871,29 @@ class Style extends Evented {
                 }
 
                 const parameters = this._getTransitionParameters({duration: 0});
+                const evaluationParameters = new EvaluationParameters(this.z, {
+                    now: browser.now(),
+                    transition: this.getTransition()
+                });
 
                 switch (light.type) {
                 case 'ambient':
                     this.ambientLight = new Lights<Ambient>(light, ambientProps);
                     this.ambientLight.updateTransitions(parameters);
+                    this.ambientLight.recalculate(evaluationParameters);
                     break;
                 case 'directional':
                     this.directionalLight = new Lights<Directional>(light, directionalProps);
                     this.directionalLight.updateTransitions(parameters);
+                    this.directionalLight.recalculate(evaluationParameters)
                     break;
                 default:
                     assert(false, "Unknown light type");
                 }
             }
+
+            this._brightness = this.calculateLightsBrightness();
+            this.dispatcher.broadcast('setBrightness', this._brightness);
         }
     }
 
