@@ -3585,7 +3585,7 @@
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
-            "js": "",
+            "js": "3.0.0",
             "android": "",
             "ios": ""
           }
