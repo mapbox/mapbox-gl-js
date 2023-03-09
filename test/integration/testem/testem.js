@@ -167,7 +167,7 @@ module.exports = async function() {
     await (ci ? buildArtifactsCi() : buildArtifactsDev());
 
     const testemConfig = {
-        middleware: [injectMiddlewares],
+        middleware: [(app) => injectMiddlewares(app, {ci})],
         "test_page": testPage,
         "query_params": getQueryParams(),
     };
