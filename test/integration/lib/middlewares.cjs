@@ -19,8 +19,8 @@ const ciOptions = {
     lastModified: false,
 };
 
-function injectMiddlewares(app, {ci = false}) {
-    const options = ci ? ciOptions : defaultOptions;
+function injectMiddlewares(app, config = {ci: false}) {
+    const options = config.ci ? ciOptions : defaultOptions;
 
     app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
     app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
