@@ -79,7 +79,7 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
 
 export function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
     const basePath = path.join(rootDirectory, suiteDirectory);
-    const jsonPaths = path.join(basePath, '/**/[!actual]*.json');
+    const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
 
     return [jsonPaths, imagePaths];
