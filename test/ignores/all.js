@@ -154,6 +154,11 @@ const skip = [
 
     // model-layer tests still not ready
     "render-tests/model-layer/default",
+
+    // icon-image-cross-fade not supported in -js
+    "render-tests/global-brightness-icon-image-fade",
+    "render-tests/global-brightness-icon-image-switch-dark",
+    "render-tests/global-brightness-icon-image-switch-light",
 ];
 
 export default {todo, skip};
