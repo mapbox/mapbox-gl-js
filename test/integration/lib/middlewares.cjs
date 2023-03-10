@@ -3,9 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const serveStatic = require('serve-static');
 
-const options = {
+const defaultOptions = {
     index: false,
     fallthrough: false,
+};
+
+const ciOptions = {
+    ...defaultOptions,
     // Explicitly indicate that revalidation is not required because the content never changes.
     maxAge: '1h',
     immutable: true,
@@ -15,7 +19,9 @@ const options = {
     lastModified: false,
 };
 
-const injectMiddlewares = (app) => {
+function injectMiddlewares(app, config = {ci: false}) {
+    const options = config.ci ? ciOptions : defaultOptions;
+
     app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
     app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
 
@@ -43,6 +49,6 @@ const injectMiddlewares = (app) => {
             });
         });
     });
-};
+}
 
 module.exports = {injectMiddlewares};
