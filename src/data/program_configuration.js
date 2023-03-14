@@ -173,7 +173,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, newLength, value);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, _: SpritePositions, brightness: ?number) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: ?number) {
         const value = this.expression.evaluate({zoom: 0, options: {brightness}}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, value);
     }
@@ -245,7 +245,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, newLength, min, max);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, _: SpritePositions, brightness: ?number) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: ?number) {
         const min = this.expression.evaluate({zoom: this.zoom, options: {brightness}}, feature, featureState, undefined, availableImages);
         const max = this.expression.evaluate({zoom: this.zoom + 1, options: {brightness}}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, min, max);
