@@ -194,8 +194,8 @@ export function parseUsedPreprocessorDefines(source, defines) {
 
 // Expand #pragmas to #ifdefs.
 export function compile(fragmentSource, vertexSource) {
-    const pragmaRegex = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
-    const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
+    const pragmaRegex = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
+    const attributeRegex = /(?<!initialize-)attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
 
     const staticAttributes = vertexSource.match(attributeRegex);
     const fragmentPragmas = {};
@@ -214,20 +214,35 @@ varying ${precision} ${type} ${name};
 uniform ${precision} ${type} u_${name};
 #endif
 `;
-        } else /* if (operation === 'initialize') */ {
+        } else  if (operation === 'initialize') {
             return `
 #ifdef HAS_UNIFORM_u_${name}
     ${precision} ${type} ${name} = u_${name};
 #endif
 `;
+        } else if (operation === 'define-attribute') {
+            return `
+#ifdef HAS_ATTRIBUTE_a_${name}
+    varying ${precision} ${type} ${name};
+#endif
+`;
+        } else if (operation === 'initialize-attribute') {
+            return '';
         }
+
     });
 
     vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
-        const attrType = type === 'float' ? 'vec2' : 'vec4';
+        const attrType = type === 'float' ? 'vec2' : type;
         const unpackType = name.match(/color/) ? 'color' : attrType;
 
-        if (fragmentPragmas[name]) {
+        if (operation === 'define-attribute-vertex-shader-only') {
+            return `
+#ifdef HAS_ATTRIBUTE_a_${name}
+attribute ${precision} ${type} a_${name};
+#endif
+`;
+        } else if (fragmentPragmas[name]) {
             if (operation === 'define') {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
@@ -238,7 +253,7 @@ varying ${precision} ${type} ${name};
 uniform ${precision} ${type} u_${name};
 #endif
 `;
-            } else /* if (operation === 'initialize') */ {
+            } else if (operation === 'initialize') {
                 if (unpackType === 'vec4') {
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
@@ -257,6 +272,19 @@ uniform ${precision} ${type} u_${name};
 #endif
 `;
                 }
+            } else if (operation === 'define-attribute') {
+                return `
+#ifdef HAS_ATTRIBUTE_a_${name}
+    attribute ${precision} ${type} a_${name};
+    varying ${precision} ${type} ${name};
+#endif
+`;
+            } else if (operation === 'initialize-attribute') {
+                return `
+#ifdef HAS_ATTRIBUTE_a_${name}
+    ${name} = a_${name};
+#endif
+`;
             }
         } else {
             if (operation === 'define') {
@@ -266,6 +294,33 @@ uniform lowp float u_${name}_t;
 attribute ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
+#endif
+`;
+            } else if (operation === 'define-instanced') {
+                if (unpackType === 'mat4') {
+                    return `
+#ifdef INSTANCED_ARRAYS
+attribute vec4 a_${name}0;
+attribute vec4 a_${name}1;
+attribute vec4 a_${name}2;
+attribute vec4 a_${name}3;
+#else
+uniform ${precision} ${type} u_${name};
+#endif
+`;
+                } else {
+                    return `
+#ifdef INSTANCED_ARRAYS
+attribute ${precision} ${attrType} a_${name};
+#else
+uniform ${precision} ${type} u_${name};
+#endif
+`;
+                }
+            } else if (operation === 'initialize-attribute-custom') {
+                return `
+#ifdef HAS_ATTRIBUTE_a_${name}
+    ${precision} ${type} ${name} = a_${name};
 #endif
 `;
             } else /* if (operation === 'initialize') */ {

@@ -1246,8 +1246,10 @@ export {
     StructArrayLayout1ui2 as LineStripIndexArray,
     StructArrayLayout3f12 as SkyboxVertexArray,
     StructArrayLayout4i8 as TileBoundsArray,
-    StructArrayLayout6i12 as CircleGlobeExtArray,
     StructArrayLayout3f12 as ModelLayoutArray,
+    StructArrayLayout3f12 as Color3fLayoutArray,
+    StructArrayLayout4f16 as Color4fLayoutArray,
+    StructArrayLayout2f8 as TexcoordLayoutArray,
     StructArrayLayout3f12 as NormalLayoutArray,
-    StructArrayLayout2f8 as TexcoordLayoutArray
+    StructArrayLayout6i12 as CircleGlobeExtArray
 };

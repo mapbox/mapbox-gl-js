@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "pitch": 80,
+  "bearing": 40,
+  "zoom": 21,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/cubes-depth.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model"
+    }
+  ]
+}

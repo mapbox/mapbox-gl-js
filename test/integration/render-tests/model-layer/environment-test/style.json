@@ -1,0 +1,33 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 21,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/environment-test.gltf",
+          "position": [0, 0],
+          "orientation": [90, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model"
+    }
+  ]
+}

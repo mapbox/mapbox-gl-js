@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0056
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "pitch": 45,
+  "bearing": 40,
+  "zoom": 22,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/transparency-box.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-opacity" : 0.5
+      }
+    }
+  ]
+}

@@ -94,6 +94,7 @@ declare module "gl-matrix" {
         fromRotation<T: Mat4>(T, number, Vec3): T,
         translate<T: Mat4>(T, Mat4, Vec3): T,
         invert<T: Mat4>(T, Mat4): T,
+        transpose<T: Mat4>(T, Mat4): T,
         copy<T: Mat4>(T, Mat4): T,
         clone<T: Mat4>(T): T
     };

@@ -152,8 +152,8 @@ const skip = [
     // fill-extrusion-rounded-roof not implemented in -js
     "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
 
-    // model-layer tests still not ready
-    "render-tests/model-layer/default",
+    // alpha textures not supported in js
+    "render-tests/model-layer/model-opacity-cutout-texture"
 ];
 
 export default {todo, skip};

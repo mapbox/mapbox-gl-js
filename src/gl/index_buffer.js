@@ -10,7 +10,7 @@ class IndexBuffer {
     buffer: ?WebGLBuffer;
     dynamicDraw: boolean;
 
-    constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
+    constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean, noDestroy?: boolean) {
         this.context = context;
         const gl = context.gl;
         this.buffer = gl.createBuffer();
@@ -24,7 +24,7 @@ class IndexBuffer {
         context.bindElementBuffer.set(this.buffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
-        if (!this.dynamicDraw) {
+        if (!this.dynamicDraw && !noDestroy) {
             array.destroy();
         }
     }

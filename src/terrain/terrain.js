@@ -629,9 +629,9 @@ export class Terrain extends Elevation {
         if (prevDemTile && demTile) {
             // Both DEM textures are expected to be correctly set if geomorphing is enabled
             context.activeTexture.set(gl.TEXTURE2);
-            (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
             context.activeTexture.set(gl.TEXTURE4);
-            (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE, gl.NEAREST);
+            (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
 
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {

@@ -21,6 +21,7 @@ import type {LightProps as Directional} from '../style/directional_light_propert
 import Lights from '../style/lights.js';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms.js';
 import type {ShadowUniformsType} from '../render/shadow_uniforms.js';
+import TextureSlots from './texture_slots.js';
 
 import assert from 'assert';
 
@@ -37,7 +38,6 @@ type ShadowCascade = {
 
 const cascadeCount = 2;
 const shadowMapResolution = 2048;
-const ShadowMap0TextureUnit = 10;
 
 export class ShadowRenderer {
     painter: Painter;
@@ -144,8 +144,8 @@ export class ShadowRenderer {
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [shadowDirection[0], shadowDirection[1], shadowDirection[2]];
         this._uniformValues['u_texel_size'] = 1 / shadowMapResolution;
-        this._uniformValues['u_shadowmap_0'] = ShadowMap0TextureUnit + 0;
-        this._uniformValues['u_shadowmap_1'] = ShadowMap0TextureUnit + 1;
+        this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
+        this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
     }
 
     get enabled(): boolean {
@@ -217,7 +217,7 @@ export class ShadowRenderer {
         for (let i = 0; i < cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, tileMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
-            context.activeTexture.set(gl.TEXTURE0 + ShadowMap0TextureUnit + i);
+            context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
             this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
