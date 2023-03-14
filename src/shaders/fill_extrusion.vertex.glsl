@@ -22,6 +22,9 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
+uniform highp vec3 u_flood_light_color;
+uniform highp float u_vertical_scale;
+
 varying vec4 v_color;
 
 #ifdef RENDER_SHADOWS
@@ -46,16 +49,24 @@ uniform lowp vec2 u_ao;
 varying vec3 v_ao;
 #endif
 
+varying float v_has_floodlight;
+
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
 #pragma mapbox: define highp vec4 color
+#pragma mapbox: define highp float wall_flood_light_radius
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
-
+    #pragma mapbox: initialize highp float wall_flood_light_radius
+    
+    base *= u_vertical_scale;
+    height *= u_vertical_scale;
+    wall_flood_light_radius *= u_vertical_scale;
+    
     vec4 pos_nx = floor(a_pos_normal_ed * 0.5);
     // The least significant bits of a_pos_normal_ed hold:
     // x is 1 if it's on top, 0 for ground.
@@ -110,6 +121,7 @@ void main() {
 
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    h = h - ele;
 
 #ifdef RENDER_SHADOWS
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos, 1);
@@ -164,7 +176,7 @@ void main() {
     top_height = mix(max(c_ele + height, ele + base + 2.0), ele + height, float(centroid_pos.x == 0.0)) - ele;
     y_ground += y_ground * 5.0 / max(3.0, top_height);
 #endif
-    v_ao = vec3(mix(concave, -concave, start), y_ground, h - ele);
+    v_ao = vec3(mix(concave, -concave, start), y_ground, h);
     NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
@@ -174,14 +186,25 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
+
+#ifdef FLOOD_LIGHT
+    float is_wall = 1.0 - float(t > 0.0 && top_up_ny.y > 0.0);
+    v_has_floodlight = float(wall_flood_light_radius > 0.0);
+    v_color = apply_lighting_linear(color, NdotL);
+    vec3 flood_radiance = u_flood_light_color * (1.0 - min(max(0.0, h) / wall_flood_light_radius, 1.0));   
+    v_color.rgb += flood_radiance * v_has_floodlight * is_wall;
+    v_color.rgb = linearTosRGB(v_color.rgb);
+#else
     v_color = apply_lighting(color, NdotL);
+#endif
+
 #else
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
 #endif
-    
+
     v_color *= u_opacity;
 
 #ifdef ZERO_ROOF_RADIUS

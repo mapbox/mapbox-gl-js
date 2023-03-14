@@ -5051,6 +5051,97 @@
           "ios": "10.7.0"
         }
       }
+    },
+    "fill-extrusion-flood-light-color": {
+      "property-type": "data-constant",
+      "type": "color",
+      "default": "#ffffff",
+      "doc": "The color of the flood light effect on the walls of the extruded buildings.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
+    "fill-extrusion-flood-light-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "The intensity of the flood light color.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
+    "fill-extrusion-wall-flood-light-radius": {
+      "property-type": "data-driven",
+      "type": "number",
+      "units": "meters",
+      "default": 0,
+      "minimum": 0,
+      "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "ios": "",
+          "android": ""
+        }
+      }
+    },
+    "fill-extrusion-vertical-scale": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 1.0,
+      "minimum": 0.0,
+      "doc": "A global multiplier that can be used to scale base, height, AO, and flood light of the fill extrusions.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
     }
   },
   "paint_line": {
