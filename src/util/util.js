@@ -755,3 +755,11 @@ export function setColumn(matrix: Mat4, col: number, values: Vec4) {
     matrix[col * 4 + 2] = values[2];
     matrix[col * 4 + 3] = values[3];
 }
+
+export function sRGBToLinearAndScale(v: [number, number, number, number], s: number): [number, number, number] {
+    return [
+        Math.pow(v[0], 2.2) * s,
+        Math.pow(v[1], 2.2) * s,
+        Math.pow(v[2], 2.2) * s
+    ];
+}

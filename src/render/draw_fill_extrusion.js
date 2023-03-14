@@ -18,6 +18,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js'
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import Context from '../gl/context.js';
 import {Terrain} from '../terrain/terrain.js';
+import {sRGBToLinearAndScale} from '../util/util.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -78,6 +79,10 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const floodLightColorSrgb = layer.paint.get('fill-extrusion-flood-light-color').toArray01();
+    const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
+    const floodLightColorLinear = sRGBToLinearAndScale(floodLightColorSrgb, floodLightIntensity);
+    const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
@@ -87,6 +92,10 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     }
     if (zeroRoofRadius) {
         baseDefines.push('ZERO_ROOF_RADIUS');
+    }
+
+    if (floodLightIntensity > 0) {
+        baseDefines.push('FLOOD_LIGHT');
     }
 
     const isShadowPass = painter.renderPass === 'shadow';
@@ -148,10 +157,10 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix);
+                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColorLinear, verticalScale);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix);
+                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColorLinear, verticalScale);
             }
         }
 

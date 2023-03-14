@@ -32,7 +32,9 @@ export type FillExtrusionUniformsType = {|
     'u_up_dir': Uniform3f,
     'u_height_lift': Uniform1f,
     'u_ao': Uniform2f,
-    'u_edge_radius': Uniform1f
+    'u_edge_radius': Uniform1f,
+    'u_flood_light_color': Uniform3f,
+    'u_vertical_scale': Uniform1f
 |};
 
 export type FillExtrusionDepthUniformsType = {|
@@ -80,7 +82,9 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_inv_rot_matrix': new UniformMatrix4f(context),
     'u_merc_center': new Uniform2f(context),
     'u_up_dir': new Uniform3f(context),
-    'u_height_lift': new Uniform1f(context)
+    'u_height_lift': new Uniform1f(context),
+    'u_flood_light_color': new Uniform3f(context),
+    'u_vertical_scale': new Uniform1f(context)
 });
 
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
@@ -126,7 +130,9 @@ const fillExtrusionUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array
+    invMatrix: Float32Array,
+    floodLightColor: [number, number, number],
+    verticalScale: number,
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -155,7 +161,9 @@ const fillExtrusionUniformValues = (
         'u_up_dir': [0, 0, 0],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
-        'u_edge_radius': edgeRadius
+        'u_edge_radius': edgeRadius,
+        'u_flood_light_color': floodLightColor,
+        'u_vertical_scale': verticalScale
     };
 
     if (tr.projection.name === 'globe') {
@@ -192,11 +200,13 @@ const fillExtrusionPatternUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array
+    invMatrix: Float32Array,
+    floodLightColor: [number, number, number],
+    verticalScale: number
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, coord,
-        heightLift, zoomTransition, mercatorCenter, invMatrix);
+        heightLift, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };

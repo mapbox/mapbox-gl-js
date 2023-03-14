@@ -3,6 +3,7 @@
 import Context from '../../src/gl/context.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
 import {Uniform3f} from '../../src/render/uniform_binding.js';
+import {sRGBToLinearAndScale} from '../../src/util/util.js';
 
 import Lights from '../style/lights.js';
 import type {LightProps as Ambient} from '../style/ambient_light_properties.js';
@@ -30,14 +31,6 @@ export const lightsUniformValues = (
     const directionalIntensity = directional.properties.get('intensity');
     const ambientColor = ambient.properties.get('color').toArray01();
     const ambientIntensity = ambient.properties.get('intensity');
-
-    const sRGBToLinearAndScale = (v: [number, number, number, number], s: number): [number, number, number] => {
-        return [
-            Math.pow(v[0], 2.2) * s,
-            Math.pow(v[1], 2.2) * s,
-            Math.pow(v[2], 2.2) * s
-        ];
-    };
 
     return {
         'u_lighting_ambient_color': sRGBToLinearAndScale(ambientColor, ambientIntensity),

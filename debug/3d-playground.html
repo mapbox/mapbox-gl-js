@@ -58,13 +58,15 @@ var Demo3D = function() {
     this.lightIntensity = 0.26;
     this.aoIntensity = 0.3;
     this.aoRadius = 3;
-    this.aoGroundLine = true;
+    this.floodLightColor = [153, 153, 100];
+    this.floodLightIntensity = 0.0;
+    this.aoGroundLine = false;
     this.buildingColor = [ 255, 255, 255 ];
     this.buildingOpacity = 1;
     this.ambientLightColor = [ 255, 255, 255 ];
-    this.ambientLightIntensity = 1.0;
+    this.ambientLightIntensity = 0.1;
     this.directionalLightColor = [ 255, 255, 255 ];
-    this.directionalLightIntensity = 1.0;
+    this.directionalLightIntensity = 0.1;
     this.directionalLightAzimuth = 90;
     this.directionalLightAltitude = 2;
 };
@@ -84,7 +86,7 @@ function updateLights(enable) {
             },
             {
                 'type': 'directional',
-                'id': 'directional_ligh',
+                'id': 'directional_light',
                 'properties': {
                     'color': 'rgba(' + demo3d.directionalLightColor[0] + ', ' + demo3d.directionalLightColor[1] + ', ' + demo3d.directionalLightColor[2] + ', 1.0)',
                     'intensity': demo3d.directionalLightIntensity,
@@ -227,6 +229,15 @@ window.onload = function() {
         map.setPaintProperty('extrusion', 'fill-extrusion-color',
             'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
     });
+    var floodLightColor = buildings.addColor(demo3d, 'floodLightColor');
+    floodLightColor.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-color',
+            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
+    });
+    var floodLightIntensity = buildings.add(demo3d, 'floodLightIntensity', 0.0, 1.0);
+    floodLightIntensity.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', value);
+    });
     var buildingOpacity = buildings.add(demo3d, 'buildingOpacity', 0.0, 1.0);
     buildingOpacity.onFinishChange((value) => {
         map.setPaintProperty('extrusion', 'fill-extrusion-opacity', value);
@@ -258,6 +269,7 @@ let skyAnimationTime = 0.0;
 let first = true;
 
 map.on('style.load', function() {
+    updateLights(demo3d.enable3dLights);
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
@@ -273,13 +285,32 @@ map.on('style.load', function() {
         'filter': ['==', 'extrude', 'true'],
         'type': 'fill-extrusion',
         'minzoom': 13,
+        'layout': {
+            "fill-extrusion-edge-radius": 0.5
+        },
         'paint': {
             'fill-extrusion-color': 'rgb(' + demo3d.buildingColor[0] + ', ' + demo3d.buildingColor[1] + ', ' + demo3d.buildingColor[2] + ')',
             'fill-extrusion-height': ["get", "height"],
             'fill-extrusion-base': ["get", "min_height"],
             'fill-extrusion-opacity': demo3d.buildingOpacity,
             'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
-            'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity
+            'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity,
+            'fill-extrusion-wall-flood-light-radius': [
+                "case",
+                ["<=", ["get", "height"], 50], 0,
+                [">",  ["get", "height"], 50], ["get", "height"],
+                0
+            ],
+            'fill-extrusion-flood-light-color': ["rgb", demo3d.floodLightColor[0], demo3d.floodLightColor[1], demo3d.floodLightColor[2]],
+            'fill-extrusion-flood-light-intensity':  demo3d.floodLightIntensity,
+            'fill-extrusion-vertical-scale': [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                1,     0,
+                15, 0,
+                16, 1,
+            ]
         }
     }, 'waterway-label');
 
