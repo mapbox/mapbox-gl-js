@@ -42,7 +42,7 @@ class VertexBuffer {
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
      * @private
      */
-    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
+    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, noDestroy?: boolean) {
         this.length = array.length;
         this.attributes = attributes;
         this.itemSize = array.bytesPerElement;
@@ -54,7 +54,7 @@ class VertexBuffer {
         context.bindVertexBuffer.set(this.buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
-        if (!this.dynamicDraw) {
+        if (!this.dynamicDraw && !noDestroy) {
             array.destroy();
         }
     }

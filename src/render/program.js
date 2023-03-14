@@ -141,8 +141,10 @@ class Program<Us: UniformBindings> {
 
         for (let i = 0; i < this.numAttributes; i++) {
             if (allAttrInfo[i]) {
-                gl.bindAttribLocation(this.program, i, allAttrInfo[i]);
-                this.attributes[allAttrInfo[i]] = i;
+                // Handle pragma defined attributes
+                const attributeName = allAttrInfo[i].startsWith('a_') ? allAttrInfo[i] : `a_${allAttrInfo[i]}`;
+                gl.bindAttribLocation(this.program, i, attributeName);
+                this.attributes[attributeName] = i;
             }
         }
 

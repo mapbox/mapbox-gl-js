@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 22,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models//box.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-rotation" : [20, 40, 60]
+      }
+    }
+  ]
+}

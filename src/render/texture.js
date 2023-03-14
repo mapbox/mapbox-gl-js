@@ -11,7 +11,10 @@ export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'DEPTH_COMPONENT'>;
 export type TextureFilter =
     | $PropertyType<WebGLRenderingContext, 'LINEAR'>
+    | $PropertyType<WebGLRenderingContext, 'NEAREST_MIPMAP_NEAREST'>
     | $PropertyType<WebGLRenderingContext, 'LINEAR_MIPMAP_NEAREST'>
+    | $PropertyType<WebGLRenderingContext, 'NEAREST_MIPMAP_LINEAR'>
+    | $PropertyType<WebGLRenderingContext, 'LINEAR_MIPMAP_LINEAR'>
     | $PropertyType<WebGLRenderingContext, 'NEAREST'>;
 export type TextureWrap =
     | $PropertyType<WebGLRenderingContext, 'REPEAT'>
@@ -39,8 +42,10 @@ class Texture {
     size: [number, number];
     texture: WebGLTexture;
     format: TextureFormat;
-    filter: ?TextureFilter;
-    wrap: ?TextureWrap;
+    minFilter: ?TextureFilter;
+    magFilter: ?TextureFilter;
+    wrapS: ?TextureWrap;
+    wrapT: ?TextureWrap;
     useMipmap: boolean;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
@@ -100,18 +105,45 @@ class Texture {
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if (filter !== this.filter) {
+        if (filter !== this.minFilter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
                 this.useMipmap ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : filter
             );
-            this.filter = filter;
+            this.minFilter = filter;
         }
 
-        if (wrap !== this.wrap) {
+        if (wrap !== this.wrapS) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
-            this.wrap = wrap;
+            this.wrapS = wrap;
+        }
+    }
+
+    bindExtraParam(minFilter: TextureFilter, magFilter: TextureFilter, wrapS: TextureWrap, wrapT: TextureWrap) {
+        const {context} = this;
+        const {gl} = context;
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (magFilter !== this.magFilter) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
+            this.magFilter = magFilter;
+        }
+        if (minFilter !== this.minFilter) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
+                this.useMipmap ? (minFilter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : minFilter
+            );
+            this.minFilter = minFilter;
+        }
+
+        if (wrapS !== this.wrapS) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS);
+            this.wrapS = wrapS;
+        }
+
+        if (wrapT !== this.wrapT) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapT);
+            this.wrapT = wrapT;
         }
     }
 

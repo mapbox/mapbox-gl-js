@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "allowed": 0.00018
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "pitch": 80,
+  "bearing": 0,
+  "zoom": 25,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models//BoomBox.glb",
+          "position": [0, 0],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale" : [440.0, 440.0, 440.0]
+      }
+    }
+  ]
+}

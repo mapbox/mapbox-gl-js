@@ -105,6 +105,7 @@ function restore(): Window {
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
     window.WebGLTexture = window.WebGLTexture || Object;
     window.WebGLRenderbuffer = window.WebGLRenderbuffer || Object;
+    window.WebGLRenderingContext = window.WebGLRenderingContext || Object;
     Object.assign(_window, window); // eslint-disable-line no-restricted-properties
 
     return window;
