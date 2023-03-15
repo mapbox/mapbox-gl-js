@@ -646,6 +646,15 @@ class Painter {
         this.renderPass = 'translucent';
 
         this.currentLayer = 0;
+
+        let shadowLayers = 0;
+        const shadowRenderer = this.shadowRenderer;
+        if (shadowRenderer) {
+            shadowLayers = shadowRenderer.getShadowCastingLayerCount();
+        }
+
+        const terrain = this.terrain;
+
         while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
@@ -659,12 +668,11 @@ class Painter {
             // With terrain on and for draped layers only, issue rendering and progress
             // this.currentLayer until the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
-            if (this.terrain && this.style.isLayerDraped(layer)) {
+            if (terrain && this.style.isLayerDraped(layer)) {
                 if (layer.isHidden(this.transform.zoom)) {
                     ++this.currentLayer;
                     continue;
                 }
-                const terrain = (((this.terrain): any): Terrain);
                 const prevLayer = this.currentLayer;
                 this.currentLayer = terrain.renderBatch(this.currentLayer);
                 assert(this.context.bindFramebuffer.current === null);
@@ -681,6 +689,11 @@ class Painter {
 
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
+
+            // Render ground shadows after the last shadow caster layer
+            if (!terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
+                shadowRenderer.drawGroundShadows();
+            }
 
             ++this.currentLayer;
         }

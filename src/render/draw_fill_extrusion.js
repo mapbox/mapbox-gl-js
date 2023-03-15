@@ -126,7 +126,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadows(tile, program);
+            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program);
         }
 
         if (image) {

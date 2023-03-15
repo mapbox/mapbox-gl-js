@@ -343,11 +343,13 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
 
+                const unwrappedId = coord.toUnwrapped();
+
                 if (shadowRenderer) {
-                    shadowRenderer.setupShadows(tile, program);
+                    shadowRenderer.setupShadows(unwrappedId, program);
                 }
 
-                painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
+                painter.uploadCommonUniforms(context, program, unwrappedId);
 
                 program.draw(context, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);

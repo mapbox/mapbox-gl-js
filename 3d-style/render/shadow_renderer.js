@@ -4,6 +4,8 @@ import Texture from '../../src/render/texture.js';
 import Framebuffer from '../../src/gl/framebuffer.js';
 import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
+import StencilMode from '../../src/gl/stencil_mode.js';
+import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import Transform from '../../src/geo/transform.js';
 import {Frustum} from '../../src/util/primitives.js';
 import Style from '../../src/style/style.js';
@@ -11,7 +13,6 @@ import Color from '../../src/style-spec/util/color.js';
 import {FreeCamera} from '../../src/ui/free_camera.js';
 import {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id.js';
 import Painter from '../../src/render/painter.js';
-import Tile from '../../src/source/tile.js';
 import Program from '../../src/render/program.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
 import {mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
@@ -27,6 +28,7 @@ import assert from 'assert';
 
 import {mat4, vec3} from 'gl-matrix';
 import type {Mat4, Vec3} from 'gl-matrix';
+import {groundShadowUniformValues} from './program/ground_shadow_program.js';
 
 type ShadowCascade = {
     framebuffer: Framebuffer,
@@ -42,6 +44,7 @@ const shadowMapResolution = 2048;
 export class ShadowRenderer {
     painter: Painter;
     _enabled: boolean;
+    _shadowLayerCount: number;
     _cascades: Array<ShadowCascade>;
     _depthMode: DepthMode;
     _uniformValues: UniformValues<ShadowUniformsType>;
@@ -49,6 +52,7 @@ export class ShadowRenderer {
     constructor(painter: Painter) {
         this.painter = painter;
         this._enabled = false;
+        this._shadowLayerCount = 0;
         this._cascades = [];
         this._depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]);
         this._uniformValues = defaultShadowUniformValues();
@@ -63,12 +67,11 @@ export class ShadowRenderer {
         this._cascades = [];
     }
 
-    updateShadowParameters(
-        transform: Transform,
-        directionalLight: ?Lights<Directional>) {
+    updateShadowParameters(transform: Transform, directionalLight: ?Lights<Directional>) {
         const painter = this.painter;
 
         this._enabled = false;
+        this._shadowLayerCount = 0;
 
         if (!painter.context.isWebGL2 || !directionalLight || !directionalLight.properties) {
             return;
@@ -80,13 +83,13 @@ export class ShadowRenderer {
             return;
         }
 
-        for (const layerId of painter.style.order) {
-            const layer = painter.style._layers[layerId];
-            if (layer.hasShadowPass() && !layer.isHidden(transform.zoom)) {
-                this._enabled = true;
-                break;
-            }
-        }
+        this._shadowLayerCount = painter.style.order.reduce(
+            (accumulator: number, layerId: string) => {
+                const layer = painter.style._layers[layerId];
+                return accumulator + (layer.hasShadowPass() && !layer.isHidden(transform.zoom) ? 1 : 0);
+            }, 0);
+
+        this._enabled = this._shadowLayerCount > 0;
 
         if (!this._enabled) {
             return;
@@ -185,12 +188,53 @@ export class ShadowRenderer {
         painter.currentShadowCascade = 0;
     }
 
+    drawGroundShadows() {
+        if (!this._enabled) {
+            return;
+        }
+
+        const painter = this.painter;
+        const tr = painter.transform;
+        const context = painter.context;
+
+        const program = painter.useProgram('groundShadow', null, []);
+
+        // Render shadows on the ground plane as an extra layer of blended "tiles"
+        const tileCoverOptions = {
+            tileSize: 256,
+            roundZoom: true,
+            renderWorldCopies: true
+        };
+        const tiles = painter.transform.coveringTiles(tileCoverOptions);
+
+        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+
+        for (const id of tiles) {
+            const unwrapped = id.toUnwrapped();
+
+            this.setupShadows(unwrapped, program);
+
+            painter.uploadCommonUniforms(context, program, unwrapped);
+
+            const uniformValues = groundShadowUniformValues(tr.calculateProjMatrix(unwrapped));
+
+            program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.multiply, CullFaceMode.disabled,
+                uniformValues, "ground_shadow", painter.tileExtentBuffer, painter.quadTriangleIndexBuffer,
+                painter.tileExtentSegments, {}, painter.transform.zoom,
+                null, null);
+        }
+    }
+
     getShadowPassColorMode(): $ReadOnly<ColorMode> {
         return this.painter._shadowMapDebug ? ColorMode.unblended : ColorMode.disabled;
     }
 
     getShadowPassDepthMode(): $ReadOnly<DepthMode> {
         return this._depthMode;
+    }
+
+    getShadowCastingLayerCount(): number {
+        return this._shadowLayerCount;
     }
 
     calculateShadowPassTileMatrix(unwrappedId: UnwrappedTileID): Float32Array {
@@ -201,7 +245,7 @@ export class ShadowRenderer {
         return Float32Array.from(tileMatrix);
     }
 
-    setupShadows(tile: Tile, program: Program<*>) {
+    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<*>) {
         if (!this._enabled) {
             return;
         }
@@ -212,7 +256,7 @@ export class ShadowRenderer {
         const uniforms = this._uniformValues;
 
         const lightMatrix = new Float64Array(16);
-        const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped(), transform.worldSize);
+        const tileMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.worldSize);
 
         for (let i = 0; i < cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, tileMatrix);
