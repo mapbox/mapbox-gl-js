@@ -171,7 +171,8 @@ function validSchema(k, t, obj, ref, version, kind) {
                             k === 'feature' ||
                             k === 'feature-state' ||
                             k === 'pitch' ||
-                            k === 'distance-from-center';
+                            k === 'distance-from-center' ||
+                            k === 'measure-light';
                     }));
                 }
             }

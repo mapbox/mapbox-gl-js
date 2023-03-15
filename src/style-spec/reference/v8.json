@@ -3580,6 +3580,17 @@
           }
         }
       },
+      "measure-light": {
+        "doc": "",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.0.0",
+            "android": "",
+            "ios": ""
+          }
+        }
+      },
       "heatmap-density": {
         "doc": "Returns the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
         "group": "Heatmap",
@@ -4614,7 +4625,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4648,7 +4660,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4684,7 +4697,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4828,7 +4842,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4944,7 +4959,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -4978,7 +4994,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5171,7 +5188,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5205,7 +5223,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5294,7 +5313,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5325,7 +5345,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5355,7 +5376,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5386,7 +5408,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5537,7 +5560,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5566,7 +5590,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5595,7 +5620,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5626,7 +5652,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5771,7 +5798,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5800,7 +5828,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5831,7 +5860,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5864,7 +5894,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -5894,7 +5925,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6017,7 +6049,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6049,7 +6082,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6081,7 +6115,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6115,7 +6150,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6149,7 +6185,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6245,7 +6282,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6278,7 +6316,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6310,7 +6349,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6344,7 +6384,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6378,7 +6419,8 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"

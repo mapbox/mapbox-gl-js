@@ -11,6 +11,7 @@ class EvaluationParameters {
     now: number;
     fadeDuration: number;
     transition: TransitionSpecification;
+    brightness: number;
 
     // "options" may also be another EvaluationParameters to copy
     constructor(zoom: number, options?: *) {
@@ -21,11 +22,13 @@ class EvaluationParameters {
             this.fadeDuration = options.fadeDuration;
             this.transition = options.transition;
             this.pitch = options.pitch;
+            this.brightness = options.brightness;
         } else {
             this.now = 0;
             this.fadeDuration = 0;
             this.transition = {};
             this.pitch = 0;
+            this.brightness = 0;
         }
     }
 

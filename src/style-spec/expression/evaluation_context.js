@@ -54,6 +54,10 @@ class EvaluationContext {
         return (this.feature && this.feature.properties) || {};
     }
 
+    measureLight(_: string): number {
+        return this.globals.brightness || 0;
+    }
+
     distanceFromCenter(): number {
         if (this.featureTileCoord && this.featureDistanceData) {
 

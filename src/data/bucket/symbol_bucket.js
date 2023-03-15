@@ -619,10 +619,10 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
         if (!this.stateDependentLayers.length) return;
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions);
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions, brightness);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions, brightness);
     }
 
     isEmpty(): boolean {
@@ -692,7 +692,8 @@ class SymbolBucket implements Bucket {
                lineLength: number,
                associatedIconIndex: number,
                availableImages: Array<string>,
-               canonical: CanonicalTileID) {
+               canonical: CanonicalTileID,
+               brightness: ?number) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const globeExtVertexArray = arrays.globeExtVertexArray;
@@ -737,7 +738,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, sections && sections[sectionIndex]);
+                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex]);
             }
         }
 

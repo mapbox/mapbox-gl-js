@@ -11,7 +11,7 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager.js';
 import Light from './light.js';
 import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
-import {pick, clone, extend, deepEqual, filterObject} from '../util/util.js';
+import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox.js';
 import browser from '../util/browser.js';
@@ -65,7 +65,7 @@ import type Transform from '../geo/transform.js';
 import type {StyleImage} from './style_image.js';
 import type {StyleGlyph} from './style_glyph.js';
 import type {Callback} from '../types/callback.js';
-import type EvaluationParameters from './evaluation_parameters.js';
+import EvaluationParameters from './evaluation_parameters.js';
 import type {Placement} from '../symbol/placement.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
@@ -173,6 +173,7 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
+    _brightness: ?number;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -604,6 +605,12 @@ class Style extends Evented {
         }
         this.z = parameters.zoom;
 
+        const newBrightness = this.calculateLightsBrightness();
+        if (newBrightness !== this._brightness) {
+            this._brightness = newBrightness;
+            this.dispatcher.broadcast('setBrightness', newBrightness);
+        }
+
         if (this._markersNeedUpdate) {
             this._updateMarkersOpacity();
             this._markersNeedUpdate = false;
@@ -864,7 +871,6 @@ class Style extends Evented {
                 }
 
                 const parameters = this._getTransitionParameters({duration: 0});
-
                 switch (light.type) {
                 case 'ambient':
                     this.ambientLight = new Lights<Ambient>(light, ambientProps);
@@ -878,7 +884,52 @@ class Style extends Evented {
                     assert(false, "Unknown light type");
                 }
             }
+
+            const evaluationParameters = new EvaluationParameters(this.z, {
+                now: browser.now(),
+                transition: this.getTransition()
+            });
+            if (this.ambientLight) {
+                this.ambientLight.recalculate(evaluationParameters);
+            }
+            if (this.directionalLight) {
+                this.directionalLight.recalculate(evaluationParameters);
+            }
+
+            this._brightness = this.calculateLightsBrightness();
+            this.dispatcher.broadcast('setBrightness', this._brightness);
         }
+    }
+
+    calculateLightsBrightness(): ?number {
+        const directional = this.directionalLight;
+        const ambient = this.ambientLight;
+
+        if (!directional || !ambient) {
+            return;
+        }
+
+        // Based on: https://www.w3.org/WAI/GL/wiki/Relative_luminance
+        const relativeLuminance = (color) => {
+            const r = color[0] <= 0.03928 ? (color[0] / 12.92) : Math.pow(((color[0] + 0.055) / 1.055), 2.4);
+            const g = color[1] <= 0.03928 ? (color[1] / 12.92) : Math.pow(((color[1] + 0.055) / 1.055), 2.4);
+            const b = color[2] <= 0.03928 ? (color[2] / 12.92) : Math.pow(((color[2] + 0.055) / 1.055), 2.4);
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        };
+
+        const directionalColor = directional.properties.get('color').toArray01();
+        const directionalIntensity = directional.properties.get('intensity');
+        const direction = directional.properties.get('direction');
+
+        const sphericalDirection = cartesianPositionToSpherical(direction.x, direction.x, direction.z);
+        const polarIntensity = 1.0 - sphericalDirection[2] / 90.0;
+        const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
+
+        const ambientColor = ambient.properties.get('color').toArray01();
+        const ambientIntensity = ambient.properties.get('intensity');
+        const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
+
+        return (directionalBrightness + ambientBrightness) / 2.0;
     }
 
     getLights(): ?Array<LightsSpecification> {

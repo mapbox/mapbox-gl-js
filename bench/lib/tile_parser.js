@@ -140,13 +140,14 @@ export default class TileParser {
         const vectorTile = new VectorTile(new Protobuf(tile.buffer));
 
         return new Promise((resolve, reject) => {
-            workerTile.parse(vectorTile, this.layerIndex, [], (this.actor: any), (err, result) => {
+            const callback = (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(result);
                 }
-            });
+            };
+            workerTile.parse(vectorTile, this.layerIndex, [], (this.actor: any), callback, 0);
         });
     }
 }

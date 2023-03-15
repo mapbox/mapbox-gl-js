@@ -3183,7 +3183,8 @@ class Map extends Camera {
                 now,
                 fadeDuration,
                 pitch,
-                transition: this.style.getTransition()
+                transition: this.style.getTransition(),
+                brightness: this.style.calculateLightsBrightness()
             });
 
             this.style.update(parameters);

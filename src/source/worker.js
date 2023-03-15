@@ -45,6 +45,7 @@ export default class Worker {
     isSpriteLoaded: {[_: string]: boolean };
     referrer: ?string;
     terrain: ?boolean;
+    brightness: ?number;
 
     constructor(self: WorkerGlobalScopeInterface) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -133,6 +134,11 @@ export default class Worker {
 
     setProjection(mapId: string, config: ProjectionSpecification) {
         this.projections[mapId] = getProjection(config);
+    }
+
+    setBrightness(mapId: string, brightness: ?number, callback: WorkerTileCallback) {
+        this.brightness = brightness;
+        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -261,7 +267,13 @@ export default class Worker {
                 },
                 scheduler: this.actor.scheduler
             };
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId), this.isSpriteLoaded[mapId]);
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)(
+                (actor: any),
+                this.getLayerIndex(mapId),
+                this.getAvailableImages(mapId),
+                this.isSpriteLoaded[mapId],
+                undefined,
+                this.brightness);
         }
 
         return this.workerSources[mapId][type][source];
