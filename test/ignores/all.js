@@ -152,7 +152,12 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
 
     // alpha textures not supported in js
-    "render-tests/model-layer/model-opacity-cutout-texture"
+    "render-tests/model-layer/model-opacity-cutout-texture",
+
+    // icon-image-cross-fade not supported in -js
+    "render-tests/measure-light/global-brightness-icon-image-fade",
+    "render-tests/measure-light/global-brightness-icon-image-switch-dark",
+    "render-tests/measure-light/global-brightness-icon-image-switch-light",
 ];
 
 export default {todo, skip};

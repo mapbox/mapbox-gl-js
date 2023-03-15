@@ -34,7 +34,8 @@ export type PopulateParameters = {
     patternDependencies: {},
     glyphDependencies: {},
     availableImages: Array<string>,
-    lineAtlas: LineAtlas
+    lineAtlas: LineAtlas,
+    brightness: ?number,
 }
 
 export type IndexedFeature = {
@@ -85,7 +86,7 @@ export interface Bucket {
     +stateDependentLayers: Array<any>;
     +stateDependentLayerIds: Array<string>;
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform): void;
-    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions): void;
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;

@@ -1,0 +1,184 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0004,
+      "operations": []
+    }
+  },
+  "zoom": 0.99,
+  "center": [
+    0.7,
+    0
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "sample-point-a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                -20.0,
+                -20.0
+              ],
+              "type": "Point"
+            }
+          }
+        ]
+      }
+    },
+    "sample-point-b": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                -40.0,
+                10.0
+              ],
+              "type": "Point"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/solid-black",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {}
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 0.0, 255.0, 1.0)",
+        "intensity": 1.0,
+        "direction": [
+          200.0,
+          40.0
+        ]
+      }
+    }
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#3399ff"
+      }
+    },
+    {
+      "id": "sample-symbol-case",
+      "type": "symbol",
+      "source": "sample-point-a",
+      "layout": {
+        "text-field": "Sample",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "case",
+          [
+            "<",
+            [
+              "measure-light",
+              "brightness"
+            ],
+            0.5
+          ],
+          "white",
+          "black"
+        ]
+      }
+    },
+    {
+      "id": "sample-symbol-calculate",
+      "type": "symbol",
+      "source": "sample-point-b",
+      "layout": {
+        "text-field": "Sample",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": [
+          "rgba",
+          [
+            "*",
+            255.0,
+            [
+              "-",
+              1.0,
+              [
+                "measure-light",
+                "brightness"
+              ]
+            ]
+          ],
+          [
+            "*",
+            255.0,
+            [
+              "-",
+              1.0,
+              [
+                "measure-light",
+                "brightness"
+              ]
+            ]
+          ],
+          [
+            "*",
+            255.0,
+            [
+              "-",
+              1.0,
+              [
+                "measure-light",
+                "brightness"
+              ]
+            ]
+          ],
+          1.0
+        ]
+      }
+    }
+  ]
+}

@@ -555,6 +555,7 @@ class Tile {
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
+        const brightness = painter.style.calculateLightsBrightness();
 
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
@@ -568,7 +569,7 @@ class Tile {
 
             // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions);
+            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {

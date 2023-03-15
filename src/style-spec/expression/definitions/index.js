@@ -255,6 +255,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.distanceFromCenter()
     ],
+    'measure-light': [
+        NumberType,
+        [StringType],
+        (ctx, [s]) => ctx.measureLight(s.evaluate(ctx))
+    ],
     'heatmap-density': [
         NumberType,
         [],

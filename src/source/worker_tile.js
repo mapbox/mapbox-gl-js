@@ -81,7 +81,7 @@ class WorkerTile {
         this.projection = params.projection;
     }
 
-    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback, brightness: ?number) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;
@@ -103,7 +103,8 @@ class WorkerTile {
             patternDependencies: {},
             glyphDependencies: {},
             lineAtlas,
-            availableImages
+            availableImages,
+            brightness
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -165,8 +166,7 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source,
                     enableTerrain: this.enableTerrain,
-                    projection: this.projection.spec,
-                    availableImages
+                    projection: this.projection.spec
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);
@@ -204,7 +204,8 @@ class WorkerTile {
                             availableImages,
                             this.tileID.canonical,
                             this.tileZoom,
-                            this.projection);
+                            this.projection,
+                            brightness);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
@@ -212,7 +213,7 @@ class WorkerTile {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
                         // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
                         const imagePositions: SpritePositions = imageAtlas.patternPositions;
-                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform);
+                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, brightness);
                     }
                 }
 
