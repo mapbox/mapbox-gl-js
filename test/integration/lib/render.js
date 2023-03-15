@@ -10,6 +10,7 @@ import ignoreMacChrome from '../../ignores/mac-chrome.js';
 import ignoreMacSafari from '../../ignores/mac-safari.js';
 import ignoreLinuxChrome from '../../ignores/linux-chrome.js';
 import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
+import ignoreWebGL1 from '../../ignores/webgl1.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
 import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
@@ -56,6 +57,11 @@ tape.onFinish(() => {
     mapboxgl.clearPrewarmedResources();
 });
 
+function concatIgnoreList(ignoreA, ignoreB) {
+    function mergeUnique(a, b) { return a.concat(b.filter((item) => a.indexOf(item) < 0)); }
+    return {todo: mergeUnique(ignoreA.todo, ignoreB.todo), skip: mergeUnique(ignoreA.skip, ignoreB.skip)};
+}
+
 let ignoreList;
 let timeout = 30000;
 
@@ -77,6 +83,10 @@ if (process.env.CI) {
         ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30
     } else {  throw new Error('Cant determine OS with user agent:', ua); }
+
+    if (!process.env.USE_WEBGL2) {
+        ignoreList = concatIgnoreList(ignoreList, ignoreWebGL1);
+    }
 }
 
 function checkIgnore(ignoreConfig, testName, options) {

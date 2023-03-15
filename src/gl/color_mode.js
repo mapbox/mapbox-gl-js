@@ -6,6 +6,7 @@ import type {BlendFuncType, ColorMaskType} from './types.js';
 const ZERO = 0x0000;
 const ONE = 0x0001;
 const ONE_MINUS_SRC_ALPHA = 0x0303;
+const DST_COLOR = 0x0306;
 
 class ColorMode {
     blendFunction: BlendFuncType;
@@ -23,6 +24,7 @@ class ColorMode {
     static disabled: $ReadOnly<ColorMode>;
     static unblended: $ReadOnly<ColorMode>;
     static alphaBlended: $ReadOnly<ColorMode>;
+    static multiply: $ReadOnly<ColorMode>;
 }
 
 ColorMode.Replace = [ONE, ZERO];
@@ -30,5 +32,6 @@ ColorMode.Replace = [ONE, ZERO];
 ColorMode.disabled = new ColorMode(ColorMode.Replace, Color.transparent, [false, false, false, false]);
 ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
 ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
+ColorMode.multiply = new ColorMode([DST_COLOR, ZERO], Color.transparent, [true, true, true, true]);
 
 export default ColorMode;

@@ -147,7 +147,6 @@ const skip = [
     // Unimplemented in -js:
     // https://mapbox.atlassian.net/browse/MAPS3D-671
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
-    "render-tests/lighting-3d-mode/shadow/fill-extrusion",
 
     // fill-extrusion-rounded-roof not implemented in -js
     "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",

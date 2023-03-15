@@ -118,7 +118,7 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
         }
 
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadows(tile, program);
+            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program);
         }
 
         if (image) {

@@ -20,11 +20,94 @@
 
 <body>
 <div id='map'></div>
-<!-- <input type="range" id="radius" min="0" max="50" step="any" value="20" />
- -->
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
+
+var PageSettings = function() {
+    this.enableTerrain = true;
+    this.terrainExaggeration = 1.0;
+    this.ambientColor = [ 255, 255, 255 ];
+    this.ambientIntensity = 0.5;
+    this.sunColor = [ 255, 255, 255 ];
+    this.sunIntensity = 0.5;
+    this.sunBearing = 160;
+    this.sunPolarAngle = 50;
+    this.castShadows = true;
+    this.shadowIntensity = 0.3;
+};
+
+var pageSettings = new PageSettings();
+
+function updateLights() {
+    map.setLights([
+        {
+            'type': 'ambient',
+            'id': 'ambient_light',
+            'properties': {
+                'color': 'rgba(' + pageSettings.ambientColor[0] + ', ' + pageSettings.ambientColor[1] + ', ' + pageSettings.ambientColor[2] + ', 1.0)',
+                'intensity': pageSettings.ambientIntensity
+            }
+        },
+        {
+            'type': 'directional',
+            'id': 'directional_light',
+            'properties': {
+                'color': 'rgba(' + pageSettings.sunColor[0] + ', ' + pageSettings.sunColor[1] + ', ' + pageSettings.sunColor[2] + ', 1.0)',
+                'intensity': pageSettings.sunIntensity,
+                'direction': [
+                    pageSettings.sunBearing,
+                    pageSettings.sunPolarAngle
+                ],
+                'cast-shadows': pageSettings.castShadows,
+                'shadow-intensity': pageSettings.shadowIntensity
+            }
+        }
+    ]);
+}
+
+window.onload = function() {
+    const gui = new dat.GUI(); // eslint-disable-line
+
+    const lights = gui.addFolder('Lighting');
+
+    const castShadows = lights.add(pageSettings, 'castShadows');
+    castShadows.onFinishChange((value) => { updateLights(); });
+
+    const shadowIntensity = lights.add(pageSettings, 'shadowIntensity', 0.0, 1.0);
+    shadowIntensity.onChange((value) => { updateLights(); });
+
+    const sunPolarAngle = lights.add(pageSettings, 'sunPolarAngle', 0.0, 90.0);
+    sunPolarAngle.onChange((value) => { updateLights(); });
+
+    const sunBearing = lights.add(pageSettings, 'sunBearing', 0.0, 360.0);
+    sunBearing.onChange((value) => { updateLights(); });
+
+    const sunIntensity = lights.add(pageSettings, 'sunIntensity', 0.0, 1.0);
+    sunIntensity.onChange((value) => { updateLights(); });
+
+    const sunColor = lights.addColor(pageSettings, 'sunColor');
+    sunColor.onChange((value) => { updateLights(); });
+
+    const ambientIntensity = lights.add(pageSettings, 'ambientIntensity', 0.0, 1.0);
+    ambientIntensity.onChange((value) => { updateLights(); });
+
+    const ambientColor = lights.addColor(pageSettings, 'ambientColor');
+    ambientColor.onChange((value) => { updateLights(); });
+
+    const terrain = gui.addFolder('Terrain');
+    const enableTerrain = terrain.add(pageSettings, 'enableTerrain');
+    enableTerrain.onFinishChange((value) => {
+        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": pageSettings.terrainExaggeration} : null);
+    });
+    const terrainExaggeration = terrain.add(pageSettings, 'terrainExaggeration', 0, 5);
+    terrainExaggeration.onChange((value) => {
+        if (pageSettings.enableTerrain) {
+            map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
+        }
+    });
+};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -68,24 +151,7 @@ map.on('load', () => {
         }
     });
 
-    map.setLights([{
-        "id": "sun_light",
-        "type": "directional",
-        "properties": {
-            "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-            "intensity": 0.5,
-            "direction": [200.0, 40.0],
-            "cast-shadows": true,
-            "shadow-intensity": 0.4
-        }
-    }, {
-        "id": "ambient_light",
-        "type": "ambient",
-        "properties": {
-            "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-            "intensity": 0.5
-        }
-    }]);
+    updateLights();
 });
 
 </script>
