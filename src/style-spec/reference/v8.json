@@ -4158,7 +4158,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },
@@ -4182,7 +4183,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },
@@ -4203,7 +4205,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },
@@ -4238,7 +4241,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },
@@ -4274,7 +4278,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },
@@ -4310,7 +4315,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ],
         "relaxZoomRestriction": true
       },

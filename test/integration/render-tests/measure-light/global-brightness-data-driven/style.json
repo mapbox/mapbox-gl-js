@@ -11,30 +11,33 @@
         [
           "setLights",
           [
-            {
-              "type": "ambient",
-              "id": "environment",
-              "properties": {
-                "intensity": 0.3
-              }
-            },
-            {
-              "type": "directional",
-              "id": "sun_light",
-              "properties": {
-                "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-                "intensity": 0.4,
-                "direction": [
-                  200.0,
-                  30.0
-                ]
-              }
-            }
+
           ]
         ]
       ]
     }
   },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.3
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.4,
+        "direction": [
+          200.0,
+          30.0
+        ]
+      }
+    }
+  ],
   "sources": {
     "geojson": {
       "type": "geojson",
