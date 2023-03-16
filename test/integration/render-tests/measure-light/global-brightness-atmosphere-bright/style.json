@@ -1,0 +1,118 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "allowed": 0.0002
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 0,
+  "sources": {},
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.7
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.7,
+        "direction": [
+          200.0,
+          30.0
+        ]
+      }
+    }
+  ],
+  "fog": {
+    "color": [
+      "rgba",
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      1.0
+    ],
+    "horizon-blend": 0.15,
+    "high-color": [
+      "rgba",
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      [
+        "*",
+        255.0,
+        [
+          "measure-light",
+          "brightness"
+        ]
+      ],
+      1.0
+    ],
+    "space-color": [
+      "case",
+      [
+        "<",
+        [
+          "measure-light",
+          "brightness"
+        ],
+        0.5
+      ],
+      "white",
+      "black"
+    ],
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }
+    }
+  ]
+}
