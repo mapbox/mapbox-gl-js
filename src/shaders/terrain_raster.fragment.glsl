@@ -14,6 +14,14 @@ varying float v_depth;
 void main() {
     vec4 color = texture2D(u_image0, v_pos0);
 
+#ifdef LIGHTING_3D_MODE
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+    color = apply_lighting_with_emission(color, color.a);
+    color.a = 1.0;
+#else
+    color = apply_lighting(color);
+#endif
+#endif
 #ifdef RENDER_SHADOWS
     color.xyz = shadowed_color(color.xyz, v_pos_light_view_0, v_pos_light_view_1, v_depth);
 #endif

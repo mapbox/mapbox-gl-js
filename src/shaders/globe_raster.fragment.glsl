@@ -31,9 +31,27 @@ void main() {
     float antialias = smoothstep(0.0, antialias_factor, norm_dist_from_center);
 
     vec4 raster = texture2D(u_image0, v_pos0);
+#ifdef LIGHTING_3D_MODE
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+    raster = apply_lighting_with_emission(raster, raster.a);
+    color = vec4(raster.rgb * antialias, antialias);
+#else
+    raster = apply_lighting(raster);
     color = vec4(raster.rgb * antialias, raster.a * antialias);
+#endif
+#else
+    color = vec4(raster.rgb * antialias, raster.a * antialias);
+#endif
 #else
     color = texture2D(u_image0, v_pos0);
+#ifdef LIGHTING_3D_MODE
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+    color = apply_lighting_with_emission(color, color.a);
+    color.a = 1.0;
+#else
+    color = apply_lighting(color);
+#endif
+#endif
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
