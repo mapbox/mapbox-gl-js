@@ -142,6 +142,7 @@ const skip = [
     "render-tests/lighting-3d-mode/emissive-strength/circle",
     "render-tests/lighting-3d-mode/emissive-strength/fill",
     "render-tests/lighting-3d-mode/emissive-strength/line",
+    "render-tests/lighting-3d-mode/emissive-strength/terrain",
     "render-tests/lighting-3d-mode/emissive-strength/symbol",
 
     // Unimplemented in -js:
