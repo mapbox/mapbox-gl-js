@@ -1,0 +1,89 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "optimizeForTerrain": true,
+      "operations": [
+        [
+          "setStyle",
+          "local://styles/sanfrancisco.json"
+        ],
+        [
+          "setZoom",
+          15.0
+        ],
+        [
+          "setCenter",
+          [
+            -122.45362,
+            37.77049
+          ]
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addSource",
+          "rgbterrain",
+          {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.noterrain.png"
+            ],
+            "maxzoom": 11,
+            "tileSize": 256
+          }
+        ],
+        [
+          "setTerrain",
+          {
+            "source": "rgbterrain"
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "test_ambient",
+              "properties": {
+                "color": "#4287f5",
+                "intensity": 0.2
+              }
+            },
+            {
+              "type": "directional",
+              "id": "test_directional",
+              "properties": {
+                "color": "#d66f2b",
+                "intensity": 0.5
+              }
+            }
+          ]
+        ],
+        [
+            "setPaintProperty", "road_major", "line-emissive-strength", 0.8
+        ],
+        [
+            "setPaintProperty", "road_major", "line-opacity", 0.5
+        ],
+        [
+            "setPaintProperty", "road_minor", "line-emissive-strength", 0.4
+        ],
+        [
+            "setPaintProperty", "landuse_park", "fill-emissive-strength", 0.5
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}
