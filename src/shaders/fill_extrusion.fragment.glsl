@@ -6,9 +6,11 @@ varying highp vec4 v_pos_light_view_1;
 varying float v_depth;
 #endif
 
+uniform lowp float u_opacity;
+
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
-varying vec3 v_ao;
+varying vec2 v_ao;
 #endif
 
 #ifdef ZERO_ROOF_RADIUS
@@ -19,9 +21,15 @@ varying vec4 v_roof_color;
 varying highp vec3 v_normal;
 #endif
 
+uniform vec3 u_flood_light_color;
 uniform highp float u_vertical_scale;
 
+#if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
+varying float v_flood_radius;
 varying float v_has_floodlight;
+#endif
+
+varying float v_height;
 
 void main() {
 
@@ -37,9 +45,9 @@ vec4 color;
 #else
     color = v_color;
 #endif
+float h = max(0.0, v_height);
 #ifdef FAUX_AO
     float intensity = u_ao[0];
-    float h = max(0.0, v_ao.z);
     float h_floors = h / (u_ao[1] * u_vertical_scale);
     float y_shade = 1.0 - 0.9 * intensity * min(v_ao.y, 1.0);
     float shade = (1.0 - 0.08 * intensity) * (y_shade + (1.0 - y_shade) * (1.0 - pow(1.0 - min(h_floors / 16.0, 1.0), 16.0))) + 0.08 * intensity * min(h_floors / 160.0, 1.0);
@@ -57,6 +65,13 @@ vec4 color;
 #if !defined(LIGHTING_3D_MODE) || !defined(FLOOD_LIGHT)
     color.rgb *= shade;
 #endif
+#endif
+
+#if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
+    vec3 flood_radiance = u_flood_light_color * (1.0 - min(h / v_flood_radius, 1.0));   
+    color.rgb += flood_radiance * v_has_floodlight;
+    color.rgb = linearTosRGB(color.rgb);
+    color *= u_opacity;
 #endif
 
 #ifdef RENDER_SHADOWS
