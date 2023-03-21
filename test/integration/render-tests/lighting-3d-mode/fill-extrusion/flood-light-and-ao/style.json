@@ -78,8 +78,8 @@
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7,
-        "fill-extrusion-ambient-occlusion-radius": 1,
-        "fill-extrusion-ambient-occlusion-intensity": 0.4,
+        "fill-extrusion-ambient-occlusion-radius": 4,
+        "fill-extrusion-ambient-occlusion-intensity": 0.6,
         "fill-extrusion-vertical-scale": 0.6
       },
       "layout": {
