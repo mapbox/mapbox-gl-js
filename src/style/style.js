@@ -921,7 +921,7 @@ class Style extends Evented {
         const directionalIntensity = directional.properties.get('intensity');
         const direction = directional.properties.get('direction');
 
-        const sphericalDirection = cartesianPositionToSpherical(direction.x, direction.x, direction.z);
+        const sphericalDirection = cartesianPositionToSpherical(direction.x, direction.y, direction.z);
         const polarIntensity = 1.0 - sphericalDirection[2] / 90.0;
         const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
 
