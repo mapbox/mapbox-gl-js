@@ -12,7 +12,8 @@ uniform mediump vec3 u_lighting_directional_color;
 // Applies 3D lighting and returns the result in sRGB color space.
 vec3 apply_lighting(vec3 color) {
     float NdotL = u_lighting_directional_dir.z;
-    return linearTosRGB(sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL));
+    vec3 litColor = sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL);
+    return linearTosRGB(clamp(litColor, 0.0, 1.0));
 }
 
 vec4 apply_lighting(vec4 color) {
