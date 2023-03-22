@@ -1,5 +1,6 @@
 uniform mat4 u_matrix;
 uniform float u_edge_radius;
+uniform float u_vertical_scale;
 
 attribute vec4 a_pos_normal_ed;
 attribute vec2 a_centroid_pos;
@@ -12,6 +13,9 @@ varying highp float v_depth;
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
+
+    base *= u_vertical_scale;
+    height *= u_vertical_scale;
 
     vec3 pos_nx = floor(a_pos_normal_ed.xyz * 0.5);
     // The least significant bits of a_pos_normal_ed.xy hold:

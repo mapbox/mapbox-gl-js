@@ -41,7 +41,7 @@
 
 var Demo3D = function() {
     this.enableTerrain = true;
-    this.enable3dLights = false;
+    this.enable3dLights = true;
     this.terrainExaggeration = 1.5;
     this.animateCamera = false;
     this.style = 'streets-v11';
@@ -64,11 +64,13 @@ var Demo3D = function() {
     this.buildingColor = [ 255, 255, 255 ];
     this.buildingOpacity = 1;
     this.ambientLightColor = [ 255, 255, 255 ];
-    this.ambientLightIntensity = 0.1;
+    this.ambientLightIntensity = 0.5;
     this.directionalLightColor = [ 255, 255, 255 ];
-    this.directionalLightIntensity = 0.1;
-    this.directionalLightAzimuth = 90;
-    this.directionalLightAltitude = 2;
+    this.directionalLightIntensity = 0.5;
+    this.directionalLightAzimuth = 160;
+    this.directionalLightAltitude = 50;
+    this.directionalLightCastShadows = true;
+    this.directionalLightShadowIntensity = 0.3;
 };
 
 var demo3d = new Demo3D();
@@ -93,7 +95,9 @@ function updateLights(enable) {
                     'direction': [
                         demo3d.directionalLightAzimuth,
                         demo3d.directionalLightAltitude
-                    ]
+                    ],
+                    'cast-shadows': demo3d.directionalLightCastShadows,
+                    'shadow-intensity': demo3d.directionalLightShadowIntensity
                 }
             }
         ] : null
@@ -146,6 +150,14 @@ window.onload = function() {
     });
     var ambientLightColor = lights.addColor(demo3d, 'ambientLightColor');
     ambientLightColor.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    const directionalLightCastShadows = lights.add(demo3d, 'directionalLightCastShadows');
+    directionalLightCastShadows.onFinishChange((value) => {
+        updateLights(demo3d.enable3dLights);
+    });
+    const directionalLightShadowIntensity = lights.add(demo3d, 'directionalLightShadowIntensity', 0.0, 1.0);
+    directionalLightShadowIntensity.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
 
@@ -258,7 +270,8 @@ var map = window.map = new mapboxgl.Map({
     bearing: 60,
     style: 'mapbox://styles/mapbox/streets-v11',
     hash: true,
-    projection: 'globe'
+    projection: 'globe',
+    useWebGL2: true
 });
 
 const r = 255 * 0.75;

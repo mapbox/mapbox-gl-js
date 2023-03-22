@@ -137,7 +137,7 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
         let uniformValues;
         if (isShadowPass && shadowRenderer) {
             const tileMatrix = shadowRenderer.calculateShadowPassTileMatrix(tile.tileID.toUnwrapped());
-            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, edgeRadius);
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, edgeRadius, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(
                 coord.projMatrix,
