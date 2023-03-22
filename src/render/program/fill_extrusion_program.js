@@ -39,7 +39,8 @@ export type FillExtrusionUniformsType = {|
 
 export type FillExtrusionDepthUniformsType = {|
     'u_matrix': UniformMatrix4f,
-    'u_edge_radius': Uniform1f
+    'u_edge_radius': Uniform1f,
+    'u_vertical_scale': Uniform1f
 |};
 
 export type FillExtrusionPatternUniformsType = {|
@@ -89,7 +90,8 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
 
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
-    'u_edge_radius': new Uniform1f(context)
+    'u_edge_radius': new Uniform1f(context),
+    'u_vertical_scale': new Uniform1f(context)
 });
 
 const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUniformsType => ({
@@ -180,11 +182,13 @@ const fillExtrusionUniformValues = (
 
 const fillExtrusionDepthUniformValues = (
     matrix: Float32Array,
-    edgeRadius: number
+    edgeRadius: number,
+    verticalScale: number
 ): UniformValues<FillExtrusionDepthUniformsType> => {
     return {
         'u_matrix': matrix,
-        'u_edge_radius': edgeRadius
+        'u_edge_radius': edgeRadius,
+        'u_vertical_scale': verticalScale
     };
 };
 
