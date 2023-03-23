@@ -7,6 +7,7 @@ import loadTileJSON from './load_tilejson.js';
 import {postTurnstileEvent} from '../util/mapbox.js';
 import TileBounds from './tile_bounds.js';
 import {ResourceType} from '../util/ajax.js';
+import window from '../util/window.js';
 import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source.js';
@@ -21,6 +22,7 @@ import type {Cancelable} from '../types/cancelable.js';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
+import type {RequestedTileParameters} from './worker_source.js';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -211,7 +213,7 @@ class VectorTileSource extends Evented implements Source {
         return extend({}, this._options);
     }
 
-    loadTile(tile: Tile, callback: Callback<void>) {
+    loadTile(tile: Tile, callback: Callback<void>): void {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
@@ -235,9 +237,12 @@ class VectorTileSource extends Evented implements Source {
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
 
+            if (this._options.loadTile) {
+                this.delegateLoadTileData(tile, params, done.bind(this));
+
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
-            if (!this.dispatcher.ready) {
+            } else if (!this.dispatcher.ready) {
                 const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err: ?Error, data: ?LoadVectorTileResult) => {
                     if (err || !data) {
                         done.call(this, err);
@@ -290,6 +295,41 @@ class VectorTileSource extends Evented implements Source {
                 tile.reloadCallback = null;
             }
         }
+    }
+
+    delegateLoadTileData(tile: Tile, params: RequestedTileParameters, callback: Callback<any>): void {
+        const {x, y, z} = tile.tileID.canonical;
+        const controller = new window.AbortController();
+        const signal = controller.signal;
+
+        const makeRequest = (callback) => {
+            Promise
+                // $FlowFixMe[not-a-function]
+                .resolve(this._options.loadTile({x, y, z}, {signal}))
+                .then(rawData => {
+                    if (!rawData) return callback(null);
+                    callback(null, {rawData});
+                })
+                .catch(error => {
+                    // silence AbortError
+                    if (error.code === 20) return;
+                    tile.state = 'errored';
+                    callback(error);
+                });
+
+            return () => {
+                controller.abort();
+                callback();
+            };
+        };
+
+        const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err: ?Error, data: ?LoadVectorTileResult) => {
+            if (err || !data) return callback.call(this, err);
+            params.data = {rawData: data.rawData.slice(0)};
+            if (tile.actor) tile.actor.send('loadTile', params, callback.bind(this), undefined, true);
+        }, true, makeRequest);
+
+        tile.request = {cancel};
     }
 
     // $FlowFixMe[method-unbinding]

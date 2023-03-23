@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #controls { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='controls'>
+    <label><input id='custom-source-checkbox' type='checkbox' checked>custom source</label><br />
+    <label><input id='tile-boundaries-checkbox' type='checkbox'>tile boundaries</label><br />
+    <label><input id='terrain-checkbox' type='checkbox'>terrain</label><br />
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script type='module'>
+// eslint-disable-next-line import/extensions
+import * as pmtiles from 'https://unpkg.com/pmtiles@2.7.1/dist/index.mjs';
+
+const pmtilesUrl = 'https://protomaps.github.io/PMTiles/protomaps(vector)ODbL_firenze.pmtiles';
+const pmtilesInstance = window.pmtilesInstance = new pmtiles.PMTiles(pmtilesUrl);
+const {centerLon, centerLat, maxZoom} = await pmtilesInstance.getHeader();
+
+const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    center: [centerLon, centerLat],
+    zoom: maxZoom - 2,
+    style: 'mapbox://styles/mapbox/light-v10',
+    hash: true
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+map.on('load', async () => {
+    map.addSource('firenze', {
+        type: 'vector',
+        maxzoom: maxZoom,
+        tiles: ['http://localhost:9966/tiles/{z}/{x}/{y}.pbf'],
+        async loadTile({z, x, y}) {
+            const response = await pmtilesInstance.getZxy(z, x, y);
+            if (!response) return null;
+            return response.data;
+        }
+    });
+
+    map.addLayer({
+        id: 'firenze-landuse',
+        type: 'fill',
+        source: 'firenze',
+        'source-layer': 'landuse',
+        paint: {
+            'fill-color': 'steelblue'
+        }
+    }, 'road-label');
+
+    map.addLayer({
+        id: 'roads',
+        type: 'line',
+        source: 'firenze',
+        'source-layer': 'roads',
+    }, 'road-label');
+
+    map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512
+    });
+
+    document.getElementById('terrain-checkbox').onclick = function () {
+        map.setTerrain(this.checked ? {source: 'mapbox-dem'} : null);
+    };
+
+    document.getElementById('tile-boundaries-checkbox').onclick = function () {
+        map.showTileBoundaries = this.checked;
+    };
+
+    document.getElementById('custom-source-checkbox').onclick = function () {
+        map.setLayoutProperty('custom-source', 'visibility', this.checked ? 'visible' : 'none');
+    };
+});
+
+</script>
+</body>
+</html>

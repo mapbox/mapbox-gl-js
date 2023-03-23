@@ -98,10 +98,10 @@ export class DedupedRequest {
 /**
  * @private
  */
-export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean): (() => void) {
+export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean, makeRequestFn?: any): (() => void) {
     const key = JSON.stringify(params.request);
 
-    const makeRequest = (callback) => {
+    const makeRequest = makeRequestFn ? makeRequestFn : (callback) => {
         const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
             if (err) {
                 callback(err);

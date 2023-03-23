@@ -113,7 +113,8 @@ export type VectorSourceSpecification = {
     "maxzoom"?: number,
     "attribution"?: string,
     "promoteId"?: PromoteIdSpecification,
-    "volatile"?: boolean
+    "volatile"?: boolean,
+    "loadTile"?: (tileID: { z: number, x: number, y: number }, options: { signal: AbortSignal }) => Promise<any>
 }
 
 export type RasterSourceSpecification = {
