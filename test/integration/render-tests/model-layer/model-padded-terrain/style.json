@@ -1,0 +1,87 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.00025
+    }
+  },
+  "pitch": 75,
+  "zoom": 22,
+  "bearing": 264,
+  "center": [
+    -122.4025,
+    37.7842
+  ],
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 8.0
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 18,
+      "tileSize": 514,
+      "tiles": ["local://models/dem/{z}-{x}-{y}.terrain.514.png"]
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [
+              -122.4025,
+              37.7842
+          ],
+          "orientation": [0, 0, 90]
+        }
+      }
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPoint",
+        "coordinates": [
+            [-122.4025, 37.7842]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10,
+          "line-opacity": 0.3
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 200,
+        "circle-color": "#ffffff",
+        "circle-pitch-alignment": "map",
+        "circle-blur": 1
+      }
+    },
+    {
+        "id": "model",
+        "type": "model",
+        "source": "model"
+    }
+  ]
+}

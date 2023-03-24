@@ -1,0 +1,83 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 3.00,
+  "pitch": 60,
+  "fog": {
+    "star-intensity": 0.0
+  },
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 45]
+        },
+        "model-on-roof" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-20, 0],
+          "orientation": [0, 140, 90]
+        },
+        "model-on-bumper-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-20, 20],
+          "orientation": [0, 110, 180]
+        },
+        "model-on-roof-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-20, -20],
+          "orientation": [0, 180, 180]
+        },
+        "model-on-bumper-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, -20],
+          "orientation": [0, 90, 180]
+        },
+        "model-on-side1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [20, 0],
+          "orientation": [-90, 0, 45]
+        },
+        "model-on-side2" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [20, 20],
+          "orientation": [-45, 0, 45]
+        },
+        "model-on-side3" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00000, 20],
+          "orientation": [0, 45, 45]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale" : [200000, 200000, 200000]
+      }
+    }
+  ]
+}

@@ -194,6 +194,15 @@ class Aabb {
         return Aabb.fromPoints(corners);
     }
 
+    static projectAabbCorners(aabb: Aabb, transform: Mat4): Array<Vec3> {
+        const corners = aabb.getCorners();
+
+        for (let i = 0; i < corners.length; ++i) {
+            vec3.transformMat4(corners[i], corners[i], transform);
+        }
+        return corners;
+    }
+
     constructor(min_: Vec3, max_: Vec3) {
         this.min = min_;
         this.max = max_;

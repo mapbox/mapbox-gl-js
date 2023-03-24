@@ -174,7 +174,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
     batches.forEach(isWireframe => {
         const tr = painter.transform;
-        const skirtHeightValue = skirtHeight(tr.zoom) * terrain.exaggeration();
+        const skirtHeightValue = skirtHeight(tr.zoom, terrain.exaggeration(), terrain.sourceCache._source.tileSize);
 
         // This code assumes the rendering is batched into mesh terrain and then wireframe
         // terrain (if applicable) so that this is enough to ensure the correct program is
@@ -302,7 +302,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
         vertexMorphing.update(now);
         const tr = painter.transform;
-        const skirt = skirtHeight(tr.zoom) * terrain.exaggeration();
+        const skirt = skirtHeight(tr.zoom, terrain.exaggeration(), terrain.sourceCache._source.tileSize);
 
         const batches = showWireframe ? [false, true] : [false];
 
@@ -382,10 +382,12 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     }
 }
 
-function skirtHeight(zoom: number) {
+function skirtHeight(zoom: number, terrainExaggeration: number, tileSize: number) {
     // Skirt height calculation is heuristic: provided value hides
     // seams between tiles and it is not too large: 9 at zoom 22, ~20000m at zoom 0.
-    return 6 * Math.pow(1.5, 22 - zoom);
+    if (terrainExaggeration === 0) return 0;
+    const exaggerationFactor = (terrainExaggeration < 1.0 && tileSize === 514) ? 0.25 / terrainExaggeration : 1.0;
+    return 6 * Math.pow(1.5, 22 - zoom) * Math.max(terrainExaggeration, 1.0) * exaggerationFactor;
 }
 
 function isEdgeTile(cid: CanonicalTileID, renderWorldCopies: boolean): boolean {

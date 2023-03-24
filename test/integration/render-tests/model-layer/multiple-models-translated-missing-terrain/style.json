@@ -1,0 +1,82 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "allowed": 0.00038
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "pitch": 45,
+  "zoom": 24,
+  "terrain": {
+    "source": "mapbox-dem"
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 14,
+      "tileSize": 514,
+      "tiles": ["local://models/dem/8-128-128.terrain.514.png"]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 45]
+        },
+        "model-on-roof" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00004, 0],
+          "orientation": [0, 140, 90]
+        },
+        "model-on-roof-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00004, 0.00005],
+          "orientation": [0, 110, 180]
+        },
+        "model-on-roof-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00004, -0.00005],
+          "orientation": [0, 180, 180]
+        },
+        "model-on-bumper-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, -0.00005],
+          "orientation": [0, 90, 180]
+        },
+        "model-on-side" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00004, 0],
+          "orientation": [-90, 0, 45]
+        },
+        "model-on-corner" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00004, 0.00005],
+          "orientation": [-45, 135, 0]
+        },
+        "model-on-corner-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00000, 0.00005],
+          "orientation": [45, 45, 0]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-translation" : [0, 0, 2]
+      }
+    }
+  ]
+}

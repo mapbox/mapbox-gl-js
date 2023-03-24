@@ -1,6 +1,6 @@
 // @flow
-import LngLat, {earthCircumference} from '../lng_lat.js';
-import {MAX_MERCATOR_LATITUDE, mercatorZfromAltitude} from '../mercator_coordinate.js';
+import LngLat from '../lng_lat.js';
+import {mercatorZfromAltitude} from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {farthestPixelDistanceOnPlane} from './far_z.js';
 import {mat4} from 'gl-matrix';
@@ -12,8 +12,6 @@ import type {Vec3} from 'gl-matrix';
 import type MercatorCoordinate from '../mercator_coordinate.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
-import {clamp, degToRad} from '../../util/util.js';
-import {DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM} from '../transform.js';
 
 export type ProjectedPoint = {
     x: number;
@@ -60,16 +58,6 @@ export default class Projection {
         this.unsupportedLayers = ['custom'];
         this.center = [0, 0];
         this.range = [3.5, 7];
-    }
-
-    static getLatitudeScale(lat: number): number {
-        return Math.cos(degToRad(clamp(lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE)));
-    }
-
-    static getMetersPerPixelAtLatitude(lat: number, zoom: number): number {
-        const constrainedZoom = clamp(zoom, DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM);
-        const constrainedScale = Math.pow(2.0, constrainedZoom);
-        return this.getLatitudeScale(lat) * earthCircumference / (constrainedScale * 512.0);
     }
 
     project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line

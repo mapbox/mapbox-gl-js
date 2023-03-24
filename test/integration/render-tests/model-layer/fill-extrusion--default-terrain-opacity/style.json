@@ -1,0 +1,166 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "allowed": 0.0003
+    }
+  },
+  "center": [
+    0.0001,
+    0.0001
+  ],
+  "pitch": 78,
+  "zoom": 22,
+  "bearing": 18,
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 0.1
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 18,
+      "tileSize": 514,
+      "tiles": ["local://models/dem/14-2618-6334-terrain.514.png"]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.0001, 0.0001],
+          "orientation": [0, 0, 45]
+        },
+        "model-2" : {
+          "uri": "local://models/cubes-depth.gltf",
+          "position": [0.00006, 0.0001],
+          "orientation": [0, 0, 90]
+        },
+        "model-3" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00006, 0.00015],
+          "orientation": [0, 0, 180]
+        },
+        "model-4" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00006, 0.00005],
+          "orientation": [0, 0, 180]
+        },
+        "model-5" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00010, 0.00005],
+          "orientation": [0, 0, 135]
+        },
+        "model-6" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00014, 0.0001],
+          "orientation": [0, 0, 45]
+        },
+        "model-7" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00014, 0.00015],
+          "orientation": [0, 0, -180]
+        },
+        "model-8" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.0001, 0.00015],
+          "orientation": [0, 0, -180]
+        }
+      }
+    },
+    "building1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [ 0.00006, 0.00015 ],
+                [ 0.0001, 0.00015 ],
+                [ 0.0001, 0.00011 ],
+                [ 0.00006, 0.00011 ],
+                [ 0.00006, 0.00015 ]
+              ]]
+            }
+          }
+        ]
+      }
+    },
+    "building2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 7
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [ 0.0001, 0.0001 ],
+                [ 0.00014, 0.0001 ],
+                [ 0.00014, 0.00006 ],
+                [ 0.0001, 0.00006 ],
+                [ 0.0001, 0.0001 ]
+              ]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "terrain-hillshade",
+      "type": "hillshade",
+      "source": "mapbox-dem"
+    },
+    {
+      "id": "extrusion1",
+      "type": "fill-extrusion",
+      "source": "building1",
+      "paint": {
+        "fill-extrusion-color": "blue",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-opacity": 0.5
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint":  {
+        "model-opacity": 0.6
+      }
+    },
+    {
+      "id": "extrusion2",
+      "type": "fill-extrusion",
+      "source": "building2",
+      "paint": {        
+        "fill-extrusion-color": "pink",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-opacity": 0.5
+      }
+    }
+  ]
+}

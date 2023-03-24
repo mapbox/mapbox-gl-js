@@ -53,14 +53,15 @@ export const fogUniformValues = (
     frustumDirBl: [number, number, number],
     globePosition: [number, number, number],
     globeRadius: number,
-    viewport: [number, number]
+    viewport: [number, number],
+    fogMatrix: ?Float32Array
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
     const fogColor = fog.properties.get('color').toArray01();
     fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     return {
-        'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : painter.identityMat,
+        'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat,
         'u_fog_range': fog.getFovAdjustedRange(tr._fov),
         'u_fog_color': fogColor,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),
