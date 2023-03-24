@@ -72,6 +72,7 @@ declare module "gl-matrix" {
         mul<T: Mat3>(T, Mat3, Mat3): T,
         multiply<T: Mat3>(T, Mat3, Mat3): T,
         adjoint<T: Mat3>(T, Mat3): T,
+        invert<T: Mat3>(T, Mat3): T,
         transpose<T: Mat3>(T, Mat3): T
     };
 

@@ -3,12 +3,12 @@ import Color from '../style-spec/util/color.js';
 
 import type {BlendFuncType, ColorMaskType} from './types.js';
 
-const ZERO = 0x0000;
-const ONE = 0x0001;
-const ONE_MINUS_SRC_ALPHA = 0x0303;
-const DST_COLOR = 0x0306;
+export const ZERO = 0x0000;
+export const ONE = 0x0001;
+export const ONE_MINUS_SRC_ALPHA = 0x0303;
+export const DST_COLOR = 0x0306;
 
-class ColorMode {
+export class ColorMode {
     blendFunction: BlendFuncType;
     blendColor: Color;
     mask: ColorMaskType;

@@ -108,6 +108,8 @@ class Transform {
     worldToFogMatrix: Float64Array;
     skyboxMatrix: Float32Array;
 
+    starsProjMatrix: Float32Array;
+
     // Transform from screen coordinates to GL NDC, [0, w] x [h, 0] --> [-1, 1] x [-1, 1]
     // Roughly speaking, applies pixelsToGLUnits scaling with a translation
     glCoordMatrix: Float32Array;
@@ -1939,6 +1941,9 @@ class Transform {
         mat4.rotateZ(view, view, this.angle);
 
         const projection = mat4.perspective(new Float32Array(16), this._fov, this.width / this.height, this._nearZ, this._farZ);
+
+        this.starsProjMatrix = mat4.clone(projection);
+
         // The distance in pixels the skybox needs to be shifted down by to meet the shifted horizon.
         const skyboxHorizonShift = (Math.PI / 2 - this._pitch) * (this.height / this._fov) * this._horizonShift;
         // Apply center of perspective offset to skybox projection

@@ -9,7 +9,6 @@ import {
     Uniform1f,
     UniformMatrix3f
 } from '../render/uniform_binding.js';
-import browser from '../util/browser.js';
 
 import type Context from '../gl/context.js';
 import type {UniformValues} from '../render/uniform_binding.js';
@@ -45,12 +44,8 @@ export type AtmosphereUniformsType = {|
     'u_color': Uniform4f,
     'u_high_color': Uniform4f,
     'u_space_color': Uniform4f,
-    'u_star_intensity': Uniform1f,
-    'u_star_size': Uniform1f,
-    'u_star_density': Uniform1f,
     'u_temporal_offset': Uniform1f,
-    'u_horizon_angle': Uniform1f,
-    'u_rotation_matrix': UniformMatrix4f
+    'u_horizon_angle': Uniform1f
 |};
 
 const globeRasterUniforms = (context: Context): GlobeRasterUniformsType => ({
@@ -83,12 +78,8 @@ const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
     'u_color': new Uniform4f(context),
     'u_high_color': new Uniform4f(context),
     'u_space_color': new Uniform4f(context),
-    'u_star_intensity': new Uniform1f(context),
-    'u_star_density': new Uniform1f(context),
-    'u_star_size': new Uniform1f(context),
     'u_temporal_offset': new Uniform1f(context),
     'u_horizon_angle': new Uniform1f(context),
-    'u_rotation_matrix': new UniformMatrix4f(context)
 });
 
 const globeRasterUniformValues = (
@@ -137,10 +128,8 @@ const atmosphereUniformValues = (
     color: [number, number, number, number],
     highColor: [number, number, number, number],
     spaceColor: [number, number, number, number],
-    starIntensity: number,
     temporalOffset: number,
-    horizonAngle: number,
-    rotationMatrix: Float32Array
+    horizonAngle: number
 ): UniformValues<AtmosphereUniformsType> => ({
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
@@ -152,12 +141,8 @@ const atmosphereUniformValues = (
     'u_color': color,
     'u_high_color': highColor,
     'u_space_color': spaceColor,
-    'u_star_intensity': starIntensity,
-    'u_star_size': 5.0 * browser.devicePixelRatio,
-    'u_star_density': 0.0,
     'u_temporal_offset': temporalOffset,
-    'u_horizon_angle': horizonAngle,
-    'u_rotation_matrix': rotationMatrix
+    'u_horizon_angle': horizonAngle
 });
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};

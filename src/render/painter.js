@@ -39,9 +39,8 @@ import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
 import sky from './draw_sky.js';
-import drawAtmosphere from './draw_atmosphere.js';
+import Atmosphere from './draw_atmosphere.js';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util.js';
-import {AtmosphereBuffer} from '../render/atmosphere_buffer.js';
 import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
@@ -168,11 +167,11 @@ class Painter {
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
     globeSharedBuffers: ?GlobeSharedBuffers;
-    atmosphereBuffer: AtmosphereBuffer;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[key: number]: Tile};
+    _atmosphere: ?Atmosphere;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -311,8 +310,6 @@ class Painter {
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
         this.loadTimeStamps.push(window.performance.now());
-
-        this.atmosphereBuffer = new AtmosphereBuffer(this.context);
     }
 
     getMercatorTileBoundsBuffers(): TileBoundsBuffers {
@@ -558,6 +555,19 @@ class Painter {
             this.uploadLayer(this, layer, sourceCache);
         }
 
+        if (this.style.fog && this.transform.projection.supportsFog) {
+            if (!this._atmosphere) {
+                this._atmosphere = new Atmosphere();
+            }
+
+            this._atmosphere.update(this);
+        } else {
+            if (this._atmosphere) {
+                this._atmosphere.destroy();
+                this._atmosphere = undefined;
+            }
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -599,7 +609,22 @@ class Painter {
         this.context.viewport.set([0, 0, this.width, this.height]);
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        this.context.clear({color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1});
+        const clearColor = (() => {
+            if (options.showOverdrawInspector) {
+                return Color.black;
+            }
+
+            if (this.style.fog && this.transform.projection.supportsFog) {
+                const spaceColor = this.style.fog.properties.get('space-color').toArray01();
+
+                return new Color(...spaceColor);
+            }
+
+            return Color.transparent;
+        })();
+
+        this.context.clear({color: clearColor, depth: 1});
+
         this.clearStencil();
 
         this._showOverdrawInspector = options.showOverdrawInspector;
@@ -607,6 +632,10 @@ class Painter {
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
+
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere) {
+            this._atmosphere.drawStars(this, this.style.fog);
+        }
 
         if (!this.terrain) {
             for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
@@ -620,8 +649,8 @@ class Painter {
             }
         }
 
-        if (this.style.fog && this.transform.projection.supportsFog) {
-            drawAtmosphere(this, this.style.fog);
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere) {
+            this._atmosphere.drawAtmosphereGlow(this, this.style.fog);
         }
 
         // Sky pass ======================================================
@@ -1012,15 +1041,16 @@ class Painter {
         if (this._terrain) {
             this._terrain.destroy();
         }
+        if (this._atmosphere) {
+            this._atmosphere.destroy();
+            this._atmosphere = undefined;
+        }
         if (this.globeSharedBuffers) {
             this.globeSharedBuffers.destroy();
         }
         this.emptyTexture.destroy();
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
-        }
-        if (this.atmosphereBuffer) {
-            this.atmosphereBuffer.destroy();
         }
     }
 
