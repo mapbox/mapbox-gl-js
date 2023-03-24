@@ -1075,7 +1075,7 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<*>, tileID: ?UnwrappedTileID) {
+    uploadCommonUniforms(context: Context, program: Program<*>, tileID: ?UnwrappedTileID, fogMatrix: ?Float32Array) {
         this.uploadCommonLightUniforms(context, program);
 
         // Fog is not enabled when rendering to texture so we
@@ -1099,7 +1099,8 @@ class Painter {
                 [
                     this.transform.width * browser.devicePixelRatio,
                     this.transform.height * browser.devicePixelRatio
-                ]);
+                ],
+                fogMatrix);
 
             program.setFogUniformValues(context, fogUniforms);
         }

@@ -24,7 +24,6 @@ declare module "gl-matrix" {
         dot(Vec3, Vec3): number,
         equals(Vec3, Vec3): boolean,
         exactEquals(Vec3, Vec3): boolean,
-
         clone<T: Vec3>(T): T,
         normalize<T: Vec3>(T, Vec3): T,
         add<T: Vec3>(T, Vec3, Vec3): T,
@@ -110,6 +109,7 @@ declare module "gl-matrix" {
         identity<T: Quat>(T): T,
         rotateX<T: Quat>(T, Quat, number): T,
         rotateY<T: Quat>(T, Quat, number): T,
-        rotateZ<T: Quat>(T, Quat, number): T
+        rotateZ<T: Quat>(T, Quat, number): T,
+        rotationTo<T:Quat>(T, Quat, Quat): T 
     }
 }

@@ -8,15 +8,16 @@ import {modelUniformValues} from './program/model_program.js';
 import type {Mesh, Node} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
-import Projection from '../../src/geo/projection/projection.js';
+import Transform from '../../src/geo/transform.js';
 import StencilMode from '../../src/gl/stencil_mode.js';
 import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
 import type {Mat4} from 'gl-matrix';
-import MercatorCoordinate from '../../src/geo/mercator_coordinate.js';
+import MercatorCoordinate, {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
+import {convertModelMatrixForGlobe} from '../util/model_util.js';
 
 export default drawModels;
 
@@ -31,6 +32,17 @@ type SortedMesh = {
     modelIndex: number;
     worldViewProjection: Mat4;
     nodeModelMatrix: Mat4;
+}
+
+function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
+    // convert model matrix from the default world size to the one used by the fog
+    const fogMatrix = [...modelMatrix];
+    const scale = transform.cameraWorldSizeForFog / transform.worldSize;
+    const scaleMatrix = mat4.identity([]);
+    mat4.scale(scaleMatrix, scaleMatrix, [scale, scale, 1]);
+    mat4.multiply(fogMatrix, scaleMatrix, fogMatrix);
+    mat4.multiply(fogMatrix, transform.worldToFogMatrix, fogMatrix);
+    return fogMatrix;
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode, colorMode) {
@@ -50,7 +62,12 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const material = mesh.material;
     const pbr = material.pbrMetallicRoughness;
 
-    const lightingMatrix = mat4.multiply([], modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
+    let lightingMatrix;
+    if (painter.transform.projection.zAxisUnit === "pixels") {
+        lightingMatrix = [...sortedMesh.nodeModelMatrix];
+    } else {
+        lightingMatrix = mat4.multiply([], modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
+    }
     mat4.multiply(lightingMatrix, modelParameters.negCameraPosMatrix, lightingMatrix);
     const normalMatrix = mat4.invert([], lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
@@ -142,7 +159,12 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     definesValues.push('USE_STANDARD_DERIVATIVES');
 
     const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
-    program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+    if (painter.style.fog) {
+        const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
+        definesValues.push('FOG');
+        painter.uploadCommonUniforms(context, program, null, new Float32Array(fogMatrix));
+    }
+    program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, dynamicBuffers);
 }
@@ -158,8 +180,15 @@ export function upload(painter: Painter, sourceCache: SourceCache) {
     }
 }
 
-function prepareMeshes(node: Node, modelMatrix: Mat4, projectionMatrix: Mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
-    const nodeModelMatrix = mat4.multiply([], modelMatrix, node.matrix);
+function prepareMeshes(transform: Transform, node: Node, modelMatrix: Mat4, projectionMatrix: Mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
+
+    let nodeModelMatrix;
+    if (transform.projection.name === 'globe') {
+        nodeModelMatrix = convertModelMatrixForGlobe(modelMatrix, transform);
+    } else {
+        nodeModelMatrix = [...modelMatrix];
+    }
+    mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.matrix);
     const worldViewProjection = mat4.multiply([], projectionMatrix, nodeModelMatrix);
     if (node.meshes) {
         for (const mesh of node.meshes) {
@@ -179,7 +208,7 @@ function prepareMeshes(node: Node, modelMatrix: Mat4, projectionMatrix: Mat4, mo
     }
     if (node.children) {
         for (const child of node.children) {
-            prepareMeshes(child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes);
+            prepareMeshes(transform, child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes);
         }
     }
 }
@@ -194,6 +223,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
 
     const mercCameraPos = painter.transform.getFreeCameraOptions().position || new MercatorCoordinate(0, 0, 0);
     const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    vec3.negate(cameraPos, cameraPos);
     const transparentMeshes: SortedMesh[] = [];
     const opaqueMeshes: SortedMesh[] = [];
     let modelIndex = 0;
@@ -203,19 +233,18 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         const scale = layer.paint.get('model-scale').constantOr((null: any));
         const translation = layer.paint.get('model-translation').constantOr((null: any));
         // update model matrices
-        model.computeModelMatrix(painter, rotation, scale, translation);
+        model.computeModelMatrix(painter, rotation, scale, translation, true, true, false);
 
         // compute model parameters matrices
         const negCameraPosMatrix = mat4.identity([]);
-        const modelMetersPerPixel = Projection.getMetersPerPixelAtLatitude(model.position.lat, painter.transform.zoom);
+        const modelMetersPerPixel = getMetersPerPixelAtLatitude(model.position.lat, painter.transform.zoom);
         const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
         const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, modelPixelsPerMeter]);
-        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, vec3.negate(cameraPos, cameraPos));
+        mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPos);
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
-
         for (const node of model.nodes) {
-            prepareMeshes(node, model.matrix, painter.transform.projMatrix, modelIndex, transparentMeshes, opaqueMeshes);
+            prepareMeshes(painter.transform, node, model.matrix, painter.transform.projMatrix, modelIndex, transparentMeshes, opaqueMeshes);
         }
         modelIndex++;
     }
@@ -234,9 +263,11 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         for (const opaqueMesh of opaqueMeshes) {
             // If we have layer opacity draw with two passes opaque meshes
             drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], StencilMode.disabled, ColorMode.disabled);
-            drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], painter.stencilModeFor3D(), painter.colorModeForRenderPass());
-            painter.resetStencilClippingMasks();
         }
+        for (const opaqueMesh of opaqueMeshes) {
+            drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], painter.stencilModeFor3D(), painter.colorModeForRenderPass());
+        }
+        painter.resetStencilClippingMasks();
     }
 
     // Draw transparent sorted meshes

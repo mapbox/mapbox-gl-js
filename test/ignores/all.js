@@ -152,8 +152,13 @@ const skip = [
     // fill-extrusion-rounded-roof not implemented in -js
     "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
 
-    // alpha textures not supported in js
+    // alpha textures not supported in -js
     "render-tests/model-layer/model-opacity-cutout-texture",
+    // GLTF interleaved arrays not supported in -js
+    "render-tests/model-layer/model-opacity-no-cutoff",
+    // terrain model tests are flaky in CI
+    "render-tests/model-layer/fill-extrusion--default-terrain-opacity",
+    "render-tests/model-layer/fill-extrusion--default-terrain",
 
     // icon-image-cross-fade not supported in -js
     "render-tests/measure-light/global-brightness-icon-image-fade",

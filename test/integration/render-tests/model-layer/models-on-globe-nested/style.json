@@ -1,0 +1,74 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [ -20, 20 ],
+  "zoom": 2.50,
+  "pitch": 45,
+  "bearing": 45,
+  "fog": {
+    "star-intensity": 0.0
+  },
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-0" : {
+          "uri": "local://models/nested-cubes.glb",
+          "position": [0, 0],
+          "orientation": [0, 0, 45]
+        },
+        "model-1" : {
+          "uri": "local://models/nested-cubes.glb",
+          "position": [0, 20],
+          "orientation": [0, 0, 0]
+        }
+      }
+    },
+    "model-elevated": {
+      "type": "model",
+      "models": {
+        "model-0" : {
+          "uri": "local://models/nested-cubes.glb",
+          "position": [0, 40],
+          "orientation": [0, 0, 45]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale" : [200000, 200000, 200000],
+        "model-translation": [0, 0, 200000]
+      }
+    },
+    {
+      "id": "model-elevated",
+      "type": "model",
+      "source": "model-elevated",
+      "paint": {
+        "model-scale" : [200000, 200000, 200000],
+        "model-translation": [0, 0, 500000]
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "center": [
+    -0.00020,
+    0
+  ],
+  "pitch": 80,
+  "bearing": -85,
+  "zoom": 21,
+  "terrain": {
+    "source": "mapbox-dem"
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 14,
+      "tileSize": 514,
+      "tiles": ["local://models/dem/8-128-128.terrain.514.png"]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, 0]
+        },
+        "model-on-roof" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00010, 0]
+        },
+        "model-on-bumper-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00030, 0]
+        },
+        "model-on-roof-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00060, 0]
+        },
+        "model-on-bumper-resting" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00100, 0]
+        },
+        "model-on-side1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00200, 0]
+        },
+        "model-on-side2" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.00400, 0]
+        },
+        "model-on-side3" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-0.01000, 0]
+        }
+      }
+    }
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model"
+    }
+  ]
+}
