@@ -53,6 +53,7 @@ const createElevation = (func, exaggeration) => {
 test('Map', (t) => {
     t.beforeEach(() => {
         window.useFakeXMLHttpRequest();
+        t.setTimeout(2000);
     });
 
     t.afterEach(() => {
@@ -2441,22 +2442,40 @@ test('Map', (t) => {
     });
 
     t.test('#remove deletes gl resources used by the atmosphere', (t) => {
-        const style = extend(createStyle(), {zoom: 1});
-        const map = createMap(t, {style});
+        const styleWithAtmosphere = {
+            'version': 8,
+            'sources': {},
+            'fog':  {
+                'color': '#0F2127',
+                'high-color': '#000',
+                'horizon-blend': 0.5,
+                'space-color': '#000'
+            },
+            'layers': [],
+            'zoom': 2,
+            'projection': {
+                name: 'globe'
+            }
+        };
+
+        const map = createMap(t, {style:styleWithAtmosphere});
 
         map.on('style.load', () => {
             map.once('render', () => {
-                const atmosphereBuffers = map.painter.atmosphereBuffer;
-
-                t.ok(atmosphereBuffers);
-
-                t.true(atmosphereBuffers.vertexBuffer.buffer);
-                t.true(atmosphereBuffers.indexBuffer.buffer);
+                const atmosphereBuffer = map.painter._atmosphere.atmosphereBuffer;
+                const starsVx = map.painter._atmosphere.starsVx;
+                const starsIdx = map.painter._atmosphere.starsIdx;
+                t.ok(atmosphereBuffer.vertexBuffer.buffer);
+                t.ok(atmosphereBuffer.indexBuffer.buffer);
+                t.ok(starsVx.buffer);
+                t.ok(starsIdx.buffer);
 
                 map.remove();
 
-                t.false(atmosphereBuffers.vertexBuffer.buffer);
-                t.false(atmosphereBuffers.indexBuffer.buffer);
+                t.false(atmosphereBuffer.vertexBuffer.buffer);
+                t.false(atmosphereBuffer.indexBuffer.buffer);
+                t.false(starsVx.buffer);
+                t.false(starsIdx.buffer);
 
                 t.end();
             });
@@ -3194,6 +3213,7 @@ test('Map', (t) => {
     });
 
     t.test('#setPaintProperty', (t) => {
+        t.setTimeout(2000);
         t.test('sets property', (t) => {
             const map = createMap(t, {
                 style: {
@@ -3980,8 +4000,8 @@ test('Map', (t) => {
     });
 
     t.test('#snapToNorth', (t) => {
-
         t.test('snaps when less than < 7 degrees', (t) => {
+            t.setTimeout(2000);
             const map = createMap(t);
             map.on('load', () =>  {
                 map.setBearing(6);
@@ -3995,6 +4015,7 @@ test('Map', (t) => {
         });
 
         t.test('does not snap when > 7 degrees', (t) => {
+            t.setTimeout(2000);
             const map = createMap(t);
             map.on('load', () =>  {
                 map.setBearing(8);
@@ -4008,6 +4029,7 @@ test('Map', (t) => {
         });
 
         t.test('snaps when < bearingSnap', (t) => {
+            t.setTimeout(2000);
             const map = createMap(t, {"bearingSnap": 12});
             map.on('load', () =>  {
                 map.setBearing(11);
@@ -4021,6 +4043,7 @@ test('Map', (t) => {
         });
 
         t.test('does not snap when > bearingSnap', (t) => {
+            t.setTimeout(2000);
             const map = createMap(t, {"bearingSnap": 10});
             map.on('load', () =>  {
                 map.setBearing(11);

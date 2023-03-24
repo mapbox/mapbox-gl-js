@@ -68,6 +68,8 @@ import globeFrag from './globe_raster.fragment.glsl';
 import globeVert from './globe_raster.vertex.glsl';
 import atmosphereFrag from './atmosphere.fragment.glsl';
 import atmosphereVert from './atmosphere.vertex.glsl';
+import starsFrag from './stars.fragment.glsl';
+import starsVert from './stars.vertex.glsl';
 
 // 3d-style related shaders
 import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
@@ -170,7 +172,8 @@ export default {
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
     globeRaster: compile(globeFrag, globeVert),
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
-    model: compile(modelFrag, modelVert)
+    model: compile(modelFrag, modelVert),
+    stars: compile(starsFrag, starsVert)
 };
 
 export function parseUsedPreprocessorDefines(source, defines) {
@@ -343,7 +346,7 @@ uniform ${precision} ${type} u_${name};
     ${precision} ${type} ${name} = u_${name};
 #endif
 `;
-                } else /* */{
+                } else /* */ {
                     return `
 #ifndef HAS_UNIFORM_u_${name}
     ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
