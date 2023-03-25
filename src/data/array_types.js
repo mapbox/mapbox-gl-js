@@ -1019,6 +1019,52 @@ class StructArrayLayout2f8 extends StructArray {
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
 register(StructArrayLayout2f8, 'StructArrayLayout2f8');
 
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Float32[16]
+ *
+ * @private
+ */
+class StructArrayLayout16f64 extends StructArray {
+    uint8: Uint8Array;
+    float32: Float32Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number, v14: number, v15: number): number {
+        const o4 = i * 16;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
+        this.float32[o4 + 4] = v4;
+        this.float32[o4 + 5] = v5;
+        this.float32[o4 + 6] = v6;
+        this.float32[o4 + 7] = v7;
+        this.float32[o4 + 8] = v8;
+        this.float32[o4 + 9] = v9;
+        this.float32[o4 + 10] = v10;
+        this.float32[o4 + 11] = v11;
+        this.float32[o4 + 12] = v12;
+        this.float32[o4 + 13] = v13;
+        this.float32[o4 + 14] = v14;
+        this.float32[o4 + 15] = v15;
+        return i;
+    }
+}
+
+StructArrayLayout16f64.prototype.bytesPerElement = 64;
+register(StructArrayLayout16f64, 'StructArrayLayout16f64');
+
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1255,6 +1301,7 @@ export {
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,
     StructArrayLayout2f8,
+    StructArrayLayout16f64,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout4i8 as RasterBoundsArray,
@@ -1289,5 +1336,6 @@ export {
     StructArrayLayout4f16 as Color4fLayoutArray,
     StructArrayLayout2f8 as TexcoordLayoutArray,
     StructArrayLayout3f12 as NormalLayoutArray,
+    StructArrayLayout16f64 as InstanceVertexArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

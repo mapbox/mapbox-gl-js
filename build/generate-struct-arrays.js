@@ -131,7 +131,7 @@ import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
 import tileBoundsAttributes from '../src/data/bounds_attributes.js';
 import {fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
-import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes} from '../3d-style/data/model_attributes.js';
+import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes} from '../3d-style/data/model_attributes.js';
 
 
 // layout vertex arrays
@@ -229,6 +229,7 @@ createStructArrayType(`color3f_layout`, color3fAttributes);
 createStructArrayType(`color4f_layout`, color4fAttributes);
 createStructArrayType(`texcoord_layout`, texcoordAttributes);
 createStructArrayType(`normal_layout`, normalAttributes);
+createStructArrayType(`instance_vertex`, instanceAttributes);
 
 // paint vertex arrays
 

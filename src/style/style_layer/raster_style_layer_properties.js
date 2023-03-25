@@ -20,6 +20,9 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type PaintProps = {|
     "raster-opacity": DataConstantProperty<number>,
+    "raster-color": ColorRampProperty,
+    "raster-color-mix": DataConstantProperty<[number, number, number, number]>,
+    "raster-color-range": DataConstantProperty<[number, number]>,
     "raster-hue-rotate": DataConstantProperty<number>,
     "raster-brightness-min": DataConstantProperty<number>,
     "raster-brightness-max": DataConstantProperty<number>,
@@ -27,13 +30,13 @@ export type PaintProps = {|
     "raster-contrast": DataConstantProperty<number>,
     "raster-resampling": DataConstantProperty<"linear" | "nearest">,
     "raster-fade-duration": DataConstantProperty<number>,
-    "raster-color": ColorRampProperty,
-    "raster-color-mix": DataConstantProperty<[number, number, number, number]>,
-    "raster-color-range": DataConstantProperty<[number, number]>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
     "raster-opacity": new DataConstantProperty(styleSpec["paint_raster"]["raster-opacity"]),
+    "raster-color": new ColorRampProperty(styleSpec["paint_raster"]["raster-color"]),
+    "raster-color-mix": new DataConstantProperty(styleSpec["paint_raster"]["raster-color-mix"]),
+    "raster-color-range": new DataConstantProperty(styleSpec["paint_raster"]["raster-color-range"]),
     "raster-hue-rotate": new DataConstantProperty(styleSpec["paint_raster"]["raster-hue-rotate"]),
     "raster-brightness-min": new DataConstantProperty(styleSpec["paint_raster"]["raster-brightness-min"]),
     "raster-brightness-max": new DataConstantProperty(styleSpec["paint_raster"]["raster-brightness-max"]),
@@ -41,9 +44,6 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
     "raster-resampling": new DataConstantProperty(styleSpec["paint_raster"]["raster-resampling"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
-    "raster-color": new ColorRampProperty(styleSpec["paint_raster"]["raster-color"]),
-    "raster-color-mix": new DataConstantProperty(styleSpec["paint_raster"]["raster-color-mix"]),
-    "raster-color-range": new DataConstantProperty(styleSpec["paint_raster"]["raster-color-range"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

@@ -20,7 +20,7 @@ import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
-import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat} from '../../geo/mercator_coordinate.js';
+import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from '../../geo/mercator_coordinate.js';
 import {subdividePolygons} from '../../util/polygon_clipping.js';
 import type {ClippedPolygon} from '../../util/polygon_clipping.js';
 import type {Vec3} from 'gl-matrix';
@@ -703,14 +703,6 @@ function isEntirelyOutside(ring: Array<Point>) {
         ring.every(p => p.x >= EXTENT) ||
         ring.every(p => p.y <= 0) ||
         ring.every(p => p.y >= EXTENT);
-}
-
-function tileToMeter(canonical: CanonicalTileID) {
-    const circumferenceAtEquator = 40075017;
-    const mercatorY = canonical.y / (1 << canonical.z);
-    const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
-    // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
-    return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
 
 function isAOConcaveAngle(p2: Point, p1: Point, p3: Point) {

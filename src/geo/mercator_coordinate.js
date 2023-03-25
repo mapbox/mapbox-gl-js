@@ -3,6 +3,8 @@
 import LngLat, {earthCircumference} from '../geo/lng_lat.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import {clamp, degToRad} from '../util/util.js';
+import {CanonicalTileID} from '../source/tile_id.js';
+import EXTENT from '../data/extent.js';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 25.5;
@@ -62,6 +64,14 @@ export function getMetersPerPixelAtLatitude(lat: number, zoom: number): number {
  */
 export function mercatorScale(lat: number): number {
     return 1 / Math.cos(lat * Math.PI / 180);
+}
+
+export function tileToMeter(canonical: CanonicalTileID, tileYCoordinate: number = 0): number {
+    const circumferenceAtEquator = 40075017;
+    const mercatorY = (canonical.y + tileYCoordinate / EXTENT) / (1 << canonical.z);
+    const exp = Math.exp(Math.PI * (1 - 2 * mercatorY));
+    // simplify cos(2 * atan(e) - PI/2) from mercator_coordinate.js, remove trigonometrics.
+    return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
 
 /**

@@ -1,0 +1,2469 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Almaraz",
+        "MW": 2017,
+        "# Units": 2,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.69694,
+          39.80806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Angra",
+        "MW": 1889,
+        "# Units": 2,
+        "Country": "Brazil"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -44.47389,
+          -23.00833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Arkansas Nuclear One",
+        "MW": 1839,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -93.23139,
+          35.31028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ascó",
+        "MW": 1992,
+        "# Units": 2,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.56944,
+          41.2
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Atucha",
+        "MW": 1027,
+        "# Units": 2,
+        "Country": "Argentina"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -59.205,
+          -33.9675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Balakovo",
+        "MW": 3800,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          47.95528,
+          52.09111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Beaver Valley",
+        "MW": 1738,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.43056,
+          40.62333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Belleville",
+        "MW": 2620,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.875,
+          47.50972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Beloyarsk Nuclear Power Station",
+        "MW": 1597,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          61.3225,
+          56.84167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Blayais",
+        "MW": 3640,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.69306,
+          45.25583
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Braidwood Nuclear Generating Station",
+        "MW": 2330,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.22917,
+          41.24361
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Brokdorf",
+        "MW": 1410,
+        "# Units": 1,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.34472,
+          53.85083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Browns Ferry",
+        "MW": 3300,
+        "# Units": 3,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.11861,
+          34.70389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Bruce",
+        "MW": 6232,
+        "# Units": 8,
+        "Country": "Canada"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.59944,
+          44.70389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Brunswick",
+        "MW": 1858,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.01028,
+          33.95833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Bugey Nuclear Power Plant",
+        "MW": 3580,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.27083,
+          45.32528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Byron Nuclear Generating Station",
+        "MW": 2300,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -89.28194,
+          42.07417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Callaway Plant",
+        "MW": 1190,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.78,
+          38.76167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Calvert Cliffs Nuclear Power Plant",
+        "MW": 1735,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.44222,
+          38.43194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Catawba Nuclear Station",
+        "MW": 2258,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.07,
+          35.05167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Cattenom Nuclear Power Plant",
+        "MW": 5200,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.21806,
+          49.41583
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Cernavodă Nuclear Power Plant",
+        "MW": 1300,
+        "# Units": 2,
+        "Country": "Romania"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.05722,
+          44.32222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Chinon Nuclear Power Plant",
+        "MW": 3620,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.17056,
+          47.23056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Chin Shan Nuclear Power Plant",
+        "MW": 1208,
+        "# Units": 2,
+        "Country": "Taiwan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.56778,
+          25.29139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Chooz Nuclear Power Plant",
+        "MW": 3000,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.78944,
+          50.09
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Civaux Nuclear Power Plant",
+        "MW": 2990,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.65278,
+          46.45667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Clinton Nuclear Generating Station",
+        "MW": 1043,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.835,
+          40.17222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Cofrentes Nuclear Power Plant",
+        "MW": 1064,
+        "# Units": 1,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.05,
+          39.21667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Columbia Generating Station",
+        "MW": 1131,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.33389,
+          46.47111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Comanche Peak Nuclear Generating Station",
+        "MW": 2367,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.785,
+          32.29833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Cruas Nuclear Power Plant",
+        "MW": 3660,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.75667,
+          44.63306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Dampierre Nuclear Power Plant",
+        "MW": 3560,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.51667,
+          47.73306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Darlington Nuclear Generating Station",
+        "MW": 3512,
+        "# Units": 4,
+        "Country": "Canada"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.71972,
+          43.87278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Daya Bay Nuclear Power Plant",
+        "MW": 1888,
+        "# Units": 2,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.54361,
+          22.59778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Diablo Canyon Power Plant",
+        "MW": 2240,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -120.85611,
+          35.21083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Doel Nuclear Power Station",
+        "MW": 2911,
+        "# Units": 4,
+        "Country": "Belgium"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.25861,
+          51.32472
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Donald C. Cook Nuclear Generating Station",
+        "MW": 2069,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.56583,
+          41.97528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Dresden Nuclear Power Plant",
+        "MW": 1734,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.26806,
+          41.38972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Dukovany Nuclear Power Station",
+        "MW": 2040,
+        "# Units": 4,
+        "Country": "Czech Republic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.14889,
+          49.085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Dungeness B",
+        "MW": 1040,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.96389,
+          50.91389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Edwin Hatch Nuclear Power Station",
+        "MW": 1759,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.34389,
+          31.93417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Enrico Fermi Nuclear Generating Station",
+        "MW": 1122,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.2575,
+          41.96278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Emsland Nuclear Power Plant",
+        "MW": 1329,
+        "# Units": 1,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.31778,
+          52.47417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Fangchenggang Nuclear Power Plant",
+        "MW": 1000,
+        "# Units": 1,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.56056,
+          21.67667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Fangjiashan Nuclear Power Plant",
+        "MW": 2000,
+        "# Units": 2,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.94167,
+          30.44139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Fessenheim Nuclear Power Plant",
+        "MW": 1760,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.56306,
+          47.90306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Flamanville Nuclear Power Plant",
+        "MW": 2660,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.88167,
+          49.53639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Forsmark Nuclear Power Plant",
+        "MW": 3138,
+        "# Units": 3,
+        "Country": "Sweden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.16667,
+          60.40333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Fukushima Daini",
+        "MW": 4400,
+        "# Units": 4,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.02111,
+          37.31944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Fuqing Nuclear Power Plant",
+        "MW": 2000,
+        "# Units": 2,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.44611,
+          25.44417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Genkai Nuclear Power Plant",
+        "MW": 2783,
+        "# Units": 3,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.83722,
+          33.51556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Golfech Nuclear Power Plant",
+        "MW": 2620,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.84528,
+          44.10667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Grand Gulf Nuclear Generating Station",
+        "MW": 1266,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.04833,
+          32.00667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Gravelines",
+        "MW": 5460,
+        "# Units": 6,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.13611,
+          51.01528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Grohnde Nuclear Power Plant",
+        "MW": 1360,
+        "# Units": 1,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.41333,
+          52.03528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Gundremmingen Nuclear Power Plant",
+        "MW": 1972,
+        "# Units": 2,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.40222,
+          48.51472
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hamaoka Nuclear Power Plant",
+        "MW": 3473,
+        "# Units": 3,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.1425,
+          34.62361
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hanbit Nuclear Power Station",
+        "MW": 5875,
+        "# Units": 6,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.42389,
+          35.415
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hanul Nuclear Power Plant",
+        "MW": 5881,
+        "# Units": 6,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.38361,
+          37.09278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hartlepool",
+        "MW": 1190,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.18083,
+          54.635
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Heysham",
+        "MW": 2400,
+        "# Units": 4,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.91611,
+          54.02889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Higashidōri Nuclear Power Plant",
+        "MW": 1067,
+        "# Units": 1,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.39028,
+          41.18806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hongyanhe Nuclear Power Plant",
+        "MW": 3122,
+        "# Units": 3,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.47194,
+          39.79778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hope Creek Nuclear Generating Station",
+        "MW": 1191,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.53806,
+          39.46778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ikata Nuclear Power Plant",
+        "MW": 1922,
+        "# Units": 3,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.31139,
+          33.49083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Indian Point Energy Center",
+        "MW": 2062,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.95222,
+          41.26972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Isar Nuclear Power Plant",
+        "MW": 1410,
+        "# Units": 2,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.29306,
+          48.60556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Joseph M. Farley Nuclear Generating Station",
+        "MW": 1711,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.11167,
+          31.22306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kalinin Nuclear Power Plant",
+        "MW": 3800,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.06028,
+          57.90556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kashiwazaki-Kariwa Nuclear Power Plant",
+        "MW": 7965,
+        "# Units": 7,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.59528,
+          37.42917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Khmelnitskiy Nuclear Power Plant",
+        "MW": 1900,
+        "# Units": 2,
+        "Country": "Ukraine"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.64972,
+          50.30139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Koeberg Nuclear Power Station",
+        "MW": 1830,
+        "# Units": 2,
+        "Country": "South Africa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.43194,
+          -33.67639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kola Nuclear Power Plant",
+        "MW": 1644,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.46667,
+          67.46667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kori Nuclear Power Plant",
+        "MW": 3227,
+        "# Units": 6,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.3,
+          35.31694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kozloduy Nuclear Power Plant",
+        "MW": 1906,
+        "# Units": 2,
+        "Country": "Bulgaria"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.77056,
+          43.74611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kuosheng Nuclear Power Plant",
+        "MW": 1933,
+        "# Units": 2,
+        "Country": "Taiwan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.66278,
+          25.20306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kudankulam Nuclear Power Plant",
+        "MW": 1000,
+        "# Units": 1,
+        "Country": "India"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.7125,
+          8.16833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Kursk Nuclear Power Plant",
+        "MW": 3700,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.60556,
+          51.675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Laguna Verde Nuclear Power Station",
+        "MW": 1300,
+        "# Units": 2,
+        "Country": "Mexico"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.40639,
+          19.72083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "LaSalle County Nuclear Generating Station",
+        "MW": 2238,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.66917,
+          41.24556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Leibstadt Nuclear Power Plant",
+        "MW": 1190,
+        "# Units": 1,
+        "Country": "Switzerland"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.18472,
+          47.60306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Lemoniz Nuclear Power Plant",
+        "MW": 1800,
+        "# Units": 2,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.8725,
+          43.43333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Leningrad Nuclear Power Plant",
+        "MW": 3700,
+        "# Units": 4,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.04361,
+          59.84722
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Limerick Nuclear Power Plant",
+        "MW": 2264,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.58722,
+          40.22667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ling Ao Nuclear Power Plant",
+        "MW": 3876,
+        "# Units": 4,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.55139,
+          22.60472
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "McGuire Nuclear Station",
+        "MW": 2200,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.94833,
+          35.4325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Maanshan Nuclear Power Plant",
+        "MW": 1841,
+        "# Units": 2,
+        "Country": "Taiwan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.75167,
+          21.95806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Millstone Nuclear Power Plant",
+        "MW": 2102,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.16861,
+          41.31194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Neckarwestheim Nuclear Power Plant",
+        "MW": 1310,
+        "# Units": 2,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.175,
+          49.04167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Nine Mile Point Nuclear Generating Station",
+        "MW": 1764,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.40694,
+          43.52083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ningde Nuclear Power Plant",
+        "MW": 3054,
+        "# Units": 3,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.28833,
+          27.04611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Nogent Nuclear Power Plant",
+        "MW": 2620,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.51778,
+          48.51528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "North Anna Nuclear Generating Station",
+        "MW": 1875,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.78944,
+          38.06056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Novovoronezhskaya Nuclear Power Plant",
+        "MW": 1720,
+        "# Units": 3,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2,
+          51.275
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Oconee Nuclear Generating Station",
+        "MW": 2538,
+        "# Units": 3,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.89806,
+          34.79389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ōi Nuclear Power Plant",
+        "MW": 4494,
+        "# Units": 4,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.65194,
+          35.54056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Olkiluoto Nuclear Power Plant",
+        "MW": 1740,
+        "# Units": 2,
+        "Country": "Finland"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.44083,
+          61.23694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Onagawa Nuclear Power Plant",
+        "MW": 2089,
+        "# Units": 3,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.49972,
+          38.40111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Oskarshamn Nuclear Power Plant",
+        "MW": 2511,
+        "# Units": 3,
+        "Country": "Sweden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.67111,
+          57.41556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Paks Nuclear Power Plant",
+        "MW": 1889,
+        "# Units": 4,
+        "Country": "Hungary"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.85417,
+          46.5725
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Palo Verde Nuclear Generating Station",
+        "MW": 4214,
+        "# Units": 3,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -112.865,
+          33.38917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Paluel Nuclear Power Plant",
+        "MW": 5320,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.63556,
+          49.85806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Penly Nuclear Power Plant",
+        "MW": 2660,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.21194,
+          49.97667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Peach Bottom Nuclear Generating Station",
+        "MW": 2234,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.26806,
+          39.75833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Perry Nuclear Generating Station",
+        "MW": 1240,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.14333,
+          41.80083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Philippsburg Nuclear Power Plant",
+        "MW": 1402,
+        "# Units": 2,
+        "Country": "Germany"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.43639,
+          49.2525
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Pickering Nuclear Generating Station",
+        "MW": 3094,
+        "# Units": 6,
+        "Country": "Canada"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.06583,
+          43.81167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Point Beach Nuclear Plant",
+        "MW": 1027,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.53667,
+          44.28111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Prairie Island Nuclear Power Plant",
+        "MW": 1114,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -92.63306,
+          44.62167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Qinshan Nuclear Power Plant",
+        "MW": 4038,
+        "# Units": 7,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.95639,
+          30.43556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Quad Cities Nuclear Generating Station",
+        "MW": 1774,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.31,
+          41.72639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Rajasthan Atomic Power Station",
+        "MW": 1085,
+        "# Units": 6,
+        "Country": "India"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.61389,
+          24.87222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Ringhals Nuclear Power Plant",
+        "MW": 3649,
+        "# Units": 4,
+        "Country": "Sweden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.11083,
+          57.25972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Rivne Nuclear Power Plant",
+        "MW": 2645,
+        "# Units": 4,
+        "Country": "Ukraine"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.89167,
+          51.32778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Rostov Nuclear Power Plant",
+        "MW": 2911,
+        "# Units": 3,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.37194,
+          47.59944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Saint-Alban Nuclear Power Plant",
+        "MW": 2670,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.75444,
+          45.40444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Saint-Laurent Nuclear Power Plant",
+        "MW": 1830,
+        "# Units": 2,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.5775,
+          47.72
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Saint Lucie Nuclear Power Station",
+        "MW": 1678,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.24639,
+          27.34861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Salem Nuclear Power Plant",
+        "MW": 2332,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.53556,
+          39.46278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Seabrook Station Nuclear Power Plant",
+        "MW": 1247,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.85083,
+          42.89889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Sendai Nuclear Power Plant",
+        "MW": 1692,
+        "# Units": 2,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.18972,
+          31.83361
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Sequoyah Nuclear Generating Station",
+        "MW": 2278,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.09167,
+          35.22639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Shika Nuclear Power Plant",
+        "MW": 1613,
+        "# Units": 2,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.72639,
+          37.06111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Shin Kori Nuclear Power Plant",
+        "MW": 1945,
+        "# Units": 6,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.29639,
+          35.32
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Shin Wolseong Nuclear Power Plant",
+        "MW": 1960,
+        "# Units": 2,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.47889,
+          35.72222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Sizewell-B",
+        "MW": 1188,
+        "# Units": 1,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.61861,
+          52.21333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Smolensk Nuclear Power Plant",
+        "MW": 2775,
+        "# Units": 3,
+        "Country": "Russia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.24667,
+          54.16917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "South Texas Nuclear Generating Station",
+        "MW": 2560,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.04889,
+          28.79556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "South Ukraine Nuclear Power Plant",
+        "MW": 2850,
+        "# Units": 3,
+        "Country": "Ukraine"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.21667,
+          47.81667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Surry Nuclear Power Plant",
+        "MW": 1638,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.69778,
+          37.16556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Susquehanna Steam Electric Station",
+        "MW": 2429,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.14889,
+          41.08889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Takahama Nuclear Power Plant",
+        "MW": 3220,
+        "# Units": 4,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.50472,
+          35.52222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tarapur Atomic Power Station",
+        "MW": 1280,
+        "# Units": 4,
+        "Country": "India"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.66111,
+          19.82778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Temelin Nuclear Power Station",
+        "MW": 1926,
+        "# Units": 2,
+        "Country": "Czech Republic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.37611,
+          49.18
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tianwan Nuclear Power Plant",
+        "MW": 1980,
+        "# Units": 2,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          119.45972,
+          34.68694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tihange Nuclear Power Station",
+        "MW": 3016,
+        "# Units": 3,
+        "Country": "Belgium"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.2725,
+          50.53472
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tokai Nuclear Power Plant",
+        "MW": 1060,
+        "# Units": 1,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.60667,
+          36.46639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tomari Nuclear Power Plant",
+        "MW": 1966,
+        "# Units": 3,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.5125,
+          43.03611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Torness",
+        "MW": 1205,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.40917,
+          55.96806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tricastin Nuclear Power Center",
+        "MW": 3660,
+        "# Units": 4,
+        "Country": "France"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.73222,
+          44.32972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Trillo Nuclear Power Plant",
+        "MW": 1003,
+        "# Units": 1,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.62194,
+          40.70111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Tsuruga Nuclear Power Plant",
+        "MW": 1108,
+        "# Units": 1,
+        "Country": "Japan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.07722,
+          35.67278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Turkey Point Nuclear Generating Station",
+        "MW": 1386,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.33056,
+          25.43417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Vandellòs Nuclear Power Station",
+        "MW": 1045,
+        "# Units": 1,
+        "Country": "Spain"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.86667,
+          40.95139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Vogtle Electric Generating Plant",
+        "MW": 2302,
+        "# Units": 2,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.76583,
+          33.14306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Waterford Nuclear Generating Station",
+        "MW": 1168,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.47111,
+          29.99528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Watts Bar Nuclear Generating Station",
+        "MW": 1123,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.78944,
+          35.60278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Wolf Creek Generating Station",
+        "MW": 1160,
+        "# Units": 1,
+        "Country": "United States"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -95.68889,
+          38.23889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Wolseong Nuclear Power Plant",
+        "MW": 2722,
+        "# Units": 4,
+        "Country": "South Korea"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.475,
+          35.71111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Yangjiang Nuclear Power Plant",
+        "MW": 3000,
+        "# Units": 3,
+        "Country": "China"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.26056,
+          21.70972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Zaporizhzhia Nuclear Power Plant",
+        "MW": 5700,
+        "# Units": 6,
+        "Country": "Ukraine"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.58583,
+          47.51222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hinkley Point B",
+        "MW": 1310,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.13342,
+          51.20852
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hinkley Point C",
+        "MW": 3260,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.127,
+          51.209
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Power station": "Hunterston B",
+        "MW": 1220,
+        "# Units": 2,
+        "Country": "United Kingdom"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.89009,
+          55.72209
+        ]
+      }
+    }
+  ]
+}

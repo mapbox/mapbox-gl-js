@@ -35,6 +35,7 @@
 <div id='map'><div id='elevationDebug'></div></div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script src='/debug/dynamic.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script>
@@ -68,7 +69,7 @@ var Demo3D = function() {
     this.directionalLightColor = [ 255, 255, 255 ];
     this.directionalLightIntensity = 0.5;
     this.directionalLightAzimuth = 160;
-    this.directionalLightAltitude = 50;
+    this.directionalLightPolar = 50;
     this.directionalLightCastShadows = true;
     this.directionalLightShadowIntensity = 0.3;
 };
@@ -94,7 +95,7 @@ function updateLights(enable) {
                     'intensity': demo3d.directionalLightIntensity,
                     'direction': [
                         demo3d.directionalLightAzimuth,
-                        demo3d.directionalLightAltitude
+                        demo3d.directionalLightPolar
                     ],
                     'cast-shadows': demo3d.directionalLightCastShadows,
                     'shadow-intensity': demo3d.directionalLightShadowIntensity
@@ -108,6 +109,8 @@ window.onload = function() {
     var gui = new dat.GUI(); // eslint-disable-line
 
     var style = gui.add(demo3d, 'style', [
+        'mapbox/streets-v12',
+        'dynamic',
         'mapbox/streets-v11',
         'mapbox/satellite-streets-v11',
         'mapbox/light-v10',
@@ -120,6 +123,9 @@ window.onload = function() {
         'mapbox-map-design/ckhqrbxlc1awj19svtb92m0bd'
     ]);
     style.onFinishChange((value) => {
+        if (value === 'dynamic') {
+            return map.setStyle(window.dynamic);
+        }
         map.setStyle('mapbox://styles/' + value);
     });
 
@@ -128,8 +134,8 @@ window.onload = function() {
     enable3dLights.onFinishChange((value) => {
         updateLights(value);
     });
-    var directionalLightAltitude = lights.add(demo3d, 'directionalLightAltitude', 0.0, 90.0);
-    directionalLightAltitude.onFinishChange((value) => {
+    var directionalLightPolar = lights.add(demo3d, 'directionalLightPolar', 0.0, 90.0);
+    directionalLightPolar.onFinishChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var directionalLightAzimuth = lights.add(demo3d, 'directionalLightAzimuth', 0.0, 360.0);
@@ -268,7 +274,7 @@ var map = window.map = new mapboxgl.Map({
     center: [-122.45814, 37.76159],
     pitch: 85,
     bearing: 60,
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/streets-v12',
     hash: true,
     projection: 'globe',
     useWebGL2: true

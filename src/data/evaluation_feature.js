@@ -5,7 +5,7 @@ import loadGeometry from './load_geometry.js';
 import type Point from '@mapbox/point-geometry';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
-type EvaluationFeature = {
+export type EvaluationFeature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon',
     +id?: any,
     +properties: {[_: string]: any},

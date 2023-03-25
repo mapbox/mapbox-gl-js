@@ -1,0 +1,143 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "allowed": 0.0015,
+      "operations": [
+        ["setPaintProperty", "tree-layer", "model-color-mix-intensity", 0.0],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "geojson",
+      "data": "local://data/trees.geojson"
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "models": {
+    "tree": "local://models/tree-metallic.glb",
+    "tree-diffuse": "local://models/tree-no-material.glb"
+  },
+  "pitch": 60,
+  "bearing": 0,
+  "zoom": 15,
+  "center": [
+    -122.40784,
+    37.78432
+  ],
+  "light": {
+    "intensity": 1,
+    "position": [1, 110, 90],
+    "anchor": "map"
+  },
+  "fog": {
+    "range": [-1.5, 3.0]
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": "tree"
+      },
+      "paint": {
+        "model-scale": [ 70.0, 50.0, 50.0],
+        "model-rotation": ["match", ["%", ["get", "id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 60.0]],
+          2, ["literal", [10.0, 0.0, 180.0]],
+          ["literal", [0.0, -3.0, -90]]],    
+        "model-color": "red",
+        "model-color-mix-intensity": 1.0
+      }
+    },
+    {
+      "id": "tree-layer-diffuse",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": "tree-diffuse"
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["get", "id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 60.0]],
+          2, ["literal", [10.0, 0.0, 180.0]],
+          ["literal", [0.0, -3.0, -90]]],
+        "model-scale": [ 70.0, 50.0, 50.0],
+        "model-translation": [0, 0, 100]
+      }
+    },
+    {
+      "id": "3d-buildings",
+      "source": "mapbox",
+      "paint": {
+        "fill-extrusion-opacity": 0.7,
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "fill-extrusion-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source-layer": "building",
+      "type": "fill-extrusion"
+    }
+  ]
+}

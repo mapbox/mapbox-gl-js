@@ -87,6 +87,13 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
+    normalizeModelURL(url: string, accessToken?: string): string {
+        if (!isMapboxURL(url)) return url;
+        const urlObject = parseUrl(url);
+        urlObject.path = `/models/v1${urlObject.path}`;
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
+    }
+
     normalizeSourceURL(url: string, accessToken?: ?string, language?: ?string, worldview?: ?string): string {
         if (!isMapboxURL(url)) return url;
         const urlObject = parseUrl(url);
