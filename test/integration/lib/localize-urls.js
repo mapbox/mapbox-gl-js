@@ -99,7 +99,11 @@ function localizeStyleURLs (style, port) {
     for (const source in style.sources) {
         localizeSourceURLs(style.sources[source], port);
     }
-
+    if (style.models) {
+        for (const modelId in style.models) {
+            style.models[modelId] = localizeURL(style.models[modelId], port);
+        }
+    }
     if (style.sprite) {
         style.sprite = localizeMapboxSpriteURL(style.sprite, port);
         style.sprite = localizeURL(style.sprite, port);

@@ -24,6 +24,7 @@ export type ModelUniformsType = {
     'u_lightpos': Uniform3f,
     'u_lightintensity': Uniform1f,
     'u_lightcolor': Uniform3f,
+    'u_camera_pos': Uniform3f,
     'u_opacity': Uniform1f,
     'u_baseColorFactor': Uniform4f,
     'u_emissiveFactor': Uniform4f,
@@ -48,6 +49,7 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_lightpos': new Uniform3f(context),
     'u_lightintensity': new Uniform1f(context),
     'u_lightcolor': new Uniform3f(context),
+    'u_camera_pos': new Uniform3f(context),
     'u_opacity': new Uniform1f(context),
     'u_baseColorFactor': new Uniform4f(context),
     'u_emissiveFactor': new Uniform4f(context),
@@ -77,7 +79,8 @@ const modelUniformValues = (
     metallicFactor: number,
     roughnessFactor: number,
     material: Material,
-    layer: ModelStyleLayer): UniformValues<ModelUniformsType> => {
+    layer: ModelStyleLayer,
+    cameraPos: [number, number, number] = [0, 0, 0]): UniformValues<ModelUniformsType> => {
 
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -101,6 +104,7 @@ const modelUniformValues = (
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
+        'u_camera_pos': cameraPos,
         'u_opacity': opacity,
         'u_baseTextureIsAlpha': 0,
         'u_alphaMask': +alphaMask,

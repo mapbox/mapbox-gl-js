@@ -74,8 +74,8 @@ const hillshadeId = 'mapbox-dem-hillshade';
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
-        "url": "mapbox://mapbox.terrain-rgb",
-        "tileSize": 512,
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        "tileSize": 514,
         "maxzoom": 14
     });
     map.addSource('ethnicity', {

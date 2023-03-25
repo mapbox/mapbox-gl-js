@@ -9,6 +9,8 @@ import {mat4} from 'gl-matrix';
 import {TriangleIndexArray, ModelLayoutArray, NormalLayoutArray, TexcoordLayoutArray, Color3fLayoutArray, Color4fLayoutArray} from '../../src/data/array_types.js';
 
 import window from '../../src/util/window.js';
+import {warnOnce} from '../../src/util/util.js';
+import assert from 'assert';
 
 // From https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
 
@@ -86,6 +88,9 @@ function convertTextures(gltf: Object, images: Array<TextureImage>): Array<Model
 }
 
 function getBufferData(gltf: Object, accessor: Object) {
+    if (accessor.value && accessor.value.length) {
+        return accessor.value;
+    }
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
     const buffer = gltf.buffers[ bufferView.buffer ];
     const offset = buffer.byteOffset + (accessor.byteOffset || 0) + bufferView.byteOffset;
@@ -161,7 +166,10 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
 
     // indices
     mesh.indexArray = new TriangleIndexArray();
-    const indexAccessor = gltf.json.accessors[indicesIdx];
+    // When loading draco compressed buffers, loader.gl parses the buffer in worker thread and returns parsed
+    // array here. TODO: There might be no need to copy element by element to mesh.indexArray.
+    const indexAccessor = (typeof indicesIdx === "object") ? indicesIdx : gltf.json.accessors[indicesIdx];
+    assert(typeof indicesIdx === "number" || (primitive.extensions && primitive.extensions.hasOwnProperty("KHR_draco_mesh_compression")));
     mesh.indexArray.reserve(indexAccessor.count);
     const indexArrayBuffer = getBufferData(gltf, indexAccessor);
     for (let i = 0;  i < indexAccessor.count; i++) {
@@ -170,7 +178,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
 
     // vertices
     mesh.vertexArray = new ModelLayoutArray();
-    const positionAccessor = gltf.json.accessors[attributeMap.POSITION];
+    const positionAccessor = (typeof attributeMap.POSITION === "object") ? attributeMap.POSITION : gltf.json.accessors[attributeMap.POSITION];
     mesh.vertexArray.reserve(positionAccessor.count);
     const vertexArrayBuffer = getBufferData(gltf, positionAccessor);
     for (let i = 0; i < positionAccessor.count; i++) {
@@ -183,10 +191,10 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
 
     // colors
     if (attributeMap.COLOR_0 !== undefined) {
-        const colorAccessor = gltf.json.accessors[attributeMap.COLOR_0];
-        // We only support colors in float format for now
+        const colorAccessor = (typeof attributeMap.COLOR_0 === "object") ? attributeMap.COLOR_0 : gltf.json.accessors[attributeMap.COLOR_0];
+        const numElements = TypeTable[ colorAccessor.type ];
+        // We only support colors in float and uint8 format for now
         if (colorAccessor.componentType === GLTF_FLOAT) {
-            const numElements = TypeTable[ colorAccessor.type ];
             mesh.colorArray = numElements === 3 ? new Color3fLayoutArray() : new Color4fLayoutArray();
             mesh.colorArray.reserve(colorAccessor.count);
             const colorArrayBuffer = getBufferData(gltf, colorAccessor);
@@ -199,13 +207,24 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
                     mesh.colorArray.emplaceBack(colorArrayBuffer[i * 4], colorArrayBuffer[i * 4 + 1], colorArrayBuffer[i * 4 + 2], colorArrayBuffer[i * 4 + 3]);
                 }
             }
+        } else if (colorAccessor.componentType === GLTF_USHORT && numElements === 4) {
+            mesh.colorArray = new Color4fLayoutArray();
+            mesh.colorArray.resize(colorAccessor.count);
+            const colorArrayBuffer = getBufferData(gltf, colorAccessor);
+            const norm = 1.0 / 65535;
+            const float32Array = ((mesh.colorArray: any): Color4fLayoutArray).float32;
+            for (let i = 0;  i < colorArrayBuffer.length * 4; ++i) {
+                float32Array[i] = colorArrayBuffer[i] * norm;
+            }
+        } else {
+            warnOnce(`glTF color buffer parsing for accessor ${JSON.stringify(colorAccessor)} is not supported`);
         }
     }
 
     // normals
     if (attributeMap.NORMAL !== undefined) {
         mesh.normalArray = new NormalLayoutArray();
-        const normalAccessor = gltf.json.accessors[attributeMap.NORMAL];
+        const normalAccessor = typeof attributeMap.NORMAL === "object" ? attributeMap.NORMAL : gltf.json.accessors[attributeMap.NORMAL];
         mesh.normalArray.reserve(normalAccessor.count);
         const normalArrayBuffer = getBufferData(gltf, normalAccessor);
         for (let i = 0;  i < normalAccessor.count; i++) {
@@ -213,9 +232,9 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
         }
     }
     // texcoord
-    if (attributeMap.TEXCOORD_0 !== undefined) {
+    if (attributeMap.TEXCOORD_0 !== undefined && textures.length > 0) {
         mesh.texcoordArray = new TexcoordLayoutArray();
-        const texcoordAccessor = gltf.json.accessors[attributeMap.TEXCOORD_0];
+        const texcoordAccessor = typeof attributeMap.TEXCOORD_0 === "object" ? attributeMap.TEXCOORD_0 : gltf.json.accessors[attributeMap.TEXCOORD_0];
         mesh.texcoordArray.reserve(texcoordAccessor.count);
         const texcoordArrayBuffer = getBufferData(gltf, texcoordAccessor);
         for (let i = 0;  i < texcoordAccessor.count; i++) {

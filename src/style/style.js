@@ -28,6 +28,7 @@ import {
     validateFilter,
     validateTerrain,
     validateLights,
+    validateModels,
     emitValidationErrors as _emitValidationErrors
 } from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
@@ -92,6 +93,7 @@ import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {Source} from '../source/source.js';
 import type {TransitionParameters} from './properties.js';
+import ModelManager from '../../3d-style/render/model_manager.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -143,6 +145,7 @@ class Style extends Evented {
     stylesheet: StyleSpecification;
     dispatcher: Dispatcher;
     imageManager: ImageManager;
+    modelManager: ?ModelManager;
     glyphManager: GlyphManager;
     light: Light;
     terrain: ?Terrain;
@@ -348,6 +351,11 @@ class Style extends Evented {
         if (this.stylesheet.lights) {
             this.setLights(this.stylesheet.lights);
         }
+        if (!this.stylesheet.models || (this.stylesheet.models instanceof Object && Object.keys(this.stylesheet.models).length === 0) || this._validate(validateModels, 'models', this.stylesheet.models)) {
+            this.modelManager = undefined;
+        } else {
+            this.modelManager = new ModelManager(this.stylesheet.models, this.map._requestManager);
+        }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
@@ -450,6 +458,9 @@ class Style extends Evented {
                 return false;
 
         if (!this.imageManager.isLoaded())
+            return false;
+
+        if (this.modelManager && !this.modelManager.isLoaded())
             return false;
 
         return true;

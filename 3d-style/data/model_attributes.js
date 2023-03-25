@@ -23,4 +23,11 @@ export const normalAttributes: StructArrayLayout = createLayout([
     {name: 'a_normal_3f',  components: 3, type: 'Float32'}
 ]);
 
+export const instanceAttributes: StructArrayLayout = createLayout([
+    {name: 'a_normal_matrix0',  components: 4, type: 'Float32'},
+    {name: 'a_normal_matrix1',  components: 4, type: 'Float32'},
+    {name: 'a_normal_matrix2',  components: 4, type: 'Float32'},
+    {name: 'a_normal_matrix3',  components: 4, type: 'Float32'}
+]);
+
 export const {members, size, alignment} = modelAttributes;
