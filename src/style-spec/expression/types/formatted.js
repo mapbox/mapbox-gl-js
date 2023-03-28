@@ -33,7 +33,7 @@ export default class Formatted {
     isEmpty(): boolean {
         if (this.sections.length === 0) return true;
         return !this.sections.some(section => section.text.length !== 0 ||
-                                             (section.image && section.image.name.length !== 0));
+                                             (section.image && section.image.namePrimary.length !== 0));
     }
 
     static factory(text: Formatted | string): Formatted {
@@ -53,7 +53,7 @@ export default class Formatted {
         const serialized: Array<mixed> = ["format"];
         for (const section of this.sections) {
             if (section.image) {
-                serialized.push(["image", section.image.name]);
+                serialized.push(["image", section.image.namePrimary]);
                 continue;
             }
             serialized.push(section.text);

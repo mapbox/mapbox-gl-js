@@ -21,8 +21,8 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"name":"monument-15","available":true},
-      {"name": "foo", "available": false}
+      {"namePrimary":"monument-15","available":true},
+      {"namePrimary": "foo", "available": false}
     ],
     "serialized": [
       "coalesce",

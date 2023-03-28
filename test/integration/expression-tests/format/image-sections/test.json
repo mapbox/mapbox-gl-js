@@ -22,14 +22,14 @@
         "sections": [
           {
             "text": "",
-            "image": {"name": "monument-15", "available": true},
+            "image": {"namePrimary": "monument-15", "available": true},
             "scale": null,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "",
-            "image": {"name": "beach-11", "available": false},
+            "image": {"namePrimary": "beach-11", "available": false},
             "scale": null,
             "fontStack": null,
             "textColor": null

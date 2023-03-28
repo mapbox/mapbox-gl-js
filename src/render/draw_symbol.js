@@ -380,6 +380,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
         const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
         const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
         const invMatrix = bucket.getProjection().createInversionMatrix(tr, coord.canonical);
+        const transitionProgress = layer.paint.get('icon-image-cross-fade').constantOr(0.0);
 
         const baseDefines = ([]: any);
         if (painter.terrainRenderModeElevated() && pitchWithMap) {
@@ -390,6 +391,9 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
         }
         if (projectedPosOnLabelSpace) {
             baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+        }
+        if (transitionProgress > 0.0) {
+            baseDefines.push('ICON_TRANSITION');
         }
 
         const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
@@ -405,7 +409,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
             }
         } else {
             uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), transitionProgress);
         }
 
         const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, baseDefines);
@@ -482,7 +486,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolSDFUniformsType>) {
     const context = painter.context;
     const gl = context.gl;
-    const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer];
+    const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer];
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,

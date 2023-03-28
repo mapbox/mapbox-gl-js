@@ -159,11 +159,6 @@ const skip = [
     // terrain model tests are flaky in CI
     "render-tests/model-layer/fill-extrusion--default-terrain-opacity",
     "render-tests/model-layer/fill-extrusion--default-terrain",
-
-    // icon-image-cross-fade not supported in -js
-    "render-tests/measure-light/global-brightness-icon-image-fade",
-    "render-tests/measure-light/global-brightness-icon-image-switch-dark",
-    "render-tests/measure-light/global-brightness-icon-image-switch-light",
 ];
 
 export default {todo, skip};

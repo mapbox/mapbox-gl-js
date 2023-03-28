@@ -17,6 +17,13 @@ import {warnOnce} from '../util/util.js';
 
 type Size = {| fixed: number, stretch: number |};
 
+export type TextureCoordinate = {
+    x: number,
+    y: number,
+    w: number,
+    h: number
+};
+
 /**
  * A textured quad for rendering a single icon or glyph.
  *
@@ -26,7 +33,8 @@ type Size = {| fixed: number, stretch: number |};
  * @param tr The offset of the top right corner from the anchor.
  * @param bl The offset of the bottom left corner from the anchor.
  * @param br The offset of the bottom right corner from the anchor.
- * @param tex The texture coordinates.
+ * @param texPrimary The texture coordinates of the primary image.
+ * @param texSecondary The texture coordinates of an optional secondary image.
  *
  * @private
  */
@@ -35,12 +43,8 @@ export type SymbolQuad = {
     tr: Point,
     bl: Point,
     br: Point,
-    tex: {
-        x: number,
-        y: number,
-        w: number,
-        h: number
-    },
+    texPrimary: TextureCoordinate,
+    texSecondary: ?TextureCoordinate,
     pixelOffsetTL: Point,
     pixelOffsetBR: Point,
     writingMode: any | void,
@@ -67,7 +71,7 @@ export function getIconQuads(
                       hasIconTextFit: boolean): Array<SymbolQuad> {
     const quads = [];
 
-    const image = shapedIcon.image;
+    const image = shapedIcon.imagePrimary;
     const pixelRatio = image.pixelRatio;
     const imageWidth = image.paddedRect.w - 2 * border;
     const imageHeight = image.paddedRect.h - 2 * border;
@@ -151,11 +155,19 @@ export function getIconQuads(
             h: y2 - y1
         };
 
+        const imageSecondary = shapedIcon.imageSecondary;
+        const subRectB = imageSecondary ? {
+            x: imageSecondary.paddedRect.x + border + x1,
+            y: imageSecondary.paddedRect.y + border + y1,
+            w: x2 - x1,
+            h: y2 - y1
+        } : undefined;
+
         const minFontScaleX = fixedContentWidth / pixelRatio / iconWidth;
         const minFontScaleY = fixedContentHeight / pixelRatio / iconHeight;
 
         // Icon quad is padded, so texture coordinates also need to be padded.
-        return {tl, tr, bl, br, tex: subRect, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
+        return {tl, tr, bl, br, texPrimary: subRect, texSecondary: subRectB, writingMode: undefined, glyphOffset: [0, 0], sectionIndex: 0, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, isSDF: isSDFIcon};
     };
 
     if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
@@ -431,7 +443,7 @@ export function getGlyphQuads(anchor: Anchor,
             const pixelOffsetBR = new Point(0, 0);
             const minFontScaleX = 0;
             const minFontScaleY = 0;
-            quads.push({tl, tr, bl, br, tex: textureRect, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
+            quads.push({tl, tr, bl, br, texPrimary: textureRect, texSecondary: undefined, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
         }
     }
 

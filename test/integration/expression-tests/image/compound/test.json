@@ -19,7 +19,7 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"name":"monument-15","available":true}
+      {"namePrimary":"monument-15","available":true}
     ],
     "serialized": [
         "image",

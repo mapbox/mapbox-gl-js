@@ -5,7 +5,8 @@ import {symbolLayoutAttributes,
     collisionVertexAttributes,
     collisionVertexAttributesExt,
     collisionBoxLayout,
-    dynamicLayoutAttributes
+    dynamicLayoutAttributes,
+    iconTransitioningAttributes
 } from './symbol_attributes.js';
 
 import {SymbolLayoutArray,
@@ -18,7 +19,8 @@ import {SymbolLayoutArray,
     PlacedSymbolArray,
     SymbolInstanceArray,
     GlyphOffsetArray,
-    SymbolLineVertexArray
+    SymbolLineVertexArray,
+    SymbolIconTransitioningArray
 } from '../array_types.js';
 
 import ONE_EM from '../../symbol/one_em.js';
@@ -155,6 +157,10 @@ function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: n
     );
 }
 
+function addTransitioningVertex(array, tx, ty) {
+    array.emplaceBack(tx, ty);
+}
+
 function addGlobeVertex(array: SymbolGlobeExtArray, projAnchorX: number, projAnchorY: number, projAnchorZ: number, normX: number, normY: number, normZ: number) {
     array.emplaceBack(
         // a_globe_anchor
@@ -209,8 +215,11 @@ export class SymbolBuffers {
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
 
+    iconTransitioningVertexArray: SymbolIconTransitioningArray;
+    iconTransitioningVertexBuffer: ?VertexBuffer;
+
     globeExtVertexArray: SymbolGlobeExtArray;
-    globeExtVertexBuffer: VertexBuffer;
+    globeExtVertexBuffer: ?VertexBuffer;
 
     placedSymbolArray: PlacedSymbolArray;
 
@@ -222,6 +231,7 @@ export class SymbolBuffers {
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
         this.placedSymbolArray = new PlacedSymbolArray();
+        this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
     }
 
@@ -229,7 +239,8 @@ export class SymbolBuffers {
         return this.layoutVertexArray.length === 0 &&
             this.indexArray.length === 0 &&
             this.dynamicLayoutVertexArray.length === 0 &&
-            this.opacityVertexArray.length === 0;
+            this.opacityVertexArray.length === 0 &&
+            this.iconTransitioningVertexArray.length === 0;
     }
 
     upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
@@ -242,6 +253,9 @@ export class SymbolBuffers {
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
+            if (this.iconTransitioningVertexArray.length > 0) {
+                this.iconTransitioningVertexBuffer = context.createVertexBuffer(this.iconTransitioningVertexArray, iconTransitioningAttributes.members, true);
+            }
             if (this.globeExtVertexArray.length > 0) {
                 this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
@@ -262,6 +276,9 @@ export class SymbolBuffers {
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
         this.opacityVertexBuffer.destroy();
+        if (this.iconTransitioningVertexBuffer) {
+            this.iconTransitioningVertexBuffer.destroy();
+        }
         if (this.globeExtVertexBuffer) {
             this.globeExtVertexBuffer.destroy();
         }
@@ -587,7 +604,10 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             if (icon) {
-                icons[icon.name] = true;
+                icons[icon.namePrimary] = true;
+                if (icon.nameSecondary) {
+                    icons[icon.nameSecondary] = true;
+                }
             }
 
             if (text) {
@@ -602,7 +622,7 @@ class SymbolBucket implements Bucket {
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
                         // Add section image to the list of dependencies.
-                        icons[section.image.name] = true;
+                        icons[section.image.namePrimary] = true;
                     }
                 }
             }
@@ -696,7 +716,8 @@ class SymbolBucket implements Bucket {
                associatedIconIndex: number,
                availableImages: Array<string>,
                canonical: CanonicalTileID,
-               brightness: ?number) {
+               brightness: ?number,
+               hasAnySecondaryIcon: boolean) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const globeExtVertexArray = arrays.globeExtVertexArray;
@@ -710,14 +731,14 @@ class SymbolBucket implements Bucket {
         const sections = feature.text && feature.text.sections;
 
         for (let i = 0; i < quads.length; i++) {
-            const {tl, tr, bl, br, tex, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, glyphOffset, isSDF, sectionIndex} = quads[i];
+            const {tl, tr, bl, br, texPrimary, texSecondary, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY, glyphOffset, isSDF, sectionIndex} = quads[i];
             const index = segment.vertexLength;
 
             const y = glyphOffset[1];
-            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
-            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tl.x, y + tl.y, texPrimary.x, texPrimary.y, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, tr.x, y + tr.y, texPrimary.x + texPrimary.w, texPrimary.y, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetTL.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, bl.x, y + bl.y, texPrimary.x, texPrimary.y + texPrimary.h, sizeVertex, isSDF, pixelOffsetTL.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
+            addVertex(layoutVertexArray, tileAnchor.x, tileAnchor.y, br.x, y + br.y, texPrimary.x + texPrimary.w, texPrimary.y + texPrimary.h, sizeVertex, isSDF, pixelOffsetBR.x, pixelOffsetBR.y, minFontScaleX, minFontScaleY);
 
             if (globe) {
                 const {x, y, z} = globe.anchor;
@@ -730,6 +751,16 @@ class SymbolBucket implements Bucket {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, x, y, z, angle);
             } else {
                 addDynamicAttributes(arrays.dynamicLayoutVertexArray, tileAnchor.x, tileAnchor.y, tileAnchor.z, angle);
+            }
+
+            // For data-driven cases if at least of one the icon has a transitionable variant
+            // we have to load the main variant in cases where the secondary image is not specified
+            if (hasAnySecondaryIcon) {
+                const tex = texSecondary ? texSecondary : texPrimary;
+                addTransitioningVertex(arrays.iconTransitioningVertexArray, tex.x, tex.y);
+                addTransitioningVertex(arrays.iconTransitioningVertexArray, tex.x + tex.w, tex.y);
+                addTransitioningVertex(arrays.iconTransitioningVertexArray, tex.x, tex.y + tex.h);
+                addTransitioningVertex(arrays.iconTransitioningVertexArray, tex.x + tex.w, tex.y + tex.h);
             }
 
             indexArray.emplaceBack(index, index + 1, index + 2);
