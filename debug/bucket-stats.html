@@ -80,7 +80,8 @@ function symbolStats(bucketKey, bucket) {
         bucket.dynamicLayoutVertexArray.arrayBuffer.byteLength +
         bucket.layoutVertexArray.arrayBuffer.byteLength +
         bucket.opacityVertexArray.arrayBuffer.byteLength +
-        bucket.placedSymbolArray.arrayBuffer.byteLength;
+        bucket.placedSymbolArray.arrayBuffer.byteLength +
+        bucket.iconTransitioningVertexArray.arrayBuffer.byteLength;
 }
 
 const statsEl = document.getElementById('stats');

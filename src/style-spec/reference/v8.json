@@ -6259,6 +6259,31 @@
       },
       "property-type": "data-constant"
     },
+    "icon-image-cross-fade": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of icon-image. Zero means the first variant is used, one is the second, and in between they are blended together.",
+      "transition": true
+    },
     "text-opacity": {
       "type": "number",
       "doc": "The opacity at which the text will be drawn.",

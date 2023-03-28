@@ -330,6 +330,7 @@ export type SymbolLayerSpecification = {|
         "icon-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
         "icon-translate"?: PropertyValueSpecification<[number, number]>,
         "icon-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "icon-image-cross-fade"?: PropertyValueSpecification<number>,
         "text-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "text-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "text-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,

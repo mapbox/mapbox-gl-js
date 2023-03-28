@@ -150,7 +150,7 @@ test('shaping', (t) => {
 
 test('shapeIcon', (t) => {
     const imagePosition = new ImagePosition({x: 0, y: 0, w: 22, h: 22}, {pixelRatio: 1, version: 1});
-    const image = Object.freeze({
+    const imagePrimary = Object.freeze({
         content: null,
         stretchX: null,
         stretchY: null,
@@ -160,58 +160,64 @@ test('shapeIcon', (t) => {
     });
 
     t.test('text-anchor: center', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'center'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'center'), {
             top: -10,
             bottom: 10,
             left: -10,
             right: 10,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'center'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'center'), {
             top: -3,
             bottom: 17,
             left: -6,
             right: 14,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'with offset');
         t.end();
     });
 
     t.test('text-anchor: left', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'left'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'left'), {
             top: -10,
             bottom: 10,
             left: 0,
             right: 20,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'left'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'left'), {
             top: -3,
             bottom: 17,
             left: 4,
             right: 24,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'with offset');
         t.end();
     });
 
     t.test('text-anchor: bottom-right', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 0, 0 ], 'bottom-right'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'bottom-right'), {
             top: -20,
             bottom: 0,
             left: -20,
             right: 0,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'no offset');
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, [ 4, 7 ], 'bottom-right'), {
+        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'bottom-right'), {
             top: -13,
             bottom: 7,
             left: -16,
             right: 4,
-            image
+            imagePrimary,
+            imageSecondary: undefined
         }, 'with offset');
         t.end();
     });
@@ -227,11 +233,12 @@ test('fitIconToText', (t) => {
         left: -10,
         right: 10,
         collisionPadding: undefined,
-        image: Object.freeze({
+        imagePrimary: Object.freeze({
             pixelRatio: 1,
             displaySize: [ 20, 20 ],
             paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22})
-        })
+        }),
+        imageSecondary: undefined
     });
 
     const shapedText = Object.freeze({
@@ -243,7 +250,8 @@ test('fitIconToText', (t) => {
 
     t.test('icon-text-fit: width', (t) => {
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: 0,
             right: 20,
@@ -252,7 +260,8 @@ test('fitIconToText', (t) => {
         }, 'preserves icon height, centers vertically');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: 7,
             right: 23,
@@ -261,7 +270,8 @@ test('fitIconToText', (t) => {
         }, 'preserves icon height, centers vertically, applies offset');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -5,
             right: 10,
@@ -271,7 +281,8 @@ test('fitIconToText', (t) => {
 
         // Ignores padding for top/bottom, since the icon is only stretched to the text's width but not height
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -5,
             right: 20,
@@ -284,7 +295,8 @@ test('fitIconToText', (t) => {
 
     t.test('icon-text-fit: height', (t) => {
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -10,
             right: -10,
@@ -293,7 +305,8 @@ test('fitIconToText', (t) => {
         }, 'preserves icon width, centers horizontally');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -3,
             right: -7,
@@ -302,7 +315,8 @@ test('fitIconToText', (t) => {
         }, 'preserves icon width, centers horizontally, applies offset');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -5,
             right: 0,
@@ -312,7 +326,8 @@ test('fitIconToText', (t) => {
 
         // Ignores padding for left/right, since the icon is only stretched to the text's height but not width
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -10,
             right: 0,
@@ -325,7 +340,8 @@ test('fitIconToText', (t) => {
 
     t.test('icon-text-fit: both', (t) => {
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -10,
             right: 20,
@@ -334,7 +350,8 @@ test('fitIconToText', (t) => {
         }, 'stretches icon to text width and height');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -3,
             right: 23,
@@ -343,7 +360,8 @@ test('fitIconToText', (t) => {
         }, 'stretches icon to text width and height, applies offset');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -5,
             right: 10,
@@ -352,7 +370,8 @@ test('fitIconToText', (t) => {
         }, 'stretches icon to text width and height, adjusts for textSize');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -10,
             right: 20,
@@ -361,7 +380,8 @@ test('fitIconToText', (t) => {
         }, 'stretches icon to text width and height, adjusts for textSize, includes padding');
 
         t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 0, 5, 10, 15 ], [0, 0], 12 / glyphSize), {
-            image: shapedIcon.image,
+            imagePrimary: shapedIcon.imagePrimary,
+            imageSecondary: undefined,
             collisionPadding: undefined,
             top: -5,
             right: 15,

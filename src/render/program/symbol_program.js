@@ -42,7 +42,8 @@ export type SymbolIconUniformsType = {|
     'u_tile_matrix': UniformMatrix4f,
     'u_up_vector': Uniform3f,
     'u_ecef_origin': Uniform3f,
-    'u_texture': Uniform1i
+    'u_texture': Uniform1i,
+    'u_icon_transition': Uniform1f
 |};
 
 export type SymbolSDFUniformsType = {|
@@ -122,7 +123,8 @@ const symbolIconUniforms = (context: Context): SymbolIconUniformsType => ({
     'u_tile_matrix': new UniformMatrix4f(context),
     'u_up_vector': new Uniform3f(context),
     'u_ecef_origin': new Uniform3f(context),
-    'u_texture': new Uniform1i(context)
+    'u_texture': new Uniform1i(context),
+    'u_icon_transition': new Uniform1f(context)
 });
 
 const symbolSDFUniforms = (context: Context): SymbolSDFUniformsType => ({
@@ -195,7 +197,8 @@ const symbolIconUniformValues = (
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
     upVector: [number, number, number],
-    projection: Projection
+    projection: Projection,
+    transition: ?number
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
 
@@ -222,7 +225,8 @@ const symbolIconUniformValues = (
         'u_camera_forward': [0, 0, 0],
         'u_ecef_origin': [0, 0, 0],
         'u_tile_matrix': identityMatrix,
-        'u_up_vector': [0, -1, 0]
+        'u_up_vector': [0, -1, 0],
+        'u_icon_transition': transition ? transition : 0.0
     };
 
     if (projection.name === 'globe') {
@@ -263,7 +267,8 @@ const symbolSDFUniformValues = (
         texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_gamma_scale': pitchWithMap ? painter.transform.cameraToCenterDistance * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_is_halo': +isHalo
+        'u_is_halo': +isHalo,
+        undefined
     });
 };
 

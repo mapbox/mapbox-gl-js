@@ -2,7 +2,7 @@ import {test} from '../../util/test.js';
 import {getIconQuads} from '../../../src/symbol/quads.js';
 
 test('getIconQuads', (t) => {
-    const image = Object.freeze({
+    const imagePrimary = Object.freeze({
         pixelRatio: 1,
         displaySize: Object.freeze([ 15, 11 ]),
         paddedRect: Object.freeze({x: 0, y: 0, w: 17, h: 13})
@@ -14,13 +14,14 @@ test('getIconQuads', (t) => {
             right: 7.5,
             bottom: 5.5,
             left: -7.5,
-            image
+            imagePrimary
         }, 0, true), [{
             tl: {x: -8.5, y: -6.5},
             tr: {x: 8.5, y: -6.5},
             bl: {x: -8.5, y: 6.5},
             br: {x: 8.5, y: 6.5},
-            tex: {x: 0, y: 0, w: 17, h: 13},
+            texPrimary: {x: 0, y: 0, w: 17, h: 13},
+            texSecondary: undefined,
             writingMode: null,
             glyphOffset: [0, 0],
             isSDF: true,
@@ -42,13 +43,14 @@ test('getIconQuads', (t) => {
             right: 15,
             bottom: 11,
             left: -15,
-            image
+            imagePrimary
         }, 0, false), [{
             tl: {x: -17, y: -13},
             tr: {x: 17, y: -13},
             bl: {x: -17, y: 13},
             br: {x: 17, y: 13},
-            tex: {x: 0, y: 0, w: 17, h: 13},
+            texPrimary: {x: 0, y: 0, w: 17, h: 13},
+            texSecondary: undefined,
             writingMode: null,
             glyphOffset: [0, 0],
             isSDF: false,
@@ -70,13 +72,14 @@ test('getIconQuads', (t) => {
             right: 0,
             bottom: 11,
             left: -15,
-            image
+            imagePrimary
         }, 0, false), [{
             tl: {x: -16, y: -1},
             tr: {x: 1, y: -1},
             bl: {x: -16, y: 12},
             br: {x: 1, y: 12},
-            tex: {x: 0, y: 0, w: 17, h: 13},
+            texPrimary: {x: 0, y: 0, w: 17, h: 13},
+            texSecondary: undefined,
             writingMode: null,
             glyphOffset: [0, 0],
             isSDF: false,
@@ -98,13 +101,14 @@ test('getIconQuads', (t) => {
             right: 30,
             bottom: 5.5,
             left: -30,
-            image
+            imagePrimary
         }, 0, false), [{
             tl: {x: -34, y: -6.5},
             tr: {x: 34, y: -6.5},
             bl: {x: -34, y: 6.5},
             br: {x: 34, y: 6.5},
-            tex: {x: 0, y: 0, w: 17, h: 13},
+            texPrimary: {x: 0, y: 0, w: 17, h: 13},
+            texSecondary: undefined,
             writingMode: null,
             glyphOffset: [0, 0],
             isSDF: false,
@@ -130,13 +134,14 @@ test('getIconQuads', (t) => {
             right: 7.5,
             bottom: 5.5,
             left: -7.5,
-            image
+            imagePrimary
         }, 0, false), [{
             tl: {x: -8.5, y: -6.5},
             tr: {x: 8.5, y: -6.5},
             bl: {x: -8.5, y: 6.5},
             br: {x: 8.5, y: 6.5},
-            tex: {x: 0, y: 0, w: 17, h: 13},
+            texPrimary: {x: 0, y: 0, w: 17, h: 13},
+            texSecondary: undefined,
             writingMode: null,
             glyphOffset: [0, 0],
             isSDF: false,

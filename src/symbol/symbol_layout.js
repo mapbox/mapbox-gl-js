@@ -189,6 +189,14 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const textSize = layout.get('text-size');
 
+    let hasAnySecondaryIcon = false;
+    for (const feature of bucket.features) {
+        if (feature.icon && feature.icon.nameSecondary) {
+            hasAnySecondaryIcon = true;
+            break;
+        }
+    }
+
     for (const feature of bucket.features) {
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
         const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical);
@@ -287,11 +295,12 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         let shapedIcon;
         let isSDFIcon = false;
-        if (feature.icon && feature.icon.name) {
-            const image = imageMap[feature.icon.name];
+        if (feature.icon && feature.icon.namePrimary) {
+            const image = imageMap[feature.icon.namePrimary];
             if (image) {
                 shapedIcon = shapeIcon(
-                    imagePositions[feature.icon.name],
+                    imagePositions[feature.icon.namePrimary],
+                    feature.icon.nameSecondary ? imagePositions[feature.icon.nameSecondary] : undefined,
                     layout.get('icon-offset').evaluate(feature, {}, canonical),
                     layout.get('icon-anchor').evaluate(feature, {}, canonical));
                 isSDFIcon = image.sdf;
@@ -313,7 +322,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             bucket.iconsInText = shapedText ? shapedText.iconsInText : false;
         }
         if (shapedText || shapedIcon) {
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection, brightness);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection, brightness, hasAnySecondaryIcon);
         }
     }
 
@@ -371,7 +380,8 @@ function addFeature(bucket: SymbolBucket,
                     availableImages: Array<string>,
                     canonical: CanonicalTileID,
                     projection: Projection,
-                    brightness: ?number) {
+                    brightness: ?number,
+                    hasAnySecondaryIcon: boolean) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
@@ -434,7 +444,7 @@ function addFeature(bucket: SymbolBucket,
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, availableImages, canonical, brightness);
+            feature, sizes, isSDFIcon, availableImages, canonical, brightness, hasAnySecondaryIcon);
     };
 
     if (symbolPlacement === 'line') {
@@ -554,7 +564,8 @@ function addTextVertices(bucket: SymbolBucket,
         placedIconIndex,
         availableImages,
         canonical,
-        brightness);
+        brightness,
+        false);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
@@ -676,7 +687,8 @@ function addSymbol(bucket: SymbolBucket,
                    isSDFIcon: boolean,
                    availableImages: Array<string>,
                    canonical: CanonicalTileID,
-                   brightness: ?number) {
+                   brightness: ?number,
+                   hasAnySecondaryIcon: boolean) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
@@ -766,7 +778,8 @@ function addSymbol(bucket: SymbolBucket,
             -1,
             availableImages,
             canonical,
-            brightness);
+            brightness,
+            hasAnySecondaryIcon);
 
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
 
@@ -789,7 +802,8 @@ function addSymbol(bucket: SymbolBucket,
                 -1,
                 availableImages,
                 canonical,
-                brightness);
+                brightness,
+                hasAnySecondaryIcon);
 
             verticalPlacedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
         }

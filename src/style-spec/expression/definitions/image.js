@@ -10,35 +10,51 @@ import type {Type} from '../types.js';
 
 export default class ImageExpression implements Expression {
     type: Type;
-    input: Expression;
+    inputPrimary: Expression;
+    inputSecondary: ?Expression;
 
-    constructor(input: Expression) {
+    constructor(inputPrimary: Expression, inputSecondary: ?Expression) {
         this.type = ResolvedImageType;
-        this.input = input;
+        this.inputPrimary = inputPrimary;
+        this.inputSecondary = inputSecondary;
     }
 
     static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
-        if (args.length !== 2) {
-            return context.error(`Expected two arguments.`);
+        if (args.length < 2) {
+            return context.error(`Expected two or more arguments.`);
         }
 
-        const name = context.parse(args[1], 1, StringType);
-        if (!name) return context.error(`No image name provided.`);
+        const namePrimary = context.parse(args[1], 1, StringType);
+        if (!namePrimary) return context.error(`No image name provided.`);
 
-        return new ImageExpression(name);
+        if (args.length === 2) {
+            return new ImageExpression(namePrimary);
+        }
+
+        const nameSecondary = context.parse(args[2], 1, StringType);
+        if (!nameSecondary) return context.error(`Secondary image variant is not a string.`);
+
+        return new ImageExpression(namePrimary, nameSecondary);
     }
 
     evaluate(ctx: EvaluationContext): null | ResolvedImage {
-        const evaluatedImageName = this.input.evaluate(ctx);
-
-        const value = ResolvedImage.fromString(evaluatedImageName);
-        if (value && ctx.availableImages) value.available = ctx.availableImages.indexOf(evaluatedImageName) > -1;
+        const value = ResolvedImage.fromString(this.inputPrimary.evaluate(ctx), this.inputSecondary ? this.inputSecondary.evaluate(ctx) : undefined);
+        if (value && ctx.availableImages) {
+            value.available = ctx.availableImages.indexOf(value.namePrimary) > -1;
+            // If there's a secondary variant, only mark it available if both are present
+            if (value.nameSecondary && value.available && ctx.availableImages) {
+                value.available = ctx.availableImages.indexOf(value.nameSecondary) > -1;
+            }
+        }
 
         return value;
     }
 
     eachChild(fn: (_: Expression) => void) {
-        fn(this.input);
+        fn(this.inputPrimary);
+        if (this.inputSecondary) {
+            fn(this.inputSecondary);
+        }
     }
 
     outputDefined(): boolean {
@@ -47,6 +63,10 @@ export default class ImageExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
-        return ["image", this.input.serialize()];
+        if (this.inputSecondary) {
+            // $FlowIgnore
+            return ["image", this.inputPrimary.serialize(), this.inputSecondary.serialize()];
+        }
+        return ["image", this.inputPrimary.serialize()];
     }
 }

@@ -92,27 +92,27 @@ window.onload = function() {
         updateLights(value);
     });
     var directionalLightAltitude = lights.add(demo3d, 'directionalLightAltitude', 0.0, 90.0);
-    directionalLightAltitude.onFinishChange((value) => {
+    directionalLightAltitude.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var directionalLightAzimuth = lights.add(demo3d, 'directionalLightAzimuth', 0.0, 360.0);
-    directionalLightAzimuth.onFinishChange((value) => {
+    directionalLightAzimuth.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var directionalLightIntensity = lights.add(demo3d, 'directionalLightIntensity', 0.0, 1.0);
-    directionalLightIntensity.onFinishChange((value) => {
+    directionalLightIntensity.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var directionalLightColor = lights.addColor(demo3d, 'directionalLightColor');
-    directionalLightColor.onFinishChange((value) => {
+    directionalLightColor.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var ambientLightIntensity = lights.add(demo3d, 'ambientLightIntensity', 0.0, 1.0);
-    ambientLightIntensity.onFinishChange((value) => {
+    ambientLightIntensity.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
     var ambientLightColor = lights.addColor(demo3d, 'ambientLightColor');
-    ambientLightColor.onFinishChange((value) => {
+    ambientLightColor.onChange((value) => {
         updateLights(demo3d.enable3dLights);
     });
 
@@ -296,6 +296,47 @@ map.on('style.load', function() {
                     1.0
                 ]
             }
+        });
+        map.addLayer({
+            "id": "icon-variant-label-demo",
+            "layout": {
+                "icon-image": [
+                    "case",
+                    [">", ["get", "sizerank"], 14],
+                    [
+                        "image",
+                        "rectangle-yellow-2",
+                        "rectangle-red-2"
+                    ],
+                    "rectangle-green-2"
+                ],
+                "text-field":  [
+                    "get",
+                    "sizerank"
+                ],
+                "text-size": 8
+            },
+            "paint": {
+                "icon-image-cross-fade": [
+                    "interpolate",
+                    ["linear"],
+                    ["measure-light", "brightness"],
+                    0.45,
+                    0.0,
+                    0.5,
+                    1.0
+                ],
+                "text-color": [
+                    "case",
+                    ["<",
+                        ["measure-light", "brightness"], 0.5],
+                    "black",
+                    "white"
+                ]
+            },
+            "source": "composite",
+            "source-layer": "poi_label",
+            "type": "symbol"
         });
     });
 });

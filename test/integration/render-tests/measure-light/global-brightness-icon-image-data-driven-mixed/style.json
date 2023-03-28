@@ -15,7 +15,7 @@
               "type": "ambient",
               "id": "environment",
               "properties": {
-                "intensity": 0.5
+                "intensity": 0.2
               }
             },
             {
@@ -23,7 +23,7 @@
               "id": "sun_light",
               "properties": {
                 "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-                "intensity": 0.8,
+                "intensity": 0.4,
                 "direction": [
                   200.0,
                   30.0
@@ -49,10 +49,25 @@
         "features": [
           {
             "type": "Feature",
-            "properties": {},
+            "properties": {
+              "sample": 2
+            },
             "geometry": {
               "coordinates": [
                 -113.2935,
+                35.9529
+              ],
+              "type": "Point"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sample": 1
+            },
+            "geometry": {
+              "coordinates": [
+                -113.2735,
                 35.9529
               ],
               "type": "Point"
@@ -68,10 +83,12 @@
         "features": [
           {
             "type": "Feature",
-            "properties": {},
+            "properties": {
+              "sample": 0
+            },
             "geometry": {
               "coordinates": [
-                -113.2735,
+                -113.3135,
                 35.9529
               ],
               "type": "Point"
@@ -119,29 +136,29 @@
       "symbol-placement": "point",
       "layout": {
         "icon-image": [
-          "image",
-          "triangle-stroked-12",
-          "building-12"
+          "case",
+          ["<", ["get", "sample"], 2],
+          [
+            "image",
+            "triangle-stroked-12",
+            "building-12"
+          ],
+          "circle-stroked-12"
         ]
       },
       "paint": {
         "icon-image-cross-fade": [
-          "case",
+          "+",
+          0.3,
           [
-            "<",
-            [
-              "measure-light",
-              "brightness"
-            ],
-            0.5
-          ],
-          0.0,
-          1.0
+            "measure-light",
+            "brightness"
+          ]
         ]
       }
     },
     {
-      "id": "sample-symbol-calculate-b",
+      "id": "sample-symbol-calculate-c",
       "type": "symbol",
       "source": "sample-point-b",
       "symbol-placement": "point",
@@ -154,17 +171,12 @@
       },
       "paint": {
         "icon-image-cross-fade": [
-          "case",
+          "+",
+          0.6,
           [
-            ">",
-            [
-              "measure-light",
-              "brightness"
-            ],
-            0.5
-          ],
-          0.0,
-          1.0
+            "measure-light",
+            "brightness"
+          ]
         ]
       }
     }

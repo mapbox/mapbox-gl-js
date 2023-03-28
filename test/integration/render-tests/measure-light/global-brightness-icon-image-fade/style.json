@@ -42,13 +42,6 @@
   "zoom": 11.2,
   "pitch": 80,
   "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
-    },
     "sample-point-a": {
       "type": "geojson",
       "data": {
@@ -139,66 +132,69 @@
       }
     },
     {
-      "id": "land",
-      "type": "fill",
-      "source": "mapbox",
-      "source-layer": "water",
-      "paint": {
-        "fill-color": "#3399ff"
-      }
-    },
-    {
       "id": "sample-symbol-calculate-a",
       "type": "symbol",
       "source": "sample-point-a",
       "symbol-placement": "point",
-      "icon-image": [
-        "image",
-        "triangle-stroked-12",
-        "building-12"
-      ],
-      "icon-image-cross-fade": [
-        "measure-light",
-        "brightness"
-      ]
+      "layout": {
+        "icon-image": [
+          "image",
+          "triangle-stroked-12",
+          "building-12"
+        ]
+      },
+      "paint": {
+        "icon-image-cross-fade": [
+          "measure-light",
+          "brightness"
+        ]
+      }
     },
     {
       "id": "sample-symbol-calculate-b",
       "type": "symbol",
       "source": "sample-point-b",
       "symbol-placement": "point",
-      "icon-image": [
-        "image",
-        "triangle-stroked-12",
-        "building-12"
-      ],
-      "icon-image-cross-fade": [
-        "+",
-        0.3,
-        [
-          "measure-light",
-          "brightness"
+      "layout": {
+        "icon-image": [
+          "image",
+          "triangle-stroked-12",
+          "building-12"
         ]
-      ]
+      },
+      "paint": {
+        "icon-image-cross-fade": [
+          "+",
+          0.3,
+          [
+            "measure-light",
+            "brightness"
+          ]
+        ]
+      }
     },
     {
       "id": "sample-symbol-calculate-c",
       "type": "symbol",
       "source": "sample-point-c",
       "symbol-placement": "point",
-      "icon-image": [
-        "image",
-        "triangle-stroked-12",
-        "building-12"
-      ],
-      "icon-image-cross-fade": [
-        "+",
-        0.6,
-        [
-          "measure-light",
-          "brightness"
+      "layout": {
+        "icon-image": [
+          "image",
+          "triangle-stroked-12",
+          "building-12"
         ]
-      ]
+      },
+      "paint": {
+        "icon-image-cross-fade": [
+          "+",
+          0.6,
+          [
+            "measure-light",
+            "brightness"
+          ]
+        ]
+      }
     }
   ]
 }
