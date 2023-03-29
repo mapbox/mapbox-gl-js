@@ -4,6 +4,8 @@ uniform sampler2D u_image;
 
 varying vec2 v_pos;
 
+uniform float u_emissive_strength;
+
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
 
@@ -19,7 +21,7 @@ void main() {
     vec4 out_color = texture2D(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color);
+    out_color = apply_lighting_with_emission(out_color, u_emissive_strength);
 #endif
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));

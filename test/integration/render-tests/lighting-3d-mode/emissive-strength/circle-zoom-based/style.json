@@ -1,0 +1,107 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 256
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 5,
+  "pitch": 60,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.5
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.5
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "green"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "blue"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                60
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "red"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -60
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circles",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 40,
+        "circle-color": [
+          "get",
+          "color"
+        ],
+        "circle-pitch-scale": "map",
+        "circle-pitch-alignment": "map",
+        "circle-emissive-strength": [
+          "interpolate",
+        ["linear"],
+        ["zoom"],
+        0,
+        1,
+        4,
+        0.5
+      ]
+      }
+    }
+  ]
+}

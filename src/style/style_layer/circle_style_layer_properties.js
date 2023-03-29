@@ -37,6 +37,7 @@ export type PaintProps = {|
     "circle-stroke-width": DataDrivenProperty<number>,
     "circle-stroke-color": DataDrivenProperty<Color>,
     "circle-stroke-opacity": DataDrivenProperty<number>,
+    "circle-emissive-strength": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -51,6 +52,7 @@ const paint: Properties<PaintProps> = new Properties({
     "circle-stroke-width": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-width"]),
     "circle-stroke-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-color"]),
     "circle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-opacity"]),
+    "circle-emissive-strength": new DataConstantProperty(styleSpec["paint_circle"]["circle-emissive-strength"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

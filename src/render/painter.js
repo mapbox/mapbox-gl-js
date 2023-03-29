@@ -957,16 +957,13 @@ class Painter {
         const defines = [];
 
         if (this.style && this.style.enable3dLights()) {
-            // The following check is equivalent to emissive strength default of 1
-            // for paint_symbol internal property in gl-native, to be removed once
-            // https://mapbox.atlassian.net/browse/MAPS3D-697 is addressed.
             // Additionally lighting was moved to a later stage in draped rendering in
             // https://mapbox.atlassian.net/browse/MAPS3D-569.
-            if (!name.startsWith('symbol') && name !== 'globeRaster' && name !== 'terrainRaster') {
+            if (name !== 'globeRaster' && name !== 'terrainRaster') {
                 defines.push('LIGHTING_3D_MODE');
-                defines.push('LIGHTING_3D_MODE_NO_EMISSION');
             }
         }
+
         if (this.renderPass === 'shadow') {
             if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
         } else if (this.shadowRenderer) {

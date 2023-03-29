@@ -611,6 +611,8 @@ const attributeNameExceptions = {
     'icon-opacity': ['opacity'],
     'text-color': ['fill_color'],
     'icon-color': ['fill_color'],
+    'text-emissive-strength': ['emissive_strength'],
+    'icon-emissive-strength': ['emissive_strength'],
     'text-halo-color': ['halo_color'],
     'icon-halo-color': ['halo_color'],
     'text-halo-blur': ['halo_blur'],

@@ -228,6 +228,7 @@ export type FillLayerSpecification = {|
     "paint"?: {|
         "fill-antialias"?: PropertyValueSpecification<boolean>,
         "fill-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-emissive-strength"?: PropertyValueSpecification<number>,
         "fill-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-outline-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-translate"?: PropertyValueSpecification<[number, number]>,
@@ -255,6 +256,7 @@ export type LineLayerSpecification = {|
     |},
     "paint"?: {|
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "line-emissive-strength"?: PropertyValueSpecification<number>,
         "line-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "line-translate"?: PropertyValueSpecification<[number, number]>,
         "line-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
@@ -325,6 +327,8 @@ export type SymbolLayerSpecification = {|
     "paint"?: {|
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "icon-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "icon-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
+        "text-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "icon-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "icon-halo-width"?: DataDrivenPropertyValueSpecification<number>,
         "icon-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
@@ -357,6 +361,7 @@ export type CircleLayerSpecification = {|
     "paint"?: {|
         "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
         "circle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "circle-emissive-strength"?: PropertyValueSpecification<number>,
         "circle-blur"?: DataDrivenPropertyValueSpecification<number>,
         "circle-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "circle-translate"?: PropertyValueSpecification<[number, number]>,
