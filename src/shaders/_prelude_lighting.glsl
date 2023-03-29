@@ -44,20 +44,8 @@ float calculate_NdotL(vec3 normal) {
     return (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
 }
 
-#ifdef LIGHTING_3D_MODE_NO_EMISSION
-
-// Note: To be removed once emission is supported in GL-JS
-// - https://mapbox.atlassian.net/browse/MAPS3D-697
-vec4 apply_lighting_with_emission(vec4 color, float emissive_strength) {
-    return apply_lighting(color);
-}
-
-#else
-
 vec4 apply_lighting_with_emission(vec4 color, float emissive_strength) {
     return mix(apply_lighting(color), color, emissive_strength);
 }
-
-#endif
 
 #endif

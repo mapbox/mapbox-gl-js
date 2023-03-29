@@ -18,7 +18,7 @@
       "id": "test_ambient",
       "properties": {
         "color": "rgba(0, 0, 0, 1)",
-        "intensity": 0.5
+        "intensity": 0.0
       }
     },
     {
@@ -26,12 +26,12 @@
       "id": "test_directional",
       "properties": {
         "color": "rgba(0, 0, 0, 1)",
-        "intensity": 0.5
+        "intensity": 0.0
       }
     }
   ],
   "sources": {
-    "geojson": {
+    "geojson1": {
       "type": "geojson",
       "data": {
         "type": "FeatureCollection",
@@ -39,8 +39,7 @@
           {
             "type": "Feature",
             "properties": {
-              "color": "green",
-              "emissive-strength": 0.0
+              "color": "green"
             },
             "geometry": {
               "type": "Point",
@@ -49,32 +48,25 @@
                 0
               ]
             }
-          },
+          }
+        ]
+      }
+    },
+    "geojson2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
           {
             "type": "Feature",
             "properties": {
-              "color": "blue",
-              "emissive-strength": 0.5
+              "color": "blue"
             },
             "geometry": {
               "type": "Point",
               "coordinates": [
                 0,
                 60
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "color": "red",
-              "emissive-strength": 1.0
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                0,
-                -60
               ]
             }
           }
@@ -84,9 +76,9 @@
   },
   "layers": [
     {
-      "id": "circles",
+      "id": "circles1",
       "type": "circle",
-      "source": "geojson",
+      "source": "geojson1",
       "paint": {
         "circle-radius": 40,
         "circle-color": [
@@ -96,8 +88,36 @@
         "circle-pitch-scale": "map",
         "circle-pitch-alignment": "map",
         "circle-emissive-strength": [
+          "interpolate",
+          ["linear"],
+          ["measure-light", "brightness"],
+          0.0,
+          1.0,
+          0.5,
+          1.0
+        ]
+      }
+    },
+    {
+      "id": "circles2",
+      "type": "circle",
+      "source": "geojson2",
+      "paint": {
+        "circle-radius": 20,
+        "circle-color": [
           "get",
-          "emissive-strength"
+          "color"
+        ],
+        "circle-pitch-scale": "map",
+        "circle-pitch-alignment": "map",
+        "circle-emissive-strength": [
+          "interpolate",
+          ["linear"],
+          ["measure-light", "brightness"],
+          0.0,
+          0.0,
+          0.5,
+          0.1
         ]
       }
     }

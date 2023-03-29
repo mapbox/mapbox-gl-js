@@ -27,7 +27,8 @@ export type LineUniformsType = {|
     'u_texsize': Uniform2f,
     'u_tile_units_to_pixels': Uniform1f,
     'u_alpha_discard_threshold': Uniform1f,
-    'u_trim_offset': Uniform2f
+    'u_trim_offset': Uniform2f,
+    'u_emissive_strength': Uniform1f
 |};
 
 export type LinePatternUniformsType = {|
@@ -54,7 +55,8 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_texsize': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_alpha_discard_threshold': new Uniform1f(context),
-    'u_trim_offset': new Uniform2f(context)
+    'u_trim_offset': new Uniform2f(context),
+    'u_emissive_strength': new Uniform1f(context)
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -93,7 +95,8 @@ const lineUniformValues = (
         'u_texsize': hasDash(layer) ? tile.lineAtlasTexture.size : [0, 0],
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
-        'u_trim_offset': trimOffset
+        'u_trim_offset': trimOffset,
+        'u_emissive_strength': layer.paint.get('line-emissive-strength')
     };
 };
 

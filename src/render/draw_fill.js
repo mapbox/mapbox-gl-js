@@ -101,19 +101,21 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
+        const emissiveStrength = layer.paint.get('fill-emissive-strength');
+
         if (!isOutline) {
             indexBuffer = bucket.indexBuffer;
             segments = bucket.segments;
             uniformValues = image ?
-                fillPatternUniformValues(tileMatrix, painter, tile) :
-                fillUniformValues(tileMatrix);
+                fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile) :
+                fillUniformValues(tileMatrix, emissiveStrength);
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
             const drawingBufferSize = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                fillOutlinePatternUniformValues(tileMatrix, painter, tile, drawingBufferSize) :
-                fillOutlineUniformValues(tileMatrix, drawingBufferSize);
+                fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize) :
+                fillOutlineUniformValues(tileMatrix, emissiveStrength, drawingBufferSize);
         }
 
         painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());

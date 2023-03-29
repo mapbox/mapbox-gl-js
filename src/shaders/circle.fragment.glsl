@@ -8,7 +8,8 @@ varying float v_visibility;
 #pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
-#pragma mapbox: define lowp float emissive_strength
+
+uniform float u_emissive_strength;
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -18,7 +19,6 @@ void main() {
     #pragma mapbox: initialize highp vec4 stroke_color
     #pragma mapbox: initialize mediump float stroke_width
     #pragma mapbox: initialize lowp float stroke_opacity
-    #pragma mapbox: initialize lowp float emissive_strength
     vec2 extrude = v_data.xy;
     float extrude_length = length(extrude);
 
@@ -36,7 +36,7 @@ void main() {
     vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_with_emission(out_color, emissive_strength);
+    out_color = apply_lighting_with_emission(out_color, u_emissive_strength);
 #endif
 #ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);

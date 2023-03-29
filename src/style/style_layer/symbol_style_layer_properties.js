@@ -111,6 +111,8 @@ const layout: Properties<LayoutProps> = new Properties({
 
 export type PaintProps = {|
     "icon-opacity": DataDrivenProperty<number>,
+    "icon-emissive-strength": DataDrivenProperty<number>,
+    "text-emissive-strength": DataDrivenProperty<number>,
     "icon-color": DataDrivenProperty<Color>,
     "icon-halo-color": DataDrivenProperty<Color>,
     "icon-halo-width": DataDrivenProperty<number>,
@@ -129,6 +131,8 @@ export type PaintProps = {|
 
 const paint: Properties<PaintProps> = new Properties({
     "icon-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-opacity"]),
+    "icon-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-emissive-strength"]),
+    "text-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["text-emissive-strength"]),
     "icon-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-color"]),
     "icon-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-color"]),
     "icon-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-width"]),

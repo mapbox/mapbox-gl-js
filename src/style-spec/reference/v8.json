@@ -4793,6 +4793,30 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-emissive-strength": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_fill-extrusion": {
@@ -5555,6 +5579,30 @@
         }
       },
       "property-type": "constant"
+    },
+    "line-emissive-strength": {
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_circle": {
@@ -5889,7 +5937,31 @@
         ]
       },
       "property-type": "data-driven"
-    }
+    },
+    "circle-emissive-strength": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
+   }
   },
   "paint_heatmap": {
     "heatmap-radius": {
@@ -6066,6 +6138,67 @@
           "android": "5.0.0",
           "ios": "3.5.0",
           "macos": "0.4.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "icon-emissive-strength": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "text-emissive-strength": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
         }
       },
       "expression": {
