@@ -1,0 +1,129 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "allowed": 0.0002
+    }
+  },
+  "center": [
+    0.0001,
+    0.0001
+  ],
+  "pitch": 60,
+  "zoom": 17,
+  "bearing": 40,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 1.0,
+        "direction": [
+          320.0,
+          50.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1": {
+          "uri": "local://models/maple2.glb",
+          "position": [
+            0,
+            1e-05
+          ],
+          "orientation": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "building1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 5
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.001
+                  ],
+                  [
+                    0.001,
+                    0.001
+                  ],
+                  [
+                    0.001,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "extrusion1",
+      "type": "fill-extrusion",
+      "source": "building1",
+      "paint": {
+        "fill-extrusion-color": "blue",
+        "fill-extrusion-height": 200,
+        "fill-extrusion-opacity": 1.0
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale": [
+          10.0,
+          10.0,
+          10.0
+        ],
+        "model-translation": [
+          0.0,
+          80.0,
+          0.0
+        ]
+      }
+    }
+  ]
+}

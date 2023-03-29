@@ -179,7 +179,7 @@ export class ShadowRenderer {
 
                 const sourceCache = style._getLayerSourceCache(layer);
                 const coords = sourceCache ? sourceCoords[sourceCache.id] : undefined;
-                if (!coords || !coords.length) continue;
+                if (layer.type !== 'model' && !(coords && coords.length)) continue;
 
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
@@ -196,13 +196,11 @@ export class ShadowRenderer {
         const painter = this.painter;
         const tr = painter.transform;
         const context = painter.context;
-
-        const program = painter.useProgram('groundShadow', null, []);
+        const program = painter.useProgram('groundShadow');
 
         // Render shadows on the ground plane as an extra layer of blended "tiles"
         const tileCoverOptions = {
-            tileSize: 256,
-            roundZoom: true,
+            tileSize: 512,
             renderWorldCopies: true
         };
         const tiles = painter.transform.coveringTiles(tileCoverOptions);
@@ -237,12 +235,18 @@ export class ShadowRenderer {
         return this._shadowLayerCount;
     }
 
-    calculateShadowPassTileMatrix(unwrappedId: UnwrappedTileID): Float32Array {
+    calculateShadowPassMatrixFromTile(unwrappedId: UnwrappedTileID): Float32Array {
         const tr = this.painter.transform;
         const tileMatrix = tr.calculatePosMatrix(unwrappedId, tr.worldSize);
         const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
         mat4.multiply(tileMatrix, lightMatrix, tileMatrix);
         return Float32Array.from(tileMatrix);
+    }
+
+    calculateShadowPassMatrixFromMatrix(matrix: Mat4): Float32Array {
+        const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
+        mat4.multiply(matrix, lightMatrix, matrix);
+        return Float32Array.from(matrix);
     }
 
     setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<*>) {
@@ -265,6 +269,23 @@ export class ShadowRenderer {
             this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
+        program.setShadowUniformValues(context, uniforms);
+    }
+
+    setupShadowsFromMatrix(worldMatrix: Mat4, program: Program<*>) {
+        if (!this._enabled) {
+            return;
+        }
+        const context = this.painter.context;
+        const gl = context.gl;
+        const uniforms = this._uniformValues;
+        const lightMatrix = new Float64Array(16);
+        for (let i = 0; i < cascadeCount; i++) {
+            mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
+            uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
+            context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
+            this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+        }
         program.setShadowUniformValues(context, uniforms);
     }
 }

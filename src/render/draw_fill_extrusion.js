@@ -144,7 +144,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         let uniformValues;
         if (isShadowPass && shadowRenderer) {
-            const tileMatrix = shadowRenderer.calculateShadowPassTileMatrix(tile.tileID.toUnwrapped());
+            const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
             uniformValues = fillExtrusionDepthUniformValues(tileMatrix, edgeRadius, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(

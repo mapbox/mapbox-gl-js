@@ -1,0 +1,121 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(255.0, 0.0, 0.0, 1.0)",
+        "intensity": 0.85
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 1.0,
+        "direction": [
+          210.0,
+          10.0
+        ]
+      }
+    }
+  ],
+  "zoom": 22,
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1": {
+          "uri": "local://models/box-with-ao.gltf",
+          "position": [
+            0,
+            0
+          ],
+          "orientation": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "model-0",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "model-translation": [
+          -3.0,
+          0.0,
+          0.0
+        ],
+        "model-rotation": [
+          20,
+          40,
+          60
+        ],
+        "model-ambient-occlusion-intensity": 0.0
+      }
+    },
+    {
+      "id": "model-1",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "model-rotation": [
+          20,
+          40,
+          60
+        ],
+        "model-ambient-occlusion-intensity": 0.5
+      }
+    },
+    {
+      "id": "model-2",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "model-translation": [
+          3.0,
+          0.0,
+          0.0
+        ],
+        "model-rotation": [
+          20,
+          40,
+          60
+        ],
+        "model-ambient-occlusion-intensity": 1.0
+      }
+    }
+  ]
+}
