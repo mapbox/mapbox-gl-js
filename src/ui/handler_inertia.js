@@ -70,6 +70,10 @@ export default class HandlerInertia {
     }
 
     _onMoveEnd(panInertiaOptions?: DragPanOptions): ?(EasingOptions & {easeId?: string}) {
+        if (browser.prefersReducedMotion) {
+            return;
+        }
+
         this._drainInertiaBuffer();
         if (this._inertiaBuffer.length < 2) {
             return;
