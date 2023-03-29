@@ -395,6 +395,10 @@ class Transform {
         return this.width / this.height;
     }
 
+    get fov(): number {
+        return this._fov / Math.PI * 180;
+    }
+
     get fovX(): number {
         return this._fov;
     }
