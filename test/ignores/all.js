@@ -151,6 +151,9 @@ const skip = [
     "render-tests/model-layer/model-opacity-cutout-texture",
     // GLTF interleaved arrays not supported in -js
     "render-tests/model-layer/model-opacity-no-cutoff",
+    // Landmarks still not ported
+    "render-tests/model-layer/lighting-3d-mode/shadow",
+
     // terrain model tests are flaky in CI
     "render-tests/model-layer/fill-extrusion--default-terrain-opacity",
     "render-tests/model-layer/fill-extrusion--default-terrain",

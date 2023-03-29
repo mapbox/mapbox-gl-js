@@ -4,7 +4,7 @@ import type Painter from '../../src/render/painter.js';
 import type SourceCache from '../../src/source/source_cache.js';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
-import {modelUniformValues} from './program/model_program.js';
+import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
 import type {Mesh, Node} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
@@ -169,11 +169,22 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
 
     const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+    let fogMatrixArray = null;
     if (painter.style.fog) {
         const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
         definesValues.push('FOG');
-        painter.uploadCommonUniforms(context, program, null, new Float32Array(fogMatrix));
+        fogMatrixArray = new Float32Array(fogMatrix);
     }
+
+    painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
+
+    const isShadowPass = painter.renderPass === 'shadow';
+    const shadowRenderer = painter.shadowRenderer;
+
+    if (!isShadowPass && shadowRenderer) {
+        shadowRenderer.setupShadowsFromMatrix(sortedMesh.nodeModelMatrix, program);
+    }
+
     program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, dynamicBuffers);
@@ -230,8 +241,26 @@ function prepareMeshes(transform: Transform, node: Node, modelMatrix: Mat4, proj
     }
 }
 
+function drawShadowCaster(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer) {
+    const shadowRenderer = painter.shadowRenderer;
+    if (!shadowRenderer) return;
+    const depthMode = shadowRenderer.getShadowPassDepthMode();
+    const colorMode = shadowRenderer.getShadowPassColorMode();
+    const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(sortedMesh.nodeModelMatrix);
+    const uniformValues = modelDepthUniformValues(shadowMatrix);
+    const definesValues = ['DEPTH_TEXTURE'];
+    const program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
+    const mesh = sortedMesh.mesh;
+    const context = painter.context;
+    program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
+            uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+            undefined, undefined);
+}
+
 function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
-    if (painter.renderPass !== 'translucent') return;
+    if (painter.renderPass === 'opaque') {
+        return;
+    }
     // early return if totally transparent
     const opacity = layer.paint.get('model-opacity');
     if (opacity === 0) {
@@ -279,6 +308,18 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     transparentMeshes.sort((a, b) => {
         return b.depth - a.depth;
     });
+
+    if (painter.renderPass === 'shadow') {
+        for (const opaqueMesh of opaqueMeshes) {
+            drawShadowCaster(opaqueMesh, painter, layer);
+        }
+        // Draw transparent sorted meshes
+        for (const transparentMesh of transparentMeshes) {
+            drawShadowCaster(transparentMesh, painter, layer);
+        }
+        // Finish the render pass
+        return;
+    }
 
     // Draw opaque meshes
     if (opacity === 1) {

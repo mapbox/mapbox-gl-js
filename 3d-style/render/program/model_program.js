@@ -125,7 +125,25 @@ const modelUniformValues = (
     return uniformValues;
 };
 
+export type ModelDepthUniformsType = {|
+    'u_matrix': UniformMatrix4f
+|};
+
+const modelDepthUniforms = (context: Context): ModelDepthUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context)
+});
+
+const modelDepthUniformValues = (
+    matrix: Float32Array
+): UniformValues<ModelDepthUniformsType> => {
+    return {
+        'u_matrix': matrix
+    };
+};
+
 export {
     modelUniforms,
-    modelUniformValues
+    modelUniformValues,
+    modelDepthUniforms,
+    modelDepthUniformValues
 };

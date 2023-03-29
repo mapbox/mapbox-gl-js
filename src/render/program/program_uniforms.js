@@ -24,7 +24,7 @@ import type {HeatmapDefinesType} from './heatmap_program.js';
 import type {DebugDefinesType} from './debug_program.js';
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program.js';
 
-import {modelUniforms} from '../../../3d-style/render/program/model_program.js';
+import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/program/model_program.js';
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program.js';
 import {starsUniforms} from '../../terrain/stars_program.js';
 
@@ -63,6 +63,7 @@ export const programUniforms = {
     globeRaster: globeRasterUniforms,
     globeAtmosphere: atmosphereUniforms,
     model: modelUniforms,
+    modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
 };
