@@ -1,0 +1,26 @@
+{
+  "expression": ["random", 0, 10, ["get", "a"]],
+  "inputs": [
+    [{}, {"properties": {"a": 23512}}],
+    [{}, {"properties": {"a": 12353}}],
+    [{}, {"properties": {"a": 0}}],
+    [{}, {"properties": {"a": 1}}],
+    [{}, {"properties": {"a": 3147483647}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      7.868636625353247,
+      6.89881898695603,
+      2.6642920868471265,
+      6.2707394058816135,
+      9.285277789458632
+    ],
+    "serialized": ["random", 0, 10, ["get", "a"]]
+  }
+}

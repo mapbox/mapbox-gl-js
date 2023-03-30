@@ -1,0 +1,14 @@
+{
+  "expression": ["random", 0, 10, 1234],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [0.7329497812315822],
+    "serialized": 0.7329497812315822
+  }
+}

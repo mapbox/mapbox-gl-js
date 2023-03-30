@@ -4139,6 +4139,17 @@
             "ios": "11.0.0"
           }
         }
+      },
+      "random": {
+        "doc": "Returns a random value in the specified range (first two input numbers) based on a supplied seed (third input). The seed can be an expression or a constant number or string value.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.0.0",
+            "android": "11.0.0",
+            "ios": "11.0.0"
+          }
+        }
       }
     }
   },

@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "properties": {
+              "label": "one"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 15 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 1247483647,
+            "properties": {
+              "label": "two"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2447483647,
+            "properties": {
+              "label": "three"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, -15 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": ["get", "label"],
+        "text-offset": [0, 0],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": [
+          "rgba",
+          ["random", 0, 255, ["id"]],
+          ["random", 0, 255, ["+", 1, ["id"]]],
+          ["random", 0, 255, ["+", 2, ["id"]]],
+          1.0
+        ]
+      }
+    }
+  ]
+}

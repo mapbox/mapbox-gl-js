@@ -49,6 +49,7 @@ import Within from './within.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
 import type {Expression, ExpressionRegistry} from '../expression.js';
+import {mulberry32} from '../../../util/random.js';
 
 const expressions: ExpressionRegistry = {
     // special forms
@@ -156,6 +157,19 @@ function binarySearch(v: any, a: {[number]: any}, i: number, j: number) {
 
 function varargs(type: Type): Varargs {
     return {type};
+}
+
+function hashString(str) {
+    let hash = 0;
+    if (str.length === 0) {
+        return hash;
+    }
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return hash;
 }
 
 CompoundExpression.register(expressions, {
@@ -628,7 +642,30 @@ CompoundExpression.register(expressions, {
         StringType,
         [CollatorType],
         (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
-    ]
+    ],
+    'random': [
+        NumberType,
+        [NumberType, NumberType, ValueType],
+        (ctx, args) => {
+            const [min, max, seed] = args.map(arg => arg.evaluate(ctx));
+            if (min > max) {
+                return min;
+            }
+            if (min === max) {
+                return min;
+            }
+            let seedVal;
+            if (typeof seed === 'string') {
+                seedVal = hashString(seed);
+            } else if (typeof seed === 'number') {
+                seedVal = seed;
+            } else {
+                throw new RuntimeError(`Invalid seed input: ${seed}`);
+            }
+            const random = mulberry32(seedVal)();
+            return min + random * (max - min);
+        }
+    ],
 });
 
 export default expressions;
