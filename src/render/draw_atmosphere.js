@@ -23,15 +23,7 @@ import SegmentVector from '../data/segment.js';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types.js';
 import {starsLayout} from './stars_attributes.js';
 import {starsUniformValues} from '../terrain/stars_program.js';
-
-function mulberry32(a: number) {
-    return function() {
-        a |= 0; a = a + 0x6D2B79F5 | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
+import {mulberry32} from '../util/random.js';
 
 function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Vec3> {
     const sRand = mulberry32(30);

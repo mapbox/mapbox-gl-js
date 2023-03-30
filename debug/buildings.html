@@ -47,7 +47,13 @@ map.on('load', () => {
             'fill-extrusion-edge-radius': 0.4
         },
         'paint': {
-            'fill-extrusion-color': '#bbb',
+            'fill-extrusion-color': [
+                "hsla",
+                ["random", 200, 300, ["id"]],
+                80,
+                ["random", 70, 100, ["+", 2, ["id"]]],
+                1.0
+            ],
             'fill-extrusion-height': ['get', 'height'],
             'fill-extrusion-base': ['get', 'min_height'],
             'fill-extrusion-opacity': 1,
