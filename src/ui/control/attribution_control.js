@@ -48,11 +48,11 @@ class AttributionControl {
         ], this);
     }
 
-    getDefaultPosition: () => ControlPosition = () => {
+    getDefaultPosition(): ControlPosition {
         return 'bottom-right';
-    };
+    }
 
-    onAdd: (map: Map) => HTMLElement = (map) => {
+    onAdd(map: Map): HTMLElement {
         const compact = this.options && this.options.compact;
 
         this._map = map;
@@ -60,6 +60,7 @@ class AttributionControl {
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
         DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', 'true');
         this._compactButton.type = 'button';
+        // $FlowFixMe[method-unbinding]
         this._compactButton.addEventListener('click', this._toggleAttribution);
         this._setElementTitle(this._compactButton, 'ToggleAttribution');
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
@@ -72,29 +73,37 @@ class AttributionControl {
         this._updateAttributions();
         this._updateEditLink();
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('styledata', this._updateData);
+        // $FlowFixMe[method-unbinding]
         this._map.on('sourcedata', this._updateData);
+        // $FlowFixMe[method-unbinding]
         this._map.on('moveend', this._updateEditLink);
 
         if (compact === undefined) {
+            // $FlowFixMe[method-unbinding]
             this._map.on('resize', this._updateCompact);
             this._updateCompact();
         }
 
         return this._container;
-    };
+    }
 
-    onRemove: () => void = () => {
+    onRemove() {
         this._container.remove();
 
+        // $FlowFixMe[method-unbinding]
         this._map.off('styledata', this._updateData);
+        // $FlowFixMe[method-unbinding]
         this._map.off('sourcedata', this._updateData);
+        // $FlowFixMe[method-unbinding]
         this._map.off('moveend', this._updateEditLink);
+        // $FlowFixMe[method-unbinding]
         this._map.off('resize', this._updateCompact);
 
         this._map = (undefined: any);
         this._attribHTML = (undefined: any);
-    };
+    }
 
     _setElementTitle(element: HTMLElement, title: string) {
         const str = this._map._getUIString(`AttributionControl.${title}`);
@@ -103,7 +112,7 @@ class AttributionControl {
         if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
     }
 
-    _toggleAttribution: () => void = () => {
+    _toggleAttribution() {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
             this._compactButton.setAttribute('aria-expanded', 'false');
@@ -111,9 +120,9 @@ class AttributionControl {
             this._container.classList.add('mapboxgl-compact-show');
             this._compactButton.setAttribute('aria-expanded', 'true');
         }
-    };
+    }
 
-    _updateEditLink: () => void = () => {
+    _updateEditLink() {
         let editLink = this._editLink;
         if (!editLink) {
             editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'): any);
@@ -136,14 +145,14 @@ class AttributionControl {
             editLink.rel = 'noopener nofollow';
             this._setElementTitle(editLink, 'MapFeedback');
         }
-    };
+    }
 
-    _updateData: (e: any) => void = (e) => {
+    _updateData(e: any) {
         if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();
         }
-    };
+    }
 
     _updateAttributions() {
         if (!this._map.style) return;
@@ -201,7 +210,7 @@ class AttributionControl {
         this._editLink = null;
     }
 
-    _updateCompact: () => void = () => {
+    _updateCompact() {
         if (this._map.getCanvasContainer().offsetWidth <= 640) {
             this._container.classList.add('mapboxgl-compact');
         } else {

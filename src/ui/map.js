@@ -563,10 +563,15 @@ class Map extends Camera {
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
+            // $FlowFixMe[method-unbinding]
             window.addEventListener('online', this._onWindowOnline, false);
+            // $FlowFixMe[method-unbinding]
             window.addEventListener('resize', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.addEventListener('orientationchange', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.addEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.addEventListener('visibilitychange', this._onVisibilityChange, false);
         }
 
@@ -603,9 +608,12 @@ class Map extends Camera {
         this.resize();
 
         if (options.attributionControl)
+            // $FlowFixMe[method-unbinding]
             this.addControl(new AttributionControl({customAttribution: options.customAttribution}));
 
+        // $FlowFixMe[method-unbinding]
         this._logoControl = new LogoControl();
+        // $FlowFixMe[method-unbinding]
         this.addControl(this._logoControl, options.logoPosition);
 
         this.on('style.load', () => {
@@ -2909,7 +2917,9 @@ class Map extends Camera {
         }
 
         this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
+        // $FlowFixMe[method-unbinding]
         this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
+        // $FlowFixMe[method-unbinding]
         this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
         this._canvas.setAttribute('tabindex', '0');
         this._canvas.setAttribute('aria-label', this._getUIString('Map.Title'));
@@ -2924,6 +2934,7 @@ class Map extends Camera {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
 
+        // $FlowFixMe[method-unbinding]
         this._container.addEventListener('scroll', this._onMapScroll, false);
     }
 
@@ -2993,7 +3004,7 @@ class Map extends Camera {
         webpSupported.testSupport(gl);
     }
 
-    _contextLost: (event: any) => void = (event) => {
+    _contextLost(event: any) {
         event.preventDefault();
         if (this._frame) {
             this._frame.cancel();
@@ -3002,14 +3013,14 @@ class Map extends Camera {
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
-    _contextRestored: (event: any) => void = (event) => {
+    _contextRestored(event: any) {
         this._setupPainter();
         this.resize();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
-    _onMapScroll: (event: any) => ?boolean = (event) => {
+    _onMapScroll(event: any): ?boolean {
         if (event.target !== this._container) return;
 
         // Revert any scroll which would move the canvas outside of the view
@@ -3059,12 +3070,14 @@ class Map extends Camera {
      * @returns An id that can be used to cancel the callback
      * @private
      */
-    _requestRenderFrame: (callback: () => void) => TaskID = (callback) => {
+    // $FlowFixMe[method-unbinding]
+    _requestRenderFrame(callback: () => void): TaskID {
         this._update();
         return this._renderTaskQueue.add(callback);
     }
 
-    _cancelRenderFrame: (id: TaskID) => void = (id) => {
+    // $FlowFixMe[method-unbinding]
+    _cancelRenderFrame(id: TaskID) {
         this._renderTaskQueue.remove(id);
     }
 
@@ -3502,17 +3515,24 @@ class Map extends Camera {
         this.setStyle(null);
 
         if (typeof window !== 'undefined') {
+            // $FlowFixMe[method-unbinding]
             window.removeEventListener('resize', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.removeEventListener('orientationchange', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.removeEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            // $FlowFixMe[method-unbinding]
             window.removeEventListener('online', this._onWindowOnline, false);
+            // $FlowFixMe[method-unbinding]
             window.removeEventListener('visibilitychange', this._onVisibilityChange, false);
         }
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
 
+        // $FlowFixMe[method-unbinding]
         this._canvas.removeEventListener('webglcontextlost', this._contextLost, false);
+        // $FlowFixMe[method-unbinding]
         this._canvas.removeEventListener('webglcontextrestored', this._contextRestored, false);
 
         this._canvasContainer.remove();
@@ -3525,6 +3545,7 @@ class Map extends Camera {
         this._missingCSSCanary = (undefined: any);
 
         this._container.classList.remove('mapboxgl-map');
+        // $FlowFixMe[method-unbinding]
         this._container.removeEventListener('scroll', this._onMapScroll, false);
 
         PerformanceUtils.clearMetrics();
@@ -3569,7 +3590,8 @@ class Map extends Camera {
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles: (transform: Transform | Array<Transform>) => Map = (transform) => {
+    // $FlowFixMe[method-unbinding]
+    _preloadTiles(transform: Transform | Array<Transform>): this {
         const sources: Array<SourceCache> = this.style ? (Object.values(this.style._sourceCaches): any) : [];
         asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
             this.triggerRepaint();
@@ -3578,17 +3600,17 @@ class Map extends Camera {
         return this;
     }
 
-    _onWindowOnline: () => void = () => {
+    _onWindowOnline() {
         this._update();
     }
 
-    _onWindowResize: (event: Event) => void = (event: Event) => {
+    _onWindowResize(event: Event) {
         if (this._trackResize) {
             this.resize({originalEvent: event})._update();
         }
     }
 
-    _onVisibilityChange: () => void = () => {
+    _onVisibilityChange() {
         if (window.document.visibilityState === 'hidden') {
             this._visibilityHidden++;
         }

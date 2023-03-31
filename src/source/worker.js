@@ -126,10 +126,10 @@ export default class Worker {
         callback();
     }
 
-    enableTerrain: (mapId: string, enable: boolean, callback: WorkerTileCallback) => void = (mapId, enable, callback) => {
+    enableTerrain(mapId: string, enable: boolean, callback: WorkerTileCallback) {
         this.terrain = enable;
         callback();
-    };
+    }
 
     setProjection(mapId: string, config: ProjectionSpecification) {
         this.projections[mapId] = getProjection(config);
@@ -147,18 +147,21 @@ export default class Worker {
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
+        // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
+        // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({buildQuadTree: this.terrain}, params) : params;
         this.getDEMWorkerSource(mapId, params.source).loadTile(p, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
+        // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);

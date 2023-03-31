@@ -198,12 +198,15 @@ class CustomSource<T> extends Evented implements Source {
         }
 
         // $FlowFixMe[prop-missing]
+        // $FlowFixMe[method-unbinding]
         implementation.update = this._update.bind(this);
 
         // $FlowFixMe[prop-missing]
+        // $FlowFixMe[method-unbinding]
         implementation.clearTiles = this._clearTiles.bind(this);
 
         // $FlowFixMe[prop-missing]
+        // $FlowFixMe[method-unbinding]
         implementation.coveringTiles = this._coveringTiles.bind(this);
 
         extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
@@ -223,7 +226,8 @@ class CustomSource<T> extends Evented implements Source {
         return this._loaded;
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onAdd(map: Map): void {
         this._map = map;
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
@@ -231,13 +235,15 @@ class CustomSource<T> extends Evented implements Source {
         this.load();
     }
 
-    onRemove: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onRemove(map: Map): void {
         if (this._implementation.onRemove) {
             this._implementation.onRemove(map);
         }
     }
 
-    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
+    // $FlowFixMe[method-unbinding]
+    hasTile(tileID: OverscaledTileID): boolean {
         if (this._implementation.hasTile) {
             const {x, y, z} = tileID.canonical;
             return this._implementation.hasTile({x, y, z});
@@ -312,7 +318,8 @@ class CustomSource<T> extends Evented implements Source {
         RasterTileSource.unloadTileData(tile, this._map.painter);
     }
 
-    unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+    // $FlowFixMe[method-unbinding]
+    unloadTile(tile: Tile, callback: Callback<void>): void {
         this.unloadTileData(tile);
         if (this._implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
@@ -322,7 +329,8 @@ class CustomSource<T> extends Evented implements Source {
         callback();
     }
 
-    abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+    // $FlowFixMe[method-unbinding]
+    abortTile(tile: Tile, callback: Callback<void>): void {
         if (tile.request && tile.request.cancel) {
             tile.request.cancel();
             delete tile.request;
@@ -335,7 +343,7 @@ class CustomSource<T> extends Evented implements Source {
         return false;
     }
 
-    _coveringTiles: () => { z: number, x: number, y: number }[] = () => {
+    _coveringTiles(): { z: number, x: number, y: number }[] {
         const tileIDs = this._map.transform.coveringTiles({
             tileSize: this.tileSize,
             minzoom: this.minzoom,
@@ -346,11 +354,11 @@ class CustomSource<T> extends Evented implements Source {
         return tileIDs.map(tileID => ({x: tileID.canonical.x, y: tileID.canonical.y, z: tileID.canonical.z}));
     }
 
-    _clearTiles: () => void = () => {
+    _clearTiles() {
         this._map.style._clearSource(this.id);
     }
 
-    _update: () => void = () => {
+    _update() {
         this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
     }
 }

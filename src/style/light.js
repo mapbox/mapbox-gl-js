@@ -60,6 +60,7 @@ class LightPositionProperty implements Property<[number, number, number], LightP
     }
 
     possiblyEvaluate(value: PropertyValue<[number, number, number], LightPosition>, parameters: EvaluationParameters): LightPosition {
+        // $FlowFixMe[method-unbinding]
         return sphericalToCartesian(value.expression.evaluate(parameters));
     }
 

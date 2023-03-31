@@ -24,17 +24,6 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
-type QueryIntersectsFeatureFn = (
-    queryGeometry: TilespaceQueryGeometry,
-    feature: IVectorTileFeature,
-    featureState: FeatureState,
-    geometry: Array<Array<Point>>,
-    zoom: number,
-    transform: Transform,
-    pixelPosMatrix: Float32Array,
-    elevationHelper: ?DEMSampler
-) => boolean;
-
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
     layout: PossiblyEvaluated<LayoutProps>;
@@ -51,14 +40,24 @@ class CircleStyleLayer extends StyleLayer {
         return new CircleBucket(parameters);
     }
 
-    queryRadius: (bucket: Bucket) => number = (bucket: Bucket) => {
+    // $FlowFixMe[method-unbinding]
+    queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket<CircleStyleLayer> = (bucket: any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+                           feature: IVectorTileFeature,
+                           featureState: FeatureState,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           transform: Transform,
+                           pixelPosMatrix: Float32Array,
+                           elevationHelper: ?DEMSampler): boolean {
+
         const translation = tilespaceTranslate(
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),

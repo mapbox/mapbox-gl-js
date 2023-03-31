@@ -126,6 +126,7 @@ class GeolocateControl extends Evented {
             '_onDeviceOrientation'
         ], this);
 
+        // $FlowFixMe[method-unbinding]
         this._updateMarkerRotationThrottled = throttle(this._updateMarkerRotation, 20);
         this._numberOfWatches = 0;
     }
@@ -133,6 +134,7 @@ class GeolocateControl extends Evented {
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', `mapboxgl-ctrl mapboxgl-ctrl-group`);
+        // $FlowFixMe[method-unbinding]
         this._checkGeolocationSupport(this._setupUI);
         return this._container;
     }
@@ -153,6 +155,7 @@ class GeolocateControl extends Evented {
         }
 
         this._container.remove();
+        // $FlowFixMe[method-unbinding]
         this._map.off('zoom', this._onZoom);
         this._map = (undefined: any);
         this._numberOfWatches = 0;
@@ -234,7 +237,7 @@ class GeolocateControl extends Evented {
      * @param {Position} position the Geolocation API Position
      * @private
      */
-    _onSuccess: (position: Position) => void = (position) => {
+    _onSuccess(position: Position) {
         if (!this._map) {
             // control has since been removed
             return;
@@ -294,7 +297,7 @@ class GeolocateControl extends Evented {
 
         this.fire(new Event('geolocate', position));
         this._finish();
-    };
+    }
 
     /**
      * Update the camera location to center on the current position
@@ -347,7 +350,7 @@ class GeolocateControl extends Evented {
         this._circleElement.style.height = `${circleDiameter}px`;
     }
 
-    _onZoom: () => void = () => {
+    _onZoom() {
         if (this.options.showUserLocation && this.options.showAccuracyCircle) {
             this._updateCircleRadius();
         }
@@ -358,7 +361,7 @@ class GeolocateControl extends Evented {
      *
      * @private
      */
-    _updateMarkerRotation: () => void = () => {
+    _updateMarkerRotation() {
         if (this._userLocationDotMarker && typeof this._heading === 'number') {
             this._userLocationDotMarker.setRotation(this._heading);
             this._dotElement.classList.add('mapboxgl-user-location-show-heading');
@@ -366,9 +369,9 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
             this._userLocationDotMarker.setRotation(0);
         }
-    };
+    }
 
-    _onError: (error: PositionError) => void = (error) => {
+    _onError(error: PositionError) {
         if (!this._map) {
             // control has since been removed
             return;
@@ -411,12 +414,12 @@ class GeolocateControl extends Evented {
         this._finish();
     }
 
-    _finish: () => void = () => {
+    _finish() {
         if (this._timeoutId) { clearTimeout(this._timeoutId); }
         this._timeoutId = undefined;
-    };
+    }
 
-    _setupUI: (supported: boolean) => void = (supported) => {
+    _setupUI(supported: boolean) {
         if (this._map === undefined) {
             // This control was removed from the map before geolocation
             // support was determined.
@@ -462,11 +465,12 @@ class GeolocateControl extends Evented {
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
 
+            // $FlowFixMe[method-unbinding]
             this._map.on('zoom', this._onZoom);
         }
 
-        this._geolocateButton.addEventListener('click',
-            this.trigger.bind(this));
+        // $FlowFixMe[method-unbinding]
+        this._geolocateButton.addEventListener('click', this.trigger.bind(this));
 
         this._setup = true;
 
@@ -484,7 +488,7 @@ class GeolocateControl extends Evented {
                 }
             });
         }
-    };
+    }
 
     /**
     * Programmatically request and move the map to the user's location.
@@ -508,7 +512,7 @@ class GeolocateControl extends Evented {
     *   geolocate.trigger();
     * });
     */
-    _onDeviceOrientation: (deviceOrientationEvent: DeviceOrientationEvent) => void = (deviceOrientationEvent) => {
+    _onDeviceOrientation(deviceOrientationEvent: DeviceOrientationEvent) {
         // absolute is true if the orientation data is provided as the difference between the Earth's coordinate frame and the device's coordinate frame, or false if the orientation data is being provided in reference to some arbitrary, device-determined coordinate frame.
         if (this._userLocationDotMarker) {
             if (deviceOrientationEvent.webkitCompassHeading) {
@@ -540,7 +544,7 @@ class GeolocateControl extends Evented {
      * });
      * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
      */
-    trigger: (() => boolean) = (): boolean => {
+    trigger(): boolean {
         if (!this._setup) {
             warnOnce('Geolocate control triggered before added to a map');
             return false;
@@ -636,11 +640,12 @@ class GeolocateControl extends Evented {
                 }
             }
         } else {
-            this.options.geolocation.getCurrentPosition(
-                this._onSuccess, this._onError, this.options.positionOptions);
+            // $FlowFixMe[method-unbinding]
+            this.options.geolocation.getCurrentPosition(this._onSuccess, this._onError, this.options.positionOptions);
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
+            // $FlowFixMe[method-unbinding]
             this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
         }
 
@@ -650,8 +655,10 @@ class GeolocateControl extends Evented {
     _addDeviceOrientationListener() {
         const addListener = () => {
             if ('ondeviceorientationabsolute' in window) {
+                // $FlowFixMe[method-unbinding]
                 window.addEventListener('deviceorientationabsolute', this._onDeviceOrientation);
             } else {
+                // $FlowFixMe[method-unbinding]
                 window.addEventListener('deviceorientation', this._onDeviceOrientation);
             }
         };
@@ -674,7 +681,9 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         this.options.geolocation.clearWatch(this._geolocationWatchID);
 
+        // $FlowFixMe[method-unbinding]
         window.removeEventListener('deviceorientation', this._onDeviceOrientation);
+        // $FlowFixMe[method-unbinding]
         window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
 
         this._geolocationWatchID = (undefined: any);

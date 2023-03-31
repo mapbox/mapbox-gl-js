@@ -228,12 +228,14 @@ class ImageSource extends Evented implements Source {
         }
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onAdd(map: Map) {
         this.map = map;
         this.load();
     }
 
-    onRemove: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    onRemove() {
         if (this._imageRequest) {
             this._imageRequest.cancel();
             this._imageRequest = null;
@@ -278,6 +280,7 @@ class ImageSource extends Evented implements Source {
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
         // transform the geo coordinates into (zoom 0) tile space coordinates
+        // $FlowFixMe[method-unbinding]
         const cornerCoords = coordinates.map(MercatorCoordinate.fromLngLat);
 
         // Compute the coordinates of the tile we'll use to hold this image's
@@ -293,7 +296,8 @@ class ImageSource extends Evented implements Source {
         return this;
     }
 
-    _clear: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    _clear() {
         this._boundsArray = undefined;
     }
 
@@ -332,7 +336,8 @@ class ImageSource extends Evented implements Source {
         this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
     }
 
-    prepare: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    prepare() {
         if (Object.keys(this.tiles).length === 0 || !this.image) return;
 
         const context = this.map.painter.context;

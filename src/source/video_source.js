@@ -154,7 +154,7 @@ class VideoSource extends ImageSource {
         return this.video;
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    onAdd(map: Map) {
         if (this.map) return;
         this.map = map;
         this.load();
@@ -198,7 +198,7 @@ class VideoSource extends ImageSource {
      */
     // setCoordinates inherited from ImageSource
 
-    prepare: () => void = () => {
+    prepare() {
         if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
             return; // not enough data for current position
         }

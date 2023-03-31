@@ -1720,21 +1720,23 @@ class Camera extends Evented {
             this._easeOptions = options;
             this._onEaseFrame = frame;
             this._onEaseEnd = finish;
+            // $FlowFixMe[method-unbinding]
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         }
     }
 
     // Callback for map._requestRenderFrame
-    _renderFrameCallback: () => void = () => {
+    _renderFrameCallback() {
         const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
         const frame = this._onEaseFrame;
         if (frame) frame(this._easeOptions.easing(t));
         if (t < 1) {
+            // $FlowFixMe[method-unbinding]
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         } else {
             this.stop();
         }
-    };
+    }
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
     _normalizeBearing(bearing: number, currentBearing: number): number {

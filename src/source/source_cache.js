@@ -89,6 +89,7 @@ class SourceCache extends Evented {
 
         this._source = source;
         this._tiles = {};
+        // $FlowFixMe[method-unbinding]
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
@@ -150,7 +151,7 @@ class SourceCache extends Evented {
         return this._source.loadTile(tile, callback);
     }
 
-    _unloadTile: (tile: Tile) => void = (tile) => {
+    _unloadTile(tile: Tile): void {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile, () => {});
     }
@@ -245,10 +246,11 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
+        // $FlowFixMe[method-unbinding]
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded: (tile: Tile, id: number, previousState: TileState, err: ?Error) => void = (tile, id, previousState, err) => {
+    _tileLoaded(tile: Tile, id: number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
@@ -762,6 +764,7 @@ class SourceCache extends Evented {
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
             tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
+            // $FlowFixMe[method-unbinding]
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 

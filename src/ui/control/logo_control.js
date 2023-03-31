@@ -23,7 +23,7 @@ class LogoControl {
         bindAll(['_updateLogo', '_updateCompact'], this);
     }
 
-    onAdd: (map: Map) => HTMLElement = (map) => {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
@@ -35,30 +35,34 @@ class LogoControl {
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('resize', this._updateCompact);
         this._updateCompact();
 
         return this._container;
     }
 
-    onRemove: () => void = () => {
+    onRemove() {
         this._container.remove();
+        // $FlowFixMe[method-unbinding]
         this._map.off('sourcedata', this._updateLogo);
+        // $FlowFixMe[method-unbinding]
         this._map.off('resize', this._updateCompact);
-    };
+    }
 
-    getDefaultPosition: () => ControlPosition = () => {
+    getDefaultPosition(): ControlPosition {
         return 'bottom-left';
-    };
+    }
 
-    _updateLogo: (e: any) => void = (e) => {
+    _updateLogo(e: any) {
         if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
-    };
+    }
 
     _logoRequired(): boolean {
         if (!this._map.style) return true;
@@ -74,7 +78,7 @@ class LogoControl {
         return true;
     }
 
-    _updateCompact: () => void = () => {
+    _updateCompact() {
         const containerChildren = this._container.children;
         if (containerChildren.length) {
             const anchor = containerChildren[0];
@@ -84,7 +88,7 @@ class LogoControl {
                 anchor.classList.remove('mapboxgl-compact');
             }
         }
-    };
+    }
 
 }
 

@@ -21,15 +21,6 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
-type QueryIntersectsFeatureFn = (
-    queryGeometry: TilespaceQueryGeometry,
-    feature: IVectorTileFeature,
-    featureState: FeatureState,
-    geometry: Array<Array<Point>>,
-    zoom: number,
-    transform: Transform
-) => boolean;
-
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom = true;
 
@@ -105,7 +96,8 @@ class LineStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
-    queryRadius: (bucket: Bucket) => number = (bucket) => {
+    // $FlowFixMe[method-unbinding]
+    queryRadius(bucket: Bucket): number {
         const lineBucket: LineBucket = (bucket: any);
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, lineBucket),
@@ -114,14 +106,19 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform) => {
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+                           feature: IVectorTileFeature,
+                           featureState: FeatureState,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           transform: Transform): boolean {
         if (queryGeometry.queryGeometry.isAboveHorizon) return false;
 
         const translatedPolygon = translate(queryGeometry.tilespaceGeometry,
             this.paint.get('line-translate'),
             this.paint.get('line-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
-
         const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
             this.paint.get('line-width').evaluate(feature, featureState),
             this.paint.get('line-gap-width').evaluate(feature, featureState));

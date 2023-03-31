@@ -26,6 +26,7 @@ export default class Hash {
         ], this);
 
         // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
+        // $FlowFixMe[method-unbinding]
         this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
     }
 
@@ -37,6 +38,7 @@ export default class Hash {
      */
     addTo(map: Map): this {
         this._map = map;
+        // $FlowFixMe[method-unbinding]
         window.addEventListener('hashchange', this._onHashChange, false);
         map.on('moveend', this._updateHash);
         return this;
@@ -51,6 +53,7 @@ export default class Hash {
         if (!this._map) return this;
 
         this._map.off('moveend', this._updateHash);
+        // $FlowFixMe[method-unbinding]
         window.removeEventListener('hashchange', this._onHashChange, false);
         clearTimeout(this._updateHash());
 
@@ -102,7 +105,7 @@ export default class Hash {
         return hash.split('/');
     }
 
-    _onHashChange: () => boolean = () => {
+    _onHashChange(): boolean {
         const map = this._map;
         if (!map) return false;
         const loc = this._getCurrentHash();
@@ -119,7 +122,7 @@ export default class Hash {
         return false;
     }
 
-    _updateHashUnthrottled: () => void = () => {
+    _updateHashUnthrottled() {
         // Replace if already present, else append the updated hash string
         const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
         window.history.replaceState(window.history.state, null, location);

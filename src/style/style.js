@@ -907,6 +907,7 @@ class Style extends Evented {
         }
         this._updateLayer(layer);
 
+        // $FlowFixMe[method-unbinding]
         if (layer.onAdd) {
             layer.onAdd(this.map);
         }
@@ -1391,6 +1392,7 @@ class Style extends Evented {
                 queryRenderedSymbols(
                     this._layers,
                     this._serializedLayers,
+                    // $FlowFixMe[method-unbinding]
                     this._getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
                     params,
@@ -1825,7 +1827,7 @@ class Style extends Evented {
         return this._otherSourceCaches[source];
     }
 
-    _getLayerSourceCache: (layer: StyleLayer) => SourceCache | void = (layer) => {
+    _getLayerSourceCache(layer: StyleLayer): SourceCache | void {
         return layer.type === 'symbol' ?
             this._symbolSourceCaches[layer.source] :
             this._otherSourceCaches[layer.source];

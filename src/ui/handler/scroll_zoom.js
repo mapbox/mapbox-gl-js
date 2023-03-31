@@ -161,7 +161,7 @@ class ScrollZoomHandler {
         }
     }
 
-    wheel: (e: WheelEvent) => void = (e) => {
+    wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
         if (this._map._cooperativeGestures) {
@@ -196,6 +196,7 @@ class ScrollZoomHandler {
             this._lastValue = value;
 
             // Start a timeout in case this was a singular event, and delay it by up to 40ms.
+            // $FlowFixMe[method-unbinding]
             this._timeout = setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {
@@ -227,7 +228,7 @@ class ScrollZoomHandler {
         e.preventDefault();
     }
 
-    _onTimeout: (initialEvent: WheelEvent) => void = (initialEvent) => {
+    _onTimeout(initialEvent: WheelEvent) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
         if (!this._active) {
@@ -263,7 +264,7 @@ class ScrollZoomHandler {
         }
     }
 
-    renderFrame: () => ?HandlerResult = () => {
+    renderFrame(): ?HandlerResult {
         if (!this._frameId) return;
         this._frameId = null;
 

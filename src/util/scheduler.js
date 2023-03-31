@@ -32,6 +32,7 @@ class Scheduler {
         this.tasks = {};
         this.taskQueue = [];
         bindAll(['process'], this);
+        // $FlowFixMe[method-unbinding]
         this.invoker = new ThrottledInvoker(this.process);
 
         this.nextId = 0;
@@ -64,7 +65,7 @@ class Scheduler {
         };
     }
 
-    process: () => void = () => {
+    process() {
         const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         try {
             this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);

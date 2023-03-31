@@ -22,18 +22,6 @@ import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
-type QueryIntersectsFeatureFn = (
-    queryGeometry: TilespaceQueryGeometry,
-    feature: IVectorTileFeature,
-    featureState: FeatureState,
-    geometry: Array<Array<Point>>,
-    zoom: number,
-    transform: Transform,
-    pixelPosMatrix: Float32Array,
-    elevationHelper: ?DEMSampler,
-    layoutVertexArrayOffset: number
-) => boolean | number;
-
 class Point3D extends Point {
     z: number;
 
@@ -57,7 +45,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
-    queryRadius: () => number = () => {
+    // $FlowFixMe[method-unbinding]
+    queryRadius(): number {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
@@ -75,12 +64,21 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
-    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset) => {
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+                           feature: IVectorTileFeature,
+                           featureState: FeatureState,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           transform: Transform,
+                           pixelPosMatrix: Float32Array,
+                           elevationHelper: ?DEMSampler,
+                           layoutVertexArrayOffset: number): boolean | number {
+
         const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
                                 this.paint.get('fill-extrusion-translate-anchor'),
                                 transform.angle,
                                 queryGeometry.pixelToTileUnitsFactor);
-
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 

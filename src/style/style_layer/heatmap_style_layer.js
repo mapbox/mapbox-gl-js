@@ -24,17 +24,6 @@ import type Transform from '../../geo/transform.js';
 import type CircleBucket from '../../data/bucket/circle_bucket.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
-type QueryIntersectsFeatureFn = (
-    queryGeometry: TilespaceQueryGeometry,
-    feature: IVectorTileFeature,
-    featureState: FeatureState,
-    geometry: Array<Array<Point>>,
-    zoom: number,
-    transform: Transform,
-    pixelPosMatrix: Float32Array,
-    elevationHelper: ?DEMSampler
-) => boolean;
-
 class HeatmapStyleLayer extends StyleLayer {
 
     heatmapFbo: ?Framebuffer;
@@ -79,11 +68,21 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
-    queryRadius: (bucket: Bucket) => number = (bucket) => {
+    // $FlowFixMe[method-unbinding]
+    queryRadius(bucket: Bucket): number {
         return getMaximumPaintValue('heatmap-radius', this, ((bucket: any): CircleBucket<*>));
     }
 
-    queryIntersectsFeature: QueryIntersectsFeatureFn = (queryGeometry, feature, featureState, geometry, zoom, transform, pixelPosMatrix, elevationHelper) => {
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
+                           feature: IVectorTileFeature,
+                           featureState: FeatureState,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           transform: Transform,
+                           pixelPosMatrix: Float32Array,
+                           elevationHelper: ?DEMSampler): boolean {
+
         const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
         return queryIntersectsCircle(
             queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,

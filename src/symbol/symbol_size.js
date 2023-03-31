@@ -42,6 +42,7 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
     const {expression} = value;
 
     if (expression.kind === 'constant') {
+        // $FlowFixMe[method-unbinding]
         const layoutSize = expression.evaluate(new EvaluationParameters(tileZoom + 1));
         return {kind: 'constant', layoutSize};
 
@@ -71,7 +72,9 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
 
         // for camera functions, also save off the function values
         // evaluated at the covering zoom levels
+        // $FlowFixMe[method-unbinding]
         const minSize = expression.evaluate(new EvaluationParameters(minZoom));
+        // $FlowFixMe[method-unbinding]
         const maxSize = expression.evaluate(new EvaluationParameters(maxZoom));
 
         return {kind: 'camera', minZoom, maxZoom, minSize, maxSize, interpolationType};

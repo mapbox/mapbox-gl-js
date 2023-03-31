@@ -61,7 +61,7 @@ class ScaleControl {
         return 'bottom-left';
     }
 
-    _update: () => void = () => {
+    _update() {
         // A horizontal scale is imagined to be present at center of the map
         // container with maximum length (Default) as 100px.
         // Using spherical law of cosines approximation, the real distance is
@@ -93,7 +93,7 @@ class ScaleControl {
         } else {
             this._setScale(maxWidth, maxMeters, 'meter');
         }
-    };
+    }
 
     _setScale(maxWidth: number, maxDistance: number, unit: string) {
         const distance = getRoundNum(maxDistance);
@@ -120,6 +120,7 @@ class ScaleControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
         this._container.dir = 'auto';
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('move', this._update);
         this._update();
 
@@ -128,6 +129,7 @@ class ScaleControl {
 
     onRemove() {
         this._container.remove();
+        // $FlowFixMe[method-unbinding]
         this._map.off('move', this._update);
         this._map = (undefined: any);
     }

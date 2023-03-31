@@ -106,7 +106,9 @@ class ConstantBinder implements UniformBinder {
         uniform.set(program, uniformName, currentValue.constantOr(this.value));
     }
 
+    // $FlowFixMe[method-unbinding]
     getBinding(context: Context, _: string): $Shape<Uniform<any>> {
+        // $FlowFixMe[method-unbinding]
         return (this.type === 'color') ?
             new UniformColor(context) :
             new Uniform1f(context);
@@ -136,7 +138,9 @@ class PatternConstantBinder implements UniformBinder {
         if (pos) uniform.set(program, uniformName, pos);
     }
 
+    // $FlowFixMe[method-unbinding]
     getBinding(context: Context, name: string): $Shape<Uniform<any>> {
+        // $FlowFixMe[method-unbinding]
         return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
             new Uniform1f(context);
@@ -168,6 +172,7 @@ class SourceExpressionBinder implements AttributeBinder {
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
         assert(Array.isArray(availableImages));
+        // $FlowFixMe[method-unbinding]
         const value = this.expression.evaluate(new EvaluationParameters(0), feature, {}, canonical, availableImages, formattedSection);
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value);
@@ -238,7 +243,9 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     }
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, formattedSection?: FormattedSection) {
+        // $FlowFixMe[method-unbinding]
         const min = this.expression.evaluate(new EvaluationParameters(this.zoom), feature, {}, canonical, availableImages, formattedSection);
+        // $FlowFixMe[method-unbinding]
         const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1), feature, {}, canonical, availableImages, formattedSection);
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
@@ -288,6 +295,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         uniform.set(program, uniformName, factor);
     }
 
+    // $FlowFixMe[method-unbinding]
     getBinding(context: Context, _: string): Uniform1f {
         return new Uniform1f(context);
     }

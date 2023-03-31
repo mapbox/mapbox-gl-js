@@ -27,7 +27,7 @@ class TwoTouchHandler {
     _start(points: [Point, Point]) {} //eslint-disable-line
     _move(points: [Point, Point], pinchAround: ?Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
 
-    touchstart: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
+    touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
         //log('touchstart', points, e.target.innerHTML, e.targetTouches.length ? e.targetTouches[0].target.innerHTML: undefined);
         if (this._firstTwoTouches || mapTouches.length < 2) return;
@@ -41,7 +41,7 @@ class TwoTouchHandler {
         this._start([points[0], points[1]]);
     }
 
-    touchmove: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult = (e, points, mapTouches) => {
+    touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         const firstTouches = this._firstTwoTouches;
         if (!firstTouches) return;
 
@@ -58,7 +58,7 @@ class TwoTouchHandler {
 
     }
 
-    touchend: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => void = (e, points, mapTouches) => {
+    touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._firstTwoTouches) return;
 
         const [idA, idB] = this._firstTwoTouches;
@@ -71,7 +71,7 @@ class TwoTouchHandler {
         this.reset();
     }
 
-    touchcancel: () => void = () => {
+    touchcancel() {
         this.reset();
     }
 
@@ -139,8 +139,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
 
 const ROTATION_THRESHOLD = 25; // pixels along circumference of touch circle
 
-function getBearingDelta(a, b) {
-    if (!a) throw new Error('Point in `getBearingDelta` is undefined');
+function getBearingDelta(a: Point, b: Point) {
     return a.angleWith(b) * 180 / Math.PI;
 }
 
@@ -167,6 +166,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
         this._active = true;
 
         return {
+            // $FlowFixMe[incompatible-call] - Flow doesn't infer that this._vectoris not null
             bearingDelta: getBearingDelta(this._vector, lastVector),
             pinchAround
         };

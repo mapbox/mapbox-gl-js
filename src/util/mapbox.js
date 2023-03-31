@@ -418,7 +418,7 @@ export class PerformanceEvent extends TelemetryEvent {
         super('gljs.performance');
     }
 
-    postPerformanceEvent: (customAccessToken: ?string, performanceData: LivePerformanceData) => void = (customAccessToken, performanceData) => {
+    postPerformanceEvent(customAccessToken: ?string, performanceData: LivePerformanceData) {
         if (config.EVENTS_URL) {
             if (customAccessToken || config.ACCESS_TOKEN) {
                 this.queueRequest({timestamp: Date.now(), performanceData}, customAccessToken);
@@ -461,7 +461,7 @@ export class MapLoadEvent extends TelemetryEvent {
         this.skuToken = '';
     }
 
-    postMapLoadEvent: (mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) => void = (mapId, skuToken, customAccessToken, callback) => {
+    postMapLoadEvent(mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) {
         this.skuToken = skuToken;
         this.errorCb = callback;
 
@@ -540,7 +540,7 @@ export class MapSessionAPI extends TelemetryEvent {
         });
     }
 
-    getSessionAPI: (mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) => void = (mapId, skuToken, customAccessToken, callback) => {
+    getSessionAPI(mapId: number, skuToken: string, customAccessToken: ?string, callback: EventCallback) {
         this.skuToken = skuToken;
         this.errorCb = callback;
 
@@ -576,7 +576,7 @@ export class TurnstileEvent extends TelemetryEvent {
         this._customAccessToken = customAccessToken;
     }
 
-    postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = (tileUrls, customAccessToken) => {
+    postTurnstileEvent(tileUrls: Array<string>, customAccessToken?: ?string) {
         //Enabled only when Mapbox Access Token is set and a source uses
         // mapbox tiles.
         if (config.EVENTS_URL &&
@@ -641,15 +641,19 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
+// $FlowFixMe[method-unbinding]
 export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 const mapLoadEvent_ = new MapLoadEvent();
+// $FlowFixMe[method-unbinding]
 export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
+// $FlowFixMe[method-unbinding]
 export const postPerformanceEvent: (?string, LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 const mapSessionAPI_ = new MapSessionAPI();
+// $FlowFixMe[method-unbinding]
 export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
 const authenticatedMaps = new Set();

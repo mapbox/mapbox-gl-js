@@ -29,7 +29,7 @@ class EvaluationParameters {
         }
     }
 
-    isSupportedScript: (str: string) => boolean = (str) => {
+    isSupportedScript(str: string): boolean {
         return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
     }
 }

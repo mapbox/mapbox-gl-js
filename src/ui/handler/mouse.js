@@ -61,7 +61,7 @@ class MouseHandler {
         this._eventButton = eventButton;
     }
 
-    mousemoveWindow: (e: MouseEvent, point: Point) => ?HandlerResult = (e, point) => {
+    mousemoveWindow(e: MouseEvent, point: Point): ?HandlerResult {
         const lastPoint = this._lastPoint;
         if (!lastPoint) return;
         e.preventDefault();
@@ -85,7 +85,7 @@ class MouseHandler {
         return this._move(lastPoint, point);
     }
 
-    mouseupWindow: (e: MouseEvent) => void = (e) => {
+    mouseupWindow(e: MouseEvent) {
         if (!this._lastPoint) return;
         const eventButton = DOM.mouseButton(e);
         if (eventButton !== this._eventButton) return;
@@ -143,7 +143,7 @@ export class MouseRotateHandler extends MouseHandler {
         }
     }
 
-    contextmenu: (e: MouseEvent) => void = (e) => {
+    contextmenu(e: MouseEvent) {
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();
@@ -164,7 +164,7 @@ export class MousePitchHandler extends MouseHandler {
         }
     }
 
-    contextmenu: (e: MouseEvent) => void = (e) => {
+    contextmenu(e: MouseEvent) {
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();

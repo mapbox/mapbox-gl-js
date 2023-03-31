@@ -192,9 +192,11 @@ class FeatureIndex {
 
         if (filter.needGeometry) {
             const evaluationFeature = toEvaluationFeature(feature, true);
+            // $FlowFixMe[method-unbinding]
             if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
                 return;
             }
+        // $FlowFixMe[method-unbinding]
         } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
             return;
         }

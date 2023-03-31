@@ -21,7 +21,7 @@ export default class ClickZoomHandler {
         this.reset();
     }
 
-    dblclick: (e: MouseEvent, point: Point) => HandlerResult = (e, point) => {
+    dblclick(e: MouseEvent, point: Point): HandlerResult {
         e.preventDefault();
         return {
             cameraAnimation: (map: Map) => {

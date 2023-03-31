@@ -110,11 +110,13 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    queryRadius: () => number = () => {
+    // $FlowFixMe[method-unbinding]
+    queryRadius(): number {
         return 0;
     }
 
-    queryIntersectsFeature: () => boolean = () => {
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
         return false;
     }

@@ -134,11 +134,13 @@ class VectorTileSource extends Evented implements Source {
         return this._loaded;
     }
 
-    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
+    // $FlowFixMe[method-unbinding]
+    hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onAdd(map: Map) {
         this.map = map;
         this.load();
     }
@@ -149,7 +151,8 @@ class VectorTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
-    reload: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    reload() {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
     }
@@ -199,7 +202,8 @@ class VectorTileSource extends Evented implements Source {
         return this;
     }
 
-    onRemove: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    onRemove() {
         this.cancelTileJSONRequest();
     }
 
@@ -288,7 +292,8 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    abortTile: (tile: Tile) => void = (tile) => {
+    // $FlowFixMe[method-unbinding]
+    abortTile(tile: Tile) {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
@@ -298,7 +303,8 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    unloadTile: (tile: Tile) => void = (tile) => {
+    // $FlowFixMe[method-unbinding]
+    unloadTile(tile: Tile) {
         tile.unloadVectorData();
         if (tile.actor) {
             tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
@@ -309,7 +315,8 @@ class VectorTileSource extends Evented implements Source {
         return false;
     }
 
-    afterUpdate: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    afterUpdate() {
         this._tileWorkers = {};
     }
 

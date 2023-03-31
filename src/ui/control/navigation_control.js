@@ -84,7 +84,7 @@ class NavigationControl {
         }
     }
 
-    _updateZoomButtons: () => void = () => {
+    _updateZoomButtons() {
         const map = this._map;
         if (!map) return;
 
@@ -95,9 +95,9 @@ class NavigationControl {
         this._zoomOutButton.disabled = isMin;
         this._zoomInButton.setAttribute('aria-disabled', isMax.toString());
         this._zoomOutButton.setAttribute('aria-disabled', isMin.toString());
-    };
+    }
 
-    _rotateCompassArrow: () => void = () => {
+    _rotateCompassArrow() {
         const map = this._map;
         if (!map) return;
 
@@ -110,21 +110,24 @@ class NavigationControl {
                 this._compassIcon.style.transform = rotate;
             }
         });
-    };
+    }
 
     onAdd(map: Map): HTMLElement {
         this._map = map;
         if (this.options.showZoom) {
             this._setButtonTitle(this._zoomInButton, 'ZoomIn');
             this._setButtonTitle(this._zoomOutButton, 'ZoomOut');
+            // $FlowFixMe[method-unbinding]
             map.on('zoom', this._updateZoomButtons);
             this._updateZoomButtons();
         }
         if (this.options.showCompass) {
             this._setButtonTitle(this._compass, 'ResetBearing');
             if (this.options.visualizePitch) {
+                // $FlowFixMe[method-unbinding]
                 map.on('pitch', this._rotateCompassArrow);
             }
+            // $FlowFixMe[method-unbinding]
             map.on('rotate', this._rotateCompassArrow);
             this._rotateCompassArrow();
             this._handler = new MouseRotateWrapper(map, this._compass, this.options.visualizePitch);
@@ -137,12 +140,15 @@ class NavigationControl {
         if (!map) return;
         this._container.remove();
         if (this.options.showZoom) {
+            // $FlowFixMe[method-unbinding]
             map.off('zoom', this._updateZoomButtons);
         }
         if (this.options.showCompass) {
             if (this.options.visualizePitch) {
+                // $FlowFixMe[method-unbinding]
                 map.off('pitch', this._rotateCompassArrow);
             }
+            // $FlowFixMe[method-unbinding]
             map.off('rotate', this._rotateCompassArrow);
             if (this._handler) this._handler.off();
             this._handler = undefined;
@@ -183,10 +189,15 @@ class MouseRotateWrapper {
         if (pitch) this.mousePitch = new MousePitchHandler({clickTolerance: map.dragRotate._mousePitch._clickTolerance});
 
         bindAll(['mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'touchend', 'reset'], this);
+        // $FlowFixMe[method-unbinding]
         element.addEventListener('mousedown', this.mousedown);
+        // $FlowFixMe[method-unbinding]
         element.addEventListener('touchstart', this.touchstart, {passive: false});
+        // $FlowFixMe[method-unbinding]
         element.addEventListener('touchmove', this.touchmove);
+        // $FlowFixMe[method-unbinding]
         element.addEventListener('touchend', this.touchend);
+        // $FlowFixMe[method-unbinding]
         element.addEventListener('touchcancel', this.reset);
     }
 
@@ -210,55 +221,64 @@ class MouseRotateWrapper {
 
     off() {
         const element = this.element;
+        // $FlowFixMe[method-unbinding]
         element.removeEventListener('mousedown', this.mousedown);
+        // $FlowFixMe[method-unbinding]
         element.removeEventListener('touchstart', this.touchstart, {passive: false});
+        // $FlowFixMe[method-unbinding]
         element.removeEventListener('touchmove', this.touchmove);
+        // $FlowFixMe[method-unbinding]
         element.removeEventListener('touchend', this.touchend);
+        // $FlowFixMe[method-unbinding]
         element.removeEventListener('touchcancel', this.reset);
         this.offTemp();
     }
 
     offTemp() {
         DOM.enableDrag();
+        // $FlowFixMe[method-unbinding]
         window.removeEventListener('mousemove', this.mousemove);
+        // $FlowFixMe[method-unbinding]
         window.removeEventListener('mouseup', this.mouseup);
     }
 
-    mousedown: (e: MouseEvent) => void = (e) => {
+    mousedown(e: MouseEvent) {
         this.down(extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
+        // $FlowFixMe[method-unbinding]
         window.addEventListener('mousemove', this.mousemove);
+        // $FlowFixMe[method-unbinding]
         window.addEventListener('mouseup', this.mouseup);
-    };
+    }
 
-    mousemove: (e: MouseEvent) => void = (e) => {
+    mousemove(e: MouseEvent) {
         this.move(e, DOM.mousePos(this.element, e));
-    };
+    }
 
-    mouseup: (e: MouseEvent) => void = (e) => {
+    mouseup(e: MouseEvent) {
         this.mouseRotate.mouseupWindow(e);
         if (this.mousePitch) this.mousePitch.mouseupWindow(e);
         this.offTemp();
-    };
+    }
 
-    touchstart: (e: TouchEvent) => void = (e) => {
+    touchstart(e: TouchEvent) {
         if (e.targetTouches.length !== 1) {
             this.reset();
         } else {
             this._startPos = this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
             this.down((({type: 'mousedown', button: 0, ctrlKey: true, preventDefault: () => e.preventDefault()}: any): MouseEvent), this._startPos);
         }
-    };
+    }
 
-    touchmove: (e: TouchEvent) => void = (e) => {
+    touchmove(e: TouchEvent) {
         if (e.targetTouches.length !== 1) {
             this.reset();
         } else {
             this._lastPos = DOM.touchPos(this.element, e.targetTouches)[0];
             this.move((({preventDefault: () => e.preventDefault()}: any): MouseEvent), this._lastPos);
         }
-    };
+    }
 
-    touchend: (e: TouchEvent) => void = (e) => {
+    touchend(e: TouchEvent) {
         if (e.targetTouches.length === 0 &&
             this._startPos &&
             this._lastPos &&
@@ -266,15 +286,15 @@ class MouseRotateWrapper {
             this.element.click();
         }
         this.reset();
-    };
+    }
 
-    reset: () => void = () => {
+    reset() {
         this.mouseRotate.reset();
         if (this.mousePitch) this.mousePitch.reset();
         delete this._startPos;
         delete this._lastPos;
         this.offTemp();
-    };
+    }
 }
 
 export default NavigationControl;

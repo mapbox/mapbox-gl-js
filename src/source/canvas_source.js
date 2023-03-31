@@ -162,7 +162,8 @@ class CanvasSource extends ImageSource {
         return this.canvas;
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onAdd(map: Map) {
         this.map = map;
         this.load();
         if (this.canvas) {
@@ -170,7 +171,8 @@ class CanvasSource extends ImageSource {
         }
     }
 
-    onRemove: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    onRemove() {
         this.pause();
     }
 
@@ -189,7 +191,8 @@ class CanvasSource extends ImageSource {
 
     // setCoordinates inherited from ImageSource
 
-    prepare: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    prepare() {
         let resize = false;
         if (this.canvas.width !== this.width) {
             this.width = this.canvas.width;

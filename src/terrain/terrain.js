@@ -279,7 +279,9 @@ export class Terrain extends Elevation {
     }
 
     set style(style: Style) {
+        // $FlowFixMe[method-unbinding]
         style.on('data', this._onStyleDataEvent.bind(this));
+        // $FlowFixMe[method-unbinding]
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
@@ -354,7 +356,7 @@ export class Terrain extends Elevation {
         return demScale * proxyTileSize;
     }
 
-    _checkRenderCacheEfficiency: () => void = () => {
+    _checkRenderCacheEfficiency() {
         const renderCacheInfo = this.renderCacheEfficiency(this._style);
         if (this._style.map._optimizeForTerrain) {
             assert(renderCacheInfo.efficiency === 100);
@@ -365,7 +367,7 @@ export class Terrain extends Elevation {
         }
     }
 
-    _onStyleDataEvent: (event: any) => void = (event) => {
+    _onStyleDataEvent(event: any) {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
         } else if (event.dataType === 'style') {
@@ -1341,6 +1343,7 @@ export class Terrain extends Elevation {
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
 
         const anchor = new Point(imageSource.tileID.x, imageSource.tileID.y)._div(1 << imageSource.tileID.z);
+        // $FlowFixMe[method-unbinding]
         const aabb = imageSource.coordinates.map(MercatorCoordinate.fromLngLat).reduce((acc, coord) => {
             acc.min.x = Math.min(acc.min.x, coord.x - anchor.x);
             acc.min.y = Math.min(acc.min.y, coord.y - anchor.y);

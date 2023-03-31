@@ -113,7 +113,8 @@ class RasterTileSource extends Evented implements Source {
         return this._loaded;
     }
 
-    onAdd: (map: Map) => void = (map) => {
+    // $FlowFixMe[method-unbinding]
+    onAdd(map: Map) {
         this.map = map;
         this.load();
     }
@@ -124,7 +125,8 @@ class RasterTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
-    reload: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    reload() {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
     }
@@ -173,17 +175,19 @@ class RasterTileSource extends Evented implements Source {
         return this;
     }
 
-    onRemove: () => void = () => {
+    // $FlowFixMe[method-unbinding]
+    onRemove() {
         this.cancelTileJSONRequest();
-    };
+    }
 
     serialize(): RasterSourceSpecification | RasterDEMSourceSpecification {
         return extend({}, this._options);
     }
 
-    hasTile: (tileID: OverscaledTileID) => boolean = (tileID) => {
+    // $FlowFixMe[method-unbinding]
+    hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
-    };
+    }
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const use2x = browser.devicePixelRatio >= 2;
@@ -222,7 +226,8 @@ class RasterTileSource extends Evented implements Source {
         }
     }
 
-    abortTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+    // $FlowFixMe[method-unbinding]
+    abortTile(tile: Tile, callback: Callback<void>) {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
@@ -230,7 +235,8 @@ class RasterTileSource extends Evented implements Source {
         callback();
     }
 
-    unloadTile: (tile: Tile, callback: Callback<void>) => void = (tile, callback) => {
+    // $FlowFixMe[method-unbinding]
+    unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
     }

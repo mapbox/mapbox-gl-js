@@ -517,6 +517,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
 
     possiblyEvaluate(value: PropertyValue<T, T>, parameters: EvaluationParameters): T {
         assert(!value.isDataDriven());
+        // $FlowFixMe[method-unbinding]
         return value.expression.evaluate(parameters);
     }
 
@@ -549,6 +550,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
+            // $FlowFixMe[method-unbinding]
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
@@ -586,6 +588,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         if (value.kind === 'constant') {
             return value.value;
         } else {
+            // $FlowFixMe[method-unbinding]
             return value.evaluate(parameters, feature, featureState, canonical, availableImages);
         }
     }
@@ -606,6 +609,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
     }
 
     possiblyEvaluate(value: PropertyValue<Color, boolean>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): boolean {
+        // $FlowFixMe[method-unbinding]
         return !!value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
     }
 
