@@ -51,9 +51,9 @@ export interface GlobalProperties {
     lineProgress?: number,
     rasterValue?: number,
     skyRadialProgress?: number,
-    isSupportedScript?: (_: string) => boolean,
+    +isSupportedScript?: (_: string) => boolean,
     accumulated?: Value,
-    brightness?: ?number
+    brightness?: number
 }
 
 export class StyleExpression {

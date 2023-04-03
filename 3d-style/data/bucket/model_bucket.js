@@ -103,6 +103,7 @@ class ModelBucket implements Bucket {
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
+            // $FlowFixMe[method-unbinding]
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
 
             const bucketFeature: BucketFeature = {

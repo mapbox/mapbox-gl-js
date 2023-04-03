@@ -77,7 +77,9 @@ class Texture {
                 let type = gl.UNSIGNED_BYTE;
 
                 if (this.format === gl.DEPTH_COMPONENT) {
+                    // $FlowFixMe[incompatible-type]
                     internalFormat = gl.DEPTH_COMPONENT16;
+                    // $FlowFixMe[incompatible-type]
                     type = gl.UNSIGNED_SHORT;
                 }
 
