@@ -36,6 +36,7 @@ class Actor {
         this.callbacks = {};
         this.cancelCallbacks = {};
         bindAll(['receive'], this);
+        // $FlowFixMe[method-unbinding]
         this.target.addEventListener('message', this.receive, false);
         this.globalScope = isWorker() ? target : window;
         this.scheduler = new Scheduler();
@@ -170,6 +171,7 @@ class Actor {
 
     remove() {
         this.scheduler.remove();
+        // $FlowFixMe[method-unbinding]
         this.target.removeEventListener('message', this.receive, false);
     }
 }

@@ -269,7 +269,7 @@ function updateLineLabels(bucket: SymbolBucket,
 
     const aspectRatio = painter.transform.width / painter.transform.height;
 
-    let useVertical = false;
+    let useVertical: ?boolean = false;
     let prevWritingMode;
 
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -628,7 +628,7 @@ function placeGlyphAlongLine(
     const prevToCurrent = vec3.sub([], current, prev);
     const labelPlanePoint = vec3.scaleAndAdd([], prev, prevToCurrent, segmentInterpolationT);
 
-    let axisZ = [0, 0, 1];
+    let axisZ: Vec3 = [0, 0, 1];
     let diffX = prevToCurrent[0];
     let diffY = prevToCurrent[1];
 

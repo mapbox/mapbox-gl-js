@@ -21,7 +21,7 @@ export default function validateFunction(options: ValidationOptions): any {
     const functionType = unbundle(options.value.type);
     let stopKeyType;
     let stopDomainValues: {[string | number]: boolean} = {};
-    let previousStopDomainValue;
+    let previousStopDomainValue: ?mixed;
     let previousStopDomainZoom;
 
     const isZoomFunction = functionType !== 'categorical' && options.value.property === undefined;

@@ -43,6 +43,7 @@ import type {Callback} from '../types/callback.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import {Aabb} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
+import type {MapEvent} from './events.js';
 
 /**
  * A helper type: converts all Object type values to non-maybe types.
@@ -762,7 +763,7 @@ class Camera extends Evented {
      * const elevation = map.queryTerrainElevation(coordinate);
      * @see [Example: Query terrain elevation](https://docs.mapbox.com/mapbox-gl-js/example/query-terrain-elevation/)
      */
-    queryTerrainElevation(lnglat: LngLatLike, options: ?ElevationQueryOptions): number | null {
+    queryTerrainElevation(lnglat: LngLatLike, options: ?ElevationQueryOptions): ?number {
         const elevation = this.transform.elevation;
         if (elevation) {
             options = extend({}, {exaggerated: true}, options);
@@ -1066,6 +1067,7 @@ class Camera extends Evented {
         }
 
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
+            // $FlowFixMe[incompatible-type] - Flow can't infer that padding is not null here
             tr.padding = options.padding;
         }
 
@@ -1718,6 +1720,7 @@ class Camera extends Evented {
             this._easeOptions = options;
             this._onEaseFrame = frame;
             this._onEaseEnd = finish;
+            // $FlowFixMe[method-unbinding]
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         }
     }
@@ -1728,6 +1731,7 @@ class Camera extends Evented {
         const frame = this._onEaseFrame;
         if (frame) frame(this._easeOptions.easing(t));
         if (t < 1) {
+            // $FlowFixMe[method-unbinding]
             this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         } else {
             this.stop();
@@ -1781,7 +1785,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
         ['drag', 'zoom', 'rotate', 'pitch', 'move'].forEach(name => {
             inProgress[name] = false;
 
-            camera.on(`${name}start`, () => {
+            camera.on(((`${name}start`: any): MapEvent), () => {
                 assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
                 inProgress[name] = true;
                 assert(inProgress.move);
@@ -1792,7 +1796,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
                 assert(inProgress.move);
             });
 
-            camera.on(`${name}end`, () => {
+            camera.on(((`${name}end`: any): MapEvent), () => {
                 assert(inProgress.move);
                 assert(inProgress[name]);
                 inProgress[name] = false;

@@ -22,7 +22,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
-    useIntegerZoom: true;
+    useIntegerZoom = true;
 
     possiblyEvaluate(value, parameters) {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
@@ -81,7 +81,7 @@ class LineStyleLayer extends StyleLayer {
             lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
-    createBucket(parameters: BucketParameters<*>): LineBucket {
+    createBucket(parameters: BucketParameters<LineStyleLayer>): LineBucket {
         return new LineBucket(parameters);
     }
 
@@ -96,6 +96,7 @@ class LineStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(bucket: Bucket): number {
         const lineBucket: LineBucket = (bucket: any);
         const width = getLineWidth(
@@ -105,6 +106,7 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,

@@ -175,7 +175,7 @@ class BoxZoomHandler {
         delete this._lastPos;
     }
 
-    _fireEvent(type: string, e: *): Map {
+    _fireEvent(type: string, e: any): Map {
         return this._map.fire(new Event(type, {originalEvent: e}));
     }
 }

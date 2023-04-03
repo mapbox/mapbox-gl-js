@@ -102,7 +102,7 @@ export default class TileParser {
         return Promise.all([
             createStyle(this.styleJSON),
             fetchTileJSON(mapStub._requestManager, (this.styleJSON.sources[this.sourceID]: any).url)
-        ]).then(([style: Style, tileJSON: TileJSON]) => {
+        ]).then(([style, tileJSON]: [Style, TileJSON]) => {
             this.style = style;
             this.tileJSON = tileJSON;
         });

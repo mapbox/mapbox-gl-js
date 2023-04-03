@@ -107,9 +107,9 @@ export class PropertyValue<T, R> {
 
 // ------- Transitionable -------
 
-export type TransitionParameters = {
+export type TransitionParameters = interface {
     now: TimePoint,
-    transition: TransitionSpecification
+    transition: TransitionSpecification,
 };
 
 /**
@@ -390,7 +390,7 @@ export class Layout<Props: Object> {
         return clone(this._values[name].value);
     }
 
-    setValue<S: string>(name: S, value: *) {
+    setValue<S: string>(name: S, value: any) {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
     }
 
@@ -531,6 +531,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
 
     possiblyEvaluate(value: PropertyValue<T, T>, parameters: EvaluationParameters): T {
         assert(!value.isDataDriven());
+        // $FlowFixMe[method-unbinding]
         return value.expression.evaluate(parameters);
     }
 
@@ -554,6 +555,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
 export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
     overrides: ?Object;
+    useIntegerZoom: ?boolean;
 
     constructor(specification: StylePropertySpecification, overrides?: Object) {
         this.specification = specification;
@@ -562,6 +564,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
+            // $FlowFixMe[method-unbinding]
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
@@ -599,6 +602,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         if (value.kind === 'constant') {
             return value.value;
         } else {
+            // $FlowFixMe[method-unbinding]
             return value.evaluate(parameters, feature, featureState, canonical, availableImages);
         }
     }
@@ -619,6 +623,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
     }
 
     possiblyEvaluate(value: PropertyValue<Color, boolean>, parameters: EvaluationParameters, canonical?: CanonicalTileID, availableImages?: Array<string>): boolean {
+        // $FlowFixMe[method-unbinding]
         return !!value.expression.evaluate(parameters, (null: any), {}, canonical, availableImages);
     }
 

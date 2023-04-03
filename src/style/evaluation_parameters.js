@@ -14,7 +14,7 @@ class EvaluationParameters {
     brightness: number;
 
     // "options" may also be another EvaluationParameters to copy
-    constructor(zoom: number, options?: *) {
+    constructor(zoom: number, options?: any) {
         this.zoom = zoom;
 
         if (options) {

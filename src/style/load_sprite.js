@@ -16,7 +16,7 @@ export default function(baseURL: string,
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    let jsonRequest = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err: ?Error, data: ?Object) => {
+    let jsonRequest: ?Cancelable = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err: ?Error, data: ?Object) => {
         jsonRequest = null;
         if (!error) {
             error = err;
@@ -25,7 +25,7 @@ export default function(baseURL: string,
         }
     });
 
-    let imageRequest = getImage(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+    let imageRequest: ?Cancelable = getImage(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
         imageRequest = null;
         if (!error) {
             error = err;

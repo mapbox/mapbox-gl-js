@@ -17,6 +17,7 @@ import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {RasterDEMSourceSpecification} from '../style-spec/types.js';
 
+// $FlowFixMe[method-unbinding]
 class RasterDEMTileSource extends RasterTileSource implements Source {
     encoding: "mapbox" | "terrarium";
 
@@ -116,6 +117,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         return neighboringTiles;
     }
 
+    // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile) {
         if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
         if (tile.fbo) {

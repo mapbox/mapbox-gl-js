@@ -32,7 +32,7 @@ function preparePoint(point: Point, scale: number) {
 }
 
 // a subset of VectorTileGeometry
-type FeatureWithGeometry = {
+interface FeatureWithGeometry {
     extent: number;
     type: 1 | 2 | 3;
     loadGeometry(): Array<Array<Point>>;

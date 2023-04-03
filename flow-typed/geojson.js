@@ -27,12 +27,12 @@ declare module "@mapbox/geojson-types" {
         geometries: Array<GeoJSONGeometry>
     };
 
-    declare export type GeoJSONFeature = {
-        type: 'Feature',
-        geometry: ?GeoJSONGeometry,
-        properties: ?{},
-        id?: number | string
-    };
+    declare export interface GeoJSONFeature {
+        type: 'Feature';
+        geometry: ?GeoJSONGeometry;
+        properties: ?{};
+        id?: number | string;
+    }
 
     declare export type GeoJSONFeatureCollection = {
         type: 'FeatureCollection',

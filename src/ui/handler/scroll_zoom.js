@@ -196,6 +196,7 @@ class ScrollZoomHandler {
             this._lastValue = value;
 
             // Start a timeout in case this was a singular event, and delay it by up to 40ms.
+            // $FlowFixMe[method-unbinding]
             this._timeout = setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {

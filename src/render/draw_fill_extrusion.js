@@ -176,7 +176,7 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
 function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
     // For all four borders: 0 - left, 1, right, 2 - top, 3 - bottom
     const neighborCoord = [
-        coord => {
+        (coord: OverscaledTileID) => {
             let x = coord.canonical.x - 1;
             let w = coord.wrap;
             if (x < 0) {
@@ -185,7 +185,7 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
             }
             return new OverscaledTileID(coord.overscaledZ, w, coord.canonical.z, x, coord.canonical.y);
         },
-        coord => {
+        (coord: OverscaledTileID) => {
             let x = coord.canonical.x + 1;
             let w = coord.wrap;
             if (x === 1 << coord.canonical.z) {

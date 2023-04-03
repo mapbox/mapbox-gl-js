@@ -62,6 +62,7 @@ function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { 
 function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext, any, any) => boolean, compareWithCollator: (EvaluationContext, any, any, any) => boolean): ExpressionRegistration {
     const isOrderComparison = op !== '==' && op !== '!=';
 
+    // $FlowFixMe[method-unbinding]
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
@@ -77,6 +78,7 @@ function makeComparison(op: ComparisonOperator, compareBasic: (EvaluationContext
             this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
+        // $FlowFixMe[method-unbinding]
         static parse(args: $ReadOnlyArray<mixed>, context: ParsingContext): ?Expression {
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);

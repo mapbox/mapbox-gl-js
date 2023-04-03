@@ -143,23 +143,29 @@ export default class Popup extends Evented {
 
         this._map = map;
         if (this.options.closeOnClick) {
+            // $FlowFixMe[method-unbinding]
             map.on('preclick', this._onClose);
         }
 
         if (this.options.closeOnMove) {
+            // $FlowFixMe[method-unbinding]
             map.on('move', this._onClose);
         }
 
+        // $FlowFixMe[method-unbinding]
         map.on('remove', this.remove);
         this._update();
         map._addPopup(this);
         this._focusFirstElement();
 
         if (this._trackPointer) {
+            // $FlowFixMe[method-unbinding]
             map.on('mousemove', this._onMouseEvent);
+            // $FlowFixMe[method-unbinding]
             map.on('mouseup', this._onMouseEvent);
             map._canvasContainer.classList.add('mapboxgl-track-pointer');
         } else {
+            // $FlowFixMe[method-unbinding]
             map.on('move', this._update);
         }
 
@@ -218,13 +224,21 @@ export default class Popup extends Evented {
 
         const map = this._map;
         if (map) {
+            // $FlowFixMe[method-unbinding]
             map.off('move', this._update);
+            // $FlowFixMe[method-unbinding]
             map.off('move', this._onClose);
+            // $FlowFixMe[method-unbinding]
             map.off('preclick', this._onClose);
+            // $FlowFixMe[method-unbinding]
             map.off('click', this._onClose);
+            // $FlowFixMe[method-unbinding]
             map.off('remove', this.remove);
+            // $FlowFixMe[method-unbinding]
             map.off('mousemove', this._onMouseEvent);
+            // $FlowFixMe[method-unbinding]
             map.off('mouseup', this._onMouseEvent);
+            // $FlowFixMe[method-unbinding]
             map.off('drag', this._onMouseEvent);
             if (map._canvasContainer) {
                 map._canvasContainer.classList.remove('mapboxgl-track-pointer');
@@ -290,7 +304,9 @@ export default class Popup extends Evented {
 
         const map = this._map;
         if (map) {
+            // $FlowFixMe[method-unbinding]
             map.on('move', this._update);
+            // $FlowFixMe[method-unbinding]
             map.off('mousemove', this._onMouseEvent);
             map._canvasContainer.classList.remove('mapboxgl-track-pointer');
         }
@@ -315,8 +331,11 @@ export default class Popup extends Evented {
         this._update();
         const map = this._map;
         if (map) {
+            // $FlowFixMe[method-unbinding]
             map.off('move', this._update);
+            // $FlowFixMe[method-unbinding]
             map.on('mousemove', this._onMouseEvent);
+            // $FlowFixMe[method-unbinding]
             map.on('drag', this._onMouseEvent);
             map._canvasContainer.classList.add('mapboxgl-track-pointer');
         }
@@ -456,6 +475,7 @@ export default class Popup extends Evented {
             button.setAttribute('aria-label', 'Close popup');
             button.setAttribute('aria-hidden', 'true');
             button.innerHTML = '&#215;';
+            // $FlowFixMe[method-unbinding]
             button.addEventListener('click', this._onClose);
         }
         this._update();

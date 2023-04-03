@@ -62,14 +62,19 @@ test('util', (t) => {
     t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2]), 16);
 
     t.test('bindAll', (t) => {
-        function MyClass() {
-            bindAll(['ontimer'], this);
-            this.name = 'Tom';
+        class MyClass {
+            name: string;
+            constructor() {
+                bindAll(['ontimer'], this);
+                this.name = 'Tom';
+            }
+
+            ontimer = () => {
+                t.equal(this.name, 'Tom');
+                t.end();
+            }
         }
-        MyClass.prototype.ontimer = function() {
-            t.equal(this.name, 'Tom');
-            t.end();
-        };
+
         const my = new MyClass();
         setTimeout(my.ontimer, 0);
     });
