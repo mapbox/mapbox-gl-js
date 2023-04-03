@@ -25,7 +25,7 @@ let _completionCallback = null;
 
 //Variables defining the current state of the plugin
 let pluginStatus = status.unavailable;
-let pluginURL = null;
+let pluginURL: ?string = null;
 
 export const triggerPluginCompletionEvent = function(error: ?Error) {
     // NetworkError's are not correctly reflected by the plugin status which prevents reloading plugin

@@ -325,6 +325,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             requestParameters,
             callback,
             cancelled: false,
+            // $FlowFixMe[object-this-reference]
             cancel() { this.cancelled = true; }
         };
         imageQueue.push(queued);
@@ -342,6 +343,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
             const request = imageQueue.shift();
             const {requestParameters, callback, cancelled} = request;
             if (!cancelled) {
+                // $FlowFixMe[cannot-write] - Flow can't infer that cancel is a writable property
                 request.cancel = getImage(requestParameters, callback).cancel;
             }
         }

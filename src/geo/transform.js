@@ -81,7 +81,7 @@ class Transform {
     mercatorFogMatrix: Float32Array;
 
     // Projection from world coordinates (mercator scaled by worldSize) to clip coordinates
-    projMatrix: Array<number>;
+    projMatrix: Array<number> | Float32Array | Float64Array;
     invProjMatrix: Float64Array;
 
     // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
@@ -580,6 +580,7 @@ class Transform {
 
         let changed = false;
         if (options.orientation && !quat.exactEquals(options.orientation, this._camera.orientation)) {
+            // $FlowFixMe[incompatible-call] - Flow can't infer that orientation is not null
             changed = this._setCameraOrientation(options.orientation);
         }
 
@@ -1874,7 +1875,7 @@ class Transform {
         cameraToClip[8] = -offset.x * 2 / this.width;
         cameraToClip[9] = offset.y * 2 / this.height;
 
-        let m = mat4.mul([], cameraToClip, worldToCamera);
+        let m: Array<number> | Float32Array | Float64Array = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).

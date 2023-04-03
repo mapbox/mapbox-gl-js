@@ -148,6 +148,7 @@ class GeoJSONSource extends Evented implements Source {
         }, options.workerOptions);
     }
 
+    // $FlowFixMe[method-unbinding]
     onAdd(map: Map) {
         this.map = map;
         this.setData(this._data);
@@ -375,6 +376,7 @@ class GeoJSONSource extends Evented implements Source {
         }, undefined, message === 'loadTile');
     }
 
+    // $FlowFixMe[method-unbinding]
     abortTile(tile: Tile) {
         if (tile.request) {
             tile.request.cancel();
@@ -383,11 +385,13 @@ class GeoJSONSource extends Evented implements Source {
         tile.aborted = true;
     }
 
+    // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
     }
 
+    // $FlowFixMe[method-unbinding]
     onRemove() {
         if (this._pendingLoad) {
             this._pendingLoad.cancel();

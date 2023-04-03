@@ -139,7 +139,7 @@ export class TouchZoomHandler extends TwoTouchHandler {
 
 const ROTATION_THRESHOLD = 25; // pixels along circumference of touch circle
 
-function getBearingDelta(a, b) {
+function getBearingDelta(a: Point, b: Point) {
     return a.angleWith(b) * 180 / Math.PI;
 }
 
@@ -166,6 +166,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
         this._active = true;
 
         return {
+            // $FlowFixMe[incompatible-call] - Flow doesn't infer that this._vectoris not null
             bearingDelta: getBearingDelta(this._vector, lastVector),
             pinchAround
         };

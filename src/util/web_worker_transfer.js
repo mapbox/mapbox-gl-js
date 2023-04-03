@@ -13,7 +13,7 @@ import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
 
-type SerializedObject = {[_: string]: Serialized }; // eslint-disable-line
+type SerializedObject = interface { [_: string]: Serialized };
 export type Serialized =
     | null
     | void
@@ -194,18 +194,18 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
                 properties[key] = serialize(property, transferables);
             }
             if (input instanceof Error) {
-                properties.message = input.message;
+                properties['message'] = input.message;
             }
         } else {
             // make sure statically serialized object survives transfer of $name property
             assert(!transferables || properties !== transferables[transferables.length - 1]);
         }
 
-        if (properties.$name) {
+        if (properties['$name']) {
             throw new Error('$name property is reserved for worker serialization logic.');
         }
         if (name !== 'Object') {
-            properties.$name = name;
+            properties['$name'] = name;
         }
 
         return properties;
@@ -248,9 +248,10 @@ export function deserialize(input: Serialized): mixed {
             return (klass.deserialize: typeof deserialize)(input);
         }
 
-        const result = Object.create(klass.prototype);
+        const result: {[_: string]: any} = Object.create(klass.prototype);
 
         for (const key of Object.keys(input)) {
+            // $FlowFixMe[incompatible-type]
             if (key === '$name') continue;
             const value = (input: SerializedObject)[key];
             result[key] = deserialize(value);

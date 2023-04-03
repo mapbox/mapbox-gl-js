@@ -32,6 +32,7 @@ class Scheduler {
         this.tasks = {};
         this.taskQueue = [];
         bindAll(['process'], this);
+        // $FlowFixMe[method-unbinding]
         this.invoker = new ThrottledInvoker(this.process);
 
         this.nextId = 0;

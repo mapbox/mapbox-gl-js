@@ -34,6 +34,7 @@ class Uniform1i extends Uniform<number> {
         this.current = 0;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: number): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
@@ -49,6 +50,7 @@ class Uniform1f extends Uniform<number> {
         this.current = 0;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: number): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
@@ -64,6 +66,7 @@ class Uniform2f extends Uniform<[number, number]> {
         this.current = [0, 0];
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: [number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1]) {
@@ -79,6 +82,7 @@ class Uniform3f extends Uniform<[number, number, number]> {
         this.current = [0, 0, 0];
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: [number, number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] || v[2] !== this.current[2]) {
@@ -94,6 +98,7 @@ class Uniform4f extends Uniform<[number, number, number, number]> {
         this.current = [0, 0, 0, 0];
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: [number, number, number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
@@ -110,6 +115,7 @@ class UniformColor extends Uniform<Color> {
         this.current = Color.transparent;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: Color): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v.r !== this.current.r || v.g !== this.current.g ||
@@ -127,6 +133,7 @@ class UniformMatrix4f extends Uniform<Float32Array> {
         this.current = emptyMat4;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         // The vast majority of matrix comparisons that will trip this set
@@ -154,6 +161,7 @@ class UniformMatrix3f extends Uniform<Float32Array> {
         this.current = emptyMat3;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 9; i++) {
@@ -173,6 +181,7 @@ class UniformMatrix2f extends Uniform<Float32Array> {
         this.current = emptyMat2;
     }
 
+    // $FlowFixMe[method-unbinding]
     set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 4; i++) {

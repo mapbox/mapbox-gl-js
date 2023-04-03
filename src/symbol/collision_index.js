@@ -19,7 +19,7 @@ import type {GlyphOffsetArray, SymbolLineVertexArray, PlacedSymbol} from '../dat
 import type {FogState} from '../style/fog_helpers.js';
 import type {Vec3, Mat4} from 'gl-matrix';
 
-type PlacedCollisionBox = {|
+export type PlacedCollisionBox = {|
     box: Array<number>,
     offscreen: boolean,
     occluded: boolean

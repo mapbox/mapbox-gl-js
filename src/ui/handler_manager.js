@@ -221,6 +221,7 @@ class HandlerManager {
         ];
 
         for (const [target, type, listenerOptions] of this._listeners) {
+            // $FlowFixMe[method-unbinding]
             const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
             target.addEventListener((type: any), (listener: any), listenerOptions);
         }
@@ -228,6 +229,7 @@ class HandlerManager {
 
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
+            // $FlowFixMe[method-unbinding]
             const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
             target.removeEventListener((type: any), (listener: any), listenerOptions);
         }
@@ -236,47 +238,62 @@ class HandlerManager {
     _addDefaultHandlers(options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number }) {
         const map = this._map;
         const el = map.getCanvasContainer();
+        // $FlowFixMe[method-unbinding]
         this._add('mapEvent', new MapEventHandler(map, options));
 
         const boxZoom = map.boxZoom = new BoxZoomHandler(map, options);
+        // $FlowFixMe[method-unbinding]
         this._add('boxZoom', boxZoom);
 
         const tapZoom = new TapZoomHandler();
         const clickZoom = new ClickZoomHandler();
         map.doubleClickZoom = new DoubleClickZoomHandler(clickZoom, tapZoom);
+        // $FlowFixMe[method-unbinding]
         this._add('tapZoom', tapZoom);
+        // $FlowFixMe[method-unbinding]
         this._add('clickZoom', clickZoom);
 
         const tapDragZoom = new TapDragZoomHandler();
+        // $FlowFixMe[method-unbinding]
         this._add('tapDragZoom', tapDragZoom);
 
         const touchPitch = map.touchPitch = new TouchPitchHandler(map);
+        // $FlowFixMe[method-unbinding]
         this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
         const mousePitch = new MousePitchHandler(options);
         map.dragRotate = new DragRotateHandler(options, mouseRotate, mousePitch);
+        // $FlowFixMe[method-unbinding]
         this._add('mouseRotate', mouseRotate, ['mousePitch']);
+        // $FlowFixMe[method-unbinding]
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
         const touchPan = new TouchPanHandler(map, options);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
+        // $FlowFixMe[method-unbinding]
         this._add('mousePan', mousePan);
+        // $FlowFixMe[method-unbinding]
         this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
 
         const touchRotate = new TouchRotateHandler();
         const touchZoom = new TouchZoomHandler();
         map.touchZoomRotate = new TouchZoomRotateHandler(el, touchZoom, touchRotate, tapDragZoom);
+        // $FlowFixMe[method-unbinding]
         this._add('touchRotate', touchRotate, ['touchPan', 'touchZoom']);
+        // $FlowFixMe[method-unbinding]
         this._add('touchZoom', touchZoom, ['touchPan', 'touchRotate']);
 
+        // $FlowFixMe[method-unbinding]
         this._add('blockableMapEvent', new BlockableMapEventHandler(map));
 
         const scrollZoom = map.scrollZoom = new ScrollZoomHandler(map, this);
+        // $FlowFixMe[method-unbinding]
         this._add('scrollZoom', scrollZoom, ['mousePan']);
 
         const keyboard = map.keyboard = new KeyboardHandler();
+        // $FlowFixMe[method-unbinding]
         this._add('keyboard', keyboard);
 
         for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
@@ -670,7 +687,7 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: string, e: *) {
+    _fireEvent(type: string, e: any) {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 

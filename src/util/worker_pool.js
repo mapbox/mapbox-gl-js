@@ -25,6 +25,7 @@ export default class WorkerPool {
             // client code has had a chance to set it.
             this.workers = [];
             while (this.workers.length < WorkerPool.workerCount) {
+                // $FlowFixMe[invalid-constructor]
                 this.workers.push(new WebWorker());
             }
         }

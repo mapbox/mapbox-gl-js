@@ -23,6 +23,18 @@ const unpackVectors = {
     terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
 };
 
+function unpackMapbox(r: number, g: number, b: number): number {
+    // unpacking formula for mapbox.terrain-rgb:
+    // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
+    return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
+}
+
+function unpackTerrarium(r: number, g: number, b: number): number {
+    // unpacking formula for mapzen terrarium:
+    // https://aws.amazon.com/public-datasets/terrain/
+    return ((r * 256 + g + b / 256) - 32768.0);
+}
+
 export default class DEMData {
     uid: number;
     pixels: Uint8Array;
@@ -86,7 +98,7 @@ export default class DEMData {
             y = clamp(y, -1, this.dim);
         }
         const index = this._idx(x, y) * 4;
-        const unpack = this.encoding === "terrarium" ? this._unpackTerrarium : this._unpackMapbox;
+        const unpack = this.encoding === "terrarium" ? unpackTerrarium : unpackMapbox;
         return unpack(this.pixels[index], this.pixels[index + 1], this.pixels[index + 2]);
     }
 
@@ -101,18 +113,6 @@ export default class DEMData {
     _idx(x: number, y: number): number {
         if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
         return (y + 1) * this.stride + (x + 1);
-    }
-
-    _unpackMapbox(r: number, g: number, b: number): number {
-        // unpacking formula for mapbox.terrain-rgb:
-        // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
-        return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
-    }
-
-    _unpackTerrarium(r: number, g: number, b: number): number {
-        // unpacking formula for mapzen terrarium:
-        // https://aws.amazon.com/public-datasets/terrain/
-        return ((r * 256 + g + b / 256) - 32768.0);
     }
 
     static pack(altitude: number, encoding: DEMEncoding): [number, number, number, number] {

@@ -155,6 +155,7 @@ class WorkerTile {
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
+                    // $FlowFixMe[incompatible-call] - Flow can't infer proper `family` type from `layer` above
                     layers: family,
                     zoom: this.zoom,
                     canonical: this.canonical,
@@ -177,9 +178,9 @@ class WorkerTile {
         lineAtlas.trim();
 
         let error: ?Error;
-        let glyphMap: ?{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}};
-        let iconMap: ?{[_: string]: StyleImage};
-        let patternMap: ?{[_: string]: StyleImage};
+        let glyphMap: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}};
+        let iconMap: {[_: string]: StyleImage};
+        let patternMap: {[_: string]: StyleImage};
         const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom};
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));

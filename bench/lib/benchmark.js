@@ -97,6 +97,7 @@ class Benchmark {
         return this._end();
     }
 
+    // $FlowFixMe[duplicate-class-member]
     _measureAsync(): Promise<Array<Measurement>> {
         const time = performance.now() - this._start;
         this._elapsed += time;

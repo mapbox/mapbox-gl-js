@@ -45,6 +45,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(): number {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
@@ -63,6 +64,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new ProgramConfiguration(this, zoom);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,

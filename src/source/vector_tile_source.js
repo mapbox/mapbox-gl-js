@@ -134,10 +134,12 @@ class VectorTileSource extends Evented implements Source {
         return this._loaded;
     }
 
+    // $FlowFixMe[method-unbinding]
     hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
+    // $FlowFixMe[method-unbinding]
     onAdd(map: Map) {
         this.map = map;
         this.load();
@@ -149,6 +151,7 @@ class VectorTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
+    // $FlowFixMe[method-unbinding]
     reload() {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
@@ -199,6 +202,7 @@ class VectorTileSource extends Evented implements Source {
         return this;
     }
 
+    // $FlowFixMe[method-unbinding]
     onRemove() {
         this.cancelTileJSONRequest();
     }
@@ -288,6 +292,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     abortTile(tile: Tile) {
         if (tile.request) {
             tile.request.cancel();
@@ -298,6 +303,7 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         if (tile.actor) {
@@ -309,6 +315,7 @@ class VectorTileSource extends Evented implements Source {
         return false;
     }
 
+    // $FlowFixMe[method-unbinding]
     afterUpdate() {
         this._tileWorkers = {};
     }

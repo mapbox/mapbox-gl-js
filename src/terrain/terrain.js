@@ -279,7 +279,9 @@ export class Terrain extends Elevation {
     }
 
     set style(style: Style) {
+        // $FlowFixMe[method-unbinding]
         style.on('data', this._onStyleDataEvent.bind(this));
+        // $FlowFixMe[method-unbinding]
         style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
         this._checkRenderCacheEfficiency();
@@ -1033,7 +1035,7 @@ export class Terrain extends Elevation {
             return;
         }
 
-        const batches = [];
+        const batches: Array<RenderBatch> = [];
 
         let currentLayer = 0;
         let layer = this._style._layers[layerIds[currentLayer]];
@@ -1041,7 +1043,7 @@ export class Terrain extends Elevation {
             layer = this._style._layers[layerIds[currentLayer]];
         }
 
-        let batchStart;
+        let batchStart: number | void;
         for (; currentLayer < layerCount; ++currentLayer) {
             const layer = this._style._layers[layerIds[currentLayer]];
             if (layer.isHidden(this.painter.transform.zoom)) {
@@ -1341,6 +1343,7 @@ export class Terrain extends Elevation {
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
 
         const anchor = new Point(imageSource.tileID.x, imageSource.tileID.y)._div(1 << imageSource.tileID.z);
+        // $FlowFixMe[method-unbinding]
         const aabb = imageSource.coordinates.map(MercatorCoordinate.fromLngLat).reduce((acc, coord) => {
             acc.min.x = Math.min(acc.min.x, coord.x - anchor.x);
             acc.min.y = Math.min(acc.min.y, coord.y - anchor.y);
@@ -1414,7 +1417,7 @@ export class Terrain extends Elevation {
     // caching "not found" results along the lookup, to leave the lookup early.
     // Not found is cached by this._findCoveringTileCache[key] = null;
     _findTileCoveringTileID(tileID: OverscaledTileID, sourceCache: SourceCache): ?Tile {
-        let tile = sourceCache.getTile(tileID);
+        let tile: ?Tile = sourceCache.getTile(tileID);
         if (tile && tile.hasData()) return tile;
 
         const lookup = this._findCoveringTileCache[sourceCache.id];

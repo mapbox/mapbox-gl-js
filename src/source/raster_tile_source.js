@@ -113,6 +113,7 @@ class RasterTileSource extends Evented implements Source {
         return this._loaded;
     }
 
+    // $FlowFixMe[method-unbinding]
     onAdd(map: Map) {
         this.map = map;
         this.load();
@@ -124,6 +125,7 @@ class RasterTileSource extends Evented implements Source {
      * @example
      * map.getSource('source-id').reload();
      */
+    // $FlowFixMe[method-unbinding]
     reload() {
         this.cancelTileJSONRequest();
         this.load(() => this.map.style._clearSource(this.id));
@@ -173,6 +175,7 @@ class RasterTileSource extends Evented implements Source {
         return this;
     }
 
+    // $FlowFixMe[method-unbinding]
     onRemove() {
         this.cancelTileJSONRequest();
     }
@@ -181,6 +184,7 @@ class RasterTileSource extends Evented implements Source {
         return extend({}, this._options);
     }
 
+    // $FlowFixMe[method-unbinding]
     hasTile(tileID: OverscaledTileID): boolean {
         return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
@@ -222,6 +226,7 @@ class RasterTileSource extends Evented implements Source {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     abortTile(tile: Tile, callback: Callback<void>) {
         if (tile.request) {
             tile.request.cancel();
@@ -230,6 +235,7 @@ class RasterTileSource extends Evented implements Source {
         callback();
     }
 
+    // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
