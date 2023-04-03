@@ -57,14 +57,16 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(parameters: BucketParameters<*>): FillBucket {
+    createBucket(parameters: BucketParameters<FillStyleLayer>): FillBucket {
         return new FillBucket(parameters);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(): number {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,

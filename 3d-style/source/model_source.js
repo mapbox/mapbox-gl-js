@@ -58,6 +58,7 @@ class ModelSource extends Evented implements Source {
         this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
     }
 
+    // $FlowFixMe[method-unbinding]
     onAdd(map: Map) {
         this.map = map;
         this.load();

@@ -135,7 +135,7 @@ class StructArray {
 
     static deserialize(input: SerializedStructArray): StructArray {
         // $FlowFixMe not-an-object - newer Flow doesn't understand this pattern, silence for now
-        const structArray = Object.create(this.prototype);
+        const structArray: {[_: string]: any} = Object.create(this.prototype);
         structArray.arrayBuffer = input.arrayBuffer;
         structArray.length = input.length;
         structArray.capacity = input.arrayBuffer.byteLength / structArray.bytesPerElement;

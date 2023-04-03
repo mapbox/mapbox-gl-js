@@ -40,12 +40,13 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         return [new ValidationError(key, value, `unknown property "${propertyKey}"`)];
     }
 
-    let tokenMatch;
+    let tokenMatch: ?RegExp$matchResult;
     if (getType(value) === 'string' && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
+        const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(
             key, value,
             `"${propertyKey}" does not support interpolation syntax\n` +
-                `Use an identity property function instead: \`{ "type": "identity", "property": ${JSON.stringify(tokenMatch[1])} }\`.`)];
+                `Use an identity property function instead: ${example}.`)];
     }
 
     const errors = [];

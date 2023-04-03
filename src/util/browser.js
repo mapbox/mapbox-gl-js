@@ -7,7 +7,7 @@ let linkEl;
 
 let reducedMotionQuery: MediaQueryList;
 
-let stubTime;
+let stubTime: number | void;
 
 let canvas;
 

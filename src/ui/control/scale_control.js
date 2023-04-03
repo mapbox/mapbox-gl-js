@@ -120,6 +120,7 @@ class ScaleControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
         this._container.dir = 'auto';
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('move', this._update);
         this._update();
 
@@ -128,6 +129,7 @@ class ScaleControl {
 
     onRemove() {
         this._container.remove();
+        // $FlowFixMe[method-unbinding]
         this._map.off('move', this._update);
         this._map = (undefined: any);
     }

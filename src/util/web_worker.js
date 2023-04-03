@@ -24,16 +24,16 @@ export interface WorkerInterface {
 export interface WorkerGlobalScopeInterface {
     importScripts(...urls: Array<string>): void;
 
-    registerWorkerSource: (string, Class<WorkerSource>) => void,
-    registerRTLTextPlugin: (_: any) => void
+    registerWorkerSource?: (string, Class<WorkerSource>) => void,
+    registerRTLTextPlugin?: (_: any) => void
 }
 
 class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
     addListeners: Array<MessageListener>;
     postListeners: Array<MessageListener>;
     target: MessageBus;
-    registerWorkerSource: *;
-    registerRTLTextPlugin: *;
+    registerWorkerSource: any;
+    registerRTLTextPlugin: any;
 
     constructor(addListeners: Array<MessageListener>, postListeners: Array<MessageListener>) {
         this.addListeners = addListeners;

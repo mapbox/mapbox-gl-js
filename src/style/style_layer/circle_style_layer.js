@@ -36,10 +36,11 @@ class CircleStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    createBucket(parameters: BucketParameters<*>): CircleBucket<CircleStyleLayer> {
+    createBucket(parameters: BucketParameters<CircleStyleLayer>): CircleBucket<CircleStyleLayer> {
         return new CircleBucket(parameters);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket<CircleStyleLayer> = (bucket: any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
@@ -47,6 +48,7 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,

@@ -23,7 +23,7 @@ function checkMaxAngle(line: Array<Point>, anchor: Anchor, labelLength: number, 
     // horizontal labels always pass
     if (anchor.segment === undefined) return true;
 
-    let p = anchor;
+    let p: Point = anchor;
     let index = anchor.segment + 1;
     let anchorDistance = 0;
 

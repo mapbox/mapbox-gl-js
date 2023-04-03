@@ -68,6 +68,7 @@ class FullscreenControl {
     onRemove() {
         this._controlContainer.remove();
         this._map = (null: any);
+        // $FlowFixMe[method-unbinding]
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
@@ -83,7 +84,9 @@ class FullscreenControl {
         DOM.create('span', `mapboxgl-ctrl-icon`, button).setAttribute('aria-hidden', 'true');
         button.type = 'button';
         this._updateTitle();
+        // $FlowFixMe[method-unbinding]
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
+        // $FlowFixMe[method-unbinding]
         window.document.addEventListener(this._fullscreenchange, this._changeIcon);
     }
 
@@ -121,6 +124,7 @@ class FullscreenControl {
             } else if (window.document.webkitCancelFullScreen) {
                 (window.document: any).webkitCancelFullScreen();
             }
+        // $FlowFixMe[method-unbinding]
         } else if (this._container.requestFullscreen) {
             this._container.requestFullscreen();
         } else if ((this._container: any).webkitRequestFullscreen) {

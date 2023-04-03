@@ -34,7 +34,7 @@ class HeatmapStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    createBucket(parameters: BucketParameters<*>): HeatmapBucket {
+    createBucket(parameters: BucketParameters<HeatmapStyleLayer>): HeatmapBucket {
         return new HeatmapBucket(parameters);
     }
 
@@ -68,10 +68,12 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(bucket: Bucket): number {
         return getMaximumPaintValue('heatmap-radius', this, ((bucket: any): CircleBucket<*>));
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,
                            feature: IVectorTileFeature,
                            featureState: FeatureState,

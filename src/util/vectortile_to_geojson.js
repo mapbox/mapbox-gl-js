@@ -1,20 +1,23 @@
 // @flow
-import type {LayerSpecification} from '../style-spec/types.js';
+import type {LayerSpecification, SourceSpecification} from '../style-spec/types.js';
 import type {GeoJSONGeometry, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 // we augment GeoJSON with custom properties in query*Features results
-export type QueryFeature = $ReadOnly<GeoJSONFeature> & {
+export interface QueryFeature extends GeoJSONFeature {
     layer?: ?LayerSpecification;
+    source?: ?SourceSpecification | ?mixed;
+    sourceLayer?: ?string | ?mixed;
+    state: ?mixed;
     [key: string]: mixed;
-};
+}
 
 const customProps = ['tile', 'layer', 'source', 'sourceLayer', 'state'];
 
 class Feature {
     type: 'Feature';
     _geometry: ?GeoJSONGeometry;
-    properties: {};
+    properties: ?{};
     id: number | string | void;
     _vectorTileFeature: IVectorTileFeature;
     _x: number;
@@ -53,6 +56,7 @@ class Feature {
     toJSON(): QueryFeature {
         const json: QueryFeature = {
             type: 'Feature',
+            state: undefined,
             geometry: this.geometry,
             properties: this.properties
         };

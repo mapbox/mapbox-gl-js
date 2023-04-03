@@ -80,6 +80,7 @@ function restore(): Window {
 
     window.fakeWorkerPresence = function() {
         global.WorkerGlobalScope = function() {};
+        // $FlowFixMe[invalid-constructor]
         global.self = new global.WorkerGlobalScope();
     };
     window.clearFakeWorkerPresence = function() {

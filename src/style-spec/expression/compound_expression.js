@@ -146,6 +146,7 @@ class CompoundExpression implements Expression {
         assert(!CompoundExpression.definitions);
         CompoundExpression.definitions = definitions;
         for (const name in definitions) {
+            // $FlowFixMe[method-unbinding]
             registry[name] = CompoundExpression;
         }
     }

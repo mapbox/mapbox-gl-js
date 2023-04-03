@@ -56,7 +56,7 @@ class Assertion implements Expression {
                 itemType = ValueType;
             }
 
-            let N;
+            let N: ?number;
             if (args.length > 3) {
                 if (args[2] !== null &&
                     (typeof args[2] !== 'number' ||
@@ -65,7 +65,7 @@ class Assertion implements Expression {
                 ) {
                     return context.error('The length argument to "array" must be a positive integer literal', 2);
                 }
-                N = args[2];
+                N = ((args[2]: any): number);
                 i++;
             }
 

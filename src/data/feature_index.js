@@ -192,9 +192,11 @@ class FeatureIndex {
 
         if (filter.needGeometry) {
             const evaluationFeature = toEvaluationFeature(feature, true);
+            // $FlowFixMe[method-unbinding]
             if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
                 return;
             }
+        // $FlowFixMe[method-unbinding]
         } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
             return;
         }
@@ -305,8 +307,9 @@ class FeatureIndex {
         let id = feature.id;
         if (this.promoteId) {
             const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
+            // $FlowFixMe[incompatible-type] - Flow can't narrow the id type from IVectorTileFeature.id
             if (propName != null) id = feature.properties[propName];
-            if (typeof id === 'boolean') id =  Number(id);
+            if (typeof id === 'boolean') id = Number(id);
         }
         return id;
     }

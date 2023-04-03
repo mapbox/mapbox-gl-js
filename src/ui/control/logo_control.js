@@ -35,9 +35,11 @@ class LogoControl {
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
 
+        // $FlowFixMe[method-unbinding]
         this._map.on('resize', this._updateCompact);
         this._updateCompact();
 
@@ -46,7 +48,9 @@ class LogoControl {
 
     onRemove() {
         this._container.remove();
+        // $FlowFixMe[method-unbinding]
         this._map.off('sourcedata', this._updateLogo);
+        // $FlowFixMe[method-unbinding]
         this._map.off('resize', this._updateCompact);
     }
 

@@ -69,6 +69,7 @@ class GridIndex {
     }
 
     insert(key: any, x1: number, y1: number, x2: number, y2: number) {
+        // $FlowFixMe[method-unbinding]
         this._forEachCell(x1, y1, x2, y2, this._insertBoxCell, this.boxUid++);
         this.boxKeys.push(key);
         this.bboxes.push(x1);
@@ -80,6 +81,7 @@ class GridIndex {
     insertCircle(key: any, x: number, y: number, radius: number) {
         // Insert circle into grid for all cells in the circumscribing square
         // It's more than necessary (by a factor of 4/PI), but fast to insert
+        // $FlowFixMe[method-unbinding]
         this._forEachCell(x - radius, y - radius, x + radius, y + radius, this._insertCircleCell, this.circleUid++);
         this.circleKeys.push(key);
         this.circles.push(x);
@@ -131,6 +133,7 @@ class GridIndex {
                 hitTest,
                 seenUids: {box: {}, circle: {}}
             };
+            // $FlowFixMe[method-unbinding]
             this._forEachCell(x1, y1, x2, y2, this._queryCell, result, queryArgs, predicate);
             return hitTest ? result.length > 0 : result;
         }
@@ -156,6 +159,7 @@ class GridIndex {
             circle: {x, y, radius},
             seenUids: {box: {}, circle: {}}
         };
+        // $FlowFixMe[method-unbinding]
         this._forEachCell(x1, y1, x2, y2, this._queryCellCircle, result, queryArgs, predicate);
         return hitTest ? result.length > 0 : result;
     }

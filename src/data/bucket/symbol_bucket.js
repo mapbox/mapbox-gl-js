@@ -523,6 +523,7 @@ class SymbolBucket implements Bucket {
 
             const needGeometry = layer._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
+            // $FlowFixMe[method-unbinding]
             if (!layer._featureFilter.filter(globalProperties, evaluationFeature, canonical)) {
                 continue;
             }

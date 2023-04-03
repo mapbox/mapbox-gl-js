@@ -96,7 +96,7 @@ class SymbolStyleLayer extends StyleLayer {
         this._setPaintOverrides();
     }
 
-    getValueAndResolveTokens(name: *, feature: Feature, canonical: CanonicalTileID, availableImages: Array<string>): string {
+    getValueAndResolveTokens(name: any, feature: Feature, canonical: CanonicalTileID, availableImages: Array<string>): string {
         const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
@@ -106,14 +106,16 @@ class SymbolStyleLayer extends StyleLayer {
         return value;
     }
 
-    createBucket(parameters: BucketParameters<*>): SymbolBucket {
+    createBucket(parameters: BucketParameters<SymbolStyleLayer>): SymbolBucket {
         return new SymbolBucket(parameters);
     }
 
+    // $FlowFixMe[method-unbinding]
     queryRadius(): number {
         return 0;
     }
 
+    // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
         return false;
@@ -129,8 +131,10 @@ class SymbolStyleLayer extends StyleLayer {
             const styleExpression = new StyleExpression(override, overriden.property.specification);
             let expression = null;
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
+                // $FlowFixMe[method-unbinding]
                 expression = (new ZoomConstantExpression('source', styleExpression): SourceExpression);
             } else {
+                // $FlowFixMe[method-unbinding]
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
                                                           overriden.value.zoomStops,

@@ -37,7 +37,7 @@ class Match implements Expression {
             return context.error(`Expected an even number of arguments.`);
 
         let inputType;
-        let outputType;
+        let outputType: ?Type;
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
