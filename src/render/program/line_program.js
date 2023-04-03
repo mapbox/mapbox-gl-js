@@ -15,6 +15,7 @@ import type Transform from '../../geo/transform.js';
 import type Tile from '../../source/tile.js';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer.js';
 import type Painter from '../painter.js';
+import Color from '../../style-spec/util/color.js';
 
 export type LineUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -42,7 +43,7 @@ export type LinePatternUniformsType = {|
     'u_alpha_discard_threshold': Uniform1f
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_TRIM_OFFSET';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'RENDER_LINE_BORDER_AUTO';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -152,6 +153,10 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     if (!hasPattern && hasOpacity) {
         values.push('RENDER_LINE_ALPHA_DISCARD');
     }
+
+    const hasBorder = layer.paint.get('line-border-width').constantOr(0.0) > 0.0;
+    if (hasBorder) values.push('RENDER_LINE_BORDER');
+    if (layer.paint.get('line-border-color').constantOr(Color.transparent).a === 0.0) values.push('RENDER_LINE_BORDER_AUTO');
     return values;
 };
 

@@ -267,7 +267,9 @@ export type LineLayerSpecification = {|
         "line-dasharray"?: DataDrivenPropertyValueSpecification<Array<number>>,
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification,
-        "line-trim-offset"?: [number, number]
+        "line-trim-offset"?: [number, number],
+        "line-border-width"?: DataDrivenPropertyValueSpecification<number>,
+        "line-border-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>
     |}
 |}
 

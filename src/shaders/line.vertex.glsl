@@ -47,6 +47,8 @@ uniform float u_image_height;
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float border_width
+#pragma mapbox: define lowp vec4 border_color
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -57,6 +59,8 @@ void main() {
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float border_width
+    #pragma mapbox: initialize lowp vec4 border_color
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.

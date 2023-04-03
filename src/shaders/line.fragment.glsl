@@ -16,8 +16,6 @@ varying vec2 v_tex;
 uniform sampler2D u_gradient_image;
 #endif
 
-uniform float u_border_width;
-uniform vec4 u_border_color;
 float luminance(vec3 c) {
     // Digital ITU BT.601 (Y = 0.299 R + 0.587 G + 0.114 B) approximation
     return (c.r + c.r + c.b + c.g + c.g + c.g) * 0.1667;
@@ -30,6 +28,8 @@ uniform float u_emissive_strength;
 #pragma mapbox: define lowp vec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float border_width
+#pragma mapbox: define lowp vec4 border_color
 
 float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -41,6 +41,8 @@ void main() {
     #pragma mapbox: initialize lowp vec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float border_width
+    #pragma mapbox: initialize lowp vec4 border_color
 
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2.s;
@@ -95,7 +97,7 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_BORDER
-    float edgeBlur = (u_border_width + 1.0 / u_device_pixel_ratio);
+    float edgeBlur = (border_width + 1.0 / u_device_pixel_ratio);
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
@@ -109,7 +111,7 @@ void main() {
             out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
         }
 #else  // use user-provided border color
-        out_color.rgb = mix(u_border_color.rgb * u_border_color.a * trimmed, out_color.rgb, smoothAlpha);
+        out_color.rgb = mix(border_color.rgb * border_color.a * trimmed, out_color.rgb, smoothAlpha);
 #endif // RENDER_LINE_BORDER_AUTO
     }
 #endif
