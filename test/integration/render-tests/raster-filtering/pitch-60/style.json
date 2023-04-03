@@ -1,0 +1,34 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 256,
+      "allowed": 0.0006
+    }
+  },
+  "center": [
+    -74.014328,
+    40.700471
+  ],
+  "zoom": 18.55,
+  "bearing": -179.732485,
+  "pitch": 60.0,
+  "sources": {
+    "mapbox://mapbox.satellite": {
+      "url": "mapbox://mapbox.satellite",
+      "type": "raster",
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "mapbox://mapbox.satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

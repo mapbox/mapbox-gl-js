@@ -104,7 +104,7 @@ class LngLatBounds {
                 const lngLatObj = ((obj: any): LngLatLike);
                 return this.extend(LngLat.convert(lngLatObj));
             }
-        } else if (typeof obj === 'object' && obj !== null && obj.hasOwnProperty("lat") && obj.hasOwnProperty("lon")) {
+        } else if (typeof obj === 'object' && obj !== null && obj.hasOwnProperty("lat") && (obj.hasOwnProperty("lon") || obj.hasOwnProperty("lng"))) {
             return this.extend(LngLat.convert(obj));
         } else {
             return this;
