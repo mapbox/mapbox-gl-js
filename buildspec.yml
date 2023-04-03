@@ -9,7 +9,7 @@ phases:
       - npm whoami
       - npm set unsafe-perm true
       - npm install -g yarn
-      - yarn
+      - yarn --ignore-engines
   build:
     commands:
       - ./build/publish.sh

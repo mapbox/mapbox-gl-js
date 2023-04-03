@@ -89,7 +89,7 @@ function buildArtifactsDev() {
     return buildTape().then(() => {
         // A promise that resolves on the first build of fixtures.json
         return new Promise((resolve, reject) => {
-            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(rootFixturePath, suitePath), {ignored: (path) => path.includes('actual.png') || path.includes('actual.json') || path.includes('diff.png')});
+            fixtureWatcher = chokidar.watch(getAllFixtureGlobs(rootFixturePath, suitePath), {ignored: /diff.png|actual.png|actual.json/});
             let needsRebuild = false;
             fixtureWatcher.on('ready', () => {
                 generateFixtureJson(rootFixturePath, suitePath, outputPath, suitePath === 'render-tests');
@@ -167,7 +167,7 @@ module.exports = async function() {
     await (ci ? buildArtifactsCi() : buildArtifactsDev());
 
     const testemConfig = {
-        middleware: [injectMiddlewares],
+        middleware: [(app) => injectMiddlewares(app, {ci})],
         "test_page": testPage,
         "query_params": getQueryParams(),
     };
