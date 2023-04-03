@@ -5596,6 +5596,63 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "line-border-width": {
+      "type": "number",
+      "private": true,
+      "doc": "The width of the line border. A value of zero means no border.",
+      "default": 0.0,
+      "minimum": 0.0,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "10.9.0",
+          "ios": "10.9.0"
+        },
+        "data-driven styling": {
+          "js": "3.0.0",
+          "android": "10.9.0",
+          "ios": "10.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "line-border-color": {
+      "type": "color",
+      "private": true,
+      "doc": "The color of the line border. If line-border-width is greater than zero and the alpha value of this color is 0 (default), the color for the border will be selected automatically based on the line color.",
+      "default": "rgba(0, 0, 0, 0)",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "10.9.0",
+          "ios": "10.9.0"
+        },
+        "data-driven styling": {
+          "js": "3.0.0",
+          "android": "10.9.0",
+          "ios": "10.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_circle": {

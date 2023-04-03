@@ -47,6 +47,8 @@ export type PaintProps = {|
     "line-gradient": ColorRampProperty,
     "line-trim-offset": DataConstantProperty<[number, number]>,
     "line-emissive-strength": DataConstantProperty<number>,
+    "line-border-width": DataDrivenProperty<number>,
+    "line-border-color": DataDrivenProperty<Color>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -63,6 +65,8 @@ const paint: Properties<PaintProps> = new Properties({
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
     "line-trim-offset": new DataConstantProperty(styleSpec["paint_line"]["line-trim-offset"]),
     "line-emissive-strength": new DataConstantProperty(styleSpec["paint_line"]["line-emissive-strength"]),
+    "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
+    "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types
