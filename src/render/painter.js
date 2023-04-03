@@ -554,9 +554,9 @@ class Painter {
         // Terrain depth offscreen render pass ==========================
         // With terrain on, renders the depth buffer into a texture.
         // This texture is used for occlusion testing (labels)
-        if (this.terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
-            // $FlowFixMe[incompatible-use] - Flow can't infer that terrain is not null
-            this.terrain.drawDepth();
+        const terrain = this.terrain;
+        if (terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
+            terrain.drawDepth();
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
