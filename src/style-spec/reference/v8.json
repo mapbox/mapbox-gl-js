@@ -6186,7 +6186,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -6216,8 +6217,6 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature",
-          "feature-state",
           "measure-light"
         ]
       },
