@@ -2936,6 +2936,7 @@ test('Map', (t) => {
     });
 
     t.test('#setLayoutProperty', (t) => {
+        t.setTimeout(2000);
         t.test('sets property', (t) => {
             const map = createMap(t, {
                 style: {
