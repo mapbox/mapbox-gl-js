@@ -7,11 +7,11 @@ import type {TransitionSpecification} from '../style-spec/types.js';
 
 class EvaluationParameters {
     zoom: number;
-    pitch: number;
+    pitch: number | void;
     now: number;
     fadeDuration: number;
     transition: TransitionSpecification;
-    brightness: number;
+    brightness: number | void;
 
     // "options" may also be another EvaluationParameters to copy
     constructor(zoom: number, options?: any) {

@@ -638,6 +638,7 @@ export class DirectionProperty implements Property<[number, number], Direction> 
     }
 
     possiblyEvaluate(value: PropertyValue<[number, number], Direction>, parameters: EvaluationParameters): Direction {
+        // $FlowFixMe[method-unbinding]
         return sphericalDirectionToCartesian(value.expression.evaluate(parameters));
     }
 
@@ -658,6 +659,7 @@ export class PositionProperty implements Property<[number, number, number], Posi
     }
 
     possiblyEvaluate(value: PropertyValue<[number, number, number], Position>, parameters: EvaluationParameters): Position {
+        // $FlowFixMe[method-unbinding]
         return sphericalPositionToCartesian(value.expression.evaluate(parameters));
     }
 

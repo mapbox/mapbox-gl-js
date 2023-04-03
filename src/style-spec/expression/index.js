@@ -53,7 +53,7 @@ export interface GlobalProperties {
     +skyRadialProgress?: number;
     +isSupportedScript?: (_: string) => boolean;
     +accumulated?: Value;
-    +brightness?: ?number;
+    +brightness?: number;
 }
 
 export class StyleExpression {

@@ -682,8 +682,6 @@ class Painter {
             shadowLayers = shadowRenderer.getShadowCastingLayerCount();
         }
 
-        const terrain = this.terrain;
-
         while (this.currentLayer < layerIds.length) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
             const sourceCache = style._getLayerSourceCache(layer);
