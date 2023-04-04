@@ -29,7 +29,7 @@ import type {Vec3} from 'gl-matrix';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
-const isMoving = p => p.zoom || p.drag || p.pitch || p.rotate;
+const isMoving = (p: { [string]: any }) => p.zoom || p.drag || p.pitch || p.rotate;
 
 class RenderFrameEvent extends Event {
     type: 'renderFrame';
@@ -491,12 +491,12 @@ class HandlerManager {
         const map = this._map;
         const tr = map.transform;
 
-        const eventStarted = (type) => {
+        const eventStarted = (type: string) => {
             const newEvent = combinedEventsInProgress[type];
             return newEvent && !this._eventsInProgress[type];
         };
 
-        const eventEnded = (type) => {
+        const eventEnded = (type: string) => {
             const event = this._eventsInProgress[type];
             return event && !this._handlersById[event.handlerName].isActive();
         };
@@ -669,7 +669,7 @@ class HandlerManager {
             this._updatingCamera = true;
             const inertialEase = this._inertia._onMoveEnd(this._map.dragPan._inertiaOptions);
 
-            const shouldSnapToNorth = bearing => bearing !== 0 && -this._bearingSnap < bearing && bearing < this._bearingSnap;
+            const shouldSnapToNorth = (bearing: number) => bearing !== 0 && -this._bearingSnap < bearing && bearing < this._bearingSnap;
 
             if (inertialEase) {
                 if (shouldSnapToNorth(inertialEase.bearing || this._map.getBearing())) {
