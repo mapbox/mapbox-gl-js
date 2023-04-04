@@ -228,7 +228,7 @@ function diffLayers(before, after, commands) {
     const tracker = beforeOrder.slice();
 
     // layers that have been added do not need to be diffed
-    const clean = Object.create(null);
+    const clean: Object = Object.create(null);
 
     let i, d, layerId, beforeLayer, afterLayer, insertBeforeLayerId, prop;
 

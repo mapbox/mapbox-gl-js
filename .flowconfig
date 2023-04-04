@@ -30,7 +30,7 @@
 .*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.189.0
+0.190.0
 
 [options]
 enforce_local_inference_annotations=false

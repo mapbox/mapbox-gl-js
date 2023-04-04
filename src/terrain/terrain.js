@@ -540,7 +540,9 @@ export class Terrain extends Elevation {
         const demId = demTile.tileID.canonical;
         const demScaleBy = Math.pow(2, demId.z - proxyId.z);
         const suffix = uniformSuffix || "";
+        // $FlowFixMe[prop-missing]
         uniforms[`u_dem_tl${suffix}`] = [proxyId.x * demScaleBy % 1, proxyId.y * demScaleBy % 1];
+        // $FlowFixMe[prop-missing]
         uniforms[`u_dem_scale${suffix}`] = demScaleBy;
         return true;
     }

@@ -140,6 +140,7 @@ class SymbolStyleLayer extends StyleLayer {
                                                           overriden.value.zoomStops,
                                                           overriden.value._interpolationType): CompositeExpression);
             }
+            // $FlowFixMe[prop-missing]
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
                                                                                  overriden.parameters);

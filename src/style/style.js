@@ -1507,6 +1507,7 @@ class Style extends Evented {
             for (const name of Object.keys(styleSpec.terrain)) {
                 // Fallback to use default style specification when the properties wasn't set
                 if (!options.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
+                    // $FlowFixMe[prop-missing]
                     options[name] = styleSpec.terrain[name].default;
                 }
             }

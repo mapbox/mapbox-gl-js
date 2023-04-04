@@ -82,6 +82,7 @@ class Fog extends Evented {
         for (const name of Object.keys(styleSpec.fog)) {
             // Fallback to use default style specification when the properties wasn't set
             if (fog && fog[name] === undefined) {
+                // $FlowFixMe[prop-missing]
                 fog[name] = styleSpec.fog[name].default;
             }
         }
