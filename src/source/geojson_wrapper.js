@@ -7,6 +7,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const toGeoJSON = VectorTileFeature.prototype.toGeoJSON;
 import EXTENT from '../data/extent.js';
 
+import type {GeoJSONFeature} from '@mapbox/geojson-types';
 import type {IVectorTile, IVectorTileLayer, IVectorTileFeature} from '@mapbox/vector-tile';
 
 // The feature type used by geojson-vt and supercluster. Should be extracted to
@@ -49,7 +50,7 @@ class FeatureWrapper implements IVectorTileFeature {
         }
     }
 
-    loadGeometry() {
+    loadGeometry(): Array<Array<Point>> {
         if (this._feature.type === 1) {
             const geometry = [];
             for (const point of this._feature.geometry) {
@@ -69,7 +70,7 @@ class FeatureWrapper implements IVectorTileFeature {
         }
     }
 
-    toGeoJSON(x: number, y: number, z: number) {
+    toGeoJSON(x: number, y: number, z: number): GeoJSONFeature {
         return toGeoJSON.call(this, x, y, z);
     }
 }

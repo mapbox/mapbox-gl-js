@@ -271,7 +271,8 @@ class CustomSource<T> extends Evented implements Source {
         // $FlowFixMe[prop-missing]
         tile.request.cancel = () => controller.abort();
 
-        function tileLoaded(data) {
+        // $FlowFixMe[missing-this-annot]
+        function tileLoaded(data: ?T) {
             delete tile.request;
 
             if (tile.aborted) {

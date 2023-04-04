@@ -226,6 +226,7 @@ class WorkerTile {
 
         maybePrepare.call(this);
 
+        // $FlowFixMe[missing-this-annot]
         function maybePrepare() {
             if (error) {
                 return callback(error);
