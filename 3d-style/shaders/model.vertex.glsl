@@ -5,6 +5,18 @@ attribute vec3 a_pos_3f;
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
 #pragma mapbox: define-attribute-vertex-shader-only highp vec4 pbr
+#pragma mapbox: define-attribute-vertex-shader-only highp vec3 heightBasedEmissiveStrength
+
+// pbr
+// .xy - color.rgba (4 bytes)
+// .z - emissive strength (1 byte) | roughness (4 bits) | metallic (4 bits)
+// .w - heightBasedEmissionMultiplier value at interpolation Begin and Finish points (2 bytes)
+
+// heightBasedEmissiveStrength
+// .xy - interpolation parameters
+// .z - interpolation curve power
+// i.e.
+// interpolatedHeight = pow(pos_z * .x + .y, .z)
 
 uniform mat4 u_matrix;
 uniform mat4 u_lighting_matrix;
@@ -37,6 +49,11 @@ varying highp float v_depth;
 
 #ifdef HAS_ATTRIBUTE_a_pbr
 varying lowp vec4 v_roughness_metallic_emissive_alpha;
+varying mediump vec4 v_height_based_emission_params;
+// .x - height-based interpolation factor
+// .y - interpolation power
+// .z - min value
+// .w - max - min
 #endif
 
 void main() {
@@ -45,6 +62,7 @@ void main() {
     #pragma mapbox: initialize-attribute highp vec3 color_3f
     #pragma mapbox: initialize-attribute highp vec4 color_4f
     #pragma mapbox: initialize-attribute-custom highp vec4 pbr
+    #pragma mapbox: initialize-attribute-custom highp vec3 heightBasedEmissiveStrength
 
     highp mat4 normal_matrix;
 #ifdef INSTANCED_ARRAYS
@@ -99,6 +117,16 @@ void main() {
     v_color_mix = vec4(albedo_c.rgb, 1.0); // vertex color is computed on CPU
     v_roughness_metallic_emissive_alpha = vec4(vec3(r_m, e_r_m.x) / 255.0, albedo_c.a);
     v_roughness_metallic_emissive_alpha.z *= 2.0; // range [0..2] was shrank to fit [0..1]
+
+    float heightBasedRelativeIntepolation = a_pos_3f.z * heightBasedEmissiveStrength.x + heightBasedEmissiveStrength.y;
+
+    v_height_based_emission_params.x = heightBasedRelativeIntepolation;
+    v_height_based_emission_params.y = heightBasedEmissiveStrength.z;
+
+    vec2 emissionMultiplierValues = unpack_float(pbr.w) / 256.0;
+
+    v_height_based_emission_params.z = emissionMultiplierValues.x;
+    v_height_based_emission_params.w = emissionMultiplierValues.y - emissionMultiplierValues.x;
 #endif
 #ifdef FOG
     v_fog_pos = fog_position(local_pos);
@@ -124,7 +152,7 @@ void main() {
 #ifdef HAS_ATTRIBUTE_a_pbr
 #ifdef HAS_ATTRIBUTE_a_color_4f
     v_roughness_metallic_emissive_alpha.w = clamp(color_4f.a * v_roughness_metallic_emissive_alpha.w * (v_roughness_metallic_emissive_alpha.z - 1.0), 0.0, 1.0);
-#endif    
+#endif
 #endif
 
 #ifdef RENDER_SHADOWS

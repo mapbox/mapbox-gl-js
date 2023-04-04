@@ -31,6 +31,7 @@ varying float v_depth_shadows;
 
 #ifdef HAS_ATTRIBUTE_a_pbr
 varying lowp vec4 v_roughness_metallic_emissive_alpha;
+varying mediump vec4 v_height_based_emission_params;
 #endif
 
 #ifdef HAS_TEXTURE_u_baseColorTexture
@@ -342,7 +343,7 @@ vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
     // Just to make happy generate-metal-shaders 
     float NdotL = 0.0;
-#ifdef LIGHTING_3D_MODE
+#ifdef LIGHTING_3D_MODE 
     // For landmarks use the extended NdotL range to mimic
     // fill extrusion lighting
     NdotL = calculate_NdotL(n, l);
@@ -458,12 +459,16 @@ vec4 finalColor;
     // Apply transparency
     float opacity = mat.baseColor.w * u_opacity;
 #ifdef HAS_ATTRIBUTE_a_pbr
-    color = mix(color, v_color_mix.rgb, min(1.0, v_roughness_metallic_emissive_alpha.z));
+    float resEmission = v_roughness_metallic_emissive_alpha.z;
+
+    resEmission *= v_height_based_emission_params.z + v_height_based_emission_params.w * pow(clamp(v_height_based_emission_params.x, 0.0, 1.0), v_height_based_emission_params.y);
+
+    color = mix(color, v_color_mix.rgb, min(1.0, resEmission));
 #ifdef HAS_ATTRIBUTE_a_color_4f
     // pbr includes color. If pbr is used, color_4f is used to pass information about light geometry.
     // calculate distance to line segment, multiplier 1.3 additionally deattenuates towards extruded corners.
     float distance = length(vec2(1.3 * max(0.0, abs(color_4f.x) - color_4f.z), color_4f.y));
-    distance +=  mix(0.5, 0.0, clamp(v_roughness_metallic_emissive_alpha.z - 1.0, 0.0, 1.0));
+    distance +=  mix(0.5, 0.0, clamp(resEmission - 1.0, 0.0, 1.0));
     opacity *= v_roughness_metallic_emissive_alpha.w * saturate(1.0 - distance * distance);
 #endif
 #endif
