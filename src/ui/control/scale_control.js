@@ -47,7 +47,8 @@ class ScaleControl {
         // This is a workaround to display the scale without proper internationalization support.
         if (!isNumberFormatSupported()) {
             // $FlowIgnore[cannot-write]
-            this._setScale = legacySetScale.bind(this);
+            // $FlowIgnore[method-unbinding]
+            this._setScale = this._legacySetScale.bind(this);
         }
 
         bindAll([
@@ -114,6 +115,24 @@ class ScaleControl {
         });
     }
 
+    _legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
+        const distance = getRoundNum(maxDistance);
+        const ratio = distance / maxDistance;
+
+        const unitAbbr = {
+            kilometer: 'km',
+            meter: 'm',
+            mile: 'mi',
+            foot: 'ft',
+            'nautical-mile': 'nm',
+        }[unit];
+
+        this._map._requestDomTask(() => {
+            this._container.style.width = `${maxWidth * ratio}px`;
+            this._container.innerHTML = `${distance}&nbsp;${unitAbbr}`;
+        });
+    }
+
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._language = map.getLanguage();
@@ -160,24 +179,6 @@ function isNumberFormatSupported() {
     } catch (_) {
         return false;
     }
-}
-
-function legacySetScale(this: ScaleControl, maxWidth: number, maxDistance: number, unit: string) {
-    const distance = getRoundNum(maxDistance);
-    const ratio = distance / maxDistance;
-
-    const unitAbbr = {
-        kilometer: 'km',
-        meter: 'm',
-        mile: 'mi',
-        foot: 'ft',
-        'nautical-mile': 'nm',
-    }[unit];
-
-    this._map._requestDomTask(() => {
-        this._container.style.width = `${maxWidth * ratio}px`;
-        this._container.innerHTML = `${distance}&nbsp;${unitAbbr}`;
-    });
 }
 
 function getDecimalRoundNum(d: number) {
