@@ -1643,7 +1643,7 @@ class Map extends Camera {
         }
 
         layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
-        const areLayerArraysEqual = (hash1, hash2) => {
+        const areLayerArraysEqual = (hash1: Set<string>, hash2: Set<string>) => {
             if (hash1.size !== hash2.size) {
                 return false; // at-least 1 arr has duplicate value(s)
             }
@@ -3363,7 +3363,7 @@ class Map extends Camera {
      * @private
      */
     _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
-        const applyUpdate = value => {
+        const applyUpdate = (value: number) => {
             this.transform.averageElevation = value;
             this._update(false);
             return true;
@@ -3468,7 +3468,7 @@ class Map extends Camera {
         const framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-        function read(texture) {
+        function read(texture: ?WebGLTexture) {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
