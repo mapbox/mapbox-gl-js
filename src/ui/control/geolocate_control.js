@@ -163,7 +163,7 @@ class GeolocateControl extends Evented {
     }
 
     _checkGeolocationSupport(callback: boolean => void) {
-        const updateSupport = (supported = !!this.options.geolocation) => {
+        const updateSupport = (supported: boolean = !!this.options.geolocation) => {
             this._supportsGeolocation = supported;
             callback(supported);
         };
