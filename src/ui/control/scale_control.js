@@ -162,7 +162,7 @@ function isNumberFormatSupported() {
     }
 }
 
-function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
+function legacySetScale(this: ScaleControl, maxWidth: number, maxDistance: number, unit: string) {
     const distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
 
@@ -180,12 +180,12 @@ function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
     });
 }
 
-function getDecimalRoundNum(d) {
+function getDecimalRoundNum(d: number) {
     const multiplier = Math.pow(10, Math.ceil(-Math.log(d) / Math.LN10));
     return Math.round(d * multiplier) / multiplier;
 }
 
-function getRoundNum(num) {
+function getRoundNum(num: number) {
     const pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1);
     let d = num / pow10;
 
