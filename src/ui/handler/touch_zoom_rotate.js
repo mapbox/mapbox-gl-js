@@ -104,7 +104,7 @@ function getTouchById(mapTouches: Array<Touch>, points: Array<Point>, identifier
 
 const ZOOM_THRESHOLD = 0.1;
 
-function getZoomDelta(distance, lastDistance) {
+function getZoomDelta(distance: number, lastDistance: number) {
     return Math.log(distance / lastDistance) / Math.LN2;
 }
 
@@ -197,7 +197,7 @@ export class TouchRotateHandler extends TwoTouchHandler {
 
 /* PITCH */
 
-function isVertical(vector) {
+function isVertical(vector: Point) {
     return Math.abs(vector.y) > Math.abs(vector.x);
 }
 
