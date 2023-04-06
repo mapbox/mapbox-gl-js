@@ -1,4 +1,17 @@
-## 2.13.0-beta.1
+## 2.14.0-beta.1
+
+### Features ✨ and improvements 🏁
+
+* Support `referrerPolicy` option for the `transformRequest` function when using fetch ([#12590](https://github.com/mapbox/mapbox-gl-js/pull/12590)) (h/t [robertcepa](https://github.com/robertcepa))
+
+## Bug fixes 🐞
+
+* Enable anisotropic filtering on tiles beyond 20 degrees pitch to prevent it from compromising image crispness on flat or low-tilted maps. ([#12577](https://github.com/mapbox/mapbox-gl-js/pull/12577))
+* Fix LngLatBounds.extend() with literal LngLat object. ([#12605](https://github.com/mapbox/mapbox-gl-js/pull/12605))
+* Add arrow characters to the map of verticalized character ([#12608](https://github.com/mapbox/mapbox-gl-js/pull/12608)) (h/t [kkokkojeong](https://github.com/kkokkojeong))
+* Disable panning inertia if `prefers-reduced-motion` is enabled ([#12631](https://github.com/mapbox/mapbox-gl-js/pull/12631))
+
+## 2.13.0
 
 ### Features ✨ and improvements 🏁
 
