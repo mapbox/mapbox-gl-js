@@ -105,7 +105,7 @@ class ScaleControl {
             // Intl.NumberFormat doesn't support nautical-mile as a unit,
             // so we are hardcoding `nm` as a unit symbol for all locales
             if (unit === 'nautical-mile') {
-                this._container.innerHTML = `${distance}&nbsp;nm`;
+                this._container.innerHTML = `${distance}nm`;
                 return;
             }
 
