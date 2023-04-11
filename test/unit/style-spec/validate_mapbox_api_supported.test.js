@@ -25,11 +25,10 @@ globSync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
     });
 });
 
-const fixtures = globSync(`${__dirname}/fixture/*.input.json`);
-const style = JSON.parse(fs.readFileSync(fixtures[0]));
 import reference from '../../../src/style-spec/reference/latest.js';
 
 test('errors from validate do not contain line numbers', (t) => {
+    const style = JSON.parse(fs.readFileSync(`${__dirname}/fixture/bad-color.input.json`));
     const result = validateMapboxApiSupported(style, reference);
     t.equal(result[0].line, undefined);
     t.end();
