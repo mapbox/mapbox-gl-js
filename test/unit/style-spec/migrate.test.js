@@ -1,6 +1,6 @@
 import {test} from '../../util/test.js';
 import fs from 'fs';
-import glob from 'glob';
+import {globSync} from 'glob';
 import path from 'path';
 import validate from '../../../src/style-spec/validate_style.js';
 import v8 from '../../../src/style-spec/reference/v8.json';
@@ -126,7 +126,7 @@ test('converts categorical function on resolvedImage type to valid expression', 
     t.end();
 });
 
-glob.sync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
+globSync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
     test(path.basename(file), (t) => {
         const outputfile = file.replace('.input', '.output');
         const style = JSON.parse(fs.readFileSync(file));
