@@ -23,6 +23,7 @@ export default function (directory, implementation, options, run) {
     const ignores = options.ignores || {};
 
     let sequence = globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
+        .sort((a, b) => a.localeCompare(b, 'en'))
         .map(fixture => {
             const id = path.dirname(fixture);
             const style = require(path.join(directory, fixture));
