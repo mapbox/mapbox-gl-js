@@ -1,4 +1,4 @@
-## 2.14.0-beta.1
+## 2.14.0
 
 ### Features ✨ and improvements 🏁
 
