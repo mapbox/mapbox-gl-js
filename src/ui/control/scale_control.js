@@ -110,7 +110,7 @@ class ScaleControl {
             }
 
             // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
-            this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+            this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'short', unit}).format(distance);
         });
     }
 
