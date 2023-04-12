@@ -137,10 +137,6 @@ const skip = [
     "render-tests/terrain/wireframe",
 
     // Unimplemented in -js:
-    // https://mapbox.atlassian.net/browse/MAPS3D-697
-    "render-tests/lighting-3d-mode/emissive-strength/terrain",
-
-    // Unimplemented in -js:
     // https://mapbox.atlassian.net/browse/MAPS3D-671
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
 

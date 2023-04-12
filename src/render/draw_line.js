@@ -28,8 +28,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const width = layer.paint.get('line-width');
     if (opacity.constantOr(1) === 0 || width.constantOr(1) === 0) return;
 
+    const emissiveStrength = layer.paint.get('line-emissive-strength');
+
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
     const pixelRatio = (painter.terrain && painter.terrain.renderingToTexture) ? 1.0 : browser.devicePixelRatio;
 
     const dasharrayProperty = layer.paint.get('line-dasharray');

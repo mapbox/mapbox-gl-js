@@ -34,7 +34,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const stencilMode = StencilMode.disabled;
     const depthMode = painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly);
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass();
 
     const program = painter.useProgram(image ? 'backgroundPattern' : 'background');
 

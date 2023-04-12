@@ -470,11 +470,25 @@ class Painter {
             const numOverdrawSteps = 8;
             const a = 1 / numOverdrawSteps;
 
-            return new ColorMode([gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
+            return new ColorMode([gl.CONSTANT_COLOR, gl.ONE, gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
         } else if (this.renderPass === 'opaque') {
             return ColorMode.unblended;
         } else {
             return ColorMode.alphaBlended;
+        }
+    }
+
+    colorModeForDrapableLayerRenderPass(emissiveStrengthForDrapedLayers?: number): $ReadOnly<ColorMode> {
+        const deferredDrapingEnabled = () => {
+            return this.style && this.style.enable3dLights() && this.terrain && this.terrain.renderingToTexture && this.style.map._optimizeForTerrain;
+        };
+
+        const gl = this.context.gl;
+        if (deferredDrapingEnabled() && this.renderPass === 'translucent') {
+            return new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA],
+                new Color(0, 0, 0, emissiveStrengthForDrapedLayers === undefined ? 0 : emissiveStrengthForDrapedLayers), [true, true, true, true]);
+        } else {
+            return this.colorModeForRenderPass();
         }
     }
 
@@ -956,13 +970,19 @@ class Painter {
         const defines = [];
 
         if (this.style && this.style.enable3dLights()) {
-            // Additionally lighting was moved to a later stage in draped rendering in
-            // https://mapbox.atlassian.net/browse/MAPS3D-569.
-            if (name !== 'globeRaster' && name !== 'terrainRaster') {
-                defines.push('LIGHTING_3D_MODE');
+            // In case of terrain and map optimized for terrain mode flag
+            // Lighting is deferred to terrain stage
+            if (name === 'globeRaster' || name === 'terrainRaster') {
+                if (this.style.map._optimizeForTerrain) {
+                    defines.push('LIGHTING_3D_MODE');
+                    defines.push('LIGHTING_3D_ALPHA_EMISSIVENESS');
+                }
+            } else {
+                if (!rtt || !this.style.map._optimizeForTerrain) {
+                    defines.push('LIGHTING_3D_MODE');
+                }
             }
         }
-
         if (this.renderPass === 'shadow') {
             if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
         } else if (this.shadowRenderer) {
