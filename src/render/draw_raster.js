@@ -31,7 +31,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const program = painter.useProgram('raster', null, rasterColor.defines);
 
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass();
 
     // When rendering to texture, coordinates are already sorted: primary by
     // proxy id and secondary sort is by Z.

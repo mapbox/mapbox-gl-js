@@ -27,7 +27,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         return;
     }
 
-    const colorMode = painter.colorModeForRenderPass();
+    const emissiveStrength = layer.paint.get('fill-emissive-strength');
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
 
     const pattern = layer.paint.get('fill-pattern');
     const pass = painter.opaquePassEnabledForLayer() &&

@@ -35,7 +35,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         // large kernels are not clipped to tiles
         const stencilMode = StencilMode.disabled;
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-        const colorMode = new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+        const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
         const resolutionScaling = painter.transform.projection.name === 'globe' ? 0.5 : 0.25;
 
         bindFramebuffer(context, painter, layer, resolutionScaling);

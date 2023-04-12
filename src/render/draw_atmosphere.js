@@ -48,8 +48,8 @@ class Atmosphere {
     colorModeWriteAlpha: ColorMode;
 
     constructor() {
-        this.colorModeAlphaBlendedWriteRGB = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, false]);
-        this.colorModeWriteAlpha = new ColorMode([ONE, ZERO], Color.transparent, [false, false, false, true]);
+        this.colorModeAlphaBlendedWriteRGB = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, false]);
+        this.colorModeWriteAlpha = new ColorMode([ONE, ZERO, ONE, ZERO], Color.transparent, [false, false, false, true]);
     }
 
     update(painter: Painter) {

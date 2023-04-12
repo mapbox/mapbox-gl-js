@@ -17,7 +17,7 @@ type BlendFuncConstant =
     | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_CONSTANT_ALPHA'>
     | $PropertyType<WebGLRenderingContext, 'BLEND_COLOR'>;
 
-export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant];
+export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant, BlendFuncConstant, BlendFuncConstant];
 
 export type BlendEquationType =
     | $PropertyType<WebGLRenderingContext, 'FUNC_ADD'>

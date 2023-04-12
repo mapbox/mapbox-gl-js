@@ -46,6 +46,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const strokeWidth = layer.paint.get('circle-stroke-width');
     const strokeOpacity = layer.paint.get('circle-stroke-opacity');
     const sortFeaturesByKey = layer.layout.get('circle-sort-key').constantOr(1) !== undefined;
+    const emissiveStrength = layer.paint.get('circle-emissive-strength');
 
     if (opacity.constantOr(1) === 0 && (strokeWidth.constantOr(1) === 0 || strokeOpacity.constantOr(1) === 0)) {
         return;
@@ -59,7 +60,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     // Turn off stencil testing to allow circles to be drawn across boundaries,
     // so that large circles are not clipped to tiles
     const stencilMode = StencilMode.disabled;
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
     const isGlobeProjection = tr.projection.name === 'globe';
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 

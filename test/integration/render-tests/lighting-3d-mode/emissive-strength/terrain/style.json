@@ -11,6 +11,24 @@
           "local://styles/sanfrancisco.json"
         ],
         [
+          "wait"
+        ],
+        [
+            "setPaintProperty", "road_major", "line-emissive-strength", 0.8
+        ],
+        [
+            "setPaintProperty", "road_major", "line-opacity", 0.5
+        ],
+        [
+            "setPaintProperty", "road_minor", "line-emissive-strength", 0.4
+        ],
+        [
+            "setPaintProperty", "landuse_park", "fill-emissive-strength", 0.5
+        ],
+        [
+          "wait"
+        ],
+        [
           "setZoom",
           15.0
         ],
@@ -67,19 +85,8 @@
           ]
         ],
         [
-            "setPaintProperty", "road_major", "line-emissive-strength", 0.8
-        ],
-        [
-            "setPaintProperty", "road_major", "line-opacity", 0.5
-        ],
-        [
-            "setPaintProperty", "road_minor", "line-emissive-strength", 0.4
-        ],
-        [
-            "setPaintProperty", "landuse_park", "fill-emissive-strength", 0.5
-        ],
-        [
-          "wait"
+          "wait",
+          500
         ]
       ]
     }

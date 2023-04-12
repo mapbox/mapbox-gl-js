@@ -506,8 +506,9 @@ window.dynamic = {
             "source-layer": "water",
             "layout": {},
             "paint": {
-                "fill-color": "hsl(200, 100%, 80%)"},
+                "fill-color": "hsl(200, 100%, 80%)",
                 "fill-emissive-strength": 0.15
+            }
         },
         {
             "id": "water-depth",
