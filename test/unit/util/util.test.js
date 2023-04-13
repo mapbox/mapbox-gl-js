@@ -76,6 +76,7 @@ test('util', (t) => {
         }
 
         const my = new MyClass();
+        // $FlowFixMe[method-unbinding]
         setTimeout(my.ontimer, 0);
     });
 
