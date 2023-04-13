@@ -69,7 +69,7 @@ test('util', (t) => {
                 this.name = 'Tom';
             }
 
-            ontimer = () => {
+            ontimer() {
                 t.equal(this.name, 'Tom');
                 t.end();
             }
