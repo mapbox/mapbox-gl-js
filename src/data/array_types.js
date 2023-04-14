@@ -901,14 +901,14 @@ class StructArrayLayout7f28 extends StructArray {
     }
 
     emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
-        const o7 = i * 7;
-        this.float32[o7 + 0] = v0;
-        this.float32[o7 + 1] = v1;
-        this.float32[o7 + 2] = v2;
-        this.float32[o7 + 3] = v3;
-        this.float32[o7 + 4] = v4;
-        this.float32[o7 + 5] = v5;
-        this.float32[o7 + 6] = v6;
+        const o4 = i * 7;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
+        this.float32[o4 + 4] = v4;
+        this.float32[o4 + 5] = v5;
+        this.float32[o4 + 6] = v6;
         return i;
     }
 }
@@ -1328,6 +1328,7 @@ export {
     StructArrayLayout3i2f6i15ui1ul3f76,
     StructArrayLayout1f4,
     StructArrayLayout5f20,
+    StructArrayLayout7f28,
     StructArrayLayout1ul3ui12,
     StructArrayLayout2ui4,
     StructArrayLayout1ui2,

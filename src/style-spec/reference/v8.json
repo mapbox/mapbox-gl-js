@@ -6479,7 +6479,7 @@
     },
     "icon-image-cross-fade": {
       "type": "number",
-      "property-type": "data-constant",
+      "property-type": "data-driven",
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -6494,6 +6494,11 @@
       },
       "sdk-support": {
         "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        },
+        "data-driven styling": {
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
