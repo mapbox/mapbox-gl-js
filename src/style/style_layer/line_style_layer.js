@@ -22,7 +22,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
-    useIntegerZoom = true;
+    useIntegerZoom: ?boolean;
 
     possiblyEvaluate(value, parameters) {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {

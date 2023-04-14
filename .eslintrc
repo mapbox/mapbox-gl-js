@@ -27,6 +27,9 @@
     "no-duplicate-imports": "off",
     "import/no-duplicates": "error",
 
+    // prevent issues with esbuild/vite https://github.com/mapbox/mapbox-gl-js/issues/12656
+    "no-restricted-syntax": ["error", "ClassProperty[value]"],
+
     // ensure compatibility with Node's native ESM
     "import/extensions": ["error", {
       "js": "always",
