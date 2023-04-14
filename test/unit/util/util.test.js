@@ -69,13 +69,14 @@ test('util', (t) => {
                 this.name = 'Tom';
             }
 
-            ontimer = () => {
+            ontimer() {
                 t.equal(this.name, 'Tom');
                 t.end();
             }
         }
 
         const my = new MyClass();
+        // $FlowFixMe[method-unbinding]
         setTimeout(my.ontimer, 0);
     });
 
