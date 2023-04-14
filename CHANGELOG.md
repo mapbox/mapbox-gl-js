@@ -1,10 +1,16 @@
+## 2.14.1
+
+### Bug fixes 🐞
+
+* Fix a bug where certain bundling configurations involving Vite or ESBuild could produce a broken build. [#12658](https://github.com/mapbox/mapbox-gl-js/pull/12658)
+
 ## 2.14.0
 
 ### Features ✨ and improvements 🏁
 
 * Support `referrerPolicy` option for the `transformRequest` function when using fetch ([#12590](https://github.com/mapbox/mapbox-gl-js/pull/12590)) (h/t [robertcepa](https://github.com/robertcepa))
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Enable anisotropic filtering on tiles beyond 20 degrees pitch to prevent it from compromising image crispness on flat or low-tilted maps. ([#12577](https://github.com/mapbox/mapbox-gl-js/pull/12577))
 * Fix LngLatBounds.extend() with literal LngLat object. ([#12605](https://github.com/mapbox/mapbox-gl-js/pull/12605))
