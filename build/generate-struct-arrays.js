@@ -130,15 +130,15 @@ import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
 import tileBoundsAttributes from '../src/data/bounds_attributes.js';
-import {fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
+import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes} from '../3d-style/data/model_attributes.js';
-
 
 // layout vertex arrays
 const layoutAttributes = {
     circle: circleAttributes,
     fill: fillAttributes,
     'fill-extrusion': fillExtrusionAttributes,
+    'fill-extrusion-ground': fillExtrusionGroundAttributes,
     heatmap: circleAttributes,
     line: lineAttributes,
     lineExt: lineAttributesExt,

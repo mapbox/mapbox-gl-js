@@ -1,7 +1,7 @@
 // @flow
 import Color from '../style-spec/util/color.js';
 
-import type {BlendFuncType, ColorMaskType} from './types.js';
+import type {BlendEquationType, BlendFuncType, ColorMaskType} from './types.js';
 
 export const ZERO = 0x0000;
 export const ONE = 0x0001;
@@ -12,11 +12,13 @@ export class ColorMode {
     blendFunction: BlendFuncType;
     blendColor: Color;
     mask: ColorMaskType;
+    blendEquation: ?BlendEquationType;
 
-    constructor(blendFunction: BlendFuncType, blendColor: Color, mask: ColorMaskType) {
+    constructor(blendFunction: BlendFuncType, blendColor: Color, mask: ColorMaskType, blendEquation: ?BlendEquationType) {
         this.blendFunction = blendFunction;
         this.blendColor = blendColor;
         this.mask = mask;
+        this.blendEquation = blendEquation;
     }
 
     static Replace: BlendFuncType;

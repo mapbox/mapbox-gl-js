@@ -39,6 +39,8 @@ export type PaintProps = {|
     "fill-extrusion-flood-light-color": DataConstantProperty<Color>,
     "fill-extrusion-flood-light-intensity": DataConstantProperty<number>,
     "fill-extrusion-wall-flood-light-radius": DataDrivenProperty<number>,
+    "fill-extrusion-ground-flood-light-radius": DataDrivenProperty<number>,
+    "fill-extrusion-ground-effects-attenuation": DataConstantProperty<number>,
     "fill-extrusion-vertical-scale": DataConstantProperty<number>,
 |};
 
@@ -56,6 +58,8 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-flood-light-color": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-color"]),
     "fill-extrusion-flood-light-intensity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-intensity"]),
     "fill-extrusion-wall-flood-light-radius": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-wall-flood-light-radius"]),
+    "fill-extrusion-ground-flood-light-radius": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ground-flood-light-radius"]),
+    "fill-extrusion-ground-effects-attenuation": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ground-effects-attenuation"]),
     "fill-extrusion-vertical-scale": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-scale"]),
 });
 

@@ -4,7 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0006
+      "allowed": 0.0004
     }
   },
   "lights": [
@@ -64,8 +64,23 @@
           "get",
           "height"
         ],
-        "fill-extrusion-opacity": 1.0,
-        "fill-extrusion-wall-flood-light-radius": 20,
+        "fill-extrusion-opacity": 0.8,
+        "fill-extrusion-wall-flood-light-radius": [
+          "case",
+          ["<=", ["get", "height"], 50], 0,
+          [">",  ["get", "height"], 50], ["get", "height"],
+          0
+        ],
+        "fill-extrusion-ground-flood-light-radius": [
+          "case",
+          ["<=", ["get", "height"], 50], 0,
+          [">",  ["get", "height"], 50], [
+            "/",
+            ["get", "height"],
+            10
+          ],
+          0
+        ],
         "fill-extrusion-flood-light-color": [
           "rgb",
           255,
@@ -73,8 +88,10 @@
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7,
-        "fill-extrusion-ambient-occlusion-radius": 1,
-        "fill-extrusion-ambient-occlusion-intensity": 0.4
+        "fill-extrusion-ambient-occlusion-radius": 4,
+        "fill-extrusion-ambient-occlusion-intensity": 0.6,
+        "fill-extrusion-vertical-scale": 0.6,
+        "fill-extrusion-ground-effects-attenuation": 1.0
       },
       "layout": {
         "fill-extrusion-edge-radius": 0.99

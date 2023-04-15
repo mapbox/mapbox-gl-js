@@ -7,6 +7,10 @@ export const fillExtrusionAttributes: StructArrayLayout = createLayout([
     {name: 'a_pos_normal_ed', components: 4, type: 'Int16'}
 ]);
 
+export const fillExtrusionGroundAttributes: StructArrayLayout = createLayout([
+    {name: 'a_pos_end', components: 4, type: 'Int16'}
+]);
+
 export const centroidAttributes: StructArrayLayout = createLayout([
     {name: 'a_centroid_pos',  components: 2, type: 'Uint16'}
 ]);

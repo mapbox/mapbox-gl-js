@@ -36,6 +36,8 @@ import fillExtrusionVert from './fill_extrusion.vertex.glsl';
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
 import fillExtrusionPatternVert from './fill_extrusion_pattern.vertex.glsl';
 import hillshadePrepareFrag from './hillshade_prepare.fragment.glsl';
+import fillExtrusionGroundEffectFrag from './fill_extrusion_ground_effect.fragment.glsl';
+import fillExtrusionGroundEffectVert from './fill_extrusion_ground_effect.vertex.glsl';
 import hillshadePrepareVert from './hillshade_prepare.vertex.glsl';
 import hillshadeFrag from './hillshade.fragment.glsl';
 import hillshadeVert from './hillshade.vertex.glsl';
@@ -159,6 +161,7 @@ export default {
     fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
     groundShadow: compile(groundShadowFrag, groundShadowVert),
+    fillExtrusionGroundEffect: compile(fillExtrusionGroundEffectFrag, fillExtrusionGroundEffectVert),
     hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
     hillshade: compile(hillshadeFrag, hillshadeVert),
     line: compile(lineFrag, lineVert),
