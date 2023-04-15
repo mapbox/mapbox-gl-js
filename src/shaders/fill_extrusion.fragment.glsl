@@ -23,6 +23,7 @@ varying highp vec3 v_normal;
 
 uniform vec3 u_flood_light_color;
 uniform highp float u_vertical_scale;
+uniform float u_flood_light_intensity;
 
 #if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
 varying float v_flood_radius;
@@ -61,25 +62,20 @@ float ao_shade = 1.0;
     ao_shade *= mix(1.0, x_shade * x_shade * x_shade, concave);
 
 #ifdef LIGHTING_3D_MODE
-#ifndef FLOOD_LIGHT
+#ifdef FLOOD_LIGHT
+    color.rgb *= mix(ao_shade, 1.0, v_has_floodlight); // flood light and AO are mutually exclusive effects.
+#else
     color.rgb *= ao_shade;
 #endif
 #else
     color.rgb *= ao_shade;
 #endif
 
-#endif
+#endif // FAUX_AO
 
-#ifdef LIGHTING_3D_MODE
-#ifdef FLOOD_LIGHT
-    vec3 flood_radiance = u_flood_light_color * (1.0 - min(h / v_flood_radius, 1.0));   
-    color.rgb += flood_radiance * v_has_floodlight;
-    color.rgb = linearTosRGB(color.rgb);
-    color *= u_opacity;
-#ifdef FAUX_AO
-    color.rgb *= mix(ao_shade, 1.0, v_has_floodlight); // flood light and AO are mutually exclusive effects.
-#endif
-#endif
+#if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
+    float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;   
+    color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
 #endif
 
 #ifdef RENDER_SHADOWS

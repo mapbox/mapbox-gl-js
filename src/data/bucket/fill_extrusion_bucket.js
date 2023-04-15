@@ -1,8 +1,8 @@
 // @flow
 
-import {FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray} from '../array_types.js';
+import {FillExtrusionGroundLayoutArray, FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray} from '../array_types.js';
 
-import {members as layoutAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
+import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
@@ -63,6 +63,15 @@ function addVertex(vertexArray: FillExtrusionLayoutArray, x: number, y: number, 
         (Math.floor(nxRatio * FACTOR) << 1) + nySign,
         // edgedistance (used for wrapping patterns around extrusion sides)
         Math.round(e)
+    );
+}
+
+function addGroundVertex(vertexArray, p: Point, end: Point, start: number, bottom: number) {
+    vertexArray.emplaceBack(
+        p.x,
+        p.y,
+        (end.x << 1) + start,
+        (end.y << 1) + bottom
     );
 }
 
@@ -172,6 +181,66 @@ export class PartMetadata {
     }
 }
 
+export class GroundEffect {
+    vertexArray: FillExtrusionGroundLayoutArray;
+    vertexBuffer: VertexBuffer;
+
+    indexArray: TriangleIndexArray;
+    indexBuffer: IndexBuffer;
+
+    segments: SegmentVector;
+
+    programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
+
+    constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
+        this.vertexArray = new FillExtrusionGroundLayoutArray();
+        this.indexArray = new TriangleIndexArray();
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
+        this.segments = new SegmentVector();
+    }
+
+    addData(polyline: Array<Point>, bounds: [Point, Point]) {
+        const n = polyline.length;
+        if (n > 2) {
+            const segment = this.segments.prepareSegment(n * 4, this.vertexArray, this.indexArray);
+            for (let i = 0; i < n; i++) {
+                const j = i === n - 1 ? 0 : i + 1;
+                const pa = polyline[i];
+                const pb = polyline[j];
+
+                if (isEdgeOutsideBounds(pa, pb, bounds) ||
+                    (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) continue;
+
+                const idx = segment.vertexLength;
+
+                addGroundVertex(this.vertexArray, pa, pb, 1, 1);
+                addGroundVertex(this.vertexArray, pa, pb, 1, 0);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 1);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 0);
+                segment.vertexLength += 4;
+
+                this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
+                this.indexArray.emplaceBack(idx, idx + 3, idx + 2);
+                segment.primitiveLength += 2;
+            }
+        }
+    }
+
+    upload(context: Context) {
+        this.vertexBuffer = context.createVertexBuffer(this.vertexArray, fillExtrusionGroundAttributes.members);
+        this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        this.programConfigurations.upload(context);
+    }
+
+    destroy() {
+        if (!this.vertexBuffer) return;
+        this.vertexBuffer.destroy();
+        this.indexBuffer.destroy();
+        this.segments.destroy();
+        this.programConfigurations.destroy();
+    }
+}
+
 class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
@@ -210,6 +279,8 @@ class FillExtrusionBucket implements Bucket {
     tileToMeter: number; // cache conversion.
     projection: ProjectionSpecification;
 
+    groundEffect: GroundEffect;
+
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
@@ -228,6 +299,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.enableTerrain = options.enableTerrain;
+        this.groundEffect = new GroundEffect(options);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -279,6 +351,7 @@ class FillExtrusionBucket implements Bucket {
     update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
+        this.groundEffect.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
     }
 
     isEmpty(): boolean {
@@ -286,7 +359,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.programConfigurations.needsUpload;
+        return !this.uploaded || this.programConfigurations.needsUpload || this.groundEffect.programConfigurations.needsUpload;
     }
 
     upload(context: Context) {
@@ -297,6 +370,8 @@ class FillExtrusionBucket implements Bucket {
             if (this.layoutVertexExtArray) {
                 this.layoutVertexExtBuffer = context.createVertexBuffer(this.layoutVertexExtArray, fillExtrusionAttributesExt.members, true);
             }
+
+            this.groundEffect.upload(context);
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
@@ -321,6 +396,7 @@ class FillExtrusionBucket implements Bucket {
         if (this.layoutVertexExtBuffer) {
             this.layoutVertexExtBuffer.destroy();
         }
+        this.groundEffect.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
         this.segments.destroy();
@@ -377,6 +453,7 @@ class FillExtrusionBucket implements Bucket {
                 if (isPolygon && !ring[0].equals(ring[ring.length - 1])) ring.push(ring[0]);
                 numVertices += (isPolygon ? (ring.length - 1) : ring.length);
             }
+
             // We use "(isPolygon ? 5 : 4) * numVertices" as an estimate to ensure whether additional segments are needed or not (see SegmentVector.MAX_VERTEX_ARRAY_LENGTH).
             const segment = this.segments.prepareSegment((isPolygon ? 5 : 4) * numVertices, this.layoutVertexArray, this.indexArray);
             if (isPolygon) {
@@ -385,10 +462,14 @@ class FillExtrusionBucket implements Bucket {
                 topIndex = segment.vertexLength;
 
                 // First we offset (inset) the top vertices (i.e the vertices that make up the roof).
-                for (const ring of polygon) {
-                    if (ring.length && ring !== polygon[0]) {
+                for (let r = 0; r < polygon.length; r++) {
+                    const ring = polygon[r];
+                    if (ring.length && r !== 0) {
                         holeIndices.push(flattened.length / 2);
                     }
+
+                    // Geometry used by ground flood light and AO.
+                    const groundPolyline: Array<Point> = [];
 
                     // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
                     let na, nb;
@@ -402,6 +483,11 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                         let {x, y} = p1;
+
+                        if (edgeRadius === 0) {
+                            groundPolyline.push(p1);
+                        }
+
                         if (edgeRadius) {
                             nb = p2.sub(p1)._perp()._unit();
                             const nm = na.add(nb)._unit();
@@ -428,6 +514,10 @@ class FillExtrusionBucket implements Bucket {
                             addGlobeExtVertex(array, projectedP, n);
                         }
                     }
+
+                    if (edgeRadius === 0) {
+                        this.groundEffect.addData(groundPolyline, bounds);
+                    }
                 }
 
                 const indices = earcut(flattened, holeIndices);
@@ -443,10 +533,14 @@ class FillExtrusionBucket implements Bucket {
                 }
             }
 
-            for (const ring of polygon) {
+            for (let r = 0; r < polygon.length; r++) {
+                const ring = polygon[r];
                 if (metadata && ring.length) metadata.startRing(ring[0]);
                 let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
                 let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
+
+                // Geometry used by ground flood light and AO.
+                const groundPolyline: Array<Point> = [];
 
                 let kFirst;
 
@@ -512,6 +606,9 @@ class FillExtrusionBucket implements Bucket {
                         offsetPrev = offsetNext;
 
                         na = nb;
+
+                        groundPolyline.push(p0);
+                        groundPolyline.push(p1);
                     }
 
                     const k = segment.vertexLength;
@@ -586,6 +683,9 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
+                if (edgeRadius) {
+                    this.groundEffect.addData(groundPolyline, bounds);
+                }
             }
         }
 
@@ -608,6 +708,7 @@ class FillExtrusionBucket implements Bucket {
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+        this.groundEffect.programConfigurations.populatePaintArrays(this.groundEffect.vertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
     }
 
     sortBorders() {
@@ -681,6 +782,7 @@ function _getRoundedEdgeOffset(p0: Point, p1: Point, p2: Point, cosHalfAngle: nu
 
 register(FillExtrusionBucket, 'FillExtrusionBucket', {omit: ['layers', 'features']});
 register(PartMetadata, 'PartMetadata');
+register(GroundEffect, 'GroundEffect');
 
 export default FillExtrusionBucket;
 
@@ -693,6 +795,11 @@ function isEdgeOutsideBounds(p1: Point, p2: Point, bounds: [Point, Point]) {
            (p1.x > bounds[1].x && p2.x > bounds[1].x) ||
            (p1.y < bounds[0].y && p2.y < bounds[0].y) ||
            (p1.y > bounds[1].y && p2.y > bounds[1].y);
+}
+
+function pointOutsideBounds(p, bounds) {
+    return ((p.x < bounds[0].x) || (p.x > bounds[1].x) ||
+            (p.y < bounds[0].y) || (p.y > bounds[1].y));
 }
 
 function isEntirelyOutside(ring: Array<Point>) {

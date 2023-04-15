@@ -1340,6 +1340,7 @@ export {
     StructArrayLayout2i4 as CircleLayoutArray,
     StructArrayLayout2i4 as FillLayoutArray,
     StructArrayLayout4i8 as FillExtrusionLayoutArray,
+    StructArrayLayout4i8 as FillExtrusionGroundLayoutArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout4f16 as LineExtLayoutArray,

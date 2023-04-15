@@ -228,12 +228,12 @@ export type FillLayerSpecification = {|
     "paint"?: {|
         "fill-antialias"?: PropertyValueSpecification<boolean>,
         "fill-opacity"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-emissive-strength"?: PropertyValueSpecification<number>,
         "fill-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-outline-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-translate"?: PropertyValueSpecification<[number, number]>,
         "fill-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "fill-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>
+        "fill-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
+        "fill-emissive-strength"?: PropertyValueSpecification<number>
     |}
 |}
 
@@ -256,7 +256,6 @@ export type LineLayerSpecification = {|
     |},
     "paint"?: {|
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
-        "line-emissive-strength"?: PropertyValueSpecification<number>,
         "line-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "line-translate"?: PropertyValueSpecification<[number, number]>,
         "line-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
@@ -268,6 +267,7 @@ export type LineLayerSpecification = {|
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification,
         "line-trim-offset"?: [number, number],
+        "line-emissive-strength"?: PropertyValueSpecification<number>,
         "line-border-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-border-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>
     |}
@@ -328,15 +328,15 @@ export type SymbolLayerSpecification = {|
     |},
     "paint"?: {|
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
-        "icon-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "icon-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "text-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "icon-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "icon-halo-width"?: DataDrivenPropertyValueSpecification<number>,
         "icon-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
         "icon-translate"?: PropertyValueSpecification<[number, number]>,
         "icon-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "icon-image-cross-fade"?: PropertyValueSpecification<number>,
+        "icon-image-cross-fade"?: DataDrivenPropertyValueSpecification<number>,
         "text-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "text-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "text-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
@@ -363,7 +363,6 @@ export type CircleLayerSpecification = {|
     "paint"?: {|
         "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
         "circle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
-        "circle-emissive-strength"?: PropertyValueSpecification<number>,
         "circle-blur"?: DataDrivenPropertyValueSpecification<number>,
         "circle-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "circle-translate"?: PropertyValueSpecification<[number, number]>,
@@ -372,7 +371,8 @@ export type CircleLayerSpecification = {|
         "circle-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport">,
         "circle-stroke-width"?: DataDrivenPropertyValueSpecification<number>,
         "circle-stroke-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
-        "circle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>
+        "circle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-emissive-strength"?: PropertyValueSpecification<number>
     |}
 |}
 
@@ -425,6 +425,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-flood-light-intensity"?: PropertyValueSpecification<number>,
         "fill-extrusion-wall-flood-light-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-ground-flood-light-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-ground-effects-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>
     |}
 |}

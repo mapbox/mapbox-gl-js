@@ -4,7 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0006
+      "allowed": 0.0004
     }
   },
   "lights": [
@@ -68,13 +68,19 @@
         "fill-extrusion-wall-flood-light-radius": [
           "get", "height"
         ],
+        "fill-extrusion-ground-flood-light-radius": [
+          "/",
+          ["get", "height"],
+          10
+        ],
         "fill-extrusion-flood-light-color": [
           "rgb",
           255,
-          255,
+          0,
           0
         ],
-        "fill-extrusion-flood-light-intensity": 0.7
+        "fill-extrusion-flood-light-intensity": 0.7,
+        "fill-extrusion-ground-effects-attenuation": 1.0
       },
       "layout": {
         "fill-extrusion-edge-radius": 0.99

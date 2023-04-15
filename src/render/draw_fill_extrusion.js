@@ -5,11 +5,12 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
-import FillExtrusionBucket, {fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {GroundEffect, fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionDepthUniformValues,
     fillExtrusionPatternUniformValues,
+    fillExtrusionGroundEffectUniformValues
 } from './program/fill_extrusion_program.js';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
@@ -19,6 +20,7 @@ import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import Context from '../gl/context.js';
 import {Terrain} from '../terrain/terrain.js';
 import {sRGBToLinearAndScale} from '../util/util.js';
+import Color from '../style-spec/util/color.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -29,6 +31,7 @@ export default draw;
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     const opacity = layer.paint.get('fill-extrusion-opacity');
+    const gl = painter.context.gl;
     if (opacity === 0) {
         return;
     }
@@ -39,10 +42,13 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const colorMode = shadowRenderer.getShadowPassColorMode();
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
     } else if (painter.renderPass === 'translucent') {
-        const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-        if (opacity === 1 && !layer.paint.get('fill-extrusion-pattern').constantOr((1: any))) {
+        const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1: any));
+
+        if (opacity === 1 && noPattern) {
             const colorMode = painter.colorModeForRenderPass();
+
             drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
 
         } else {
@@ -60,6 +66,37 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                 painter.colorModeForRenderPass());
 
             painter.resetStencilClippingMasks();
+        }
+
+        const lighting3DMode = painter.style.enable3dLights();
+        const noTerrain = !painter.terrain;
+        const noGlobe = painter.transform.projection.name !== 'globe';
+        const webGL2 = !!painter.context.isWebGL2;
+        if (webGL2 && lighting3DMode && noTerrain && noGlobe) {
+            const opacity = layer.paint.get('fill-extrusion-opacity');
+            const aoIntensity = layer.paint.get('fill-extrusion-ambient-occlusion-intensity');
+            const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-radius');
+            const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
+            const attenuation = layer.paint.get('fill-extrusion-ground-effects-attenuation');
+            const showOverdraw = painter._showOverdrawInspector;
+            const pass = (aoPass: boolean) => {
+                const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, true);
+                if (!showOverdraw) {
+                    /* $FlowFixMe[prop-missing] */
+                    const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorSdfPass, CullFaceMode.disabled, aoPass, true, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                }
+                const colorColorPass = new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+                drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, false, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+            };
+
+            if (aoIntensity > 0 && aoRadius > 0) {
+                pass(true);
+            }
+            if (floodLightIntensity > 0) {
+                pass(false);
+            }
         }
     }
 }
@@ -79,9 +116,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
-    const floodLightColorSrgb = layer.paint.get('fill-extrusion-flood-light-color').toArray01();
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3): any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
-    const floodLightColorLinear = sRGBToLinearAndScale(floodLightColorSrgb, floodLightIntensity);
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
@@ -157,10 +193,10 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColorLinear, verticalScale);
+                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColorLinear, verticalScale);
+                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity);
             }
         }
 
@@ -176,6 +212,41 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
+    }
+}
+
+function drawGroundEffect(painter, source, layer, coords, depthMode, stencilMode, colorMode, cullFaceMode, aoPass, sdfSubpass, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor: any, attenuation) {
+    const context = painter.context;
+    const tr = painter.transform;
+    const defines = ([]: any);
+    if (sdfSubpass) {
+        defines.push('SDF_SUBPASS');
+    }
+    for (const coord of coords) {
+        const tile = source.getTile(coord);
+        const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
+        if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect) continue;
+
+        const groundEffect: GroundEffect = (bucket.groundEffect: any);
+        const programConfiguration = groundEffect.programConfigurations.get(layer.id);
+        const program = painter.useProgram('fillExtrusionGroundEffect', programConfiguration, defines);
+
+        const matrix = painter.translatePosMatrix(
+            coord.projMatrix,
+            tile,
+            layer.paint.get('fill-extrusion-translate'),
+            layer.paint.get('fill-extrusion-translate-anchor'));
+
+        const meterToTile = 1 / bucket.tileToMeter;
+        const ao = [aoIntensity, aoRadius * meterToTile];
+        const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation);
+
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
+
+        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
+            uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
+            groundEffect.segments, layer.paint, painter.transform.zoom,
+            programConfiguration);
     }
 }
 

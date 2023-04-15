@@ -195,10 +195,9 @@ void main() {
     float is_wall = 1.0 - float(t > 0.0 && top_up_ny.y > 0.0);
     v_has_floodlight = float(wall_flood_light_radius > 0.0 && is_wall > 0.0);
     v_flood_radius = wall_flood_light_radius * u_vertical_scale;
-    v_color = apply_lighting_linear(color, NdotL);
+    v_color = apply_lighting(color, NdotL);
 #else
     v_color = apply_lighting(color, NdotL);
-    v_color *= u_opacity;
 #endif
 
 #else
@@ -206,8 +205,9 @@ void main() {
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
     v_color.rgb += clamp(color.rgb * NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-    v_color *= u_opacity;
 #endif
+
+    v_color *= u_opacity;
 
 #ifdef ZERO_ROOF_RADIUS
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
