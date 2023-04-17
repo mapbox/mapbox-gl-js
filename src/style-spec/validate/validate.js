@@ -28,6 +28,7 @@ import validateProjection from './validate_projection.js';
 import type {StyleReference} from '../reference/latest.js';
 import type {StyleSpecification} from '../types.js';
 import type ValidationError from '../error/validation_error.js';
+import getType from '../util/get_type.js';
 
 const VALIDATORS = {
     '*'() {
@@ -70,7 +71,7 @@ export type ValidationOptions = {
     styleSpec: StyleReference;
 }
 
-export default function validate(options: ValidationOptions): Array<ValidationError> {
+export default function validate(options: ValidationOptions, arrayAsExpression: boolean = false): Array<ValidationError> {
     const value = options.value;
     const valueSpec = options.valueSpec;
     const styleSpec = options.styleSpec;
@@ -80,7 +81,13 @@ export default function validate(options: ValidationOptions): Array<ValidationEr
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
-        return VALIDATORS[valueSpec.type](options);
+        const valid = VALIDATORS[valueSpec.type](options);
+        if (arrayAsExpression === true && valid.length > 0 && getType(options.value) === "array") {
+            // Try to validate as an expression
+            return validateExpression(options);
+        } else {
+            return valid;
+        }
     } else {
         const valid = validateObject(extend({}, options, {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec

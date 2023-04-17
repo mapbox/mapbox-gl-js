@@ -319,7 +319,7 @@ export function normalizePropertyExpression<T>(value: PropertyValueSpecification
     if (isFunction(value)) {
         return (new StylePropertyFunction(value, specification): any);
 
-    } else if (isExpression(value)) {
+    } else if (isExpression(value) || (Array.isArray(value) && value.length > 0)) {
         const expression = createPropertyExpression(value, specification);
         if (expression.result === 'error') {
             // this should have been caught in validation

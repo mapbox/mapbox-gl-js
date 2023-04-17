@@ -5,8 +5,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "[1][4][0]",
-          "error": "Unknown expression \"FAKE-EXPRESSION\". If you wanted a literal array, use [\"literal\", [...]]."
+          "key": "[1][4]",
+          "error": "Expected number but found array."
         }
       ]
     }

@@ -8,7 +8,7 @@
     "line": 22
   },
   {
-    "message": "layers[2].filter[0]: Unknown expression \"=\". If you wanted a literal array, use [\"literal\", [...]].",
+    "message": "layers[2].filter: Expected boolean but found array.",
     "line": 29
   },
   {

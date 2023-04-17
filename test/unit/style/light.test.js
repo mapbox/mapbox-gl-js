@@ -84,13 +84,13 @@ test('Light#setLight', (t) => {
         const light = new Light({});
 
         const lightSpy = t.spy(light, '_validate');
-        light.setLight({color: [999]}, {validate: false});
+        light.setLight({color: 999}, {validate: false});
         light.updateTransitions({transition: false}, {});
         light.recalculate({zoom: 16, now: 10});
 
         t.ok(lightSpy.calledOnce);
         t.deepEqual(lightSpy.args[0][2], {validate: false});
-        t.deepEqual(light.properties.get('color'), [999]);
+        t.deepEqual(light.properties.get('color'), 999);
         t.end();
     });
     t.end();

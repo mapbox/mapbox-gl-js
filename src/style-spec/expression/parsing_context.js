@@ -62,7 +62,7 @@ class ParsingContext {
         bindings?: Array<[string, Expression]>,
         options: {typeAnnotation?: 'assert' | 'coerce' | 'omit'} = {}
     ): ?Expression {
-        if (index) {
+        if (index || expectedType) {
             return this.concat(index, expectedType, bindings)._parse(expr, options);
         }
         return this._parse(expr, options);
@@ -88,13 +88,7 @@ class ParsingContext {
                 return this.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
             }
 
-            const op = expr[0];
-            if (typeof op !== 'string') {
-                this.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
-                return null;
-            }
-
-            const Expr = this.registry[op];
+            const Expr = typeof expr[0] === 'string' ? this.registry[expr[0]] : undefined;
             if (Expr) {
                 let parsed = Expr.parse(expr, this);
                 if (!parsed) return null;
@@ -137,7 +131,8 @@ class ParsingContext {
                 return parsed;
             }
 
-            return this.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
+            // Try to parse as array
+            return Coercion.parse(['to-array', expr], this);
         } else if (typeof expr === 'undefined') {
             return this.error(`'undefined' value invalid. Use null instead.`);
         } else if (typeof expr === 'object') {
@@ -155,7 +150,7 @@ class ParsingContext {
      * parsing, is copied by reference rather than cloned.
      * @private
      */
-    concat(index: number, expectedType?: ?Type, bindings?: Array<[string, Expression]>): ParsingContext {
+    concat(index: ?number, expectedType?: ?Type, bindings?: Array<[string, Expression]>): ParsingContext {
         const path = typeof index === 'number' ? this.path.concat(index) : this.path;
         const scope = bindings ? this.scope.concat(bindings) : this.scope;
         return new ParsingContext(
