@@ -56,7 +56,7 @@ export default function validateArray(options: Options): Array<ValidationError> 
             style,
             styleSpec,
             key: `${key}[${i}]`
-        }));
+        }, true));
     }
     return errors;
 }

@@ -12,10 +12,6 @@
     "line": 99
   },
   {
-    "message": "layers[7].layout.text-field[1][0]: Unknown expression \"Helvetica\". If you wanted a literal array, use [\"literal\", [...]].",
-    "line": 111
-  },
-  {
     "message": "layers[10].layout.text-field[1]: Expected array<string> but found number instead.",
     "line": 147
   }

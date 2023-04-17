@@ -1,14 +1,14 @@
 {
   "expression": [1, 2],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
-      "result": "error",
-      "errors": [
-        {
-          "key": "[0]",
-          "error": "Expression name must be a string, but found number instead. If you wanted a literal array, use [\"literal\", [...]]."
-        }
-      ]
-    }
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "array<number, 2>"
+    },
+    "outputs": [[1, 2]],
+    "serialized": [1, 2]
   }
 }

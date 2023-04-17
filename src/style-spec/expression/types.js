@@ -26,7 +26,8 @@ export type Type =
     ErrorTypeT |
     CollatorTypeT |
     FormattedTypeT |
-    ResolvedImageTypeT
+    ResolvedImageTypeT |
+    ArrayType;
 
 export type ArrayType = {
     kind: 'array',

@@ -2,8 +2,8 @@
 
 import assert from 'assert';
 
-import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types.js';
-import {Color, toString as valueToString, validateRGBA} from '../values.js';
+import {BooleanType, ColorType, NumberType, StringType, ValueType, array, NullType} from '../types.js';
+import {Color, isValue, toString as valueToString, typeOf, validateRGBA} from '../values.js';
 import RuntimeError from '../runtime_error.js';
 import Formatted from '../types/formatted.js';
 import FormatExpression from '../definitions/format.js';
@@ -13,7 +13,8 @@ import ResolvedImage from '../types/resolved_image.js';
 import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
-import type {Type} from '../types.js';
+import type {Type, ArrayType} from '../types.js';
+import getType from '../../util/get_type.js';
 
 const types = {
     'to-boolean': BooleanType,
@@ -30,7 +31,7 @@ const types = {
  * @private
  */
 class Coercion implements Expression {
-    type: Type;
+    type: Type | ArrayType;
     args: Array<Expression>;
 
     constructor(type: Type, args: Array<Expression>) {
@@ -43,24 +44,60 @@ class Coercion implements Expression {
             return context.error(`Expected at least one argument.`);
 
         const name: string = (args[0]: any);
-        assert(types[name], name);
-
-        if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
-            return context.error(`Expected one argument.`);
-
-        const type = types[name];
-
         const parsed = [];
-        for (let i = 1; i < args.length; i++) {
-            const input = context.parse(args[i], i, ValueType);
-            if (!input) return null;
-            parsed.push(input);
+        let type: Type | ArrayType = NullType;
+        if (name === 'to-array') {
+            if (!Array.isArray(args[1])) {
+                return null;
+            }
+            const arrayLength = args[1].length;
+            if (context.expectedType) {
+                if (context.expectedType.kind === 'array') {
+                    type = array(context.expectedType.itemType, arrayLength);
+                } else {
+                    return context.error(`Expected ${context.expectedType.kind} but found array.`);
+                }
+            } else if (arrayLength > 0 && isValue(args[1][0])) {
+                const value = (args[1][0]: any);
+                type = array(typeOf(value), arrayLength);
+            } else {
+                return null;
+            }
+            for (let i = 0; i < arrayLength; i++) {
+                // $FlowIgnore
+                const member = args[1][i];
+                let parsedMember;
+                if (getType(member) === 'array') {
+                    parsedMember = context.parse(member, undefined, type.itemType);
+                } else {
+                    const memberType = getType(member);
+                    if (memberType !== type.itemType.kind) {
+                        return context.error(`Expected ${type.itemType.kind} but found ${memberType}.`);
+                    }
+                    parsedMember = context.registry['literal'].parse(['literal', member === undefined ? null : member], context);
+                }
+                if (!parsedMember) return null;
+                parsed.push(parsedMember);
+            }
+        } else {
+            assert(types[name], name);
+
+            if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
+                return context.error(`Expected one argument.`);
+
+            type = types[name];
+
+            for (let i = 1; i < args.length; i++) {
+                const input = context.parse(args[i], i, ValueType);
+                if (!input) return null;
+                parsed.push(input);
+            }
         }
 
         return new Coercion(type, parsed);
     }
 
-    evaluate(ctx: EvaluationContext): null | boolean | number | string | Color | Formatted | ResolvedImage {
+    evaluate(ctx: EvaluationContext): any {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));
         } else if (this.type.kind === 'color') {
@@ -102,6 +139,8 @@ class Coercion implements Expression {
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
             return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
+        } else if (this.type.kind === 'array') {
+            return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
             return valueToString(this.args[0].evaluate(ctx));
         }
@@ -124,7 +163,7 @@ class Coercion implements Expression {
             return new ImageExpression(this.args[0]).serialize();
         }
 
-        const serialized = [`to-${this.type.kind}`];
+        const serialized: Array<mixed> = this.type.kind === 'array' ? [] : [`to-${this.type.kind}`];
         this.eachChild(child => { serialized.push(child.serialize()); });
         return serialized;
     }
