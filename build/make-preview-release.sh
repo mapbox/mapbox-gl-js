@@ -24,8 +24,9 @@ fi
 npm version $nextVersion --no-git-tag-version
 npm run prepublishOnly
 
-# Delete all *.map, *.flow and *-dev.* files in the dist/ folder
-find dist/ -type f \( -name "*.map" -o -name "*.flow" -o -name "*-dev.*" \) -delete
+# Delete all *.flow and *-dev.* files in the dist/ folder
+find dist/ -type f \( -name "*.flow" -o -name "*-dev.*" \) -delete
+rm dist/package.json
 
 # Update package.json inplace using jq to remove everything from the "files" section except dist/
 jq '.files = ["dist/"]' package.json > package.json.tmp && mv package.json.tmp package.json
@@ -34,7 +35,7 @@ jq '.files = ["dist/"]' package.json > package.json.tmp && mv package.json.tmp p
 npm pack
 
 # Revert the version change
-git checkout package.json
+git checkout package.json dist/package.json
 
 # Rename the tarball
 mv mapbox-mapbox-gl-private-$nextVersion.tgz mapbox-gl-$nextVersion.tgz
