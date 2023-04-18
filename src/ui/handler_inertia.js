@@ -140,7 +140,7 @@ export default class HandlerInertia {
 
 // Unfortunately zoom, bearing, etc can't have different durations and easings so
 // we need to choose one. We use the longest duration and it's corresponding easing.
-function extendDuration(easeOptions, result: {| amount: number, duration: number, easing: (t: number) => number |}) {
+function extendDuration(easeOptions: EasingOptions, result: {| amount: number, duration: number, easing: (t: number) => number |}) {
     if (!easeOptions.duration || easeOptions.duration < result.duration) {
         easeOptions.duration = result.duration;
         easeOptions.easing = result.easing;

@@ -1,9 +1,10 @@
 // @flow strict
 
-type GeoJSONPosition = [number, number] | [number, number, number];
 type Geometry<T, C> = { type: T, coordinates: C }
 
 declare module "@mapbox/geojson-types" {
+    declare export type GeoJSONPosition = [number, number] | [number, number, number];
+
     declare export type GeoJSONPoint = Geometry<'Point', GeoJSONPosition>;
     declare export type GeoJSONMultiPoint = Geometry<'MultiPoint', Array<GeoJSONPosition>>;
 

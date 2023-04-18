@@ -192,7 +192,7 @@ class StructArray {
     /**
      * Create TypedArray views for the current ArrayBuffer.
      */
-    _refreshViews() {
+    _refreshViews(): void {
         throw new Error('_refreshViews() must be implemented by each concrete StructArray layout');
     }
 

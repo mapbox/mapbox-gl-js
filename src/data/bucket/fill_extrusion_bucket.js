@@ -53,7 +53,7 @@ const FACTOR = Math.pow(2, 13);
 export const ELEVATION_SCALE = 7.0;
 export const ELEVATION_OFFSET = 450;
 
-function addVertex(vertexArray, x, y, nxRatio, nySign, normalUp, top, e) {
+function addVertex(vertexArray: FillExtrusionLayoutArray, x: number, y: number, nxRatio: number, nySign: number, normalUp: number, top: number, e: number) {
     vertexArray.emplaceBack(
         // a_pos_normal_ed:
         // Encode top and side/up normal using the least significant bits
@@ -73,7 +73,7 @@ function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, 
         normal[0] * encode, normal[1] * encode, normal[2] * encode);
 }
 
-class PartMetadata {
+export class PartMetadata {
     acc: Point;
     min: Point;
     max: Point;
@@ -661,20 +661,20 @@ class FillExtrusionBucket implements Bucket {
     }
 }
 
-function getCosHalfAngle(na, nb) {
+function getCosHalfAngle(na: Point, nb: Point) {
     const nm = na.add(nb)._unit();
     const cosHalfAngle = na.x * nm.x + na.y * nm.y;
     return cosHalfAngle;
 }
 
-function getRoundedEdgeOffset(p0, p1, p2, edgeRadius) {
+function getRoundedEdgeOffset(p0: Point, p1: Point, p2: Point, edgeRadius: number) {
     const na = p1.sub(p0)._perp()._unit();
     const nb = p2.sub(p1)._perp()._unit();
     const cosHalfAngle = getCosHalfAngle(na, nb);
     return _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
 }
 
-function _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius) {
+function _getRoundedEdgeOffset(p0: Point, p1: Point, p2: Point, cosHalfAngle: number, edgeRadius: number) {
     const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
     return Math.min(p0.dist(p1) / 3, p1.dist(p2) / 3, edgeRadius * sinHalfAngle / cosHalfAngle);
 }
@@ -688,14 +688,14 @@ export default FillExtrusionBucket;
 // Rendering them twice often results with Z-fighting.
 // In case of globe and axis aligned bounds, it is also useful to
 // discard edges that have the both endpoints outside the same bound.
-function isEdgeOutsideBounds(p1, p2, bounds) {
+function isEdgeOutsideBounds(p1: Point, p2: Point, bounds: [Point, Point]) {
     return (p1.x < bounds[0].x && p2.x < bounds[0].x) ||
            (p1.x > bounds[1].x && p2.x > bounds[1].x) ||
            (p1.y < bounds[0].y && p2.y < bounds[0].y) ||
            (p1.y > bounds[1].y && p2.y > bounds[1].y);
 }
 
-function isEntirelyOutside(ring) {
+function isEntirelyOutside(ring: Array<Point>) {
     // Discard rings with corners on border if all other vertices are outside: they get defined
     // also in the tile across the border. Eventual zero area rings at border are discarded by classifyRings
     // and there is no need to handle that case here.
@@ -713,7 +713,7 @@ function tileToMeter(canonical: CanonicalTileID) {
     return circumferenceAtEquator * 2 * exp / (exp * exp + 1) / EXTENT / (1 << canonical.z);
 }
 
-function isAOConcaveAngle(p2, p1, p3) {
+function isAOConcaveAngle(p2: Point, p1: Point, p3: Point) {
     if (p2.x < 0 || p2.x >= EXTENT || p1.x < 0 || p1.x >= EXTENT || p3.x < 0 || p3.x >= EXTENT) {
         return false; // angles are not processed for edges that extend over tile borders
     }
@@ -728,7 +728,7 @@ function isAOConcaveAngle(p2, p1, p3) {
     return cosAB > -0.866 && dotProductWithNormal < 0;
 }
 
-function encodeAOToEdgeDistance(edgeDistance, isConcaveCorner, edgeStart) {
+function encodeAOToEdgeDistance(edgeDistance: number, isConcaveCorner: boolean, edgeStart: boolean) {
     // Encode concavity and edge start/end using the least significant bits.
     // Second least significant bit 1 encodes concavity.
     // The least significant bit 1 marks the edge start, 0 for edge end.
@@ -758,7 +758,7 @@ export function resampleFillExtrusionPolygonsForGlobe(polygons: Point[][][], til
     const cellCountOnXAxis = Math.ceil((rightLng - leftLng) / cellCount);
     const cellCountOnYAxis = Math.ceil((topLat - bottomLat) / cellCount);
 
-    const splitFn = (axis, min, max) => {
+    const splitFn = (axis: number, min: number, max: number) => {
         if (axis === 0) {
             return 0.5 * (min + max);
         } else {
