@@ -131,6 +131,7 @@ export const symbolInstance: StructArrayLayout = createLayout([
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Float32', components: 2, name: 'textOffset'},
     {type: 'Float32', name: 'collisionCircleDiameter'},
+    {type: 'Uint8', name: 'hasIconTextFit'}
 ]);
 
 export const glyphOffset: StructArrayLayout = createLayout([

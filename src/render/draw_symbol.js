@@ -152,7 +152,7 @@ function updateVariableAnchors(coords, painter, layer, sourceCache, rotationAlig
 
         const pixelsToTileUnits = tr.calculatePixelsToTileUnitsMatrix(tile);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucket.getProjection(), pixelsToTileUnits);
-        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&  bucket.hasIconData();
+        const updateTextFitIcon = bucket.hasIconTextFit() &&  bucket.hasIconData();
 
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
@@ -361,7 +361,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucket.getProjection(), s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
-        const updateTextFitIcon = layer.layout.get('icon-text-fit') !== 'none' &&
+        const updateTextFitIcon = bucket.hasIconTextFit() &&
             hasVariableAnchors &&
             bucket.hasIconData();
 

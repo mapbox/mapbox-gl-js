@@ -1664,15 +1664,21 @@
           "android": "9.2.0",
           "ios": "5.8.0",
           "macos": "0.15.0"
+        },
+        "data-driven styling": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
         "interpolated": false,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "icon-text-fit-padding": {
       "type": "array",
@@ -1703,15 +1709,21 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
+        },
+        "data-driven styling": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "feature"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "icon-image": {
       "type": "resolvedImage",
