@@ -408,18 +408,23 @@ function addFeature(bucket: SymbolBucket,
         symbolPlacement = layout.get('symbol-placement'),
         textRepeatDistance = symbolMinDistance / 2;
 
-    const iconTextFit = layout.get('icon-text-fit');
+    const iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
+    const iconTextFitPadding = layout.get('icon-text-fit-padding').evaluate(feature, {}, canonical);
+    const hasIconTextFit = iconTextFit !== 'none';
+    if (bucket.hasAnyIconTextFit === false && hasIconTextFit) {
+        bucket.hasAnyIconTextFit = true;
+    }
     let verticallyShapedIcon;
 
     // Adjust shaped icon size when icon-text-fit is used.
-    if (shapedIcon && iconTextFit !== 'none') {
+    if (shapedIcon && hasIconTextFit) {
         if (bucket.allowVerticalPlacement && shapedTextOrientations.vertical) {
             verticallyShapedIcon = fitIconToText(shapedIcon, shapedTextOrientations.vertical, iconTextFit,
-                layout.get('icon-text-fit-padding'), iconOffset, fontScale);
+                iconTextFitPadding, iconOffset, fontScale);
         }
         if (defaultShaping) {
             shapedIcon = fitIconToText(shapedIcon, defaultShaping, iconTextFit,
-                                       layout.get('icon-text-fit-padding'), iconOffset, fontScale);
+                                       iconTextFitPadding, iconOffset, fontScale);
         }
     }
 
@@ -702,6 +707,7 @@ function addSymbol(bucket: SymbolBucket,
     const placedTextSymbolIndices = {};
     let key = murmur3('');
     const collisionFeatureAnchor: Anchor = globe ? globe.anchor : anchor;
+    const hasIconTextFit = layer.layout.get('icon-text-fit').evaluate(feature, {}, canonical) !== 'none';
 
     let textOffset0 = 0;
     let textOffset1 = 0;
@@ -736,7 +742,6 @@ function addSymbol(bucket: SymbolBucket,
 
     if (shapedIcon) {
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
-        const hasIconTextFit = layer.layout.get('icon-text-fit') !== 'none';
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit) : undefined;
         iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate);
@@ -897,7 +902,9 @@ function addSymbol(bucket: SymbolBucket,
         0,
         textOffset0,
         textOffset1,
-        collisionCircleDiameter);
+        collisionCircleDiameter,
+        hasIconTextFit ? 1 : 0
+    );
 }
 
 function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anchor: Point) {

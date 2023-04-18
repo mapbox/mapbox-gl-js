@@ -422,6 +422,7 @@ class SymbolBucket implements Bucket {
     hasRTLText: boolean;
     projection: ProjectionSpecification;
     projectionInstance: ?Projection;
+    hasAnyIconTextFit: boolean;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -435,6 +436,7 @@ class SymbolBucket implements Bucket {
         this.hasPattern = false;
         this.hasRTLText = false;
         this.fullyClipped = false;
+        this.hasAnyIconTextFit = false;
         this.sortKeyRanges = [];
 
         this.collisionCircleArray = [];
@@ -1019,6 +1021,10 @@ class SymbolBucket implements Bucket {
 
     hasIconCollisionBoxData(): boolean {
         return this.hasDebugData() && this.iconCollisionBox.segments.get().length > 0;
+    }
+
+    hasIconTextFit(): boolean {
+        return this.hasAnyIconTextFit;
     }
 
     addIndicesForPlacedSymbol(iconOrText: SymbolBuffers, placedSymbolIndex: number) {

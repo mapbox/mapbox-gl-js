@@ -411,7 +411,6 @@ export class Placement {
         const iconAllowOverlap = layout.get('icon-allow-overlap');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
 
         this.transform.setProjection(bucket.projection);
@@ -599,7 +598,7 @@ export class Placement {
                         const width = (collisionTextBox.x2 - collisionTextBox.x1) * textScale + 2.0 * collisionTextBox.padding;
                         const height = (collisionTextBox.y2 - collisionTextBox.y1) * textScale + 2.0 * collisionTextBox.padding;
 
-                        const variableIconBox = hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
+                        const variableIconBox = symbolInstance.hasIconTextFit && !iconAllowOverlap ? collisionIconBox : null;
                         if (variableIconBox) updateBoxData(variableIconBox);
 
                         let placedBox: PartialPlacedCollisionBox = {box: [], offscreen: false, occluded: false};
@@ -714,7 +713,7 @@ export class Placement {
 
                 const placeIconFeature = (iconBox: SingleCollisionBox) => {
                     updateBoxData(iconBox);
-                    const shiftPoint: Point = hasIconTextFit && shift ?
+                    const shiftPoint: Point = symbolInstance.hasIconTextFit && shift ?
                         offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolInstance.placedIconSymbolIndex);
@@ -942,7 +941,6 @@ export class Placement {
         const variablePlacement = layout.get('text-variable-anchor');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        const hasIconTextFit = layout.get('icon-text-fit') !== 'none';
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
@@ -1096,14 +1094,14 @@ export class Placement {
 
                     if (collisionArrays.iconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, verticalIconUsed,
-                            hasIconTextFit ? shift.x : 0,
-                            hasIconTextFit ? shift.y : 0);
+                            symbolInstance.hasIconTextFit ? shift.x : 0,
+                            symbolInstance.hasIconTextFit ? shift.y : 0);
                     }
 
                     if (collisionArrays.verticalIconBox) {
                         updateCollisionVertices(bucket.iconCollisionBox.collisionVertexArray, opacityState.icon.placed, !verticalIconUsed,
-                            hasIconTextFit ? shift.x : 0,
-                            hasIconTextFit ? shift.y : 0);
+                            symbolInstance.hasIconTextFit ? shift.x : 0,
+                            symbolInstance.hasIconTextFit ? shift.y : 0);
                     }
                 }
             }
