@@ -58,10 +58,12 @@ var Demo3D = function() {
     this.verticalGradient = false;
     this.lightIntensity = 0.26;
     this.aoIntensity = 0.3;
-    this.aoRadius = 3.0;
+    this.aoWallRadius = 3.0;
+    this.aoGroundRadius = 3.0;
+    this.aoGroundAttenuation = 0.69;
     this.floodLightColor = [255, 255, 146];
     this.floodLightIntensity = 0.0;
-    this.aoGroundLine = false;
+    this.floodLightGroundAttenuation = 0.69;
     this.buildingColor = [ 255, 255, 255 ];
     this.buildingOpacity = 1;
     this.ambientLightColor = [ 255, 255, 255 ];
@@ -72,7 +74,6 @@ var Demo3D = function() {
     this.directionalLightPolar = 50;
     this.directionalLightCastShadows = false;
     this.directionalLightShadowIntensity = 0.3;
-    this.groundEffectAttenuation = 2.0;
     this.edgeRadius = 0.3;
 };
 
@@ -228,39 +229,18 @@ window.onload = function() {
     verticalGradient.onFinishChange((value) => {
         map.setPaintProperty('extrusion', 'fill-extrusion-vertical-gradient', value);
     });
-    var buildingsAO = buildings.add(demo3d, 'aoIntensity', 0.0, 1.0);
-    buildingsAO.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', value);
-        map.setPaintProperty('footprint-blur5', 'line-opacity', value);
-        map.setPaintProperty('footprint-blur2', 'line-opacity', value);
-    });
-    var aoRadius = buildings.add(demo3d, 'aoRadius', 0.0, 50.0);
-    aoRadius.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', value);
-    });
-    var aoGroundLine = buildings.add(demo3d, 'aoGroundLine');
-    aoGroundLine.onFinishChange((value) => {
-        const visible = value ? 'visible' : 'none';
-        map.setLayoutProperty('footprint-blur2', 'visibility', visible);
-        map.setLayoutProperty('footprint-blur5', 'visibility', visible);
-    });
     var buildingColor = buildings.addColor(demo3d, 'buildingColor');
     buildingColor.onFinishChange((value) => {
         map.setPaintProperty('extrusion', 'fill-extrusion-color',
             'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
     });
-    var floodLightColor = buildings.addColor(demo3d, 'floodLightColor');
-    floodLightColor.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-color',
-            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
-    });
-    var floodLightIntensity = buildings.add(demo3d, 'floodLightIntensity', 0.0, 1.0);
-    floodLightIntensity.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', value);
-    });
     var buildingOpacity = buildings.add(demo3d, 'buildingOpacity', 0.0, 1.0);
     buildingOpacity.onFinishChange((value) => {
         map.setPaintProperty('extrusion', 'fill-extrusion-opacity', value);
+    });
+    var edgeRadius = buildings.add(demo3d, 'edgeRadius');
+    edgeRadius.onFinishChange((value) => {
+        map.setLayoutProperty('extrusion', 'fill-extrusion-edge-radius', value);
     });
     var lightIntensity = buildings.add(demo3d, 'lightIntensity', 0.0, 1.0);
     lightIntensity.onFinishChange((value) => {
@@ -268,13 +248,37 @@ window.onload = function() {
         light['intensity'] = value;
         map.setLight(light);
     });
-    var groundEffectAttenuation = buildings.add(demo3d, 'groundEffectAttenuation', 0.1, 3.0);
-    groundEffectAttenuation.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ground-effects-attenuation', value);
+
+    var groundEffects = buildings.addFolder('Flood light and AO');
+    var buildingsAO = groundEffects.add(demo3d, 'aoIntensity', 0.0, 1.0);
+    buildingsAO.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', value);
     });
-    var edgeRadius = buildings.add(demo3d, 'edgeRadius');
-    edgeRadius.onFinishChange((value) => {
-        map.setLayoutProperty('extrusion', 'fill-extrusion-edge-radius', value);
+    var aoWallRadius = groundEffects.add(demo3d, 'aoWallRadius', 0.0, 50.0);
+    aoWallRadius.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', value);
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-wall-radius', value);
+    });
+    var aoGroundRadius = groundEffects.add(demo3d, 'aoGroundRadius', 0.0, 50.0);
+    aoGroundRadius.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-radius', value);
+    });
+    var aoGroundAttenuation = groundEffects.add(demo3d, 'aoGroundAttenuation', 0.0, 1.0);
+    aoGroundAttenuation.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-attenuation', value);
+    });
+    var floodLightColor = groundEffects.addColor(demo3d, 'floodLightColor');
+    floodLightColor.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-color',
+            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
+    });
+    var floodLightIntensity = groundEffects.add(demo3d, 'floodLightIntensity', 0.0, 1.0);
+    floodLightIntensity.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', value);
+    });
+    var floodLightGroundAttenuation = groundEffects.add(demo3d, 'floodLightGroundAttenuation', 0.0, 1.0);
+    floodLightGroundAttenuation.onFinishChange((value) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-ground-attenuation', value);
     });
 };
 
@@ -323,15 +327,18 @@ map.on('style.load', function() {
             'fill-extrusion-base': ["get", "min_height"],
             'fill-extrusion-opacity': demo3d.buildingOpacity,
             'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
-            'fill-extrusion-ambient-occlusion-radius': demo3d.aoRadius,
+            'fill-extrusion-ambient-occlusion-radius': demo3d.aoWallRadius,
             'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity,
-            'fill-extrusion-wall-flood-light-radius': [
+            'fill-extrusion-ambient-occlusion-wall-radius': demo3d.aoWallRadius,
+            'fill-extrusion-ambient-occlusion-ground-radius': demo3d.aoGroundRadius,
+            'fill-extrusion-ambient-occlusion-ground-attenuation': demo3d.aoGroundAttenuation,
+            'fill-extrusion-flood-light-wall-radius': [
                 "case",
                 ["<=", ["get", "height"], 50], 0,
                 [">",  ["get", "height"], 50], ["get", "height"],
                 0
             ],
-            'fill-extrusion-ground-flood-light-radius': [
+            'fill-extrusion-flood-light-ground-radius': [
                 "case",
                 ["<=", ["get", "height"], 50], 0,
                 [">",  ["get", "height"], 50], [
@@ -351,43 +358,9 @@ map.on('style.load', function() {
                 15, 0,
                 16, 1,
             ],
-            'fill-extrusion-ground-effects-attenuation': demo3d.groundEffectAttenuation
+            'fill-extrusion-flood-light-ground-attenuation': demo3d.floodLightGroundAttenuation
         }
     }, 'waterway-label');
-
-    // Buildings AO lines
-    let buildingsBlurLayerId = "footprint-blur5";
-    if (!map.getLayer(buildingsBlurLayerId)) {
-        map.addLayer({
-            'id': buildingsBlurLayerId,
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['all', ['==', ['get', 'min_height'], 0], ['==', ['get', 'extrude'], 'true']],
-            'type': 'line',
-            'paint': {
-                'line-color': 'rgba(100, 100, 100, 0.3)',
-                'line-width': {"base": 1.3, "stops":[[14, 5], [22, 10]]},
-                'line-opacity': 0.4
-            }
-        }, "extrusion");
-    }
-    buildingsBlurLayerId = "footprint-blur2";
-    if (!map.getLayer(buildingsBlurLayerId)) {
-        map.addLayer({
-            'id': buildingsBlurLayerId,
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['all', ['==', ['get', 'min_height'], 0], ['==', ['get', 'extrude'], 'true']],
-            'type': 'line',
-            'paint': {
-                'line-color': 'rgba(100, 100, 100, 0.4)',
-                'line-width': 3,
-                'line-opacity': 0.4
-            }
-        }, "extrusion");
-    }
-    map.setLayoutProperty('footprint-blur2', 'visibility', demo3d.aoGroundLine ? 'visible' : 'none');
-    map.setLayoutProperty('footprint-blur5', 'visibility', demo3d.aoGroundLine ? 'visible' : 'none');
 
     map.addLayer({
         'id': 'sky',

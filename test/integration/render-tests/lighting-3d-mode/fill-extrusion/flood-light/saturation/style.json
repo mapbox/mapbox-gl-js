@@ -65,10 +65,10 @@
           "height"
         ],
         "fill-extrusion-opacity": 1.0,
-        "fill-extrusion-wall-flood-light-radius": [
+        "fill-extrusion-flood-light-wall-radius": [
           "get", "height"
         ],
-        "fill-extrusion-ground-flood-light-radius": [
+        "fill-extrusion-flood-light-ground-radius": [
           "/",
           ["get", "height"],
           10
@@ -80,7 +80,8 @@
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7,
-        "fill-extrusion-ground-effects-attenuation": 1.0
+        "fill-extrusion-flood-light-ground-attenuation": 0.344,
+        "fill-extrusion-ambient-occlusion-ground-attenuation": 0.344
       },
       "layout": {
         "fill-extrusion-edge-radius": 0.99

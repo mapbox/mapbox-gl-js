@@ -94,8 +94,9 @@
       }
     }
   },
-  "pitch": 10,
-  "zoom": 18.2,
+  "pitch": 61,
+  "bearing": 50,
+  "zoom": 18.6,
   "layers": [
     {
       "id": "background",
@@ -111,9 +112,8 @@
       "paint": {
         "fill-extrusion-color": "white",
         "fill-extrusion-opacity": 1.0,
-        "fill-extrusion-height": 5,
-        "fill-extrusion-flood-light-wall-radius": 5,
-        "fill-extrusion-flood-light-ground-radius": 5,
+        "fill-extrusion-height": 10,
+        "fill-extrusion-flood-light-wall-radius": 4,
         "fill-extrusion-flood-light-color": [
           "rgb",
           255,
@@ -121,9 +121,6 @@
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7
-      },
-      "layout": {
-        "fill-extrusion-edge-radius": 0.9
       }
     }
   ]

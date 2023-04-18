@@ -65,7 +65,7 @@
             "height"
           ],
           "fill-extrusion-opacity": 1.0,
-          "fill-extrusion-wall-flood-light-radius": [
+          "fill-extrusion-flood-light-wall-radius": [
             "get", "height"
           ],
           "fill-extrusion-flood-light-color": [

@@ -59,13 +59,13 @@ varying float v_height;
 #pragma mapbox: define highp float height
 
 #pragma mapbox: define highp vec4 color
-#pragma mapbox: define highp float wall_flood_light_radius
+#pragma mapbox: define highp float flood_light_wall_radius
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
-    #pragma mapbox: initialize highp float wall_flood_light_radius
+    #pragma mapbox: initialize highp float flood_light_wall_radius
     
     base *= u_vertical_scale;
     height *= u_vertical_scale;
@@ -193,8 +193,8 @@ void main() {
 
 #ifdef FLOOD_LIGHT
     float is_wall = 1.0 - float(t > 0.0 && top_up_ny.y > 0.0);
-    v_has_floodlight = float(wall_flood_light_radius > 0.0 && is_wall > 0.0);
-    v_flood_radius = wall_flood_light_radius * u_vertical_scale;
+    v_has_floodlight = float(flood_light_wall_radius > 0.0 && is_wall > 0.0);
+    v_flood_radius = flood_light_wall_radius * u_vertical_scale;
     v_color = apply_lighting(color, NdotL);
 #else
     v_color = apply_lighting(color, NdotL);

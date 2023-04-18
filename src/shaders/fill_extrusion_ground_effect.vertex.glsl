@@ -15,18 +15,18 @@ uniform highp float u_ao_pass;
 uniform highp float u_meter_to_tile;
 
 uniform highp vec2 u_ao;
-#pragma mapbox: define highp float ground_flood_light_radius
+#pragma mapbox: define highp float flood_light_ground_radius
 #pragma mapbox: define highp float base
 
 void main() {
-    #pragma mapbox: initialize highp float ground_flood_light_radius
+    #pragma mapbox: initialize highp float flood_light_ground_radius
     #pragma mapbox: initialize highp float base
 
     vec2 p = a_pos_end.xy;
     vec2 q = floor(a_pos_end.zw * 0.5);
     vec2 start_bottom = a_pos_end.zw - q * 2.0;
 
-    float flood_radius_tile = ground_flood_light_radius * u_meter_to_tile;
+    float flood_radius_tile = flood_light_ground_radius * u_meter_to_tile;
     vec2 v = normalize(q - p);
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
     float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass);
@@ -49,7 +49,7 @@ void main() {
     centroid_pos = a_centroid_pos;
 #endif
 
-    float isFloodlit = float(ground_flood_light_radius > 0.0 && u_flood_light_intensity > 0.0);
+    float isFloodlit = float(flood_light_ground_radius > 0.0 && u_flood_light_intensity > 0.0);
     float hidden = mix(1.0 - isFloodlit, isFloodlit, u_ao_pass);
     hidden += float(base > 0.0); // vertex base is above ground.
     hidden += float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0); // vertex is replaced by landmark geometry.
