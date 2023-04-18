@@ -112,9 +112,9 @@
         "fill-extrusion-color": "white",
         "fill-extrusion-opacity": 1.0,
         "fill-extrusion-height": 0,
-        "fill-extrusion-wall-flood-light-radius": 0,
-        "fill-extrusion-ground-flood-light-radius": 10,
-        "fill-extrusion-ground-effects-attenuation": 0.5,
+        "fill-extrusion-flood-light-wall-radius": 0,
+        "fill-extrusion-flood-light-ground-radius": 10,
+        "fill-extrusion-flood-light-ground-attenuation": 0.172,
         "fill-extrusion-flood-light-color": [
           "rgb",
           255,

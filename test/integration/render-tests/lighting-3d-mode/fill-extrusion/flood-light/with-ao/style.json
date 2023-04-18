@@ -4,7 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0004
+      "allowed": 0.0003
     }
   },
   "lights": [
@@ -38,12 +38,12 @@
       ]
     }
   },
-  "pitch": 66.5,
-  "zoom": 17.5,
-  "bearing": 320,
+  "pitch": 60,
+  "zoom": 19.0,
+  "bearing": 290,
   "center": [
-    -74.0125,
-    40.7152
+    -74.01183,
+    40.71497
   ],
   "layers": [
     {
@@ -65,13 +65,13 @@
           "height"
         ],
         "fill-extrusion-opacity": 1.0,
-        "fill-extrusion-wall-flood-light-radius": [
+        "fill-extrusion-flood-light-wall-radius": [
           "case",
           ["<=", ["get", "height"], 50], 0,
           [">",  ["get", "height"], 50], ["get", "height"],
           0
         ],
-        "fill-extrusion-ground-flood-light-radius": [
+        "fill-extrusion-flood-light-ground-radius": [
           "case",
           ["<=", ["get", "height"], 50], 0,
           [">",  ["get", "height"], 50], [
@@ -84,13 +84,16 @@
         "fill-extrusion-flood-light-color": [
           "rgb",
           255,
-          255,
+          0,
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7,
-        "fill-extrusion-ambient-occlusion-radius": 4,
+        "fill-extrusion-ambient-occlusion-wall-radius": 10,
+        "fill-extrusion-ambient-occlusion-ground-radius": 20,
         "fill-extrusion-vertical-scale": 0.6,
-        "fill-extrusion-ambient-occlusion-intensity": 0.6
+        "fill-extrusion-ambient-occlusion-intensity": 0.6,
+        "fill-extrusion-ambient-occlusion-ground-attenuation": 0.7,
+        "fill-extrusion-flood-light-ground-attenuation": 0.3
       },
       "layout": {
         "fill-extrusion-edge-radius": 0.99

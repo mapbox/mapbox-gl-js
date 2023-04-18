@@ -5110,7 +5110,10 @@
         ]
       },
       "transition": true,
-      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings.",
+      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with legacy light. When 3D light is enabled `fill-extrusion-ambient-occlusion-wall-radius` and `fill-extrusion-ambient-occlusion-ground-radius` are used instead.",
+      "requires": [
+        "fill-extrusion-edge-radius"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "2.10.0",
@@ -5139,12 +5142,80 @@
         "parameters": [
           "zoom"
         ]
+      }
+    },
+    "fill-extrusion-ambient-occlusion-wall-radius": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 3.0,
+      "minimum": 0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
       },
+      "transition": true,
+      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "requires": [
+        "fill-extrusion-edge-radius"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
+    "fill-extrusion-ambient-occlusion-ground-radius": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 3.0,
+      "minimum": 0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The extent of the ambient occlusion effect on the ground beneath the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
+    "fill-extrusion-ambient-occlusion-ground-attenuation": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0.69,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "Provides a control to futher fine-tune the look of the ambient occlusion on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
     "fill-extrusion-flood-light-color": {
       "property-type": "data-constant",
       "type": "color",
       "default": "#ffffff",
-      "doc": "The color of the flood light effect on the walls of the extruded buildings.",
+      "doc": "The color of the flood light effect on the walls of the extruded buildings. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5166,7 +5237,7 @@
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
-      "doc": "The intensity of the flood light color.",
+      "doc": "The intensity of the flood light color. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5182,13 +5253,13 @@
         }
       }
     },
-    "fill-extrusion-wall-flood-light-radius": {
+    "fill-extrusion-flood-light-wall-radius": {
       "property-type": "data-driven",
       "type": "number",
       "units": "meters",
       "default": 0,
       "minimum": 0,
-      "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters.",
+      "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5210,13 +5281,13 @@
         }
       }
     },
-    "fill-extrusion-ground-flood-light-radius": {
+    "fill-extrusion-flood-light-ground-radius": {
       "property-type": "data-driven",
       "type": "number",
       "units": "meters",
       "default": 0,
       "minimum": 0,
-      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
+      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5238,13 +5309,13 @@
         }
       }
     },
-    "fill-extrusion-ground-effects-attenuation": {
+    "fill-extrusion-flood-light-ground-attenuation": {
       "property-type": "data-constant",
       "type": "number",
-      "default": 2.0,
-      "minimum": 0.1,
-      "maximum": 3.0,
-      "doc": "Provides a control to futher fine-tune the look of the flood light and/or AO on the ground beneath the extruded buildings. A value of 1 indicates a linear gradient. Values below 1 give the effect a more solid look and values above 1 make it smoother.",
+      "default": 0.69,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "Provides a control to futher fine-tune the look of the flood light on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "transition": true,
       "expression": {
         "interpolated": true,

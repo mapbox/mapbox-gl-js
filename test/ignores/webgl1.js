@@ -14,7 +14,9 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/edge-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/fog",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/interior",
-    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-height"
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-height",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/fixed-height",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/floating-base"
 ];
 
 export default {todo, skip};

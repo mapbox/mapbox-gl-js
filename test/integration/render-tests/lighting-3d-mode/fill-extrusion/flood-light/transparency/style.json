@@ -65,13 +65,13 @@
           "height"
         ],
         "fill-extrusion-opacity": 0.8,
-        "fill-extrusion-wall-flood-light-radius": [
+        "fill-extrusion-flood-light-wall-radius": [
           "case",
           ["<=", ["get", "height"], 50], 0,
           [">",  ["get", "height"], 50], ["get", "height"],
           0
         ],
-        "fill-extrusion-ground-flood-light-radius": [
+        "fill-extrusion-flood-light-ground-radius": [
           "case",
           ["<=", ["get", "height"], 50], 0,
           [">",  ["get", "height"], 50], [
@@ -88,10 +88,12 @@
           0
         ],
         "fill-extrusion-flood-light-intensity": 0.7,
-        "fill-extrusion-ambient-occlusion-radius": 4,
+        "fill-extrusion-ambient-occlusion-wall-radius": 4,
+        "fill-extrusion-ambient-occlusion-ground-radius": 4,
         "fill-extrusion-ambient-occlusion-intensity": 0.6,
         "fill-extrusion-vertical-scale": 0.6,
-        "fill-extrusion-ground-effects-attenuation": 1.0
+        "fill-extrusion-flood-light-ground-attenuation": 0.344,
+        "fill-extrusion-ambient-occlusion-ground-attenuation": 0.344
       },
       "layout": {
         "fill-extrusion-edge-radius": 0.99

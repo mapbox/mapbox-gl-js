@@ -72,15 +72,17 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const noTerrain = !painter.terrain;
         const noGlobe = painter.transform.projection.name !== 'globe';
         const webGL2 = !!painter.context.isWebGL2;
-        if (webGL2 && lighting3DMode && noTerrain && noGlobe) {
+        if (webGL2 && lighting3DMode && noPattern && noTerrain && noGlobe) {
             const opacity = layer.paint.get('fill-extrusion-opacity');
             const aoIntensity = layer.paint.get('fill-extrusion-ambient-occlusion-intensity');
-            const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-radius');
+            const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-ground-radius');
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
             const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
-            const attenuation = layer.paint.get('fill-extrusion-ground-effects-attenuation');
             const showOverdraw = painter._showOverdrawInspector;
+            const lerp = (a, b, t) => { return (1 - t) * a + t * b; };
             const pass = (aoPass: boolean) => {
+                const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
+                const attenuation = lerp(0.1, 3, t);
                 const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, true);
                 if (!showOverdraw) {
                     /* $FlowFixMe[prop-missing] */
@@ -108,7 +110,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const image = patternProperty.constantOr((1: any));
     const opacity = layer.paint.get('fill-extrusion-opacity');
-    const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), layer.paint.get('fill-extrusion-ambient-occlusion-radius')];
+    const lighting3DMode = painter.style.enable3dLights();
+    const aoRadius = (lighting3DMode && !image) ? layer.paint.get('fill-extrusion-ambient-occlusion-wall-radius') : layer.paint.get('fill-extrusion-ambient-occlusion-radius');
+    const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), aoRadius];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
     const zeroRoofRadius = edgeRadius > 0 && !layer.paint.get('fill-extrusion-rounded-roof');
     const roofEdgeRadius = zeroRoofRadius ? 0.0 : edgeRadius;
