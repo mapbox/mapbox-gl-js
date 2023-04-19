@@ -4733,6 +4733,29 @@
           "ios": "10.7.0"
         }
       }
+    },
+    "fill-extrusion-rounded-roof": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Indicates whether top edges should be rounded when fill-extrusion-edge-radius has a value greater than 0. If false, rounded edges are only applied to the sides. Default is true.",
+      "requires": [
+        "fill-extrusion-edge-radius"
+      ],
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "2.15.0",
+          "android": "10.10.0",
+          "ios": "10.10.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_line": {
