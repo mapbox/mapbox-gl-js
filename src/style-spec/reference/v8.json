@@ -4744,7 +4744,7 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.14.0",
+          "js": "2.15.0",
           "android": "10.10.0",
           "ios": "10.10.0"
         }
