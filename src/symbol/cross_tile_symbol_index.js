@@ -44,7 +44,9 @@ class TileLayerIndex {
             const {x, y} = this.getScaledCoordinates(symbolInstance, tileID);
             coords.push({x, y, key, crossTileID});
         }
-        this.index = new KDBush(coords, p => p.x, p => p.y, 64, Int32Array);
+        // create a spatial index for deduplicating symbol instances;
+        // use a low nodeSize because we're optimizing for search performance, not indexing
+        this.index = new KDBush(coords, p => p.x, p => p.y, 16, Int32Array);
     }
 
     // Converts the coordinates of the input symbol instance into coordinates that be can compared

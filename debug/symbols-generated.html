@@ -57,8 +57,6 @@ map.on('styleimagemissing', ({id}) => {
     ctx.fill();
     ctx.stroke();
 
-    console.log(id);
-
     map.addImage(id, ctx.getImageData(0, 0, size, size), {pixelRatio: 2});
 });
 
