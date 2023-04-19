@@ -146,7 +146,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.equal(mainInstances[1].crossTileID, 2);
 
         const layerIndex = index.layerIndexes[styleLayer.id];
-        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
+        t.deepEqual([...layerIndex.usedCrossTileIDs[6]], [1, 2]);
 
         // copies parent ids without duplicate ids in this tile
         index.addLayer(styleLayer, [childTile], 0, {name: 'mercator'});
@@ -155,8 +155,8 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.equal(childInstances[2].crossTileID, 3); // C' gets new ID
 
         // Updates per-zoom usedCrossTileIDs
-        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), []);
-        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[7]), [1, 2, 3]);
+        t.deepEqual([...layerIndex.usedCrossTileIDs[6]], []);
+        t.deepEqual([...layerIndex.usedCrossTileIDs[7]], [1, 2, 3]);
 
         t.end();
     });
@@ -184,7 +184,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.equal(firstInstances[1].crossTileID, 2);
 
         const layerIndex = index.layerIndexes[styleLayer.id];
-        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
+        t.deepEqual([...layerIndex.usedCrossTileIDs[6]], [1, 2]);
 
         // uses same ids when tile gets updated
         index.addLayer(styleLayer, [secondTile], 0, {name: 'mercator'});
@@ -192,7 +192,7 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.equal(secondInstances[1].crossTileID, 2); // B' copies from B
         t.equal(secondInstances[2].crossTileID, 3); // C' gets new ID
 
-        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2, 3]);
+        t.deepEqual([...layerIndex.usedCrossTileIDs[6]], [1, 2, 3]);
 
         t.end();
     });
