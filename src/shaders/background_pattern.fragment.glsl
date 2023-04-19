@@ -2,6 +2,7 @@ uniform vec2 u_pattern_tl;
 uniform vec2 u_pattern_br;
 uniform vec2 u_texsize;
 uniform float u_opacity;
+uniform float u_emissive_strength;
 
 uniform sampler2D u_image;
 
@@ -13,7 +14,7 @@ void main() {
     vec4 out_color = texture2D(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color);
+    out_color = apply_lighting_with_emission(out_color, u_emissive_strength);
 #endif
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));

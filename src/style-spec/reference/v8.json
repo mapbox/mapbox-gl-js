@@ -7356,6 +7356,30 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "background-emissive-strength": {
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Emission strength",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": "",
+          "macos": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_sky": {

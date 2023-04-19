@@ -19,6 +19,7 @@ export default drawBackground;
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('background-color');
     const opacity = layer.paint.get('background-opacity');
+    const emissiveStrength = layer.paint.get('background-emissive-strength');
 
     if (opacity === 0) return;
 
@@ -34,7 +35,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const stencilMode = StencilMode.disabled;
     const depthMode = painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly);
-    const colorMode = painter.colorModeForDrapableLayerRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
 
     const program = painter.useProgram(image ? 'backgroundPattern' : 'background');
 
@@ -59,8 +60,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-            backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}) :
-            backgroundUniformValues(matrix, opacity, color);
+            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, {tileID, tileSize}) :
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color);
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

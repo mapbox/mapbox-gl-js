@@ -521,7 +521,8 @@ export type BackgroundLayerSpecification = {|
     "paint"?: {|
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
         "background-pattern"?: PropertyValueSpecification<ResolvedImageSpecification>,
-        "background-opacity"?: PropertyValueSpecification<number>
+        "background-opacity"?: PropertyValueSpecification<number>,
+        "background-emissive-strength"?: PropertyValueSpecification<number>
     |}
 |}
 
