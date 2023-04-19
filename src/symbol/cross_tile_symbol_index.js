@@ -32,7 +32,7 @@ const roundingFactor = 512 / EXTENT / 2;
 class TileLayerIndex {
     tileID: OverscaledTileID;
     bucketInstanceId: number;
-    index: KDBush;
+    index: KDBush<{x: number, y: number, key: number, crossTileID: number}>;
 
     constructor(tileID: OverscaledTileID, symbolInstances: SymbolInstanceArray, bucketInstanceId: number) {
         this.tileID = tileID;
