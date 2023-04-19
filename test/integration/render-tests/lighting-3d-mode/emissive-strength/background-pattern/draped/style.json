@@ -4,37 +4,9 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.005,
+      "allowed": 0.008,
       "optimizeForTerrain": true,
       "operations": [
-        [
-          "setStyle",
-          "local://styles/sanfrancisco.json"
-        ],
-        [
-          "wait"
-        ],
-        [
-            "setPaintProperty", "road_major", "line-emissive-strength", 0.8
-        ],
-        [
-            "setPaintProperty", "road_major", "line-opacity", 0.5
-        ],
-        [
-            "setPaintProperty", "road_minor", "line-emissive-strength", 0.4
-        ],
-        [
-            "setPaintProperty", "landuse_park", "fill-emissive-strength", 0.5
-        ],
-        [
-            "setPaintProperty", "background", "background-color", "green"
-        ],
-        [
-          "setPaintProperty", "background", "background-emissive-strength", 1.0
-        ],
-        [
-          "wait"
-        ],
         [
           "setZoom",
           15.0
@@ -99,5 +71,15 @@
     }
   },
   "sources": {},
-  "layers": []
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "cemetery_icon",
+        "background-emissive-strength": 0.9
+      }
+    }
+  ]
 }

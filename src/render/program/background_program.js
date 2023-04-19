@@ -19,12 +19,14 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4f,
+    'u_emissive_strength': Uniform1f,
     'u_opacity': Uniform1f,
     'u_color': UniformColor
 |};
 
 export type BackgroundPatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
+    'u_emissive_strength': Uniform1f,
     'u_opacity': Uniform1f,
     // pattern uniforms:
     'u_image': Uniform1i,
@@ -39,12 +41,14 @@ export type BackgroundPatternUniformsType = {|
 
 const backgroundUniforms = (context: Context): BackgroundUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
+    'u_emissive_strength': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_color': new UniformColor(context)
 });
 
 const backgroundPatternUniforms = (context: Context): BackgroundPatternUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
+    'u_emissive_strength': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_image': new Uniform1i(context),
     'u_pattern_tl': new Uniform2f(context),
@@ -58,16 +62,19 @@ const backgroundPatternUniforms = (context: Context): BackgroundPatternUniformsT
 
 const backgroundUniformValues = (
     matrix: Float32Array,
+    emissiveStrength: number,
     opacity: number,
     color: Color
 ): UniformValues<BackgroundUniformsType> => ({
     'u_matrix': matrix,
+    'u_emissive_strength': emissiveStrength,
     'u_opacity': opacity,
     'u_color': color
 });
 
 const backgroundPatternUniformValues = (
     matrix: Float32Array,
+    emissiveStrength: number,
     opacity: number,
     painter: Painter,
     image: ResolvedImage,
@@ -76,6 +83,7 @@ const backgroundPatternUniformValues = (
     bgPatternUniformValues(image, painter, tile),
     {
         'u_matrix': matrix,
+        'u_emissive_strength': emissiveStrength,
         'u_opacity': opacity
     }
 );
