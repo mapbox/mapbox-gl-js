@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    center: [-79.197693, 43.832545],
+    zoom: 15
+});
+
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d', {willReadFrequently: true});
+
+map.on('styleimagemissing', ({id}) => {
+    const [shape, fill, stroke] = id.split('-');
+    const size = 32;
+
+    ctx.canvas.width = size;
+    ctx.canvas.height = size;
+
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 4;
+
+    if (shape === 'circle') {
+        ctx.arc(16, 16, 14, 0, Math.PI * 2);
+
+    } else if (shape === 'triangle') {
+        ctx.moveTo(2, 2);
+        ctx.lineTo(30, 2);
+        ctx.lineTo(16, 30);
+
+    } else if (shape === 'square') {
+        ctx.moveTo(4, 4);
+        ctx.lineTo(28, 4);
+        ctx.lineTo(28, 28);
+        ctx.lineTo(4, 28);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    map.addImage(id, ctx.getImageData(0, 0, size, size), {pixelRatio: 2});
+});
+
+map.on('load', () => {
+    map.addSource('trees', {
+        'type': 'vector',
+        'url': 'mapbox://william-davis.b5m4mb3c'
+    });
+    map.addLayer({
+        'id': 'trees',
+        'source': 'trees',
+        'source-layer': 'trees',
+        'type': 'symbol',
+        'layout': {
+            // 'icon-image': ['concat', 'square-rgb(0,', ['*', ['round', ['get', 'd_height']], 5], ',0)-green'],
+            'icon-image': ['case', ['<', ['get', 'd_height'], 10], 'circle-red-white', 'triangle-blue-yellow'],
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+        }
+    });
+});
+
+</script>
+</body>
+</html>
