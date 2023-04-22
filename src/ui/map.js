@@ -2794,10 +2794,10 @@ class Map extends Camera {
      *
      * @param {Object} feature Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
+     * @param {number | string} [feature.id] (optional) Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) For vector tile sources, `sourceLayer` is required.
-     * @param {string} key (optional) The key in the feature state to reset.
+     * @param {string} [key] (optional) The key in the feature state to reset.
      *
      * @example
      * // Reset the entire state object for all features
@@ -2830,11 +2830,12 @@ class Map extends Camera {
      *     }, 'hover');
      * });
      *
-    */
+     */
     removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string): this {
         this.style.removeFeatureState(feature, key);
         return this._update();
     }
+
 
     /**
      * Gets the `state` of a feature.
