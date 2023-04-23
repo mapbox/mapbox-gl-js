@@ -69,7 +69,7 @@ function aabbRayIntersect(min: Vec3, max: Vec3, pos: Vec3, dir: Vec3): ?number {
     return tMin;
 }
 
-function triangleRayIntersect(ax, ay, az, bx, by, bz, cx, cy, cz, pos: Vec3, dir: Vec3): ?number {
+function triangleRayIntersect(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number, pos: Vec3, dir: Vec3): ?number {
     // Compute barycentric coordinates u and v to find the intersection
     const abX = bx - ax;
     const abY = by - ay;
@@ -109,11 +109,11 @@ function triangleRayIntersect(ax, ay, az, bx, by, bz, cx, cy, cz, pos: Vec3, dir
     return (acX * qvecX + acY * qvecY + acZ * qvecZ) * invDet;
 }
 
-function frac(v, lo, hi) {
+function frac(v: number, lo: number, hi: number) {
     return (v - lo) / (hi - lo);
 }
 
-function decodeBounds(x, y, depth, boundsMinx, boundsMiny, boundsMaxx, boundsMaxy, outMin, outMax) {
+function decodeBounds(x: number, y: number, depth: number, boundsMinx: number, boundsMiny: number, boundsMaxx: number, boundsMaxy: number, outMin: Array<number>, outMax: Array<number>) {
     const scale = 1 << depth;
     const rangex = boundsMaxx - boundsMinx;
     const rangey = boundsMaxy - boundsMiny;
@@ -394,7 +394,7 @@ export function buildDemMipmap(dem: DEMData): Array<MipLevel> {
     let blockCount = Math.ceil(Math.pow(2, levelCount));
     const blockSize = 1 / blockCount;
 
-    const blockSamples = (x, y, size, exclusive, outBounds) => {
+    const blockSamples = (x: number, y: number, size: number, exclusive: boolean, outBounds: Array<number>) => {
         const padding = exclusive ? 1 : 0;
         const minx = x * size;
         const maxx = (x + 1) * size - padding;
