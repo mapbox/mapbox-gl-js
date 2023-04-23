@@ -2,13 +2,13 @@
 
 import Point from '@mapbox/point-geometry';
 
-function pointToLineDist(px, py, ax, ay, bx, by) {
+function pointToLineDist(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
     const dx = ax - bx;
     const dy = ay - by;
     return Math.abs((ay - py) * dx - (ax - px) * dy) / Math.hypot(dx, dy);
 }
 
-function addResampled(resampled, mx0, my0, mx2, my2, start, end, reproject, tolerance) {
+function addResampled(resampled: Array<Point>, mx0: number, my0: number, mx2: number, my2: number, start: Point, end: Point, reproject: ((Point) => void), tolerance: number) {
     const mx1 = (mx0 + mx2) / 2;
     const my1 = (my0 + my2) / 2;
     const mid = new Point(mx1, my1);
@@ -49,7 +49,7 @@ export default function resample(line: Array<Point>, reproject: (Point) => void,
     return resampled;
 }
 
-function addResampledPred(resampled: Point[], a: Point, b: Point, pred) {
+function addResampledPred(resampled: Point[], a: Point, b: Point, pred: ((Point, Point) => boolean)) {
     const split = pred(a, b);
 
     // if the predicate condition is met, recurse into two halves

@@ -395,11 +395,11 @@ function placeFirstAndLastGlyph(
 
 // Check in the glCoordinate space, the rough estimation of angle between the text line and the Y axis.
 // If the angle if less or equal to 5 degree, then keep the text glyphs unflipped even if it is required.
-function isInFlipRetainRange(dx, dy) {
+function isInFlipRetainRange(dx: number, dy: number) {
     return dx === 0 || Math.abs(dy / dx) > maxTangent;
 }
 
-function requiresOrientationChange(writingMode, flipState, dx, dy) {
+function requiresOrientationChange(writingMode: number, flipState: number, dx: number, dy: number) {
     if (writingMode === WritingMode.horizontal && Math.abs(dy) > Math.abs(dx)) {
         // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
         // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
@@ -422,7 +422,7 @@ function requiresOrientationChange(writingMode, flipState, dx, dy) {
     return dx < 0 ? {needsFlipping: true} : null;
 }
 
-function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevation, projection, tileID, pitchWithMap): PlacementStatus {
+function placeGlyphsAlongLine(symbol: PlacedSymbol, fontSize: number, flip: boolean, keepUpright: boolean, posMatrix: Float32Array, labelPlaneMatrix: Float32Array, glCoordMatrix: Float32Array, glyphOffsetArray: GlyphOffsetArray, lineVertexArray: SymbolLineVertexArray, dynamicLayoutVertexArray: SymbolDynamicLayoutArray, globeExtVertexArray: ?SymbolGlobeExtArray, anchorPoint: VecType, tileAnchorPoint: Point, projectionCache: ProjectionCache, aspectRatio: number, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: OverscaledTileID, pitchWithMap: boolean): PlacementStatus {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
     const lineOffsetY = symbol.lineOffsetY * fontScale;
