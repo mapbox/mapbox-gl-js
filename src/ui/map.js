@@ -2836,7 +2836,6 @@ class Map extends Camera {
         return this._update();
     }
 
-
     /**
      * Gets the `state` of a feature.
      * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
