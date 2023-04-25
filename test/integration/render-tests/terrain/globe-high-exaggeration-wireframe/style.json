@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1000,
+      "height": 512,
+      "allowed": 0.004,
+      "showTerrainWireframe": true,
+      "interactive": false,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait", 1500],
+        ["setCameraPosition", [108.80097707770716, 41.24223557170592, 1309138.855122132]],
+        ["wait", 1500],
+        ["setPitchBearing", [50, -48]],
+        ["wait", 1500],
+        ["setZoom", 5.13 ],
+        ["wait", 1500]
+      ]
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 100.0
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "tileSize": 256
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.512.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 512
+    }
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}
