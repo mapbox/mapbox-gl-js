@@ -28,13 +28,36 @@
             padding:5px;
             z-index: 99;
         }
-    </style>
+
+        #config {
+            position: absolute;
+            top:15px;
+            left:15px;
+            max-height: 90%;
+            overflow-y:auto;
+        }
+        #config::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #config::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb {
+            background: rgba(110, 110, 110);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(90, 90, 90);
+        }
+</style>
 </head>
 
 <body>
-<div id='map'><div id='elevationDebug'></div></div>
+<div id='map'><div id='elevationDebug'></div><div id='config'></div></div>
 
-<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
+<script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
 <script src='/debug/dynamic.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -45,14 +68,14 @@ var Demo3D = function() {
     this.enable3dLights = true;
     this.terrainExaggeration = 1.5;
     this.animateCamera = false;
-    this.style = 'streets-v11';
+    this.style = 'mapbox/streets-v11';
     this.sunAltitude = 2;
     this.sunAzimuth = 90;
     this.sunHaloIntensity = 1.0;
     this.sunAtmosphereIntensity = 1.0;
     this.animateSky = false;
-    this.sunHaloColor = [ 255, 255, 255 ];
-    this.skyColor = [ 255, 255, 255 ];
+    this.sunHaloColor = {r:255, g:255, b:255};
+    this.skyColor = {r:255, g:255, b:255};
     this.starIntensity = 1.0;
     this.sunIntensity = 30.0;
     this.verticalGradient = false;
@@ -61,20 +84,25 @@ var Demo3D = function() {
     this.aoWallRadius = 3.0;
     this.aoGroundRadius = 3.0;
     this.aoGroundAttenuation = 0.69;
-    this.floodLightColor = [255, 255, 146];
+    this.floodLightColor = {r:255, g:255, b:146};
     this.floodLightIntensity = 0.0;
     this.floodLightGroundAttenuation = 0.69;
-    this.buildingColor = [ 255, 255, 255 ];
+    this.buildingColor = {r:255, g:255, b:255};
     this.buildingOpacity = 1;
-    this.ambientLightColor = [ 255, 255, 255 ];
+    this.ambientLightColor = {r:255, g:255, b:255};
     this.ambientLightIntensity = 0.5;
-    this.directionalLightColor = [ 255, 255, 255 ];
+    this.directionalLightColor = {r:255, g:255, b:255};
     this.directionalLightIntensity = 0.5;
     this.directionalLightAzimuth = 160;
     this.directionalLightPolar = 50;
     this.directionalLightCastShadows = false;
     this.directionalLightShadowIntensity = 0.3;
     this.edgeRadius = 0.3;
+    this.fps = 0;
+    this.continuousRedraw = true;
+
+    this.fpsTimer = 0;
+    this.frameCounter = 0;
 };
 
 var demo3d = new Demo3D();
@@ -86,7 +114,7 @@ function updateLights(enable) {
                 'type': 'ambient',
                 'id': 'ambient_light',
                 'properties': {
-                    'color': 'rgba(' + demo3d.ambientLightColor[0] + ', ' + demo3d.ambientLightColor[1] + ', ' + demo3d.ambientLightColor[2] + ', 1.0)',
+                    'color': 'rgba(' + demo3d.ambientLightColor.r + ', ' + demo3d.ambientLightColor.g + ', ' + demo3d.ambientLightColor.b + ', 255)',
                     'intensity': demo3d.ambientLightIntensity
                 }
             },
@@ -94,7 +122,7 @@ function updateLights(enable) {
                 'type': 'directional',
                 'id': 'directional_light',
                 'properties': {
-                    'color': 'rgba(' + demo3d.directionalLightColor[0] + ', ' + demo3d.directionalLightColor[1] + ', ' + demo3d.directionalLightColor[2] + ', 1.0)',
+                    'color': 'rgba(' + demo3d.directionalLightColor.r + ', ' + demo3d.directionalLightColor.g + ', ' + demo3d.directionalLightColor.b + ', 255)',
                     'intensity': demo3d.directionalLightIntensity,
                     'direction': [
                         demo3d.directionalLightAzimuth,
@@ -109,176 +137,158 @@ function updateLights(enable) {
 }
 
 window.onload = function() {
-    var gui = new dat.GUI(); // eslint-disable-line
+    // Create a pane
+    const gui = new Tweakpane.Pane({  // eslint-disable-line
+        container: document.querySelector('#config'),
+        title: 'Parameters',
+    });
 
-    var style = gui.add(demo3d, 'style', [
-        'mapbox/streets-v12',
-        'dynamic',
-        'mapbox/streets-v11',
-        'mapbox/satellite-streets-v11',
-        'mapbox/light-v10',
-        'mapbox/dark-v10',
-        'mapbox/outdoors-v11',
-        'mapbox/satellite-v9',
-        'mapbox/cjerxnqt3cgvp2rmyuxbeqme7',
-        'mapbox-map-design/ckhqrdj3q0q1y19ko8t70qtqu',
-        'mapbox-map-design/ckhqrf2tz0dt119ny6azh975y',
-        'mapbox-map-design/ckhqrbxlc1awj19svtb92m0bd'
-    ]);
-    style.onFinishChange((value) => {
+    // General style
+    const fillOptions = (styles) => {
+        const options = {};
+
+        for (const style of styles) {
+            options[style] = style;
+        }
+
+        return options;
+    };
+
+    const style = gui.addInput(demo3d, 'style',
+        {options: fillOptions([
+            'mapbox/streets-v12',
+            'dynamic',
+            'mapbox/streets-v11',
+            'mapbox/satellite-streets-v11',
+            'mapbox/light-v10',
+            'mapbox/dark-v10',
+            'mapbox/outdoors-v11',
+            'mapbox/satellite-v9',
+            'mapbox/cjerxnqt3cgvp2rmyuxbeqme7',
+            'mapbox-map-design/ckhqrdj3q0q1y19ko8t70qtqu',
+            'mapbox-map-design/ckhqrf2tz0dt119ny6azh975y',
+            'mapbox-map-design/ckhqrbxlc1awj19svtb92m0bd'
+        ])}
+    );
+    style.on('change', (ev) => {
+        const value = ev.value;
         if (value === 'dynamic') {
             return map.setStyle(window.dynamic);
         }
         map.setStyle('mapbox://styles/' + value);
     });
 
-    var lights = gui.addFolder('Lighting');
-    var enable3dLights = lights.add(demo3d, 'enable3dLights');
-    enable3dLights.onFinishChange((value) => {
-        updateLights(value);
+    // FPS
+
+    // Update FPS every second
+    demo3d.fpsTimer = window.setInterval(() => {
+        demo3d.fps = map.painter.frameCounter - demo3d.frameCounter;
+        demo3d.frameCounter = map.painter.frameCounter;
+    }, 1000);
+
+    map.repaint = demo3d.continuousRedraw;
+    const fps = gui.addFolder({title:'FPS', expanded: true});
+    const continuousRedraw = fps.addInput(demo3d, 'continuousRedraw');
+    continuousRedraw.on('change', (ev) => {
+        map.repaint = demo3d.continuousRedraw;
     });
-    var directionalLightPolar = lights.add(demo3d, 'directionalLightPolar', 0.0, 90.0);
-    directionalLightPolar.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
+
+    fps.addMonitor(demo3d, 'fps');
+    fps.addMonitor(demo3d, 'fps', {
+        label:'graph',
+        view: 'graph',
+        min: 0,
+        max: 140,
     });
-    var directionalLightAzimuth = lights.add(demo3d, 'directionalLightAzimuth', 0.0, 360.0);
-    directionalLightAzimuth.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    var directionalLightIntensity = lights.add(demo3d, 'directionalLightIntensity', 0.0, 1.0);
-    directionalLightIntensity.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    var directionalLightColor = lights.addColor(demo3d, 'directionalLightColor');
-    directionalLightColor.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    var ambientLightIntensity = lights.add(demo3d, 'ambientLightIntensity', 0.0, 1.0);
-    ambientLightIntensity.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    var ambientLightColor = lights.addColor(demo3d, 'ambientLightColor');
-    ambientLightColor.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    const directionalLightCastShadows = lights.add(demo3d, 'directionalLightCastShadows');
-    directionalLightCastShadows.onFinishChange((value) => {
-        updateLights(demo3d.enable3dLights);
-    });
-    const directionalLightShadowIntensity = lights.add(demo3d, 'directionalLightShadowIntensity', 0.0, 1.0);
-    directionalLightShadowIntensity.onChange((value) => {
+
+    // Lights
+    const lights = gui.addFolder({title:'Lighting', expanded: true});
+    const enable3dLights = lights.addInput(demo3d, 'enable3dLights');
+    const directionalLightPolar = lights.addInput(demo3d, 'directionalLightPolar', {min:0.0, max:90.0});
+    const directionalLightAzimuth = lights.addInput(demo3d, 'directionalLightAzimuth', {min:0.0, max:360.0});
+    const directionalLightIntensity = lights.addInput(demo3d, 'directionalLightIntensity', {min: 0.0, max: 1.0});
+    const directionalLightColor = lights.addInput(demo3d, 'directionalLightColor');
+    const ambientLightIntensity = lights.addInput(demo3d, 'ambientLightIntensity', {min:0.0, max:1.0});
+    const ambientLightColor = lights.addInput(demo3d, 'ambientLightColor');
+    const directionalLightCastShadows = lights.addInput(demo3d, 'directionalLightCastShadows');
+    const directionalLightShadowIntensity = lights.addInput(demo3d, 'directionalLightShadowIntensity', {min:0.0, max:1.0});
+    lights.on('change', (ev) => {
         updateLights(demo3d.enable3dLights);
     });
 
-    var terrain = gui.addFolder('Terrain');
-    var enableTerrain = terrain.add(demo3d, 'enableTerrain');
-    enableTerrain.onFinishChange((value) => {
-        map.setTerrain(value ? {"source": "mapbox-dem", "exaggeration": demo3d.terrainExaggeration} : null);
-    });
-    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0, 100);
-    terrainExaggeration.onFinishChange((value) => {
-        if (demo3d.enableTerrain) {
-            map.setTerrain({"source": "mapbox-dem", "exaggeration": value});
-        }
+    // Terrain
+    const terrain = gui.addFolder({title:'Terrain', expanded: true});
+    const enableTerrain = terrain.addInput(demo3d, 'enableTerrain');
+    const terrainExaggeration = terrain.addInput(demo3d, 'terrainExaggeration', {min:0, max:100});
+    terrain.on('change', (ev) => {
+        map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": demo3d.terrainExaggeration} : null);
     });
 
-    var camera = gui.addFolder('Camera');
-    camera.add(demo3d, 'animateCamera');
+    // Camera
+    const camera = gui.addFolder({title:'Camera', expanded:false});
+    camera.addInput(demo3d, 'animateCamera');
 
-    var sky = gui.addFolder('Sky');
-    sky.add(demo3d, 'animateSky');
-    var sunAltitude = sky.add(demo3d, 'sunAltitude', 0.0, 90.0);
-    sunAltitude.onFinishChange((value) => {
-        map.setLight({'position': [1, demo3d.sunAzimuth, value], 'anchor': 'map', intensity: demo3d.lightIntensity});
-    });
-    var sunAzimuth = sky.add(demo3d, 'sunAzimuth', 0.0, 360.0);
-    sunAzimuth.onFinishChange((value) => {
-        map.setLight({'position': [1, value, demo3d.sunAltitude], 'anchor': 'map', intensity: demo3d.lightIntensity});
-    });
-    var sunIntensity = sky.add(demo3d, 'sunIntensity', 0.0, 100.0);
-    sunIntensity.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', value);
-    });
-    var sunHaloIntensity = sky.add(demo3d, 'sunHaloIntensity', 0.0, 1.0);
-    sunHaloIntensity.onFinishChange((value) => {
+    // Sky
+    const sky = gui.addFolder({title:'Sky', expanded:false});
+    sky.addInput(demo3d, 'animateSky');
+    const sunAltitude = sky.addInput(demo3d, 'sunAltitude', {min:0.0, max:90.0});
+    const sunAzimuth = sky.addInput(demo3d, 'sunAzimuth', {min:0.0, max:360.0});
+    const sunIntensity = sky.addInput(demo3d, 'sunIntensity', {min:0.0, max:100.0});
+    const sunHaloIntensity = sky.addInput(demo3d, 'sunHaloIntensity', {min:0.0, max:1.0});
+    const sunHaloColor = sky.addInput(demo3d, 'sunHaloColor');
+    const sunAtmosphereIntensity = sky.addInput(demo3d, 'sunAtmosphereIntensity', {min:0.0, max:1.0});
+    const skyColor = sky.addInput(demo3d, 'skyColor');
+    const starIntensity = sky.addInput(demo3d, 'starIntensity', {min:0.0, max:1.0});
+    sky.on('change', (ev) => {
+        map.setLight({'position': [1, demo3d.sunAzimuth, ev.value], 'anchor': 'map', intensity: demo3d.lightIntensity});
+        map.setLight({'position': [1, ev.value, demo3d.sunAltitude], 'anchor': 'map', intensity: demo3d.lightIntensity});
+        map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', demo3d.sunIntensity);
+
         map.setPaintProperty('sky', 'sky-atmosphere-halo-color',
-            'rgba(' + demo3d.sunHaloColor[0] + ', ' + demo3d.sunHaloColor[1] + ', ' + demo3d.sunHaloColor[2] + ', ' + value + ')');
-    });
-    var sunHaloColor = sky.addColor(demo3d, 'sunHaloColor');
-    sunHaloColor.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-atmosphere-halo-color',
-            'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunHaloIntensity + ')');
-    });
-    var sunAtmosphereIntensity = sky.add(demo3d, 'sunAtmosphereIntensity', 0.0, 1.0);
-    sunAtmosphereIntensity.onFinishChange((value) => {
+            'rgba(' + demo3d.sunHaloColor.r + ', ' + demo3d.sunHaloColor.g + ', ' + demo3d.sunHaloColor.b + ', ' + demo3d.sunHaloIntensity + ')');
         map.setPaintProperty('sky', 'sky-atmosphere-color',
-            'rgba(' + demo3d.skyColor[0] + ', ' + demo3d.skyColor[1] + ', ' + demo3d.skyColor[2] + ', ' + value + ')');
-    });
-    var skyColor = sky.addColor(demo3d, 'skyColor');
-    skyColor.onFinishChange((value) => {
-        map.setPaintProperty('sky', 'sky-atmosphere-color',
-            'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + demo3d.sunAtmosphereIntensity + ')');
-    });
-    var starIntensity = sky.add(demo3d, 'starIntensity', 0.0, 1.0);
-    starIntensity.onFinishChange((value) => {
+            'rgba(' + demo3d.skyColor.r + ', ' + demo3d.skyColor.g + ', ' + demo3d.skyColor.b + ', ' + demo3d.sunAtmosphereIntensity + ')');
         map.setFog({'star-intensity': demo3d.starIntensity});
     });
 
-    var buildings = gui.addFolder('Buildings');
-    var verticalGradient = buildings.add(demo3d, 'verticalGradient');
-    verticalGradient.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-vertical-gradient', value);
-    });
-    var buildingColor = buildings.addColor(demo3d, 'buildingColor');
-    buildingColor.onFinishChange((value) => {
+    // Buildings
+    const buildings = gui.addFolder({title:'Buildings', expanded:false});
+    const verticalGradient = buildings.addInput(demo3d, 'verticalGradient');
+    const buildingColor = buildings.addInput(demo3d, 'buildingColor');
+    const buildingOpacity = buildings.addInput(demo3d, 'buildingOpacity', {min:0.0, max:1.0});
+    const edgeRadius = buildings.addInput(demo3d, 'edgeRadius');
+    const lightIntensity = buildings.addInput(demo3d, 'lightIntensity', {min:0.0, max:1.0});
+    buildings.on('change', (ev) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-vertical-gradient', demo3d.verticalGradient);
         map.setPaintProperty('extrusion', 'fill-extrusion-color',
-            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
-    });
-    var buildingOpacity = buildings.add(demo3d, 'buildingOpacity', 0.0, 1.0);
-    buildingOpacity.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-opacity', value);
-    });
-    var edgeRadius = buildings.add(demo3d, 'edgeRadius');
-    edgeRadius.onFinishChange((value) => {
-        map.setLayoutProperty('extrusion', 'fill-extrusion-edge-radius', value);
-    });
-    var lightIntensity = buildings.add(demo3d, 'lightIntensity', 0.0, 1.0);
-    lightIntensity.onFinishChange((value) => {
+            'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')');
+        map.setPaintProperty('extrusion', 'fill-extrusion-opacity', demo3d.buildingOpacity);
+        map.setLayoutProperty('extrusion', 'fill-extrusion-edge-radius', demo3d.edgeRadius);
+
         const light = map.getLight();
-        light['intensity'] = value;
+        light['intensity'] = demo3d.lightIntensity;
         map.setLight(light);
     });
 
-    var groundEffects = buildings.addFolder('Flood light and AO');
-    var buildingsAO = groundEffects.add(demo3d, 'aoIntensity', 0.0, 1.0);
-    buildingsAO.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', value);
-    });
-    var aoWallRadius = groundEffects.add(demo3d, 'aoWallRadius', 0.0, 50.0);
-    aoWallRadius.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', value);
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-wall-radius', value);
-    });
-    var aoGroundRadius = groundEffects.add(demo3d, 'aoGroundRadius', 0.0, 50.0);
-    aoGroundRadius.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-radius', value);
-    });
-    var aoGroundAttenuation = groundEffects.add(demo3d, 'aoGroundAttenuation', 0.0, 1.0);
-    aoGroundAttenuation.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-attenuation', value);
-    });
-    var floodLightColor = groundEffects.addColor(demo3d, 'floodLightColor');
-    floodLightColor.onFinishChange((value) => {
+    // Flood lights
+    const groundEffects = buildings.addFolder({title:'Flood light and AO', expanded:true});
+    const buildingsAO = groundEffects.addInput(demo3d, 'aoIntensity', {min:0.0, max:1.0});
+    const aoWallRadius = groundEffects.addInput(demo3d, 'aoWallRadius', {min:0.0, max:50.0});
+    const aoGroundRadius = groundEffects.addInput(demo3d, 'aoGroundRadius', {min:0.0, max:50.0});
+    const aoGroundAttenuation = groundEffects.addInput(demo3d, 'aoGroundAttenuation', {min:0.0, max:1.0});
+    const floodLightColor = groundEffects.addInput(demo3d, 'floodLightColor');
+    const floodLightIntensity = groundEffects.addInput(demo3d, 'floodLightIntensity', {min:0.0, max:1.0});
+    const floodLightGroundAttenuation = groundEffects.addInput(demo3d, 'floodLightGroundAttenuation', {min:0.0, max:1.0});
+    groundEffects.on('change', (ev) => {
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', demo3d.aoIntensity);
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', demo3d.aoWallRadius);
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-wall-radius', demo3d.aoWallRadius);
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-radius', demo3d.aoGroundRadius);
+        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-attenuation', demo3d.aoGroundAttenuation);
         map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-color',
-            'rgb(' + value[0] + ', ' + value[1] + ', ' + value[2] + ')');
-    });
-    var floodLightIntensity = groundEffects.add(demo3d, 'floodLightIntensity', 0.0, 1.0);
-    floodLightIntensity.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', value);
-    });
-    var floodLightGroundAttenuation = groundEffects.add(demo3d, 'floodLightGroundAttenuation', 0.0, 1.0);
-    floodLightGroundAttenuation.onFinishChange((value) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-ground-attenuation', value);
+            'rgb(' + demo3d.floodLightColor.r + ', ' + demo3d.floodLightColor.g + ', ' + demo3d.floodLightColor.b + ')');
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', demo3d.floodLightIntensity);
+        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-ground-attenuation', demo3d.floodLightGroundAttenuation);
     });
 };
 
@@ -322,7 +332,7 @@ map.on('style.load', function() {
             'fill-extrusion-edge-radius': demo3d.edgeRadius
         },
         'paint': {
-            'fill-extrusion-color': 'rgb(' + demo3d.buildingColor[0] + ', ' + demo3d.buildingColor[1] + ', ' + demo3d.buildingColor[2] + ')',
+            'fill-extrusion-color': 'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')',
             'fill-extrusion-height': ["get", "height"],
             'fill-extrusion-base': ["get", "min_height"],
             'fill-extrusion-opacity': demo3d.buildingOpacity,
@@ -348,7 +358,7 @@ map.on('style.load', function() {
                 ],
                 0
             ],
-            'fill-extrusion-flood-light-color': ["rgb", demo3d.floodLightColor[0], demo3d.floodLightColor[1], demo3d.floodLightColor[2]],
+            'fill-extrusion-flood-light-color': ["rgb", demo3d.floodLightColor.r, demo3d.floodLightColor.g, demo3d.floodLightColor.b],
             'fill-extrusion-flood-light-intensity':  demo3d.floodLightIntensity,
             'fill-extrusion-vertical-scale': [
                 "interpolate",
