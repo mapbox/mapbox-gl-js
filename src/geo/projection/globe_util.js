@@ -935,7 +935,7 @@ export class GlobeSharedBuffers {
                         const index = j * vertexExt + i;
                         wireframeIndices.emplaceBack(index, index + 1);
                         wireframeIndices.emplaceBack(index, index + vertexExt);
-                        wireframeIndices.emplaceBack(index, index + vertexExt + 1);
+                        wireframeIndices.emplaceBack(index + vertexExt, index + 1);
                     }
                 }
 

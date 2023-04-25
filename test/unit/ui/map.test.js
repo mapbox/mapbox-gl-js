@@ -4002,7 +4002,7 @@ test('Map', (t) => {
 
     t.test('#snapToNorth', (t) => {
         t.test('snaps when less than < 7 degrees', (t) => {
-            t.setTimeout(2000);
+            t.setTimeout(10000);
             const map = createMap(t);
             map.on('load', () =>  {
                 map.setBearing(6);

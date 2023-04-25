@@ -120,6 +120,14 @@ export const operationHandlers = {
         map.setFreeCameraOptions(options);
         doneCb();
     },
+    setPitchBearing(map, params, doneCb) {
+        const options = map.getFreeCameraOptions();
+        const pitch = params[0][0];
+        const bearing = params[0][1];
+        options.setPitchBearing(pitch, bearing);
+        map.setFreeCameraOptions(options);
+        doneCb();
+    },
     updateImage(map, params, doneCb) {
         map.loadImage(params[1], (error, image) => {
             if (error) throw error;
