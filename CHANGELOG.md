@@ -2,6 +2,8 @@
 
 ### Features ✨ and improvements 🏁
 
+* Clarify layer requirements in documentation examples related to clustered source methods ([#12680](https://github.com/mapbox/mapbox-gl-js/pull/12680))
+
 * Support `referrerPolicy` option for the `transformRequest` function when using fetch ([#12590](https://github.com/mapbox/mapbox-gl-js/pull/12590)) (h/t [robertcepa](https://github.com/robertcepa))
 
 ## Bug fixes 🐞
