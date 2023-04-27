@@ -24,11 +24,10 @@
 <script src='../debug/access_token_generated.js'></script>
 <script type='module'>
 // eslint-disable-next-line import/extensions
-import * as pmtiles from 'https://unpkg.com/pmtiles@2.7.1/dist/index.mjs';
+import {PMTiles} from 'https://unpkg.com/pmtiles@2.7.2/dist/index.mjs';
 
-const pmtilesUrl = 'https://protomaps.github.io/PMTiles/protomaps(vector)ODbL_firenze.pmtiles';
-const pmtilesInstance = window.pmtilesInstance = new pmtiles.PMTiles(pmtilesUrl);
-const {centerLon, centerLat, maxZoom} = await pmtilesInstance.getHeader();
+const pmtiles = window.pmtilesInstance = new PMTiles('https://protomaps.github.io/PMTiles/protomaps(vector)ODbL_firenze.pmtiles');
+const {centerLon, centerLat, maxZoom} = await pmtiles.getHeader();
 
 const map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -40,12 +39,12 @@ const map = window.map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl());
 
-map.on('load', async () => {
+map.on('load', () => {
     map.addSource('firenze', {
         type: 'vector',
         maxzoom: maxZoom,
-        async loadTile({z, x, y}) {
-            const response = await pmtilesInstance.getZxy(z, x, y);
+        async loadTile({z, x, y}, {signal}) {
+            const response = await pmtiles.getZxy(z, x, y, signal);
             if (!response) return null;
             return response.data;
         }
