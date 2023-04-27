@@ -44,7 +44,6 @@ map.on('load', async () => {
     map.addSource('firenze', {
         type: 'vector',
         maxzoom: maxZoom,
-        tiles: ['http://localhost:9966/tiles/{z}/{x}/{y}.pbf'],
         async loadTile({z, x, y}) {
             const response = await pmtilesInstance.getZxy(z, x, y);
             if (!response) return null;

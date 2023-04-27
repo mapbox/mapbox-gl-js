@@ -22,7 +22,9 @@ import type {Cancelable} from '../types/cancelable.js';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
-import type {RequestedTileParameters} from './worker_source.js';
+import type {RequestedTileParameters, WorkerTileResult} from './worker_source.js';
+
+type LoadTileDelegate<T> = ({z: number, x: number, y: number}, {signal: AbortSignal}) => Promise<?T>;
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -60,7 +62,7 @@ class VectorTileSource extends Evented implements Source {
     tileSize: number;
     promoteId: ?PromoteIdSpecification;
 
-    _options: VectorSourceSpecification;
+    _options: VectorSourceSpecification & {loadTile: LoadTileDelegate<ArrayBuffer>};
     _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
@@ -214,7 +216,12 @@ class VectorTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>): void {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
+        const url = this._options.loadTile && this.tiles.length === 0 ?
+            // use the string representation of canonical tile as mock URL in loadVectorTile
+            // since the actual tile loading is delegated to the this._options.loadTile function
+            tile.tileID.canonical.toString() :
+            this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
+
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
         const params = {
@@ -238,7 +245,7 @@ class VectorTileSource extends Evented implements Source {
             tile.actor = this._tileWorkers[url] = this._tileWorkers[url] || this.dispatcher.getActor();
 
             if (this._options.loadTile) {
-                this.delegateLoadTileData(tile, params, done.bind(this));
+                this.delegateLoadTile(tile, params, done.bind(this));
 
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
@@ -270,12 +277,13 @@ class VectorTileSource extends Evented implements Source {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err, data) {
+        function done(err: ?Error, data: ?WorkerTileResult) {
             delete tile.request;
 
             if (tile.aborted)
                 return callback(null);
 
+            // $FlowFixMe[prop-missing] - generic Error type doesn't have status
             if (err && err.status !== 404) {
                 return callback(err);
             }
@@ -297,16 +305,17 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    delegateLoadTileData(tile: Tile, params: RequestedTileParameters, callback: Callback<any>): void {
+    delegateLoadTile(tile: Tile, params: RequestedTileParameters, callback: Callback<WorkerTileResult>): void {
+        if (!this._options.loadTile) return;
+
         const {x, y, z} = tile.tileID.canonical;
         const controller = new window.AbortController();
         const signal = controller.signal;
 
         const makeRequest = (callback) => {
             Promise
-                // $FlowFixMe[not-a-function]
                 .resolve(this._options.loadTile({x, y, z}, {signal}))
-                .then(rawData => {
+                .then((rawData: ?ArrayBuffer) => {
                     if (!rawData) return callback(null);
                     callback(null, {rawData});
                 })
