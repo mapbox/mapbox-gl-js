@@ -388,7 +388,7 @@ export class Placement {
         }
     }
 
-    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: { [string | number]: boolean }, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean) {
+    placeLayerBucketPart(bucketPart: Object, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean) {
 
         const {
             bucket,
@@ -470,12 +470,12 @@ export class Placement {
 
                 if (shouldClip) {
                     this.placements[crossTileID] = new JointPlacement(false, false, false, true);
-                    seenCrossTileIDs[crossTileID] = true;
+                    seenCrossTileIDs.add(crossTileID);
                     return;
                 }
             }
 
-            if (seenCrossTileIDs[crossTileID]) return;
+            if (seenCrossTileIDs.has(crossTileID)) return;
             if (holdingForFade) {
                 // Mark all symbols from this tile as "not placed", but don't add to seenCrossTileIDs, because we don't
                 // know yet if we have a duplicate in a parent tile that _should_ be placed.
@@ -790,7 +790,7 @@ export class Placement {
             alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 
             this.placements[crossTileID] = new JointPlacement(placeText || alwaysShowText, placeIcon || alwaysShowIcon, offscreen || bucket.justReloaded);
-            seenCrossTileIDs[crossTileID] = true;
+            seenCrossTileIDs.add(crossTileID);
         };
 
         if (zOrderByViewportY) {
@@ -917,7 +917,7 @@ export class Placement {
     }
 
     updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>) {
-        const seenCrossTileIDs = {};
+        const seenCrossTileIDs = new Set();
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.id === symbolBucket.layerIds[0]) {
@@ -926,7 +926,7 @@ export class Placement {
         }
     }
 
-    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: { [string | number]: boolean }, collisionBoxArray: ?CollisionBoxArray) {
+    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: Set<number>, collisionBoxArray: ?CollisionBoxArray) {
         if (bucket.hasTextData()) bucket.text.opacityVertexArray.clear();
         if (bucket.hasIconData()) bucket.icon.opacityVertexArray.clear();
         if (bucket.hasIconCollisionBoxData()) bucket.iconCollisionBox.collisionVertexArray.clear();
@@ -971,7 +971,7 @@ export class Placement {
                 numIconVertices
             } = symbolInstance;
 
-            const isDuplicate = seenCrossTileIDs[crossTileID];
+            const isDuplicate = seenCrossTileIDs.has(crossTileID);
 
             let opacityState = this.opacities[crossTileID];
             if (isDuplicate) {
@@ -982,7 +982,7 @@ export class Placement {
                 this.opacities[crossTileID] = opacityState;
             }
 
-            seenCrossTileIDs[crossTileID] = true;
+            seenCrossTileIDs.add(crossTileID);
 
             const hasText = numHorizontalGlyphVertices > 0 || numVerticalGlyphVertices > 0;
             const hasIcon = numIconVertices > 0;
