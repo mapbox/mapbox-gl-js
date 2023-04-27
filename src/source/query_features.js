@@ -1,6 +1,6 @@
 // @flow
 
-import {OverscaledTileID} from './tile_id.js';
+import type {OverscaledTileID} from './tile_id.js';
 import type SourceCache from './source_cache.js';
 import type StyleLayer from '../style/style_layer.js';
 import type CollisionIndex from '../symbol/collision_index.js';
