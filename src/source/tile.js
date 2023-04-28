@@ -107,11 +107,11 @@ class Tile {
     lineAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
     glyphAtlasTexture: Texture;
-    expirationTime: any;
+    expirationTime: ?number;
     expiredRequestCount: number;
     state: TileState;
-    timeAdded: any;
-    fadeEndTime: any;
+    timeAdded: number;
+    fadeEndTime: number;
     collisionBoxArray: ?CollisionBoxArray;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
@@ -162,7 +162,7 @@ class Tile {
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any, isRaster?: boolean) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: ?Painter, isRaster?: boolean) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -197,6 +197,10 @@ class Tile {
         this.fadeEndTime = fadeEndTime;
     }
 
+    fadeFinished(): boolean {
+        return !this.fadeEndTime || this.fadeEndTime < browser.now();
+    }
+
     wasRequested(): boolean {
         return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
     }
@@ -218,7 +222,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: ?WorkerTileResult, painter: any, justReloaded: ?boolean) {
+    loadVectorData(data: ?WorkerTileResult, painter: Painter, justReloaded: ?boolean) {
         this.unloadVectorData();
 
         this.state = 'loaded';
@@ -275,7 +279,10 @@ class Tile {
         this.queryPadding = 0;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
+            const layer = painter.style.getLayer(id);
+            this.queryPadding = layer ?
+                Math.max(this.queryPadding, layer.queryRadius(bucket)) :
+                this.queryPadding;
         }
 
         if (data.imageAtlas) {
@@ -495,21 +502,22 @@ class Tile {
             this.expirationTime = new Date(data.expires).getTime();
         }
 
-        if (this.expirationTime) {
+        const expirationTime = this.expirationTime;
+        if (expirationTime) {
             const now = Date.now();
             let isExpired = false;
 
-            if (this.expirationTime > now) {
+            if (expirationTime > now) {
                 isExpired = false;
             } else if (!prior) {
                 isExpired = true;
-            } else if (this.expirationTime < prior) {
+            } else if (expirationTime < prior) {
                 // Expiring date is going backwards:
                 // fall back to exponential backoff
                 isExpired = true;
 
             } else {
-                const delta = this.expirationTime - prior;
+                const delta = expirationTime - prior;
 
                 if (!delta) {
                     // Server is serving the same expired resource over and over: fall

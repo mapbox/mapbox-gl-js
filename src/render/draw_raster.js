@@ -33,18 +33,20 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const [stencilModes, coords] = source instanceof ImageSource || renderingToTexture ? [{}, tileIDs] :
         painter.stencilConfigForOverlap(tileIDs);
 
+    const rasterFadeDuration = isInitialLoad ? 0 : layer.paint.get('raster-fade-duration');
     const minTileZ = coords[coords.length - 1].overscaledZ;
 
     const align = !painter.options.moving;
     for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        if (renderingToTexture && !(tile && tile.hasData())) continue;
+
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         // Use gl.LESS to prevent double drawing in areas where tiles overlap.
         const depthMode = renderingToTexture ? DepthMode.disabled : painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
             layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS);
 
         const unwrappedTileID = coord.toUnwrapped();
-        const tile = sourceCache.getTile(coord);
-        if (renderingToTexture && !(tile && tile.hasData())) continue;
 
         const projMatrix = (renderingToTexture) ? coord.projMatrix :
             painter.transform.calculateProjMatrix(unwrappedTileID, align);
@@ -53,7 +55,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             painter.terrain.stencilModeForRTTOverlap(coord) :
             stencilModes[coord.overscaledZ];
 
-        const rasterFadeDuration = isInitialLoad ? 0 : layer.paint.get('raster-fade-duration');
         tile.registerFadeDuration(rasterFadeDuration);
 
         const parentTile = sourceCache.findLoadedParent(coord, 0);

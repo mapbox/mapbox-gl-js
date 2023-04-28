@@ -542,7 +542,7 @@ class SourceCache extends Evented {
                 assert(tileID.key === +id);
 
                 const tile = this._tiles[id];
-                if (!tile || (tile.fadeEndTime && tile.fadeEndTime <= browser.now())) continue;
+                if (!tile || tile.fadeFinished()) continue;
 
                 // if the tile is loaded but still fading in, find parents to cross-fade with it
                 const parentTile = this.findLoadedParent(tileID, Math.max(tileID.overscaledZ - SourceCache.maxOverzooming, this._source.minzoom));
@@ -925,7 +925,7 @@ class SourceCache extends Evented {
         if (isRasterType(this._source.type)) {
             for (const id in this._tiles) {
                 const tile = this._tiles[id];
-                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= browser.now()) {
+                if (!tile.fadeFinished()) {
                     return true;
                 }
             }
