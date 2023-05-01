@@ -4735,10 +4735,10 @@ just-extend@^4.0.2:
   resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-4.2.1.tgz#ef5e589afb61e5d66b24eca749409a8939a8c744"
   integrity sha512-g3UB796vUFIY90VIv/WX3L2c8CS2MdWUww3CNrYmqza1Fg0DURc2K/O4YrnklBdQarSJ/y8JnJYDGc+1iumQjg==
 
-kdbush@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/kdbush/-/kdbush-4.0.1.tgz#c411c5571d246c7f012ea5980ea720023d663329"
-  integrity sha512-RlSWHFOf40nU5Be8dZIzdA8j6Jn9IYskSPSZwkDCooGb16uXeUx/6QZuW+krdEToViiK2OAwfW7QWDHY+kAz0A==
+kdbush@^4.0.1, kdbush@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/kdbush/-/kdbush-4.0.2.tgz#2f7b7246328b4657dd122b6c7f025fbc2c868e39"
+  integrity sha512-WbCVYJ27Sz8zi9Q7Q0xHC+05iwkm3Znipc2XTlrnJbsHMYktW4hPhXUE8Ys1engBrvffoSCqbil1JQAa7clRpA==
 
 kind-of@^6.0.2, kind-of@^6.0.3:
   version "6.0.3"
@@ -7472,11 +7472,11 @@ subarg@^1.0.0:
     minimist "^1.1.0"
 
 supercluster@^8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-8.0.0.tgz#021872ea0ad0a4bfaba4be3cd305fd0a510a9670"
-  integrity sha512-/cyICCWE1LjHwN5vKjBB1OHn7TwSyrnerRSMvcLkDgSIyPLN7KJEqx3upzB3BxK4Efs5JrF37bmqMuaxfH0EmA==
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-8.0.1.tgz#9946ba123538e9e9ab15de472531f604e7372df5"
+  integrity sha512-IiOea5kJ9iqzD2t7QJq/cREyLHTtSmUT6gQsweojg9WH2sYJqZK9SswTu6jrscO6D1G5v5vYZ9ru/eq85lXeZQ==
   dependencies:
-    kdbush "^4.0.1"
+    kdbush "^4.0.2"
 
 supports-color@^5.3.0:
   version "5.5.0"
