@@ -16,9 +16,10 @@ import Painter from '../../src/render/painter.js';
 import Program from '../../src/render/program.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
 import {mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
-import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp} from '../../src/util/util.js';
+import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util.js';
 
 import type {LightProps as Directional} from '../style/directional_light_properties.js';
+import type {LightProps as Ambient} from '../style/ambient_light_properties.js';
 import Lights from '../style/lights.js';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms.js';
 import type {ShadowUniformsType} from '../render/shadow_uniforms.js';
@@ -194,8 +195,15 @@ export class ShadowRenderer {
         }
 
         const painter = this.painter;
-        const tr = painter.transform;
+        const style = painter.style;
         const context = painter.context;
+        const directionalLight = style.directionalLight;
+        const ambientLight = style.ambientLight;
+
+        if (!directionalLight || !ambientLight) {
+            return;
+        }
+
         const program = painter.useProgram('groundShadow');
 
         // Render shadows on the ground plane as an extra layer of blended "tiles"
@@ -204,6 +212,8 @@ export class ShadowRenderer {
             renderWorldCopies: true
         };
         const tiles = painter.transform.coveringTiles(tileCoverOptions);
+
+        const shadowColor = calculateGroundShadowFactor(directionalLight, ambientLight);
 
         const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
@@ -214,7 +224,7 @@ export class ShadowRenderer {
 
             painter.uploadCommonUniforms(context, program, unwrapped);
 
-            const uniformValues = groundShadowUniformValues(tr.calculateProjMatrix(unwrapped));
+            const uniformValues = groundShadowUniformValues(painter.transform.calculateProjMatrix(unwrapped), shadowColor);
 
             program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.multiply, CullFaceMode.disabled,
                 uniformValues, "ground_shadow", painter.tileExtentBuffer, painter.quadTriangleIndexBuffer,
@@ -305,6 +315,35 @@ function shadowDirectionFromProperties(transform: Transform, directionalLight: L
 
     // Convert polar and azimuthal to cartesian
     return vec3.fromValues(position.x, position.y, position.z);
+}
+
+function calculateGroundShadowFactor(directionalLight: Lights<Directional>, ambientLight: Lights<Ambient>): [number, number, number] {
+    const dirColor = directionalLight.properties.get('color');
+    const dirIntensity = directionalLight.properties.get('intensity');
+    const dirDirection = directionalLight.properties.get('direction');
+    const directionVec = [dirDirection.x, dirDirection.y, dirDirection.z];
+    const ambientColor = ambientLight.properties.get('color');
+    const ambientIntensity = ambientLight.properties.get('intensity');
+
+    const groundNormal = [0.0, 0.0, 1.0];
+    const dirDirectionalFactor = Math.max(vec3.dot(groundNormal, directionVec), 0.0);
+    const ambStrength = [0, 0, 0];
+    vec3.scale(ambStrength, ambientColor.toArray01Linear().slice(0, 3), ambientIntensity);
+    const dirStrength = [0, 0, 0];
+    vec3.scale(dirStrength, dirColor.toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
+
+    // Multiplier X to get from lit surface color L to shadowed surface color S
+    // X = A / (A + D)
+    // A: Ambient light coming into the surface; taking into account color, intensity and direction
+    // D: Directional light coming into the surface; taking into account color, intensity and direction
+    const shadow = [
+        ambStrength[0] > 0.0 ? ambStrength[0] / (ambStrength[0] + dirStrength[0]) : 0.0,
+        ambStrength[1] > 0.0 ? ambStrength[1] / (ambStrength[1] + dirStrength[1]) : 0.0,
+        ambStrength[2] > 0.0 ? ambStrength[2] / (ambStrength[2] + dirStrength[2]) : 0.0
+    ];
+
+    // Because blending will happen in sRGB space, convert the shadow factor to sRGB
+    return linearVec3TosRGB(shadow);
 }
 
 function createLightMatrix(

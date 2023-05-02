@@ -36,7 +36,7 @@ void main() {
     vec4 out_color = mix(color * opacity, stroke_color * stroke_opacity, color_t);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_with_emission(out_color, u_emissive_strength);
+    out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
 #endif
 #ifdef FOG
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);

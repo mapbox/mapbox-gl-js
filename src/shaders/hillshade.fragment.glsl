@@ -45,7 +45,7 @@ void main() {
     gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
 
 #ifdef LIGHTING_3D_MODE
-    gl_FragColor = apply_lighting(gl_FragColor);
+    gl_FragColor = apply_lighting_ground(gl_FragColor);
 #endif
 #ifdef FOG
     gl_FragColor = fog_dither(fog_apply_premultiplied(gl_FragColor, v_fog_pos));

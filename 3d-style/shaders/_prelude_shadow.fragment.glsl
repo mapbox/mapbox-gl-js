@@ -201,35 +201,27 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
     return occlusion;
 }
 
-vec3 shadowed_color_normal(
-    vec3 color, float NDotL, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    if (NDotL < 0.0)
-        return color * (1.0 - u_shadow_intensity);
-
-    NDotL = clamp(NDotL, 0.0, 1.0);
-
+highp float calculate_shadow_bias(float NDotL) {
     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
-    highp float bias = 0.5 * (u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z));
+    return 0.5 * (u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z));
+}
+
+float shadowed_light_factor_normal(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    highp float NDotL = dot(N, u_shadow_direction);
+    if (NDotL < 0.0)
+        return 0.0;
+    
+    highp float bias = calculate_shadow_bias(NDotL);
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
-    float backfacing = 1.0 - smoothstep(0.0, 0.1, NDotL);
-    occlusion = mix(occlusion, 1.0, backfacing);
-    color *= 1.0 - (u_shadow_intensity * occlusion);
-    return color;
+    return (1.0 - (u_shadow_intensity * occlusion)) * NDotL;
 }
 
-vec3 shadowed_color_normal(
-    vec3 color, highp vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
-    return shadowed_color_normal(color, NDotL, light_view_pos0, light_view_pos1, view_depth);
-}
-
-vec3 shadowed_color(vec3 color, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+float shadowed_light_factor(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
-    color *= 1.0 - (u_shadow_intensity * occlusion);
-    return color;
+    return 1.0 - (u_shadow_intensity * occlusion);
 }
 
 #endif

@@ -17,7 +17,7 @@ varying vec2 v_ao;
 varying vec4 v_roof_color;
 #endif
 
-#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS)
+#if defined(ZERO_ROOF_RADIUS) || defined(LIGHTING_3D_MODE)
 varying highp vec3 v_normal;
 #endif
 
@@ -34,8 +34,8 @@ varying float v_height;
 
 void main() {
 
-#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS)
-    vec3 normal = v_normal;
+#if defined(ZERO_ROOF_RADIUS) || defined(LIGHTING_3D_MODE)
+    vec3 normal = normalize(v_normal);
 #endif
 
 float z;
@@ -64,26 +64,30 @@ float ao_shade = 1.0;
 #ifdef LIGHTING_3D_MODE
 #ifdef FLOOD_LIGHT
     color.rgb *= mix(ao_shade, 1.0, v_has_floodlight); // flood light and AO are mutually exclusive effects.
-#else
+#else // FLOOD_LIGHT
     color.rgb *= ao_shade;
-#endif
-#else
+#endif // !FLOOD_LIGHT
+#else // LIGHTING_3D_MODE
     color.rgb *= ao_shade;
-#endif
+#endif // !LIGHTING_3D_MODE
 
 #endif // FAUX_AO
 
-#if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
-    float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;   
-    color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
-#endif
-
+#ifdef LIGHTING_3D_MODE
 #ifdef RENDER_SHADOWS
-#ifdef ZERO_ROOF_RADIUS
-    normal = mix(normal, vec3(0.0, 0.0, 1.0), z);
-#endif
-    color.xyz = shadowed_color_normal(color.xyz, normalize(normal), v_pos_light_view_0, v_pos_light_view_1, v_depth);
-#endif
+    float lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb = apply_lighting(color.rgb, normal, lighting_factor);
+#else // RENDER_SHADOWS
+    color.rgb = apply_lighting(color.rgb, normal);
+#endif // !RENDER_SHADOWS
+
+#ifdef FLOOD_LIGHT
+    float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
+    color.rgb = linearTosRGB(mix(sRGBToLinear(color.rgb), u_flood_light_color * u_opacity, flood_radiance));
+#endif // FLOOD_LIGHT
+
+    color *= u_opacity;
+#endif // LIGHTING_3D_MODE
 
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

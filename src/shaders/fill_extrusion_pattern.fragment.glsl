@@ -8,7 +8,7 @@ varying vec3 v_ao;
 #endif
 
 #ifdef LIGHTING_3D_MODE
-varying float v_NdotL;
+varying vec3 v_normal;
 #endif
 
 varying vec2 v_pos;
@@ -35,7 +35,7 @@ void main() {
     vec4 out_color = texture2D(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color, v_NdotL) * u_opacity;
+    out_color = apply_lighting(out_color, normalize(v_normal)) * u_opacity;
 #else
     out_color = out_color * v_lighting;
 #endif

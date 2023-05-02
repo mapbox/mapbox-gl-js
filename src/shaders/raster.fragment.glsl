@@ -79,7 +79,7 @@ void main() {
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting(out_color);
+    out_color = apply_lighting_ground(out_color);
 #endif
 #ifdef FOG
     out_color = fog_dither(fog_apply(out_color, v_fog_pos));

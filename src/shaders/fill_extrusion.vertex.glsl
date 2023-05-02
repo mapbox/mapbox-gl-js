@@ -39,7 +39,7 @@ varying float v_depth;
 varying vec4 v_roof_color;
 #endif
 
-#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS)
+#if defined(ZERO_ROOF_RADIUS) || defined(LIGHTING_3D_MODE)
 varying highp vec3 v_normal;
 #endif
 
@@ -81,7 +81,7 @@ void main() {
 
     float x_normal = pos_nx.z / 8192.0;
     vec3 normal = top_up_ny.y == 1.0 ? vec3(0.0, 0.0, 1.0) : normalize(vec3(x_normal, (2.0 * top_up_ny.z - 1.0) * (1.0 - abs(x_normal)), 0.0));
-#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS)
+#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
     v_normal = normal;
 #endif
 
@@ -135,9 +135,7 @@ void main() {
 
     float NdotL = 0.0;
     float colorvalue = 0.0;
-#ifdef LIGHTING_3D_MODE
-    NdotL = calculate_NdotL(normal);
-#else
+#ifndef LIGHTING_3D_MODE
     // Relative luminance (how dark/bright is the surface color?)
     colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
 
@@ -153,22 +151,18 @@ void main() {
     // with lower light intensity
     // and with lighter/brighter surface colors
     NdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), NdotL);
-#endif
 
     // Add gradient along z axis of side surfaces
     if (normal.y != 0.0) {
         float r = 0.84;
-#ifndef LIGHTING_3D_MODE
         r = mix(0.7, 0.98, 1.0 - u_lightintensity);
-#endif
         // This avoids another branching statement, but multiplies by a constant of 0.84 if no vertical gradient,
         // and otherwise calculates the gradient based on base + height
         NdotL *= (
             (1.0 - u_vertical_gradient) +
             (u_vertical_gradient * clamp((t + base) * pow(height / 150.0, 0.5), r, 1.0)));
     }
-
-    v_color = vec4(0.0, 0.0, 0.0, 1.0);
+#endif // !LIGHTING_3D_MODE
 
 #ifdef FAUX_AO
     // Documented at https://github.com/mapbox/mapbox-gl-js/pull/11926#discussion_r898496259
@@ -179,15 +173,15 @@ void main() {
 #ifdef TERRAIN
     top_height = mix(max(c_ele + height, ele + base + 2.0), ele + height, float(centroid_pos.x == 0.0)) - ele;
     y_ground += y_ground * 5.0 / max(3.0, top_height);
-#endif
+#endif // TERRAIN
     v_ao = vec2(mix(concave, -concave, start), y_ground);
     NdotL *= (1.0 + 0.05 * (1.0 - top_up_ny.y) * u_ao[0]); // compensate sides faux ao shading contribution
 
 #ifdef PROJECTION_GLOBE_VIEW
     top_height += u_height_lift;
-#endif
+#endif // PROJECTION_GLOBE_VIEW
     gl_Position.z -= (0.0000006 * (min(top_height, 500.) + 2.0 * min(base, 500.0) + 60.0 * concave + 3.0 * start)) * gl_Position.w;
-#endif
+#endif // FAUX_AO
 
 #ifdef LIGHTING_3D_MODE
 
@@ -195,33 +189,32 @@ void main() {
     float is_wall = 1.0 - float(t > 0.0 && top_up_ny.y > 0.0);
     v_has_floodlight = float(flood_light_wall_radius > 0.0 && is_wall > 0.0);
     v_flood_radius = flood_light_wall_radius * u_vertical_scale;
-    v_color = apply_lighting(color, NdotL);
-#else
-    v_color = apply_lighting(color, NdotL);
-#endif
+#endif // FLOOD_LIGHT
 
-#else
+    v_color = color;
+
+#else // LIGHTING_3D_MODE
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
     // so that shading is tinted with the complementary (opposite) color to the light color
+    v_color = vec4(0.0, 0.0, 0.0, 1.0);
     v_color.rgb += clamp(color.rgb * NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-#endif
-
     v_color *= u_opacity;
+#endif // !LIGHTING_3D_MODE
 
 #ifdef ZERO_ROOF_RADIUS
-    v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 #ifdef LIGHTING_3D_MODE
-    v_roof_color = apply_lighting(color, calculate_NdotL(vec3(0.0, 0.0, 1.0)));
-#else
+    v_roof_color = color;
+#else // LIGHTING_3D_MODE
     float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);
+    v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
     v_roof_color.rgb += clamp(color.rgb * roofNdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-#endif
+#endif // !LIGHTING_3D_MODE
 
     v_roof_color *= u_opacity;
-#endif
+#endif // ZERO_ROOF_RADIUS
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
