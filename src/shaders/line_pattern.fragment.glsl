@@ -50,7 +50,7 @@ void main() {
     vec4 color = texture2D(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
-    color = apply_lighting(color);
+    color = apply_lighting_ground(color);
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

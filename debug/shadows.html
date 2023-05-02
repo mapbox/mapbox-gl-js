@@ -35,7 +35,7 @@ var PageSettings = function() {
     this.sunBearing = 160;
     this.sunPolarAngle = 50;
     this.castShadows = true;
-    this.shadowIntensity = 0.3;
+    this.shadowIntensity = 1.0;
 };
 
 var pageSettings = new PageSettings();
@@ -142,7 +142,7 @@ map.on('load', () => {
             'fill-extrusion-edge-radius': 0.4
         },
         'paint': {
-            'fill-extrusion-color': '#bbb',
+            'fill-extrusion-color': '#eee',
             'fill-extrusion-height': ['get', 'height'],
             'fill-extrusion-base': ['get', 'min_height'],
             'fill-extrusion-opacity': 1,

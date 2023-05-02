@@ -10,12 +10,16 @@
   "lights": [
     {
       "type": "ambient",
-      "id": "environment"
+      "id": "environment",
+      "properties": {
+        "intensity": 0.0
+      }
     },
     {
       "type": "directional",
       "id": "sun_light",
       "properties": {
+        "intensity": 1.0,
         "cast-shadows": true,
         "shadow-intensity": 1.0
       }

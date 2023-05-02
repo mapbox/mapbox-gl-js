@@ -83,8 +83,16 @@ float calculate_NdotL(vec3 normal, vec3 lightDir) {
 vec3 getDiffuseShadedColor(vec3 albedo, vec3 normal, vec3 lightDir, vec3 lightColor)
 {
 #ifdef LIGHTING_3D_MODE
-    return apply_lighting(albedo, calculate_NdotL(normal, lightDir));
-#else
+    vec3 transformed_normal = vec3(-normal.xy, normal.z);
+    float lighting_factor;
+#ifdef RENDER_SHADOWS
+    lighting_factor = shadowed_light_factor_normal(transformed_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
+#else // RENDER_SHADOWS
+    lighting_factor = saturate(dot(transformed_normal, u_lighting_directional_dir));
+#endif // !RENDER_SHADOWS
+    return apply_lighting(albedo, transformed_normal, lighting_factor);
+
+#else // LIGHTING_3D_MODE
     vec3 n = normal;
     // Computation from fill extrusion vertex shader
     float colorvalue = ((albedo.x * 0.2126) + (albedo.y * 0.7152)) + (albedo.z * 0.0722);
@@ -93,7 +101,7 @@ vec3 getDiffuseShadedColor(vec3 albedo, vec3 normal, vec3 lightDir, vec3 lightCo
     directional = mix(1.0 - u_lightintensity, max((1.0 - colorvalue) + u_lightintensity, 1.0), directional);
     vec3 c3 = c + clamp((albedo * directional) * lightColor, mix(vec3(0.0), vec3(0.3), vec3(1.0) - lightColor), vec3(1.0));
     return c3;
-#endif
+#endif // !LIGHTING_3D_MODE
 }
 
 vec4 getBaseColor() {
@@ -341,16 +349,7 @@ vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
 
     // Avoid dividing by zero when the dot product is zero
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
-    // Just to make happy generate-metal-shaders 
-    float NdotL = 0.0;
-#ifdef LIGHTING_3D_MODE 
-    // For landmarks use the extended NdotL range to mimic
-    // fill extrusion lighting
-    NdotL = calculate_NdotL(n, l);
-#else
-    NdotL = clamp(dot(n, l), 0.001, 1.0);
-#endif
-
+    float NdotL = saturate(dot(n, l));
     highp float NdotH = saturate(dot(n, h));
     float VdotH = saturate(dot(v, h));
 
@@ -370,26 +369,29 @@ vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
     // Cook-Torrance BRDF
     vec3 specularTerm = f * g * d;
 
-    vec3 directLightColor = (specularTerm + diffuseTerm) * NdotL * lightColor;
+    float lighting_factor;
+#ifdef RENDER_SHADOWS
+    vec3 transformed_normal = vec3(-n.xy, n.z);
+    lighting_factor = shadowed_light_factor_normal(transformed_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
+#else
+    lighting_factor = NdotL;
+#endif // RENDER_SHADOWS
+
+    vec3 directLightColor = (specularTerm + diffuseTerm) * lighting_factor * lightColor;
     vec3 indirectLightColor = computeIndirectLightContribution(mat, NdotV);
 
     vec3 color = (directLightColor + indirectLightColor);
 
-    // Calculate luminance
-    const vec3 luminosityFactor = vec3(0.2126, 0.7152, 0.0722);
-    float luminance = dot(diffuseTerm, luminosityFactor);
     float intensityFactor = 1.0;
-#ifdef LIGHTING_3D_MODE 
-    // Boost luminance for directional term to avoid adding too much weight to ambient light
-    // for puck models
-    float lightLuminance = dot(lightColor, luminosityFactor);
-    intensityFactor = mix(0.5, max(1.0 - luminance + 0.5, 1.0), NdotL);
-    // intensityFactor tends to 1 (no effect) depending on light color luminance
-    intensityFactor = mix(1.0, intensityFactor, lightLuminance);
-#else
+#if !defined(LIGHTING_3D_MODE)
+    const vec3 luminosityFactor = vec3(0.2126, 0.7152, 0.0722);
+
+    // Calculate luminance
+    float luminance = dot(diffuseTerm, luminosityFactor);
     // Adjust light intensity depending on light incidence
     intensityFactor = mix((1.0 - u_lightintensity), max((1.0 - luminance + u_lightintensity), 1.0), NdotL);
-#endif
+#endif // !defined(LIGHTING_3D_MODE)
+
     color *= intensityFactor;
     return color;
 }
@@ -402,8 +404,8 @@ void main() {
     }
 #endif
 
-vec3 lightDir = u_lightpos;
-vec3 lightColor = u_lightcolor;
+    vec3 lightDir = u_lightpos;
+    vec3 lightColor = u_lightcolor;
 
 #ifdef LIGHTING_3D_MODE
     lightDir = u_lighting_directional_dir;
@@ -413,12 +415,10 @@ vec3 lightColor = u_lightcolor;
     lightColor = u_lighting_directional_color;
 #endif
 
-vec3 N;
-vec3 diffuse;
 vec4 finalColor;
 #ifdef DIFFUSE_SHADED
-    N = getNormal();
-    diffuse = getDiffuseShadedColor(getBaseColor().rgb, N, lightDir, lightColor);
+    vec3 N = getNormal();
+    vec3 diffuse = getDiffuseShadedColor(getBaseColor().rgb, N, lightDir, lightColor);
     // Ambient Occlusion
 #ifdef HAS_TEXTURE_u_occlusionTexture
     // For b3dm tiles where models contains occlusion textures we interpret them similarly to how
@@ -428,19 +428,9 @@ vec4 finalColor;
     diffuse *= ao;
 #endif
     finalColor = vec4(diffuse, 1.0) * u_opacity;
-#ifdef RENDER_SHADOWS
-    float shadowNdotL = dot(N, vec3(-u_shadow_direction.xy, u_shadow_direction.z));
-    finalColor.xyz = shadowed_color_normal(finalColor.xyz, shadowNdotL, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
-#endif
-
-#else
+#else // DIFFUSE_SHADED
     Material mat = getPBRMaterial();
     vec3 color = computeLightContribution(mat, lightDir, lightColor);
-
-#ifdef RENDER_SHADOWS
-    float shadowNdotL = dot(mat.normal, vec3(-u_shadow_direction.xy, u_shadow_direction.z));
-    color = shadowed_color_normal(color, shadowNdotL, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
-#endif
 
     // Ambient Occlusion
 #ifdef HAS_TEXTURE_u_occlusionTexture
@@ -476,7 +466,7 @@ vec4 finalColor;
     color = linearTosRGB(color);
     color *= opacity;
     finalColor = vec4(color, opacity);
-#endif
+#endif // !DIFFUSE_SHADED
 
 #ifdef FOG
     finalColor = fog_dither(fog_apply_premultiplied(finalColor, v_fog_pos));

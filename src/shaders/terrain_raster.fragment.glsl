@@ -12,19 +12,29 @@ varying float v_depth;
 #endif
 
 void main() {
-    vec4 color = texture2D(u_image0, v_pos0);
+    vec4 image_color = texture2D(u_image0, v_pos0);
+    vec4 color;
 
 #ifdef LIGHTING_3D_MODE
-#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
-    color = apply_lighting_with_emission(color, color.a);
-    color.a = 1.0;
-#else
-    color = apply_lighting(color);
-#endif
-#endif
+    const vec3 normal = vec3(0.0, 0.0, 1.0);
+
+    float lighting_factor;
 #ifdef RENDER_SHADOWS
-    color.xyz = shadowed_color(color.xyz, v_pos_light_view_0, v_pos_light_view_1, v_depth);
-#endif
+    lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#else // RENDER_SHADOWS
+    lighting_factor = calculate_NdotL(normal);
+#endif // !RENDER_SHADOWS
+
+    color = apply_lighting(image_color, normal, lighting_factor);
+
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+    color.rgb = mix(color.rgb, image_color.rgb, image_color.a);
+    color.a = 1.0;
+#endif // LIGHTING_3D_ALPHA_EMISSIVENESS
+
+#else // LIGHTING_3D_MODE
+    color = image_color;
+#endif // !LIGHTING_3D_MODE
 
 #ifdef FOG
 #ifdef ZERO_EXAGGERATION

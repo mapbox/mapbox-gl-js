@@ -761,3 +761,11 @@ export function sRGBToLinearAndScale(v: [number, number, number, number], s: num
         Math.pow(v[2], 2.2) * s
     ];
 }
+
+export function linearVec3TosRGB(v: [number, number, number]): [number, number, number] {
+    return [
+        Math.pow(v[0], 1.0 / 2.2),
+        Math.pow(v[1], 1.0 / 2.2),
+        Math.pow(v[2], 1.0 / 2.2)
+    ];
+}

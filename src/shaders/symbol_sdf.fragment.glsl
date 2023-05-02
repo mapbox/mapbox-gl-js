@@ -49,7 +49,7 @@ void main() {
     vec4 out_color = color * (alpha * opacity * fade_opacity);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_with_emission(out_color, emissive_strength);
+    out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #endif
 
     gl_FragColor = out_color;

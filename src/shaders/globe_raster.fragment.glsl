@@ -33,26 +33,26 @@ void main() {
     vec4 raster = texture2D(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
-    raster = apply_lighting_with_emission(raster, raster.a);
+    raster = apply_lighting_with_emission_ground(raster, raster.a);
     color = vec4(raster.rgb * antialias, antialias);
-#else
-    raster = apply_lighting(raster);
+#else // LIGHTING_3D_ALPHA_EMISSIVENESS
+    raster = apply_lighting_ground(raster);
     color = vec4(raster.rgb * antialias, raster.a * antialias);
-#endif
-#else
+#endif // !LIGHTING_3D_ALPHA_EMISSIVENESS
+#else // LIGHTING_3D_MODE
     color = vec4(raster.rgb * antialias, raster.a * antialias);
-#endif
-#else
+#endif // !LIGHTING_3D_MODE
+#else // CUSTOM_ANTIALIASING
     color = texture2D(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
-    color = apply_lighting_with_emission(color, color.a);
+    color = apply_lighting_with_emission_ground(color, color.a);
     color.a = 1.0;
-#else
-    color = apply_lighting(color);
-#endif
-#endif
-#endif
+#else // LIGHTING_3D_ALPHA_EMISSIVENESS
+    color = apply_lighting_ground(color);
+#endif // !LIGHTING_3D_ALPHA_EMISSIVENESS
+#endif // LIGHTING_3D_MODE
+#endif // !CUSTOM_ANTIALIASING
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif

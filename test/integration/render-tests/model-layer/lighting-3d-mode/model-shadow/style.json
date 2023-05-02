@@ -20,7 +20,7 @@
       "id": "environment",
       "properties": {
         "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-        "intensity": 0.5
+        "intensity": 0.05
       }
     },
     {
@@ -28,13 +28,13 @@
       "id": "sun_light",
       "properties": {
         "color": "rgba(255.0, 255.0, 255.0, 1.0)",
-        "intensity": 0.9,
+        "intensity": 1.0,
         "direction": [
           320.0,
           70.0
         ],
         "cast-shadows": true,
-        "shadow-intensity": 0.8
+        "shadow-intensity": 1.0
       }
     }
   ],

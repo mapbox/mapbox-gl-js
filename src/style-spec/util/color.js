@@ -136,6 +136,22 @@ class Color {
             a
         ];
     }
+
+    /**
+     * Returns an RGBA array of values representing the color, unpremultiplied by A, and converted to linear color space.
+     * The color is defined by sRGB primaries, but the sRGB transfer function is reversed to obtain linear energy.
+     *
+     * @returns An array of RGBA color values in the range [0, 1].
+     */
+    toArray01Linear(): [number, number, number, number] {
+        const {r, g, b, a} = this;
+        return a === 0 ? [0, 0, 0, 0] : [
+            Math.pow((r / a), 2.2),
+            Math.pow((g / a), 2.2),
+            Math.pow((b / a), 2.2),
+            a
+        ];
+    }
 }
 
 Color.black = new Color(0, 0, 0, 1);

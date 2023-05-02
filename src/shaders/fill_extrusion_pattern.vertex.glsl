@@ -34,7 +34,7 @@ varying vec3 v_ao;
 #endif
 
 #ifdef LIGHTING_3D_MODE
-varying float v_NdotL;
+varying vec3 v_normal;
 #endif
 
 #pragma mapbox: define lowp float base
@@ -152,7 +152,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    v_NdotL = NdotL;
+    v_normal = normal;
 #else
     v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;

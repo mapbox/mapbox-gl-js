@@ -9,24 +9,72 @@ uniform mediump vec3 u_lighting_ambient_color;
 uniform mediump vec3 u_lighting_directional_dir;        // Direction towards the light source
 uniform mediump vec3 u_lighting_directional_color;
 
-// Applies 3D lighting and returns the result in sRGB color space.
-vec3 apply_lighting(vec3 color) {
+// Emulate sky being brighter close to the main light source
+float calculate_ambient_directional_factor(float NdotL) {
+    const float factor_reduction_max = 0.3;
+    float dir_luminance = dot(u_lighting_directional_color, vec3(0.2126, 0.7152, 0.0722));
+    float directional_factor_min = 1.0 - factor_reduction_max * min(dir_luminance, 1.0);
+
+    // If u_lighting_directional_color is (1, 1, 1), then the return value range is
+    // NdotL=-1: 1.0 - factor_reduction_max
+    // NdotL>=0: 1.0
+    return mix(directional_factor_min, 1.0, min((NdotL + 1.0), 1.0));
+}
+
+// BEGIN Used for anisotropic ambient light
+
+// BEGIN Use with shadows, pass shadow light factor as dir_factor
+
+vec3 apply_lighting(vec3 color, vec3 normal, float dir_factor) {
+    // TODO: Use a cubemap to sample precalculated values
+
+    // NdotL Used only for ambient directionality
+    float NdotL = dot(normal, u_lighting_directional_dir);
+    float ambient_directional_factor = calculate_ambient_directional_factor(NdotL);
+
+    // Emulate environmental light being blocked by other objects
+    // Value moves from vertical_factor_min at z=-1 to 1.0 at z=1
+    const float vertical_factor_min = 0.92;
+    // clamp(z, -1.0, 1.0) is required because z can be very slightly out of the acceptable input
+    // range for asin, even when it has been normalized, due to limited floating point precision.
+    float vertical_factor = mix(vertical_factor_min, 1.0, asin(clamp(normal.z, -1.0, 1.0)) / PI + 0.5);
+
+    vec3 ambient_contrib = vertical_factor * ambient_directional_factor * u_lighting_ambient_color;
+    vec3 directional_contrib = u_lighting_directional_color * dir_factor;
+    return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + directional_contrib));
+}
+
+vec4 apply_lighting(vec4 color, vec3 normal, float dir_factor) {
+    return vec4(apply_lighting(color.rgb, normal, dir_factor), color.a);
+}
+
+// END Use with shadows
+
+vec3 apply_lighting(vec3 color, vec3 normal) {
+    float dir_factor = max(dot(normal, u_lighting_directional_dir), 0.0);
+    return apply_lighting(color.rgb, normal, dir_factor);
+}
+
+vec4 apply_lighting(vec4 color, vec3 normal) {
+    float dir_factor = max(dot(normal, u_lighting_directional_dir), 0.0);
+    return vec4(apply_lighting(color.rgb, normal, dir_factor), color.a);
+}
+
+vec3 apply_lighting_ground(vec3 color) {
     float NdotL = u_lighting_directional_dir.z;
-    vec3 litColor = sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL);
-    return linearTosRGB(clamp(litColor, 0.0, 1.0));
+
+    // Emulate sky being brighter close to the main light source
+    float ambient_directional_factor = calculate_ambient_directional_factor(NdotL);
+
+    vec3 ambient_contrib = u_lighting_ambient_color * ambient_directional_factor;
+    return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + u_lighting_directional_color * NdotL));
 }
 
-vec4 apply_lighting(vec4 color) {
-    return vec4(apply_lighting(color.rgb), color.a);
+vec4 apply_lighting_ground(vec4 color) {
+    return vec4(apply_lighting_ground(color.rgb), color.a);
 }
 
-vec3 apply_lighting(vec3 color, float NdotL) {
-    return linearTosRGB(sRGBToLinear(color) * (u_lighting_ambient_color + u_lighting_directional_color * NdotL));
-}
-
-vec4 apply_lighting(vec4 color, float NdotL) {
-    return vec4(apply_lighting(color.rgb, NdotL), color.a);
-}
+// END Used for anisotropic ambient light
 
 float calculate_NdotL(vec3 normal) {
     // Use slightly modified dot product for lambertian diffuse shading. This increase the range of NdotL to cover surfaces facing up to 45 degrees away from the light source.
@@ -35,8 +83,8 @@ float calculate_NdotL(vec3 normal) {
     return (clamp(dot(normal, u_lighting_directional_dir), -ext, 1.0) + ext) / (1.0 + ext);
 }
 
-vec4 apply_lighting_with_emission(vec4 color, float emissive_strength) {
-    return mix(apply_lighting(color), color, emissive_strength);
+vec4 apply_lighting_with_emission_ground(vec4 color, float emissive_strength) {
+    return mix(apply_lighting_ground(color), color, emissive_strength);
 }
 
-#endif
+#endif // LIGHTING_3D_MODE

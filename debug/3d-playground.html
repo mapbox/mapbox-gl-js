@@ -4,8 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='mapbox-gl.css' />
-    <link href='main.css' rel='stylesheet' type="text/css"/>
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0 }
         html, body, #map { height: 100%; }
@@ -35,6 +34,7 @@
             left:15px;
             max-height: 90%;
             overflow-y:auto;
+            z-index: 100;
         }
         #config::-webkit-scrollbar {
             width: 10px;
@@ -95,8 +95,8 @@ var Demo3D = function() {
     this.directionalLightIntensity = 0.5;
     this.directionalLightAzimuth = 160;
     this.directionalLightPolar = 50;
-    this.directionalLightCastShadows = false;
-    this.directionalLightShadowIntensity = 0.3;
+    this.directionalLightCastShadows = true;
+    this.directionalLightShadowIntensity = 1.0;
     this.edgeRadius = 0.3;
     this.fps = 0;
     this.continuousRedraw = true;

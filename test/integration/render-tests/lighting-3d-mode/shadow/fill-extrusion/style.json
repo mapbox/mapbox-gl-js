@@ -27,7 +27,7 @@
           40.0
         ],
         "cast-shadows": true,
-        "shadow-intensity": 0.3
+        "shadow-intensity": 1.0
       }
     }
   ],
