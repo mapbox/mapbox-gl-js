@@ -6,7 +6,13 @@ import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
 import type {Vec3} from 'gl-matrix';
 import {mat4} from 'gl-matrix';
-import {TriangleIndexArray, ModelLayoutArray, NormalLayoutArray, TexcoordLayoutArray, Color3fLayoutArray, Color4fLayoutArray} from '../../src/data/array_types.js';
+import {TriangleIndexArray,
+    ModelLayoutArray,
+    NormalLayoutArray,
+    TexcoordLayoutArray,
+    Color3fLayoutArray,
+    Color4fLayoutArray
+} from '../../src/data/array_types.js';
 
 import window from '../../src/util/window.js';
 import {warnOnce} from '../../src/util/util.js';
@@ -93,7 +99,7 @@ function getBufferData(gltf: Object, accessor: Object) {
     }
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
     const buffer = gltf.buffers[ bufferView.buffer ];
-    const offset = buffer.byteOffset + (accessor.byteOffset || 0) + bufferView.byteOffset;
+    const offset = buffer.byteOffset + (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
     const ArrayType = ArrayTypes[ accessor.componentType ];
     const bufferData = new ArrayType(buffer.arrayBuffer, offset, accessor.count * TypeTable[ accessor.type ]);
     return bufferData;
@@ -163,7 +169,6 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
 
     // eslint-disable-next-line no-warning-comments
     // TODO: Investigate a better way to pass arrays to StructArrays and avoid the double componentType
-
     // indices
     mesh.indexArray = new TriangleIndexArray();
     // When loading draco compressed buffers, loader.gl parses the buffer in worker thread and returns parsed
@@ -246,6 +251,14 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     const materialIdx = primitive.material;
     const materialDesc = materialIdx !== undefined ? gltf.json.materials[materialIdx] : {defined: false};
     mesh.material = convertMaterial(materialDesc, textures);
+
+    // Mapbox mesh features, the name CUSTOM_ATTRIBUTE_3 is coming from loader.gl but instead it should be
+    // _FEATURE_RGBA4444
+    if (attributeMap.CUSTOM_ATTRIBUTE_3 !== undefined) {
+        const featureAccesor = attributeMap.CUSTOM_ATTRIBUTE_3;
+        const buffer = featureAccesor.value;
+        mesh.featureData = new Uint32Array(buffer.buffer);
+    }
 
     return mesh;
 }

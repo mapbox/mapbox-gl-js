@@ -5,7 +5,7 @@ import LngLat from '../../src/geo/lng_lat.js';
 import Color from "../../src/style-spec/util/color.js";
 import Texture from '../../src/render/texture.js';
 import type IndexBuffer from '../../src/gl/index_buffer.js';
-import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray} from '../../src/data/array_types.js';
+import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types.js';
 import {StructArray} from '../../src/util/struct_array.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import type {Mat4, Vec3, Quat} from 'gl-matrix';
@@ -67,6 +67,9 @@ export type Mesh = {
     texcoordBuffer: VertexBuffer;
     colorArray: StructArray;
     colorBuffer: VertexBuffer;
+    featureData: Uint32Array;
+    featureArray: FeatureVertexArray;
+    pbrBuffer: VertexBuffer;
     material: Material;
     aabb: Aabb;
     segments: SegmentVector;
@@ -79,6 +82,12 @@ export type Node = {
     meshes: Array<Mesh>;
     children: Array<Node>;
 }
+
+export const ModelTraits = {
+    CoordinateSpaceTile : 1,
+    CoordinateSpaceYUp : 2, // not used yet.
+    HasMapboxMeshFeatures : 1 << 2
+};
 
 export default class Model {
     id: string;
@@ -244,143 +253,153 @@ export default class Model {
         }
     }
 
-    _uploadTexture(texture: ModelTexture, context: Context,) {
-        if (!texture.uploaded) {
-            texture.gfxTexture = new Texture(context, texture.image, context.gl.RGBA, {useMipmap: texture.sampler.mipmaps});
-            texture.uploaded = true;
-            texture.image = (null: any);
-        }
-    }
-
-    _uploadMesh(mesh: Mesh, context: Context) {
-        // Buffers
-        // Note: array buffers could reused for different nodes so destroy them in a later pass
-        mesh.indexBuffer = context.createIndexBuffer(mesh.indexArray, false, true);
-        mesh.vertexBuffer = context.createVertexBuffer(mesh.vertexArray, modelAttributes.members, false, true);
-        if (mesh.normalArray) {
-            mesh.normalBuffer = context.createVertexBuffer(mesh.normalArray, normalAttributes.members, false, true);
-        }
-        if (mesh.texcoordArray) {
-            mesh.texcoordBuffer = context.createVertexBuffer(mesh.texcoordArray, texcoordAttributes.members, false, true);
-        }
-        if (mesh.colorArray) {
-            const colorAttributes = mesh.colorArray.bytesPerElement === 12 ? color3fAttributes : color4fAttributes;
-            mesh.colorBuffer = context.createVertexBuffer(mesh.colorArray, colorAttributes.members, false, true);
-        }
-        mesh.segments = SegmentVector.simpleSegment(0, 0, mesh.vertexArray.length, mesh.indexArray.length);
-
-        // Textures
-        const material = mesh.material;
-        if (material.pbrMetallicRoughness.baseColorTexture) {
-            this._uploadTexture(material.pbrMetallicRoughness.baseColorTexture, context);
-        }
-        if (material.pbrMetallicRoughness.metallicRoughnessTexture) {
-            this._uploadTexture(material.pbrMetallicRoughness.metallicRoughnessTexture, context);
-        }
-        if (material.normalTexture) {
-            this._uploadTexture(material.normalTexture, context);
-        }
-        if (material.occlusionTexture) {
-            this._uploadTexture(material.occlusionTexture, context);
-        }
-        if (material.emissionTexture) {
-            this._uploadTexture(material.emissionTexture, context);
-        }
-    }
-
-    _uploadNode(node: Node, context: Context) {
-        if (node.meshes) {
-            for (const mesh of node.meshes) {
-                this._uploadMesh(mesh, context);
-            }
-        }
-        if (node.children) {
-            for (const child of node.children) {
-                this._uploadNode(child, context);
-            }
-        }
-    }
-
-    _destroyNodeArrays(node: Node) {
-        if (node.meshes) {
-            for (const mesh of node.meshes) {
-                mesh.indexArray.destroy();
-                mesh.vertexArray.destroy();
-                if (mesh.colorArray) mesh.colorArray.destroy();
-                if (mesh.normalArray) mesh.normalArray.destroy();
-                if (mesh.texcoordArray) mesh.texcoordArray.destroy();
-            }
-        }
-        if (node.children) {
-            for (const child of node.children) {
-                this._destroyNodeArrays(child);
-            }
-        }
-    }
-
     upload(context: Context) {
         if (this.uploaded) return;
         for (const node of this.nodes) {
-            this._uploadNode(node, context);
+            uploadNode(node, context);
         }
 
         // Now destroy all buffers
         for (const node of this.nodes) {
-            this._destroyNodeArrays(node);
+            destroyNodeArrays(node);
         }
 
         this.uploaded = true;
     }
 
-    _destroyTextures(material: Material) {
-        if (material.pbrMetallicRoughness.baseColorTexture && material.pbrMetallicRoughness.baseColorTexture.gfxTexture) {
-            material.pbrMetallicRoughness.baseColorTexture.gfxTexture.destroy();
-        }
-        if (material.pbrMetallicRoughness.metallicRoughnessTexture && material.pbrMetallicRoughness.metallicRoughnessTexture.gfxTexture) {
-            material.pbrMetallicRoughness.metallicRoughnessTexture.gfxTexture.destroy();
-        }
-        if (material.normalTexture && material.normalTexture.gfxTexture) {
-            material.normalTexture.gfxTexture.destroy();
-        }
-        if (material.emissionTexture && material.emissionTexture.gfxTexture) {
-            material.emissionTexture.gfxTexture.destroy();
-        }
-        if (material.occlusionTexture && material.occlusionTexture.gfxTexture) {
-            material.occlusionTexture.gfxTexture.destroy();
-        }
-    }
-
-    _destroyBuffers(node: Node) {
-        if (node.meshes) {
-            for (const mesh of node.meshes) {
-                if (!mesh.vertexBuffer) continue;
-                mesh.vertexBuffer.destroy();
-                mesh.indexBuffer.destroy();
-                if (mesh.normalBuffer) {
-                    mesh.normalBuffer.destroy();
-                }
-                if (mesh.texcoordBuffer) {
-                    mesh.texcoordBuffer.destroy();
-                }
-                if (mesh.colorBuffer) {
-                    mesh.colorBuffer.destroy();
-                }
-                mesh.segments.destroy();
-                if (mesh.material) {
-                    this._destroyTextures(mesh.material);
-                }
-            }
-        }
-        if (node.children) {
-            for (const child of node.children) {
-                this._destroyBuffers(child);
-            }
-        }
-    }
-
     destroy() {
         for (const node of this.nodes) {
-            this._destroyBuffers(node);
+            destroyBuffers(node);
+        }
+    }
+}
+
+export function uploadTexture(texture: ModelTexture, context: Context, useSingleChannelTexture: boolean = false) {
+    // $FlowFixMe[prop-missing]
+    const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA;
+    if (!texture.uploaded) {
+        texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap: texture.sampler.mipmaps});
+        texture.uploaded = true;
+        texture.image = (null: any);
+    }
+}
+
+export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusionTexture?: boolean) {
+    // Buffers
+    // Note: array buffers could reused for different nodes so destroy them in a later pass
+    mesh.indexBuffer = context.createIndexBuffer(mesh.indexArray, false, true);
+    mesh.vertexBuffer = context.createVertexBuffer(mesh.vertexArray, modelAttributes.members, false, true);
+    if (mesh.normalArray) {
+        mesh.normalBuffer = context.createVertexBuffer(mesh.normalArray, normalAttributes.members, false, true);
+    }
+    if (mesh.texcoordArray) {
+        mesh.texcoordBuffer = context.createVertexBuffer(mesh.texcoordArray, texcoordAttributes.members, false, true);
+    }
+    if (mesh.colorArray) {
+        const colorAttributes = mesh.colorArray.bytesPerElement === 12 ? color3fAttributes : color4fAttributes;
+        mesh.colorBuffer = context.createVertexBuffer(mesh.colorArray, colorAttributes.members, false, true);
+    }
+    mesh.segments = SegmentVector.simpleSegment(0, 0, mesh.vertexArray.length, mesh.indexArray.length);
+
+    // Textures
+    const material = mesh.material;
+    if (material.pbrMetallicRoughness.baseColorTexture) {
+        uploadTexture(material.pbrMetallicRoughness.baseColorTexture, context);
+    }
+    if (material.pbrMetallicRoughness.metallicRoughnessTexture) {
+        uploadTexture(material.pbrMetallicRoughness.metallicRoughnessTexture, context);
+    }
+    if (material.normalTexture) {
+        uploadTexture(material.normalTexture, context);
+    }
+    if (material.occlusionTexture) {
+        uploadTexture(material.occlusionTexture, context, useSingleChannelOcclusionTexture);
+    }
+    if (material.emissionTexture) {
+        uploadTexture(material.emissionTexture, context);
+    }
+}
+
+export function uploadNode(node: Node, context: Context, useSingleChannelOcclusionTexture?: boolean) {
+    if (node.meshes) {
+        for (const mesh of node.meshes) {
+            uploadMesh(mesh, context, useSingleChannelOcclusionTexture);
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            uploadNode(child, context, useSingleChannelOcclusionTexture);
+        }
+    }
+}
+
+export function destroyNodeArrays(node: Node) {
+    if (node.meshes) {
+        for (const mesh of node.meshes) {
+            mesh.indexArray.destroy();
+            mesh.vertexArray.destroy();
+            if (mesh.colorArray) mesh.colorArray.destroy();
+            if (mesh.normalArray) mesh.normalArray.destroy();
+            if (mesh.texcoordArray) mesh.texcoordArray.destroy();
+            if (mesh.featureArray) {
+                mesh.featureArray.destroy();
+                mesh.featureData = (null: any);
+            }
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            destroyNodeArrays(child);
+        }
+    }
+}
+
+export function destroyTextures(material: Material) {
+    if (material.pbrMetallicRoughness.baseColorTexture && material.pbrMetallicRoughness.baseColorTexture.gfxTexture) {
+        material.pbrMetallicRoughness.baseColorTexture.gfxTexture.destroy();
+    }
+    if (material.pbrMetallicRoughness.metallicRoughnessTexture && material.pbrMetallicRoughness.metallicRoughnessTexture.gfxTexture) {
+        material.pbrMetallicRoughness.metallicRoughnessTexture.gfxTexture.destroy();
+    }
+    if (material.normalTexture && material.normalTexture.gfxTexture) {
+        material.normalTexture.gfxTexture.destroy();
+    }
+    if (material.emissionTexture && material.emissionTexture.gfxTexture) {
+        material.emissionTexture.gfxTexture.destroy();
+    }
+    if (material.occlusionTexture && material.occlusionTexture.gfxTexture) {
+        material.occlusionTexture.gfxTexture.destroy();
+    }
+}
+
+export function destroyBuffers(node: Node) {
+    if (node.meshes) {
+        for (const mesh of node.meshes) {
+            if (!mesh.vertexBuffer) continue;
+            mesh.vertexBuffer.destroy();
+            mesh.indexBuffer.destroy();
+            if (mesh.normalBuffer) {
+                mesh.normalBuffer.destroy();
+            }
+            if (mesh.texcoordBuffer) {
+                mesh.texcoordBuffer.destroy();
+            }
+            if (mesh.colorBuffer) {
+                mesh.colorBuffer.destroy();
+            }
+            if (mesh.pbrBuffer) {
+                mesh.pbrBuffer.destroy();
+            }
+
+            mesh.segments.destroy();
+            if (mesh.material) {
+                destroyTextures(mesh.material);
+            }
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            destroyBuffers(child);
         }
     }
 }

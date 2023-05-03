@@ -71,7 +71,13 @@ class Texture {
             this.size = [width, height];
 
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
-                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+                let baseFormat = this.format;
+                // $FlowFixMe[prop-missing] - Flow cannot check for gl.R8
+                if (context.isWebGL2 && this.format === gl.R8) {
+                    // $FlowFixMe[prop-missing] - Flow cannot check for gl.RED
+                    baseFormat = gl.RED;
+                }
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, baseFormat, gl.UNSIGNED_BYTE, image);
             } else {
                 let internalFormat = this.format;
                 let type = gl.UNSIGNED_BYTE;

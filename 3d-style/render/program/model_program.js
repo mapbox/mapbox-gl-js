@@ -97,6 +97,9 @@ const modelUniformValues = (
     const lightColor = light.properties.get('color');
 
     const aoIntensity =  layer.paint.get('model-ambient-occlusion-intensity');
+    const colorMix = layer.paint.get('model-color').constantOr(Color.white);
+    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
+
     const uniformValues = {
         'u_matrix': matrix,
         'u_lighting_matrix': lightingMatrix,
@@ -118,7 +121,7 @@ const modelUniformValues = (
         'u_normalTexture': TextureSlots.Normal,
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
-        'u_color_mix': [1.0, 1.0, 1.0, 0.0],
+        'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity],
         'u_aoIntensity': aoIntensity
     };
 

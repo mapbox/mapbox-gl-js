@@ -6,6 +6,7 @@ import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
 import type {Mesh, Node} from '../data/model.js';
+import {ModelTraits} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 import Transform from '../../src/geo/transform.js';
@@ -15,15 +16,19 @@ import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4} from 'gl-matrix';
+import type {Mat4, Vec4} from 'gl-matrix';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
-import {warnOnce} from '../../src/util/util.js';
+import {warnOnce, clamp} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
+import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
+import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
+import {FeatureVertexArray} from '../../src/data/array_types.js';
+import {featureAttributes} from '../data/model_attributes.js';
 
 export default drawModels;
 
@@ -117,6 +122,12 @@ function setupMeshDraw(definesValues, dynamicBuffers, mesh, painter) {
         dynamicBuffers.push(mesh.normalBuffer);
     }
 
+    if (mesh.pbrBuffer) {
+        definesValues.push('HAS_ATTRIBUTE_a_pbr');
+        definesValues.push('HAS_ATTRIBUTE_a_heightBasedEmissiveStrength');
+        dynamicBuffers.push(mesh.pbrBuffer);
+    }
+
     if (material.alphaMode === 'OPAQUE' || material.alphaMode === 'MASK') {
         definesValues.push('UNPREMULT_TEXTURE_IN_SHADER');
     }
@@ -200,8 +211,11 @@ export function upload(painter: Painter, sourceCache: SourceCache) {
         }
         return;
     }
+    if (modelSource.type === 'batched-model') {
+        // batched models uploads happen in tile_3d_bucket
+        return;
+    }
     const models = (modelSource: any).getModels();
-
     // Upload models
     for (const model of models) {
         model.upload(painter.context);
@@ -272,6 +286,10 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         drawInstancedModels(painter, sourceCache, layer, coords);
+        return;
+    }
+    if (modelSource.type === 'batched-model') {
+        drawBatchedModels(painter, sourceCache, layer, coords);
         return;
     }
     const models = (modelSource: any).getModels();
@@ -459,6 +477,181 @@ function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coor
     if (node.children) {
         for (const child of node.children) {
             drawInstancedNode(painter, layer, child, modelInstances, cameraPos, coord);
+        }
+    }
+}
+
+function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, layer: ModelStyleLayer, coord: OverscaledTileID, tileMatrix: Mat4, zScaleMatrix: Mat4, negCameraPosMatrix: Mat4) {
+    const context = painter.context;
+    for (const mesh of node.meshes) {
+        const definesValues = [];
+        const dynamicBuffers = [];
+        setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+        const isShadowPass = painter.renderPass === 'shadow';
+        if (isShadowPass) {
+            return;
+        }
+
+        if (!(modelTraits & ModelTraits.HasMapboxMeshFeatures)) {
+            definesValues.push('DIFFUSE_SHADED');
+        }
+
+        const modelMatrix = [...tileMatrix];
+        mat4.multiply(modelMatrix, modelMatrix, node.matrix);
+
+        let fogMatrixArray = null;
+        if (painter.style.fog) {
+            const fogMatrix = fogMatrixForModel(modelMatrix, painter.transform);
+            definesValues.push('FOG');
+            fogMatrixArray = new Float32Array(fogMatrix);
+        }
+        const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+
+        const lightingMatrix = mat4.multiply([], zScaleMatrix, modelMatrix);
+        mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
+        const normalMatrix = mat4.invert([], lightingMatrix);
+        mat4.transpose(normalMatrix, normalMatrix);
+        mat4.scale(normalMatrix, normalMatrix, [1.0, -1.0, 1.0]);
+
+        const worldViewProjection = mat4.multiply([], painter.transform.projMatrix, modelMatrix);
+
+        const shadowRenderer = painter.shadowRenderer;
+        if (!isShadowPass && shadowRenderer) {
+            shadowRenderer.setupShadowsFromMatrix(modelMatrix, program);
+        }
+
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), fogMatrixArray);
+
+        const material = mesh.material;
+        const pbr = material.pbrMetallicRoughness;
+        // These values were taken from the tilesets used for testing
+        pbr.metallicFactor = 0.9;
+        pbr.roughnessFactor = 0.5;
+
+        const uniformValues = modelUniformValues(
+                new Float32Array(worldViewProjection),
+                new Float32Array(lightingMatrix),
+                new Float32Array(normalMatrix),
+                painter,
+                layer.paint.get('model-opacity'),
+                pbr.baseColorFactor,
+                material.emissiveFactor,
+                pbr.metallicFactor,
+                pbr.roughnessFactor,
+                material,
+                layer
+        );
+        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+
+        program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.backCCW,
+            uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+            undefined, dynamicBuffers);
+        return;
+    }
+}
+
+function encodeEmissionToByte(emission) {
+    const clampedEmission = clamp(emission, 0, 2);
+    return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
+}
+
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4) {
+    let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
+    let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
+    let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
+
+    if (colorMix[3] > 0) {
+        r = interpolate(r, 255 * colorMix[0], colorMix[3]);
+        g = interpolate(g, 255 * colorMix[1], colorMix[3]);
+        b = interpolate(b, 255 * colorMix[2], colorMix[3]);
+    }
+
+    const a0 = (r << 8) | g;
+    const a1 = (b << 8) | Math.floor(rmea[3] * 255);
+    const a2 = (encodeEmissionToByte(rmea[2]) << 8) | ((rmea[0] * 15) << 4) | (rmea[1] * 15);
+
+    const a3 = (255 << 8) | 255;
+
+    vertexArray.emplaceBack(a0, a1, a2, a3, 0, 1, 1);
+}
+
+const defaultColorMix = [1, 1, 1, 0];
+
+function updateNodeFeatureVertices(nodeInfo, context) {
+    const node = nodeInfo.node;
+    for (const mesh of node.meshes) {
+        if (!mesh.featureData) continue;
+        // initialize featureArray
+        mesh.featureArray = new FeatureVertexArray();
+        for (const feature of mesh.featureData) {
+            const id = feature & 0xFFFF;
+            const partId = (id & 0xf) < 8 ? (id & 0xf) : 0;
+            const featureColor = (feature >> 16) & 0xFFFF;
+            const rmea = nodeInfo.evaluatedRMEA[partId];
+            const evaluatedColor = nodeInfo.evaluatedColor ? nodeInfo.evaluatedColor[partId] : defaultColorMix;
+            addPBRVertex(mesh.featureArray, featureColor, evaluatedColor, rmea);
+        }
+        // upload PBR buffer, maybe not the best place to do it
+        mesh.pbrBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, false, true);
+    }
+}
+
+function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
+    const exaggeration = painter.terrain ? painter.terrain.exaggeration() : 0;
+    for (const coord of coords) {
+        const tile = source.getTile(coord);
+        const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
+        if (!bucket) continue;
+        const nodesInfo = bucket.getNodesInfo();
+        // Check for terrainTile
+        let demTile;
+        let canonicalDem;
+        if (painter.terrain && exaggeration > 0) {
+            const terrain = painter.terrain;
+            demTile = terrain.findDEMTileFor(coord);
+            if (demTile && demTile.tileID) {
+                canonicalDem = demTile.tileID.canonical;
+            }
+        }
+        const shouldReEvaluate = bucket.needsReEvaluation(painter, canonicalDem);
+        if (!shouldReEvaluate) continue;
+        for (const nodeInfo of nodesInfo) {
+            if (!nodeInfo.node.meshes) continue;
+            updateNodeFeatureVertices(nodeInfo, painter.context);
+        }
+    }
+}
+
+function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
+    const tr = painter.transform;
+    if (tr.projection.name !== 'mercator') {
+        warnOnce(`Drawing 3D landmark models for ${tr.projection.name} projection is not yet implemented`);
+        return;
+    }
+
+    const mercCameraPos = (painter.transform.getFreeCameraOptions().position: any);
+    const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    vec3.negate(cameraPos, cameraPos);
+    // compute model parameters matrices
+    const negCameraPosMatrix = mat4.identity([]);
+    const metersPerPixel = getMetersPerPixelAtLatitude(tr.center.lat, tr.zoom);
+    const pixelsPerMeter = 1.0 / metersPerPixel;
+    const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, pixelsPerMeter]);
+    mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPos);
+
+    // Evaluate bucket and prepare for rendering
+    prepareBatched(painter, source, layer, coords);
+
+    for (const coord of coords) {
+        const tile = source.getTile(coord);
+        const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
+        if (!bucket) continue;
+        const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
+        const nodesInfo = bucket.getNodesInfo();
+        for (const nodeInfo of nodesInfo) {
+            if (nodeInfo.hiddenByReplacement) continue;
+            if (!nodeInfo.node.meshes) continue;
+            drawBatchedNode(nodeInfo.node, bucket.modelTraits, painter, layer, coord, tileMatrix, zScaleMatrix, negCameraPosMatrix);
         }
     }
 }

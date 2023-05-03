@@ -175,7 +175,10 @@ export type ImageSourceSpecification = {|
 |}
 
 export type ModelSourceSpecification = {|
-    "type": "model" | "batched-model"
+    "type": "model" | "batched-model",
+    "maxzoom"?: number,
+    "minzoom"?: number,
+    "tiles"?: Array<string>
 |}
 
 export type SourceSpecification =
