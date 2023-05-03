@@ -30,4 +30,10 @@ export const instanceAttributes: StructArrayLayout = createLayout([
     {name: 'a_normal_matrix3',  components: 4, type: 'Float32'}
 ]);
 
+export const featureAttributes: StructArrayLayout = createLayout([
+    // pbr encoding: | color.rgba (4 bytes) | emissivity (a byte) | roughness (a nibble) | metallic (a nibble)
+    {name: 'a_pbr', components: 4, type: 'Uint16'},
+    {name: 'a_heightBasedEmissiveStrength', components: 3, type: 'Float32'}
+]);
+
 export const {members, size, alignment} = modelAttributes;

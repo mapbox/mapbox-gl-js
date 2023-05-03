@@ -424,7 +424,7 @@ vec4 finalColor;
     // For b3dm tiles where models contains occlusion textures we interpret them similarly to how
     // we handle baseColorTexture as an alpha mask (i.e one channel).
     // This is why we read the alpha component here (refer to getBaseColor to see how baseColorTexture.w is used to implement alpha masking).
-    float ao = (texture2D(u_occlusionTexture, uv_2f).w - 1.0) * u_aoIntensity + 1.0;
+    float ao = (texture2D(u_occlusionTexture, uv_2f).r - 1.0) * u_aoIntensity + 1.0;
     diffuse *= ao;
 #endif
     finalColor = vec4(diffuse, 1.0) * u_opacity;
@@ -437,7 +437,6 @@ vec4 finalColor;
     float ao = (texture2D(u_occlusionTexture, uv_2f).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
-
     // Emission
     vec4 emissive = u_emissiveFactor;
 

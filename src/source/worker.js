@@ -6,6 +6,7 @@ import StyleLayerIndex from '../style/style_layer_index.js';
 import VectorTileWorkerSource from './vector_tile_worker_source.js';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source.js';
 import GeoJSONWorkerSource from './geojson_worker_source.js';
+import Tiled3dModelWorkerSource from '../../3d-style/source/tiled_3d_model_worker_source.js';
 import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin.js';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
@@ -61,7 +62,8 @@ export default class Worker {
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource
+            geojson: GeoJSONWorkerSource,
+            'batched-model': Tiled3dModelWorkerSource
         };
 
         // [mapId][sourceType][sourceName] => worker source instance

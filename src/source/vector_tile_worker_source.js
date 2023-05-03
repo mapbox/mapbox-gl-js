@@ -16,7 +16,7 @@ import type {
     RequestedTileParameters,
     WorkerTileCallback,
     TileParameters
-} from '../source/worker_source.js';
+} from './worker_source.js';
 
 import type Actor from '../util/actor.js';
 import type StyleLayerIndex from '../style/style_layer_index.js';

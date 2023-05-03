@@ -4,6 +4,7 @@ import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
 
 import type {Vec3, Mat4} from 'gl-matrix';
+import {register} from './web_worker_transfer.js';
 
 class Ray {
     pos: Vec3;
@@ -305,6 +306,9 @@ class Aabb {
     }
 
 }
+
+register(Aabb, 'Aabb');
+
 export {
     Aabb,
     Frustum,

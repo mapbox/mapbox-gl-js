@@ -20,16 +20,16 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type PaintProps = {|
     "background-color": DataConstantProperty<Color>,
-    "background-emissive-strength": DataConstantProperty<number>,
     "background-pattern": DataConstantProperty<?ResolvedImage>,
     "background-opacity": DataConstantProperty<number>,
+    "background-emissive-strength": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
     "background-color": new DataConstantProperty(styleSpec["paint_background"]["background-color"]),
-    "background-emissive-strength": new DataConstantProperty(styleSpec["paint_background"]["background-emissive-strength"]),
     "background-pattern": new DataConstantProperty(styleSpec["paint_background"]["background-pattern"]),
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),
+    "background-emissive-strength": new DataConstantProperty(styleSpec["paint_background"]["background-emissive-strength"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

@@ -1098,6 +1098,47 @@ class StructArrayLayout16f64 extends StructArray {
 StructArrayLayout16f64.prototype.bytesPerElement = 64;
 register(StructArrayLayout16f64, 'StructArrayLayout16f64');
 
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Uint16[4]
+ * [8]: Float32[3]
+ *
+ * @private
+ */
+class StructArrayLayout4ui3f20 extends StructArray {
+    uint8: Uint8Array;
+    uint16: Uint16Array;
+    float32: Float32Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5, v6);
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number): number {
+        const o2 = i * 10;
+        const o4 = i * 5;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.float32[o4 + 2] = v4;
+        this.float32[o4 + 3] = v5;
+        this.float32[o4 + 4] = v6;
+        return i;
+    }
+}
+
+StructArrayLayout4ui3f20.prototype.bytesPerElement = 20;
+register(StructArrayLayout4ui3f20, 'StructArrayLayout4ui3f20');
+
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1338,6 +1379,7 @@ export {
     StructArrayLayout1ui2,
     StructArrayLayout2f8,
     StructArrayLayout16f64,
+    StructArrayLayout4ui3f20,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout4i8 as RasterBoundsArray,
@@ -1375,5 +1417,6 @@ export {
     StructArrayLayout2f8 as TexcoordLayoutArray,
     StructArrayLayout3f12 as NormalLayoutArray,
     StructArrayLayout16f64 as InstanceVertexArray,
+    StructArrayLayout4ui3f20 as FeatureVertexArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

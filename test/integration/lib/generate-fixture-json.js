@@ -82,8 +82,9 @@ export function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
     const jsonPaths = path.join(basePath, '/**/*.json');
     const imagePaths = path.join(basePath, '/**/*.png');
     const modelPaths = path.join(basePath, '/**/*.gltf');
+    const landmarkPaths = path.join(basePath, '/**/*.b3dm');
 
-    return [jsonPaths, imagePaths, modelPaths];
+    return [jsonPaths, imagePaths, modelPaths, landmarkPaths];
 }
 
 function parseJsonFromFile(filePath) {

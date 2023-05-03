@@ -207,7 +207,7 @@ export function parseUsedPreprocessorDefines(source, defines) {
 // Expand #pragmas to #ifdefs.
 export function compile(fragmentSource, vertexSource) {
     const pragmaRegex = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
-    const attributeRegex = /attribute (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
+    const attributeRegex = /attribute(\S*) (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
 
     let staticAttributes = vertexSource.match(attributeRegex);
     // remove duplicates as Safari does not support lookbehind in regex
