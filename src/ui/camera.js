@@ -90,8 +90,7 @@ export type CameraOptions = {
     bearing?: number,
     pitch?: number,
     around?: LngLatLike,
-    padding?: PaddingOptions,
-    offset?: PointLike
+    padding?: PaddingOptions
 };
 
 export type FullCameraOptions = {
@@ -192,6 +191,7 @@ class Camera extends Evented {
     _easeStart: number;
     _easeOptions: {duration: number, easing: (_: number) => number};
     _easeId: string | void;
+    _respectPrefersReducedMotion: boolean;
 
     _onEaseFrame: ?(_: number) => Transform | void;
     _onEaseEnd: ?(easeId?: string) => void;
@@ -202,12 +202,13 @@ class Camera extends Evented {
 
     +_preloadTiles: (transform: Transform | Array<Transform>, callback?: Callback<any>) => any;
 
-    constructor(transform: Transform, options: {bearingSnap: number}) {
+    constructor(transform: Transform, options: {bearingSnap: number, respectPrefersReducedMotion: ?boolean}) {
         super();
         this._moving = false;
         this._zooming = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
+        this._respectPrefersReducedMotion = options.respectPrefersReducedMotion !== false;
 
         bindAll(['_renderFrameCallback'], this);
 
@@ -1255,7 +1256,7 @@ class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) options.duration = 0;
+        if (options.animate === false || this._prefersReducedMotion(options)) options.duration = 0;
 
         const tr = this.transform,
             startZoom = this.getZoom(),
@@ -1499,7 +1500,7 @@ class Camera extends Evented {
      */
     flyTo(options: EasingOptions, eventData?: Object): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
-        if (!options.essential && browser.prefersReducedMotion) {
+        if (this._prefersReducedMotion(options)) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
             return this.jumpTo(coercedOptions, eventData);
         }
@@ -1757,6 +1758,12 @@ class Camera extends Evented {
         center.lng +=
             delta > 180 ? -360 :
             delta < -180 ? 360 : 0;
+    }
+
+    _prefersReducedMotion(options: ?AnimationOptions): boolean {
+        const essential = options && options.essential;
+        const prefersReducedMotion = this._respectPrefersReducedMotion && browser.prefersReducedMotion;
+        return prefersReducedMotion && !essential;
     }
 
     // emulates frame function for some transform

@@ -70,7 +70,7 @@ export default class HandlerInertia {
     }
 
     _onMoveEnd(panInertiaOptions?: DragPanOptions): ?(EasingOptions & {easeId?: string}) {
-        if (browser.prefersReducedMotion) {
+        if (this._map._prefersReducedMotion()) {
             return;
         }
 
