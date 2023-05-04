@@ -1824,6 +1824,18 @@ class Map extends Camera {
         return this.style.querySourceFeatures(sourceId, parameters);
     }
 
+    /**
+     * Determines if the given point is located on a visible map surface.
+     *
+     * @param {PointLike} point - The point to be checked, specified as an array of two numbers representing the x and y coordinates, or as a {@link https://docs.mapbox.com/mapbox-gl-js/api/geography/#point|Point} object.
+     * @returns {boolean} Returns `true` if the point is on the visible map surface, otherwise returns `false`.
+     * @example
+     * const pointOnSurface = map.isPointOnSurface([100, 200]);
+     */
+    isPointOnSurface(point: PointLike): boolean {
+        return !this.transform.isPointAboveHorizon(Point.convert(point));
+    }
+
     /** @section {Working with styles} */
 
     /**

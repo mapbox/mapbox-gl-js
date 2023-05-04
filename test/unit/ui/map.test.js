@@ -4044,6 +4044,59 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.only('#isPointOnSurface', (t) => {
+
+        t.test('Mercator', (t) => {
+            const map = createMap(t, {
+                zoom: 0,
+                projection: 'mercator'
+            });
+
+            t.ok(map.isPointOnSurface([100, 100]), 'center of the map');
+            t.notOk(map.isPointOnSurface([-100, -100]), 'top left outside of the map');
+            t.notOk(map.isPointOnSurface([300, 300]), 'bottom right outside of the map');
+
+            // With pitch
+            map.setPitch(90);
+            t.ok(map.isPointOnSurface([100, 100]), 'center of the map');
+            t.notOk(map.isPointOnSurface([100, 99]), 'above the horizon');
+
+            t.end();
+        });
+
+        t.test('Globe', (t) => {
+            const map = createMap(t, {
+                zoom: 0,
+                projection: 'globe'
+            });
+
+            // On the Globe
+            t.ok(map.isPointOnSurface([45, 45]));
+            t.ok(map.isPointOnSurface([135, 45]));
+            t.ok(map.isPointOnSurface([135, 135]));
+            t.ok(map.isPointOnSurface([45, 135]));
+
+            // Off the Globe
+            t.notOk(map.isPointOnSurface([25, 25]));
+            t.notOk(map.isPointOnSurface([175, 25]));
+            t.notOk(map.isPointOnSurface([175, 175]));
+            t.notOk(map.isPointOnSurface([25, 175]));
+
+            // North pole
+            map.setCenter([0, 90]);
+            t.ok(map.isPointOnSurface([100, 100]));
+
+            // North pole with pitch
+            map.setPitch(90);
+            t.ok(map.isPointOnSurface([100, 100]));
+            t.notOk(map.isPointOnSurface([100, 99]));
+
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.end();
 });
 
