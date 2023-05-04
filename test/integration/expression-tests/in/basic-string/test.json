@@ -13,7 +13,8 @@
     [{}, {"properties": {"substr": "low", "str": null}}],
     [{}, {"properties": {"substr": "", "str": "helloworld"}}],
     [{}, {"properties": {"substr": "helloworld", "str": ""}}],
-    [{}, {"properties": {"substr": "", "str": ""}}]
+    [{}, {"properties": {"substr": "", "str": ""}}],
+    [{}, {"properties": {"substr": "鶴見区", "str": "横浜市鶴見区"}}]
   ],
   "expected": {
     "compiled": {
@@ -32,6 +33,7 @@
       false,
       true,
       false,
+      true,
       true
     ],
     "serialized": [
