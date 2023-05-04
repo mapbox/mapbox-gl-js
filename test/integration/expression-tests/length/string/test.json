@@ -1,6 +1,9 @@
 {
   "expression": ["length", ["string", ["get", "x"]]],
-  "inputs": [[{}, {"properties": {"x": "a string"}}]],
+  "inputs": [
+    [{}, {"properties": {"x": "a string"}}],
+    [{}, {"properties": {"x": "横浜市鶴見区"}}]
+  ],
   "expected": {
     "compiled": {
       "result": "success",
@@ -8,7 +11,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [8],
+    "outputs": [8, 6],
     "serialized": ["length", ["string", ["get", "x"]]]
   }
 }

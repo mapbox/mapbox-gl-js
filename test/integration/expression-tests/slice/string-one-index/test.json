@@ -4,7 +4,8 @@
     [{}, { "properties": { "val": "0123456789", "index": 0 } }],
     [{}, { "properties": { "val": "0123456789", "index": 4 } }],
     [{}, { "properties": { "val": "0123456789", "index": 99 } }],
-    [{}, { "properties": { "val": "0123456789", "index": -2 } }]
+    [{}, { "properties": { "val": "0123456789", "index": -2 } }],
+    [{}, { "properties": { "val": "横浜市", "index": 2 } }]
   ],
   "expected": {
     "compiled": {
@@ -13,7 +14,7 @@
       "isZoomConstant": true,
       "type": "value"
     },
-    "outputs": ["0123456789", "456789", "", "89"],
+    "outputs": ["0123456789", "456789", "", "89", "市"],
     "serialized": ["slice", ["get", "val"], ["number", ["get", "index"]]]
   }
 }
