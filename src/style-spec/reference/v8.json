@@ -7885,6 +7885,37 @@
         }
       },
       "transition": true
+    },
+    "model-height-based-emissive-strength-multiplier": {
+      "type": "array",
+      "default": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "length": 5,
+      "value": "number",
+      "doc": "Emissive strength multiplier along model height (gradient begin, gradient end, value at begin, value at end, gradient curve power (logarithmic scale, curve power = pow(10, val)).",
+      "property-type": "data-driven",
+      "expression": {
+        "interpolated": true,
+        "parameters": ["feature", "feature-state", "measure-light"]
+      },
+      "sdk-support": {
+          "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "transition": true
     }
   },
   "transition": {

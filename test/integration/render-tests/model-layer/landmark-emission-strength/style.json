@@ -1,0 +1,225 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00025,
+      "width": 1024,
+      "height": 1024,
+      "operations": [
+        [
+          "setPaintProperty",
+          "landmarks",
+          "model-emissive-strength",
+          [
+            "match",
+            [
+              "get",
+              "part"
+            ],
+            "door",
+            0.0,
+            "logo",
+            0.0,
+            "window",
+            1.0,
+            0.0
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    }
+  ],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.b3dm"
+      ]
+    }
+  },
+  "pitch": 70,
+  "zoom": 17.85,
+  "bearing": 126,
+  "center": [
+    11.5605,
+    48.1762
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878906,
+            233.00001525878906,
+            225.00001525878906,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878906,
+            228.00001525878906,
+            224.00001525878906,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "minzoom": 14.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "paint": {
+        "model-color-mix-intensity": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "logo",
+          0.0,
+          "windows",
+          1.0,
+          0.9
+        ],
+        "model-emissive-strength": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          0.0,
+          "logo",
+          0.0,
+          "window",
+          1.0,
+          0.0
+        ],
+        "model-height-based-emissive-strength-multiplier": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "window",
+          [
+            "literal",
+            [
+              0.0,
+              1.0,
+              0.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            "literal",
+            [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "model-scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "model-color": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          [
+            "rgba",
+            0.0,
+            255.0,
+            204.0,
+            1.0
+          ],
+          "roof",
+          [
+            "rgba",
+            252.49998474121094,
+            255.0,
+            0.0,
+            1.0
+          ],
+          "window",
+          [
+            "rgba",
+            255.0,
+            190.0,
+            0.0,
+            1.0
+          ],
+          [
+            "rgba",
+            244.9999237060547,
+            223.9828338623047,
+            102.08338165283203,
+            1.0
+          ]
+        ],
+        "model-opacity": 1.0,
+        "model-roughness": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "window",
+          0.4,
+          1.0
+        ]
+      },
+      "id": "landmarks"
+    }
+  ]
+}

@@ -28,14 +28,7 @@ function getNodeHeight(node: Node): number {
     return height;
 }
 
-export const PartNames = {
-    wall : 1,
-    door : 2,
-    roof : 3,
-    window : 4,
-    lamp : 5,
-    logo : 6
-};
+export const PartNames = ['', 'wall', 'door', 'roof', 'window', 'lamp', 'logo'];
 
 class Tiled3dModelFeature {
     feature: EvaluationFeature;
@@ -44,9 +37,8 @@ class Tiled3dModelFeature {
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
     node: Node;
-    id: CanonicalTileID;
-    constructor(node: Node, tileId: CanonicalTileID) {
-        this.id = tileId;
+    emissionHeightBasedParams: Array<[number, number, number, number, number]>;
+    constructor(node: Node) {
         this.node = node;
         this.evaluatedRMEA = [[1, 0, 0, 1],
             [1, 0, 0, 1],   // wall
@@ -57,8 +49,10 @@ class Tiled3dModelFeature {
             [1, 0, 0, 1]];  // logo
         this.hiddenByReplacement = false;
         this.evaluatedScale = [1, 1, 1];
+        this.evaluatedColor = [];
+        this.emissionHeightBasedParams = [];
         // Needs to calculate geometry
-        this.feature = {type: 'Point', geometry: [], properties: {'height' : getNodeHeight(node)}};
+        this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
     }
 }
 
@@ -128,11 +122,37 @@ class Tiled3dModelBucket implements Bucket {
         return false;
     }
 
+    evaluate(layer: ModelStyleLayer) {
+        const nodesInfo = this.getNodesInfo();
+        for (const nodeInfo of nodesInfo) {
+            const evaluationFeature = nodeInfo.feature;
+            const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
+            if (hasFeatures) {
+                for (let i = 0; i < PartNames.length; i++) {
+                    const part = PartNames[i];
+                    if (part.length) {
+                        evaluationFeature.properties['part'] = part;
+                    }
+                    const canonical = this.id.canonical;
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical);
+                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
+                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, {}, canonical);
+                    // For the first version metallic is not styled
+                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedRMEA[i][3] = color.a;
+                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
+                }
+                delete evaluationFeature.properties['part'];
+            }
+        }
+    }
+
     getNodesInfo(): Array<Tiled3dModelFeature> {
         if (!this.nodesInfo) {
             this.nodesInfo = [];
             for (const node of this.nodes) {
-                this.nodesInfo.push(new Tiled3dModelFeature(node, this.id.canonical));
+                this.nodesInfo.push(new Tiled3dModelFeature(node));
             }
         }
         return this.nodesInfo;
