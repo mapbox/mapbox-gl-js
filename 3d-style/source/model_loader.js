@@ -294,6 +294,9 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
     if (nodeDesc.mesh !== undefined) {
         node.meshes = meshes[nodeDesc.mesh];
     }
+    if (nodeDesc.extras && nodeDesc.extras.id) {
+        node.id = nodeDesc.extras.id;
+    }
     if (nodeDesc.children) {
         const children: Node[] = [];
         for (const childNodeIdx of nodeDesc.children) {

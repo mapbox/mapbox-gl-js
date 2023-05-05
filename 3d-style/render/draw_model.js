@@ -555,7 +555,7 @@ function encodeEmissionToByte(emission) {
     return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
 }
 
-function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4) {
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams, zMin: number, zMax: number) {
     let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
     let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
     let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
@@ -570,12 +570,26 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     const a1 = (b << 8) | Math.floor(rmea[3] * 255);
     const a2 = (encodeEmissionToByte(rmea[2]) << 8) | ((rmea[0] * 15) << 4) | (rmea[1] * 15);
 
-    const a3 = (255 << 8) | 255;
+    const emissionMultiplierStart = clamp(heightBasedEmissionMultiplierParams[0], 0, 1);
+    const emissionMultiplierFinish = clamp(heightBasedEmissionMultiplierParams[1], 0, 1);
+    const emissionMultiplierValueStart = clamp(heightBasedEmissionMultiplierParams[2], 0, 1);
+    const emissionMultiplierValueFinish = clamp(heightBasedEmissionMultiplierParams[3], 0, 1);
 
-    vertexArray.emplaceBack(a0, a1, a2, a3, 0, 1, 1);
+    if (emissionMultiplierStart !== emissionMultiplierFinish && zMax !== zMin &&
+        emissionMultiplierFinish !== emissionMultiplierStart) {
+        const zRange = zMax - zMin;
+        const b0 = 1.0 / (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
+        const b1 = -(zMin + zRange * emissionMultiplierStart) /
+                       (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
+        const power = clamp(heightBasedEmissionMultiplierParams[4], -1, 1);
+        const b2 = Math.pow(10, power);
+        const a3 = (emissionMultiplierValueStart * 255.0 << 8) | (emissionMultiplierValueFinish * 255.0);
+        vertexArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
+    } else {
+        const a3 = (255 << 8) | 255;
+        vertexArray.emplaceBack(a0, a1, a2, a3, 0, 1, 1);
+    }
 }
-
-const defaultColorMix = [1, 1, 1, 0];
 
 function updateNodeFeatureVertices(nodeInfo, context) {
     const node = nodeInfo.node;
@@ -588,10 +602,10 @@ function updateNodeFeatureVertices(nodeInfo, context) {
             const partId = (id & 0xf) < 8 ? (id & 0xf) : 0;
             const featureColor = (feature >> 16) & 0xFFFF;
             const rmea = nodeInfo.evaluatedRMEA[partId];
-            const evaluatedColor = nodeInfo.evaluatedColor ? nodeInfo.evaluatedColor[partId] : defaultColorMix;
-            addPBRVertex(mesh.featureArray, featureColor, evaluatedColor, rmea);
+            const evaluatedColor = nodeInfo.evaluatedColor[partId];
+            const emissionParams = nodeInfo.emissionHeightBasedParams[partId];
+            addPBRVertex(mesh.featureArray, featureColor, evaluatedColor, rmea, emissionParams, mesh.aabb.min[2], mesh.aabb.max[2]);
         }
-        // upload PBR buffer, maybe not the best place to do it
         mesh.pbrBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, false, true);
     }
 }
@@ -617,6 +631,8 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         if (!shouldReEvaluate) continue;
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
+            bucket.evaluate(layer);
+
             updateNodeFeatureVertices(nodeInfo, painter.context);
         }
     }
