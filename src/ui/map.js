@@ -1834,7 +1834,7 @@ class Map extends Camera {
      */
     isPointOnSurface(point: PointLike): boolean {
         const {name} = this.transform.projection;
-        if (name !== 'globe' || name !== 'mercator') {
+        if (name !== 'globe' && name !== 'mercator') {
             warnOnce(`${name} projection does not support isPointOnSurface, this API may behave unexpectedly.`);
         }
 
