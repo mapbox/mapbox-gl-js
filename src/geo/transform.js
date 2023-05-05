@@ -1365,7 +1365,6 @@ class Transform {
         if (p.y < 0 || p.y > this.height || p.x < 0 || p.x > this.width) return false;
         if (this.elevation) return !this.isPointAboveHorizon(p);
         const coord = this.pointCoordinate(p);
-        console.log(coord);
         return coord.y >= 0 && coord.y <= 1;
     }
 

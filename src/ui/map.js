@@ -1833,6 +1833,10 @@ class Map extends Camera {
      * const pointOnSurface = map.isPointOnSurface([100, 200]);
      */
     isPointOnSurface(point: PointLike): boolean {
+        if (this.transform.projection.name !== 'globe' || this.transform.projection.name !== 'mercator') {
+            warnOnce(`${this.transform.projection.name} projection do not support isPointOnSurface API, this API may behave unexpectedly.`);
+        }
+
         return this.transform.isPointOnSurface(Point.convert(point));
     }
 
