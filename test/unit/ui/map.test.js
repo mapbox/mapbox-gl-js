@@ -4044,7 +4044,20 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.only('#isPointOnSurface', (t) => {
+    t.test('#isPointOnSurface', (t) => {
+
+        t.test('Off the map', (t) => {
+            const map = createMap(t);
+
+            t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
+            t.equal(map.isPointOnSurface([0, 0]), true, 'top left of the map');
+            t.equal(map.isPointOnSurface([200, 200]), true, 'bottom right of the map');
+
+            t.equal(map.isPointOnSurface([-100, -100]), false, 'top left outside of the map');
+            t.equal(map.isPointOnSurface([300, 300]), false, 'bottom right outside of the map');
+
+            t.end();
+        });
 
         t.test('Mercator', (t) => {
             const map = createMap(t, {
@@ -4052,14 +4065,11 @@ test('Map', (t) => {
                 projection: 'mercator'
             });
 
-            t.ok(map.isPointOnSurface([100, 100]), 'center of the map');
-            t.notOk(map.isPointOnSurface([-100, -100]), 'top left outside of the map');
-            t.notOk(map.isPointOnSurface([300, 300]), 'bottom right outside of the map');
+            t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
 
-            // With pitch
             map.setPitch(90);
-            t.ok(map.isPointOnSurface([100, 100]), 'center of the map');
-            t.notOk(map.isPointOnSurface([100, 99]), 'above the horizon');
+            t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
+            t.equal(map.isPointOnSurface([100, 85]), false, 'above the horizon');
 
             t.end();
         });
@@ -4070,28 +4080,30 @@ test('Map', (t) => {
                 projection: 'globe'
             });
 
-            // On the Globe
-            t.ok(map.isPointOnSurface([45, 45]));
-            t.ok(map.isPointOnSurface([135, 45]));
-            t.ok(map.isPointOnSurface([135, 135]));
-            t.ok(map.isPointOnSurface([45, 135]));
+            map.on('load', () => {
+                // On the Globe
+                t.equal(map.isPointOnSurface([45, 45]), true, 'top left on the globe');
+                t.equal(map.isPointOnSurface([135, 45]), true, 'top right on the globe');
+                t.equal(map.isPointOnSurface([135, 135]), true, 'bottom right on the globe');
+                t.equal(map.isPointOnSurface([45, 135]), true, 'bottom left on the globe');
 
-            // Off the Globe
-            t.notOk(map.isPointOnSurface([25, 25]));
-            t.notOk(map.isPointOnSurface([175, 25]));
-            t.notOk(map.isPointOnSurface([175, 175]));
-            t.notOk(map.isPointOnSurface([25, 175]));
+                // Off the Globe
+                t.equal(map.isPointOnSurface([25, 25]), false, 'top left off the globe');
+                t.equal(map.isPointOnSurface([175, 25]), false, 'top right off the globe');
+                t.equal(map.isPointOnSurface([175, 175]), false, 'bottom right off the globe');
+                t.equal(map.isPointOnSurface([25, 175]), false, 'bottom left off the globe');
 
-            // North pole
-            map.setCenter([0, 90]);
-            t.ok(map.isPointOnSurface([100, 100]));
+                // North pole
+                map.setCenter([0, 90]);
+                t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
 
-            // North pole with pitch
-            map.setPitch(90);
-            t.ok(map.isPointOnSurface([100, 100]));
-            t.notOk(map.isPointOnSurface([100, 99]));
+                // North pole with pitch
+                map.setPitch(90);
+                t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
+                t.equal(map.isPointOnSurface([100, 85]), false, 'above the horizon');
 
-            t.end();
+                t.end();
+            });
         });
 
         t.end();

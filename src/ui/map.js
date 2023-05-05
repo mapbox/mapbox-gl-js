@@ -1833,7 +1833,7 @@ class Map extends Camera {
      * const pointOnSurface = map.isPointOnSurface([100, 200]);
      */
     isPointOnSurface(point: PointLike): boolean {
-        return !this.transform.isPointAboveHorizon(Point.convert(point));
+        return this.transform.isPointOnSurface(Point.convert(point));
     }
 
     /** @section {Working with styles} */
