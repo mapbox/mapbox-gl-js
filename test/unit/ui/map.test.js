@@ -4102,6 +4102,15 @@ test('Map', (t) => {
                 t.equal(map.isPointOnSurface([100, 100]), true, 'center of the map');
                 t.equal(map.isPointOnSurface([100, 85]), false, 'above the horizon');
 
+                map.setZoom(5);
+                map.setCenter([0, 0]);
+                t.equal(map.isPointOnSurface([100, 100]), true, 'on the globe on zoom 5');
+                t.equal(map.isPointOnSurface([100, 85]), false, 'above the horizon on zoom 5');
+
+                map.setZoom(6);
+                t.equal(map.isPointOnSurface([100, 100]), true, 'on the globe on zoom 6');
+                t.equal(map.isPointOnSurface([100, 85]), false, 'above the horizon on zoom 6');
+
                 t.end();
             });
         });

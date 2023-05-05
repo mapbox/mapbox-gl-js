@@ -1363,7 +1363,7 @@ class Transform {
      */
     isPointOnSurface(p: Point): boolean {
         if (p.y < 0 || p.y > this.height || p.x < 0 || p.x > this.width) return false;
-        if (this.elevation) return !this.isPointAboveHorizon(p);
+        if (this.elevation || this.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) return !this.isPointAboveHorizon(p);
         const coord = this.pointCoordinate(p);
         return coord.y >= 0 && coord.y <= 1;
     }
