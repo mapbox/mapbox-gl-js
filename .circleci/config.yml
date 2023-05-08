@@ -186,7 +186,7 @@ linux-defaults: &linux-defaults
 mac-defaults: &mac-defaults
   macos:
     # https://circleci.com/docs/using-macos/#supported-xcode-versions
-    xcode: 14.2.0 # macOS 12.6 (Monterey)
+    xcode: 14.3.0 # macOS 13.2 (Ventura)
   environment:
     HOMEBREW_NO_AUTO_UPDATE: 1
   working_directory: ~/mapbox-gl-js
