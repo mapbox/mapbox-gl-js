@@ -1355,6 +1355,20 @@ class Transform {
     }
 
     /**
+     * Determines if the given point is located on a visible map surface.
+     *
+     * @param {Point} p
+     * @returns {boolean}
+     * @private
+     */
+    isPointOnSurface(p: Point): boolean {
+        if (p.y < 0 || p.y > this.height || p.x < 0 || p.x > this.width) return false;
+        if (this.elevation || this.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) return !this.isPointAboveHorizon(p);
+        const coord = this.pointCoordinate(p);
+        return coord.y >= 0 && coord.y <= 1;
+    }
+
+    /**
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
      * @param {boolean} sampleTerrainIn3D in 3D mode (terrain enabled), sample elevation for the point.
