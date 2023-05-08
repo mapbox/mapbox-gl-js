@@ -60,6 +60,7 @@ export interface Source {
 
     fire(event: Event): mixed;
     on(type: MapEvent, listener: (Object) => any): Evented;
+    off(type: MapEvent, listener: (Object) => any): Evented;
     setEventedParent(parent: ?Evented, data?: Object | () => Object): Evented;
 
     +onAdd?: (map: Map) => void;

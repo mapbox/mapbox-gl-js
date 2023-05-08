@@ -994,6 +994,17 @@ class SourceCache extends Evented {
      * @returns {Object} Returns `this` | Promise.
      */
     _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+        if (!this._sourceLoaded) {
+            const waitUntilSourceLoaded = () => {
+                if (!this._sourceLoaded) return;
+                this._source.off('data', waitUntilSourceLoaded);
+                this._preloadTiles(transform, callback);
+            };
+
+            this._source.on('data', waitUntilSourceLoaded);
+            return;
+        }
+
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 
@@ -1020,10 +1031,9 @@ class SourceCache extends Evented {
         }
 
         const tileIDs = Array.from(coveringTilesIDs.values());
-        const tileZoom = this.transform ? this.transform.tileZoom : this.map.transform.tileZoom;
 
         asyncAll(tileIDs, (tileID, done) => {
-            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), tileZoom, this.map.painter, this._isRaster);
+            const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, this.map.painter, this._isRaster);
             this._loadTile(tile, (err) => {
                 if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
                 done(err, tile);
