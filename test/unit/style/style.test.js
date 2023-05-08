@@ -54,6 +54,8 @@ class StubMap extends Evented {
         this._prioritizeAndUpdateProjection = () => {};
     }
 
+    setCamera() {}
+
     _getMapId() {
         return 1;
     }

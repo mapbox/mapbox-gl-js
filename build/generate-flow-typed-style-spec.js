@@ -207,6 +207,8 @@ ${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${flowObjectDeclaration('FogSpecification', spec.fog)}
 
+${flowObjectDeclaration('CameraSpecification', spec.camera)}
+
 ${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}

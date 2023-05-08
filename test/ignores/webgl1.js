@@ -18,7 +18,15 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/interior",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-height",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/fixed-height",
-    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/floating-base"
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/floating-base",
+
+    // Orthographic camera projection tests with shadows
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-high-pitch",
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-low-pitch",
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-terrain-zero-pitch",
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-text",
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-viewport-padding",
+    "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-zero-pitch",
 ];
 
 export default {todo, skip};

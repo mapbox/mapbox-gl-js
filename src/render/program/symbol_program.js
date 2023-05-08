@@ -207,7 +207,7 @@ const symbolIconUniformValues = (
         'u_is_size_feature_constant': +(functionType === 'constant' || functionType === 'camera'),
         'u_size_t': size ? size.uSizeT : 0,
         'u_size': size ? size.uSize : 0,
-        'u_camera_to_center_distance': transform.cameraToCenterDistance,
+        'u_camera_to_center_distance': transform.getCameraToCenterDistance(projection),
         'u_rotate_symbol': +rotateInShader,
         'u_aspect_ratio': transform.width / transform.height,
         'u_fade_change': painter.options.fadeDuration ? painter.symbolFadeChange : 1,
@@ -265,7 +265,7 @@ const symbolSDFUniformValues = (
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
         texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
-        'u_gamma_scale': pitchWithMap ? painter.transform.cameraToCenterDistance * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
+        'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo,
         undefined

@@ -66,7 +66,8 @@ import type {
     SourceSpecification,
     ProjectionSpecification,
     PropertyValueSpecification,
-    TransitionSpecification
+    TransitionSpecification,
+    CameraSpecification
 } from '../style-spec/types.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {Source} from '../source/source.js';
@@ -2785,6 +2786,32 @@ class Map extends Camera {
      */
     getFog(): ?FogSpecification {
         return this.style ? this.style.getFog() : null;
+    }
+
+    /**
+     * Sets the camera property of the style.
+     *
+     * @param {CameraSpecification} camera The camera properties to set. Must conform to the Camera Style Specification.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setCamera({
+     *     "camera-projection": "perspective",
+     * });
+     */
+    setCamera(camera: CameraSpecification): this {
+        this.style.stylesheet.camera = camera;
+        return this._update(this.transform.setOrthographicProjectionAtLowPitch(camera["camera-projection"] === "orthographic"));
+    }
+
+    /**
+     * Returns the camera options specification.
+     *
+     * @returns {CameraSpecification} Camera specification properties of the style.
+     * @example
+     * const camera = map.getCamera();
+     */
+    getCamera(): ?CameraSpecification {
+        return this.style.stylesheet.camera;
     }
 
     /**
