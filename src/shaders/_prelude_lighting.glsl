@@ -9,16 +9,30 @@ uniform mediump vec3 u_lighting_ambient_color;
 uniform mediump vec3 u_lighting_directional_dir;        // Direction towards the light source
 uniform mediump vec3 u_lighting_directional_color;
 
-// Emulate sky being brighter close to the main light source
-float calculate_ambient_directional_factor(float NdotL) {
+float calculate_ambient_directional_factor(vec3 normal) {
+    // NdotL Used only for ambient directionality
+    float NdotL = dot(normal, u_lighting_directional_dir);
+
+    // Emulate sky being brighter close to the main light source
+
     const float factor_reduction_max = 0.3;
     float dir_luminance = dot(u_lighting_directional_color, vec3(0.2126, 0.7152, 0.0722));
     float directional_factor_min = 1.0 - factor_reduction_max * min(dir_luminance, 1.0);
-
+    
     // If u_lighting_directional_color is (1, 1, 1), then the return value range is
     // NdotL=-1: 1.0 - factor_reduction_max
     // NdotL>=0: 1.0
-    return mix(directional_factor_min, 1.0, min((NdotL + 1.0), 1.0));
+    float ambient_directional_factor = mix(directional_factor_min, 1.0, min((NdotL + 1.0), 1.0));
+
+    // Emulate environmental light being blocked by other objects
+
+    // Value moves from vertical_factor_min at z=-1 to 1.0 at z=1
+    const float vertical_factor_min = 0.92;
+    // clamp(z, -1.0, 1.0) is required because z can be very slightly out of the acceptable input
+    // range for asin, even when it has been normalized, due to limited floating point precision.
+    float vertical_factor = mix(vertical_factor_min, 1.0, asin(clamp(normal.z, -1.0, 1.0)) / PI + 0.5);
+
+    return vertical_factor * ambient_directional_factor;
 }
 
 // BEGIN Used for anisotropic ambient light
@@ -27,19 +41,8 @@ float calculate_ambient_directional_factor(float NdotL) {
 
 vec3 apply_lighting(vec3 color, vec3 normal, float dir_factor) {
     // TODO: Use a cubemap to sample precalculated values
-
-    // NdotL Used only for ambient directionality
-    float NdotL = dot(normal, u_lighting_directional_dir);
-    float ambient_directional_factor = calculate_ambient_directional_factor(NdotL);
-
-    // Emulate environmental light being blocked by other objects
-    // Value moves from vertical_factor_min at z=-1 to 1.0 at z=1
-    const float vertical_factor_min = 0.92;
-    // clamp(z, -1.0, 1.0) is required because z can be very slightly out of the acceptable input
-    // range for asin, even when it has been normalized, due to limited floating point precision.
-    float vertical_factor = mix(vertical_factor_min, 1.0, asin(clamp(normal.z, -1.0, 1.0)) / PI + 0.5);
-
-    vec3 ambient_contrib = vertical_factor * ambient_directional_factor * u_lighting_ambient_color;
+    float ambient_directional_factor = calculate_ambient_directional_factor(normal);
+    vec3 ambient_contrib = ambient_directional_factor * u_lighting_ambient_color;
     vec3 directional_contrib = u_lighting_directional_color * dir_factor;
     return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + directional_contrib));
 }
@@ -64,8 +67,7 @@ vec3 apply_lighting_ground(vec3 color) {
     float NdotL = u_lighting_directional_dir.z;
 
     // Emulate sky being brighter close to the main light source
-    float ambient_directional_factor = calculate_ambient_directional_factor(NdotL);
-
+    float ambient_directional_factor = calculate_ambient_directional_factor(vec3(0.0, 0.0, 1.0));
     vec3 ambient_contrib = u_lighting_ambient_color * ambient_directional_factor;
     return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + u_lighting_directional_color * NdotL));
 }
