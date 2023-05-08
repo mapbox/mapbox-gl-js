@@ -327,11 +327,12 @@ vec3 EnvBRDFApprox(vec3 specularColor, float roughness,highp float NdotV)
     return specularColor * AB.x + AB.y;
 }
 
-vec3 computeIndirectLightContribution(Material mat, float NdotV)
+vec3 computeIndirectLightContribution(Material mat, float NdotV, vec3 normal)
 {
     vec3 env_light = vec3(0.65, 0.65, 0.65);
 #ifdef LIGHTING_3D_MODE
-    env_light = u_lighting_ambient_color;
+    float ambient_factor = calculate_ambient_directional_factor(normal);
+    env_light = u_lighting_ambient_color * ambient_factor;
 #endif
     vec3 envBRDF = EnvBRDFApprox(mat.specularColor, mat.perceptualRoughness, NdotV);
     vec3 indirectSpecular =  envBRDF * env_light;
@@ -369,16 +370,17 @@ vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
     // Cook-Torrance BRDF
     vec3 specularTerm = f * g * d;
 
+    vec3 transformed_normal = vec3(-n.xy, n.z);
+
     float lighting_factor;
 #ifdef RENDER_SHADOWS
-    vec3 transformed_normal = vec3(-n.xy, n.z);
     lighting_factor = shadowed_light_factor_normal(transformed_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
 #else
     lighting_factor = NdotL;
 #endif // RENDER_SHADOWS
 
     vec3 directLightColor = (specularTerm + diffuseTerm) * lighting_factor * lightColor;
-    vec3 indirectLightColor = computeIndirectLightContribution(mat, NdotV);
+    vec3 indirectLightColor = computeIndirectLightContribution(mat, NdotV, transformed_normal);
 
     vec3 color = (directLightColor + indirectLightColor);
 
