@@ -41,6 +41,19 @@ export const DEFAULT_MAX_ZOOM = 25.5;
 type RayIntersectionResult = { p0: Vec4, p1: Vec4, t: number};
 type ElevationReference = "sea" | "ground";
 
+const OrthographicPitchTranstionValue = 15;
+const lerp = (x, y, t) => { return (1 - t) * x + t * y; };
+const easeIn = (x) => {
+    return x * x * x * x * x;
+};
+const lerpMatrix = (out, a, b, value) => {
+    for (let i = 0; i < 16; i++) {
+        out[i] = lerp(a[i], b[i], value);
+    }
+
+    return out;
+};
+
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
@@ -160,6 +173,8 @@ class Transform {
     _mercatorScaleRatio: number;
     _isCameraConstrained: boolean;
 
+    _orthographicProjectionAtLowPitch: boolean;
+
     constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection?: ?ProjectionSpecification, bounds: ?LngLatBounds) {
         this.tileSize = 512; // constant
 
@@ -198,6 +213,8 @@ class Transform {
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
+
+        this._orthographicProjectionAtLowPitch = false;
     }
 
     clone(): Transform {
@@ -266,6 +283,18 @@ class Transform {
         this.mercatorFromTransition = false;
 
         return projectionHasChanged;
+    }
+
+    // Returns whether the projection need to be reevaluated
+    setOrthographicProjectionAtLowPitch(enabled: boolean): boolean {
+        if (this._orthographicProjectionAtLowPitch === enabled) {
+            return false;
+        }
+
+        this._orthographicProjectionAtLowPitch = enabled;
+        this._calcMatrices();
+
+        return true;
     }
 
     setMercatorFromTransition(): boolean {
@@ -1872,12 +1901,38 @@ class Transform {
 
         const zUnit = this.projection.zAxisUnit === "meters" ? pixelsPerMeter : 1.0;
         const worldToCamera = this._camera.getWorldToCamera(this.worldSize, zUnit);
-        const cameraToClip = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
 
-        // Apply center of perspective offset
-        cameraToClip[8] = -offset.x * 2 / this.width;
-        cameraToClip[9] = offset.y * 2 / this.height;
+        let cameraToClip;
 
+        const cameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, this._farZ);
+        // Apply offset/padding
+        cameraToClipPerspective[8] = -offset.x * 2 / this.width;
+        cameraToClipPerspective[9] = offset.y * 2 / this.height;
+
+        if (this.projection.name !== 'globe' && this._orthographicProjectionAtLowPitch && this.pitch < OrthographicPitchTranstionValue) {
+            const cameraToCenterDistance =  0.5 * this.height / Math.tan(this._fov / 2.0) * 1.0;
+
+            // Calculate bounds for orthographic view
+            let top = cameraToCenterDistance * Math.tan(this._fov * 0.5);
+            let right = top * this.aspect;
+            let left = -right;
+            let bottom = -top;
+            // Apply offset/padding
+            right -= offset.x;
+            left -= offset.x;
+            top += offset.y;
+            bottom += offset.y;
+
+            cameraToClip = this._camera.getCameraToClipOrthographic(left, right, bottom, top, this._nearZ, this._farZ);
+
+            const mixValue =
+                this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
+            lerpMatrix(cameraToClip, cameraToClip, cameraToClipPerspective, easeIn(mixValue));
+        } else {
+            cameraToClip = cameraToClipPerspective;
+        }
+
+        const worldToClipPerspective: Array<number> | Float32Array | Float64Array = mat4.mul([], cameraToClipPerspective, worldToCamera);
         let m: Array<number> | Float32Array | Float64Array = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
@@ -1889,6 +1944,7 @@ class Transform {
             mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
             mat4.multiply(m, m, adjustments);
+            mat4.multiply(worldToClipPerspective, worldToClipPerspective, adjustments);
             this.inverseAdjustmentMatrix = getProjectionAdjustmentInverted(this);
         } else {
             this.inverseAdjustmentMatrix = [1, 0, 0, 1];
@@ -1952,7 +2008,7 @@ class Transform {
         this.glCoordMatrix = m;
 
         // matrix for conversion from location to screen coordinates
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, this.projMatrix);
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, worldToClipPerspective);
 
         this._calcFogMatrices();
         this._distanceTileDataCache = {};
@@ -2257,7 +2313,15 @@ class Transform {
     getCameraToCenterDistance(projection: Projection, zoom: number = this.zoom, worldSize: number = this.worldSize): number {
         const t = getProjectionInterpolationT(projection, zoom, this.width, this.height, 1024);
         const projectionScaler = projection.pixelSpaceConversion(this.center.lat, worldSize, t);
-        return 0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
+        let distance =  0.5 / Math.tan(this._fov * 0.5) * this.height * projectionScaler;
+
+        // In case we have orthographic transition we need to interpolate the distance value in the range [1, distance]
+        // to calculate correct perspective ratio values for symbols
+        if (this._orthographicProjectionAtLowPitch && this.projection.name !== 'globe' && true && this.pitch < OrthographicPitchTranstionValue) {
+            const mixValue = this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
+            distance = lerp(1.0, distance, easeIn(mixValue));
+        }
+        return distance;
     }
 
     getWorldToCameraMatrix(): Mat4 {

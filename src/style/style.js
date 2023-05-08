@@ -110,7 +110,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setGeoJSONSourceData',
     'setTerrain',
     'setFog',
-    'setProjection'
+    'setProjection',
+    'setCamera'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -367,8 +368,17 @@ class Style extends Evented {
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
         }
-        this._updateDrapeFirstLayers();
 
+        if (!this.stylesheet.camera) {
+            this.stylesheet.camera = {
+                "camera-projection": "perspective"
+            };
+        }
+
+        // Trigger transform update
+        this.map.setCamera(this.stylesheet.camera);
+
+        this._updateDrapeFirstLayers();
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event('style.load'));
     }

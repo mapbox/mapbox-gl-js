@@ -1,0 +1,205 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+       "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+
+  },
+  "center": [ -80.1664, 29.0873 ],
+  "zoom": 1,
+  "pitch": 0,
+  "bearing": 0,
+  "transition": {
+    "duration": 0
+  },
+  "fog": {
+    "star-intensity": 0.0
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "minzoom": 1,
+      "maxzoom": 1,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "camera": {
+        "camera-projection": "orthographic"
+   },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878907,
+            233.00001525878907,
+            225.00001525878907,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878907,
+            228.00001525878907,
+            224.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "type": "fill",
+      "id": "landcover",
+      "source": "mapbox",
+      "maxzoom": 7.0,
+      "paint": {
+        "fill-antialias": false,
+        "fill-opacity": [
+          "interpolate",
+          [
+            "exponential",
+            1.5
+          ],
+          [
+            "zoom"
+          ],
+          2.0,
+          0.3,
+          7.0,
+          0.0
+        ],
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "snow",
+          [
+            "rgba",
+            255.0,
+            255.0,
+            255.0,
+            1.0
+          ],
+          [
+            "rgba",
+            222.00001525878907,
+            237.00001525878907,
+            177.0,
+            1.0
+          ]
+        ]
+      },
+      "source-layer": "landcover"
+    },
+    {
+      "minzoom": 15.0,
+      "type": "line",
+      "paint": {
+        "line-color": [
+          "rgba",
+          226.00001525878907,
+          237.00001525878907,
+          191.0,
+          1.0
+        ]
+      },
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "pitch"
+      ],
+      "source": "mapbox",
+      "id": "pitch-outline"
+    },
+    {
+      "type": "fill",
+      "source": "mapbox",
+      "paint": {
+        "fill-color": [
+          "rgba",
+          117.00000762939453,
+          207.00001525878907,
+          240.00001525878907,
+          1.0
+        ]
+      },
+      "source-layer": "water",
+      "id": "water"
+    },
+    {
+      "minzoom": 1.0,
+      "type": "symbol",
+      "paint": {
+        "text-halo-width": 1.0,
+        "text-halo-color": [
+          "rgba",
+          255.0,
+          255.0,
+          255.0,
+          1.0
+        ],
+        "text-color": [
+          "rgba",
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source-layer": "place_label",
+      "layout": {
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-letter-spacing": 0.15000000596046449,
+        "text-max-width": 6.0,
+        "text-size": 15,
+        "text-field": [
+          "format",
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          {}
+        ]
+      },
+      "id": "country-label",
+      "source": "mapbox",
+      "maxzoom": 9.0
+    }
+  ]
+}

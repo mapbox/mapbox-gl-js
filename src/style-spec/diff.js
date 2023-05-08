@@ -117,6 +117,11 @@ export const operations: {[_: string]: string} = {
     setFog: 'setFog',
 
     /*
+     *  { command: 'setCamera', args: [cameraProperties] }
+     */
+    setCamera: 'setCamera',
+
+    /*
      *  { command: 'setLights', args: [{light-3d},...] }
      */
     setLights: 'setLights',
@@ -386,6 +391,9 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         }
         if (!isEqual(before.lights, after.lights)) {
             commands.push({command: operations.setLights, args: [after.lights]});
+        }
+        if (!isEqual(before.camera, after.camera)) {
+            commands.push({command: operations.setCamera, args: [after.camera]});
         }
 
         // Handle changes to `sources`

@@ -69,6 +69,7 @@ export type StyleSpecification = {|
     "lights"?: Array<LightsSpecification>,
     "terrain"?: TerrainSpecification,
     "fog"?: FogSpecification,
+    "camera"?: CameraSpecification,
     "sources": {[_: string]: SourceSpecification},
     "sprite"?: string,
     "glyphs"?: string,
@@ -97,6 +98,10 @@ export type FogSpecification = {|
     "space-color"?: PropertyValueSpecification<ColorSpecification>,
     "horizon-blend"?: PropertyValueSpecification<number>,
     "star-intensity"?: PropertyValueSpecification<number>
+|}
+
+export type CameraSpecification = {|
+    "camera-projection"?: PropertyValueSpecification<"perspective" | "orthographic">
 |}
 
 export type ProjectionSpecification = {|
@@ -424,11 +429,14 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
         "fill-extrusion-ambient-occlusion-radius"?: PropertyValueSpecification<number>,
+        "fill-extrusion-ambient-occlusion-wall-radius"?: PropertyValueSpecification<number>,
+        "fill-extrusion-ambient-occlusion-ground-radius"?: PropertyValueSpecification<number>,
+        "fill-extrusion-ambient-occlusion-ground-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-flood-light-intensity"?: PropertyValueSpecification<number>,
-        "fill-extrusion-wall-flood-light-radius"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-ground-flood-light-radius"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-ground-effects-attenuation"?: PropertyValueSpecification<number>,
+        "fill-extrusion-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>
     |}
 |}

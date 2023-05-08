@@ -92,6 +92,10 @@
       "type": "fog",
       "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features. Note: fog is renamed to atmosphere in the Android and iOS SDKs and planned to be changed in GL-JS v.3.0.0."
     },
+    "camera": {
+      "type": "camera",
+      "doc": "Global setting to control additional camera intrinsics parameters, e.g. projection type (perspective / orthographic)."
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -4367,6 +4371,29 @@
           "ios": "10.6.0"
         }
       }
+    }
+  },
+  "camera": {
+    "camera-projection" : {
+      "doc": "Camera projection describes how 3D world geometry get projected into 2D screen",
+      "type": "enum",
+      "values": {
+        "perspective": {
+          "doc": "linear projection where distant objects appear smaller than closer objects. Lines that are parallel seem to converge towards a vanishing point"
+        },
+        "orthographic": {
+          "doc": "Projection where objects are of the same scale regardless of whether they are far away or near to the camera. Parallel lines remains parallel and there is no vanishing point."
+        }
+      },
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "default": "perspective",
+      "property-type": "data-constant"
     }
   },
   "light": {

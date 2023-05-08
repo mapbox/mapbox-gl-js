@@ -312,7 +312,7 @@ function updateLineLabels(bucket: SymbolBucket,
             continue;
         }
         const cameraToAnchorDistance = anchorPos[3];
-        const perspectiveRatio = getPerspectiveRatio(painter.transform.cameraToCenterDistance, cameraToAnchorDistance);
+        const perspectiveRatio = getPerspectiveRatio(painter.transform.getCameraToCenterDistance(tr.projection), cameraToAnchorDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;

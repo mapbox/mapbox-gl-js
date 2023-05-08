@@ -1,0 +1,209 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0008
+    }
+  },
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 1.5
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.5
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.5,
+        "cast-shadows": false
+      }
+    }
+  ],
+  "sources": {
+     "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 14,
+      "tileSize": 512,
+      "tiles": ["local://models/dem/14-8847-5550.terrain-512.png"]
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "pitch": 0,
+  "zoom": 16.0,
+  "bearing": 0,
+  "center": [
+    14.3946,
+    50.0834
+  ],
+  "camera": {
+        "camera-projection": "orthographic"
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"]
+      }
+    },
+{
+  "filter": [
+    "match",
+    [
+      "get",
+      "class"
+    ],
+    [
+      "motorway",
+      "primary",
+      "secondary",
+      "street",
+      "street_limited",
+      "tertiary",
+      "trunk"
+    ],
+    true,
+    false
+  ],
+  "id": "road-label-simple",
+  "layout": {
+    "symbol-placement": "line",
+    "text-field": [
+      "format",
+      [
+        "coalesce",
+        [
+          "get",
+          "name_en"
+        ],
+        [
+          "get",
+          "name"
+        ]
+      ],
+      {}
+    ],
+    "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+    ],
+    "text-letter-spacing": 0.009999999776482582,
+    "text-max-angle": 30.0,
+    "text-padding": 1.0,
+    "text-pitch-alignment": "viewport",
+    "text-rotation-alignment": "map",
+    "text-size": [
+      "interpolate",
+      [
+        "linear"
+      ],
+      [
+        "zoom"
+      ],
+      10.0,
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "motorway",
+          "primary",
+          "secondary",
+          "tertiary",
+          "trunk"
+        ],
+        10.0,
+        9.0
+      ],
+      18.0,
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "motorway",
+          "primary",
+          "secondary",
+          "tertiary",
+          "trunk"
+        ],
+        16.0,
+        14.0
+      ]
+    ]
+  },
+  "minzoom": 12.0,
+  "paint": {
+    "text-color": [
+      "rgba",
+      154.0,
+      121.00000762939453,
+      55.000003814697269,
+      1.0
+    ],
+    "text-halo-color": [
+      "rgba",
+      255.0,
+      255.0,
+      255.0,
+      1.0
+    ],
+    "text-halo-width": 1.0
+  },
+  "source": "mapbox",
+  "source-layer": "road",
+  "type": "symbol"
+}
+  ]
+}

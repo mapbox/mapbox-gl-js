@@ -124,7 +124,7 @@ WebGL 1 context is enabled by default.
 
 To enable usage of WebGL 2, supply value `true` to `USE_WEBGL2` in CLI, e.g.:
 ```
-USE_WEBGL2={true} yarn run test-render
+USE_WEBGL2=true yarn run test-render
 ```
 
 ### Build Notifications

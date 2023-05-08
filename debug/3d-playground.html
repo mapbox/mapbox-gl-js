@@ -103,9 +103,12 @@ var Demo3D = function() {
 
     this.fpsTimer = 0;
     this.frameCounter = 0;
+
+    this.mapProjection = 'globe';
+    this.orthographicProjectionAtLowPitch = false;
 };
 
-var demo3d = new Demo3D();
+const demo3d = new Demo3D();
 
 function updateLights(enable) {
     map.setLights(enable ?
@@ -225,8 +228,22 @@ window.onload = function() {
     });
 
     // Camera
-    const camera = gui.addFolder({title:'Camera', expanded:false});
+    const camera = gui.addFolder({title:'Camera', expanded:true});
     camera.addInput(demo3d, 'animateCamera');
+
+    const mapProjection = camera.addInput(demo3d, 'mapProjection',
+        {options: fillOptions([
+            'mercator',
+            'globe',
+        ])}
+    );
+    mapProjection.on('change', (ev) => {
+        map.setProjection(ev.value);
+    });
+
+    camera.addInput(demo3d, 'orthographicProjectionAtLowPitch').on('change', (ev) => {
+        map.setCamera({'camera-projection': ev.value ? 'orthographic' : 'perspective'});
+    });
 
     // Sky
     const sky = gui.addFolder({title:'Sky', expanded:false});
