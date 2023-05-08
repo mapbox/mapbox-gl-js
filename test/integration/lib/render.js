@@ -59,6 +59,8 @@ tape.onFinish(() => {
 let ignoreList;
 let timeout = 30000;
 
+const useWebGL2 = process.env.USE_WEBGL2 ? process.env.USE_WEBGL2 !== 'false' : true;
+
 if (process.env.CI) {
     const ua = navigator.userAgent;
     const browser = ua.includes('Firefox') ? 'firefox' :
@@ -129,13 +131,12 @@ function parseStyle(currentFixture) {
     return style;
 }
 
-function parseOptions(currentFixture, style, useWebGL2) {
+function parseOptions(currentFixture, style) {
     const options = {
         width: 512,
         height: 512,
         pixelRatio: 1,
         allowed: 0.00015,
-        useWebGL2,
         ...((style.metadata && style.metadata.test) || {})
     };
 
@@ -192,7 +193,7 @@ async function renderMap(style, options) {
         attributionControl: false,
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
-        useWebGL2: options.useWebGL2 || false,
+        useWebGL2,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
         optimizeForTerrain: options.optimizeForTerrain || false,
@@ -323,7 +324,7 @@ async function runTest(t) {
         const expectedImages = await getExpectedImages(currentTestName, currentFixture);
 
         const style = parseStyle(currentFixture);
-        const options = parseOptions(currentFixture, style, process.env.USE_WEBGL2 && process.env.USE_WEBGL2 === 'true');
+        const options = parseOptions(currentFixture, style);
         const {actualImageData, w, h} = await getActualImage(style, options);
 
         if (process.env.UPDATE) {
