@@ -11,7 +11,7 @@ import {isExpressionFilter} from '../feature_filter/index.js';
 import type {ValidationOptions} from './validate.js';
 
 type Options = ValidationOptions & {
-    layerType: string;
+    layerType?: string;
 }
 
 export default function validateFilter(options: Options): Array<ValidationError> {
@@ -28,7 +28,7 @@ export default function validateFilter(options: Options): Array<ValidationError>
     }
 }
 
-function validateNonExpressionFilter(options) {
+function validateNonExpressionFilter(options: Options) {
     const value = options.value;
     const key = options.key;
 
@@ -96,12 +96,12 @@ function validateNonExpressionFilter(options) {
     case 'all':
     case 'none':
         for (let i = 1; i < value.length; i++) {
-            errors = errors.concat(validateNonExpressionFilter({
+            errors = errors.concat(validateNonExpressionFilter(({
                 key: `${key}[${i}]`,
                 value: value[i],
                 style: options.style,
                 styleSpec: options.styleSpec
-            }));
+            }: any)));
         }
         break;
 
