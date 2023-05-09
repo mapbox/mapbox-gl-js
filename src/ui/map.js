@@ -1368,7 +1368,7 @@ class Map extends Camera {
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (!features.length) {
@@ -1385,7 +1385,7 @@ class Map extends Camera {
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
@@ -1395,7 +1395,7 @@ class Map extends Camera {
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                 }
             };
-            const mouseout = (e) => {
+            const mouseout = (e: MapMouseEvent) => {
                 if (mousein) {
                     mousein = false;
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
@@ -1404,7 +1404,7 @@ class Map extends Camera {
 
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else {
-            const delegate = (e) => {
+            const delegate = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
