@@ -9,7 +9,7 @@ import type {ProjectedPoint} from './projection.js';
 
 const halfPi = Math.PI / 2;
 
-function tany(y) {
+function tany(y: number) {
     return Math.tan((halfPi + y) / 2);
 }
 
