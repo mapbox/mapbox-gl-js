@@ -231,7 +231,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 layout.get('text-max-width').evaluate(feature, {}, canonical) * ONE_EM :
                 Infinity;
 
-            const addVerticalShapingIfNeeded = (textJustify) => {
+            const addVerticalShapingIfNeeded = (textJustify: TextJustify) => {
                 if (bucket.allowVerticalPlacement && allowsVerticalWritingMode(unformattedText)) {
                     // Vertical POI label placement is meant to be used for scripts that support vertical
                     // writing mode, thus, default left justification is used. If Latin
@@ -342,7 +342,7 @@ export function getAnchorJustification(anchor: TextAnchor): TextJustify  {
  * in order to thin out labels density and save memory and CPU .
  * @private
  */
-function tilePixelRatioForSymbolSpacing(overscaleFactor, overscaledZ) {
+function tilePixelRatioForSymbolSpacing(overscaleFactor: number, overscaledZ: number) {
     if (overscaledZ > 18 && overscaleFactor > 2) {
         overscaleFactor >>= 1;
     }
@@ -411,7 +411,7 @@ function addFeature(bucket: SymbolBucket,
         }
     }
 
-    const addSymbolAtAnchor = (line, anchor, canonicalId) => {
+    const addSymbolAtAnchor = (line: Array<Point>, anchor: Anchor, canonicalId: CanonicalTileID) => {
         if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
             // Symbol layers are drawn across tile boundaries, We filter out symbols
             // outside our tile boundaries (which may be included in vector tile buffers)
