@@ -14,7 +14,7 @@ import fs from 'fs';
 import ejs from 'ejs';
 import {extend} from '../src/util/util.js';
 import {createLayout, viewTypes} from '../src/util/struct_array.js';
-import type {ViewType, StructArrayLayout} from '../src/util/struct_array.js';
+import type {ViewType, StructArrayLayout, StructArrayMember} from '../src/util/struct_array.js';
 
 const structArrayLayoutJs = ejs.compile(fs.readFileSync('src/util/struct_array_layout.js.ejs', 'utf8'), {strict: true});
 const structArrayJs = ejs.compile(fs.readFileSync('src/util/struct_array.js.ejs', 'utf8'), {strict: true});
@@ -33,7 +33,7 @@ const arraysWithStructAccessors = [];
 const arrayTypeEntries = new Set();
 const layoutCache = {};
 
-function normalizeMembers(members, usedTypes) {
+function normalizeMembers(members: Array<StructArrayMember>, usedTypes: Set<string | ViewType>) {
     return members.map((member) => {
         if (usedTypes && !usedTypes.has(member.type)) {
             usedTypes.add(member.type);
@@ -70,7 +70,7 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
     }
 }
 
-function createStructArrayLayoutType({members, size, alignment}) {
+function createStructArrayLayoutType({members, size, alignment}: StructArrayLayout) {
     const usedTypes = new Set(['Uint8']);
     members = normalizeMembers(members, usedTypes);
 
@@ -106,7 +106,7 @@ function sizeOf(type: ViewType): number {
     return viewTypes[type].BYTES_PER_ELEMENT;
 }
 
-function camelize (str) {
+function camelize (str: string) {
     return str.replace(/(?:^|[-_])(.)/g, (_, x) => {
         return /^[0-9]$/.test(x) ? _ : x.toUpperCase();
     });
