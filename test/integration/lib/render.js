@@ -20,6 +20,8 @@ import {vec3, vec4} from 'gl-matrix';
 
 const browserWriteFile = new Worker('../util/browser_write_file.js');
 
+const useWebGL2 = process.env.USE_WEBGL2 ? process.env.USE_WEBGL2 !== 'false' : true;
+
 // We are self-hosting test files.
 config.REQUIRE_ACCESS_TOKEN = false;
 window._suiteName = 'render-tests';
@@ -43,7 +45,7 @@ fakeCanvasContainer.style.top = '10px';
 fakeCanvasContainer.style.left = '10px';
 document.body.appendChild(fakeCanvasContainer);
 
-setupHTML();
+setupHTML({useWebGL2});
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
@@ -58,8 +60,6 @@ tape.onFinish(() => {
 
 let ignoreList;
 let timeout = 30000;
-
-const useWebGL2 = process.env.USE_WEBGL2 ? process.env.USE_WEBGL2 !== 'false' : true;
 
 if (process.env.CI) {
     const ua = navigator.userAgent;
@@ -283,6 +283,7 @@ function getActualImageDataURL(actualImageData, map, {w, h}, options) {
 
 function calculateDiff(actualImageData, expectedImages, {w, h}) {
     // 2. draw expected.png into a canvas and extract ImageData
+    let minImageSrc;
     let minDiffImage;
     let minExpectedCanvas;
     let minDiff = Infinity;
@@ -299,10 +300,11 @@ function calculateDiff(actualImageData, expectedImages, {w, h}) {
             minDiff = currentDiff;
             minDiffImage = diffImage;
             minExpectedCanvas = expectedCanvas;
+            minImageSrc = expectedImages[i].src;
         }
     }
 
-    return {minDiff, minDiffImage, minExpectedCanvas};
+    return {minDiff, minDiffImage, minExpectedCanvas, minImageSrc};
 }
 
 async function getActualImage(style, options) {
@@ -336,7 +338,7 @@ async function runTest(t) {
             return;
         }
 
-        const {minDiff, minDiffImage, minExpectedCanvas} = calculateDiff(actualImageData, expectedImages, {w, h});
+        const {minDiff, minDiffImage, minExpectedCanvas, minImageSrc} = calculateDiff(actualImageData, expectedImages, {w, h});
         const pass = minDiff <= options.allowed;
         const testMetaData = {
             name: currentTestName,
@@ -376,6 +378,7 @@ async function runTest(t) {
             // 7. pass image paths to testMetaData so the UI can render them
             testMetaData.actual = actual;
             testMetaData.expected = minExpectedCanvas.toDataURL();
+            testMetaData.expectedPath = minImageSrc;
             testMetaData.imgDiff = imgDiff;
         }
 
