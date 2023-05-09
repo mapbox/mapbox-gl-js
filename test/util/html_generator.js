@@ -81,7 +81,7 @@ const counterDom = {
 
 let resultsContainer;
 
-export function setupHTML({useWebGL2}) {
+export function setupHTML(options = {}) {
     // Add CSS to the page
     const style = document.createElement('style');
     document.head.appendChild(style);
@@ -91,7 +91,7 @@ export function setupHTML({useWebGL2}) {
     const statsContainer = document.createElement('div');
 
     const webgl2Container = document.createElement('div');
-    webgl2Container.innerHTML = useWebGL2 ? 'WebGL2 is enabled.' : 'WebGL2 is disabled.';
+    webgl2Container.innerHTML = options.useWebGL2 ? 'WebGL2 is enabled.' : 'WebGL2 is disabled.';
     statsContainer.appendChild(webgl2Container);
 
     const failedTestContainer = document.createElement('h1');
