@@ -33,7 +33,7 @@
 0.190.1
 
 [options]
-enforce_local_inference_annotations=false
+enforce_local_inference_annotations=true
 
 [strict]
 nonstrict-import
