@@ -28,6 +28,8 @@ import {
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
+import type Program from '../render/program.js';
+import type VertexBuffer from "../gl/vertex_buffer.js";
 
 export {
     drawTerrainRaster,
@@ -253,7 +255,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
-                const drawPole = (program, vertexBuffer) => program.draw(
+                const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
