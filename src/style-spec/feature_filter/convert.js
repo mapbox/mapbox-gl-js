@@ -161,7 +161,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
     return [op, get, value];
 }
 
-function convertInOp(property: string, values: Array<any>, negate = false) {
+function convertInOp(property: string, values: Array<any>, negate: boolean = false) {
     if (values.length === 0) return negate;
 
     let get;
