@@ -161,7 +161,7 @@ export default function validateFunction(options: ValidationOptions): any {
         }));
     }
 
-    function validateStopDomainValue(options: ValidationOptions, stop) {
+    function validateStopDomainValue(options: ValidationOptions, stop: any) {
         const type = getType(options.value);
         const value = unbundle(options.value);
 
