@@ -145,6 +145,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-linux-firefox-webgl1-dev:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
       - prepare-mac:
           filters:
             tags:
@@ -475,6 +481,18 @@ jobs:
           at: ~/
       - browser-tools/install-firefox
       - run: yarn run test-render-firefox
+      - store_test_results:
+          path: test/integration/render-tests
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-linux-firefox-webgl1-dev:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - browser-tools/install-firefox
+      - run: USE_WEBGL2=false yarn run test-render-firefox
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
