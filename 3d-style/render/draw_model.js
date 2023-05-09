@@ -255,16 +255,15 @@ function prepareMeshes(transform: Transform, node: Node, modelMatrix: Mat4, proj
     }
 }
 
-function drawShadowCaster(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer) {
+function drawShadowCaster(mesh: Mesh, matrix: Mat4, painter: Painter, layer: ModelStyleLayer) {
     const shadowRenderer = painter.shadowRenderer;
     if (!shadowRenderer) return;
     const depthMode = shadowRenderer.getShadowPassDepthMode();
     const colorMode = shadowRenderer.getShadowPassColorMode();
-    const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(sortedMesh.nodeModelMatrix);
+    const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
     const definesValues = ['DEPTH_TEXTURE'];
     const program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
-    const mesh = sortedMesh.mesh;
     const context = painter.context;
     program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -329,11 +328,11 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
 
     if (painter.renderPass === 'shadow') {
         for (const opaqueMesh of opaqueMeshes) {
-            drawShadowCaster(opaqueMesh, painter, layer);
+            drawShadowCaster(opaqueMesh.mesh, opaqueMesh.nodeModelMatrix, painter, layer);
         }
         // Draw transparent sorted meshes
         for (const transparentMesh of transparentMeshes) {
-            drawShadowCaster(transparentMesh, painter, layer);
+            drawShadowCaster(transparentMesh.mesh, transparentMesh.nodeModelMatrix, painter, layer);
         }
         // Finish the render pass
         return;
@@ -487,10 +486,6 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         const definesValues = [];
         const dynamicBuffers = [];
         setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
-        const isShadowPass = painter.renderPass === 'shadow';
-        if (isShadowPass) {
-            return;
-        }
 
         if (!(modelTraits & ModelTraits.HasMapboxMeshFeatures)) {
             definesValues.push('DIFFUSE_SHADED');
@@ -498,6 +493,11 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
 
         const modelMatrix = [...tileMatrix];
         mat4.multiply(modelMatrix, modelMatrix, node.matrix);
+        const isShadowPass = painter.renderPass === 'shadow';
+        if (isShadowPass) {
+            drawShadowCaster(mesh, modelMatrix, painter, layer);
+            return;
+        }
 
         let fogMatrixArray = null;
         if (painter.style.fog) {

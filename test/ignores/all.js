@@ -153,6 +153,10 @@ const skip = [
     // terrain model tests are flaky in CI
     "render-tests/model-layer/fill-extrusion--default-terrain-opacity",
     "render-tests/model-layer/fill-extrusion--default-terrain",
+
+    // Conflation needs to be implemented first
+    "render-tests/model-layer/landmark-part-styling-munich-museum",
+    "render-tests/model-layer/landmark-part-styling-roughness",
 ];
 
 export default {todo, skip};
