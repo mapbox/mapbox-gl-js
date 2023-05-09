@@ -148,7 +148,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
-    const setShaderMode = (mode, isWireframe) => {
+    const setShaderMode = (mode: number, isWireframe: boolean) => {
         if (programMode === mode) return;
         const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
 
@@ -286,7 +286,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         let program, programMode;
         const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
-        const setShaderMode = (mode, isWireframe) => {
+        const setShaderMode = (mode: number, isWireframe: boolean) => {
             if (programMode === mode)
                 return;
             const modes = [shaderDefines[mode]];
@@ -373,7 +373,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     }
 }
 
-function skirtHeight(zoom) {
+function skirtHeight(zoom: number) {
     // Skirt height calculation is heuristic: provided value hides
     // seams between tiles and it is not too large: 9 at zoom 22, ~20000m at zoom 0.
     return 6 * Math.pow(1.5, 22 - zoom);
