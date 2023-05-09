@@ -13,6 +13,8 @@ import {
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 
 import type Painter from './painter.js';
+import type Context from '../gl/context.js';
+import type Framebuffer from '../gl/framebuffer.js';
 import type SourceCache from '../source/source_cache.js';
 import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer.js';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket.js';
@@ -86,7 +88,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     }
 }
 
-function bindFramebuffer(context, painter, layer, scaling) {
+function bindFramebuffer(context: Context, painter: Painter, layer: HeatmapStyleLayer, scaling: number) {
     const gl = context.gl;
     const width = painter.width * scaling;
     const height = painter.height * scaling;
@@ -116,7 +118,7 @@ function bindFramebuffer(context, painter, layer, scaling) {
     }
 }
 
-function bindTextureToFramebuffer(context, painter, texture, fbo, width, height) {
+function bindTextureToFramebuffer(context: Context, painter: Painter, texture: ?WebGLTexture, fbo: Framebuffer, width: number, height: number) {
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     // Otherwise, fall back to a low precision texture
@@ -127,7 +129,7 @@ function bindTextureToFramebuffer(context, painter, texture, fbo, width, height)
     fbo.colorAttachment.set(texture);
 }
 
-function renderTextureToMap(painter, layer) {
+function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     const context = painter.context;
     const gl = context.gl;
 
