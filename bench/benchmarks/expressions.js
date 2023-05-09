@@ -39,7 +39,7 @@ class ExpressionBenchmark extends Benchmark {
                         continue;
                     }
 
-                    const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
+                    const expressionData = function(rawValue: any, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
                         const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
