@@ -8,7 +8,7 @@ import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import EvaluationParameters from '../../../src/style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import type {Mat4} from 'gl-matrix';
-import type {CanonicalTileID} from '../../../src/source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -79,7 +79,11 @@ class ModelBucket implements Bucket {
 
     // elevation is baked into vertex buffer together with evaluated instance translation
     validForExaggeration: number;
-    validForDEMTile: ?CanonicalTileID;
+    validForDEMTile: ?OverscaledTileID;
+    maxVerticalOffset: number; // for tile AABB calculation
+    maxScale: number; // across all dimensions, for tile AABB calculation
+    maxHeight: number; // calculated from previous two, during rendering, when models are available.
+    isInsideFirstShadowMapFrustum: boolean; // evaluated during first shadows pass and cached here for the second shadow pass.
 
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(options: BucketParameters<ModelStyleLayer>) {
@@ -94,6 +98,9 @@ class ModelBucket implements Bucket {
         this.hasPattern = false;
         this.instancesPerModel = {};
         this.validForExaggeration = 0;
+        this.maxVerticalOffset = 0;
+        this.maxScale = 0;
+        this.maxHeight = 0;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -136,6 +143,7 @@ class ModelBucket implements Bucket {
                 }
             }
         }
+        this.maxHeight = 0; // needs to be recalculated.
     }
 
     isEmpty(): boolean {
@@ -227,6 +235,8 @@ class ModelBucket implements Bucket {
         const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
         const rotationScaleYZFlip: Mat4 = [];
+        if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
+        this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 
         rotationScaleYZFlipMatrix(rotationScaleYZFlip, (rotation: any), (scale: any));
 

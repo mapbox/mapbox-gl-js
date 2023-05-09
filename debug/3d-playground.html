@@ -68,7 +68,7 @@ var Demo3D = function() {
     this.enable3dLights = true;
     this.terrainExaggeration = 1.5;
     this.animateCamera = false;
-    this.style = 'mapbox/streets-v11';
+    this.style = 'dynamic';
     this.sunAltitude = 2;
     this.sunAzimuth = 90;
     this.sunHaloIntensity = 1.0;
@@ -106,11 +106,27 @@ var Demo3D = function() {
 
     this.mapProjection = 'globe';
     this.orthographicProjectionAtLowPitch = false;
+    this.buildingExtrusion = "extrusion";
 };
 
 const demo3d = new Demo3D();
 
-function updateLights(enable) {
+function updateLights(enable, loadFromStyleIfPresent) {
+    const currentLights = map.getLights();
+    if (currentLights && loadFromStyleIfPresent) {
+        demo3d.enable3dLights = true;
+        let c = currentLights[0].properties.color.slice(1);
+        demo3d.directionalLightColor = {r: c[0], g: c[1], b: c[2]};
+        c = currentLights[1].properties.color.slice(1);
+        demo3d.ambientLightColor = {r: c[0], g: c[1], b: c[2]};
+        demo3d.directionalLightCastShadows = currentLights[0].properties['cast-shadows'];
+        demo3d.directionalLightShadowIntensity = currentLights[0].properties['shadow-intensity'];
+        demo3d.directionalLightIntensity = currentLights[0].properties.intensity;
+        demo3d.ambientLightIntensity = currentLights[1].properties.intensity;
+        demo3d.directionalLightAzimuth = currentLights[0].properties.direction[0];
+        demo3d.directionalLightPolar = currentLights[0].properties.direction[1];
+        return;
+    }
     map.setLights(enable ?
         [
             {
@@ -276,11 +292,11 @@ window.onload = function() {
     const edgeRadius = buildings.addInput(demo3d, 'edgeRadius');
     const lightIntensity = buildings.addInput(demo3d, 'lightIntensity', {min:0.0, max:1.0});
     buildings.on('change', (ev) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-vertical-gradient', demo3d.verticalGradient);
-        map.setPaintProperty('extrusion', 'fill-extrusion-color',
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-vertical-gradient', demo3d.verticalGradient);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-color',
             'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')');
-        map.setPaintProperty('extrusion', 'fill-extrusion-opacity', demo3d.buildingOpacity);
-        map.setLayoutProperty('extrusion', 'fill-extrusion-edge-radius', demo3d.edgeRadius);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-opacity', demo3d.buildingOpacity);
+        map.setLayoutProperty(demo3d.buildingExtrusion, 'fill-extrusion-edge-radius', demo3d.edgeRadius);
 
         const light = map.getLight();
         light['intensity'] = demo3d.lightIntensity;
@@ -297,15 +313,15 @@ window.onload = function() {
     const floodLightIntensity = groundEffects.addInput(demo3d, 'floodLightIntensity', {min:0.0, max:1.0});
     const floodLightGroundAttenuation = groundEffects.addInput(demo3d, 'floodLightGroundAttenuation', {min:0.0, max:1.0});
     groundEffects.on('change', (ev) => {
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-intensity', demo3d.aoIntensity);
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-radius', demo3d.aoWallRadius);
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-wall-radius', demo3d.aoWallRadius);
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-radius', demo3d.aoGroundRadius);
-        map.setPaintProperty('extrusion', 'fill-extrusion-ambient-occlusion-ground-attenuation', demo3d.aoGroundAttenuation);
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-color',
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-intensity', demo3d.aoIntensity);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-radius', demo3d.aoWallRadius);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-wall-radius', demo3d.aoWallRadius);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-ground-radius', demo3d.aoGroundRadius);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-ground-attenuation', demo3d.aoGroundAttenuation);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-color',
             'rgb(' + demo3d.floodLightColor.r + ', ' + demo3d.floodLightColor.g + ', ' + demo3d.floodLightColor.b + ')');
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-intensity', demo3d.floodLightIntensity);
-        map.setPaintProperty('extrusion', 'fill-extrusion-flood-light-ground-attenuation', demo3d.floodLightGroundAttenuation);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-intensity', demo3d.floodLightIntensity);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-ground-attenuation', demo3d.floodLightGroundAttenuation);
     });
 };
 
@@ -315,7 +331,7 @@ var map = window.map = new mapboxgl.Map({
     center: [-122.45814, 37.76159],
     pitch: 85,
     bearing: 60,
-    style: 'mapbox://styles/mapbox/streets-v12',
+    style: window.dynamic,
     hash: true,
     projection: 'globe',
     useWebGL2: true
@@ -330,7 +346,7 @@ let first = true;
 
 map.on('style.load', function() {
     // map.showOverdrawInspector =  true;
-    updateLights(demo3d.enable3dLights);
+    updateLights(demo3d.enable3dLights, true);
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
@@ -338,56 +354,60 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
     map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
-    map.addLayer({
-        'id': "extrusion",
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 15,
-        'layout': {
-            'fill-extrusion-edge-radius': demo3d.edgeRadius
-        },
-        'paint': {
-            'fill-extrusion-color': 'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')',
-            'fill-extrusion-height': ["get", "height"],
-            'fill-extrusion-base': ["get", "min_height"],
-            'fill-extrusion-opacity': demo3d.buildingOpacity,
-            'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
-            'fill-extrusion-ambient-occlusion-radius': demo3d.aoWallRadius,
-            'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity,
-            'fill-extrusion-ambient-occlusion-wall-radius': demo3d.aoWallRadius,
-            'fill-extrusion-ambient-occlusion-ground-radius': demo3d.aoGroundRadius,
-            'fill-extrusion-ambient-occlusion-ground-attenuation': demo3d.aoGroundAttenuation,
-            'fill-extrusion-flood-light-wall-radius': [
-                "case",
-                ["<=", ["get", "height"], 50], 0,
-                [">",  ["get", "height"], 50], ["get", "height"],
-                0
-            ],
-            'fill-extrusion-flood-light-ground-radius': [
-                "case",
-                ["<=", ["get", "height"], 50], 0,
-                [">",  ["get", "height"], 50], [
-                    "/",
-                    ["get", "height"],
-                    10
+    demo3d.buildingExtrusion = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion' && map.style.getLayer(id).sourceLayer === 'building');
+    if (!demo3d.buildingExtrusion) {
+        demo3d.buildingExtrusion = 'extrusion';
+        map.addLayer({
+            'id': demo3d.buildingExtrusion,
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'layout': {
+                'fill-extrusion-edge-radius': demo3d.edgeRadius
+            },
+            'paint': {
+                'fill-extrusion-color': 'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')',
+                'fill-extrusion-height': ["get", "height"],
+                'fill-extrusion-base': ["get", "min_height"],
+                'fill-extrusion-opacity': demo3d.buildingOpacity,
+                'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
+                'fill-extrusion-ambient-occlusion-radius': demo3d.aoWallRadius,
+                'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity,
+                'fill-extrusion-ambient-occlusion-wall-radius': demo3d.aoWallRadius,
+                'fill-extrusion-ambient-occlusion-ground-radius': demo3d.aoGroundRadius,
+                'fill-extrusion-ambient-occlusion-ground-attenuation': demo3d.aoGroundAttenuation,
+                'fill-extrusion-flood-light-wall-radius': [
+                    "case",
+                    ["<=", ["get", "height"], 50], 0,
+                    [">",  ["get", "height"], 50], ["get", "height"],
+                    0
                 ],
-                0
-            ],
-            'fill-extrusion-flood-light-color': ["rgb", demo3d.floodLightColor.r, demo3d.floodLightColor.g, demo3d.floodLightColor.b],
-            'fill-extrusion-flood-light-intensity':  demo3d.floodLightIntensity,
-            'fill-extrusion-vertical-scale': [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                1,     0,
-                15, 0,
-                16, 1,
-            ],
-            'fill-extrusion-flood-light-ground-attenuation': demo3d.floodLightGroundAttenuation
-        }
-    }, 'waterway-label');
+                'fill-extrusion-flood-light-ground-radius': [
+                    "case",
+                    ["<=", ["get", "height"], 50], 0,
+                    [">",  ["get", "height"], 50], [
+                        "/",
+                        ["get", "height"],
+                        10
+                    ],
+                    0
+                ],
+                'fill-extrusion-flood-light-color': ["rgb", demo3d.floodLightColor.r, demo3d.floodLightColor.g, demo3d.floodLightColor.b],
+                'fill-extrusion-flood-light-intensity':  demo3d.floodLightIntensity,
+                'fill-extrusion-vertical-scale': [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    1,     0,
+                    15, 0,
+                    16, 1,
+                ],
+                'fill-extrusion-flood-light-ground-attenuation': demo3d.floodLightGroundAttenuation
+            }
+        }, 'waterway-label');
+    }
 
     map.addLayer({
         'id': 'sky',

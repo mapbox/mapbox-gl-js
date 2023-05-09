@@ -35,8 +35,8 @@ type ShadowCascade = {
     framebuffer: Framebuffer,
     texture: Texture,
     matrix: Mat4,
-    near: number,
-    far: number
+    far: number,
+    frustum: Frustum
 };
 
 const cascadeCount = 2;
@@ -114,15 +114,28 @@ export class ShadowRenderer {
                     fbo.colorAttachment.set(colorTexture.texture);
                 }
 
-                this._cascades.push({framebuffer: fbo, texture: depthTexture, matrix: mat4.create(), near: 0, far: 0});
+                this._cascades.push({framebuffer: fbo, texture: depthTexture, matrix: mat4.create(), far: 0, frustum: new Frustum([[]], [[]])});
             }
         }
 
         const shadowDirection = shadowDirectionFromProperties(transform, directionalLight);
+        let verticalRange = 0.0;
+        if (transform.elevation) {
+            const elevation = transform.elevation;
+            const range = [10000, -10000];
+            elevation.visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
+                const minMaxTree = (tile.dem: any).tree;
+                range[0] = Math.min(range[0], minMaxTree.minimums[0]);
+                range[1] = Math.max(range[1], minMaxTree.maximums[0]);
+            });
+            if (range[0] !== 10000) {
+                verticalRange = (range[1] - range[0]) * elevation.exaggeration();
+            }
+        }
 
         const cascadeSplitDist = transform.cameraToCenterDistance * 1.5;
         const shadowCutoutDist = cascadeSplitDist * 3.0;
-
+        const cameraInvProj = new Float64Array(16);
         for (let cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
             const cascade = this._cascades[cascadeIndex];
 
@@ -140,11 +153,13 @@ export class ShadowRenderer {
                 }
             }
 
-            cascade.matrix = createLightMatrix(transform, shadowDirection, near, far, shadowMapResolution);
-            cascade.near = near;
+            cascade.matrix = createLightMatrix(transform, shadowDirection, near, far, shadowMapResolution, verticalRange);
+
+            mat4.invert(cameraInvProj, cascade.matrix);
+            cascade.frustum = Frustum.fromInvProjectionMatrix(cameraInvProj, 1, 0, true);
             cascade.far = far;
         }
-        this._uniformValues['u_cascade_distances'] = [this._cascades[0].far, this._cascades[1].far];
+        this._uniformValues['u_fade_range'] = [this._cascades[1].far * 0.75, this._cascades[1].far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [shadowDirection[0], shadowDirection[1], shadowDirection[2]];
         this._uniformValues['u_texel_size'] = 1 / shadowMapResolution;
@@ -154,6 +169,11 @@ export class ShadowRenderer {
 
     get enabled(): boolean {
         return this._enabled;
+    }
+
+    set enabled(enabled: boolean) {
+        // called on layer rendering to disable shadow receiving.
+        this._enabled = enabled;
     }
 
     drawShadowPass(style: Style, sourceCoords: {[_: string]: Array<OverscaledTileID>}) {
@@ -298,6 +318,16 @@ export class ShadowRenderer {
         }
         program.setShadowUniformValues(context, uniforms);
     }
+
+    // When the same uniform values are used multiple times on different programs, it is sufficient
+    // to call program.setShadowUniformValues(context, uniforms) instead of calling setupShadowsFromMatrix multiple times.
+    getShadowUniformValues(): UniformValues<ShadowUniformsType> {
+        return this._uniformValues;
+    }
+
+    getCurrentCascadeFrustum(): Frustum {
+        return this._cascades[this.painter.currentShadowCascade].frustum;
+    }
 }
 
 function shadowDirectionFromProperties(transform: Transform, directionalLight: Lights<Directional>): Vec3 {
@@ -351,7 +381,8 @@ function createLightMatrix(
     shadowDirection: Vec3,
     near: number,
     far: number,
-    resolution: number): Float64Array {
+    resolution: number,
+    verticalRange: number): Float64Array {
     const zoom = transform.zoom;
     const scale = transform.scale;
     const ws = transform.worldSize;
@@ -440,7 +471,7 @@ function createLightMatrix(
     const radiusPx = sphereRadius * ws;
     const lightMatrixNearZ = Math.min(transform._mercatorZfromZoom(17) * ws * -2.0, radiusPx * -2.0);
 
-    const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, radiusPx);
+    const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, (radiusPx + verticalRange * pixelsPerMeter) / shadowDirection[2]);
     const lightWorldToClip = new Float64Array(16);
     mat4.multiply(lightWorldToClip, lightViewToClip, lightWorldToView);
 

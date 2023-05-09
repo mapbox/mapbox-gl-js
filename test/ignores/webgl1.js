@@ -30,6 +30,10 @@ const skip = [
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-text",
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-viewport-padding",
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-zero-pitch",
+    "render-tests/model-layer/buildings-trees-shadows-fog",
+    "render-tests/model-layer/buildings-trees-shadows-fog-terrain",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
+    "render-tests/model-layer/buildings-trees-shadows-casting"
 ];
 
 export default {todo, skip};
