@@ -9,11 +9,12 @@ import {getMaximumPaintValue, translateDistance, translate} from '../query_utils
 import properties from './line_style_layer_properties.js';
 import {extend} from '../../util/util.js';
 import EvaluationParameters from '../evaluation_parameters.js';
-import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties.js';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty, PropertyValue, PossiblyEvaluatedPropertyValue} from '../properties.js';
 import ProgramConfiguration from '../../data/program_configuration.js';
 
 import Step from '../../style-spec/expression/definitions/step.js';
-import type {FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index.js';
+import type {PossiblyEvaluatedValue} from '../properties.js';
+import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
@@ -24,7 +25,7 @@ import type {IVectorTileFeature} from '@mapbox/vector-tile';
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: ?boolean;
 
-    possiblyEvaluate(value, parameters) {
+    possiblyEvaluate(value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<number> {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
             now: parameters.now,
             fadeDuration: parameters.fadeDuration,
@@ -33,7 +34,7 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
         return super.possiblyEvaluate(value, parameters);
     }
 
-    evaluate(value, globals, feature, featureState) {
+    evaluate(value: PossiblyEvaluatedValue<number>, globals: EvaluationParameters, feature: Feature, featureState: FeatureState): number {
         globals = extend({}, globals, {zoom: Math.floor(globals.zoom)});
         return super.evaluate(value, globals, feature, featureState);
     }
@@ -137,7 +138,7 @@ class LineStyleLayer extends StyleLayer {
 
 export default LineStyleLayer;
 
-function getLineWidth(lineWidth, lineGapWidth) {
+function getLineWidth(lineWidth: number, lineGapWidth: number) {
     if (lineGapWidth > 0) {
         return lineGapWidth + 2 * lineWidth;
     } else {
@@ -145,7 +146,7 @@ function getLineWidth(lineWidth, lineGapWidth) {
     }
 }
 
-function offsetLine(rings, offset) {
+function offsetLine(rings: Array<Array<Point>>, offset: number) {
     const newRings = [];
     const zero = new Point(0, 0);
     for (let k = 0; k < rings.length; k++) {
