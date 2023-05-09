@@ -492,7 +492,7 @@ class Style extends Evented {
         return drapedLayers[layer.type];
     }
 
-    _checkLoaded() {
+    _checkLoaded(): void {
         if (!this._loaded) {
             throw new Error('Style is not done loading');
         }
@@ -711,7 +711,7 @@ class Style extends Evented {
         return this._availableImages.slice();
     }
 
-    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
+    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getSource(id) !== undefined) {
@@ -736,7 +736,7 @@ class Style extends Evented {
             sourceId: id
         }));
 
-        const addSourceCache = (onlySymbols) => {
+        const addSourceCache = (onlySymbols: boolean) => {
             const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
             const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
             (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
@@ -1285,7 +1285,7 @@ class Style extends Evented {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = layerId => this._layers[layerId].type === 'fill-extrusion';
+        const isLayer3D = (layerId: string) => this._layers[layerId].type === 'fill-extrusion';
 
         const layerIndex = {};
         const features3D = [];
