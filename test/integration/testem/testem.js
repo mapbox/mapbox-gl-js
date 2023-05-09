@@ -170,6 +170,7 @@ module.exports = async function() {
         middleware: [(app) => injectMiddlewares(app, {ci})],
         "test_page": testPage,
         "query_params": getQueryParams(),
+        "bail_on_uncaught_error": false
     };
 
     // Configuration for tests running in CI mode (i.e. test-... not watch-...)
@@ -178,7 +179,7 @@ module.exports = async function() {
         "reporter": "xunit",
         "report_file": ciOutputFile,
         "xunit_intermediate_output": true,
-        "tap_quiet_logs": true,
+        "tap_quiet_logs": false,
         "browser_disconnect_timeout": 90, // A longer disconnect time out prevents crashes on Windows Virtual Machines.
         "launchers": { // Allow safari to proceed without user interention. See https://github.com/testem/testem/issues/1387
             "Safari": {
