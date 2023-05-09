@@ -46,8 +46,9 @@ import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
 
+import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
-import type {ExpressionRegistry} from '../expression.js';
+import type {Expression, ExpressionRegistry} from '../expression.js';
 
 const expressions: ExpressionRegistry = {
     // special forms
@@ -108,7 +109,7 @@ const expressions: ExpressionRegistry = {
     'within': Within
 };
 
-function rgba(ctx, [r, g, b, a]) {
+function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
     r = r.evaluate(ctx);
     g = g.evaluate(ctx);
     b = b.evaluate(ctx);
@@ -118,16 +119,16 @@ function rgba(ctx, [r, g, b, a]) {
     return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
-function has(key, obj) {
+function has(key: string, obj: {[string]: any}): boolean {
     return key in obj;
 }
 
-function get(key, obj) {
+function get(key: string, obj: {[string]: any}) {
     const v = obj[key];
     return typeof v === 'undefined' ? null : v;
 }
 
-function binarySearch(v, a, i, j) {
+function binarySearch(v: any, a: {[number]: any}, i: number, j: number) {
     while (i <= j) {
         const m = (i + j) >> 1;
         if (a[m] === v)
