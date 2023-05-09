@@ -84,7 +84,7 @@ export default class FormatExpression implements Expression {
     }
 
     evaluate(ctx: EvaluationContext): Formatted {
-        const evaluateSection = section => {
+        const evaluateSection = (section: FormattedSectionExpression) => {
             const evaluatedContent = section.content.evaluate(ctx);
             if (typeOf(evaluatedContent) === ResolvedImageType) {
                 return new FormattedSection('', evaluatedContent, null, null, null);
