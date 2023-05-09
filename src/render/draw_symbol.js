@@ -34,6 +34,7 @@ import type SourceCache from '../source/source_cache.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
 import type Texture from '../render/texture.js';
+import type ColorMode from '../gl/color_mode.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program.js';
@@ -165,7 +166,7 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
     }
 }
 
-function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boolean, pitchWithMap: boolean, variableOffsets: { [_: CrossTileID]: VariableOffset }, symbolSize, transform: Transform, labelPlaneMatrix: Float32Array, coord: OverscaledTileID, tileScale: number, size: InterpolatedSize, updateTextFitIcon: boolean) {
+function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boolean, pitchWithMap: boolean, variableOffsets: { [_: CrossTileID]: VariableOffset }, symbolSize: typeof symbolSize, transform: Transform, labelPlaneMatrix: Float32Array, coord: OverscaledTileID, tileScale: number, size: InterpolatedSize, updateTextFitIcon: boolean) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
@@ -268,7 +269,7 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
     }
 }
 
-function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, isText: boolean, translate: [number, number], translateAnchor: 'map' | 'viewport', rotationAlignment: Alignment, pitchAlignment: Alignment, keepUpright: boolean, stencilMode: StencilMode, colorMode) {
+function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, isText: boolean, translate: [number, number], translateAnchor: 'map' | 'viewport', rotationAlignment: Alignment, pitchAlignment: Alignment, keepUpright: boolean, stencilMode: StencilMode, colorMode: ColorMode) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -476,7 +477,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
     }
 }
 
-function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode, uniformValues: UniformValues<SymbolSDFUniformsType>) {
+function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolSDFUniformsType>) {
     const context = painter.context;
     const gl = context.gl;
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.globeExtVertexBuffer];
