@@ -125,7 +125,7 @@ function calculateTileRatio(tile: Tile, transform: Transform) {
     return 1 / pixelsToTileUnits(tile, 1, transform.tileZoom);
 }
 
-function calculateMatrix(painter, tile, layer, matrix) {
+function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, matrix: ?Float32Array) {
     return painter.translatePosMatrix(
         matrix ? matrix : tile.tileID.projMatrix,
         tile,
@@ -152,7 +152,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     return values;
 };
 
-function hasDash(layer) {
+function hasDash(layer: LineStyleLayer) {
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
     return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
 }
