@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00025,
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.7
+      }
+    }
+  ],
+  "sources": {
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.b3dm"
+      ]
+    }
+  },
+  "pitch": 70,
+  "zoom": 17.85,
+  "bearing": 126,
+  "center": [
+    11.5605,
+    48.1762
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      },
+      "id": "land"
+    },
+    {
+      "minzoom": 14.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "id": "landmarks"
+    }
+  ]
+}
