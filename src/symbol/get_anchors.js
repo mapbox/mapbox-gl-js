@@ -110,7 +110,7 @@ function getAnchors(line: Array<Point>,
     return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, false, tileExtent);
 }
 
-function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent) {
+function resample(line: Array<Point>, offset: number, spacing: number, angleWindowSize: number, maxAngle: number, labelLength: number, isLineContinued: boolean, placeAtMiddle: boolean, tileExtent: number) {
 
     const halfLabelLength = labelLength / 2;
     const lineLength = getLineLength(line);
