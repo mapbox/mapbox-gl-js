@@ -1,0 +1,205 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00085,
+      "height": 1024,
+      "width": 1024,
+      "standardDerivatives": true,
+      "optimizeForTerrain": true,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+          "source": "rgbterrain",
+          "exaggeration": 1.0
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "fog": {
+    "range": [-0.5, 3.0],
+    "color": "white"
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.04
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 1.0,
+        "cast-shadows": true,
+        "shadow-intensity": 1,
+        "direction": [
+          160,
+          60
+        ]
+      }
+    }
+  ],
+  "models": {
+    "maple": "local://models/maple.glb",
+    "maple1": "local://models/maple1.glb",
+    "maple2": "local://models/maple2.glb",
+    "oak1": "local://models/oak1.glb",
+    "oak2": "local://models/oak2.glb",
+    "oak3": "local://models/oak3.glb",
+    "spur1": "local://models/spur1.glb",
+    "spur2": "local://models/spur2.glb"
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 0.5
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/dem/{z}-{x}-{y}.terrain.514.png"
+      ],
+      "maxzoom": 13,
+      "tileSize": 514
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-122.4027, 37.7845],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "pitch": 50,
+  "zoom": 17.7,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10,
+          "line-opacity": 0.3,
+          "line-emissive-strength": 1
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-opacity" : 0.9,
+        "model-scale": [10, 10, 10],
+        "model-type": "location-indicator"
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "trees",
+      "layout" : {
+        "model-id": ["match", ["get", "tree_type"],
+          "broadleaved", 
+          ["match", ["%", ["id"], 6],
+            0, "maple",
+            1, "maple1",
+            2, "spur1",
+            3, "oak1",
+            4, "oak2",
+            "oak3"],
+          ["match", ["%", ["id"], 2],
+            0, "oak1", "oak2"]
+        ]
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 50.0]],
+          2, ["literal", [10.0, 0.0, 120.0]],
+          ["literal", [0.0, -3.0, -60]]],
+        "model-scale": ["match", ["%", ["id"], 3],
+          0, ["literal", [1.0, 1.25, 1.0]],
+          1, ["literal", [0.8, 0.9, 0.8]],
+          ["literal", [1.2, 1.1, 1.1]]],
+        "model-color": [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          "blue",
+          ["match", ["%", ["id"], 6],
+            0, "orange",
+            1, "gray",
+            2, "white",
+            3, "pink",
+            4, "yellow",
+            "green"]
+        ],
+        "model-color-mix-intensity": 1
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"]
+      }
+    }
+  ]
+}

@@ -29,6 +29,7 @@ import {OverscaledTileID} from '../../src/source/tile_id.js';
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import {FeatureVertexArray} from '../../src/data/array_types.js';
 import {featureAttributes} from '../data/model_attributes.js';
+import {Aabb} from '../../src/util/primitives.js';
 
 export default drawModels;
 
@@ -43,6 +44,13 @@ type SortedMesh = {
     modelIndex: number;
     worldViewProjection: Mat4;
     nodeModelMatrix: Mat4;
+}
+
+type RenderData = {
+    shadowUniformsInitialized: boolean;
+    tileMatrix: Float64Array;
+    shadowTileMatrix: Float32Array;
+    aabb: Aabb;
 }
 
 function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
@@ -279,16 +287,32 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     if (opacity === 0) {
         return;
     }
+    const castShadows = layer.paint.get('model-cast-shadows');
+    if (painter.renderPass === 'shadow' && !castShadows) {
+        return;
+    }
+    const shadowRenderer = painter.shadowRenderer;
+    const receiveShadows = layer.paint.get('model-cast-shadows');
+    if (shadowRenderer && !receiveShadows) {
+        shadowRenderer.enabled = false;
+    }
+    const cleanup = () => {
+        if (shadowRenderer && !receiveShadows) {
+            shadowRenderer.enabled = true;
+        }
+    };
 
     const modelSource = sourceCache.getSource();
 
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         drawInstancedModels(painter, sourceCache, layer, coords);
+        cleanup();
         return;
     }
     if (modelSource.type === 'batched-model') {
         drawBatchedModels(painter, sourceCache, layer, coords);
+        cleanup();
         return;
     }
     const models = (modelSource: any).getModels();
@@ -335,6 +359,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
             drawShadowCaster(transparentMesh.mesh, transparentMesh.nodeModelMatrix, painter, layer);
         }
         // Finish the render pass
+        cleanup();
         return;
     }
 
@@ -358,6 +383,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     for (const transparentMesh of transparentMeshes) {
         drawMesh(transparentMesh, painter, layer, modelParametersVector[transparentMesh.modelIndex], StencilMode.disabled, painter.colorModeForRenderPass());
     }
+    cleanup();
 }
 
 // If terrain changes, update elevations (baked in translation).
@@ -374,7 +400,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
         }
     }
     if (exaggeration === bucket.validForExaggeration &&
-        (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID.canonical === bucket.validForDEMTile))) {
+        (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID === bucket.validForDEMTile))) {
         return;
     }
 
@@ -389,10 +415,18 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
         }
     }
     bucket.validForExaggeration = exaggeration;
-    bucket.validForDEMTile = dem && dem._demTile ? dem._demTile.tileID.canonical : undefined;
+    bucket.validForDEMTile = dem && dem._demTile ? dem._demTile.tileID : undefined;
     bucket.uploaded = false;
     bucket.upload(painter.context);
 }
+
+// preallocate structure used to reduce re-allocation during rendering and flow checks
+const renderData: RenderData = {
+    shadowUniformsInitialized: false,
+    tileMatrix: new Float64Array(16),
+    shadowTileMatrix: new Float32Array(16),
+    aabb: new Aabb([0, 0, 0], [EXTENT, EXTENT, 0])
+};
 
 function drawInstancedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
     const tr = painter.transform;
@@ -409,6 +443,20 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         const tile = source.getTile(coord);
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
+
+        renderData.shadowUniformsInitialized = false;
+        if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
+            const shadowRenderer = painter.shadowRenderer;
+            if (painter.currentShadowCascade === 1 && bucket.isInsideFirstShadowMapFrustum) continue;
+
+            const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
+            renderData.tileMatrix.set(tileMatrix);
+            renderData.shadowTileMatrix = Float32Array.from(shadowRenderer.calculateShadowPassMatrixFromMatrix(tileMatrix));
+            renderData.aabb.min.fill(0);
+            renderData.aabb.max[0] = renderData.aabb.max[1] = EXTENT;
+            renderData.aabb.max[2] = 0;
+            if (calculateTileShadowPassCulling(bucket, renderData, painter)) continue;
+        }
         updateModelBucketsElevation(painter, bucket, coord);
 
         // camera position in the tile coordinates
@@ -421,61 +469,74 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
             if (!model) continue;
             const modelInstances = bucket.instancesPerModel[modelId];
             for (const node of model.nodes) {
-                drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord);
+                drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
             }
         }
     }
 }
 
-function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord) {
+function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData) {
     const context = painter.context;
-    if (node.meshes) {
-        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
-        for (const mesh of node.meshes) {
-            const definesValues = [];
-            const dynamicBuffers = [];
-            setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
-            definesValues.push('MODEL_POSITION_ON_GPU');
-            const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+    const isShadowPass = painter.renderPass === 'shadow';
+    const shadowRenderer = painter.shadowRenderer;
+    const depthMode = isShadowPass && shadowRenderer ? shadowRenderer.getShadowPassDepthMode() : new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const colorMode = isShadowPass && shadowRenderer ? shadowRenderer.getShadowPassColorMode() : painter.colorModeForRenderPass();
 
-            const isShadowPass = painter.renderPass === 'shadow';
-            const shadowRenderer = painter.shadowRenderer;
-            if (!isShadowPass && shadowRenderer) {
-                shadowRenderer.setupShadows(coord.toUnwrapped(), program);
+    if (node.meshes) {
+        for (const mesh of node.meshes) {
+            const definesValues = ['MODEL_POSITION_ON_GPU'];
+            const dynamicBuffers = [];
+            let program;
+            let uniformValues;
+
+            if (isShadowPass && shadowRenderer) {
+                program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
+                uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
+            } else {
+                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+                program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+                const material = mesh.material;
+                const pbr = material.pbrMetallicRoughness;
+
+                uniformValues = modelUniformValues(
+                    coord.projMatrix,
+                    Float32Array.from(node.matrix),
+                    new Float32Array(16),
+                    painter,
+                    layer.paint.get('model-opacity'),
+                    pbr.baseColorFactor,
+                    material.emissiveFactor,
+                    pbr.metallicFactor,
+                    pbr.roughnessFactor,
+                    material,
+                    layer,
+                    cameraPos);
+                if (shadowRenderer) {
+                    if (!renderData.shadowUniformsInitialized) {
+                        shadowRenderer.setupShadows(coord.toUnwrapped(), program);
+                        renderData.shadowUniformsInitialized = true;
+                    } else {
+                        program.setShadowUniformValues(context, shadowRenderer.getShadowUniformValues());
+                    }
+                }
             }
 
             painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
-            const material = mesh.material;
-            const pbr = material.pbrMetallicRoughness;
-
-            const uniformValues = modelUniformValues(
-                coord.projMatrix,
-                Float32Array.from(node.matrix),
-                new Float32Array(16),
-                painter,
-                layer.paint.get('model-opacity'),
-                pbr.baseColorFactor,
-                material.emissiveFactor,
-                pbr.metallicFactor,
-                pbr.roughnessFactor,
-                material,
-                layer,
-                cameraPos);
-
             assert(modelInstances.instancedDataArray.bytesPerElement === 64);
-
+            const instanceUniform = isShadowPass ? "u_instance" : "u_normal_matrix";
             for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
-                uniformValues["u_normal_matrix"] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
-                program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
-                        uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-                        undefined, dynamicBuffers);
+                /* $FlowIgnore[prop-missing] modelDepth uses u_instance and model uses u_normal_matrix for packing instance data */
+                uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
+                program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+                uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                undefined, dynamicBuffers);
             }
         }
     }
     if (node.children) {
         for (const child of node.children) {
-            drawInstancedNode(painter, layer, child, modelInstances, cameraPos, coord);
+            drawInstancedNode(painter, layer, child, modelInstances, cameraPos, coord, renderData);
         }
     }
 }
@@ -670,5 +731,37 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             drawBatchedNode(nodeInfo.node, bucket.modelTraits, painter, layer, coord, tileMatrix, zScaleMatrix, negCameraPosMatrix);
         }
     }
+}
+
+function calculateTileShadowPassCulling(bucket, renderData, painter) {
+    if (!painter.style.modelManager) return true;
+    const modelManager = painter.style.modelManager;
+    if (!painter.shadowRenderer) return true;
+    const shadowRenderer = painter.shadowRenderer;
+    assert(painter.renderPass === 'shadow');
+    const aabb = renderData.aabb;
+    let allModelsLoaded = true;
+    let maxHeight = bucket.maxHeight;
+    if (maxHeight === 0) {
+        let maxDim = 0;
+        for (const modelId in bucket.instancesPerModel) {
+            const model = modelManager.getModel(modelId);
+            if (!model) {
+                allModelsLoaded = false;
+                continue;
+            }
+            maxDim = Math.max(maxDim, Math.max(Math.max(model.aabb.max[0], model.aabb.max[1]), model.aabb.max[2]));
+        }
+        maxHeight = bucket.maxScale * maxDim * 1.41 + bucket.maxVerticalOffset;
+        if (allModelsLoaded) bucket.maxHeight = maxHeight;
+    }
+    aabb.max[2] = maxHeight;
+    vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix);
+    vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix);
+    const intersection = aabb.intersects(shadowRenderer.getCurrentCascadeFrustum());
+    if (painter.currentShadowCascade === 0) {
+        bucket.isInsideFirstShadowMapFrustum = intersection === 2;
+    }
+    return intersection === 0;
 }
 

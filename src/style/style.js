@@ -352,9 +352,13 @@ class Style extends Evented {
             this.setLights(this.stylesheet.lights);
         }
         if (!this.stylesheet.models || (this.stylesheet.models instanceof Object && Object.keys(this.stylesheet.models).length === 0) || this._validate(validateModels, 'models', this.stylesheet.models)) {
+            if (this.modelManager) {
+                this.modelManager.setEventedParent(null);
+            }
             this.modelManager = undefined;
         } else {
             this.modelManager = new ModelManager(this.stylesheet.models, this.map._requestManager);
+            this.modelManager.setEventedParent(this);
         }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
@@ -1803,6 +1807,9 @@ class Style extends Evented {
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].clearTiles();
             this._sourceCaches[id].setEventedParent(null);
+        }
+        if (this.modelManager) {
+            this.modelManager.setEventedParent(null);
         }
         this.imageManager.setEventedParent(null);
         this.setEventedParent(null);

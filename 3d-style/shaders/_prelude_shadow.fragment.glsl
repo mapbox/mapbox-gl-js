@@ -14,7 +14,7 @@ uniform sampler2D u_shadowmap_1;
 
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
-uniform vec2 u_cascade_distances;
+uniform vec2 u_fade_range;
 uniform highp vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
@@ -39,7 +39,6 @@ highp float shadow_sample_0(highp vec2 uv, highp float compare) {
 }
 
 highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
-    pos.xyz = pos.xyz * (0.5 / pos.w) + 0.5;
     highp float compare1 = pos.z - bias;
 
     highp vec2 texel = pos.xy / u_texel_size - vec2(0.5);
@@ -81,7 +80,6 @@ highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
 }
 
 highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
-    pos.xyz = pos.xyz * (0.5 / pos.w) + 0.5;
     highp float compare0 = pos.z - bias;
 
     highp vec2 texel = pos.xy / u_texel_size - vec2(1.5);
@@ -178,27 +176,25 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
 }
 
 float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
-    const float cascadeFadeRange = 0.05;
-    const float endFadeRange = 0.25;
+    light_view_pos0.xyz /= light_view_pos0.w;
+    light_view_pos1.xyz /= light_view_pos1.w;
 
-    float occlusion = 0.0;
-    if (view_depth < u_cascade_distances.x) {
-        occlusion = shadow_occlusion_0(light_view_pos0, bias);
+    vec4 uv = vec4(light_view_pos0.xy, light_view_pos1.xy);
+    vec4 abs_bounds = abs(uv);
+
+    if (abs_bounds.x < 1.0 && abs_bounds.y < 1.0) {
+        light_view_pos0.xyz = light_view_pos0.xyz * 0.5 + 0.5;
+        return shadow_occlusion_0(light_view_pos0, bias);
     }
-    if (view_depth > u_cascade_distances.x * (1.0 - cascadeFadeRange) && view_depth < u_cascade_distances.y) {
-        float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
+    if (abs_bounds.z >= 1.0 || abs_bounds.w >= 1.0) {
+        return 0.0;
+    }
 
-        // If view_depth is within cascade 0 depth, mix the results
-        occlusion = (view_depth >= u_cascade_distances.x) ? occlusion1 :
-            mix(occlusion1, occlusion, (u_cascade_distances.x - view_depth) / (u_cascade_distances.x * cascadeFadeRange));
+    light_view_pos1.xyz = light_view_pos1.xyz * 0.5 + 0.5;
+    float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
         
-        // If view_depth is within end fade range, fade out
-        if (view_depth > u_cascade_distances.y * (1.0 - endFadeRange)) {
-            occlusion *= (u_cascade_distances.y - view_depth) / (u_cascade_distances.y * endFadeRange);
-        }
-    }
-
-    return occlusion;
+    // If view_depth is within end fade range, fade out
+    return mix(occlusion1, 0.0, smoothstep(u_fade_range.x, u_fade_range.y, view_depth));
 }
 
 highp float calculate_shadow_bias(float NDotL) {

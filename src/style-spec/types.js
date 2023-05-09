@@ -516,7 +516,8 @@ export type ModelLayerSpecification = {|
         "model-receive-shadows"?: ExpressionSpecification,
         "model-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
         "model-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
-        "model-roughness"?: DataDrivenPropertyValueSpecification<number>
+        "model-roughness"?: DataDrivenPropertyValueSpecification<number>,
+        "model-height-based-emissive-strength-multiplier"?: DataDrivenPropertyValueSpecification<[number, number, number, number, number]>
     |}
 |}
 

@@ -129,18 +129,27 @@ const modelUniformValues = (
 };
 
 export type ModelDepthUniformsType = {|
-    'u_matrix': UniformMatrix4f
+    'u_matrix': UniformMatrix4f,
+    'u_instance': UniformMatrix4f,
+    'u_node_matrix': UniformMatrix4f
 |};
 
 const modelDepthUniforms = (context: Context): ModelDepthUniformsType => ({
-    'u_matrix': new UniformMatrix4f(context)
+    'u_matrix': new UniformMatrix4f(context),
+    'u_instance': new UniformMatrix4f(context),
+    'u_node_matrix': new UniformMatrix4f(context)
 });
 
+const emptyMat4 = new Float32Array(16);
 const modelDepthUniformValues = (
-    matrix: Float32Array
+    matrix: Float32Array,
+    instance: Float32Array = emptyMat4,
+    nodeMatrix: Float32Array = emptyMat4
 ): UniformValues<ModelDepthUniformsType> => {
     return {
-        'u_matrix': matrix
+        'u_matrix': matrix,
+        'u_instance': instance,
+        'u_node_matrix': nodeMatrix
     };
 };
 

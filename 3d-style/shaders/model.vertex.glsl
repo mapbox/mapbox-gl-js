@@ -156,8 +156,8 @@ void main() {
 #endif
 
 #ifdef RENDER_SHADOWS
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(a_pos_3f, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(a_pos_3f, 1);
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(local_pos, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(local_pos, 1);
     v_depth_shadows = gl_Position.w;
 #endif
 }
