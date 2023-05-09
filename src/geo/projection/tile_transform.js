@@ -9,7 +9,7 @@ import assert from 'assert';
 import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {Vec3} from 'gl-matrix';
-import type Projection from './projection.js';
+import type Projection, {ProjectedPoint} from './projection.js';
 import type Transform from '../transform.js';
 
 export type TileTransform = {
@@ -51,7 +51,7 @@ export default function tileTransform(id: Object, projection: Projection): TileT
     // we pick an error threshold for calculating the bbox that balances between performance and precision
     const maxErr = s / 16;
 
-    function processSegment(pa, pb, ax, ay, bx, by) {
+    function processSegment(pa: ProjectedPoint, pb: ProjectedPoint, ax: number, ay: number, bx: number, by: number) {
         const mx = (ax + bx) / 2;
         const my = (ay + by) / 2;
 
