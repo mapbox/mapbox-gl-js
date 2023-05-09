@@ -13,6 +13,7 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type Tile from '../source/tile.js';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer.js';
+import type ColorMode from '../gl/color_mode.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import DEMData from '../data/dem_data.js';
@@ -49,7 +50,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     painter.resetStencilClippingMasks();
 }
 
-function renderHillshade(painter, coord, tile, layer, depthMode, stencilMode, colorMode) {
+function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, layer: HillshadeStyleLayer, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode) {
     const context = painter.context;
     const gl = context.gl;
     const fbo = tile.fbo;
@@ -92,7 +93,7 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
 
 // hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
 // directions for each pixel, and saves those values to a framebuffer texture in the r and g channels.
-function prepareHillshade(painter, tile, layer, depthMode, stencilMode, colorMode) {
+function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLayer, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode) {
     const context = painter.context;
     const gl = context.gl;
     if (!tile.dem) return;
