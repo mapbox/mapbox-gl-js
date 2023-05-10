@@ -9,11 +9,11 @@ import {getMaximumPaintValue, translateDistance, translate} from '../query_utils
 import properties from './line_style_layer_properties.js';
 import {extend} from '../../util/util.js';
 import EvaluationParameters from '../evaluation_parameters.js';
-import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty, PropertyValue, PossiblyEvaluatedPropertyValue} from '../properties.js';
+import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties.js';
 import ProgramConfiguration from '../../data/program_configuration.js';
 
 import Step from '../../style-spec/expression/definitions/step.js';
-import type {PossiblyEvaluatedValue} from '../properties.js';
+import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue} from '../properties.js';
 import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties.js';

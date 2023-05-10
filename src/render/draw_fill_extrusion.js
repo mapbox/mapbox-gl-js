@@ -5,7 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
-import FillExtrusionBucket, {fillExtrusionHeightLift, PartMetadata} from '../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionPatternUniformValues,
@@ -20,6 +20,7 @@ import {Terrain} from '../terrain/terrain.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
+import type {PartMetadata} from '../data/bucket/fill_extrusion_bucket.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
 
 export default draw;

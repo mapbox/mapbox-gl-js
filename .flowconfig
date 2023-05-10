@@ -30,10 +30,10 @@
 .*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.190.1
+0.191.0
 
 [options]
-enforce_local_inference_annotations=true
+exact_empty_objects=false
 
 [strict]
 nonstrict-import

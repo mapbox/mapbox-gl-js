@@ -224,10 +224,7 @@ class WorkerTile {
 
         PerformanceUtils.endMeasure(m);
 
-        maybePrepare.call(this);
-
-        // $FlowFixMe[missing-this-annot]
-        function maybePrepare() {
+        const maybePrepare = () => {
             if (error) {
                 return callback(error);
             } else if (glyphMap && iconMap && patternMap) {
@@ -275,7 +272,9 @@ class WorkerTile {
                 });
                 PerformanceUtils.endMeasure(m);
             }
-        }
+        };
+
+        maybePrepare.call(this);
     }
 }
 
