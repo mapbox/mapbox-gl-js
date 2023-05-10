@@ -20,7 +20,6 @@
         }
 
         #elevationDebug {
-            background-color: azure;
             position: absolute;
             top:30px;
             right:30px;
@@ -32,7 +31,7 @@
             position: absolute;
             top:15px;
             left:15px;
-            max-height: 90%;
+            max-height: 95%;
             overflow-y:auto;
             z-index: 100;
         }
@@ -55,7 +54,9 @@
 </head>
 
 <body>
-<div id='map'><div id='elevationDebug'></div><div id='config'></div></div>
+<div id='map'></div>
+<div id='elevationDebug'></div>
+<div id='config'></div>
 
 <script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
 <script src='/debug/dynamic.js'></script>
@@ -63,7 +64,7 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-var Demo3D = function() {
+const Demo3D = function() {
     this.enableTerrain = false;
     this.enable3dLights = true;
     this.terrainExaggeration = 1.5;
@@ -107,6 +108,27 @@ var Demo3D = function() {
     this.mapProjection = 'globe';
     this.orthographicProjectionAtLowPitch = false;
     this.buildingExtrusion = "extrusion";
+    this.enableBuildings = true;
+
+    this.debug = {
+        showTiles: false,
+        showCollisions: false,
+        showOverdraw: false,
+        terrainWireframe: false,
+        tileAABBDebug: false,
+        freezeTileCoverage: false
+    };
+
+    // Terrain debug widget
+    this.terrainElevationDebugWidget = new Tweakpane.Pane({  // eslint-disable-line
+        container: document.querySelector('#elevationDebug'),
+        title: 'Terrain elevation debug'});
+    this.terrainElevationDebugWidget.hidden = true;
+
+    this.debug.exaggerated = 0;
+    this.debug.unexaggerated = 0;
+    this.terrainElevationDebugWidget.addMonitor(this.debug, 'exaggerated');
+    this.terrainElevationDebugWidget.addMonitor(this.debug, 'unexaggerated');
 };
 
 const demo3d = new Demo3D();
@@ -220,6 +242,30 @@ window.onload = function() {
         max: 140,
     });
 
+    {
+        const debug = gui.addFolder({title:'Debug', expanded: false});
+
+        debug.addInput(demo3d.debug, 'showTiles').on('change', (ev) => {
+            map.showTileBoundaries = demo3d.debug.showTiles;
+        });
+        debug.addInput(demo3d.debug, 'showCollisions').on('change', (ev) => {
+            map.showCollisionBoxes = demo3d.debug.showCollisions;
+        });
+        debug.addInput(demo3d.debug, 'showOverdraw').on('change', (ev) => {
+            map.showOverdrawInspector = demo3d.debug.showOverdraw;
+        });
+        debug.addInput(demo3d.debug, 'terrainWireframe').on('change', (ev) => {
+            map.showTerrainWireframe = demo3d.debug.terrainWireframe;
+        });
+        debug.addInput(demo3d.debug, 'tileAABBDebug').on('change', (ev) => {
+            map.showTileAABBs = demo3d.debug.tileAABBDebug;
+        });
+        debug.addInput(demo3d.debug, 'freezeTileCoverage').on('change', (ev) => {
+            map.transform.freezeTileCoverage = demo3d.debug.freezeTileCoverage;
+            map._update();
+        });
+    }
+
     // Lights
     const lights = gui.addFolder({title:'Lighting', expanded: true});
     const enable3dLights = lights.addInput(demo3d, 'enable3dLights');
@@ -241,6 +287,7 @@ window.onload = function() {
     const terrainExaggeration = terrain.addInput(demo3d, 'terrainExaggeration', {min:0, max:100});
     terrain.on('change', (ev) => {
         map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": demo3d.terrainExaggeration} : null);
+        demo3d.terrainElevationDebugWidget.hidden = !demo3d.enableTerrain;
     });
 
     // Camera
@@ -286,6 +333,12 @@ window.onload = function() {
 
     // Buildings
     const buildings = gui.addFolder({title:'Buildings', expanded:false});
+    buildings.addInput(demo3d, 'enableBuildings').on('change', (ev) => {
+        const buildingsLayerId = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
+        if (buildingsLayerId !== -1) {
+            map.setLayoutProperty(buildingsLayerId, 'visibility', demo3d.enableBuildings ? 'visible' : 'none');
+        }
+    });
     const verticalGradient = buildings.addInput(demo3d, 'verticalGradient');
     const buildingColor = buildings.addInput(demo3d, 'buildingColor');
     const buildingOpacity = buildings.addInput(demo3d, 'buildingOpacity', {min:0.0, max:1.0});
@@ -427,11 +480,11 @@ map.on('style.load', function() {
     });
     map.setFog({});
     map.setLight({intensity: demo3d.lightIntensity});
-    var elevationDebug = document.getElementById('elevationDebug');
     map.on('mousemove', (e) => {
-        const elevation = map.queryTerrainElevation(map.unproject(e.point));
-        const elevation2 = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
-        elevationDebug.innerHTML = 'Exaggerated: ' + (elevation ? elevation.toFixed(3) + 'm ' : 'Unavailable') + 'Unexaggerated: ' + (elevation2 ? elevation2.toFixed(3) + 'm ' : 'Unavailable');
+        demo3d.debug.exaggerated = map.queryTerrainElevation(map.unproject(e.point));
+        demo3d.debug.unexaggerated = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
+
+        demo3d.terrainElevationDebugWidget.refresh();
     });
 
     const lerp = (a, b, t) => {
