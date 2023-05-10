@@ -994,6 +994,17 @@ class SourceCache extends Evented {
      * @returns {Object} Returns `this` | Promise.
      */
     _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+        if (!this._sourceLoaded) {
+            const waitUntilSourceLoaded = () => {
+                if (!this._sourceLoaded) return;
+                this._source.off('data', waitUntilSourceLoaded);
+                this._preloadTiles(transform, callback);
+            };
+
+            this._source.on('data', waitUntilSourceLoaded);
+            return;
+        }
+
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 

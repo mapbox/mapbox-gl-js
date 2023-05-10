@@ -1897,5 +1897,26 @@ test('SourceCache#_preloadTiles', (t) => {
         sourceCache.getSource().onAdd();
     });
 
+    t.test('waits until source is loaded before preloading tiles', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        const {sourceCache} = createSourceCache({
+            loadTile (tile) {
+                t.ok(sourceCache._sourceLoaded, 'source is loaded before preloading tiles');
+                t.equal(tile.tileID.key, new OverscaledTileID(0, 0, 0, 0, 0).key);
+                t.end();
+            }
+        });
+
+        // Marks source as not loaded
+        sourceCache._sourceLoaded = false;
+        sourceCache._preloadTiles(transform);
+
+        // Fires event that marks source as loaded
+        sourceCache.getSource().onAdd();
+    });
+
     t.end();
 });
