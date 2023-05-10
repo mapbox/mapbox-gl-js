@@ -86,6 +86,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - verify-codegen:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
       - collect-stats:
           requires:
             - build
@@ -315,6 +321,17 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: yarn run test-style-spec
+
+  verify-codegen:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Verify codegen output
+          command: |
+            yarn run codegen
+            git add -A && git diff --staged --exit-code | tee check.patch
 
   collect-stats:
     <<: *linux-defaults
