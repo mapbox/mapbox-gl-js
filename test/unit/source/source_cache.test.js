@@ -1903,17 +1903,16 @@ test('SourceCache#_preloadTiles', (t) => {
         transform.zoom = 0;
 
         const {sourceCache} = createSourceCache({
-            loadTile (tile, callback) {
+            loadTile (tile) {
                 t.ok(sourceCache._sourceLoaded, 'source is loaded before preloading tiles');
-                t.equal(tile.tileID.key, new OverscaledTileID(0, 0, 0, 0, 0).key,);
-                tile.state = 'loaded';
-                callback(null);
+                t.equal(tile.tileID.key, new OverscaledTileID(0, 0, 0, 0, 0).key);
+                t.end();
             }
         });
 
         // Marks source as not loaded
         sourceCache._sourceLoaded = false;
-        sourceCache._preloadTiles(transform, () => t.end());
+        sourceCache._preloadTiles(transform);
 
         // Fires event that marks source as loaded
         sourceCache.getSource().onAdd();
