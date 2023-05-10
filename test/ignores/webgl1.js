@@ -16,6 +16,7 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/saturation",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/transparency",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/with-ao",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/with-shadows",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/edge-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/fog",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/interior",
