@@ -239,7 +239,7 @@ class WorkerTile {
                 if (!error) {
                     error = err;
                     glyphMap = result;
-                    maybePrepare.call(this);
+                    maybePrepare();
                 }
             }, undefined, false, taskMetadata);
         } else {
@@ -252,7 +252,7 @@ class WorkerTile {
                 if (!error) {
                     error = err;
                     iconMap = result;
-                    maybePrepare.call(this);
+                    maybePrepare();
                 }
             }, undefined, false, taskMetadata);
         } else {
@@ -265,7 +265,7 @@ class WorkerTile {
                 if (!error) {
                     error = err;
                     patternMap = result;
-                    maybePrepare.call(this);
+                    maybePrepare();
                 }
             }, undefined, false, taskMetadata);
         } else {
@@ -274,7 +274,7 @@ class WorkerTile {
 
         PerformanceUtils.endMeasure(m);
 
-        maybePrepare.call(this);
+        maybePrepare();
     }
 }
 
