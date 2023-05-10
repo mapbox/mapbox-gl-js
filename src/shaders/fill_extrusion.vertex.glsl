@@ -35,7 +35,7 @@ varying highp vec4 v_pos_light_view_1;
 varying float v_depth;
 #endif
 
-#ifdef ZERO_ROOF_RADIUS
+#if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
 varying vec4 v_roof_color;
 #endif
 
@@ -202,19 +202,13 @@ void main() {
     v_color *= u_opacity;
 #endif // !LIGHTING_3D_MODE
 
-#ifdef ZERO_ROOF_RADIUS
-
-#ifdef LIGHTING_3D_MODE
-    v_roof_color = color;
-#else // LIGHTING_3D_MODE
+#if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
     float roofNdotL = clamp(u_lightpos.z, 0.0, 1.0);
     roofNdotL = mix((1.0 - u_lightintensity), max((1.0 - colorvalue + u_lightintensity), 1.0), roofNdotL);
     v_roof_color = vec4(0.0, 0.0, 0.0, 1.0);
     v_roof_color.rgb += clamp(color.rgb * roofNdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
-#endif // !LIGHTING_3D_MODE
-
     v_roof_color *= u_opacity;
-#endif // ZERO_ROOF_RADIUS
+#endif // defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);

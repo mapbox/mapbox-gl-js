@@ -13,7 +13,7 @@ uniform lowp vec2 u_ao;
 varying vec2 v_ao;
 #endif
 
-#ifdef ZERO_ROOF_RADIUS
+#if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
 varying vec4 v_roof_color;
 #endif
 
@@ -39,13 +39,13 @@ void main() {
 #endif
 
 float z;
-vec4 color;
 #ifdef ZERO_ROOF_RADIUS
     z = float(normal.z > 0.00001);
-    color = mix(v_color, v_roof_color, z);
-#else
-    color = v_color;
+    normal = mix(normal, vec3(0.0, 0.0, 1.0), z);
 #endif
+
+    vec4 color = v_color;
+
 float h = max(0.0, v_height);
 float ao_shade = 1.0;
 #ifdef FAUX_AO
@@ -83,7 +83,7 @@ float ao_shade = 1.0;
 
 #ifdef FLOOD_LIGHT
     float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
-    color.rgb = linearTosRGB(mix(sRGBToLinear(color.rgb), u_flood_light_color * u_opacity, flood_radiance));
+    color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
 #endif // FLOOD_LIGHT
 
     color *= u_opacity;
