@@ -28,6 +28,8 @@ import {
     getLatitudinalLod
 } from '../geo/projection/globe_util.js';
 import extend from '../style-spec/util/extend.js';
+import type Program from '../render/program.js';
+import type VertexBuffer from "../gl/vertex_buffer.js";
 
 export {
     drawTerrainRaster,
@@ -148,7 +150,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
-    const setShaderMode = (mode, isWireframe) => {
+    const setShaderMode = (mode: number, isWireframe: boolean) => {
         if (programMode === mode) return;
         const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
 
@@ -253,7 +255,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
-                const drawPole = (program, vertexBuffer) => program.draw(
+                const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
                     context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
@@ -286,7 +288,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         let program, programMode;
         const showWireframe = painter.options.showTerrainWireframe ? SHADER_TERRAIN_WIREFRAME : SHADER_DEFAULT;
 
-        const setShaderMode = (mode, isWireframe) => {
+        const setShaderMode = (mode: number, isWireframe: boolean) => {
             if (programMode === mode)
                 return;
             const modes = [shaderDefines[mode]];
@@ -373,7 +375,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     }
 }
 
-function skirtHeight(zoom) {
+function skirtHeight(zoom: number) {
     // Skirt height calculation is heuristic: provided value hides
     // seams between tiles and it is not too large: 9 at zoom 22, ~20000m at zoom 0.
     return 6 * Math.pow(1.5, 22 - zoom);

@@ -2,7 +2,9 @@
 
 import isEqual from './util/deep_equal.js';
 
-import type {StyleSpecification} from './types.js';
+import type {StyleSpecification, SourceSpecification, LayerSpecification} from './types.js';
+
+type Sources = { [string]: SourceSpecification };
 
 type Command = {
     command: string;
@@ -122,21 +124,21 @@ export const operations: {[_: string]: string} = {
     setProjection: 'setProjection'
 };
 
-function addSource(sourceId, after, commands) {
+function addSource(sourceId: string, after: Sources, commands: Array<Command>) {
     commands.push({command: operations.addSource, args: [sourceId, after[sourceId]]});
 }
 
-function removeSource(sourceId, commands, sourcesRemoved) {
+function removeSource(sourceId: string, commands: Array<Command>, sourcesRemoved: {[string]: true}) {
     commands.push({command: operations.removeSource, args: [sourceId]});
     sourcesRemoved[sourceId] = true;
 }
 
-function updateSource(sourceId, after, commands, sourcesRemoved) {
+function updateSource(sourceId: string, after: Sources, commands: Array<Command>, sourcesRemoved: {[string]: true}) {
     removeSource(sourceId, commands, sourcesRemoved);
     addSource(sourceId, after, commands);
 }
 
-function canUpdateGeoJSON(before, after, sourceId) {
+function canUpdateGeoJSON(before: Sources, after: Sources, sourceId: string) {
     let prop;
     for (prop in before[sourceId]) {
         if (!before[sourceId].hasOwnProperty(prop)) continue;
@@ -153,7 +155,7 @@ function canUpdateGeoJSON(before, after, sourceId) {
     return true;
 }
 
-function diffSources(before, after, commands, sourcesRemoved) {
+function diffSources(before: Sources, after: Sources, commands: Array<Command>, sourcesRemoved: {[string]: true}) {
     before = before || {};
     after = after || {};
 
@@ -184,7 +186,7 @@ function diffSources(before, after, commands, sourcesRemoved) {
     }
 }
 
-function diffLayerPropertyChanges(before, after, commands, layerId, klass, command) {
+function diffLayerPropertyChanges(before: any, after: any, commands: Array<Command>, layerId: string, klass: ?string, command: string) {
     before = before || {};
     after = after || {};
 
@@ -204,15 +206,16 @@ function diffLayerPropertyChanges(before, after, commands, layerId, klass, comma
     }
 }
 
-function pluckId(layer) {
+function pluckId(layer: LayerSpecification) {
     return layer.id;
 }
-function indexById(group, layer) {
+
+function indexById(group: {[string]: LayerSpecification}, layer: LayerSpecification) {
     group[layer.id] = layer;
     return group;
 }
 
-function diffLayers(before, after, commands) {
+function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecification>, commands: Array<Command>) {
     before = before || [];
     after = after || [];
 
@@ -228,9 +231,9 @@ function diffLayers(before, after, commands) {
     const tracker = beforeOrder.slice();
 
     // layers that have been added do not need to be diffed
-    const clean = Object.create(null);
+    const clean: Object = Object.create(null);
 
-    let i, d, layerId, beforeLayer, afterLayer, insertBeforeLayerId, prop;
+    let i, d, layerId, beforeLayer: LayerSpecification, afterLayer: LayerSpecification, insertBeforeLayerId, prop;
 
     // remove layers
     for (i = 0, d = 0; i < beforeOrder.length; i++) {
@@ -278,6 +281,7 @@ function diffLayers(before, after, commands) {
 
         // If source, source-layer, or type have changes, then remove the layer
         // and add it back 'from scratch'.
+        // $FlowFixMe[prop-missing] - there is no `source-layer` in background and sky layers
         if (!isEqual(beforeLayer.source, afterLayer.source) || !isEqual(beforeLayer['source-layer'], afterLayer['source-layer']) || !isEqual(beforeLayer.type, afterLayer.type)) {
             commands.push({command: operations.removeLayer, args: [layerId]});
             // we add the layer back at the same position it was already in, so

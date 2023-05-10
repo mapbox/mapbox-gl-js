@@ -33,12 +33,25 @@ import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
+import type {Aabb} from '../util/primitives';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
 
 type RayIntersectionResult = { p0: Vec4, p1: Vec4, t: number};
 type ElevationReference = "sea" | "ground";
+type RootTile = {
+    aabb: Aabb,
+    fullyVisible: boolean,
+    maxZ: number,
+    minZ: number,
+    shouldSplit?: boolean,
+    tileID?: OverscaledTileID,
+    wrap: number,
+    x: number,
+    y: number,
+    zoom: number,
+};
 
 /**
  * A single transform, generally used for a single tile to be
@@ -795,7 +808,7 @@ class Transform {
 
         const scaleAdjustment = this.projection.isReprojectedInTileSpace ? getScaleAdjustment(this) : 1.0;
 
-        const relativeScaleAtMercatorCoord = mc => {
+        const relativeScaleAtMercatorCoord = (mc: MercatorCoordinate) => {
             // Calculate how scale compares between projected coordinates and mercator coordinates.
             // Returns a length. The units don't matter since the result is only
             // used in a ratio with other values returned by this function.
@@ -822,7 +835,7 @@ class Transform {
             return Math.sqrt(dx * dy) * scaleAdjustment / offset;
         };
 
-        const newRootTile = (wrap: number): any => {
+        const newRootTile = (wrap: number): RootTile => {
             const max = maxRange;
             const min = minRange;
             return {
@@ -844,10 +857,10 @@ class Transform {
         let result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
-        const square = a => a * a;
+        const square = (a: number) => a * a;
         const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
 
-        const getAABBFromElevation = (it) => {
+        const getAABBFromElevation = (it: RootTile) => {
             assert(this._elevation);
             if (!this._elevation || !it.tileID || !isMercator) return; // To silence flow.
             const minmax = this._elevation.getMinMaxForTile(it.tileID);
@@ -870,7 +883,7 @@ class Transform {
         // Scale distance to split for acute angles.
         // dzSqr: z component of camera to tile distance, square.
         // dSqr: 3D distance of camera to tile, square.
-        const distToSplitScale = (dzSqr, dSqr) => {
+        const distToSplitScale = (dzSqr: number, dSqr: number) => {
             // When the angle between camera to tile ray and tile plane is smaller
             // than acuteAngleThreshold, scale the distance to split. Scaling is adaptive: smaller
             // the angle, the scale gets lower value. Although it seems early to start at 45,
@@ -892,7 +905,7 @@ class Transform {
             return r / (1 / acuteAngleThresholdSin + (Math.pow(stretchTile, k + 1) - 1) / (stretchTile - 1) - 1);
         };
 
-        const shouldSplit = (it) => {
+        const shouldSplit = (it: RootTile) => {
             if (it.zoom < minZoom) {
                 return true;
             } else if (it.zoom === maxZoom) {
@@ -1012,7 +1025,7 @@ class Transform {
                 const childY = (y << 1) + (i >> 1);
 
                 const aabb = isMercator ? it.aabb.quadrant(i) : tileAABB(this, numTiles, it.zoom + 1, childX, childY, it.wrap, it.minZ, it.maxZ, this.projection);
-                const child = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
+                const child: RootTile = {aabb, zoom: it.zoom + 1, x: childX, y: childY, wrap: it.wrap, fullyVisible, tileID: undefined, shouldSplit: undefined, minZ: it.minZ, maxZ: it.maxZ};
                 if (useElevationData && !isGlobe) {
                     child.tileID = new OverscaledTileID(it.zoom + 1 === maxZoom ? overscaledZ : it.zoom + 1, it.wrap, it.zoom + 1, childX, childY);
                     getAABBFromElevation(child);
@@ -1415,7 +1428,7 @@ class Transform {
         // and mising area near the horizon is highly compressed so not noticeable
         const minRecursions = this.projection.name === "globe" ? 1 : 4;
 
-        const processSegment = (ax, ay, bx, by, depth) => {
+        const processSegment = (ax: number, ay: number, bx: number, by: number, depth: number) => {
             const mx = (ax + bx) / 2;
             const my = (ay + by) / 2;
 
@@ -1478,7 +1491,7 @@ class Transform {
 
         // If map pitch places top corners off map edge (latitude > 90 or < -90),
         // place them at the intersection between the left/right screen edge and map edge.
-        const slope = (p1, p2) => (p2.y - p1.y) / (p2.x - p1.x);
+        const slope = (p1: MercatorCoordinate, p2: MercatorCoordinate) => (p2.y - p1.y) / (p2.x - p1.x);
 
         if (tl.y > 1 && tr.y >= 0) tl = new MercatorCoordinate((1 - bl.y) / slope(bl, tl) + bl.x, 1);
         else if (tl.y < 0 && tr.y <= 1) tl = new MercatorCoordinate(-bl.y / slope(bl, tl) + bl.x, 0);
@@ -1847,7 +1860,7 @@ class Transform {
         return this._mercatorZfromZoom(this._minZoomForBounds());
     }
 
-    _calcMatrices() {
+    _calcMatrices(): void {
         if (!this.height) return;
 
         const offset = this.centerOffset;

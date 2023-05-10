@@ -145,7 +145,7 @@ function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, 
     gl.disable(gl.SCISSOR_TEST);
 }
 
-function drawTileQueryGeometry(painter, sourceCache, coord: OverscaledTileID) {
+function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 

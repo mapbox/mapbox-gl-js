@@ -38,7 +38,7 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 export default function derefLayers(layers: Array<LayerSpecification>): Array<LayerSpecification> {
     layers = layers.slice();
 
-    const map = Object.create(null);
+    const map: Object = Object.create(null);
     for (let i = 0; i < layers.length; i++) {
         map[layers[i].id] = layers[i];
     }

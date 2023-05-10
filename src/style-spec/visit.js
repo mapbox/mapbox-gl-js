@@ -10,7 +10,7 @@ import type {
     DataDrivenPropertyValueSpecification
 } from './types.js';
 
-function getPropertyReference(propertyName): StylePropertySpecification {
+function getPropertyReference(propertyName: string): StylePropertySpecification {
     for (let i = 0; i < Reference.layout.length; i++) {
         for (const key in Reference[Reference.layout[i]]) {
             if (key === propertyName) return (Reference[Reference.layout[i]][key]: any);
@@ -50,7 +50,7 @@ export function eachProperty(
     options: {paint?: boolean, layout?: boolean},
     callback: PropertyCallback
 ) {
-    function inner(layer, propertyType: 'paint' | 'layout') {
+    function inner(layer: LayerSpecification, propertyType: 'paint' | 'layout') {
         const properties = (layer[propertyType]: any);
         if (!properties) return;
         Object.keys(properties).forEach((key) => {

@@ -292,7 +292,7 @@ class SourceCache extends Evented {
             }
         }
 
-        function fillBorder(tile, borderTile) {
+        function fillBorder(tile: Tile, borderTile: Tile) {
             if (!tile.dem || tile.dem.borderReady) return;
             tile.needsHillshadePrepare = true;
             tile.needsDEMTextureUpload = true;
@@ -1043,7 +1043,7 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
     return a.overscaledZ - b.overscaledZ || bWrap - aWrap || b.canonical.y - a.canonical.y || b.canonical.x - a.canonical.x;
 }
 
-function isRasterType(type): boolean {
+function isRasterType(type: string): boolean {
     return type === 'raster' || type === 'image' || type === 'video' || type === 'custom';
 }
 

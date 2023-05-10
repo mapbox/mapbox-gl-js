@@ -138,7 +138,7 @@ class Match implements Expression {
             }
         }
 
-        const coerceLabel = (label) => this.inputType.kind === 'number' ? Number(label) : label;
+        const coerceLabel = (label: number | string) => this.inputType.kind === 'number' ? Number(label) : label;
 
         for (const [outputIndex, labels] of groupedByOutput) {
             if (labels.length === 1) {

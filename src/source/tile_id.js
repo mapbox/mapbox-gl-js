@@ -182,7 +182,7 @@ function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y
     return key;
 }
 
-function getQuadkey(z, x, y) {
+function getQuadkey(z: number, x: number, y: number) {
     let quadkey = '', mask;
     for (let i = z; i > 0; i--) {
         mask = 1 << (i - 1);

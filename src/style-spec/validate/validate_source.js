@@ -8,6 +8,7 @@ import validateExpression from './validate_expression.js';
 import validateString from './validate_string.js';
 import getType from '../util/get_type.js';
 
+import type {StyleReference} from '../reference/latest.js';
 import type {ValidationOptions} from './validate.js';
 
 const objectElementValidators = {
@@ -101,7 +102,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     }
 }
 
-function getSourceTypeValues(styleSpec) {
+function getSourceTypeValues(styleSpec: StyleReference) {
     return styleSpec.source.reduce((memo, source) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
@@ -111,7 +112,7 @@ function getSourceTypeValues(styleSpec) {
     }, []);
 }
 
-function validatePromoteId({key, value}) {
+function validatePromoteId({key, value}: $Shape<ValidationOptions>) {
     if (getType(value) === 'string') {
         return validateString({key, value});
     } else {

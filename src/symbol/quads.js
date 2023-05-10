@@ -15,6 +15,8 @@ import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/ver
 import ONE_EM from './one_em.js';
 import {warnOnce} from '../util/util.js';
 
+type Size = {| fixed: number, stretch: number |};
+
 /**
  * A textured quad for rendering a single icon or glyph.
  *
@@ -76,7 +78,7 @@ export function getIconQuads(
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
 
-    const reduceRanges = (sum, range) => sum + range[1] - range[0];
+    const reduceRanges = (sum: number, range: [number, number]) => sum + range[1] - range[0];
     const stretchWidth = stretchX.reduce(reduceRanges, 0);
     const stretchHeight = stretchY.reduce(reduceRanges, 0);
     const fixedWidth = imageWidth - stretchWidth;
@@ -103,7 +105,7 @@ export function getIconQuads(
         fixedContentHeight = content[3] - content[1] - stretchContentHeight;
     }
 
-    const makeBox = (left, top, right, bottom) => {
+    const makeBox = (left: Size, top: Size, right: Size, bottom: Size) => {
 
         const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
         const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
@@ -180,7 +182,7 @@ export function getIconQuads(
     return quads;
 }
 
-function sumWithinRange(ranges, min, max) {
+function sumWithinRange(ranges: Array<[number, number]>, min: number, max: number) {
     let sum = 0;
     for (const range of ranges) {
         sum += Math.max(min, Math.min(max, range[1])) - Math.max(min, Math.min(max, range[0]));
@@ -188,7 +190,7 @@ function sumWithinRange(ranges, min, max) {
     return sum;
 }
 
-function stretchZonesToCuts(stretchZones, fixedSize, stretchSize) {
+function stretchZonesToCuts(stretchZones: Array<[number, number]>, fixedSize: number, stretchSize: number) {
     const cuts = [{fixed: -border, stretch: 0}];
 
     for (const [c1, c2] of stretchZones) {
@@ -209,11 +211,11 @@ function stretchZonesToCuts(stretchZones, fixedSize, stretchSize) {
     return cuts;
 }
 
-function getEmOffset(stretchOffset, stretchSize, iconSize, iconOffset) {
+function getEmOffset(stretchOffset: number, stretchSize: number, iconSize: number, iconOffset: number) {
     return stretchOffset / stretchSize * iconSize + iconOffset;
 }
 
-function getPxOffset(fixedOffset, fixedSize, stretchOffset, stretchSize) {
+function getPxOffset(fixedOffset: number, fixedSize: number, stretchOffset: number, stretchSize: number) {
     return fixedOffset - fixedSize * stretchOffset / stretchSize;
 }
 
@@ -231,7 +233,7 @@ function getRotateOffset(textOffset: [number, number]) {
     }
 }
 
-function getMidlineOffset(shaping, lineHeight, previousOffset, lineIndex) {
+function getMidlineOffset(shaping: Shaping, lineHeight: number, previousOffset: number, lineIndex: number) {
     const currentLineHeight = (lineHeight + shaping.positionedLines[lineIndex].lineOffset);
     if (lineIndex === 0) {
         return previousOffset + currentLineHeight / 2.0;

@@ -1,12 +1,13 @@
 // @flow
 
+import type {OverscaledTileID} from './tile_id.js';
 import type SourceCache from './source_cache.js';
 import type StyleLayer from '../style/style_layer.js';
 import type CollisionIndex from '../symbol/collision_index.js';
 import type Transform from '../geo/transform.js';
 import type {RetainedQueryData} from '../symbol/placement.js';
 import type {FilterSpecification} from '../style-spec/types.js';
-import type {QueryGeometry} from '../style/query_geometry.js';
+import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry.js';
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
@@ -22,7 +23,7 @@ export type RenderedFeatureLayers = Array<{
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */
-function getPixelPosMatrix(transform, tileID) {
+function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
     const t = mat4.identity([]);
     mat4.scale(t, t, [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);
@@ -170,7 +171,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params: any): Arra
     return result;
 }
 
-function sortTilesIn(a, b) {
+function sortTilesIn(a: TilespaceQueryGeometry | RetainedQueryData, b: TilespaceQueryGeometry | RetainedQueryData) {
     const idA = a.tileID;
     const idB = b.tileID;
     return (idA.overscaledZ - idB.overscaledZ) || (idA.canonical.y - idB.canonical.y) || (idA.wrap - idB.wrap) || (idA.canonical.x - idB.canonical.x);

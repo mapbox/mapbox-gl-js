@@ -23,6 +23,7 @@ import {DEMSampler} from '../terrain/elevation.js';
 
 import type StyleLayer from '../style/style_layer.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+import type {FeatureStates} from "../source/source_state";
 import type {FeatureFilter} from '../style-spec/feature_filter/index.js';
 import type Transform from '../geo/transform.js';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types.js';
@@ -126,7 +127,7 @@ class FeatureIndex {
         const transform = args.transform;
 
         const bounds = tilespaceGeometry.bufferedTilespaceBounds;
-        const queryPredicate = (bx1, by1, bx2, by2) => {
+        const queryPredicate = (bx1: number, by1: number, bx2: number, by2: number) => {
             return polygonIntersectsBox(tilespaceGeometry.bufferedTilespaceGeometry, bx1, by1, bx2, by2);
         };
         const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);
@@ -319,13 +320,13 @@ register(FeatureIndex, 'FeatureIndex', {omit: ['rawTileData', 'sourceLayerCoder'
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties, styleLayerProperties, feature, featureState, availableImages) {
+function evaluateProperties(serializedProperties: mixed, styleLayerProperties: mixed, feature: IVectorTileFeature, featureState: FeatureStates, availableImages: Array<string>) {
     return mapObject(serializedProperties, (property, key) => {
         const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
         return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
     });
 }
 
-function topDownFeatureComparator(a, b) {
+function topDownFeatureComparator(a: number, b: number) {
     return b - a;
 }

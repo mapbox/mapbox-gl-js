@@ -183,7 +183,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, end, value);
     }
 
-    _setPaintValue(start, end, value) {
+    _setPaintValue(start: number, end: number, value: any) {
         if (this.type === 'color') {
             const color = packColor(value);
             for (let i = start; i < end; i++) {
@@ -258,7 +258,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, end, min, max);
     }
 
-    _setPaintValue(start, end, min, max) {
+    _setPaintValue(start: number, end: number, min: any, max: any) {
         if (this.type === 'color') {
             const minColor = packColor(min);
             const maxColor = packColor(max);
@@ -331,7 +331,7 @@ class PatternCompositeBinder implements AttributeBinder {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    _setPaintValues(start, end, patterns, positions) {
+    _setPaintValues(start: number, end: number, patterns: ?string, positions: SpritePositions) {
         if (!positions || !patterns) return;
 
         const pos = positions[patterns];
@@ -639,7 +639,7 @@ const attributeNameExceptions = {
     'line-dasharray': ['dash']
 };
 
-function paintAttributeNames(property, type) {
+function paintAttributeNames(property: string, type: string) {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
@@ -673,7 +673,9 @@ const defaultLayouts = {
     }
 };
 
-function layoutType(property, type, binderType) {
+type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string';
+
+function layoutType(property: string, type: LayoutType, binderType: string) {
     const layoutException = propertyExceptions[property];
     // $FlowFixMe[prop-missing] - we don't cover all types in defaultLayouts for some reason
     return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];

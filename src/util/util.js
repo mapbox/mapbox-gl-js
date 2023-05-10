@@ -375,7 +375,7 @@ export function uniqueId(): number {
  * @private
  */
 export function uuid(): string {
-    function b(a) {
+    function b(a: void) {
         return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
         //$FlowFixMe: Flow doesn't like the implied array literal conversion here
             ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
@@ -462,6 +462,7 @@ export function endsWith(string: string, suffix: string): boolean {
  *
  * @private
  */
+// $FlowFixMe[missing-this-annot]
 export function mapObject(input: Object, iterator: Function, context?: Object): Object {
     const output = {};
     for (const key in input) {
@@ -475,6 +476,7 @@ export function mapObject(input: Object, iterator: Function, context?: Object): 
  *
  * @private
  */
+// $FlowFixMe[missing-this-annot]
 export function filterObject(input: Object, iterator: Function, context?: Object): Object {
     const output = {};
     for (const key in input) {

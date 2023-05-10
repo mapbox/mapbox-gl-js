@@ -27,6 +27,9 @@ export default function(style: StyleSpecification): StyleSpecification {
     eachProperty(style, {paint: true, layout: true}, ({path, value, reference, set}) => {
         if (isExpression(value)) return;
         if (typeof value === 'object' && !Array.isArray(value)) {
+            // $FlowFixMe[prop-missing]
+            // $FlowFixMe[incompatible-call]
+            // $FlowFixMe[incompatible-variance]
             set(convertFunction(value, reference));
             converted.push(path.join('.'));
         } else if (reference.tokens && typeof value === 'string') {

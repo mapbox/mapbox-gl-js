@@ -14,6 +14,7 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type FillStyleLayer from '../style/style_layer/fill_style_layer.js';
 import type FillBucket from '../data/bucket/fill_bucket.js';
+import type ColorMode from '../gl/color_mode.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 
 export default drawFill;
@@ -58,7 +59,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     }
 }
 
-function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, isOutline) {
+function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, colorMode: ColorMode, isOutline: boolean) {
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');

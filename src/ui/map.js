@@ -1368,7 +1368,7 @@ class Map extends Camera {
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (!features.length) {
@@ -1385,7 +1385,7 @@ class Map extends Camera {
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
@@ -1395,7 +1395,7 @@ class Map extends Camera {
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                 }
             };
-            const mouseout = (e) => {
+            const mouseout = (e: MapMouseEvent) => {
                 if (mousein) {
                     mousein = false;
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
@@ -1404,7 +1404,7 @@ class Map extends Camera {
 
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else {
-            const delegate = (e) => {
+            const delegate = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
@@ -1643,7 +1643,7 @@ class Map extends Camera {
         }
 
         layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
-        const areLayerArraysEqual = (hash1, hash2) => {
+        const areLayerArraysEqual = (hash1: Set<string>, hash2: Set<string>) => {
             if (hash1.size !== hash2.size) {
                 return false; // at-least 1 arr has duplicate value(s)
             }
@@ -3363,7 +3363,7 @@ class Map extends Camera {
      * @private
      */
     _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
-        const applyUpdate = value => {
+        const applyUpdate = (value: number) => {
             this.transform.averageElevation = value;
             this._update(false);
             return true;
@@ -3468,7 +3468,7 @@ class Map extends Camera {
         const framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-        function read(texture) {
+        function read(texture: ?WebGLTexture) {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);

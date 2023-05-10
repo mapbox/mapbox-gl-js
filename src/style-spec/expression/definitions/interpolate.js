@@ -252,7 +252,7 @@ class Interpolate implements Expression {
  *
  * @private
 */
-function exponentialInterpolation(input, base, lowerValue, upperValue) {
+function exponentialInterpolation(input: number, base: number, lowerValue: number, upperValue: number) {
     const difference = upperValue - lowerValue;
     const progress = input - lowerValue;
 

@@ -78,7 +78,7 @@ function getZoomAdjustment(projection: Projection, loc: LngLat) {
     return Math.log(scale) / Math.LN2;
 }
 
-function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: boolean) {
+function getShearAdjustment(projection: Projection, zoom: number, loc: LngLat, interpT: number, withoutRotation?: boolean) {
 
     // create two locations a tiny amount (~1km) east and west of the given location
     const locw = new LngLat(loc.lng - 180 * offset, loc.lat);
@@ -141,7 +141,7 @@ function getShearAdjustment(projection, zoom, loc, interpT, withoutRotation?: bo
     return shear;
 }
 
-function rotate(x, y, angle) {
+function rotate(x: number, y: number, angle: number) {
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     return {

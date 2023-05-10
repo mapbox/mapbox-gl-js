@@ -103,7 +103,7 @@ export const getReferrer: (() => string) = isWorker() ?
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins
 // with file://. Relative URLs are also file:// URLs iff the original document was loaded
 // via a file:// URL.
-const isFileURL = url => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
+const isFileURL = (url: string) => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
 
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     const controller = new window.AbortController();
@@ -125,14 +125,14 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         request.headers.set('Accept', 'application/json');
     }
 
-    const validateOrFetch = (err, cachedResponse, responseIsFresh) => {
+    const validateOrFetch = (err: ?Error, cachedResponse: ?Response, responseIsFresh: ?boolean) => {
         if (aborted) return;
 
         if (err) {
             // Do fetch in case of cache error.
             // HTTP pages in Edge trigger a security error that can be ignored.
             if (err.message !== 'SecurityError') {
-                warnOnce(err);
+                warnOnce(err.toString());
             }
         }
 
@@ -163,7 +163,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         });
     };
 
-    const finishRequest = (response, cacheableResponse, requestTime) => {
+    const finishRequest = (response: Response, cacheableResponse: ?Response, requestTime: ?number) => {
         (
             requestParameters.type === 'arrayBuffer' ? response.arrayBuffer() :
             requestParameters.type === 'json' ? response.json() :
@@ -270,7 +270,7 @@ export const getData = function(requestParameters: RequestParameters, callback: 
     return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
 };
 
-function sameOrigin(url) {
+function sameOrigin(url: string) {
     const a: HTMLAnchorElement = window.document.createElement('a');
     a.href = url;
     return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
