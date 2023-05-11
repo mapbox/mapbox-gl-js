@@ -479,6 +479,27 @@ test('Popup', (t) => {
         const point = args[1];
         const transform = args[2];
 
+        test('Popup respects padding and changes anchor accordingly', (t) => {
+            const map = createMap(t);
+            const padding = {top: 10, bottom: 10, left: 10, right: 10};
+            const popup = new Popup({padding})
+                .setText('Test')
+                .setLngLat([0, 0])
+                .addTo(map);
+            map._domRenderTaskQueue.run();
+
+            Object.defineProperty(popup.getElement(), 'offsetWidth', {value: 5});
+            Object.defineProperty(popup.getElement(), 'offsetHeight', {value: 5});
+
+            t.stub(map, 'project').returns(point);
+            t.stub(map.transform, 'locationPoint3D').returns(point);
+            popup.setLngLat([0, 0]);
+            map._domRenderTaskQueue.run();
+
+            t.ok(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`));
+            t.end();
+        });
+
         test(`Popup automatically anchors to ${anchor}`, (t) => {
             const map = createMap(t);
             const popup = new Popup()

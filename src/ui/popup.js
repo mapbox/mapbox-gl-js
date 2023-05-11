@@ -14,6 +14,7 @@ import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 import type Map from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {PointLike} from '@mapbox/point-geometry';
+import type {PaddingOptions} from '../geo/edge_insets.js';
 import type Marker from './marker.js';
 
 const defaultOptions = {
@@ -21,7 +22,8 @@ const defaultOptions = {
     closeOnClick: true,
     focusAfterOpen: true,
     className: '',
-    maxWidth: "240px"
+    maxWidth: "240px",
+    padding: {top:0, left:0, right:0, bottom:0}
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -34,7 +36,8 @@ export type PopupOptions = {
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
-    maxWidth?: string
+    maxWidth?: string,
+    padding?: PaddingOptions
 };
 
 const focusQuerySelector = [
@@ -117,7 +120,11 @@ export default class Popup extends Evented {
 
     constructor(options: PopupOptions) {
         super();
-        this.options = extend(Object.create(defaultOptions), options);
+        let validPadding = defaultOptions.padding;
+        if (options) {
+            validPadding = extend(Object.create(defaultOptions.padding), options.padding);
+        }
+        this.options = extend(Object.create(defaultOptions), {...options, padding: validPadding});
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
@@ -580,10 +587,10 @@ export default class Popup extends Evented {
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height;
-        const isBottom = pos.y > map.transform.height - height;
-        const isLeft = pos.x < width / 2;
-        const isRight = pos.x > map.transform.width - width / 2;
+        const isTop = pos.y + bottomY - this.options.padding.top < height;
+        const isBottom = pos.y > map.transform.height - height - this.options.padding.bottom;
+        const isLeft = pos.x < width / 2 + this.options.padding.left;
+        const isRight = pos.x  > map.transform.width - width / 2 - this.options.padding.right;
 
         if (isTop) {
             if (isLeft) return 'top-left';
@@ -689,14 +696,14 @@ function normalizeOffset(offset: Offset = new Point(0, 0), anchor: Anchor = 'bot
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
         switch (anchor) {
-        case 'top': return new Point(0, offset);
-        case 'top-left': return new Point(cornerOffset, cornerOffset);
-        case 'top-right': return new Point(-cornerOffset, cornerOffset);
-        case 'bottom': return new Point(0, -offset);
-        case 'bottom-left': return new Point(cornerOffset, -cornerOffset);
-        case 'bottom-right': return new Point(-cornerOffset, -cornerOffset);
-        case 'left': return new Point(offset, 0);
-        case 'right': return new Point(-offset, 0);
+            case 'top': return new Point(0, offset);
+            case 'top-left': return new Point(cornerOffset, cornerOffset);
+            case 'top-right': return new Point(-cornerOffset, cornerOffset);
+            case 'bottom': return new Point(0, -offset);
+            case 'bottom-left': return new Point(cornerOffset, -cornerOffset);
+            case 'bottom-right': return new Point(-cornerOffset, -cornerOffset);
+            case 'left': return new Point(offset, 0);
+            case 'right': return new Point(-offset, 0);
         }
         return new Point(0, 0);
     }
