@@ -4,7 +4,8 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0008
+      "allowed": 0.0008,
+      "optimizeForTerrain": true
     }
   },
   "terrain": {
@@ -35,7 +36,7 @@
       "type": "raster-dem",
       "maxzoom": 14,
       "tileSize": 512,
-      "tiles": ["local://models/dem/14-8847-5550.terrain-512.png"]
+      "tiles": ["local://tiles/dem/14-8847-5550.terrain-512.png"]
     },
     "mapbox": {
       "type": "vector",
@@ -46,7 +47,7 @@
     }
   },
   "pitch": 0,
-  "zoom": 16.0,
+  "zoom": 16.5,
   "bearing": 0,
   "center": [
     14.3946,
