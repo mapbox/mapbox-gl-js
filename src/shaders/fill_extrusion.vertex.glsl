@@ -39,7 +39,7 @@ varying float v_depth;
 varying vec4 v_roof_color;
 #endif
 
-#if defined(ZERO_ROOF_RADIUS) || defined(LIGHTING_3D_MODE)
+#if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
 varying highp vec3 v_normal;
 #endif
 
