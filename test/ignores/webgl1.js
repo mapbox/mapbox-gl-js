@@ -3,8 +3,6 @@ const todo = [
 
 // Tests not supported on WebGL 1
 const skip = [
-    "render-tests/lighting-3d-mode/shadow/fill-extrusion",
-    "render-tests/lighting-3d-mode/shadow/fill-extrusion-vertical-scale",
     "render-tests/model-layer/lighting-3d-mode/model-shadow",
     "render-tests/model-layer/ground-shadow-fog",
     "render-tests/model-layer/landmark-mbx",
@@ -23,6 +21,11 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-height",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/fixed-height",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/floating-base",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-vertical-scale",
+    "render-tests/lighting-3d-mode/shadow/high-pitch-terrain",
 
     // Orthographic camera projection tests with shadows
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-high-pitch",
@@ -33,7 +36,6 @@ const skip = [
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-zero-pitch",
     "render-tests/model-layer/buildings-trees-shadows-fog",
     "render-tests/model-layer/buildings-trees-shadows-fog-terrain",
-    "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
     "render-tests/model-layer/buildings-trees-shadows-casting"
 ];
 

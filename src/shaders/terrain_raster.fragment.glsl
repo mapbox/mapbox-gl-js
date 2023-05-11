@@ -20,7 +20,7 @@ void main() {
 
     float lighting_factor;
 #ifdef RENDER_SHADOWS
-    lighting_factor = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    lighting_factor = shadowed_light_factor_normal_unbiased(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
 #else // RENDER_SHADOWS
     lighting_factor = calculate_NdotL(normal);
 #endif // !RENDER_SHADOWS
