@@ -6,29 +6,31 @@
       "optimizeForTerrain": true,
       "width": 512,
       "height": 512,
-      "allowed": 0.0021
+      "allowed": 0.0008
     }
   },
   "terrain": {
     "source": "mapbox-dem",
-    "exaggeration": 1.3
+    "exaggeration": 1.0
   },
   "lights": [
     {
       "type": "ambient",
       "id": "environment",
       "properties": {
-        "intensity": 0.04
+        "intensity": 0.15,
+        "color": "rgba(100, 140, 255, 1.0)"
       }
     },
     {
       "type": "directional",
       "id": "sun_light",
       "properties": {
-        "intensity": 0.8,
+        "intensity": 0.9,
         "cast-shadows": true,
         "shadow-intensity": 1.0,
-        "direction": [210, 60]
+        "direction": [230, 75],
+        "color": "rgba(255, 255, 100, 1.0)"
       }
     }
   ],
