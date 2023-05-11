@@ -587,10 +587,10 @@ export default class Popup extends Evented {
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY - this.options.padding.top < height;
+        const isTop = pos.y + bottomY < height + this.options.padding.top;
         const isBottom = pos.y > map.transform.height - height - this.options.padding.bottom;
         const isLeft = pos.x < width / 2 + this.options.padding.left;
-        const isRight = pos.x  > map.transform.width - width / 2 - this.options.padding.right;
+        const isRight = pos.x > map.transform.width - width / 2 - this.options.padding.right;
 
         if (isTop) {
             if (isLeft) return 'top-left';
@@ -696,14 +696,14 @@ function normalizeOffset(offset: Offset = new Point(0, 0), anchor: Anchor = 'bot
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
         switch (anchor) {
-            case 'top': return new Point(0, offset);
-            case 'top-left': return new Point(cornerOffset, cornerOffset);
-            case 'top-right': return new Point(-cornerOffset, cornerOffset);
-            case 'bottom': return new Point(0, -offset);
-            case 'bottom-left': return new Point(cornerOffset, -cornerOffset);
-            case 'bottom-right': return new Point(-cornerOffset, -cornerOffset);
-            case 'left': return new Point(offset, 0);
-            case 'right': return new Point(-offset, 0);
+        case 'top': return new Point(0, offset);
+        case 'top-left': return new Point(cornerOffset, cornerOffset);
+        case 'top-right': return new Point(-cornerOffset, cornerOffset);
+        case 'bottom': return new Point(0, -offset);
+        case 'bottom-left': return new Point(cornerOffset, -cornerOffset);
+        case 'bottom-right': return new Point(-cornerOffset, -cornerOffset);
+        case 'left': return new Point(offset, 0);
+        case 'right': return new Point(-offset, 0);
         }
         return new Point(0, 0);
     }
