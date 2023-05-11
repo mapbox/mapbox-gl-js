@@ -4,6 +4,8 @@ import tap from 'tap';
 /*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 
+delete global.MessageChannel;
+
 type CreateTest = (typeof sinon) & {
     (name: string, body: (test: CreateTest) => void): void,
 
