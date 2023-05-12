@@ -17,6 +17,11 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {PaddingOptions} from '../geo/edge_insets.js';
 import type Marker from './marker.js';
 
+/**
+ * A helper type: converts all Object type values to non-maybe types.
+ */
+type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
+
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
@@ -115,17 +120,15 @@ export default class Popup extends Evented {
     _trackPointer: boolean;
     _pos: ?Point;
     _anchor: Anchor;
+    _padding: Required<PaddingOptions>;
     _classList: Set<string>;
     _marker: ?Marker;
 
     constructor(options: PopupOptions) {
         super();
-        let validPadding = defaultOptions.padding;
-        if (options) {
-            validPadding = extend(Object.create(defaultOptions.padding), options.padding);
-        }
-        this.options = extend(Object.create(defaultOptions), {...options, padding: validPadding});
+        this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
+        this._padding = this._getPadding();
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -575,6 +578,19 @@ export default class Popup extends Evented {
         this._update(event.point);
     }
 
+    _getPadding(): Required<PaddingOptions> {
+        if (!this.options.padding) {
+            return defaultOptions.padding;
+        }
+
+        return {
+            top: this.options.padding.top || 0,
+            left: this.options.padding.left || 0,
+            bottom: this.options.padding.bottom || 0,
+            right: this.options.padding.right || 0,
+        };
+    }
+
     _getAnchor(bottomY: number): Anchor {
         if (this.options.anchor) { return this.options.anchor; }
 
@@ -587,10 +603,10 @@ export default class Popup extends Evented {
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height + this.options.padding.top;
-        const isBottom = pos.y > map.transform.height - height - this.options.padding.bottom;
-        const isLeft = pos.x < width / 2 + this.options.padding.left;
-        const isRight = pos.x > map.transform.width - width / 2 - this.options.padding.right;
+        const isTop = pos.y + bottomY < height + this._padding.top;
+        const isBottom = pos.y > map.transform.height - height - this._padding.bottom;
+        const isLeft = pos.x < width / 2 + this._padding.left;
+        const isRight = pos.x > map.transform.width - width / 2 - this._padding.right;
 
         if (isTop) {
             if (isLeft) return 'top-left';
