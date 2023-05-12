@@ -1,5 +1,6 @@
 // @flow
 
+import type Point from '@mapbox/point-geometry';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket.js';
 
 export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
@@ -8,12 +9,12 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const mergedFeatures = [];
     let mergedIndex = 0;
 
-    function add(k) {
+    function add(k: number) {
         mergedFeatures.push(features[k]);
         mergedIndex++;
     }
 
-    function mergeFromRight(leftKey: string, rightKey: string, geom) {
+    function mergeFromRight(leftKey: string, rightKey: string, geom: Array<Array<Point>>) {
         const i = rightIndex[leftKey];
         delete rightIndex[leftKey];
         rightIndex[rightKey] = i;
@@ -23,7 +24,7 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         return i;
     }
 
-    function mergeFromLeft(leftKey: string, rightKey: string, geom) {
+    function mergeFromLeft(leftKey: string, rightKey: string, geom: Array<Array<Point>>) {
         const i = leftIndex[rightKey];
         delete leftIndex[rightKey];
         leftIndex[leftKey] = i;
@@ -33,7 +34,7 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         return i;
     }
 
-    function getKey(text, geom, onRight) {
+    function getKey(text: string, geom: Array<Array<Point>>, onRight: ?boolean) {
         const point = onRight ? geom[0][geom[0].length - 1] : geom[0][0];
         return `${text}:${point.x}:${point.y}`;
     }

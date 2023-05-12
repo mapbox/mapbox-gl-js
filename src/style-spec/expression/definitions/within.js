@@ -6,7 +6,8 @@ import {BooleanType} from '../types.js';
 import type {Expression, SerializedExpression} from '../expression.js';
 import type ParsingContext from '../parsing_context.js';
 import type EvaluationContext from '../evaluation_context.js';
-import type {GeoJSON, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
+import type Point from '@mapbox/point-geometry';
+import type {GeoJSON, GeoJSONPosition, GeoJSONPolygon, GeoJSONMultiPolygon} from '@mapbox/geojson-types';
 import type {CanonicalTileID} from '../../../source/tile_id.js';
 
 type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
@@ -15,7 +16,7 @@ type GeoJSONPolygons =| GeoJSONPolygon | GeoJSONMultiPolygon;
 type BBox = [number, number, number, number];
 const EXTENT = 8192;
 
-function updateBBox(bbox: BBox, coord: [number, number]) {
+function updateBBox(bbox: BBox, coord: GeoJSONPosition) {
     bbox[0] = Math.min(bbox[0], coord[0]);
     bbox[1] = Math.min(bbox[1], coord[1]);
     bbox[2] = Math.max(bbox[2], coord[0]);
@@ -38,14 +39,14 @@ function boxWithinBox(bbox1: BBox, bbox2: BBox) {
     return true;
 }
 
-function getTileCoordinates(p, canonical: CanonicalTileID) {
+function getTileCoordinates(p: GeoJSONPosition, canonical: CanonicalTileID) {
     const x = mercatorXfromLng(p[0]);
     const y = mercatorYfromLat(p[1]);
     const tilesAtZoom = Math.pow(2, canonical.z);
     return [Math.round(x * tilesAtZoom * EXTENT), Math.round(y * tilesAtZoom * EXTENT)];
 }
 
-function onBoundary(p, p1, p2) {
+function onBoundary(p: GeoJSONPosition, p1: GeoJSONPosition, p2: GeoJSONPosition) {
     const x1 = p[0] - p1[0];
     const y1 = p[1] - p1[1];
     const x2 = p[0] - p2[0];
@@ -53,12 +54,12 @@ function onBoundary(p, p1, p2) {
     return (x1 * y2 - x2 * y1 === 0) && (x1 * x2 <= 0) && (y1 * y2 <= 0);
 }
 
-function rayIntersect(p, p1, p2) {
+function rayIntersect(p: GeoJSONPosition, p1: GeoJSONPosition, p2: GeoJSONPosition) {
     return ((p1[1] > p[1]) !== (p2[1] > p[1])) && (p[0] < (p2[0] - p1[0]) * (p[1] - p1[1]) / (p2[1] - p1[1]) + p1[0]);
 }
 
 // ray casting algorithm for detecting if point is in polygon
-function pointWithinPolygon(point, rings) {
+function pointWithinPolygon(point: GeoJSONPosition, rings: Array<Array<GeoJSONPosition>>) {
     let inside = false;
     for (let i = 0, len = rings.length; i < len; i++) {
         const ring = rings[i];
@@ -70,19 +71,19 @@ function pointWithinPolygon(point, rings) {
     return inside;
 }
 
-function pointWithinPolygons(point, polygons) {
+function pointWithinPolygons(point: GeoJSONPosition, polygons: Array<Array<Array<GeoJSONPosition>>>) {
     for (let i = 0; i < polygons.length; i++) {
         if (pointWithinPolygon(point, polygons[i])) return true;
     }
     return false;
 }
 
-function perp(v1, v2) {
+function perp(v1: GeoJSONPosition, v2: GeoJSONPosition) {
     return (v1[0] * v2[1] - v1[1] * v2[0]);
 }
 
 // check if p1 and p2 are in different sides of line segment q1->q2
-function  twoSided(p1, p2, q1, q2) {
+function  twoSided(p1: GeoJSONPosition, p2: GeoJSONPosition, q1: GeoJSONPosition, q2: GeoJSONPosition) {
     // q1->p1 (x1, y1), q1->p2 (x2, y2), q1->q2 (x3, y3)
     const x1 = p1[0] - q1[0];
     const y1 = p1[1] - q1[1];
@@ -96,7 +97,7 @@ function  twoSided(p1, p2, q1, q2) {
     return false;
 }
 // a, b are end points for line segment1, c and d are end points for line segment2
-function lineIntersectLine(a, b, c, d) {
+function lineIntersectLine(a: GeoJSONPosition, b: GeoJSONPosition, c: GeoJSONPosition, d: GeoJSONPosition) {
     // check if two segments are parallel or not
     // precondition is end point a, b is inside polygon, if line a->b is
     // parallel to polygon edge c->d, then a->b won't intersect with c->d
@@ -111,7 +112,7 @@ function lineIntersectLine(a, b, c, d) {
     return false;
 }
 
-function lineIntersectPolygon(p1, p2, polygon) {
+function lineIntersectPolygon(p1: GeoJSONPosition, p2: GeoJSONPosition, polygon: Array<Array<GeoJSONPosition>>) {
     for (const ring of polygon) {
         // loop through every edge of the ring
         for (let j = 0; j < ring.length - 1; ++j) {
@@ -123,7 +124,7 @@ function lineIntersectPolygon(p1, p2, polygon) {
     return false;
 }
 
-function lineStringWithinPolygon(line, polygon) {
+function lineStringWithinPolygon(line: Array<GeoJSONPosition>, polygon: Array<Array<GeoJSONPosition>>) {
     // First, check if geometry points of line segments are all inside polygon
     for (let i = 0; i < line.length; ++i) {
         if (!pointWithinPolygon(line[i], polygon)) {
@@ -140,14 +141,14 @@ function lineStringWithinPolygon(line, polygon) {
     return true;
 }
 
-function lineStringWithinPolygons(line, polygons) {
+function lineStringWithinPolygons(line: Array<GeoJSONPosition>, polygons: Array<Array<Array<GeoJSONPosition>>>) {
     for (let i = 0; i < polygons.length; i++) {
         if (lineStringWithinPolygon(line, polygons[i])) return true;
     }
     return false;
 }
 
-function getTilePolygon(coordinates, bbox: BBox, canonical: CanonicalTileID) {
+function getTilePolygon(coordinates: Array<Array<GeoJSONPosition>>, bbox: BBox, canonical: CanonicalTileID) {
     const polygon = [];
     for (let i = 0; i < coordinates.length; i++) {
         const ring = [];
@@ -161,7 +162,7 @@ function getTilePolygon(coordinates, bbox: BBox, canonical: CanonicalTileID) {
     return polygon;
 }
 
-function getTilePolygons(coordinates, bbox, canonical: CanonicalTileID) {
+function getTilePolygons(coordinates: Array<Array<Array<GeoJSONPosition>>>, bbox: BBox, canonical: CanonicalTileID) {
     const polygons = [];
     for (let i = 0; i < coordinates.length; i++) {
         const polygon = getTilePolygon(coordinates[i], bbox, canonical);
@@ -170,7 +171,7 @@ function getTilePolygons(coordinates, bbox, canonical: CanonicalTileID) {
     return polygons;
 }
 
-function updatePoint(p, bbox, polyBBox, worldSize) {
+function updatePoint(p: GeoJSONPosition, bbox: BBox, polyBBox: Array<number>, worldSize: number) {
     if (p[0] < polyBBox[0] || p[0] > polyBBox[2]) {
         const halfWorldSize = worldSize * 0.5;
         let shift = (p[0] - polyBBox[0] > halfWorldSize) ? -worldSize : (polyBBox[0] - p[0] > halfWorldSize) ? worldSize : 0;
@@ -182,12 +183,12 @@ function updatePoint(p, bbox, polyBBox, worldSize) {
     updateBBox(bbox, p);
 }
 
-function resetBBox(bbox) {
+function resetBBox(bbox: BBox) {
     bbox[0] = bbox[1] = Infinity;
     bbox[2] = bbox[3] = -Infinity;
 }
 
-function getTilePoints(geometry, pointBBox, polyBBox, canonical: CanonicalTileID) {
+function getTilePoints(geometry: ?Array<Array<Point>>, pointBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID) {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
@@ -202,15 +203,15 @@ function getTilePoints(geometry, pointBBox, polyBBox, canonical: CanonicalTileID
     return tilePoints;
 }
 
-function getTileLines(geometry, lineBBox, polyBBox, canonical: CanonicalTileID) {
+function getTileLines(geometry: ?Array<Array<Point>>, lineBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID) {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
-    const tileLines = [];
+    const tileLines: Array<Array<GeoJSONPosition>> = [];
     if (!geometry) return tileLines;
     for (const line of geometry) {
         const tileLine = [];
         for (const point of line) {
-            const p = [point.x + shifts[0], point.y + shifts[1]];
+            const p: GeoJSONPosition = [point.x + shifts[0], point.y + shifts[1]];
             updateBBox(lineBBox, p);
             tileLine.push(p);
         }

@@ -21,6 +21,7 @@ import type {Cancelable} from '../types/cancelable.js';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type Actor from '../util/actor.js';
 import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
+import type {WorkerTileResult} from './worker_source.js';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -265,12 +266,14 @@ class VectorTileSource extends Evented implements Source {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err, data) {
+        // $FlowFixMe[missing-this-annot]
+        function done(err: ?Error, data: ?WorkerTileResult) {
             delete tile.request;
 
             if (tile.aborted)
                 return callback(null);
 
+            // $FlowFixMe[prop-missing] - generic Error type doesn't have status
             if (err && err.status !== 404) {
                 return callback(err);
             }

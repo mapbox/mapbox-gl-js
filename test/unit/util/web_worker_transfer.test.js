@@ -11,13 +11,13 @@ test('round trip', (t) => {
         buffer: ArrayBuffer;
         _cached: ?number;
 
-        constructor(n) {
+        constructor(n: number) {
             this.n = n;
             this.buffer = new ArrayBuffer(100);
             this.squared();
         }
 
-        squared() {
+        squared(): number {
             if (this._cached) {
                 return this._cached;
             }
@@ -48,7 +48,7 @@ test('custom serialization', (t) => {
     class Bar {
         id: string;
         _deserialized: boolean;
-        constructor(id) {
+        constructor(id: string) {
             this.id = id;
             this._deserialized = false;
         }

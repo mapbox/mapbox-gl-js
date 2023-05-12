@@ -18,9 +18,12 @@ import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import Color from '../style-spec/util/color.js';
+import Context from '../gl/context.js';
+import {Terrain} from '../terrain/terrain.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
+import type {PartMetadata} from '../data/bucket/fill_extrusion_bucket.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
 
 export default draw;
@@ -99,7 +102,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, stencilMode, colorMode) {
+function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -110,6 +113,8 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
     const aoRadius = (lighting3DMode && !image) ? layer.paint.get('fill-extrusion-ambient-occlusion-wall-radius') : layer.paint.get('fill-extrusion-ambient-occlusion-radius');
     const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), aoRadius];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
+    const zeroRoofRadius = edgeRadius > 0 && !layer.paint.get('fill-extrusion-rounded-roof');
+    const roofEdgeRadius = zeroRoofRadius ? 0.0 : edgeRadius;
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
@@ -123,6 +128,9 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
     }
     if (ao[0] > 0) { // intensity
         baseDefines.push('FAUX_AO');
+    }
+    if (zeroRoofRadius) {
+        baseDefines.push('ZERO_ROOF_RADIUS');
     }
 
     if (floodLightIntensity > 0) {
@@ -186,13 +194,11 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
-            if (image) {
-                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
-            } else {
-                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity);
-            }
+            uniformValues = image ?
+            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
+                tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
+            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
+                heightLift, globeToMercator, mercatorCenter, invMatrix);
         }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
@@ -247,7 +253,7 @@ function drawGroundEffect(painter, source, layer, coords, depthMode, stencilMode
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
+function flatRoofsUpdate(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain) {
     // For all four borders: 0 - left, 1, right, 2 - top, 3 - bottom
     const neighborCoord = [
         (coord: OverscaledTileID) => {
@@ -268,15 +274,15 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
             }
             return new OverscaledTileID(coord.overscaledZ, w, coord.canonical.z, x, coord.canonical.y);
         },
-        coord => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        (coord: OverscaledTileID) => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
             (coord.canonical.y === 0 ? 1 << coord.canonical.z : coord.canonical.y) - 1),
-        coord => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        (coord: OverscaledTileID) => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
             coord.canonical.y === (1 << coord.canonical.z) - 1 ? 0 : coord.canonical.y + 1)
     ];
 
-    const getLoadedBucket = (nid) => {
+    const getLoadedBucket = (nid: OverscaledTileID) => {
         const minzoom = source.getSource().minzoom;
-        const getBucket = (key) => {
+        const getBucket = (key: number) => {
             const n = source.getTileByID(key);
             if (n && n.hasData()) {
                 return n.getBucket(layer);
@@ -298,23 +304,23 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
     };
 
     const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
-    const xjoin = (a, b) => {
+    const xjoin = (a: PartMetadata, b: PartMetadata) => {
         projectedToBorder[0] = Math.min(a.min.y, b.min.y);
         projectedToBorder[1] = Math.max(a.max.y, b.max.y);
         projectedToBorder[2] = EXTENT - b.min.x > a.max.x ? b.min.x - EXTENT : a.max.x;
         return projectedToBorder;
     };
-    const yjoin = (a, b) => {
+    const yjoin = (a: PartMetadata, b: PartMetadata) => {
         projectedToBorder[0] = Math.min(a.min.x, b.min.x);
         projectedToBorder[1] = Math.max(a.max.x, b.max.x);
         projectedToBorder[2] = EXTENT - b.min.y > a.max.y ? b.min.y - EXTENT : a.max.y;
         return projectedToBorder;
     };
     const projectCombinedSpanToBorder = [
-        (a, b) => xjoin(a, b),
-        (a, b) => xjoin(b, a),
-        (a, b) => yjoin(a, b),
-        (a, b) => yjoin(b, a)
+        (a: PartMetadata, b: PartMetadata) => xjoin(a, b),
+        (a: PartMetadata, b: PartMetadata) => xjoin(b, a),
+        (a: PartMetadata, b: PartMetadata) => yjoin(a, b),
+        (a: PartMetadata, b: PartMetadata) => yjoin(b, a)
     ];
 
     const centroid = new Point(0, 0);
@@ -322,7 +328,7 @@ function flatRoofsUpdate(context, source, coord, bucket, layer, terrain) {
 
     let demTile, neighborDEMTile, neighborTileID;
 
-    const flatBase = (min, max, edge, verticalEdge, maxOffsetFromBorder) => {
+    const flatBase = (min: number, max: number, edge: number, verticalEdge: boolean, maxOffsetFromBorder: number) => {
         const points = [[verticalEdge ? edge : min, verticalEdge ? min : edge, 0], [verticalEdge ? edge : max, verticalEdge ? max : edge, 0]];
 
         const coord3 = maxOffsetFromBorder < 0 ? EXTENT + maxOffsetFromBorder : maxOffsetFromBorder;

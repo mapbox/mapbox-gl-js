@@ -1,5 +1,5 @@
 import {test} from '../../util/test.js';
-import glob from 'glob';
+import {globSync} from 'glob';
 import fs from 'fs';
 import path from 'path';
 import validateMapboxApiSupported from '../../../src/style-spec/validate_mapbox_api_supported.js';
@@ -9,7 +9,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const UPDATE = !!process.env.UPDATE;
 
-glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
+globSync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
     test(path.basename(file), (t) => {
         const outputfile = file.replace('.input', '.output-api-supported');
         const style = fs.readFileSync(file);
@@ -25,11 +25,10 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
     });
 });
 
-const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
-const style = JSON.parse(fs.readFileSync(fixtures[0]));
 import reference from '../../../src/style-spec/reference/latest.js';
 
 test('errors from validate do not contain line numbers', (t) => {
+    const style = JSON.parse(fs.readFileSync(`${__dirname}/fixture/bad-color.input.json`));
     const result = validateMapboxApiSupported(style, reference);
     t.equal(result[0].line, undefined);
     t.end();

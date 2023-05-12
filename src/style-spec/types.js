@@ -437,7 +437,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
-        "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>
+        "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>,
+        "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>
     |}
 |}
 

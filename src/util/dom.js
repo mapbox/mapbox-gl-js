@@ -41,7 +41,7 @@ export function enableDrag() {
 }
 
 // Suppress the next click, but only if it's immediate.
-function suppressClickListener(e) {
+function suppressClickListener(e: Event) {
     e.preventDefault();
     e.stopPropagation();
     window.removeEventListener('click', suppressClickListener, true);

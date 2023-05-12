@@ -292,7 +292,7 @@ class SourceCache extends Evented {
             }
         }
 
-        function fillBorder(tile, borderTile) {
+        function fillBorder(tile: Tile, borderTile: Tile) {
             if (!tile.dem || tile.dem.borderReady) return;
             tile.needsHillshadePrepare = true;
             tile.needsDEMTextureUpload = true;
@@ -994,6 +994,17 @@ class SourceCache extends Evented {
      * @returns {Object} Returns `this` | Promise.
      */
     _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+        if (!this._sourceLoaded) {
+            const waitUntilSourceLoaded = () => {
+                if (!this._sourceLoaded) return;
+                this._source.off('data', waitUntilSourceLoaded);
+                this._preloadTiles(transform, callback);
+            };
+
+            this._source.on('data', waitUntilSourceLoaded);
+            return;
+        }
+
         const coveringTilesIDs: Map<number, OverscaledTileID> = new Map();
         const transforms = Array.isArray(transform) ? transform : [transform];
 
@@ -1043,7 +1054,7 @@ function compareTileId(a: OverscaledTileID, b: OverscaledTileID): number {
     return a.overscaledZ - b.overscaledZ || bWrap - aWrap || b.canonical.y - a.canonical.y || b.canonical.x - a.canonical.x;
 }
 
-function isRasterType(type): boolean {
+function isRasterType(type: string): boolean {
     return type === 'raster' || type === 'image' || type === 'video' || type === 'custom';
 }
 

@@ -34,7 +34,7 @@ import type Projection from '../../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
-function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
+function addCircleVertex(layoutVertexArray: CircleLayoutArray, x: number, y: number, extrudeX: number, extrudeY: number) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
         (y * 2) + ((extrudeY + 1) / 2));

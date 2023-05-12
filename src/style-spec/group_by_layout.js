@@ -4,7 +4,7 @@ import type {LayerSpecification} from './types.js';
 
 import refProperties from './util/ref_properties.js';
 
-function stringify(obj) {
+function stringify(obj: any) {
     if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
 
@@ -23,7 +23,7 @@ function stringify(obj) {
     return `${str}}`;
 }
 
-function getKey(layer) {
+function getKey(layer: LayerSpecification) {
     let key = '';
     for (const k of refProperties) {
         key += `/${stringify((layer: any)[k])}`;

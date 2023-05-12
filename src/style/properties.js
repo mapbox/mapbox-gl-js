@@ -437,7 +437,7 @@ export class Layout<Props: Object> {
  *
  * @private
  */
-type PossiblyEvaluatedValue<T> =
+export type PossiblyEvaluatedValue<T> =
     | {kind: 'constant', value: T}
     | SourceExpression
     | CompositeExpression;

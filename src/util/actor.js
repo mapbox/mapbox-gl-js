@@ -141,7 +141,7 @@ class Actor {
             }
         } else {
             const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
-            const done = task.hasCallback ? (err, data) => {
+            const done = task.hasCallback ? (err: ?Error, data: mixed) => {
                 delete this.cancelCallbacks[id];
                 this.target.postMessage({
                     id,

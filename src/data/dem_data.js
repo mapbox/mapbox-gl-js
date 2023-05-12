@@ -131,7 +131,7 @@ export default class DEMData {
         return new RGBAImage({width: this.stride, height: this.stride}, this.pixels);
     }
 
-    backfillBorder(borderTile: DEMData, dx: number, dy: number) {
+    backfillBorder(borderTile: DEMData, dx: number, dy: number): void {
         if (this.dim !== borderTile.dim) throw new Error('dem dimension mismatch');
 
         let xMin = dx * this.dim,

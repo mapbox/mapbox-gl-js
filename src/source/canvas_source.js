@@ -124,11 +124,13 @@ class CanvasSource extends ImageSource {
             return;
         }
 
+        // $FlowFixMe[missing-this-annot]
         this.play = function() {
             this._playing = true;
             this.map.triggerRepaint();
         };
 
+        // $FlowFixMe[missing-this-annot]
         this.pause = function() {
             if (this._playing) {
                 this.prepare();

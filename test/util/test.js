@@ -32,6 +32,7 @@ export const only = (tap.only: CreateTest);
 const consoleError = console.error;
 const consoleWarn = console.warn;
 
+// $FlowFixMe[missing-this-annot]
 tap.beforeEach(function () {
     this.sandbox = sinon.createSandbox({
         injectInto: this,
@@ -44,6 +45,7 @@ tap.beforeEach(function () {
     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 });
 
+// $FlowFixMe[missing-this-annot]
 tap.afterEach(function () {
     // $FlowFixMe the assignment is intentional
     console.error = consoleError;

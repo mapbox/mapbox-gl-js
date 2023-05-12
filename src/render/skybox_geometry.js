@@ -7,7 +7,7 @@ import type IndexBuffer from '../gl/index_buffer.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type Context from '../gl/context.js';
 
-function addVertex(vertexArray, x, y, z) {
+function addVertex(vertexArray: SkyboxVertexArray, x: number, y: number, z: number) {
     vertexArray.emplaceBack(
         // a_pos
         x,

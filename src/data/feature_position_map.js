@@ -94,7 +94,7 @@ function getNumericId(value: mixed) {
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)
 // uses Hoare partitioning & manual tail call optimization to avoid worst case scenarios
-function sort(ids, positions, left, right) {
+function sort(ids: Float64Array, positions: Uint32Array, left: number, right: number) {
     while (left < right) {
         const pivot = ids[(left + right) >> 1];
         let i = left - 1;
@@ -120,7 +120,7 @@ function sort(ids, positions, left, right) {
     }
 }
 
-function swap(arr, i, j) {
+function swap(arr: Uint32Array | Float64Array, i: number, j: number) {
     const tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;

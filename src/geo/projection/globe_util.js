@@ -496,7 +496,7 @@ export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID): numbe
     return ecefPerPixel * normCoeff;
 }
 
-function calculateGlobePosMatrix(x, y, worldSize, lng, lat): Float64Array {
+function calculateGlobePosMatrix(x: number, y: number, worldSize: number, lng: number, lat: number): Float64Array {
     // transform the globe from reference coordinate space to world space
     const scale = globeECEFUnitsToPixelScale(worldSize);
     const offset = [x, y, -worldSize / (2.0 * Math.PI)];

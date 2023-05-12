@@ -1,7 +1,7 @@
 // Use linux 'path' syntax on all operating systems to preserve compatability with 'glob'
 import {posix as path} from "path";
 import fs from 'fs';
-import glob from 'glob';
+import {globSync} from 'glob';
 import localizeURLs from './localize-urls.js';
 
 /**
@@ -16,7 +16,7 @@ import localizeURLs from './localize-urls.js';
 export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
     if (!stylePaths.length) {
         const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
-        stylePaths = glob.sync(pathGlob);
+        stylePaths = globSync(pathGlob);
         if (!stylePaths.length) {
             console.error(`Found no tests matching the pattern ${pathGlob}`);
         }

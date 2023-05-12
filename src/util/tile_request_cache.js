@@ -46,7 +46,7 @@ export function cacheClose() {
 }
 
 let responseConstructorSupportsReadableStream;
-function prepareBody(response: Response, callback) {
+function prepareBody(response: Response, callback: ((body: ?(Blob | ReadableStream)) => void)) {
     if (responseConstructorSupportsReadableStream === undefined) {
         try {
             new Response(new ReadableStream()); // eslint-disable-line no-undef
@@ -151,7 +151,7 @@ export function cacheGet(request: Request, callback: (error: ?any, response: ?Re
 
 }
 
-function isFresh(response) {
+function isFresh(response: Response) {
     if (!response) return false;
     const expires = new Date(response.headers.get('Expires') || 0);
     const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
