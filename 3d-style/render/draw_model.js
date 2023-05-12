@@ -1,22 +1,15 @@
 // @flow
 
-import type Painter from '../../src/render/painter.js';
-import type SourceCache from '../../src/source/source_cache.js';
-import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
-
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
-import type {Mesh, Node} from '../data/model.js';
 import {ModelTraits} from '../data/model.js';
-import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 import Transform from '../../src/geo/transform.js';
 import EXTENT from '../../src/data/extent.js';
 import StencilMode from '../../src/gl/stencil_mode.js';
-import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4, Vec4} from 'gl-matrix';
+import ColorMode from '../../src/gl/color_mode.js';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
@@ -30,6 +23,16 @@ import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import {FeatureVertexArray} from '../../src/data/array_types.js';
 import {featureAttributes} from '../data/model_attributes.js';
 import {Aabb} from '../../src/util/primitives.js';
+
+import type Context from '../../src/gl/context.js';
+import type Painter from '../../src/render/painter.js';
+import type SourceCache from '../../src/source/source_cache.js';
+import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
+import type VertexBuffer from '../../src/gl/vertex_buffer.js';
+import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket.js';
+import type {Mat4, Vec4} from 'gl-matrix';
+import type {Mesh, Node} from '../data/model.js';
+import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 export default drawModels;
 
@@ -65,7 +68,7 @@ function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
 }
 
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
-function setupMeshDraw(definesValues, dynamicBuffers, mesh, painter) {
+function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?VertexBuffer>, mesh: Mesh, painter: Painter) {
     const material = mesh.material;
     const pbr = material.pbrMetallicRoughness;
     const context = painter.context;
@@ -148,7 +151,7 @@ function setupMeshDraw(definesValues, dynamicBuffers, mesh, painter) {
     definesValues.push('USE_STANDARD_DERIVATIVES');
 }
 
-function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode, colorMode) {
+function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
     const opacity = layer.paint.get('model-opacity');
     assert(opacity > 0);
     const context = painter.context;
@@ -475,7 +478,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 }
 
-function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData) {
+function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
@@ -611,12 +614,12 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
     }
 }
 
-function encodeEmissionToByte(emission) {
+function encodeEmissionToByte(emission: number) {
     const clampedEmission = clamp(emission, 0, 2);
     return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
 }
 
-function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams, zMin: number, zMax: number) {
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams: [number, number, number, number, number], zMin: number, zMax: number) {
     let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
     let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
     let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
@@ -652,7 +655,7 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     }
 }
 
-function updateNodeFeatureVertices(nodeInfo, context) {
+function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, context: Context) {
     const node = nodeInfo.node;
     for (const mesh of node.meshes) {
         if (!mesh.featureData) continue;
@@ -733,7 +736,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     }
 }
 
-function calculateTileShadowPassCulling(bucket, renderData, painter) {
+function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter) {
     if (!painter.style.modelManager) return true;
     const modelManager = painter.style.modelManager;
     if (!painter.shadowRenderer) return true;

@@ -207,7 +207,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
-                const workerTileCallback = (err, result) => {
+                const workerTileCallback = (err: ?Error, result: ?WorkerTileResult) => {
                     if (err || !result) return callback(err);
 
                     const resourceTiming = {};

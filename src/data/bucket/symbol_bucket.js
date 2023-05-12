@@ -157,7 +157,7 @@ function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: n
     );
 }
 
-function addTransitioningVertex(array, tx, ty) {
+function addTransitioningVertex(array: SymbolIconTransitioningArray, tx: number, ty: number) {
     array.emplaceBack(tx, ty);
 }
 

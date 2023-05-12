@@ -115,9 +115,9 @@ class Tiled3DModelSource extends Evented implements Source {
         }
         tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
 
-        function done(err, data) {
-            if (tile.aborted)
-                return callback(null);
+        // $FlowFixMe[missing-this-annot]
+        function done(err: ?Error, data: any) {
+            if (tile.aborted) return callback(null);
 
             if (err) {
                 return callback(err);

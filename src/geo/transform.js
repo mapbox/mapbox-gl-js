@@ -55,11 +55,11 @@ type RootTile = {
 };
 
 const OrthographicPitchTranstionValue = 15;
-const lerp = (x, y, t) => { return (1 - t) * x + t * y; };
-const easeIn = (x) => {
+const lerp = (x: number, y: number, t: number) => { return (1 - t) * x + t * y; };
+const easeIn = (x: number) => {
     return x * x * x * x * x;
 };
-const lerpMatrix = (out, a, b, value) => {
+const lerpMatrix = (out: Float64Array, a: Float64Array, b: Float64Array, value: number) => {
     for (let i = 0; i < 16; i++) {
         out[i] = lerp(a[i], b[i], value);
     }

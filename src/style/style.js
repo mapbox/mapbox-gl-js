@@ -935,7 +935,7 @@ class Style extends Evented {
         }
 
         // Based on: https://www.w3.org/WAI/GL/wiki/Relative_luminance
-        const relativeLuminance = (color) => {
+        const relativeLuminance = (color: [number, number, number, number]) => {
             const r = color[0] <= 0.03928 ? (color[0] / 12.92) : Math.pow(((color[0] + 0.055) / 1.055), 2.4);
             const g = color[1] <= 0.03928 ? (color[1] / 12.92) : Math.pow(((color[1] + 0.055) / 1.055), 2.4);
             const b = color[2] <= 0.03928 ? (color[2] / 12.92) : Math.pow(((color[2] + 0.055) / 1.055), 2.4);

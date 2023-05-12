@@ -79,7 +79,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
             const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
             const showOverdraw = painter._showOverdrawInspector;
-            const lerp = (a, b, t) => { return (1 - t) * a + t * b; };
+            const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
             const pass = (aoPass: boolean) => {
                 const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
                 const attenuation = lerp(0.1, 3, t);
@@ -219,7 +219,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     }
 }
 
-function drawGroundEffect(painter, source, layer, coords, depthMode, stencilMode, colorMode, cullFaceMode, aoPass, sdfSubpass, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor: any, attenuation) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, sdfSubpass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number) {
     const context = painter.context;
     const tr = painter.transform;
     const defines = ([]: any);

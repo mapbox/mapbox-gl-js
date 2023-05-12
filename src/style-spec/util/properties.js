@@ -1,8 +1,8 @@
 // @flow
 
-import type {StylePropertySpecification} from '../style-spec.js';
+import type {ExpressionSpecification, StylePropertySpecification} from '../style-spec.js';
 
-function expressionHasParameter(expression, parameter): boolean {
+function expressionHasParameter(expression: ?ExpressionSpecification, parameter: string): boolean {
     return !!expression && !!expression.parameters && expression.parameters.indexOf(parameter) > -1;
 }
 

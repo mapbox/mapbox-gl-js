@@ -124,7 +124,7 @@ function has(key: string, obj: {[string]: any}): boolean {
     return key in obj;
 }
 
-function hsla(ctx, [h, s, l, a]) {
+function hsla(ctx: EvaluationContext, [h, s, l, a]: Array<Expression>) {
     h = h.evaluate(ctx);
     s = s.evaluate(ctx);
     l = l.evaluate(ctx);
@@ -159,7 +159,7 @@ function varargs(type: Type): Varargs {
     return {type};
 }
 
-function hashString(str) {
+function hashString(str: string) {
     let hash = 0;
     if (str.length === 0) {
         return hash;
