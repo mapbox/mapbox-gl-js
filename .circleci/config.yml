@@ -543,18 +543,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install/Upgrade NVM
-          command: |
-            choco upgrade nvm -y
-            refreshenv
-      - run:
-          name: Install Node.js from .nvmrc
+          name: Install Node.js and npm
           command: |
             $nodeVersion = Get-Content .nvmrc -Raw
-            nvm install $nodeVersion
-            nvm use $nodeVersion
+            choco install nodejs --version $nodeVersion
             refreshenv
-            npm install --global yarn
+      - run:
+          name: Install Yarn
+          command: |
+            npm install -g yarn
+            refreshenv
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
       - run:
