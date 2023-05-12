@@ -542,8 +542,18 @@ jobs:
     <<: *windows-defaults
     steps:
       - checkout
-      - run: $NodeVersion = Get-Content -Path .\.nvmrc; nvm install $NodeVersion; nvm use $NodeVersion
-      - run: npm install --global yarn
+      - run:
+          name: Install/Upgrade NVM
+          command: |
+            choco upgrade nvm -y
+            refreshenv
+      - run:
+          name: Install Node.js from .nvmrc
+          command: |
+            $nodeVersion = Get-Content .nvmrc -Raw
+            nvm install $nodeVersion
+            nvm use $nodeVersion
+            npm install --global yarn
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
       - run:
