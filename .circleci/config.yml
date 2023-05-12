@@ -543,15 +543,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Node.js and npm
+          name: Setup Node.js and Yarn
           command: |
             choco uninstall nvm nvm.portable nodejs
             $nodeVersion = Get-Content .nvmrc -Raw
             choco install nodejs --version $nodeVersion
+            choco install npm
             refreshenv
-      - run:
-          name: Install Yarn
-          command: |
             npm install -g yarn
             refreshenv
       - run: yarn --frozen-lockfile
