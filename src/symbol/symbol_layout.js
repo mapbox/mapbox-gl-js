@@ -163,13 +163,11 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const layout = bucket.layers[0].layout;
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
 
-    const sizes: {
-        textMaxSize: PossiblyEvaluatedPropertyValue<number>,
-        layoutTextSize: PossiblyEvaluatedPropertyValue<number>,
-        layoutIconSize: PossiblyEvaluatedPropertyValue<number>,
-        compositeTextSizes?: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>],
-        compositeIconSizes?: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>]
-    } = {
+    const sizes: Sizes = {
+        // $FlowFixMe[incompatible-type]
+        compositeIconSizes: null,
+        // $FlowFixMe[incompatible-type]
+        compositeTextSizes: null,
         textMaxSize: unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical),
         layoutTextSize: unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical),
         layoutIconSize: unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical)
