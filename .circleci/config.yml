@@ -553,6 +553,7 @@ jobs:
             $nodeVersion = Get-Content .nvmrc -Raw
             nvm install $nodeVersion
             nvm use $nodeVersion
+            refreshenv
             npm install --global yarn
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
