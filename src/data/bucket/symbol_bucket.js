@@ -132,7 +132,7 @@ const shaderOpacityAttributes = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: any, isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
+function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: ?Array<number>, isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
 
@@ -682,7 +682,7 @@ class SymbolBucket implements Bucket {
 
     addSymbols(arrays: SymbolBuffers,
                quads: Array<SymbolQuad>,
-               sizeVertex: any,
+               sizeVertex: ?Array<number>,
                lineOffset: [number, number],
                alongLine: boolean,
                feature: SymbolFeature,

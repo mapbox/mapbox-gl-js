@@ -163,7 +163,17 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const layout = bucket.layers[0].layout;
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
 
-    const sizes = {};
+    const sizes: {
+        textMaxSize: PossiblyEvaluatedPropertyValue<number>,
+        layoutTextSize: PossiblyEvaluatedPropertyValue<number>,
+        layoutIconSize: PossiblyEvaluatedPropertyValue<number>,
+        compositeTextSizes?: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>],
+        compositeIconSizes?: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>]
+    } = {
+        textMaxSize: unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical),
+        layoutTextSize: unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical),
+        layoutIconSize: unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical)
+    };
 
     if (bucket.textSizeData.kind === 'composite') {
         const {minZoom, maxZoom} = bucket.textSizeData;
@@ -181,10 +191,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
         ];
     }
 
-    sizes.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical);
-    sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(tileZoom + 1), canonical);
-    sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18), canonical);
-
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const textSize = layout.get('text-size');
 
@@ -195,7 +201,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical);
 
         const shapedTextOrientations = {
-            horizontal: {},
+            horizontal: ({}: {[TextJustify]: Shaping}),
             vertical: undefined
         };
         const text = feature.text;

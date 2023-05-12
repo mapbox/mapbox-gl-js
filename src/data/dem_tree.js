@@ -69,7 +69,7 @@ function aabbRayIntersect(min: Vec3, max: Vec3, pos: Vec3, dir: Vec3): ?number {
     return tMin;
 }
 
-function triangleRayIntersect(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number, pos: Vec3, dir: Vec3): ?number {
+function triangleRayIntersect(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number, pos: Vec3, dir: Vec3): number | null {
     // Compute barycentric coordinates u and v to find the intersection
     const abX = bx - ax;
     const abY = by - ay;
@@ -225,13 +225,13 @@ export default class DemMinMaxQuadTree {
                 const cz = sampleElevation(maxxUv, maxyUv, this.dem) * exaggeration;
                 const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
-                const t0: any = triangleRayIntersect(
+                const t0 = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
                     boundsMax[0], boundsMin[1], bz,     // B
                     boundsMax[0], boundsMax[1], cz,     // C
                     p, d);
 
-                const t1: any = triangleRayIntersect(
+                const t1 = triangleRayIntersect(
                     boundsMax[0], boundsMax[1], cz,
                     boundsMin[0], boundsMax[1], dz,
                     boundsMin[0], boundsMin[1], az,
@@ -354,7 +354,7 @@ export default class DemMinMaxQuadTree {
     }
 }
 
-function bilinearLerp(p00: any, p10: any, p01: any, p11: any, x: number, y: number): any {
+function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
     return interpolate(
         interpolate(p00, p01, y),
         interpolate(p10, p11, y),
