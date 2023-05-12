@@ -39,12 +39,15 @@ void main() {
 #endif
 
 float z;
+vec4 color = v_color;
 #ifdef ZERO_ROOF_RADIUS
     z = float(normal.z > 0.00001);
+#ifdef LIGHTING_3D_MODE
     normal = mix(normal, vec3(0.0, 0.0, 1.0), z);
-#endif
-
-    vec4 color = v_color;
+#else // LIGHTING_3D_MODE
+    color = mix(v_color, v_roof_color, z);
+#endif // !LIGHTING_3D_MODE
+#endif // ZERO_ROOF_RADIUS
 
 float h = max(0.0, v_height);
 float ao_shade = 1.0;
