@@ -516,6 +516,7 @@ jobs:
 
   test-render-mac-safari-dev:
     <<: *mac-defaults
+    parallelism: 3
     resource_class: macos.m1.large.gen1
     steps:
       - attach_workspace:
@@ -528,6 +529,7 @@ jobs:
 
   test-render-mac-safari-webgl2-dev:
     <<: *mac-defaults
+    parallelism: 3
     resource_class: macos.m1.large.gen1
     steps:
       - attach_workspace:
@@ -545,11 +547,9 @@ jobs:
       - run:
           name: Setup Node.js and Yarn
           command: |
-            choco uninstall nvm nvm.portable nodejs
-            $nodeVersion = Get-Content .nvmrc -Raw
+            choco uninstall nvm.portable
+            $nodeVersion = Get-Content .nvmrc
             choco install nodejs --version $nodeVersion
-            choco install npm
-            refreshenv
             npm install -g yarn
             refreshenv
       - run: yarn --frozen-lockfile
