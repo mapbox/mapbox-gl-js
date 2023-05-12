@@ -120,7 +120,7 @@ function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
     return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
-function hsla(ctx, [h, s, l, a]) {
+function hsla(ctx: EvaluationContext, [h, s, l, a]: Array<Expression>) {
     h = h.evaluate(ctx);
     s = s.evaluate(ctx);
     l = l.evaluate(ctx);
@@ -159,7 +159,7 @@ function varargs(type: Type): Varargs {
     return {type};
 }
 
-function hashString(str) {
+function hashString(str: string) {
     let hash = 0;
     if (str.length === 0) {
         return hash;

@@ -30,7 +30,7 @@ function getNodeHeight(node: Node): number {
 
 export const PartNames = ['', 'wall', 'door', 'roof', 'window', 'lamp', 'logo'];
 
-class Tiled3dModelFeature {
+export class Tiled3dModelFeature {
     feature: EvaluationFeature;
     evaluatedColor: Array<Vec4>;
     evaluatedRMEA: Array<Vec4>;

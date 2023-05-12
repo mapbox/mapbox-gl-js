@@ -140,7 +140,7 @@ export default class TileParser {
         const vectorTile = new VectorTile(new Protobuf(tile.buffer));
 
         return new Promise((resolve, reject) => {
-            const callback = (err, result) => {
+            const callback = (err: ?Error, result: ?WorkerTileResult) => {
                 if (err) {
                     reject(err);
                 } else {

@@ -66,7 +66,7 @@ function addVertex(vertexArray: FillExtrusionLayoutArray, x: number, y: number, 
     );
 }
 
-function addGroundVertex(vertexArray, p: Point, end: Point, start: number, bottom: number) {
+function addGroundVertex(vertexArray: FillExtrusionLayoutArray, p: Point, end: Point, start: number, bottom: number) {
     vertexArray.emplaceBack(
         p.x,
         p.y,
@@ -797,7 +797,7 @@ function isEdgeOutsideBounds(p1: Point, p2: Point, bounds: [Point, Point]) {
            (p1.y > bounds[1].y && p2.y > bounds[1].y);
 }
 
-function pointOutsideBounds(p, bounds) {
+function pointOutsideBounds(p: Point, bounds: [Point, Point]) {
     return ((p.x < bounds[0].x) || (p.x > bounds[1].x) ||
             (p.y < bounds[0].y) || (p.y > bounds[1].y));
 }

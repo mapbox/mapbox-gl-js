@@ -105,7 +105,7 @@ function saturationFactor(saturation: number) {
         -saturation;
 }
 
-function colorScaleFactors ([min, max]) {
+function colorScaleFactors ([min, max]: [number, number]) {
     if (min === max) return [min, max];
     // Precompute the offset and delta so that operations are moved out of the shader and
     // the raster value may be computed in-shader as `colorScale[0] + colorScale[1] * inputValue`
