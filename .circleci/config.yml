@@ -547,6 +547,7 @@ jobs:
           command: |
             $nodeVersion = Get-Content .nvmrc -Raw
             choco install nodejs --version $nodeVersion
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
             refreshenv
       - run:
           name: Install Yarn
