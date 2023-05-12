@@ -194,11 +194,13 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
-            uniformValues = image ?
-            fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                tile, heightLift, globeToMercator, mercatorCenter, invMatrix) :
-            fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                heightLift, globeToMercator, mercatorCenter, invMatrix);
+            if (image) {
+                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
+            } else {
+                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity);
+            }
         }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
