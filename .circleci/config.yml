@@ -584,10 +584,9 @@ jobs:
       - run:
           name: Setup Node.js and Yarn
           command: |
-            $NodeVersion = Get-Content .nvmrc
-            nvm install $NodeVersion
-            nvm use $NodeVersion
-            refreshenv
+            choco uninstall nvm.portable
+            $nodeVersion = Get-Content .nvmrc
+            choco install nodejs --version $nodeVersion
             npm install -g yarn
             refreshenv
       - run: yarn --frozen-lockfile
@@ -618,10 +617,9 @@ jobs:
       - run:
           name: Setup Node.js and Yarn
           command: |
-            $NodeVersion = Get-Content .nvmrc
-            nvm install $NodeVersion
-            nvm use $NodeVersion
-            refreshenv
+            choco uninstall nvm.portable
+            $nodeVersion = Get-Content .nvmrc
+            choco install nodejs --version $nodeVersion
             npm install -g yarn
             refreshenv
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
