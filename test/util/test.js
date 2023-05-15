@@ -4,6 +4,10 @@ import tap from 'tap';
 /*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 
+// Disable MessageChannel in unit tests since
+// it prevents a Node.js process from exiting.
+delete global.MessageChannel;
+
 type CreateTest = (typeof sinon) & {
     (name: string, body: (test: CreateTest) => void): void,
 
