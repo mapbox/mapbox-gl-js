@@ -587,6 +587,7 @@ jobs:
             $NodeVersion = Get-Content .nvmrc
             nvm install $NodeVersion
             nvm use $NodeVersion
+            refreshenv
             npm install -g yarn
             refreshenv
       - run: yarn --frozen-lockfile
@@ -620,6 +621,7 @@ jobs:
             $NodeVersion = Get-Content .nvmrc
             nvm install $NodeVersion
             nvm use $NodeVersion
+            refreshenv
             npm install -g yarn
             refreshenv
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
