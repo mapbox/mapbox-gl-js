@@ -194,7 +194,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 layer.paint.get('fill-extrusion-translate-anchor'));
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-            
+
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
