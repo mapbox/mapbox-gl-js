@@ -66,9 +66,6 @@ const skip = [
     "render-tests/globe/globe-circle/change-projection/set-projection",
     "render-tests/globe/globe-circle/vertical-viewport-scaled-viewport-aligned/style.json",
     "render-tests/free-camera/default/style.json",
-    "render-tests/fit-screen-coordinates/terrain",
-
-    // Flaky on windows platform only:
-    "render-tests/measure-light/global-brightness-data-driven"
+    "render-tests/fit-screen-coordinates/terrain"
 ];
 export default {todo, skip};
