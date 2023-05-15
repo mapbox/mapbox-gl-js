@@ -86,7 +86,7 @@ if (process.env.CI) {
         timeout = 150000; // 2:30
     } else {  throw new Error('Cant determine OS with user agent:', ua); }
 
-    if (!process.env.USE_WEBGL2) {
+    if (!useWebGL2) {
         ignoreList = concatIgnoreList(ignoreList, ignoreWebGL1);
     }
 }
