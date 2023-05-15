@@ -25,7 +25,10 @@ const todo = [
 
     // Needs port from Native
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
-    "render-tests/terrain/symbol-draping/style.json"
+    "render-tests/terrain/symbol-draping/style.json",
+
+    // Flaky: https://mapbox.atlassian.net/browse/GLJS-397
+    "render-tests/measure-light/global-brightness-data-driven"
 ];
 
 const skip = [
