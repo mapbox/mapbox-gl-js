@@ -180,7 +180,7 @@ workflows:
 
 linux-defaults: &linux-defaults
   docker:
-    - image: cimg/node:14.21-browsers
+    - image: cimg/node:18.16-browsers
   working_directory: ~/mapbox-gl-js
 
 mac-defaults: &mac-defaults
@@ -542,8 +542,14 @@ jobs:
     <<: *windows-defaults
     steps:
       - checkout
-      - run: $NodeVersion = Get-Content -Path .\.nvmrc; nvm install $NodeVersion; nvm use $NodeVersion
-      - run: npm install --global yarn
+      - run:
+          name: Setup Node.js and Yarn
+          command: |
+            choco uninstall nvm.portable
+            $nodeVersion = Get-Content .nvmrc
+            choco install nodejs --version $nodeVersion
+            npm install -g yarn
+            refreshenv
       - run: yarn --frozen-lockfile
       - run: yarn run build-dev
       - run:
