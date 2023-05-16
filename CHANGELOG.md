@@ -2,7 +2,6 @@
 
 ## Features ✨ and improvements 🏁
 
-* `fill-extrusion-rounded-roof` provides an option to exclude the top edges of fill extrusions from getting rounded. ([#12668](https://github.com/mapbox/mapbox-gl-js/pull/12668))
 * Improve performance of symbol layers with identical or no text ([#12669](https://github.com/mapbox/mapbox-gl-js/pull/12669))
 * Improve performance of clustered sources: 20% faster loading & 40–60% less memory overhead. Improve performance of symbol collisions. ([#12682](https://github.com/mapbox/mapbox-gl-js/pull/12682))
 * Add `respectPrefersReducedMotion` map option ([#12694](https://github.com/mapbox/mapbox-gl-js/pull/12694))
