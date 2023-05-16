@@ -4,7 +4,7 @@ import {isCounterClockwise} from './util.js';
 
 import Point from '@mapbox/point-geometry';
 
-export {polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox, polygonContainsPoint};
+export {polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox, polygonContainsPoint, triangleIntersectsTriangle};
 
 type Line = $ReadOnlyArray<Point>;
 type MultiLine = $ReadOnlyArray<Line>;
@@ -205,4 +205,36 @@ function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
     return dir !== isCounterClockwise(e1, e2, corners[1]) ||
         dir !== isCounterClockwise(e1, e2, corners[2]) ||
         dir !== isCounterClockwise(e1, e2, corners[3]);
+}
+
+// Checks whether the triangle [p0, p1, p2] is on the left side of the edge [a, b].
+function triangleLeftSideOfEdge(a: Point, b: Point, p0: Point, p1: Point, p2: Point): boolean {
+    const ex = b.x - a.x;
+    const ey = b.y - a.y;
+    if ((p0.x - a.x) * ey - (p0.y - a.y) * ex < 0) {
+        return false;
+    } else if ((p1.x - a.x) * ey - (p1.y - a.y) * ex < 0) {
+        return false;
+    } else if ((p2.x - a.x) * ey - (p2.y - a.y) * ex < 0) {
+        return false;
+    }
+    return true;
+}
+
+function triangleIntersectsTriangle(a0: Point, b0: Point, c0: Point, a1: Point, b1: Point, c1: Point): boolean {
+    // Triangles are not intersecting if even one separating axis can be found
+    if (triangleLeftSideOfEdge(a0, b0, a1, b1, c1)) {
+        return false;
+    } else if (triangleLeftSideOfEdge(b0, c0, a1, b1, c1)) {
+        return false;
+    } else if (triangleLeftSideOfEdge(c0, a0, a1, b1, c1)) {
+        return false;
+    } else if (triangleLeftSideOfEdge(a1, b1, a0, b0, c0)) {
+        return false;
+    } else if (triangleLeftSideOfEdge(b1, c1, a0, b0, c0)) {
+        return false;
+    } else if (triangleLeftSideOfEdge(c1, a1, a0, b0, c0)) {
+        return false;
+    }
+    return true;
 }

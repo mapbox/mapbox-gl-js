@@ -688,7 +688,10 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
                 canonicalDem = demTile.tileID.canonical;
             }
         }
-        const shouldReEvaluate = bucket.needsReEvaluation(painter, canonicalDem);
+        let shouldReEvaluate = bucket.needsReEvaluation(painter, canonicalDem);
+        if (painter.conflationActive && bucket.updateReplacement(coord, painter.replacementSource)) {
+            shouldReEvaluate = true;
+        }
         if (!shouldReEvaluate) continue;
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;

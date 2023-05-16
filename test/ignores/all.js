@@ -25,7 +25,11 @@ const todo = [
 
     // Needs port from Native
     // "https://github.com/mapbox/mapbox-gl-js/issues/10365"
-    "render-tests/terrain/symbol-draping/style.json"
+    "render-tests/terrain/symbol-draping/style.json",
+
+    // Requires complete landmark rendering support such as shadows and materials
+    "render-tests/model-layer/landmark-conflation-buckingham",
+    "render-tests/model-layer/landmark-conflation-multiple-model-layers"
 ];
 
 const skip = [

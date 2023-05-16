@@ -30,7 +30,8 @@ async function parseTile(data: ArrayBuffer, layerIndex: StyleLayerIndex, params:
     for (const sourceLayerId in layerFamilies) {
         for (const family of layerFamilies[sourceLayerId]) {
             const layer = family[0];
-            buckets[layer.id] = new Tiled3dModelBucket(nodes, tileID, b3dm.gltf.json.extensionsUsed.includes("MAPBOX_mesh_features"));
+            const extensions = b3dm.gltf.json.extensionsUsed;
+            buckets[layer.id] = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"));
         }
     }
     // $FlowFixMe flow is complaining about missing properties and buckets not being of type Array

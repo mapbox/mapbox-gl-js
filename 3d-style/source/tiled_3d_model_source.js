@@ -22,6 +22,7 @@ class Tiled3DModelSource extends Evented implements Source {
     tileBounds: TileBounds;
     roundZoom: boolean | void;
     reparseOverscaled: boolean | void;
+    usedInConflation: boolean;
     tileSize: number;
     tiles: Array<string>;
     dispatcher: Dispatcher;
@@ -30,6 +31,7 @@ class Tiled3DModelSource extends Evented implements Source {
     _options: ModelSourceSpecification;
     _tileJSONRequest: ?Cancelable;
     map: Map;
+
     /**
      * @private
      */
@@ -45,6 +47,7 @@ class Tiled3DModelSource extends Evented implements Source {
         this.maxzoom = options.maxzoom || 19;
         this.minzoom = options.minzoom || 0;
         this.roundZoom = true;
+        this.usedInConflation = true;
         this.dispatcher = dispatcher;
         this.reparseOverscaled = true;
         this.scheme = 'xyz';

@@ -54,6 +54,7 @@ export interface Source {
     maxTileCacheSize?: ?number;
     language?: ?string;
     worldview?: ?string;
+    +usedInConflation?: boolean;
 
     hasTransition(): boolean;
     loaded(): boolean;
