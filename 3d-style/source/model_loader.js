@@ -1,6 +1,6 @@
 // @flow
 
-import type {Mesh, Node, Material, ModelTexture, Sampler} from '../data/model.js';
+import type {Footprint, Mesh, Node, Material, ModelTexture, Sampler} from '../data/model.js';
 import type {TextureImage} from '../../src/render/texture.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
@@ -13,10 +13,13 @@ import {TriangleIndexArray,
     Color3fLayoutArray,
     Color4fLayoutArray
 } from '../../src/data/array_types.js';
+import Point from '@mapbox/point-geometry';
+import earcut from 'earcut';
 
 import window from '../../src/util/window.js';
 import {warnOnce} from '../../src/util/util.js';
 import assert from 'assert';
+import GridIndex from 'grid-index';
 
 // From https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
 
@@ -291,6 +294,10 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
         mat4.scale(node.matrix, node.matrix, [nodeDesc.scale[0], nodeDesc.scale[1], nodeDesc.scale[2]]);
     }
 
+    if (nodeDesc.extras) {
+        node.footprint = convertFootprint(nodeDesc);
+    }
+
     if (nodeDesc.mesh !== undefined) {
         node.meshes = meshes[nodeDesc.mesh];
     }
@@ -306,6 +313,108 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
         node.children = children;
     }
     return node;
+}
+
+function convertFootprint(desc: Object): ?Footprint {
+    if (!desc.extras) {
+        return null;
+    }
+
+    const groundContainer = desc.extras.ground;
+    if (!groundContainer || !Array.isArray(groundContainer) || groundContainer.length === 0) {
+        return null;
+    }
+
+    const ground = groundContainer[0];
+    if (!ground || !Array.isArray(ground) || ground.length === 0) {
+        return null;
+    }
+
+    // Populate only the vertex list of the footprint mesh.
+    const vertices: Array<Point> = [];
+
+    for (const point of ground) {
+        if (!Array.isArray(point) || point.length !== 2) {
+            continue;
+        }
+
+        const x = point[0];
+        const y = point[1];
+
+        if (typeof x !== "number" || typeof y !== "number") {
+            continue;
+        }
+
+        vertices.push(new Point(x, y));
+    }
+
+    if (vertices.length > 1 && vertices[vertices.length - 1].equals(vertices[0])) {
+        vertices.pop();
+    }
+
+    if (vertices.length < 3) {
+        return null;
+    }
+
+    // Ensure that the vertex list is defined in CW order
+    let cross = 0;
+
+    const getTriangleBounds = (out, a, b, c) => {
+        out[0] = Math.min(a.x, b.x, c.x);
+        out[1] = Math.min(a.y, b.y, c.y);
+        out[2] = Math.max(a.x, b.x, c.x);
+        out[3] = Math.max(a.y, b.y, c.y);
+    };
+
+    const minmax = [Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
+
+    for (let i = 0; i < vertices.length; i++) {
+        const a = vertices[i];
+        const b = vertices[(i + 1) % vertices.length];
+        const c = vertices[(i + 2) % vertices.length];
+
+        cross += (a.x - b.x) * (c.y - b.y) - (c.x - b.x) * (a.y - b.y);
+
+        minmax[0] = Math.min(minmax[0], a.x, b.x, c.x);
+        minmax[1] = Math.min(minmax[1], a.y, b.y, c.y);
+        minmax[2] = Math.max(minmax[2], a.x, b.x, c.x);
+        minmax[3] = Math.max(minmax[3], a.y, b.y, c.y);
+    }
+
+    if (cross > 0) {
+        vertices.reverse();
+    }
+
+    // Triangulate the footprint and compute grid acceleration structure for
+    // more performant intersection queries.
+    const indices = earcut(vertices.flatMap(v => [v.x, v.y]), []);
+
+    const min = new Point(minmax[0], minmax[1]);
+    const max = new Point(minmax[2], minmax[3]);
+    let gridExtent = Math.max(max.x - min.x, max.y - min.y);
+
+    if (gridExtent === 0)
+        gridExtent = 1;
+
+    const grid = new GridIndex(gridExtent, 8, 0);
+    const bounds = [];
+
+    for (let i = 0, idx = 0; i < indices.length; i += 3) {
+        const v0 = vertices[indices[i + 0]];
+        const v1 = vertices[indices[i + 1]];
+        const v2 = vertices[indices[i + 2]];
+
+        getTriangleBounds(bounds, v0, v1, v2);
+        grid.insert(idx++, bounds[0] - min.x, bounds[1] - min.y, bounds[2] - min.x, bounds[3] - min.y);
+    }
+
+    return {
+        vertices,
+        indices,
+        grid,
+        min,
+        max
+    };
 }
 
 export default function convertModel(gltf: Object): Array<Node> {

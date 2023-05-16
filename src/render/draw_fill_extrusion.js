@@ -5,7 +5,7 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
-import FillExtrusionBucket, {GroundEffect, fillExtrusionHeightLift} from '../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {GroundEffect, fillExtrusionHeightLift, PartData, ELEVATION_SCALE, ELEVATION_OFFSET} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionDepthUniformValues,
@@ -32,15 +32,35 @@ export default draw;
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const gl = painter.context.gl;
+    const terrain = painter.terrain;
     if (opacity === 0) {
         return;
+    }
+
+    // Update replacement used with model layer conflation
+    const conflateLayer = painter.conflationActive && painter.layerUsedInConflation(layer, source.getSource());
+
+    if (conflateLayer) {
+        updateReplacement(painter, source, layer, coords);
+    }
+
+    if (terrain || conflateLayer) {
+        for (const coord of coords) {
+            const tile = source.getTile(coord);
+            const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
+            if (!bucket) {
+                continue;
+            }
+
+            updateBorders(painter.context, source, coord, bucket, layer, terrain, conflateLayer);
+        }
     }
 
     if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
         const shadowRenderer = painter.shadowRenderer;
         const depthMode = shadowRenderer.getShadowPassDepthMode();
         const colorMode = shadowRenderer.getShadowPassColorMode();
-        drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+        drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
@@ -49,27 +69,29 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         if (opacity === 1 && noPattern) {
             const colorMode = painter.colorModeForRenderPass();
 
-            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode);
+            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
 
         } else {
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
             // First draw all the extrusions into only the depth buffer. No colors are drawn.
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 StencilMode.disabled,
-                ColorMode.disabled);
+                ColorMode.disabled,
+                conflateLayer);
 
             // Then draw all the extrusions a second type, only coloring fragments if they have the
             // same depth value as the closest fragment in the previous pass. Use the stencil buffer
             // to prevent the second draw in cases where we have coincident polygons.
             drawExtrusionTiles(painter, source, layer, coords, depthMode,
                 painter.stencilModeFor3D(),
-                painter.colorModeForRenderPass());
+                painter.colorModeForRenderPass(),
+                conflateLayer);
 
             painter.resetStencilClippingMasks();
         }
 
         const lighting3DMode = painter.style.enable3dLights();
-        const noTerrain = !painter.terrain;
+        const noTerrain = !terrain;
         const noGlobe = painter.transform.projection.name !== 'globe';
         const webGL2 = !!painter.context.isWebGL2;
         if (webGL2 && lighting3DMode && noPattern && noTerrain && noGlobe) {
@@ -103,7 +125,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode) {
+function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -133,7 +155,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     if (zeroRoofRadius) {
         baseDefines.push('ZERO_ROOF_RADIUS');
     }
-
+    if (replacementActive) {
+        baseDefines.push('HAS_CENTROID');
+    }
     if (floodLightIntensity > 0) {
         baseDefines.push('FLOOD_LIGHT');
     }
@@ -155,14 +179,13 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             if (painter.style.terrainSetForDrapingOnly()) {
                 terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
             } else {
-                if (!bucket.enableTerrain) continue;
                 terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-                flatRoofsUpdate(context, source, coord, bucket, layer, terrain);
-                if (!bucket.centroidVertexBuffer) {
-                    const attrIndex: number | void = program.attributes['a_centroid_pos'];
-                    if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
-                }
             }
+        }
+
+        if (!bucket.centroidVertexBuffer) {
+            const attrIndex: number | void = program.attributes['a_centroid_pos'];
+            if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
         }
 
         if (!isShadowPass && shadowRenderer) {
@@ -209,13 +232,25 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
         const dynamicBuffers = [];
-        if (painter.terrain) dynamicBuffers.push(bucket.centroidVertexBuffer);
+        if (painter.terrain || replacementActive) dynamicBuffers.push(bucket.centroidVertexBuffer);
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
 
         program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
+    }
+}
+
+function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+    for (const coord of coords) {
+        const tile = source.getTile(coord);
+        const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
+        if (!bucket) {
+            continue;
+        }
+        bucket.updateReplacement(coord, painter.replacementSource);
+        bucket.uploadCentroid(painter.context);
     }
 }
 
@@ -256,7 +291,27 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function flatRoofsUpdate(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain, reconcileReplacementState: boolean) {
+    if (bucket.centroidVertexArray.length === 0) {
+        bucket.createCentroidsBuffer();
+    }
+
+    const demTile = terrain ? terrain.findDEMTileFor(coord) : null;
+    if ((!demTile || !demTile.dem) && !reconcileReplacementState) {
+        return;     // defer update until an elevation tile is available.
+    }
+
+    const reconcileReplacement = (centroid1, centroid2) => {
+        const hiddenFlag = (centroid1.flags | centroid2.flags) & PartData.HiddenByReplacement;
+        if (hiddenFlag) {
+            centroid1.flags |= PartData.HiddenByReplacement;
+            centroid2.flags |= PartData.HiddenByReplacement;
+        } else {
+            centroid1.flags &= ~PartData.HiddenByReplacement;
+            centroid2.flags &= ~PartData.HiddenByReplacement;
+        }
+    };
+
     // For all four borders: 0 - left, 1, right, 2 - top, 3 - bottom
     const neighborCoord = [
         (coord: OverscaledTileID) => {
@@ -282,6 +337,10 @@ function flatRoofsUpdate(context: Context, source: SourceCache, coord: Overscale
         (coord: OverscaledTileID) => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
             coord.canonical.y === (1 << coord.canonical.z) - 1 ? 0 : coord.canonical.y + 1)
     ];
+
+    const encodeHeightAsCentroid = (height) => {
+        return new Point(Math.ceil((height + ELEVATION_OFFSET) * ELEVATION_SCALE), 0);
+    };
 
     const getLoadedBucket = (nid: OverscaledTileID) => {
         const minzoom = source.getSource().minzoom;
@@ -326,12 +385,12 @@ function flatRoofsUpdate(context: Context, source: SourceCache, coord: Overscale
         (a: PartMetadata, b: PartMetadata) => yjoin(b, a)
     ];
 
-    const centroid = new Point(0, 0);
     const error = 3; // Allow intrusion of a building to the building with adjacent wall.
 
-    let demTile, neighborDEMTile, neighborTileID;
-
-    const flatBase = (min: number, max: number, edge: number, verticalEdge: boolean, maxOffsetFromBorder: number) => {
+    const flatBase = (min, max, edge, neighborDEMTile, neighborTileID, verticalEdge, maxOffsetFromBorder) => {
+        if (!terrain) {
+            return 0;
+        }
         const points = [[verticalEdge ? edge : min, verticalEdge ? min : edge, 0], [verticalEdge ? edge : max, verticalEdge ? max : edge, 0]];
 
         const coord3 = maxOffsetFromBorder < 0 ? EXTENT + maxOffsetFromBorder : maxOffsetFromBorder;
@@ -348,110 +407,135 @@ function flatRoofsUpdate(context: Context, source: SourceCache, coord: Overscale
 
     // Process all four borders: get neighboring tile
     for (let i = 0; i < 4; i++) {
-        // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
-        // bucket's border i is neighboring bucket's border j:
-        const j = (i < 2 ? 1 : 5) - i;
-        // Sort by border intersection area minimums, ascending.
-        const a = bucket.borders[i];
-        if (a.length === 0) continue;
-        const nid = neighborTileID = neighborCoord[i](coord);
-        const nBucket = getLoadedBucket(nid);
-        if (!nBucket || !(nBucket instanceof FillExtrusionBucket) || !nBucket.enableTerrain) continue;
-        if (bucket.borderDoneWithNeighborZ[i] === nBucket.canonical.z &&
-            nBucket.borderDoneWithNeighborZ[j] === bucket.canonical.z) {
+        // sorted by border intersection area minimums, ascending.
+        const a = bucket.borderFeatureIndices[i];
+        if (a.length === 0) {
             continue;
         }
 
-        neighborDEMTile = terrain.findDEMTileFor(nid);
-        if (!neighborDEMTile || !neighborDEMTile.dem) continue;
-        if (!demTile) {
-            const dem = terrain.findDEMTileFor(coord);
-            if (!(dem && dem.dem)) return; // defer update until an elevation tile is available.
-            demTile = dem;
+        // Look up the neighbor tile's bucket
+        const nid = neighborCoord[i](coord);
+        const nBucket = getLoadedBucket(nid);
+        if (!nBucket || !(nBucket instanceof FillExtrusionBucket)) {
+            continue;
         }
-        const b = nBucket.borders[j];
+        if (bucket.borderDoneWithNeighborZ[i] === nBucket.canonical.z) {
+            continue;
+        }
+
+        if (nBucket.centroidVertexArray.length === 0) {
+            nBucket.createCentroidsBuffer();
+        }
+
+        // Look up the neighbor DEM tile
+        const neighborDEMTile = terrain ? terrain.findDEMTileFor(nid) : null;
+        if ((!neighborDEMTile || !neighborDEMTile.dem) && !reconcileReplacementState) {
+            continue;
+        }
+
+        const j = (i < 2 ? 1 : 5) - i;
+        const updateNeighbor = nBucket.borderDoneWithNeighborZ[j] !== bucket.canonical.z;
+        const b = nBucket.borderFeatureIndices[j];
         let ib = 0;
 
-        const updateNeighbor = nBucket.borderDoneWithNeighborZ[j] !== bucket.canonical.z;
         // If neighbors are of different canonical z, we cannot join parts but show
         // all without flat roofs.
         if (bucket.canonical.z !== nBucket.canonical.z) {
             for (const index of a) {
-                bucket.encodeCentroid(undefined, bucket.featuresOnBorder[index], false);
+                bucket.showCentroid(bucket.featuresOnBorder[index]);
             }
             if (updateNeighbor) {
                 for (const index of b) {
-                    nBucket.encodeCentroid(undefined, nBucket.featuresOnBorder[index], false);
+                    nBucket.showCentroid(nBucket.featuresOnBorder[index]);
                 }
-                nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
-                nBucket.needsCentroidUpdate = true;
             }
             bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
-            bucket.needsCentroidUpdate = true;
-            continue;
+            nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
         }
 
-        for (let ia = 0; ia < a.length; ia++) {
-            const parta = bucket.featuresOnBorder[a[ia]];
-            const partABorderRange = parta.borders[i];
-            // Find all nBucket parts that share the border overlap.
-            let partb;
+        for (const ia of a) {
+            const partA = bucket.featuresOnBorder[ia];
+            const centroidA = bucket.centroidData[partA.centroidDataIndex];
+            assert(partA.borders);
+            const partABorderRange = (partA.borders: any)[i];
+
+            // Find all nBucket parts that share the border overlap
+            let partB;
             while (ib < b.length) {
-                // Pass all that are before the overlap.
-                partb = nBucket.featuresOnBorder[b[ib]];
-                const partBBorderRange = partb.borders[j];
-                if (partBBorderRange[1] > partABorderRange[0] + error) break;
-                if (updateNeighbor) nBucket.encodeCentroid(undefined, partb, false);
+                // Pass all that are before the overlap
+                partB = nBucket.featuresOnBorder[b[ib]];
+                assert(partB.borders);
+                const partBBorderRange = (partB.borders: any)[j];
+                if (partBBorderRange[1] > partABorderRange[0] + error ||
+                    partBBorderRange[0] > partABorderRange[0] - error) {
+                    break;
+                }
+                nBucket.showCentroid(partB);
                 ib++;
             }
-            if (partb && ib < b.length) {
+
+            if (partB && ib < b.length) {
                 const saveIb = ib;
                 let count = 0;
                 while (true) {
                     // Collect all parts overlapping parta on the edge, to make sure it is only one.
-                    const partBBorderRange = partb.borders[j];
-                    if (partBBorderRange[0] > partABorderRange[1] - error) break;
-                    count++;
-                    if (++ib === b.length) break;
-                    partb = nBucket.featuresOnBorder[b[ib]];
-                }
-                partb = nBucket.featuresOnBorder[b[saveIb]];
-
-                // If any of a or b crosses more than one tile edge, don't support flat roof.
-                if (parta.intersectsCount() > 1 || partb.intersectsCount() > 1 || count !== 1) {
-                    if (count !== 1) {
-                        ib = saveIb; // rewind unprocessed ib so that it is processed again for the next ia.
+                    assert(partB.borders);
+                    const partBBorderRange = (partB.borders: any)[j];
+                    if (partBBorderRange[0] > partABorderRange[1] - error) {
+                        break;
                     }
-
-                    bucket.encodeCentroid(undefined, parta, false);
-                    if (updateNeighbor) nBucket.encodeCentroid(undefined, partb, false);
+                    count++;
+                    if (++ib === b.length) {
+                        break;
+                    }
+                    partB = nBucket.featuresOnBorder[b[ib]];
+                }
+                partB = nBucket.featuresOnBorder[b[saveIb]];
+                if (count > 1) {
+                    // if it can be concluded that it is the piece of the same feature,
+                    // use it, even following features (inner details) overlap on border edge.
+                    assert(partB.borders);
+                    const partBBorderRange = (partB.borders: any)[j];
+                    if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
+                        Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
+                        count = 1;
+                        ib = saveIb + 1;
+                    }
+                } else if (count === 0) {
+                    // No B for A, show it, no flat roofs.
+                    bucket.showCentroid(partA);
                     continue;
                 }
 
-                // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base elevation
-                // as average of three points: 2 are edge points (combined span projected to border) and one is point of
-                // span that has maximum offset to border.
-                const span = projectCombinedSpanToBorder[i](parta, partb);
-                const edge = (i % 2) ? EXTENT - 1 : 0;
-                centroid.x = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, i < 2, span[2]);
-                centroid.y = 0;
-                assert(parta.vertexArrayOffset !== undefined && parta.vertexArrayOffset < bucket.layoutVertexArray.length);
-                bucket.encodeCentroid(centroid, parta, false);
+                const centroidB = nBucket.centroidData[partB.centroidDataIndex];
+                if (reconcileReplacementState && count === 1) {
+                    reconcileReplacement(centroidA, centroidB);
+                }
 
-                assert(partb.vertexArrayOffset !== undefined && partb.vertexArrayOffset < nBucket.layoutVertexArray.length);
-                if (updateNeighbor) nBucket.encodeCentroid(centroid, partb, false);
+                let centroidXY = new Point(0, 0);
+                if (count > 1) {
+                    ib = saveIb;    // rewind unprocessed ib so that it is processed again for the next ia.
+                } else if (neighborDEMTile && neighborDEMTile.dem && !(partA.intersectsCount() > 1 || partB.intersectsCount() > 1)) {
+                    // If any of a or b crosses more than one tile edge, don't support flat roof.
+                    // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
+                    // elevation as average of three points: 2 are edge points (combined span projected to border) and
+                    // one is point of span that has maximum offset to border.
+                    const span = projectCombinedSpanToBorder[i](centroidA, centroidB);
+                    const edge = (i % 2) ? EXTENT - 1 : 0;
+
+                    const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
+                    centroidXY = encodeHeightAsCentroid(height);
+                }
+                centroidA.centroidXY = centroidB.centroidXY = centroidXY;
+                bucket.writeCentroidToBuffer(centroidA);
+                nBucket.writeCentroidToBuffer(centroidB);
             } else {
-                assert(parta.intersectsCount() > 1 || (partb && partb.intersectsCount() > 1)); // expected at the end of border, when buildings cover corner (show building w/o flat roof).
-                bucket.encodeCentroid(undefined, parta, false);
+                bucket.showCentroid(partA);
             }
         }
 
         bucket.borderDoneWithNeighborZ[i] = nBucket.canonical.z;
-        bucket.needsCentroidUpdate = true;
-        if (updateNeighbor) {
-            nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
-            nBucket.needsCentroidUpdate = true;
-        }
+        nBucket.borderDoneWithNeighborZ[j] = bucket.canonical.z;
     }
 
     if (bucket.needsCentroidUpdate || (!bucket.centroidVertexBuffer && bucket.centroidVertexArray.length !== 0)) {

@@ -45,6 +45,8 @@ import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
+import {ReplacementSource} from '../../3d-style/source/replacement_source.js';
+import type {Source} from '../source/source.js';
 
 // 3D-style related
 import model, {upload as modelUpload} from '../../3d-style/render/draw_model.js';
@@ -172,6 +174,8 @@ class Painter {
     loadTimeStamps: Array<number>;
     _backgroundTiles: {[key: number]: Tile};
     _atmosphere: ?Atmosphere;
+    replacementSource: ReplacementSource;
+    conflationActive: boolean;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -194,6 +198,8 @@ class Painter {
         this.frameCounter = 0;
         this._backgroundTiles = {};
 
+        this.conflationActive = false;
+        this.replacementSource = new ReplacementSource();
         this._shadowRenderer = new ShadowRenderer(this);
     }
 
@@ -518,11 +524,17 @@ class Painter {
 
         const layerIds = this.style.order;
         const sourceCaches = this.style._sourceCaches;
+        let conflationSourcesInStyle = 0;
+        let conflationActiveThisFrame = false;
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
                 sourceCache.prepare(this.context);
+
+                if (sourceCache.getSource().usedInConflation) {
+                    ++conflationSourcesInStyle;
+                }
             }
         }
 
@@ -536,6 +548,48 @@ class Painter {
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
         }
+
+        if (conflationSourcesInStyle) {
+            const getLayerSource = (layer) => {
+                const cache = this.style._getLayerSourceCache(layer);
+                if (!cache || !cache.used) {
+                    return null;
+                }
+                return cache.getSource();
+            };
+
+            const orderedLayers = layerIds.map(id => this.style._layers[id]);
+            const conflationLayersInStyle = orderedLayers.map(layer => this.layerUsedInConflation(layer, getLayerSource(layer)));
+
+            if (conflationLayersInStyle) {
+                // Some layer types such as fill extrusions and models might have interdependencies
+                // where certain features should be replaced by overlapping features from another layer with higher
+                // precedence. A special data structure 'replacementSource' is used to compute regions
+                // on visible tiles where potential overlap might occur between features of different layers.
+                const conflationSources = [];
+
+                for (const layer of orderedLayers) {
+                    const sourceCache = this.style._getLayerSourceCache(layer);
+
+                    if (!sourceCache || !sourceCache.used || !sourceCache.getSource().usedInConflation) {
+                        continue;
+                    }
+
+                    conflationSources.push({layer: layer.id, cache: sourceCache});
+                }
+
+                this.replacementSource.setSources(conflationSources);
+                conflationActiveThisFrame = true;
+            }
+        }
+
+        if (!conflationActiveThisFrame) {
+            this.replacementSource.clear();
+        }
+
+        // Mark conflation as active for one frame after the deactivation to give
+        // consumers of the feature an opportunity to clean up
+        this.conflationActive = conflationActiveThisFrame;
 
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < layerIds.length; i++) {
@@ -784,6 +838,10 @@ class Painter {
         if (this.tileLoaded && this.options.speedIndexTiming) {
             this.loadTimeStamps.push(window.performance.now());
             this.saveCanvasCopy();
+        }
+
+        if (!conflationActiveThisFrame) {
+            this.conflationActive = false;
         }
     }
 
@@ -1170,6 +1228,24 @@ class Painter {
 
     clearBackgroundTiles() {
         this._backgroundTiles = {};
+    }
+
+    /*
+     * Replacement source's features get precedence over features defined in other sources.
+     * E.g. landmark features replace fill extrusion buildings at the same position.
+     * Initially planned to be used for Tiled3DModelSource, 2D source that is used with ModelLayer of buildings type and
+     * custom layer buildings.
+     */
+    layerUsedInConflation(layer: StyleLayer, source: ?Source): boolean {
+        if (!layer.is3D()) {
+            return false;
+        }
+
+        if (layer.sourceLayer === "building") {
+            return true;
+        }
+
+        return !!source && source.type === "batched-model";
     }
 }
 

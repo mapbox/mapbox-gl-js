@@ -12,6 +12,7 @@ import type Context from '../../../src/gl/context.js';
 import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Vec4} from 'gl-matrix';
+import {ReplacementSource} from '../../source/replacement_source.js';
 
 function getNodeHeight(node: Node): number {
     let height = 0;
@@ -71,6 +72,8 @@ class Tiled3dModelBucket implements Bucket {
     projection: ProjectionSpecification;
     terrainTile: ?CanonicalTileID;
     terrainExaggeration: ?number;
+    replacementUpdateTime: number;
+
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean) {
         this.nodes = nodes;
@@ -84,6 +87,7 @@ class Tiled3dModelBucket implements Bucket {
         this.zoom = -1;
         this.terrainExaggeration = 1;
         this.projection = {name: 'mercator'};
+        this.replacementUpdateTime = 0;
     }
     update() {
         console.log("Update 3D model bucket");
@@ -168,6 +172,25 @@ class Tiled3dModelBucket implements Bucket {
         return !this.nodes.length;
     }
 
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource): boolean {
+        // Replacement has to be re-checked if the source has been updated since last time
+        if (source.updateTime === this.replacementUpdateTime) {
+            return false;
+        }
+
+        this.replacementUpdateTime = source.updateTime;
+        const activeReplacements = source.getReplacementRegionsForTile(coord.toUnwrapped());
+        const nodesInfo = this.getNodesInfo();
+
+        for (let i = 0; i < this.nodesInfo.length; i++) {
+            const node = nodesInfo[i].node;
+
+            // Node is visible if its footprint passes the replacement check
+            nodesInfo[i].hiddenByReplacement = !!node.footprint && !activeReplacements.find(region => region.footprint === node.footprint);
+        }
+
+        return true;
+    }
 }
 
 register(Tiled3dModelBucket, 'Tiled3dModelBucket', {omit: ['layers']});

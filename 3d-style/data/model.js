@@ -20,6 +20,8 @@ import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import MercatorCoordinate, {getMetersPerPixelAtLatitude, getLatitudeScale, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import Transform from '../../src/geo/transform.js';
 import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convertModelMatrixForGlobe} from '../util/model_util.js';
+import type Point from '@mapbox/point-geometry';
+import type GridIndex from 'grid-index';
 
 export type Sampler = {
     minFilter: TextureFilter;
@@ -76,11 +78,20 @@ export type Mesh = {
     centroid: Vec3;
 }
 
+export type Footprint = {
+    vertices: Array<Point>;
+    indices: Array<number>;
+    grid: GridIndex;
+    min: Point;
+    max: Point;
+}
+
 export type Node = {
     id: string;
     matrix: Mat4;
     meshes: Array<Mesh>;
     children: Array<Node>;
+    footprint: ?Footprint;
 }
 
 export const ModelTraits = {
