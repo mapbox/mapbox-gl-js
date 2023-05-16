@@ -9,7 +9,7 @@
 
 ## Bug fixes 🐞
 
-* Adding Spaces between Magnitude and Unit in the Scale Control for all units ([#12644](https://github.com/mapbox/mapbox-gl-js/pull/12644)) (h/t [kathirgounder](https://github.com/kathirgounder))
+* Fix inconsistent spacing in the Scale control ([#12644](https://github.com/mapbox/mapbox-gl-js/pull/12644)) (h/t [kathirgounder](https://github.com/kathirgounder))
 * Fix transpilation issues with some setups involving Vite or ESBuild ([#12658](https://github.com/mapbox/mapbox-gl-js/pull/12658))
 * Fix tiles preloading when a source is not yet loaded ([#12699](https://github.com/mapbox/mapbox-gl-js/pull/12699))
 
