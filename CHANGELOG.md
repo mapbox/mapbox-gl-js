@@ -2,7 +2,7 @@
 
 ## Features ✨ and improvements 🏁
 
-* Improve performance of symbol layers with identical or no text ([#12669](https://github.com/mapbox/mapbox-gl-js/pull/12669))
+* Improve performance of symbol layers with identical or no text. Eliminate stuttering when zooming on maps with many identical symbols. ([#12669](https://github.com/mapbox/mapbox-gl-js/pull/12669))
 * Improve performance of clustered sources: 20% faster loading & 40–60% less memory overhead. Improve performance of symbol collisions. ([#12682](https://github.com/mapbox/mapbox-gl-js/pull/12682))
 * Add `respectPrefersReducedMotion` map option ([#12694](https://github.com/mapbox/mapbox-gl-js/pull/12694))
 * Add the `isPointOnSurface` map method to determine if the given point is located on a visible map surface. ([#12695](https://github.com/mapbox/mapbox-gl-js/pull/12695))
