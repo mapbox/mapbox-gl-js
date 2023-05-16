@@ -1,4 +1,26 @@
-## 2.14.0-beta.1
+## 2.15.0-beta.1
+
+## Features ✨ and improvements 🏁
+
+* `fill-extrusion-rounded-roof` provides an option to exclude the top edges of fill extrusions from getting rounded. ([#12668](https://github.com/mapbox/mapbox-gl-js/pull/12668))
+* Improve performance of symbol layers with identical or no text ([#12669](https://github.com/mapbox/mapbox-gl-js/pull/12669))
+* Improve performance of clustered sources: 20% faster loading & 40–60% less memory overhead. Improve performance of symbol collisions. ([#12682](https://github.com/mapbox/mapbox-gl-js/pull/12682))
+* Add `respectPrefersReducedMotion` map option ([#12694](https://github.com/mapbox/mapbox-gl-js/pull/12694))
+* Add the `isPointOnSurface` map method to determine if the given point is located on a visible map surface. ([#12695](https://github.com/mapbox/mapbox-gl-js/pull/12695))
+
+## Bug fixes 🐞
+
+* Adding Spaces between Magnitude and Unit in the Scale Control for all units ([#12644](https://github.com/mapbox/mapbox-gl-js/pull/12644)) (h/t [kathirgounder](https://github.com/kathirgounder))
+* Fix transpilation issues with some setups involving Vite or ESBuild ([#12658](https://github.com/mapbox/mapbox-gl-js/pull/12658))
+* Fix tiles preloading when a source is not yet loaded ([#12699](https://github.com/mapbox/mapbox-gl-js/pull/12699))
+
+## 2.14.1
+
+## Bug fixes 🐞
+
+* Fix a bug where certain bundling configurations involving Vite or ESBuild could produce a broken build. [#12658](https://github.com/mapbox/mapbox-gl-js/pull/12658)
+
+## 2.14.0
 
 ### Features ✨ and improvements 🏁
 
