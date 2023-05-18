@@ -366,6 +366,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _fullscreenchangeEvent: "fullscreenchange" | "webkitfullscreenchange";
     _isInitialLoad: boolean;
     _shouldCheckAccess: boolean;
     _fadeDuration: number;
@@ -565,20 +566,18 @@ class Map extends Camera {
         this.on('zoom', () => this._update(true));
 
         if (typeof window !== 'undefined') {
+            this._fullscreenchangeEvent = 'onfullscreenchange' in window.document ?
+                    'fullscreenchange' :
+                    'webkitfullscreenchange';
+
             // $FlowFixMe[method-unbinding]
             window.addEventListener('online', this._onWindowOnline, false);
             // $FlowFixMe[method-unbinding]
             window.addEventListener('resize', this._onWindowResize, false);
             // $FlowFixMe[method-unbinding]
             window.addEventListener('orientationchange', this._onWindowResize, false);
-
-            const fullscreenchange = 'onfullscreenchange' in window.document ?
-                'fullscreenchange' :
-                'webkitfullscreenchange';
-
             // $FlowFixMe[method-unbinding]
-            window.addEventListener(fullscreenchange, this._onWindowResize, false);
-
+            window.addEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
             // $FlowFixMe[method-unbinding]
             window.addEventListener('visibilitychange', this._onVisibilityChange, false);
         }
@@ -3545,7 +3544,7 @@ class Map extends Camera {
             // $FlowFixMe[method-unbinding]
             window.removeEventListener('orientationchange', this._onWindowResize, false);
             // $FlowFixMe[method-unbinding]
-            window.removeEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            window.removeEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
             // $FlowFixMe[method-unbinding]
             window.removeEventListener('online', this._onWindowOnline, false);
             // $FlowFixMe[method-unbinding]
