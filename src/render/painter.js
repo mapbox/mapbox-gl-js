@@ -705,7 +705,7 @@ class Painter {
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
 
-        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere) {
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector) {
             this._atmosphere.drawStars(this, this.style.fog);
         }
 
@@ -721,7 +721,7 @@ class Painter {
             }
         }
 
-        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere) {
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector) {
             this._atmosphere.drawAtmosphereGlow(this, this.style.fog);
         }
 
