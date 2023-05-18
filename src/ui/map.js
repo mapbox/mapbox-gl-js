@@ -567,8 +567,8 @@ class Map extends Camera {
 
         if (typeof window !== 'undefined') {
             this._fullscreenchangeEvent = 'onfullscreenchange' in window.document ?
-                    'fullscreenchange' :
-                    'webkitfullscreenchange';
+                'fullscreenchange' :
+                'webkitfullscreenchange';
 
             // $FlowFixMe[method-unbinding]
             window.addEventListener('online', this._onWindowOnline, false);
