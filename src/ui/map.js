@@ -571,8 +571,14 @@ class Map extends Camera {
             window.addEventListener('resize', this._onWindowResize, false);
             // $FlowFixMe[method-unbinding]
             window.addEventListener('orientationchange', this._onWindowResize, false);
+
+            const fullscreenchange = 'onfullscreenchange' in window.document ?
+                'fullscreenchange' :
+                'webkitfullscreenchange';
+
             // $FlowFixMe[method-unbinding]
-            window.addEventListener('webkitfullscreenchange', this._onWindowResize, false);
+            window.addEventListener(fullscreenchange, this._onWindowResize, false);
+
             // $FlowFixMe[method-unbinding]
             window.addEventListener('visibilitychange', this._onVisibilityChange, false);
         }
