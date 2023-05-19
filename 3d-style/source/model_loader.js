@@ -359,7 +359,7 @@ function convertFootprint(desc: Object): ?Footprint {
     // Ensure that the vertex list is defined in CW order
     let cross = 0;
 
-    const getTriangleBounds = (out, a, b, c) => {
+    const getTriangleBounds = (out: Array<number>, a: Point, b: Point, c: Point) => {
         out[0] = Math.min(a.x, b.x, c.x);
         out[1] = Math.min(a.y, b.y, c.y);
         out[2] = Math.max(a.x, b.x, c.x);

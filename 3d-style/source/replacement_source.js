@@ -173,7 +173,7 @@ class ReplacementSource {
         if (regionsChanged) {
             ++this._updateTime;
 
-            const firstRegionOfNextPriority = (idx) => {
+            const firstRegionOfNextPriority = (idx: number) => {
                 const regs = this._activeRegions;
 
                 if (idx >= regs.length) {
