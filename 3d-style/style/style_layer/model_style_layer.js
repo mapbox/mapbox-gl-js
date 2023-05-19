@@ -45,7 +45,7 @@ class ModelStyleLayer extends StyleLayer {
         }
         // relayout on programatically setPaintProperty for all non-data-driven properties that get baked into vertex data.
         // Buckets could be updated without relayout later, if needed to optimize.
-        return name === "model-color" || name === "model-color-mix-intensity" || name === "model-rotation" || name === "model-scale" || name === "model-translation";
+        return name === "model-color" || name === "model-color-mix-intensity" || name === "model-rotation" || name === "model-scale" || name === "model-translation" || name === "model-emissive-strength";
     }
 }
 
