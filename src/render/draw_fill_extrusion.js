@@ -21,10 +21,10 @@ import Context from '../gl/context.js';
 import {Terrain} from '../terrain/terrain.js';
 import {sRGBToLinearAndScale} from '../util/util.js';
 import Color from '../style-spec/util/color.js';
+import Tile from '../source/tile.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
-import type {PartMetadata} from '../data/bucket/fill_extrusion_bucket.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
 
 export default draw;
@@ -291,7 +291,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain, reconcileReplacementState: boolean) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: ?Terrain, reconcileReplacementState: boolean) {
     if (bucket.centroidVertexArray.length === 0) {
         bucket.createCentroidsBuffer();
     }
@@ -301,7 +301,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         return;     // defer update until an elevation tile is available.
     }
 
-    const reconcileReplacement = (centroid1, centroid2) => {
+    const reconcileReplacement = (centroid1: PartData, centroid2: PartData) => {
         const hiddenFlag = (centroid1.flags | centroid2.flags) & PartData.HiddenByReplacement;
         if (hiddenFlag) {
             centroid1.flags |= PartData.HiddenByReplacement;
@@ -338,7 +338,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             coord.canonical.y === (1 << coord.canonical.z) - 1 ? 0 : coord.canonical.y + 1)
     ];
 
-    const encodeHeightAsCentroid = (height) => {
+    const encodeHeightAsCentroid = (height: number) => {
         return new Point(Math.ceil((height + ELEVATION_OFFSET) * ELEVATION_SCALE), 0);
     };
 
@@ -366,28 +366,28 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     };
 
     const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
-    const xjoin = (a: PartMetadata, b: PartMetadata) => {
+    const xjoin = (a: PartData, b: PartData) => {
         projectedToBorder[0] = Math.min(a.min.y, b.min.y);
         projectedToBorder[1] = Math.max(a.max.y, b.max.y);
         projectedToBorder[2] = EXTENT - b.min.x > a.max.x ? b.min.x - EXTENT : a.max.x;
         return projectedToBorder;
     };
-    const yjoin = (a: PartMetadata, b: PartMetadata) => {
+    const yjoin = (a: PartData, b: PartData) => {
         projectedToBorder[0] = Math.min(a.min.x, b.min.x);
         projectedToBorder[1] = Math.max(a.max.x, b.max.x);
         projectedToBorder[2] = EXTENT - b.min.y > a.max.y ? b.min.y - EXTENT : a.max.y;
         return projectedToBorder;
     };
     const projectCombinedSpanToBorder = [
-        (a: PartMetadata, b: PartMetadata) => xjoin(a, b),
-        (a: PartMetadata, b: PartMetadata) => xjoin(b, a),
-        (a: PartMetadata, b: PartMetadata) => yjoin(a, b),
-        (a: PartMetadata, b: PartMetadata) => yjoin(b, a)
+        (a: PartData, b: PartData) => xjoin(a, b),
+        (a: PartData, b: PartData) => xjoin(b, a),
+        (a: PartData, b: PartData) => yjoin(a, b),
+        (a: PartData, b: PartData) => yjoin(b, a)
     ];
 
     const error = 3; // Allow intrusion of a building to the building with adjacent wall.
 
-    const flatBase = (min, max, edge, neighborDEMTile, neighborTileID, verticalEdge, maxOffsetFromBorder) => {
+    const flatBase = (min: number, max: number, edge: number, neighborDEMTile: Tile, neighborTileID: OverscaledTileID, verticalEdge: boolean, maxOffsetFromBorder: number) => {
         if (!terrain) {
             return 0;
         }

@@ -550,7 +550,7 @@ class Painter {
         }
 
         if (conflationSourcesInStyle) {
-            const getLayerSource = (layer) => {
+            const getLayerSource = (layer: StyleLayer) => {
                 const cache = this.style._getLayerSourceCache(layer);
                 if (!cache || !cache.used) {
                     return null;

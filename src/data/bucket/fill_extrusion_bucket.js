@@ -101,8 +101,8 @@ export class PartData {
     min: Point;
     max: Point;
 
-    static hiddenCentroid: Point = new Point(0, 1);
-    static HiddenByReplacement: number = 0x80000000;
+    static hiddenCentroid: Point = new Point(0, 1); // eslint-disable-line no-restricted-syntax
+    static HiddenByReplacement: number = 0x80000000; // eslint-disable-line no-restricted-syntax
 
     constructor() {
         this.centroidXY = new Point(0, 0);
