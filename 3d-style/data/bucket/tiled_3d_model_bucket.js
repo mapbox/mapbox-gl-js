@@ -240,12 +240,12 @@ class Tiled3dModelBucket implements Bucket {
     }
 }
 
-function encodeEmissionToByte(emission) {
+function encodeEmissionToByte(emission: number) {
     const clampedEmission = clamp(emission, 0, 2);
     return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
 }
 
-function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams, zMin: number, zMax: number, lightsFeatureArray: ?FeatureVertexArray) {
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams: [number, number, number, number, number], zMin: number, zMax: number, lightsFeatureArray: ?FeatureVertexArray) {
     let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
     let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
     let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
@@ -293,7 +293,7 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     }
 }
 
-function updateNodeFeatureVertices(nodeInfo, doorLightChanged) {
+function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChanged: boolean) {
     const node = nodeInfo.node;
     let i = 0;
     for (const mesh of node.meshes) {
