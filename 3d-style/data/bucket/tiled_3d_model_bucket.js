@@ -13,6 +13,9 @@ import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Vec4} from 'gl-matrix';
 import {ReplacementSource} from '../../source/replacement_source.js';
+import {FeatureVertexArray} from '../../../src/data/array_types.js';
+import {number as interpolate} from '../../../src/style-spec/util/interpolate.js';
+import {clamp} from '../../../src/util/util.js';
 
 function getNodeHeight(node: Node): number {
     let height = 0;
@@ -28,6 +31,15 @@ function getNodeHeight(node: Node): number {
     }
     return height;
 }
+
+export const PartIndices = {
+    wall: 1,
+    door: 2,
+    roof: 3,
+    window: 4,
+    lamp: 5,
+    logo: 6
+};
 
 export const PartNames = ['', 'wall', 'door', 'roof', 'window', 'lamp', 'logo'];
 
@@ -101,14 +113,27 @@ class Tiled3dModelBucket implements Bucket {
 
     upload(context: Context) {
         if (this.uploaded) return;
-        for (const node of this.nodes) {
+        const nodesInfo = this.getNodesInfo();
+        for (const nodeInfo of nodesInfo) {
+            const node = nodeInfo.node;
+            if (!node.meshes[0].indexArray.arrayBuffer) {
+                this.updatePbrBuffer(node);
+                continue;
+            }
             uploadNode(node, context, true);
         }
         // Now destroy all buffers
-        for (const node of this.nodes) {
-            destroyNodeArrays(node);
+        for (const nodeInfo of nodesInfo) {
+            destroyNodeArrays(nodeInfo.node);
         }
         this.uploaded = true;
+    }
+
+    updatePbrBuffer(node: Node) {
+        if (!node.meshes) return;
+        for (const mesh of node.meshes) {
+            mesh.pbrBuffer.updateData(mesh.featureArray);
+        }
     }
 
     needsReEvaluation(painter: Painter, demTile: ?CanonicalTileID): boolean {
@@ -129,8 +154,12 @@ class Tiled3dModelBucket implements Bucket {
     evaluate(layer: ModelStyleLayer) {
         const nodesInfo = this.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
+            if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
             const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
+            const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
+            const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
+
             if (hasFeatures) {
                 for (let i = 0; i < PartNames.length; i++) {
                     const part = PartNames[i];
@@ -148,7 +177,12 @@ class Tiled3dModelBucket implements Bucket {
                     nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
                 }
                 delete evaluationFeature.properties['part'];
+                this.uploaded = false;
+                const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
+                                         previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
+                updateNodeFeatureVertices(nodeInfo, doorLightChanged);
             }
+
         }
     }
 
@@ -158,13 +192,26 @@ class Tiled3dModelBucket implements Bucket {
             for (const node of this.nodes) {
                 this.nodesInfo.push(new Tiled3dModelFeature(node));
             }
+            this.freeNodes();
         }
         return this.nodesInfo;
     }
 
+    freeNodes() {
+        if (this.nodes) {
+            for (const node of this.nodes) {
+                destroyBuffers(node);
+            }
+            this.nodes.splice(0, this.nodes.length);
+        }
+    }
+
     destroy() {
-        for (const node of this.nodes) {
-            destroyBuffers(node);
+        this.freeNodes();
+        const nodesInfo = this.getNodesInfo();
+        for (const nodeInfo of nodesInfo) {
+            destroyNodeArrays(nodeInfo.node);
+            destroyBuffers(nodeInfo.node);
         }
     }
 
@@ -193,6 +240,96 @@ class Tiled3dModelBucket implements Bucket {
     }
 }
 
+function encodeEmissionToByte(emission) {
+    const clampedEmission = clamp(emission, 0, 2);
+    return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
+}
+
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams, zMin: number, zMax: number, lightsFeatureArray: ?FeatureVertexArray) {
+    let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
+    let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
+    let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
+
+    if (colorMix[3] > 0) {
+        r = interpolate(r, 255 * colorMix[0], colorMix[3]);
+        g = interpolate(g, 255 * colorMix[1], colorMix[3]);
+        b = interpolate(b, 255 * colorMix[2], colorMix[3]);
+    }
+
+    const a0 = (r << 8) | g;
+    const a1 = (b << 8) | Math.floor(rmea[3] * 255);
+    const a2 = (encodeEmissionToByte(rmea[2]) << 8) | ((rmea[0] * 15) << 4) | (rmea[1] * 15);
+
+    const emissionMultiplierStart = clamp(heightBasedEmissionMultiplierParams[0], 0, 1);
+    const emissionMultiplierFinish = clamp(heightBasedEmissionMultiplierParams[1], 0, 1);
+    const emissionMultiplierValueStart = clamp(heightBasedEmissionMultiplierParams[2], 0, 1);
+    const emissionMultiplierValueFinish = clamp(heightBasedEmissionMultiplierParams[3], 0, 1);
+
+    let a3, b0, b1, b2;
+
+    if (emissionMultiplierStart !== emissionMultiplierFinish && zMax !== zMin &&
+        emissionMultiplierFinish !== emissionMultiplierStart) {
+        const zRange = zMax - zMin;
+        b0 = 1.0 / (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
+        b1 = -(zMin + zRange * emissionMultiplierStart) /
+                       (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
+        const power = clamp(heightBasedEmissionMultiplierParams[4], -1, 1);
+        b2 = Math.pow(10, power);
+        a3 = (emissionMultiplierValueStart * 255.0 << 8) | (emissionMultiplierValueFinish * 255.0);
+    } else {
+        a3 = (255 << 8) | 255;
+        b0 = 0;
+        b1 = 1;
+        b2 = 1;
+    }
+
+    vertexArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
+    if (lightsFeatureArray) {
+        const size = lightsFeatureArray.length;
+        lightsFeatureArray.clear();
+        for (let j = 0; j < size; j++) {
+            lightsFeatureArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
+        }
+    }
+}
+
+function updateNodeFeatureVertices(nodeInfo, doorLightChanged) {
+    const node = nodeInfo.node;
+    let i = 0;
+    for (const mesh of node.meshes) {
+        if (node.lights && node.lightMeshIndex === i) continue;
+        if (!mesh.featureData) continue;
+        // initialize featureArray
+        mesh.featureArray = new FeatureVertexArray();
+        mesh.featureArray.reserve(mesh.featureData.length);
+        let pendingDoorLightUpdate = doorLightChanged;
+        for (const feature of mesh.featureData) {
+            let lightsFeatureArray;
+            const id = feature & 0xFFFF;
+            const partId = (id & 0xf) < 8 ? (id & 0xf) : 0;
+            const featureColor = (feature >> 16) & 0xFFFF;
+            const rmea = nodeInfo.evaluatedRMEA[partId];
+            const evaluatedColor = nodeInfo.evaluatedColor[partId];
+            const emissionParams = nodeInfo.emissionHeightBasedParams[partId];
+            if (pendingDoorLightUpdate && partId === PartIndices.door && node.lights) {
+                lightsFeatureArray = new FeatureVertexArray();
+                lightsFeatureArray.resize(node.lights.length * 10);
+            }
+            addPBRVertex(mesh.featureArray, featureColor, evaluatedColor, rmea, emissionParams, mesh.aabb.min[2], mesh.aabb.max[2], lightsFeatureArray);
+            if (lightsFeatureArray && pendingDoorLightUpdate) {
+                pendingDoorLightUpdate = false;
+                const lightsMesh = node.meshes[node.lightMeshIndex];
+                lightsMesh.featureArray = lightsFeatureArray;
+                lightsMesh.featureArray._trim();
+            }
+        }
+        mesh.featureArray._trim();
+        i++;
+    }
+
+}
+
 register(Tiled3dModelBucket, 'Tiled3dModelBucket', {omit: ['layers']});
+register(Tiled3dModelFeature, 'Tiled3dModelFeature');
 
 export default Tiled3dModelBucket;

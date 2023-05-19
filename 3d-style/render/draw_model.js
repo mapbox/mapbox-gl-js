@@ -16,19 +16,16 @@ import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4, Vec4} from 'gl-matrix';
+import type {Mat4} from 'gl-matrix';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
-import {warnOnce, clamp} from '../../src/util/util.js';
+import {warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
-import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
-import {FeatureVertexArray} from '../../src/data/array_types.js';
-import {featureAttributes} from '../data/model_attributes.js';
 import {Aabb} from '../../src/util/primitives.js';
 
 export default drawModels;
@@ -542,6 +539,9 @@ function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coor
 }
 
 function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, layer: ModelStyleLayer, coord: OverscaledTileID, tileMatrix: Mat4, zScaleMatrix: Mat4, negCameraPosMatrix: Mat4) {
+    if (painter.renderPass === 'opaque') {
+        return;
+    }
     const context = painter.context;
     for (const mesh of node.meshes) {
         const definesValues = [];
@@ -607,67 +607,6 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, dynamicBuffers);
-        return;
-    }
-}
-
-function encodeEmissionToByte(emission) {
-    const clampedEmission = clamp(emission, 0, 2);
-    return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
-}
-
-function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: Vec4, rmea: Vec4, heightBasedEmissionMultiplierParams, zMin: number, zMax: number) {
-    let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
-    let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
-    let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
-
-    if (colorMix[3] > 0) {
-        r = interpolate(r, 255 * colorMix[0], colorMix[3]);
-        g = interpolate(g, 255 * colorMix[1], colorMix[3]);
-        b = interpolate(b, 255 * colorMix[2], colorMix[3]);
-    }
-
-    const a0 = (r << 8) | g;
-    const a1 = (b << 8) | Math.floor(rmea[3] * 255);
-    const a2 = (encodeEmissionToByte(rmea[2]) << 8) | ((rmea[0] * 15) << 4) | (rmea[1] * 15);
-
-    const emissionMultiplierStart = clamp(heightBasedEmissionMultiplierParams[0], 0, 1);
-    const emissionMultiplierFinish = clamp(heightBasedEmissionMultiplierParams[1], 0, 1);
-    const emissionMultiplierValueStart = clamp(heightBasedEmissionMultiplierParams[2], 0, 1);
-    const emissionMultiplierValueFinish = clamp(heightBasedEmissionMultiplierParams[3], 0, 1);
-
-    if (emissionMultiplierStart !== emissionMultiplierFinish && zMax !== zMin &&
-        emissionMultiplierFinish !== emissionMultiplierStart) {
-        const zRange = zMax - zMin;
-        const b0 = 1.0 / (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
-        const b1 = -(zMin + zRange * emissionMultiplierStart) /
-                       (zRange * (emissionMultiplierFinish - emissionMultiplierStart));
-        const power = clamp(heightBasedEmissionMultiplierParams[4], -1, 1);
-        const b2 = Math.pow(10, power);
-        const a3 = (emissionMultiplierValueStart * 255.0 << 8) | (emissionMultiplierValueFinish * 255.0);
-        vertexArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
-    } else {
-        const a3 = (255 << 8) | 255;
-        vertexArray.emplaceBack(a0, a1, a2, a3, 0, 1, 1);
-    }
-}
-
-function updateNodeFeatureVertices(nodeInfo, context) {
-    const node = nodeInfo.node;
-    for (const mesh of node.meshes) {
-        if (!mesh.featureData) continue;
-        // initialize featureArray
-        mesh.featureArray = new FeatureVertexArray();
-        for (const feature of mesh.featureData) {
-            const id = feature & 0xFFFF;
-            const partId = (id & 0xf) < 8 ? (id & 0xf) : 0;
-            const featureColor = (feature >> 16) & 0xFFFF;
-            const rmea = nodeInfo.evaluatedRMEA[partId];
-            const evaluatedColor = nodeInfo.evaluatedColor[partId];
-            const emissionParams = nodeInfo.emissionHeightBasedParams[partId];
-            addPBRVertex(mesh.featureArray, featureColor, evaluatedColor, rmea, emissionParams, mesh.aabb.min[2], mesh.aabb.max[2]);
-        }
-        mesh.pbrBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, false, true);
     }
 }
 
@@ -677,7 +616,6 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         const tile = source.getTile(coord);
         const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        const nodesInfo = bucket.getNodesInfo();
         // Check for terrainTile
         let demTile;
         let canonicalDem;
@@ -693,12 +631,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
             shouldReEvaluate = true;
         }
         if (!shouldReEvaluate) continue;
-        for (const nodeInfo of nodesInfo) {
-            if (!nodeInfo.node.meshes) continue;
-            bucket.evaluate(layer);
-
-            updateNodeFeatureVertices(nodeInfo, painter.context);
-        }
+        bucket.evaluate(layer);
     }
 }
 

@@ -8,11 +8,11 @@ import type IndexBuffer from '../../src/gl/index_buffer.js';
 import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types.js';
 import {StructArray} from '../../src/util/struct_array.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
-import type {Mat4, Vec3, Quat} from 'gl-matrix';
+import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
 import type Context from "../../src/gl/context.js";
 import {Aabb} from '../../src/util/primitives.js';
 import {mat4, vec4} from 'gl-matrix';
-import {modelAttributes, normalAttributes, texcoordAttributes, color3fAttributes, color4fAttributes} from './model_attributes.js';
+import {modelAttributes, normalAttributes, texcoordAttributes, color3fAttributes, color4fAttributes, featureAttributes} from './model_attributes.js';
 import type {TextureImage, TextureWrap, TextureFilter} from '../../src/render/texture.js';
 import SegmentVector from '../../src/data/segment.js';
 import {globeToMercatorTransition} from '../../src/geo/projection/globe_util.js';
@@ -85,6 +85,15 @@ export type Footprint = {
     min: Point;
     max: Point;
 }
+// A rectangle with 5 DoF, no rolling
+export type AreaLight = {
+    pos: Vec3;
+    normal: Vec3;
+    width: number;
+    height: number;
+    depth: number;
+    points: Vec4;
+};
 
 export type Node = {
     id: string;
@@ -92,6 +101,8 @@ export type Node = {
     meshes: Array<Mesh>;
     children: Array<Node>;
     footprint: ?Footprint;
+    lights: Array<AreaLight>;
+    lightMeshIndex: number;
 }
 
 export const ModelTraits = {
@@ -310,6 +321,9 @@ export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusi
         const colorAttributes = mesh.colorArray.bytesPerElement === 12 ? color3fAttributes : color4fAttributes;
         mesh.colorBuffer = context.createVertexBuffer(mesh.colorArray, colorAttributes.members, false, true);
     }
+    if (mesh.featureArray) {
+        mesh.pbrBuffer = context.createVertexBuffer(mesh.featureArray, featureAttributes.members, true);
+    }
     mesh.segments = SegmentVector.simpleSegment(0, 0, mesh.vertexArray.length, mesh.indexArray.length);
 
     // Textures
@@ -354,7 +368,6 @@ export function destroyNodeArrays(node: Node) {
             if (mesh.texcoordArray) mesh.texcoordArray.destroy();
             if (mesh.featureArray) {
                 mesh.featureArray.destroy();
-                mesh.featureData = (null: any);
             }
         }
     }

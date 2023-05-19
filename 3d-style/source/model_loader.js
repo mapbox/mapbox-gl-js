@@ -1,11 +1,11 @@
 // @flow
 
-import type {Footprint, Mesh, Node, Material, ModelTexture, Sampler} from '../data/model.js';
+import type {Footprint, Mesh, Node, Material, ModelTexture, Sampler, AreaLight} from '../data/model.js';
 import type {TextureImage} from '../../src/render/texture.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
 import type {Vec3} from 'gl-matrix';
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import {TriangleIndexArray,
     ModelLayoutArray,
     NormalLayoutArray,
@@ -17,7 +17,7 @@ import Point from '@mapbox/point-geometry';
 import earcut from 'earcut';
 
 import window from '../../src/util/window.js';
-import {warnOnce} from '../../src/util/util.js';
+import {warnOnce, base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
 import GridIndex from 'grid-index';
 
@@ -301,9 +301,16 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
     if (nodeDesc.mesh !== undefined) {
         node.meshes = meshes[nodeDesc.mesh];
     }
-    if (nodeDesc.extras && nodeDesc.extras.id) {
-        node.id = nodeDesc.extras.id;
+    if (nodeDesc.extras) {
+        if (nodeDesc.extras.id) {
+            node.id = nodeDesc.extras.id;
+        }
+        if (nodeDesc.extras.lights) {
+            const base64Lights = nodeDesc.extras.lights;
+            node.lights = decodeLights(base64Lights);
+        }
     }
+
     if (nodeDesc.children) {
         const children: Node[] = [];
         for (const childNodeIdx of nodeDesc.children) {
@@ -432,4 +439,157 @@ export default function convertModel(gltf: Object): Array<Node> {
         nodes.push(convertNode(nodeDesc, gltf, meshes));
     }
     return nodes;
+}
+
+export function convertB3dm(gltf: Object, zScale: number): Array<Node> {
+    const nodes = convertModel(gltf);
+    for (const node of nodes) {
+        if (node.lights) {
+            node.meshes.push(createLightsMesh(node.lights, zScale));
+            node.lightMeshIndex = node.meshes.length - 1;
+        }
+    }
+    return nodes;
+}
+
+function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
+
+    const mesh: Mesh = {};
+    mesh.indexArray = new TriangleIndexArray();
+    mesh.indexArray.reserve(4 * lights.length);
+    mesh.vertexArray = new ModelLayoutArray();
+    mesh.vertexArray.reserve(10 * lights.length);
+    mesh.colorArray = new Color4fLayoutArray();
+    mesh.vertexArray.reserve(10 * lights.length);
+
+    let currentVertex = 0;
+    // Model layer color4 attribute is used for light offset: first three components are light's offset in tile space (z
+    // also in tile space) and 4th parameter is a decimal number that carries 2 parts: the distance to full light
+    // falloff is in the integer part, and the decimal part represents the ratio of distance where the falloff starts (saturated
+    // until it reaches that part).
+    for (const light of lights) {
+        // fallOff - light range from the door.
+        const fallOff = Math.min(10, Math.max(4, 1.3 * light.height)) * zScale;
+        const tangent = [-light.normal[1], light.normal[0], 0];
+        // 0---3  (at light.height above light.points)
+        // |   |
+        // 1-p-2  (p for light.position at bottom edge)
+
+        // horizontalSpread is tangent of the angle between light geometry and light normal.
+        // Cap it for doors with large inset (depth) to prevent intersecting door posts.
+        const horizontalSpread = Math.min(0.29, 0.1 * light.width / light.depth);
+        // A simple geometry, that starts at door, starts towards the centre of door to prevent intersecting
+        // door posts. Later, additional vertices at depth distance from door could be reconsidered.
+        // 0.01f to prevent intersection with door post.
+        const width = light.width - 2 * light.depth * zScale * (horizontalSpread + 0.01);
+        const v1 = vec3.scaleAndAdd([], light.pos, tangent, width / 2);
+        const v2 = vec3.scaleAndAdd([], light.pos, tangent, -width / 2);
+        const v0 = [v1[0], v1[1], v1[2] + light.height];
+        const v3 = [v2[0], v2[1], v2[2] + light.height];
+
+        const v1extrusion = vec3.scaleAndAdd([], light.normal, tangent, horizontalSpread);
+        vec3.scale(v1extrusion, v1extrusion, fallOff);
+        const v2extrusion = vec3.scaleAndAdd([], light.normal, tangent, -horizontalSpread);
+        vec3.scale(v2extrusion, v2extrusion, fallOff);
+
+        vec3.add(v1extrusion, v1, v1extrusion);
+        vec3.add(v2extrusion, v2, v2extrusion);
+
+        v1[2] += 0.1;
+        v2[2] += 0.1;
+        mesh.vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
+        mesh.vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
+        mesh.vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
+        mesh.vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
+        // side: top
+        mesh.vertexArray.emplaceBack(v0[0], v0[1], v0[2]);
+        mesh.vertexArray.emplaceBack(v3[0], v3[1], v3[2]);
+        // side
+        mesh.vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
+        mesh.vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
+        mesh.vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
+        mesh.vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
+        // Light doesnt include light coordinates - instead it incldues offet to light area segment. Distances are
+        // normalized by dividing by fallOff. Normalized lighting coordinate system is used where center of
+        // coord system is on half of door and +Y is direction of extrusion.
+        // z includes half width - this is used to calculate distance to segment.
+
+        // 2 and 3 are bottom of the door, fully lit.
+        const halfWidth = width / fallOff / 2.0;
+        // right ground extruded looking out from door
+        // x Coordinate is used to model angle (for spot)
+        mesh.colorArray.emplaceBack(-halfWidth, -horizontalSpread, -1, 0.8);
+        mesh.colorArray.emplaceBack(halfWidth, -horizontalSpread, -1, 0.8);
+        // keep shine at bottom of door even for reduced emissive strength
+        mesh.colorArray.emplaceBack(-halfWidth, 0, halfWidth, 1.3);
+        mesh.colorArray.emplaceBack(halfWidth, 0, halfWidth, 1.3);
+        // for all vertices on the side, push the light origin behind the door top
+        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
+        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
+        // side at door, ground
+        mesh.colorArray.emplaceBack(0, 0, halfWidth, 1.3);
+        mesh.colorArray.emplaceBack(0, 0, halfWidth, 1.3);
+        // extruded side
+        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
+        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
+
+        // Finally, the triangle indices
+        mesh.indexArray.emplaceBack(6 + currentVertex, 4 + currentVertex, 8 + currentVertex);
+        mesh.indexArray.emplaceBack(7 + currentVertex, 9 + currentVertex, 5 + currentVertex);
+        mesh.indexArray.emplaceBack(0 + currentVertex, 1 + currentVertex, 2 + currentVertex);
+        mesh.indexArray.emplaceBack(1 + currentVertex, 3 + currentVertex, 2 + currentVertex);
+        currentVertex += 10;
+    }
+    //mesh.featureArray = new FeatureVertexArray();
+    //mesh.featureArray.reserve(10 * lights.length);
+    //for (let i = 0; i < 10 * lights.length; i++) {
+    //    mesh.featureArray.emplaceBack(0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0);
+    //}
+    const material: Material = {};
+    material.defined = true;
+    material.emissiveFactor = [0, 0, 0];
+    const pbrMetallicRoughness = {};
+    pbrMetallicRoughness.baseColorFactor = Color.white;
+    // $FlowIgnore[prop-missing] don't need all the properties
+    material.pbrMetallicRoughness = pbrMetallicRoughness;
+    mesh.material = material;
+    mesh.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
+    return mesh;
+}
+
+function decodeLights(base64: string): Array<AreaLight> {
+    if (!base64.length) return [];
+    const decoded = base64DecToArr(base64);
+    const lights: AreaLight[] = [];
+    const lightCount = decoded.length / 24; // 24 bytes (4 uint16 & 4 floats) per light
+    // Each door light is defined by two endpoiunts in tile coordinates, left and bottom right
+    // (where normal is implied from those two), depth and height.
+    // https://github.com/mapbox/mapbox-3dtile-tools/pull/100
+    const lightData = new Uint16Array(decoded.buffer);
+    const lightDataFloat = new Float32Array(decoded.buffer);
+    const stride = 6;
+    for (let i = 0; i < lightCount; i++) {
+        const h = lightData[i * 2 * stride] / 30;
+        const elevation = lightData[i * 2 * stride + 1 ] / 30;
+        const bottomLeft = [lightDataFloat[i * stride + 1], lightDataFloat[i * stride + 2], elevation];
+        const bottomRight = [lightDataFloat[i * stride + 3], lightDataFloat[i * stride + 4], elevation];
+        const normal = vec3.sub([], bottomRight, bottomLeft);
+        const length = vec3.length(normal);
+        normal[2] = -normal[0];
+        normal[0] = normal[1];
+        normal[1] = normal[2];
+        normal[2] = 0;
+        vec3.scale(normal, normal, 1 / length);
+        const depth = lightData[i * 2 * stride + 10] / 100;
+        const pos = vec3.add([], bottomLeft, bottomRight);
+        vec3.scale(pos, pos, 0.5);
+        lights.push({pos,
+            normal,
+            width: length,
+            height: h,
+            depth,
+            points: [ bottomLeft[0], bottomLeft[1], bottomRight[0], bottomRight[1]]
+        });
+    }
+    return lights;
 }
