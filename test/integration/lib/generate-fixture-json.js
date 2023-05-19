@@ -16,7 +16,7 @@ import localizeURLs from './localize-urls.js';
 export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
     if (!stylePaths.length) {
         const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
-        stylePaths = globSync(pathGlob);
+        stylePaths = globSync(pathGlob).sort((a, b) => a.localeCompare(b, 'en'));
         if (!stylePaths.length) {
             console.error(`Found no tests matching the pattern ${pathGlob}`);
         }
