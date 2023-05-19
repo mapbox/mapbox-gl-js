@@ -20,6 +20,7 @@ const todo = [
     "render-tests/debug/collision-variable-icon-image-simple",
     "render-tests/terrain/wireframe",
     "render-tests/terrain/wireframe-high-exaggeration",
+    "render-tests/terrain/globe-high-exaggeration-wireframe",
 
     // Looks good but diff is too high
     "render-tests/globe/globe-terrain",
