@@ -290,7 +290,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: ?Terrain, reconcileReplacementState: boolean   ) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: ?Terrain, reconcileReplacementState: boolean) {
     if (bucket.centroidVertexArray.length === 0) {
         bucket.createCentroidsBuffer();
     }
