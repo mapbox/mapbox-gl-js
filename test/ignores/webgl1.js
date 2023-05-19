@@ -10,6 +10,8 @@ const skip = [
     "render-tests/model-layer/landmark-emission-strength",
     "render-tests/model-layer/landmark-part-styling-munich-museum",
     "render-tests/model-layer/landmark-part-styling-roughness",
+    "render-tests/model-layer/landmark-part-styling-update",
+    "render-tests/model-layer/landmark-part-styling-door-light-munich-museum",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/saturation",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/transparency",

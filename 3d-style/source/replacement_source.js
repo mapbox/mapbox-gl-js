@@ -103,7 +103,8 @@ class ReplacementSource {
                         if (!bucket) {
                             continue;
                         }
-                        for (const node of bucket.nodes) {
+                        for (const nodeInfo of bucket.getNodesInfo()) {
+                            const node = nodeInfo.node;
                             if (!node.footprint) {
                                 continue;
                             }
