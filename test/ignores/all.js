@@ -28,7 +28,11 @@ const todo = [
     "render-tests/terrain/symbol-draping/style.json",
 
     // Flaky: https://mapbox.atlassian.net/browse/GLJS-397
-    "render-tests/measure-light/global-brightness-data-driven"
+    "render-tests/measure-light/global-brightness-data-driven",
+    
+    // Requires complete landmark rendering support such as shadows and materials
+    "render-tests/model-layer/landmark-conflation-buckingham",
+    "render-tests/model-layer/landmark-conflation-multiple-model-layers"
 ];
 
 const skip = [
