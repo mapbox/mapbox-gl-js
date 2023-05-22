@@ -154,17 +154,6 @@ void main() {
 #endif
 #endif
     float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
-#ifdef PROJECTION_GLOBE_VIEW
-    // Map aligned labels in globe view are aligned to the surface of the globe
-    vec3 xAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, u_up_vector)) : vec3(1, 0, 0);
-    vec3 yAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, xAxis)) : vec3(0, 1, 0);
-
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
-#else
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, float(projected_point.w <= 0.0 || occlusion_fade == 0.0));
-#endif
-    float gamma_scale = gl_Position.w;
-
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
@@ -173,8 +162,22 @@ void main() {
 #if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
     projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
 #endif
+    float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+    float alpha = opacity * out_fade_opacity;
+    float hidden = float(alpha == 0.0 || projected_point.w <= 0.0 || occlusion_fade == 0.0);
+
+#ifdef PROJECTION_GLOBE_VIEW
+    // Map aligned labels in globe view are aligned to the surface of the globe
+    vec3 xAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, u_up_vector)) : vec3(1, 0, 0);
+    vec3 yAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, xAxis)) : vec3(0, 1, 0);
+
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, hidden);
+#else
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, hidden);
+#endif
+    float gamma_scale = gl_Position.w;
 
     v_data0.xy = a_tex / u_texsize;
     v_data0.zw = a_tex / u_texsize_icon;
-    v_data1 = vec4(gamma_scale, size, interpolated_fade_opacity * projection_transition_fade, is_sdf);
+    v_data1 = vec4(gamma_scale, size, out_fade_opacity, is_sdf);
 }

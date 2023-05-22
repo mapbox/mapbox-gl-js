@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0002,
+      "showOverdrawInspector": true
+    }
+  },
+  "center": [
+    45,
+    45
+  ],
+  "zoom": 1.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "point",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "triangle-stroked-12"
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    }
+  ]
+}
