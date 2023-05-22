@@ -23,14 +23,14 @@
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://tiles/landmark/{x}-{y}-{z}.b3dm"
+        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
       ]
     },
     "landmark-mbx": {
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://tiles/landmark/mbx-{x}-{y}-{z}.b3dm"
+        "local://models/landmark/mbx/mbx-{x}-{y}-{z}.b3dm"
       ]
     }
   },
