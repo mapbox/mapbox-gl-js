@@ -59,15 +59,15 @@ type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
  * @property {LngLatLike} center The location to place at the screen center.
  * @property {number} zoom The desired zoom level.
  * @property {number} bearing The desired bearing in degrees. The bearing is the compass direction that
- * is "up". For example, `bearing: 90` orients the map so that east is up.
+ *     is "up". For example, `bearing: 90` orients the map so that east is up.
  * @property {number} pitch The desired pitch in degrees. The pitch is the angle towards the horizon
- * measured in degrees with a range between 0 and 85 degrees. For example, pitch: 0 provides the appearance
- * of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
- * Increasing the pitch value is often used to display 3D objects.
+ *     measured in degrees with a range between 0 and 85 degrees. For example, pitch: 0 provides the appearance
+ *     of looking straight down at the map, while pitch: 60 tilts the user's perspective towards the horizon.
+ *     Increasing the pitch value is often used to display 3D objects.
  * @property {LngLatLike} around The location serving as the origin for a change in `zoom`, `pitch` and/or `bearing`.
- * This location will remain at the same screen position following the transform.
- * This is useful for drawing attention to a location that is not in the screen center.
- * `center` is ignored if `around` is included.
+ *     This location will remain at the same screen position following the transform.
+ *     This is useful for drawing attention to a location that is not in the screen center.
+ *     `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * @example
  * // set the map's initial perspective with CameraOptions
@@ -107,11 +107,11 @@ export type FullCameraOptions = {
  * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
- *   the initial state and 1 is the final state.
+ *     the initial state and 1 is the final state.
  * @property {PointLike} offset The target center's offset relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
- *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
+ *     [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  * @property {boolean} preloadOnly If `true`, it will trigger tiles loading across the animation path, but no animation will occur.
  * @property {number} curve The zooming "curve" that will occur along the
  *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
@@ -472,7 +472,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} bearing The desired bearing.
      * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -494,7 +494,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -513,7 +513,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -537,7 +537,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {EasingOptions | null} options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:moveend
@@ -589,8 +589,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
-     *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
-     *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
+     *     the highest zoom level up to and including `Map#getMaxZoom()` that fits
+     *     in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
      * @param {CameraOptions | null} options Options object.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
@@ -598,7 +598,7 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
-     *      `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
+     *     `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
      * @example
      * const bbox = [[-79, 43], [-73, 45]];
      * const newCameraTransform = map.cameraForBounds(bbox, {
@@ -757,7 +757,7 @@ class Camera extends Evented {
      * @param {LngLatLike} lnglat The geographical location at which to query.
      * @param {ElevationQueryOptions} [options] Options object.
      * @param {boolean} [options.exaggerated=true] When `true` returns the terrain elevation with the value of `exaggeration` from the style already applied.
-     * When `false`, returns the raw value of the underlying data without styling applied.
+     *     When `false`, returns the raw value of the underlying data without styling applied.
      * @returns {number | null} The elevation in meters.
      * @example
      * const coordinate = [-122.420679, 37.772537];
@@ -906,7 +906,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
-     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     *     zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {number} [options.pitch=0] Desired map pitch at end of animation, in degrees.
@@ -1217,7 +1217,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {EasingOptions} options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+     *     Accepts {@link CameraOptions} and {@link AnimationOptions}.
      * @param {Object | null} eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires Map.event:movestart
      * @fires Map.event:zoomstart

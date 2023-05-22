@@ -29,7 +29,6 @@ import {
     create as createSource,
     getType as getSourceType,
     setType as setSourceType,
-    type SourceClass
 } from '../source/source.js';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features.js';
 import SourceCache from '../source/source_cache.js';
@@ -83,7 +82,7 @@ import type {QueryResult} from '../data/feature_index.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import type {Source} from '../source/source.js';
+import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters} from './properties.js';
 
 const supportedDiffOperations = pick(diffOperations, [

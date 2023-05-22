@@ -128,7 +128,7 @@ function isRaster(data: any): boolean {
  * @param {Object} options Options.
  * @param {AbortSignal} options.signal A signal object that communicates when the map cancels the tile loading request.
  * @returns {Promise<TextureImage | undefined | null>} The promise that resolves to the tile image data as an `HTMLCanvasElement`, `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
- *  If `loadTile` resolves to `undefined`, a map will render an overscaled parent tile in the tile’s space. If `loadTile` resolves to `null`, a map will render nothing in the tile’s space.
+ *     If `loadTile` resolves to `undefined`, a map will render an overscaled parent tile in the tile’s space. If `loadTile` resolves to `null`, a map will render nothing in the tile’s space.
  */
 export type CustomSourceInterface<T> = {
     id: string;

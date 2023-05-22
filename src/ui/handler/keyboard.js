@@ -166,7 +166,7 @@ class KeyboardHandler {
      * interaction is enabled.
      *
      * @returns {boolean} `true` if the "keyboard rotate and zoom"
-     * interaction is enabled.
+     *     interaction is enabled.
      * @example
      * const isKeyboardEnabled = map.keyboard.isEnabled();
      */
@@ -179,7 +179,7 @@ class KeyboardHandler {
      * zoom/rotate gesture.
      *
      * @returns {boolean} `true` if the handler is enabled and has detected the
-     * start of a zoom/rotate gesture.
+     *     start of a zoom/rotate gesture.
      * @example
      * const isKeyboardActive = map.keyboard.isActive();
      */
