@@ -181,9 +181,9 @@ class ImageSource extends Evented implements Source {
      * @param {Object} options Options object.
      * @param {string} [options.url] Required image URL.
      * @param {Array<Array<number>>} [options.coordinates] Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
-     *   The coordinates start at the top left corner of the image and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
+     *     represented as arrays of longitude and latitude numbers, which define the corners of the image.
+     *     The coordinates start at the top left corner of the image and proceed in clockwise order.
+     *     They do not have to represent a rectangle.
      * @returns {ImageSource} Returns itself to allow for method chaining.
      * @example
      * // Add to an image source to the map with some initial URL and coordinates
@@ -247,9 +247,9 @@ class ImageSource extends Evented implements Source {
      * Sets the image's coordinates and re-renders the map.
      *
      * @param {Array<Array<number>>} coordinates Four geographical coordinates,
-     *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
-     *   The coordinates start at the top left corner of the image and proceed in clockwise order.
-     *   They do not have to represent a rectangle.
+     *     represented as arrays of longitude and latitude numbers, which define the corners of the image.
+     *     The coordinates start at the top left corner of the image and proceed in clockwise order.
+     *     They do not have to represent a rectangle.
      * @returns {ImageSource} Returns itself to allow for method chaining.
      * @example
      * // Add an image source to the map with some initial coordinates
