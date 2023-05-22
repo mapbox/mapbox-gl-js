@@ -6,6 +6,8 @@ import assert from 'assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket.js';
 import resolveTokens from '../../util/resolve_tokens.js';
 import properties from './symbol_style_layer_properties.js';
+import type {FormattedSection} from '../../style-spec/expression/types/formatted.js';
+import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format.js';
 
 import {
     Transitionable,
@@ -140,6 +142,7 @@ class SymbolStyleLayer extends StyleLayer {
                                                           overriden.value.zoomStops,
                                                           overriden.value._interpolationType): CompositeExpression);
             }
+            // $FlowFixMe[prop-missing]
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
                                                                                  overriden.parameters);
@@ -158,7 +161,7 @@ class SymbolStyleLayer extends StyleLayer {
         const property = properties.paint.properties[propertyName];
         let hasOverrides = false;
 
-        const checkSections = (sections) => {
+        const checkSections = (sections: Array<FormattedSection> | Array<FormattedSectionExpression>) => {
             for (const section of sections) {
                 if (property.overrides && property.overrides.hasOverride(section)) {
                     hasOverrides = true;

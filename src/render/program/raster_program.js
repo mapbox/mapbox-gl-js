@@ -82,7 +82,7 @@ const rasterUniformValues = (
     'u_color_ramp': colorRampUnit,
 });
 
-function spinWeights(angle) {
+function spinWeights(angle: number) {
     angle *= Math.PI / 180;
     const s = Math.sin(angle);
     const c = Math.cos(angle);
@@ -93,19 +93,19 @@ function spinWeights(angle) {
     ];
 }
 
-function contrastFactor(contrast) {
+function contrastFactor(contrast: number) {
     return contrast > 0 ?
         1 / (1 - contrast) :
         1 + contrast;
 }
 
-function saturationFactor(saturation) {
+function saturationFactor(saturation: number) {
     return saturation > 0 ?
         1 - 1 / (1.001 - saturation) :
         -saturation;
 }
 
-function colorScaleFactors ([min, max]) {
+function colorScaleFactors ([min, max]: [number, number]) {
     if (min === max) return [min, max];
     // Precompute the offset and delta so that operations are moved out of the shader and
     // the raster value may be computed in-shader as `colorScale[0] + colorScale[1] * inputValue`

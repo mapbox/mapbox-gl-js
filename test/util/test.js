@@ -4,6 +4,10 @@ import tap from 'tap';
 /*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
 
+// Disable MessageChannel in unit tests since
+// it prevents a Node.js process from exiting.
+delete global.MessageChannel;
+
 type CreateTest = (typeof sinon) & {
     (name: string, body: (test: CreateTest) => void): void,
 
@@ -32,6 +36,7 @@ export const only = (tap.only: CreateTest);
 const consoleError = console.error;
 const consoleWarn = console.warn;
 
+// $FlowFixMe[missing-this-annot]
 tap.beforeEach(function () {
     this.sandbox = sinon.createSandbox({
         injectInto: this,
@@ -44,6 +49,7 @@ tap.beforeEach(function () {
     console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
 });
 
+// $FlowFixMe[missing-this-annot]
 tap.afterEach(function () {
     // $FlowFixMe the assignment is intentional
     console.error = consoleError;

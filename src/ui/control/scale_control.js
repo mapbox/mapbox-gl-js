@@ -17,6 +17,14 @@ const defaultOptions: Options = {
     unit: 'metric'
 };
 
+const unitAbbr = {
+    kilometer: 'km',
+    meter: 'm',
+    mile: 'mi',
+    foot: 'ft',
+    'nautical-mile': 'nm',
+};
+
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
  * Add this control to a map using {@link Map#addControl}.
@@ -38,17 +46,15 @@ class ScaleControl {
     _map: Map;
     _container: HTMLElement;
     _language: ?string | ?string[];
+    _isNumberFormatSupported: boolean;
     options: Options;
 
     constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
-        // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style.
+        // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style in NumberFormat.
         // This is a workaround to display the scale without proper internationalization support.
-        if (!isNumberFormatSupported()) {
-            // $FlowIgnore[cannot-write]
-            this._setScale = legacySetScale.bind(this);
-        }
+        this._isNumberFormatSupported = isNumberFormatSupported();
 
         bindAll([
             '_update',
@@ -96,21 +102,18 @@ class ScaleControl {
     }
 
     _setScale(maxWidth: number, maxDistance: number, unit: string) {
-        const distance = getRoundNum(maxDistance);
-        const ratio = distance / maxDistance;
-
         this._map._requestDomTask(() => {
-            this._container.style.width = `${maxWidth * ratio}px`;
+            const distance = getRoundNum(maxDistance);
+            const ratio = distance / maxDistance;
 
-            // Intl.NumberFormat doesn't support nautical-mile as a unit,
-            // so we are hardcoding `nm` as a unit symbol for all locales
-            if (unit === 'nautical-mile') {
-                this._container.innerHTML = `${distance}&nbsp;nm`;
-                return;
+            if (this._isNumberFormatSupported && unit !== 'nautical-mile') {
+                // $FlowFixMe[incompatible-call] — flow v0.190.1 doesn't support optional `locales` argument and `unit` style option
+                this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'short', unit}).format(distance);
+            } else {
+                this._container.innerHTML = `${distance}&nbsp;${unitAbbr[unit]}`;
             }
 
-            // $FlowFixMe — flow v0.142.0 doesn't support optional `locales` argument and `unit` style option
-            this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'narrow', unit}).format(distance);
+            this._container.style.width = `${maxWidth * ratio}px`;
         });
     }
 
@@ -155,37 +158,19 @@ export default ScaleControl;
 function isNumberFormatSupported() {
     try {
         // $FlowIgnore
-        new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'narrow', unit: 'meter'});
+        new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'short', unit: 'meter'});
         return true;
     } catch (_) {
         return false;
     }
 }
 
-function legacySetScale(maxWidth: number, maxDistance: number, unit: string) {
-    const distance = getRoundNum(maxDistance);
-    const ratio = distance / maxDistance;
-
-    const unitAbbr = {
-        kilometer: 'km',
-        meter: 'm',
-        mile: 'mi',
-        foot: 'ft',
-        'nautical-mile': 'nm',
-    }[unit];
-
-    this._map._requestDomTask(() => {
-        this._container.style.width = `${maxWidth * ratio}px`;
-        this._container.innerHTML = `${distance}&nbsp;${unitAbbr}`;
-    });
-}
-
-function getDecimalRoundNum(d) {
+function getDecimalRoundNum(d: number) {
     const multiplier = Math.pow(10, Math.ceil(-Math.log(d) / Math.LN10));
     return Math.round(d * multiplier) / multiplier;
 }
 
-function getRoundNum(num) {
+function getRoundNum(num: number) {
     const pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1);
     let d = num / pow10;
 

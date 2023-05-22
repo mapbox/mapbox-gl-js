@@ -30,9 +30,10 @@
 .*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.188.0
+0.191.0
 
 [options]
+exact_empty_objects=false
 
 [strict]
 nonstrict-import

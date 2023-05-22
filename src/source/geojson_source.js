@@ -196,6 +196,7 @@ class GeoJSONSource extends Evented implements Source {
      * @example
      * // Assuming the map has a layer named 'clusters' and a source 'earthquakes'
      * // The following creates a camera animation on cluster feature click
+     * // the clicked layer should be filtered to only include clusters, e.g. `filter: ['has', 'point_count']`
      * map.on('click', 'clusters', (e) => {
      *     const features = map.queryRenderedFeatures(e.point, {
      *         layers: ['clusters']
@@ -230,6 +231,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster children on click
+     * // the clicked layer should be filtered to only include clusters, e.g. `filter: ['has', 'point_count']`
      * map.on('click', 'clusters', (e) => {
      *     const features = map.queryRenderedFeatures(e.point, {
      *         layers: ['clusters']
@@ -260,6 +262,7 @@ class GeoJSONSource extends Evented implements Source {
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * // Retrieve cluster leaves on click
+     * // the clicked layer should be filtered to only include clusters, e.g. `filter: ['has', 'point_count']`
      * map.on('click', 'clusters', (e) => {
      *     const features = map.queryRenderedFeatures(e.point, {
      *         layers: ['clusters']

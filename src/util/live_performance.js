@@ -44,7 +44,7 @@ export const LivePerformanceUtils = {
     }
 };
 
-function categorize(arr, fn) {
+function categorize(arr: Array<PerformanceResourceTiming>, fn: (entry: PerformanceResourceTiming) => string): {[string]: Array<PerformanceResourceTiming>} {
     const obj = {};
     if (arr) {
         for (const item of arr) {
@@ -58,7 +58,7 @@ function categorize(arr, fn) {
     return obj;
 }
 
-function getCountersPerResourceType(resourceTimers) {
+function getCountersPerResourceType(resourceTimers: { [string]: Array<PerformanceResourceTiming> }) {
     const obj = {};
     if (resourceTimers) {
         for (const category in resourceTimers) {
@@ -74,7 +74,7 @@ function getCountersPerResourceType(resourceTimers) {
                     obj[min] = Math.min(obj[min] || +Infinity, timer.startTime);
                     obj[max] = Math.max(obj[max] || -Infinity, timer.responseEnd);
 
-                    const increment = (key) => {
+                    const increment = (key: string) => {
                         if (obj[key] === undefined) {
                             obj[key] = 0;
                         }
@@ -134,7 +134,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
 
     // Please read carefully before adding or modifying the following metrics:
     // https://github.com/mapbox/gl-js-team/blob/main/docs/live_performance_metrics.md
-    const addMetric = (arr, name, value) => {
+    const addMetric = (arr: Array<{| name: string, value: string |}>, name: string, value: ?(number | string)) => {
         if (value !== undefined && value !== null) {
             arr.push({name, value: value.toString()});
         }

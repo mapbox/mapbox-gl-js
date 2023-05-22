@@ -12,6 +12,7 @@ import tileTransform from '../geo/projection/tile_transform.js';
 
 import type {
     WorkerSource,
+    WorkerTileResult,
     WorkerTileParameters,
     RequestedTileParameters,
     WorkerTileCallback,
@@ -98,10 +99,11 @@ export class DedupedRequest {
 /**
  * @private
  */
+// $FlowFixMe[missing-this-annot]
 export function loadVectorTile(params: RequestedTileParameters, callback: LoadVectorDataCallback, skipParse?: boolean): (() => void) {
     const key = JSON.stringify(params.request);
 
-    const makeRequest = (callback) => {
+    const makeRequest = (callback: LoadVectorDataCallback) => {
         const request = getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer, cacheControl: ?string, expires: ?string) => {
             if (err) {
                 callback(err);
@@ -205,7 +207,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
-                const workerTileCallback = (err, result) => {
+                const workerTileCallback = (err: ?Error, result: ?WorkerTileResult) => {
                     if (err || !result) return callback(err);
 
                     const resourceTiming = {};
@@ -256,7 +258,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             workerTile.projection = params.projection;
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
 
-            const done = (err, data) => {
+            const done = (err: ?Error, data: ?WorkerTileResult) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;

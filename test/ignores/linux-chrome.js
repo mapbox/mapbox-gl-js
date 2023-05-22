@@ -3,6 +3,11 @@ const todo = [
     // https://github.com/mapbox/mapbox-gl-js/issues/7331
     "render-tests/globe/globe-transforms/north-pole"
 ];
-const skip = [];
+const skip = [
+    // Timing out
+    // https://mapbox.atlassian.net/browse/GLJS-398
+    "render-tests/model-layer/buildings-trees-shadows-fog-terrain",
+    "render-tests/model-layer/multiple-models-terrain-fog"
+];
 
 export default {todo, skip};

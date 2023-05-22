@@ -96,14 +96,14 @@ class SectionOptions {
         this.imageName = null;
     }
 
-    static forText(scale: number | null, fontStack: string) {
+    static forText(scale: ?number, fontStack: string): SectionOptions {
         const textOptions = new SectionOptions();
         textOptions.scale = scale || 1;
         textOptions.fontStack = fontStack;
         return textOptions;
     }
 
-    static forImage(imageName: string) {
+    static forImage(imageName: string): SectionOptions {
         const imageOptions = new SectionOptions();
         imageOptions.imageName = imageName;
         return imageOptions;
@@ -124,7 +124,7 @@ class TaggedString {
         this.imageSectionID = null;
     }
 
-    static fromFeature(text: Formatted, defaultFontStack: string) {
+    static fromFeature(text: Formatted, defaultFontStack: string): TaggedString {
         const result = new TaggedString();
         for (let i = 0; i < text.sections.length; i++) {
             const section = text.sections[i];
@@ -190,7 +190,7 @@ class TaggedString {
         return this.text;
     }
 
-    getMaxScale() {
+    getMaxScale(): number {
         return this.sectionIndex.reduce((max, index) => Math.max(max, this.sections[index].scale), 0);
     }
 

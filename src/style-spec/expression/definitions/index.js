@@ -46,8 +46,9 @@ import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
 
+import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
-import type {ExpressionRegistry} from '../expression.js';
+import type {Expression, ExpressionRegistry} from '../expression.js';
 import {mulberry32} from '../../../util/random.js';
 
 const expressions: ExpressionRegistry = {
@@ -109,7 +110,7 @@ const expressions: ExpressionRegistry = {
     'within': Within
 };
 
-function rgba(ctx, [r, g, b, a]) {
+function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
     r = r.evaluate(ctx);
     g = g.evaluate(ctx);
     b = b.evaluate(ctx);
@@ -119,7 +120,7 @@ function rgba(ctx, [r, g, b, a]) {
     return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
-function hsla(ctx, [h, s, l, a]) {
+function hsla(ctx: EvaluationContext, [h, s, l, a]: Array<Expression>) {
     h = h.evaluate(ctx);
     s = s.evaluate(ctx);
     l = l.evaluate(ctx);
@@ -132,16 +133,16 @@ function hsla(ctx, [h, s, l, a]) {
     return color;
 }
 
-function has(key, obj) {
+function has(key: string, obj: {[string]: any}): boolean {
     return key in obj;
 }
 
-function get(key, obj) {
+function get(key: string, obj: {[string]: any}) {
     const v = obj[key];
     return typeof v === 'undefined' ? null : v;
 }
 
-function binarySearch(v, a, i, j) {
+function binarySearch(v: any, a: {[number]: any}, i: number, j: number) {
     while (i <= j) {
         const m = (i + j) >> 1;
         if (a[m] === v)
@@ -158,7 +159,7 @@ function varargs(type: Type): Varargs {
     return {type};
 }
 
-function hashString(str) {
+function hashString(str: string) {
     let hash = 0;
     if (str.length === 0) {
         return hash;

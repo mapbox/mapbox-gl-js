@@ -532,7 +532,7 @@ class Style extends Evented {
         return drapedLayers[layer.type];
     }
 
-    _checkLoaded() {
+    _checkLoaded(): void {
         if (!this._loaded) {
             throw new Error('Style is not done loading');
         }
@@ -763,7 +763,7 @@ class Style extends Evented {
         return this._availableImages.slice();
     }
 
-    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}) {
+    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getSource(id) !== undefined) {
@@ -788,7 +788,7 @@ class Style extends Evented {
             sourceId: id
         }));
 
-        const addSourceCache = (onlySymbols) => {
+        const addSourceCache = (onlySymbols: boolean) => {
             const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
             const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
             (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
@@ -936,7 +936,7 @@ class Style extends Evented {
         }
 
         // Based on: https://www.w3.org/WAI/GL/wiki/Relative_luminance
-        const relativeLuminance = (color) => {
+        const relativeLuminance = (color: [number, number, number, number]) => {
             const r = color[0] <= 0.03928 ? (color[0] / 12.92) : Math.pow(((color[0] + 0.055) / 1.055), 2.4);
             const g = color[1] <= 0.03928 ? (color[1] / 12.92) : Math.pow(((color[1] + 0.055) / 1.055), 2.4);
             const b = color[2] <= 0.03928 ? (color[2] / 12.92) : Math.pow(((color[2] + 0.055) / 1.055), 2.4);
@@ -1427,7 +1427,7 @@ class Style extends Evented {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = layerId => this._layers[layerId].type === 'fill-extrusion';
+        const isLayer3D = (layerId: string) => this._layers[layerId].type === 'fill-extrusion';
 
         const layerIndex = {};
         const features3D = [];
@@ -1649,6 +1649,7 @@ class Style extends Evented {
             for (const name of Object.keys(styleSpec.terrain)) {
                 // Fallback to use default style specification when the properties wasn't set
                 if (!options.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
+                    // $FlowFixMe[prop-missing]
                     options[name] = styleSpec.terrain[name].default;
                 }
             }

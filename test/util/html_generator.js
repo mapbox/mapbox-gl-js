@@ -16,7 +16,7 @@ const generateResultHTML = template(`
           <img title="actual" src="<%- r.actual %>">
       <% } %>
       <% if (r.expected) { %>
-          <img title="expected" src="<%- r.expected %>">
+          <img title="expected <%- r.expectedPath %>" src="<%- r.expected %>">
       <% } %>
       <% if (r.imgDiff) { %>
           <img title="diff" src="<%- r.imgDiff %>">
@@ -81,7 +81,7 @@ const counterDom = {
 
 let resultsContainer;
 
-export function setupHTML() {
+export function setupHTML(options = {}) {
     // Add CSS to the page
     const style = document.createElement('style');
     document.head.appendChild(style);
@@ -89,6 +89,10 @@ export function setupHTML() {
 
     //Create a container to hold test stats
     const statsContainer = document.createElement('div');
+
+    const webgl2Container = document.createElement('div');
+    webgl2Container.innerHTML = options.useWebGL2 ? 'WebGL2 is enabled.' : 'WebGL2 is disabled.';
+    statsContainer.appendChild(webgl2Container);
 
     const failedTestContainer = document.createElement('h1');
     failedTestContainer.style.color = 'red';

@@ -8,7 +8,8 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters
+    TileParameters,
+    WorkerTileResult
 } from '../../src/source/worker_source.js';
 import {convertB3dm} from './model_loader.js';
 import {tileToMeter} from '../../src/geo/mercator_coordinate.js';
@@ -126,7 +127,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
             workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
 
-            const done = (err, data) => {
+            const done = (err: ?Error, data: ?WorkerTileResult) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;

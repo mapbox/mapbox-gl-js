@@ -2,7 +2,7 @@
 
 import path from 'path';
 import fs from 'fs';
-import glob from 'glob';
+import {globSync} from 'glob';
 import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
 import colors from 'chalk';
@@ -22,7 +22,8 @@ export default function (directory, implementation, options, run) {
     const tests = options.tests || [];
     const ignores = options.ignores || {};
 
-    let sequence = glob.sync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
+    let sequence = globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
+        .sort((a, b) => a.localeCompare(b, 'en'))
         .map(fixture => {
             const id = path.dirname(fixture);
             const style = require(path.join(directory, fixture));

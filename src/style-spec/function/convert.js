@@ -5,11 +5,22 @@ import assert from 'assert';
 import type {StylePropertySpecification} from '../style-spec.js';
 import type {ExpressionSpecification} from '../types.js';
 
-function convertLiteral(value) {
+type Stop = [{zoom: number, value: string | number | boolean}, mixed];
+
+type FunctionParameters = {
+    stops: Array<Stop>;
+    base: number;
+    property: string;
+    type: 'identity' | 'exponential' | 'interval' | 'categorical';
+    colorSpace: 'rgb' | 'lab' | 'hcl';
+    default: mixed;
+};
+
+function convertLiteral(value: mixed) {
     return typeof value === 'object' ? ['literal', value] : value;
 }
 
-export default function convertFunction(parameters: any, propertySpec: StylePropertySpecification): ExpressionSpecification {
+export default function convertFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): ExpressionSpecification {
     let stops = parameters.stops;
     if (!stops) {
         // identity function
@@ -36,7 +47,7 @@ export default function convertFunction(parameters: any, propertySpec: StyleProp
     }
 }
 
-function convertIdentityFunction(parameters, propertySpec): Array<mixed> {
+function convertIdentityFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): Array<mixed> {
     const get = ['get', parameters.property];
 
     if (parameters.default === undefined) {
@@ -60,7 +71,7 @@ function convertIdentityFunction(parameters, propertySpec): Array<mixed> {
     }
 }
 
-function getInterpolateOperator(parameters) {
+function getInterpolateOperator(parameters: FunctionParameters) {
     switch (parameters.colorSpace) {
     case 'hcl': return 'interpolate-hcl';
     case 'lab': return 'interpolate-lab';
@@ -68,7 +79,7 @@ function getInterpolateOperator(parameters) {
     }
 }
 
-function convertZoomAndPropertyFunction(parameters, propertySpec, stops) {
+function convertZoomAndPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>) {
     const featureFunctionParameters = {};
     const featureFunctionStops = {};
     const zoomStops = [];
@@ -116,12 +127,12 @@ function convertZoomAndPropertyFunction(parameters, propertySpec, stops) {
     }
 }
 
-function coalesce(a, b) {
+function coalesce(a: mixed, b: mixed) {
     if (a !== undefined) return a;
     if (b !== undefined) return b;
 }
 
-function getFallback(parameters, propertySpec) {
+function getFallback(parameters: FunctionParameters, propertySpec: StylePropertySpecification) {
     const defaultValue = convertLiteral(coalesce(parameters.default, propertySpec.default));
 
     /*
@@ -136,7 +147,7 @@ function getFallback(parameters, propertySpec) {
     return defaultValue;
 }
 
-function convertPropertyFunction(parameters, propertySpec, stops) {
+function convertPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>) {
     const type = getFunctionType(parameters, propertySpec);
     const get = ['get', parameters.property];
     if (type === 'categorical' && typeof stops[0][0] === 'boolean') {
@@ -189,7 +200,7 @@ function convertPropertyFunction(parameters, propertySpec, stops) {
     }
 }
 
-function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) {
+function convertZoomFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>, input: Array<string> = ['zoom']) {
     const type = getFunctionType(parameters, propertySpec);
     let expression;
     let isStep = false;
@@ -213,7 +224,7 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
     return expression;
 }
 
-function fixupDegenerateStepCurve(expression) {
+function fixupDegenerateStepCurve(expression: ExpressionSpecification) {
     // degenerate step curve (i.e. a constant function): add a noop stop
     if (expression[0] === 'step' && expression.length === 3) {
         expression.push(0);
@@ -221,7 +232,7 @@ function fixupDegenerateStepCurve(expression) {
     }
 }
 
-function appendStopPair(curve, input, output, isStep) {
+function appendStopPair(curve: ExpressionSpecification, input: mixed, output: mixed, isStep: boolean) {
     // Skip duplicate stop values. They were not validated for functions, but they are for expressions.
     // https://github.com/mapbox/mapbox-gl-js/issues/4107
     if (curve.length > 3 && input === curve[curve.length - 2]) {
@@ -234,7 +245,7 @@ function appendStopPair(curve, input, output, isStep) {
     curve.push(output);
 }
 
-function getFunctionType(parameters, propertySpec) {
+function getFunctionType(parameters: FunctionParameters, propertySpec: StylePropertySpecification): string {
     if (parameters.type) {
         return parameters.type;
     } else {

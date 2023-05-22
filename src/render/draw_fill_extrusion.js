@@ -18,6 +18,9 @@ import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import Color from '../style-spec/util/color.js';
+import Context from '../gl/context.js';
+import {Terrain} from '../terrain/terrain.js';
+import Tile from '../source/tile.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -97,7 +100,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
             const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
             const showOverdraw = painter._showOverdrawInspector;
-            const lerp = (a, b, t) => { return (1 - t) * a + t * b; };
+            const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
             const pass = (aoPass: boolean) => {
                 const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
                 const attenuation = lerp(0.1, 3, t);
@@ -121,7 +124,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, stencilMode, colorMode, replacementActive) {
+function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -132,6 +135,8 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
     const aoRadius = (lighting3DMode && !image) ? layer.paint.get('fill-extrusion-ambient-occlusion-wall-radius') : layer.paint.get('fill-extrusion-ambient-occlusion-radius');
     const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), aoRadius];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
+    const zeroRoofRadius = edgeRadius > 0 && !layer.paint.get('fill-extrusion-rounded-roof');
+    const roofEdgeRadius = zeroRoofRadius ? 0.0 : edgeRadius;
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
@@ -145,6 +150,9 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
     }
     if (ao[0] > 0) { // intensity
         baseDefines.push('FAUX_AO');
+    }
+    if (zeroRoofRadius) {
+        baseDefines.push('ZERO_ROOF_RADIUS');
     }
     if (replacementActive) {
         baseDefines.push('HAS_CENTROID');
@@ -199,7 +207,7 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
         let uniformValues;
         if (isShadowPass && shadowRenderer) {
             const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
-            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, edgeRadius, verticalScale);
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(
                 coord.projMatrix,
@@ -210,10 +218,10 @@ function drawExtrusionTiles(painter: Painter, source, layer, coords, depthMode, 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
             if (image) {
-                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
-                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, edgeRadius, coord,
+                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                     heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity);
             }
         }
@@ -245,7 +253,7 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-function drawGroundEffect(painter, source, layer, coords, depthMode, stencilMode, colorMode, cullFaceMode, aoPass, sdfSubpass, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor: any, attenuation) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, sdfSubpass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number) {
     const context = painter.context;
     const tr = painter.transform;
     const defines = ([]: any);
@@ -282,7 +290,7 @@ function drawGroundEffect(painter, source, layer, coords, depthMode, stencilMode
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function updateBorders(context, source, coord, bucket, layer, terrain, reconcileReplacementState) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: ?Terrain, reconcileReplacementState: boolean) {
     if (bucket.centroidVertexArray.length === 0) {
         bucket.createCentroidsBuffer();
     }
@@ -292,7 +300,7 @@ function updateBorders(context, source, coord, bucket, layer, terrain, reconcile
         return;     // defer update until an elevation tile is available.
     }
 
-    const reconcileReplacement = (centroid1, centroid2) => {
+    const reconcileReplacement = (centroid1: PartData, centroid2: PartData) => {
         const hiddenFlag = (centroid1.flags | centroid2.flags) & PartData.HiddenByReplacement;
         if (hiddenFlag) {
             centroid1.flags |= PartData.HiddenByReplacement;
@@ -323,19 +331,19 @@ function updateBorders(context, source, coord, bucket, layer, terrain, reconcile
             }
             return new OverscaledTileID(coord.overscaledZ, w, coord.canonical.z, x, coord.canonical.y);
         },
-        coord => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        (coord: OverscaledTileID) => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
             (coord.canonical.y === 0 ? 1 << coord.canonical.z : coord.canonical.y) - 1),
-        coord => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        (coord: OverscaledTileID) => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
             coord.canonical.y === (1 << coord.canonical.z) - 1 ? 0 : coord.canonical.y + 1)
     ];
 
-    const encodeHeightAsCentroid = (height) => {
+    const encodeHeightAsCentroid = (height: number) => {
         return new Point(Math.ceil((height + ELEVATION_OFFSET) * ELEVATION_SCALE), 0);
     };
 
-    const getLoadedBucket = (nid) => {
+    const getLoadedBucket = (nid: OverscaledTileID) => {
         const minzoom = source.getSource().minzoom;
-        const getBucket = (key) => {
+        const getBucket = (key: number) => {
             const n = source.getTileByID(key);
             if (n && n.hasData()) {
                 return n.getBucket(layer);
@@ -357,28 +365,28 @@ function updateBorders(context, source, coord, bucket, layer, terrain, reconcile
     };
 
     const projectedToBorder = [0, 0, 0]; // [min, max, maxOffsetFromBorder]
-    const xjoin = (a, b) => {
+    const xjoin = (a: PartData, b: PartData) => {
         projectedToBorder[0] = Math.min(a.min.y, b.min.y);
         projectedToBorder[1] = Math.max(a.max.y, b.max.y);
         projectedToBorder[2] = EXTENT - b.min.x > a.max.x ? b.min.x - EXTENT : a.max.x;
         return projectedToBorder;
     };
-    const yjoin = (a, b) => {
+    const yjoin = (a: PartData, b: PartData) => {
         projectedToBorder[0] = Math.min(a.min.x, b.min.x);
         projectedToBorder[1] = Math.max(a.max.x, b.max.x);
         projectedToBorder[2] = EXTENT - b.min.y > a.max.y ? b.min.y - EXTENT : a.max.y;
         return projectedToBorder;
     };
     const projectCombinedSpanToBorder = [
-        (a, b) => xjoin(a, b),
-        (a, b) => xjoin(b, a),
-        (a, b) => yjoin(a, b),
-        (a, b) => yjoin(b, a)
+        (a: PartData, b: PartData) => xjoin(a, b),
+        (a: PartData, b: PartData) => xjoin(b, a),
+        (a: PartData, b: PartData) => yjoin(a, b),
+        (a: PartData, b: PartData) => yjoin(b, a)
     ];
 
     const error = 3; // Allow intrusion of a building to the building with adjacent wall.
 
-    const flatBase = (min, max, edge, neighborDEMTile, neighborTileID, verticalEdge, maxOffsetFromBorder) => {
+    const flatBase = (min: number, max: number, edge: number, neighborDEMTile: Tile, neighborTileID: OverscaledTileID, verticalEdge: boolean, maxOffsetFromBorder: number) => {
         if (!terrain) {
             return 0;
         }

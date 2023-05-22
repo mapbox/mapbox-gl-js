@@ -47,6 +47,6 @@ export default function classifyRings(rings: Array<Array<Point>>, maxRings: numb
     return polygons;
 }
 
-function compareAreas(a, b) {
+function compareAreas(a: {area: number}, b: {area: number}) {
     return b.area - a.area;
 }

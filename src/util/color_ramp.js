@@ -28,7 +28,7 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
 
     assert(isPowerOfTwo(width));
 
-    const renderPixel = (stride, index, progress) => {
+    const renderPixel = (stride: number, index: number, progress: number) => {
         evaluationGlobals[params.evaluationKey] = progress;
         const pxColor = params.expression.evaluate((evaluationGlobals: any));
         // the colors are being unpremultiplied because Color uses

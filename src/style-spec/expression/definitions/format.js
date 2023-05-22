@@ -9,7 +9,7 @@ import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
 
-type FormattedSectionExpression = {
+export type FormattedSectionExpression = {
     // Content of a section may be Image expression or other
     // type of expression that is coercable to 'string'.
     content: Expression,
@@ -84,7 +84,7 @@ export default class FormatExpression implements Expression {
     }
 
     evaluate(ctx: EvaluationContext): Formatted {
-        const evaluateSection = section => {
+        const evaluateSection = (section: FormattedSectionExpression) => {
             const evaluatedContent = section.content.evaluate(ctx);
             if (typeOf(evaluatedContent) === ResolvedImageType) {
                 return new FormattedSection('', evaluatedContent, null, null, null);

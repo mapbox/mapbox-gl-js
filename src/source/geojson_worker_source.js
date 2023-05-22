@@ -51,6 +51,7 @@ export interface GeoJSONIndex {
     getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSONFeature>;
 }
 
+// $FlowFixMe[missing-this-annot]
 function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {
     const canonical = params.tileID.canonical;
 
@@ -247,7 +248,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 }
 
-function getSuperclusterOptions({superclusterOptions, clusterProperties}) {
+function getSuperclusterOptions({superclusterOptions, clusterProperties}: LoadGeoJSONParameters) {
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
 
     const mapExpressions = {};

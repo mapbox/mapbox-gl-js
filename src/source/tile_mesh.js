@@ -67,7 +67,7 @@ type TileMesh = {
 // most of these issues.
 const commonRasterTileSize = 256;
 const paddingSize = meshSize / commonRasterTileSize / 4;
-function seamPadding(n) {
+function seamPadding(n: number) {
     if (n === 0) return -paddingSize;
     else if (n === gridSize - 1) return paddingSize;
     else return 0;
@@ -132,7 +132,7 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
 
     let numVertices = 0;
 
-    function addVertex(x, y) {
+    function addVertex(x: number, y: number) {
         const k = y * gridSize + x;
 
         if (indexMap[k] === 0) {
@@ -149,7 +149,7 @@ export default function getTileMesh(canonical: CanonicalTileID, projection: Proj
         return indexMap[k] - 1;
     }
 
-    function addTriangles(ax, ay, bx, by, cx, cy) {
+    function addTriangles(ax: number, ay: number, bx: number, by: number, cx: number, cy: number) {
         const mx = (ax + bx) >> 1;
         const my = (ay + by) >> 1;
 

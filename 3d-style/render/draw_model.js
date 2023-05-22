@@ -22,6 +22,7 @@ import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
 import {warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
+import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
@@ -62,7 +63,7 @@ function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
 }
 
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
-function setupMeshDraw(definesValues, dynamicBuffers, mesh, painter) {
+function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?VertexBuffer>, mesh: Mesh, painter: Painter) {
     const material = mesh.material;
     const pbr = material.pbrMetallicRoughness;
     const context = painter.context;
@@ -145,7 +146,7 @@ function setupMeshDraw(definesValues, dynamicBuffers, mesh, painter) {
     definesValues.push('USE_STANDARD_DERIVATIVES');
 }
 
-function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode, colorMode) {
+function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
     const opacity = layer.paint.get('model-opacity');
     assert(opacity > 0);
     const context = painter.context;
@@ -472,7 +473,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 }
 
-function drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData) {
+function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
@@ -669,7 +670,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     }
 }
 
-function calculateTileShadowPassCulling(bucket, renderData, painter) {
+function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter) {
     if (!painter.style.modelManager) return true;
     const modelManager = painter.style.modelManager;
     if (!painter.shadowRenderer) return true;

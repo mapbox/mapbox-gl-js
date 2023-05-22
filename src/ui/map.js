@@ -185,6 +185,7 @@ const defaultOptions = {
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
+    respectPrefersReducedMotion: true,
     crossSourceCollisions: true
 };
 
@@ -290,6 +291,7 @@ const defaultOptions = {
  *   Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
  * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
+ * @param {boolean} [options.respectPrefersReducedMotion=true] If set to `true`, the map will respect the user's `prefers-reduced-motion` browser setting and apply a reduced motion mode, minimizing animations and transitions. When set to `false`, the map will always ignore the `prefers-reduced-motion` settings, regardless of the user's preference, making all animations essential.
  * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @param {string} [options.accessToken=null] If specified, map will use this [token](https://docs.mapbox.com/help/glossary/access-token/) instead of the one defined in `mapboxgl.accessToken`.
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
@@ -1368,7 +1370,7 @@ class Map extends Camera {
     _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (!features.length) {
@@ -1385,7 +1387,7 @@ class Map extends Camera {
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else if (type === 'mouseleave' || type === 'mouseout') {
             let mousein = false;
-            const mousemove = (e) => {
+            const mousemove = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
@@ -1395,7 +1397,7 @@ class Map extends Camera {
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                 }
             };
-            const mouseout = (e) => {
+            const mouseout = (e: MapMouseEvent) => {
                 if (mousein) {
                     mousein = false;
                     listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
@@ -1404,7 +1406,7 @@ class Map extends Camera {
 
             return {layers: new Set(layers), listener, delegates: {mousemove, mouseout}};
         } else {
-            const delegate = (e) => {
+            const delegate = (e: MapMouseEvent) => {
                 const filteredLayers = layers.filter(layerId => this.getLayer(layerId));
                 const features = filteredLayers.length ? this.queryRenderedFeatures(e.point, {layers: filteredLayers}) : [];
                 if (features.length) {
@@ -1643,7 +1645,7 @@ class Map extends Camera {
         }
 
         layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
-        const areLayerArraysEqual = (hash1, hash2) => {
+        const areLayerArraysEqual = (hash1: Set<string>, hash2: Set<string>) => {
             if (hash1.size !== hash2.size) {
                 return false; // at-least 1 arr has duplicate value(s)
             }
@@ -1822,6 +1824,23 @@ class Map extends Camera {
      */
     querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         return this.style.querySourceFeatures(sourceId, parameters);
+    }
+
+    /**
+     * Determines if the given point is located on a visible map surface.
+     *
+     * @param {PointLike} point - The point to be checked, specified as an array of two numbers representing the x and y coordinates, or as a {@link https://docs.mapbox.com/mapbox-gl-js/api/geography/#point|Point} object.
+     * @returns {boolean} Returns `true` if the point is on the visible map surface, otherwise returns `false`.
+     * @example
+     * const pointOnSurface = map.isPointOnSurface([100, 200]);
+     */
+    isPointOnSurface(point: PointLike): boolean {
+        const {name} = this.transform.projection;
+        if (name !== 'globe' && name !== 'mercator') {
+            warnOnce(`${name} projection does not support isPointOnSurface, this API may behave unexpectedly.`);
+        }
+
+        return this.transform.isPointOnSurface(Point.convert(point));
     }
 
     /** @section {Working with styles} */
@@ -2866,10 +2885,10 @@ class Map extends Camera {
      *
      * @param {Object} feature Identifier of where to remove state. It can be a source, a feature, or a specific key of feature.
      * Feature objects returned from {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {number | string} feature.id Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
+     * @param {number | string} [feature.id] (optional) Unique id of the feature. Can be an integer or a string, but supports string values only when the [`promoteId`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#vector-promoteId) option has been applied to the source or the string can be cast to an integer.
      * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional) For vector tile sources, `sourceLayer` is required.
-     * @param {string} key (optional) The key in the feature state to reset.
+     * @param {string} [key] (optional) The key in the feature state to reset.
      *
      * @example
      * // Reset the entire state object for all features
@@ -2902,7 +2921,7 @@ class Map extends Camera {
      *     }, 'hover');
      * });
      *
-    */
+     */
     removeFeatureState(feature: { source: string; sourceLayer?: string; id?: string | number; }, key?: string): this {
         this.style.removeFeatureState(feature, key);
         return this._update();
@@ -3417,7 +3436,7 @@ class Map extends Camera {
      * @private
      */
     _updateAverageElevation(timeStamp: number, ignoreTimeout: boolean = false): boolean {
-        const applyUpdate = value => {
+        const applyUpdate = (value: number) => {
             this.transform.averageElevation = value;
             this._update(false);
             return true;
@@ -3522,7 +3541,7 @@ class Map extends Camera {
         const framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-        function read(texture) {
+        function read(texture: ?WebGLTexture) {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
             gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);

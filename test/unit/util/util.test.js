@@ -8,7 +8,7 @@ import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
 
-function pointsetEqual(t, actual, expected) {
+function pointsetEqual(t: any, actual: Array<Point>, expected: Array<Point>) {
     t.equal(actual.length, expected.length);
     for (let i = 0; i < actual.length; i++) {
         const p1 = actual[i];
@@ -69,13 +69,14 @@ test('util', (t) => {
                 this.name = 'Tom';
             }
 
-            ontimer = () => {
+            ontimer() {
                 t.equal(this.name, 'Tom');
                 t.end();
             }
         }
 
         const my = new MyClass();
+        // $FlowFixMe[method-unbinding]
         setTimeout(my.ontimer, 0);
     });
 
@@ -230,6 +231,7 @@ test('util', (t) => {
         t.plan(6);
         t.deepEqual(mapObject({}, () => { t.ok(false); }), {});
         const that = {};
+        // $FlowFixMe[missing-this-annot]
         t.deepEqual(mapObject({map: 'box'}, function(value, key, object) {
             t.equal(value, 'box');
             t.equal(key, 'map');
@@ -243,6 +245,7 @@ test('util', (t) => {
         t.plan(6);
         t.deepEqual(filterObject({}, () => { t.ok(false); }), {});
         const that = {};
+        // $FlowFixMe[missing-this-annot]
         filterObject({map: 'box'}, function(value, key, object) {
             t.equal(value, 'box');
             t.equal(key, 'map');
@@ -426,7 +429,7 @@ test('util', (t) => {
 
     t.test('isSafariWithAntialiasingBug', (t) => {
 
-        const isSafariWithAntialiasingBugReset = (scope) => {
+        const isSafariWithAntialiasingBugReset = (scope: {| navigator: {| userAgent: string |} |}) => {
             _resetSafariCheckForTest();
             const result = isSafariWithAntialiasingBug(scope);
             _resetSafariCheckForTest();
