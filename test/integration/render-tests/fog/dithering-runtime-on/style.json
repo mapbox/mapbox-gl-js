@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        [
+          "setRuntimeSettingBool",
+          "mapbox_enable_fog_dithering",
+          true
+        ]
+      ]
+    }
+  },
+  "center": [
+    143.2469,
+    48.3620
+  ],
+  "fog": {
+    "range": [-4, 7]
+  },
+  "bearing": 266.10,
+  "pitch": 71.50,
+  "zoom": 2.73,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#3bb2d0"
+      }
+    }
+  ]
+}
