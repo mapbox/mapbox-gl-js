@@ -189,7 +189,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     let fogMatrixArray = null;
     if (painter.style.fog) {
         const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
-        definesValues.push('FOG');
+        definesValues.push('FOG', 'FOG_DITHERING');
         fogMatrixArray = new Float32Array(fogMatrix);
     }
 
@@ -564,7 +564,7 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         let fogMatrixArray = null;
         if (painter.style.fog) {
             const fogMatrix = fogMatrixForModel(modelMatrix, painter.transform);
-            definesValues.push('FOG');
+            definesValues.push('FOG', 'FOG_DITHERING');
             fogMatrixArray = new Float32Array(fogMatrix);
         }
         const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));

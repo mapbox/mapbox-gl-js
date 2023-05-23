@@ -139,6 +139,10 @@ export const operationHandlers = {
     forceRenderCached(map, params, doneCb) {
         // No-op in gl-js
         doneCb();
+    },
+    setRuntimeSettingBool(map, params, doneCb) {
+        // No-op in gl-js
+        doneCb();
     }
 };
 

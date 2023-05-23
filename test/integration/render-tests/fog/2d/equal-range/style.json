@@ -3,7 +3,14 @@
   "metadata": {
     "test": {
       "height": 256,
-      "width": 256
+      "width": 256,
+      "operations": [
+        [
+          "setRuntimeSettingBool",
+          "mapbox_enable_fog_dithering",
+          true
+        ]
+      ]
     }
   },
   "center": [-113.32296, 35.94662],

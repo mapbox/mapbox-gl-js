@@ -161,6 +161,9 @@ const skip = [
     // Conflation needs to be implemented first
     "render-tests/model-layer/landmark-part-styling-munich-museum",
     "render-tests/model-layer/landmark-part-styling-roughness",
+
+    // Dithering of fog is always enabled in GL-JS
+    "render-tests/fog/dithering-runtime-off",
 ];
 
 export default {todo, skip};
