@@ -12,6 +12,7 @@ import background from './style_layer/background_style_layer.js';
 import raster from './style_layer/raster_style_layer.js';
 import CustomStyleLayer from './style_layer/custom_style_layer.js';
 import sky from './style_layer/sky_style_layer.js';
+import slot from './style_layer/slot_style_layer.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import model from '../../3d-style/style/style_layer/model_style_layer.js';
 
@@ -28,6 +29,7 @@ const subclasses = {
     background,
     raster,
     sky,
+    slot,
     model
 };
 

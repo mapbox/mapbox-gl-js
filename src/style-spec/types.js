@@ -70,7 +70,9 @@ export type StyleSpecification = {|
     "terrain"?: TerrainSpecification,
     "fog"?: FogSpecification,
     "camera"?: CameraSpecification,
-    "sources": {[_: string]: SourceSpecification},
+    "imports"?: Array<ImportSpecification>,
+    "schema"?: SchemaSpecification,
+    "sources": SourcesSpecification,
     "sprite"?: string,
     "glyphs"?: string,
     "transition"?: TransitionSpecification,
@@ -78,6 +80,10 @@ export type StyleSpecification = {|
     "layers": Array<LayerSpecification>,
     "models"?: mixed
 |}
+
+export type SourcesSpecification = {
+    [_: string]: SourceSpecification
+}
 
 export type LightSpecification = {|
     "anchor"?: PropertyValueSpecification<"map" | "viewport">,
@@ -110,6 +116,32 @@ export type ProjectionSpecification = {|
     "parallels"?: [number, number]
 |}
 
+export type ImportSpecification = {|
+    "id": string,
+    "url": string,
+    "config"?: ConfigSpecification,
+    "data"?: StyleSpecification
+|}
+
+export type ConfigSpecification = {
+    [_: string]: mixed
+}
+
+export type SchemaSpecification = {
+    [_: string]: OptionSpecification
+}
+
+export type OptionSpecification = {|
+    "default": mixed,
+    "type"?: "string" | "number" | "boolean" | "color",
+    "array"?: boolean,
+    "minValue"?: number,
+    "maxValue"?: number,
+    "stepValue"?: number,
+    "values"?: Array<mixed>,
+    "metadata"?: mixed
+|}
+
 export type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
@@ -120,7 +152,8 @@ export type VectorSourceSpecification = {
     "maxzoom"?: number,
     "attribution"?: string,
     "promoteId"?: PromoteIdSpecification,
-    "volatile"?: boolean
+    "volatile"?: boolean,
+    [_: string]: mixed
 }
 
 export type RasterSourceSpecification = {
@@ -133,7 +166,8 @@ export type RasterSourceSpecification = {
     "tileSize"?: number,
     "scheme"?: "xyz" | "tms",
     "attribution"?: string,
-    "volatile"?: boolean
+    "volatile"?: boolean,
+    [_: string]: mixed
 }
 
 export type RasterDEMSourceSpecification = {
@@ -146,7 +180,8 @@ export type RasterDEMSourceSpecification = {
     "tileSize"?: number,
     "attribution"?: string,
     "encoding"?: "terrarium" | "mapbox",
-    "volatile"?: boolean
+    "volatile"?: boolean,
+    [_: string]: mixed
 }
 
 export type GeoJSONSourceSpecification = {|
@@ -226,6 +261,7 @@ export type FillLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -251,6 +287,7 @@ export type LineLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -287,6 +324,7 @@ export type SymbolLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -361,6 +399,7 @@ export type CircleLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -390,6 +429,7 @@ export type HeatmapLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -411,6 +451,7 @@ export type FillExtrusionLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -448,6 +489,7 @@ export type RasterLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -475,6 +517,7 @@ export type HillshadeLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -497,6 +540,7 @@ export type ModelLayerSpecification = {|
     "metadata"?: mixed,
     "source": string,
     "source-layer"?: string,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
@@ -525,6 +569,7 @@ export type BackgroundLayerSpecification = {|
     "id": string,
     "type": "background",
     "metadata"?: mixed,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
@@ -542,6 +587,7 @@ export type SkyLayerSpecification = {|
     "id": string,
     "type": "sky",
     "metadata"?: mixed,
+    "slot"?: string,
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
@@ -560,6 +606,13 @@ export type SkyLayerSpecification = {|
     |}
 |}
 
+export type SlotLayerSpecification = {|
+    "id": string,
+    "type": "slot",
+    "metadata"?: mixed,
+    "slot"?: string
+|}
+
 export type LayerSpecification =
     | FillLayerSpecification
     | LineLayerSpecification
@@ -571,5 +624,6 @@ export type LayerSpecification =
     | HillshadeLayerSpecification
     | ModelLayerSpecification
     | BackgroundLayerSpecification
-    | SkyLayerSpecification;
+    | SkyLayerSpecification
+    | SlotLayerSpecification;
 

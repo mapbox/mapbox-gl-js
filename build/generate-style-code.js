@@ -139,19 +139,21 @@ const layerPropertiesJs3Dstyle = ejs.compile(fs.readFileSync('src/style/style_la
 
 
 const layers = Object.keys(spec.layer.type.values).map((type) => {
-    const layoutProperties = Object.keys(spec[`layout_${type}`]).reduce((memo, name) => {
+    const layoutSpec = spec[`layout_${type}`] ?? {};
+    const paintSpec = spec[`paint_${type}`] ?? {};
+    const layoutProperties = Object.keys(layoutSpec).reduce((memo, name) => {
         if (name !== 'visibility') {
-            spec[`layout_${type}`][name].name = name;
-            spec[`layout_${type}`][name].type_ = type;
-            memo.push(spec[`layout_${type}`][name]);
+            layoutSpec[name].name = name;
+            layoutSpec[name].type_ = type;
+            memo.push(layoutSpec[name]);
         }
         return memo;
     }, []);
 
-    const paintProperties = Object.keys(spec[`paint_${type}`]).reduce((memo, name) => {
-        spec[`paint_${type}`][name].name = name;
-        spec[`paint_${type}`][name].type_ = type;
-        memo.push(spec[`paint_${type}`][name]);
+    const paintProperties = Object.keys(paintSpec).reduce((memo, name) => {
+        paintSpec[name].name = name;
+        paintSpec[name].type_ = type;
+        memo.push(paintSpec[name]);
         return memo;
     }, []);
 
