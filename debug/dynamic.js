@@ -115,27 +115,34 @@ window.dynamic = {
         "camera-projection": "orthographic"
     },
     "models": {
-        "palm1-lod2": "mapbox://models/mapbox/palm-1-lod2-v2.glb",
-        "palm1-lod1": "mapbox://models/mapbox/palm-1-lod1-v2.glb",
-        "palm1-lod0": "mapbox://models/mapbox/palm-1-lod0-v2.glb",
-        "maple1-lod2": "mapbox://models/mapbox/maple-1-lod2-v2.glb",
-        "maple1-lod1": "mapbox://models/mapbox/maple-1-lod1-v2.glb",
-        "maple1-lod0": "mapbox://models/mapbox/maple-1-lod0-v2.glb",
-        "maple2-lod2": "mapbox://models/mapbox/maple-2-lod2-v2.glb",
-        "maple2-lod1": "mapbox://models/mapbox/maple-2-lod1-v2.glb",
-        "maple2-lod0": "mapbox://models/mapbox/maple-2-lod0-v2.glb",
-        "oak1-lod2": "mapbox://models/mapbox/oak-1-lod2-v2.glb",
-        "oak1-lod1": "mapbox://models/mapbox/oak-1-lod1-v2.glb",
-        "oak1-lod0": "mapbox://models/mapbox/oak-1-lod0-v2.glb",
-        "oak2-lod2": "mapbox://models/mapbox/oak-2-lod2-v2.glb",
-        "oak2-lod1": "mapbox://models/mapbox/oak-2-lod1-v2.glb",
-        "oak2-lod0": "mapbox://models/mapbox/oak-2-lod0-v2.glb",
-        "spruce1-lod2": "mapbox://models/mapbox/spruce-1-lod2-v2.glb",
-        "spruce1-lod1": "mapbox://models/mapbox/spruce-1-lod1-v2.glb",
-        "spruce1-lod0": "mapbox://models/mapbox/spruce-1-lod0-v2.glb",
-        "pine1-lod2": "mapbox://models/mapbox/pine-1-lod2-v2.glb",
-        "pine1-lod1": "mapbox://models/mapbox/pine-1-lod1-v2.glb",
-        "pine1-lod0": "mapbox://models/mapbox/pine-1-lod0-v2.glb"
+        "maple1-lod1": "mapbox://models/mapbox/maple1-lod1.glb",
+        "maple1-lod2": "mapbox://models/mapbox/maple1-lod2.glb",
+        "maple1-lod3": "mapbox://models/mapbox/maple1-lod3.glb",
+        "maple1-lod4": "mapbox://models/mapbox/maple1-lod4.glb",
+        "maple2-lod1": "mapbox://models/mapbox/maple2-lod1.glb",
+        "maple2-lod2": "mapbox://models/mapbox/maple2-lod2.glb",
+        "maple2-lod3": "mapbox://models/mapbox/maple2-lod3.glb",
+        "maple2-lod4": "mapbox://models/mapbox/maple2-lod4.glb",
+        "oak1-lod1": "mapbox://models/mapbox/oak1-lod1.glb",
+        "oak1-lod2": "mapbox://models/mapbox/oak1-lod2.glb",
+        "oak1-lod3": "mapbox://models/mapbox/oak1-lod3.glb",
+        "oak1-lod4": "mapbox://models/mapbox/oak1-lod4.glb",
+        "oak2-lod1": "mapbox://models/mapbox/oak2-lod1.glb",
+        "oak2-lod2": "mapbox://models/mapbox/oak2-lod2.glb",
+        "oak2-lod3": "mapbox://models/mapbox/oak2-lod3.glb",
+        "oak2-lod4": "mapbox://models/mapbox/oak2-lod4.glb",
+        "palm1-lod1": "mapbox://models/mapbox/palm1-lod1.glb",
+        "palm1-lod2": "mapbox://models/mapbox/palm1-lod2.glb",
+        "palm1-lod3": "mapbox://models/mapbox/palm1-lod3.glb",
+        "palm1-lod4": "mapbox://models/mapbox/palm1-lod4.glb",
+        "pine1-lod1": "mapbox://models/mapbox/pine1-lod1.glb",
+        "pine1-lod2": "mapbox://models/mapbox/pine1-lod2.glb",
+        "pine1-lod3": "mapbox://models/mapbox/pine1-lod3.glb",
+        "pine1-lod4": "mapbox://models/mapbox/pine1-lod4.glb",
+        "pine2-lod1": "mapbox://models/mapbox/pine2-lod1.glb",
+        "pine2-lod2": "mapbox://models/mapbox/pine2-lod2.glb",
+        "pine2-lod3": "mapbox://models/mapbox/pine2-lod3.glb",
+        "pine2-lod4": "mapbox://models/mapbox/pine2-lod4.glb"
     },
     "sources": {
         "composite": {
@@ -144,15 +151,14 @@ window.dynamic = {
         },
         "trees": {
             "type": "vector",
-            "url": "mapbox://mapbox.mapbox-models-v1",
-            "minzoom": 15
+            "url": "mapbox://mapbox.mapbox-models-v1"
         },
         "mbx-3dbuildings": {
             "type": "batched-model",
             "url": "mapbox://mapbox.mbx-3dbuildings-stg"
         }
     },
-    "sprite": "mapbox://sprites/mapbox-map-design/cleq2ui27001001lu7y292893/7ljka8w8gew2rf4ooadbj7qsu",
+    "sprite": "mapbox://sprites/mapbox-map-design/clhrnvstg01yh01pn02ty6w7p/82qb27u5bmlfnboenyglbwsa3",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "projection": { "name": "globe" },
     "layers": [
@@ -161,7 +167,18 @@ window.dynamic = {
             "type": "background",
             "metadata": { "mapbox:group": "Land & water, land" },
             "layout": { },
-            "paint": { "background-color": "hsl(20, 20%, 95%)" }
+            "paint": {
+                "background-color": "hsl(20, 20%, 95%)",
+                "background-emissive-strength": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    4,
+                    0.1,
+                    5,
+                    0.0
+                ]
+            }
         },
         {
             "id": "landcover",
@@ -172,6 +189,15 @@ window.dynamic = {
             "maxzoom": 9,
             "layout": { },
             "paint": {
+                "fill-emissive-strength": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    2,
+                    0.5,
+                    4,
+                    0.2
+                ],
                 "fill-color": [
                     "match",
                     [ "get", "class" ],
@@ -179,7 +205,15 @@ window.dynamic = {
                     "hsla(115, 55%, 74%, 0.8)",
                     "snow",
                     "hsl(200, 70%, 90%)",
-                    "hsl(110, 52%, 81%)"
+                    [
+                        "interpolate",
+                        [ "linear" ],
+                        [ "measure-light", "brightness" ],
+                        0.28,
+                        "hsl(137, 46%, 66%)",
+                        0.3,
+                        "hsl(110, 52%, 81%)"
+                    ]
                 ],
                 "fill-opacity": [
                     "interpolate",
@@ -203,6 +237,7 @@ window.dynamic = {
             "filter": [ "==", [ "get", "class" ], "national_park" ],
             "layout": { },
             "paint": {
+                "fill-emissive-strength": 0.3,
                 "fill-color": "hsl(110, 41%, 78%)",
                 "fill-opacity": [
                     "interpolate",
@@ -298,12 +333,48 @@ window.dynamic = {
             ],
             "layout": { },
             "paint": {
-                "fill-emissive-strength": 0.15,
+                "fill-emissive-strength":0.2,
                 "fill-color": [
                     "interpolate",
                     [ "linear" ],
-                    [ "zoom" ],
-                    15,
+                    [ "measure-light", "brightness" ],
+                    0.1,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        "wood",
+                        "hsla(115, 55%, 74%, 0.8)",
+                        "scrub",
+                        "hsla(110, 52%, 82%, 0.6)",
+                        "agriculture",
+                        "hsla(110, 55%, 88%, 0.6)",
+                        "park",
+                        "hsl(110, 60%, 80%)",
+                        "grass",
+                        "hsla(110, 55%, 88%, 0.6)",
+                        "airport",
+                        "hsl(225, 60%, 92%)",
+                        "cemetery",
+                        "hsl(110, 48%, 85%)",
+                        "glacier",
+                        "hsl(200, 70%, 90%)",
+                        "hospital",
+                        "hsl(0, 50%, 92%)",
+                        "pitch",
+                        "hsl(100, 70%, 85%)",
+                        "sand",
+                        "hsl(52, 65%, 86%)",
+                        "school",
+                        "hsl(40, 50%, 88%)",
+                        "commercial_area",
+                        "hsl(24, 75%, 80%)",
+                        "residential",
+                        "hsl(20, 7%, 97%)",
+                        [ "facility", "industrial" ],
+                        "hsl(230, 20%, 90%)",
+                        "hsl(20, 22%, 86%)"
+                    ],
+                    0.4,
                     [
                         "match",
                         [ "get", "class" ],
@@ -338,47 +409,15 @@ window.dynamic = {
                         [ "facility", "industrial" ],
                         "hsl(230, 20%, 90%)",
                         "hsl(20, 22%, 86%)"
-                    ],
-                    16,
-                    [
-                        "match",
-                        [ "get", "class" ],
-                        "wood",
-                        "hsla(115, 55%, 74%, 0.8)",
-                        "scrub",
-                        "hsla(110, 52%, 82%, 0.6)",
-                        "agriculture",
-                        "hsla(110, 55%, 88%, 0.6)",
-                        "park",
-                        "hsl(110, 60%, 80%)",
-                        "grass",
-                        "hsla(110, 55%, 88%, 0.6)",
-                        "airport",
-                        "hsl(225, 60%, 92%)",
-                        "cemetery",
-                        "hsl(110, 48%, 85%)",
-                        "glacier",
-                        "hsl(200, 70%, 90%)",
-                        "hospital",
-                        "hsl(0, 50%, 92%)",
-                        "pitch",
-                        "hsl(100, 70%, 85%)",
-                        "sand",
-                        "hsl(52, 65%, 86%)",
-                        "school",
-                        "hsl(40, 50%, 88%)",
-                        "commercial_area",
-                        "hsla(24, 100%, 94%, 0.4)",
-                        [ "facility", "industrial" ],
-                        "hsl(230, 20%, 90%)",
-                        "hsl(20, 22%, 86%)"
                     ]
                 ],
                 "fill-opacity": [
                     "interpolate",
                     [ "linear" ],
                     [ "zoom" ],
-                    8,
+                    5,
+                    0,
+                    6,
                     [
                         "match",
                         [ "get", "class" ],
@@ -388,14 +427,29 @@ window.dynamic = {
                             [ "linear" ],
                             [ "measure-light", "brightness" ],
                             0.1,
-                            0.5,
+                            1,
                             0.4,
                             0.8
                         ],
                         0.2
                     ],
                     12,
-                    [ "match", [ "get", "class" ], "residential", 0, 1 ]
+                    [ "match", 
+                    [ "get", "class" ],
+                    ["residential"],
+                    0,
+                    ["forest", "grass", "meadow", "park"],
+                    1,
+                    [
+                        "interpolate",
+                        [ "linear" ],
+                        [ "measure-light", "brightness" ],
+                        0.1,
+                        0.5,
+                        0.4,
+                        1
+                    ] 
+                    ]
                 ]
             }
         },
@@ -516,9 +570,8 @@ window.dynamic = {
             "source-layer": "water",
             "layout": { },
             "paint": {
-                "fill-color": "hsl(200, 100%, 80%)",
-                "fill-emissive-strength": 0.15
-            }
+                "fill-color": "hsl(200, 100%, 80%)" },
+            "fill-emissive-strength": 0.1
         },
         {
             "id": "water-depth",
@@ -569,7 +622,7 @@ window.dynamic = {
             "maxzoom": 16,
             "layout": { },
             "paint": {
-                "fill-emissive-strength": 0.3,
+                "fill-emissive-strength": 0.8,
                 "fill-color": [
                     "interpolate",
                     [ "linear" ],
@@ -1055,7 +1108,9 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": "round" },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -1086,7 +1141,9 @@ window.dynamic = {
                 [ "!=", [ "get", "type" ], "steps" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": "round" },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -1153,6 +1210,9 @@ window.dynamic = {
                 [ "==", [ "get", "class" ], "pedestrian" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
+            "layout": { 
+            "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-emissive-strength": 0.2,
                 "line-width": [
@@ -1685,7 +1745,15 @@ window.dynamic = {
             "minzoom": 8,
             "filter": [ "==", [ "get", "type" ], "ferry" ],
             "paint": {
-                "line-emissive-strength": 0.8,
+                "line-emissive-strength":  [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    12,
+                    0.0,
+                    13,
+                    0.5
+                ],
                 "line-color": [
                     "interpolate",
                     [ "linear" ],
@@ -1806,7 +1874,10 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-join": [ "step", [ "zoom" ], "miter", 14, "round" ] },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
+                "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
+            },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -1876,7 +1947,10 @@ window.dynamic = {
                 [ "case", [ "has", "layer" ], [ ">=", [ "get", "layer" ], 0 ], true ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-join": [ "step", [ "zoom" ], "miter", 14, "round" ] },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
+                "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
+            },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -1923,9 +1997,9 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": {
-                "line-cap": "round",
-                "line-join": [ "step", [ "zoom" ], "miter", 14, "round" ]
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ],
+                "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
             "paint": {
                 "line-width": [
@@ -1980,12 +2054,12 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": {
-                "line-cap": "round",
-                "line-join": [ "step", [ "zoom" ], "miter", 14, "round" ]
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ],
+                "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
             "paint": {
-                "line-emissive-strength": 0.2,
+                "line-emissive-strength": 0.3,
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2069,7 +2143,10 @@ window.dynamic = {
                 [ "case", [ "has", "layer" ], [ ">=", [ "get", "layer" ], 0 ], true ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-join": [ "step", [ "zoom" ], "miter", 14, "round" ] },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
+                "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
+            },
             "paint": {
                 "line-emissive-strength": 0.2,
                 "line-width": [
@@ -2138,6 +2215,80 @@ window.dynamic = {
             ],
             "layout": { "visibility": "none" },
             "paint": { "fill-color": "#bfc6d9", "fill-outline-color": "#a3adc2" }
+        },
+        {
+            "id": "gate-fence-hedge-shade",
+            "type": "line",
+            "metadata": {
+                "mapbox:group": "Walking, cycling, etc., barriers-bridges"
+            },
+            "source": "composite",
+            "source-layer": "structure",
+            "minzoom": 17,
+            "filter": [
+                "match",
+                [ "get", "class" ],
+                [ "gate", "fence", "hedge" ],
+                true,
+                false
+            ],
+            "paint": {
+                "line-width": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    16,
+                    1,
+                    20,
+                    3
+                ],
+                "line-opacity": [ "match", [ "get", "class" ], "gate", 0.5, 1 ],
+                "line-translate": [ 1.5, 1.5 ],
+                "line-color": [
+                    "match",
+                    [ "get", "class" ],
+                    "hedge",
+                    "hsl(110, 35%, 70%)",
+                    "hsl(221, 0%, 70%)"
+                ]
+            }
+        },
+        {
+            "id": "gate-fence-hedge",
+            "type": "line",
+            "metadata": {
+                "mapbox:group": "Walking, cycling, etc., barriers-bridges"
+            },
+            "source": "composite",
+            "source-layer": "structure",
+            "minzoom": 16,
+            "filter": [
+                "match",
+                [ "get", "class" ],
+                [ "gate", "fence", "hedge" ],
+                true,
+                false
+            ],
+            "layout": { },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [ "get", "class" ],
+                    "hedge",
+                    "hsl(110, 35%, 70%)",
+                    "hsl(221, 0%, 85%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    16,
+                    1,
+                    20,
+                    3
+                ],
+                "line-opacity": [ "match", [ "get", "class" ], "gate", 0.5, 1 ]
+            }
         },
         {
             "id": "turning-feature-outline",
@@ -2952,15 +3103,7 @@ window.dynamic = {
                 "line-join": [ "step", [ "zoom" ], "miter", 13, "round" ]
             },
             "paint": {
-                "line-emissive-strength": [
-                    "interpolate",
-                    [ "exponential", 1.5 ],
-                    [ "zoom" ],
-                    3,
-                    0.3,
-                    6,
-                    0.6
-                ],
+                "line-emissive-strength": 0.8,
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -3342,80 +3485,6 @@ window.dynamic = {
             }
         },
         {
-            "id": "gate-fence-hedge-shade",
-            "type": "line",
-            "metadata": {
-                "mapbox:group": "Walking, cycling, etc., barriers-bridges"
-            },
-            "source": "composite",
-            "source-layer": "structure",
-            "minzoom": 17,
-            "filter": [
-                "match",
-                [ "get", "class" ],
-                [ "gate", "fence", "hedge" ],
-                true,
-                false
-            ],
-            "paint": {
-                "line-width": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    16,
-                    1,
-                    20,
-                    3
-                ],
-                "line-opacity": [ "match", [ "get", "class" ], "gate", 0.5, 1 ],
-                "line-translate": [ 1.5, 1.5 ],
-                "line-color": [
-                    "match",
-                    [ "get", "class" ],
-                    "hedge",
-                    "hsl(110, 35%, 70%)",
-                    "hsl(221, 0%, 70%)"
-                ]
-            }
-        },
-        {
-            "id": "gate-fence-hedge",
-            "type": "line",
-            "metadata": {
-                "mapbox:group": "Walking, cycling, etc., barriers-bridges"
-            },
-            "source": "composite",
-            "source-layer": "structure",
-            "minzoom": 16,
-            "filter": [
-                "match",
-                [ "get", "class" ],
-                [ "gate", "fence", "hedge" ],
-                true,
-                false
-            ],
-            "layout": { },
-            "paint": {
-                "line-color": [
-                    "match",
-                    [ "get", "class" ],
-                    "hedge",
-                    "hsl(110, 35%, 70%)",
-                    "hsl(221, 0%, 85%)"
-                ],
-                "line-width": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    16,
-                    1,
-                    20,
-                    3
-                ],
-                "line-opacity": [ "match", [ "get", "class" ], "gate", 0.5, 1 ]
-            }
-        },
-        {
             "id": "bridge-path-bg",
             "type": "line",
             "metadata": {
@@ -3446,7 +3515,6 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -3568,7 +3636,9 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": "round" },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-emissive-strength": 0.2,
                 "line-width": [
@@ -3610,7 +3680,9 @@ window.dynamic = {
                 [ "!=", [ "get", "type" ], "steps" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": "round" },
+            "layout": { 
+                "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-emissive-strength": 0.2,
                 "line-width": [
@@ -3699,7 +3771,9 @@ window.dynamic = {
                 [ "==", [ "get", "class" ], "pedestrian" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { },
+            "layout": { 
+            "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
+            },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -3744,7 +3818,6 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": [ "step", [ "zoom" ], "butt", 14, "round" ] },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -3792,7 +3865,6 @@ window.dynamic = {
                 [ "match", [ "get", "type" ], [ "piste" ], false, true ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { "line-cap": [ "step", [ "zoom" ], "butt", 14, "round" ] },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -4266,7 +4338,6 @@ window.dynamic = {
                 [ "<=", [ "get", "layer" ], 1 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { },
             "paint": {
                 "line-color": "hsl(221, 20%, 50%)",
                 "line-gap-width": [
@@ -4306,7 +4377,6 @@ window.dynamic = {
                 [ "<=", [ "get", "layer" ], 1 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { },
             "paint": {
                 "line-width": [
                     "interpolate",
@@ -5302,7 +5372,7 @@ window.dynamic = {
             ],
             "layout": { },
             "paint": {
-                "line-emissive-strength": 0.3,
+                "line-emissive-strength": 0.5,
                 "line-dasharray": [
                     "step",
                     [ "zoom" ],
@@ -5376,7 +5446,7 @@ window.dynamic = {
                 [ "match", [ "get", "worldview" ], [ "all", "US" ], true, false ]
             ],
             "paint": {
-                "line-emissive-strength": 0.3,
+                "line-emissive-strength": 0.8,
                 "line-color": "hsl(345, 100%, 70%)",
                 "line-width": [
                     "interpolate",
@@ -5469,11 +5539,11 @@ window.dynamic = {
                                 ],
                                 0.0
                             ],
-                            "pine1-lod0",
-                            "spruce1-lod0"
+                            "pine1-lod3",
+                            "pine2-lod3"
                         ],
                         "palm",
-                        "palm1-lod0",
+                        "palm1-lod3",
                         [
                             "case",
                             [
@@ -5490,7 +5560,7 @@ window.dynamic = {
                                 ],
                                 0.0
                             ],
-                            "oak1-lod0",
+                            "oak1-lod3",
                             [
                                 "==",
                                 [
@@ -5505,7 +5575,7 @@ window.dynamic = {
                                 ],
                                 1.0
                             ],
-                            "oak2-lod0",
+                            "oak2-lod3",
                             [
                                 "==",
                                 [
@@ -5520,11 +5590,11 @@ window.dynamic = {
                                 ],
                                 2.0
                             ],
-                            "maple1-lod0",
-                            "maple2-lod0"
+                            "maple1-lod3",
+                            "maple2-lod3"
                         ]
                     ],
-                    15.0,
+                    16.0,
                     [
                         "match",
                         [
@@ -5548,91 +5618,11 @@ window.dynamic = {
                                 ],
                                 0.0
                             ],
-                            "pine1-lod1",
-                            "spruce1-lod1"
-                        ],
-                        "palm",
-                        "palm1-lod1",
-                        [
-                            "case",
-                            [
-                                "==",
-                                [
-                                    "%",
-                                    [
-                                        "number",
-                                        [
-                                            "id"
-                                        ]
-                                    ],
-                                    4.0
-                                ],
-                                0.0
-                            ],
-                            "oak1-lod1",
-                            [
-                                "==",
-                                [
-                                    "%",
-                                    [
-                                        "number",
-                                        [
-                                            "id"
-                                        ]
-                                    ],
-                                    4.0
-                                ],
-                                1.0
-                            ],
-                            "oak2-lod1",
-                            [
-                                "==",
-                                [
-                                    "%",
-                                    [
-                                        "number",
-                                        [
-                                            "id"
-                                        ]
-                                    ],
-                                    4.0
-                                ],
-                                2.0
-                            ],
-                            "maple1-lod1",
-                            "maple2-lod1"
-                        ]
-                    ],
-                    17.0,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "leaf_type"
-                        ],
-                        "needleleaved",
-                        [
-                            "case",
-                            [
-                                "==",
-                                [
-                                    "%",
-                                    [
-                                        "number",
-                                        [
-                                            "id"
-                                        ]
-                                    ],
-                                    2.0
-                                ],
-                                0.0
-                            ],
-                            "pine1-lod1",
-                            "spruce1-lod1"
+                            "pine1-lod2",
+                            "pine2-lod2"
                         ],
                         "palm",
                         "palm1-lod2",
-
                         [
                             "case",
                             [
@@ -5682,6 +5672,86 @@ window.dynamic = {
                             "maple1-lod2",
                             "maple2-lod2"
                         ]
+                    ],
+                    17.0,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "leaf_type"
+                        ],
+                        "needleleaved",
+                        [
+                            "case",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    2.0
+                                ],
+                                0.0
+                            ],
+                            "pine1-lod1",
+                            "pine2-lod1"
+                        ],
+                        "palm",
+                        "palm1-lod1",
+
+                        [
+                            "case",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                0.0
+                            ],
+                            "oak1-lod1",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                1.0
+                            ],
+                            "oak2-lod1",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                2.0
+                            ],
+                            "maple1-lod1",
+                            "maple2-lod1"
+                        ]
                     ]
                 ]
             },
@@ -5722,18 +5792,17 @@ window.dynamic = {
                     1.0
                 ],
                 "model-rotation": [
-                    "interpolate", ["linear"],
+                    0.0,
+                    0.0,
                     [
-                        "%",
-                        ["number",
-                            [
-                                "id"
-                            ]
-                        ],
-                        360
-                    ],
-                    0, ['literal', [0, 0, 0]],
-                    360, ['literal', [0, 0, 360]]
+                        "random",
+                        0.0,
+                        360.0,
+                        [
+                            "id"
+                        ]
+                    ]
+
                 ],
                 "model-scale": [
                     "match",
@@ -6149,16 +6218,15 @@ window.dynamic = {
                 "fill-extrusion-edge-radius": 0.4
             },
             "paint": {
-                "fill-extrusion-ambient-occlusion-intensity": 0.2,
-                "fill-extrusion-base": [
+                "fill-extrusion-vertical-scale": [
                     "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    15,
-                    0,
-                    15.3,
-                    [ "number", [ "get", "min_height" ] ]
+                    ["linear"],
+                    ["zoom"],
+                    15, 0,
+                    15.3, 1
                 ],
+                "fill-extrusion-ambient-occlusion-intensity": 0.2,
+                "fill-extrusion-base": [ "get", "min_height" ],
                 "fill-extrusion-color": [
                     "interpolate",
                     [ "linear" ],
@@ -6169,21 +6237,53 @@ window.dynamic = {
                     "hsl(23, 100%, 97%)"
                 ],
                 "fill-extrusion-height": [
+                    "case",
+                    ["all",
+                    ["==", ["get", "height"], 3],
+                    ["in", ["get", "type"], ["literal", ["beach_hut", "boathouse", "bunker", "cabin", "carport", "garage", "garages", "greenhouse", "houseboat", "hut", "service", "stable", "toilets"]]]
+                ],
+                2,
+                ["all",
+                ["==", ["get", "height"], 3],
+                ["==", ["get", "type"], "bungalow"]
+                ],
+                4,
+                    ["all",
+                        ["==", ["get", "height"], 3],
+                        ["in", ["get", "type"], ["literal", ["apartments", "church", "civic", "college", "commercial", "hangar", "hotel", "industrial", "mosque", "office", "school", "university", "warehouse" ]]]
+                    ],
+                    [
+                        "random",
+                        18.0,
+                        20.0,
+                        [
+                          "id"
+                        ]
+                    ],
+                    ["==", ["get", "height"], 3],
+                    [
+                    "random",
+                    9.0,
+                    11.0,
+                    [
+                      "id"
+                    ]
+                    ],
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ]
+                  ],
+                "fill-extrusion-opacity": [
                     "interpolate",
                     [ "linear" ],
                     [ "zoom" ],
                     15,
                     0,
                     15.3,
-                    [ "number", [ "get", "height" ] ]
-                ],
-                "fill-extrusion-opacity": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    15.1,
-                    0,
-                    15.5,
                     1
                 ]
             }
@@ -6299,7 +6399,15 @@ window.dynamic = {
                         "part"
                     ],
                     "logo",
-                    0.0,
+                    [
+                        "interpolate",
+                        [ "linear" ],
+                        [ "measure-light", "brightness" ],
+                        0.2,
+                        0,
+                        0.4,
+                        0.3
+                    ],
                     1.0
                 ],
                 "model-emissive-strength": [
@@ -6309,7 +6417,15 @@ window.dynamic = {
                         "part"
                     ],
                     "door",
-                    2.0,
+                    [
+                        "interpolate",
+                        [ "linear" ],
+                        [ "measure-light", "brightness" ],
+                        0.2,
+                        1.5,
+                        0.4,
+                        2.5
+                    ],
                     "logo",
                     0.8,
                     "window",
@@ -6323,7 +6439,43 @@ window.dynamic = {
                     ],
                     0.0
                 ],
-                "model-opacity": 1.0,
+                "model-height-based-emissive-strength-multiplier": [
+                    "match",
+                    [
+                        "get",
+                        "part"
+                    ],
+                    "window",
+                    [
+                        "literal",
+                        [
+                            0.0,
+                            0.9,
+                            0,
+                            1,
+                            0.5
+                        ]
+                    ],
+                    [
+                        "literal",
+                        [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    ]
+                ],
+                "model-opacity": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    14.2,
+                    0.0,
+                    14.5,
+                    1.0
+                ],
                 "model-roughness": [
                     "match",
                     [
@@ -6335,9 +6487,21 @@ window.dynamic = {
                     1.0
                 ],
                 "model-scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    14.2,
+                    [
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    14.5,
+                    [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
                 ],
                 "model-type": "common-3d"
             },
@@ -7244,260 +7408,7 @@ window.dynamic = {
             }
         },
         {
-            "id": "poi-label-far",
-            "type": "symbol",
-            "metadata": {
-                "mapbox:group": "Point of interest labels, poi-labels"
-            },
-            "source": "composite",
-            "source-layer": "poi_label",
-            "minzoom": 6,
-            "filter": [
-                "all",
-                [
-                    "<=",
-                    [ "number", [ "get", "filterrank" ] ],
-                    [ "+", [ "step", [ "zoom" ], 0, 16, 1, 17, 2 ], 1 ]
-                ],
-                [
-                    "case",
-                    [
-                        "<=",
-                        [
-                            "pitch"
-                        ],
-                        40.0
-                    ],
-                    false,
-                    [
-                        "step",
-                        [ "pitch" ],
-                        false,
-                        40,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 1 ],
-                            [ "<", [ "distance-from-center" ], 2 ]
-                        ],
-                        50,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 0.8 ],
-                            [ "<", [ "distance-from-center" ], 1.2 ]
-                        ],
-                        55,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 0.4 ],
-                            [ "<", [ "distance-from-center" ], 0.8 ]
-                        ],
-                        60,
-                        [
-                            "all",
-                            [ ">", [ "distance-from-center" ], 1 ],
-                            [ "<", [ "distance-from-center" ], 2 ]
-                        ]
-                    ]
-                ]
-            ],
-            "layout": {
-                "text-size": [
-                    "step",
-                    [ "zoom" ],
-                    [ "step", [ "number", [ "get", "sizerank" ] ], 18, 5, 12 ],
-                    17,
-                    [ "step", [ "number", [ "get", "sizerank" ] ], 18, 13, 12 ]
-                ],
-                "text-field": [
-                    "format",
-                    [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
-                    { }
-                ],
-                "text-font": [ "DIN Pro Medium", "Arial Unicode MS Bold" ],
-                "icon-image": [
-                    "case",
-                    [ "has", "maki_beta" ],
-                    [
-                        "coalesce",
-                        [ "image",
-                            [ "concat", [ "string", [ "get", "maki_beta" ] ], "-dark" ],
-                            [ "string", [ "get", "maki_beta" ] ]
-                        ],
-                        [ "image",
-                            [ "concat", [ "string", [ "get", "maki" ] ], "-dark" ],
-                            [ "string", [ "get", "maki" ] ]
-                        ]
-                    ],
-                    [ "image",
-                        [ "concat", [ "string", [ "get", "maki" ] ], "-dark" ],
-                        [ "string", [ "get", "maki" ] ]
-                    ]
-                ],
-                "text-offset": [
-                    "step",
-                    [ "zoom" ],
-                    [
-                        "step",
-                        [ "number", [ "get", "sizerank" ] ],
-                        [ "literal", [ 0, 0 ] ],
-                        5,
-                        [ "literal", [ 0, 0.8 ] ]
-                    ],
-                    17,
-                    [
-                        "step",
-                        [ "number", [ "get", "sizerank" ] ],
-                        [ "literal", [ 0, 0 ] ],
-                        13,
-                        [ "literal", [ 0, 0.8 ] ]
-                    ]
-                ],
-                "text-anchor": [
-                    "step",
-                    [ "zoom" ],
-                    [
-                        "step",
-                        [ "number", [ "get", "sizerank" ] ],
-                        "center",
-                        5,
-                        "top"
-                    ],
-                    17,
-                    [
-                        "step",
-                        [ "number", [ "get", "sizerank" ] ],
-                        "center",
-                        13,
-                        "top"
-                    ]
-                ]
-            },
-            "paint": {
-                "icon-image-cross-fade": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "measure-light", "brightness" ],
-                    0.25,
-                    0.0,
-                    0.3,
-                    1.0
-                ],
-                "text-opacity": [
-                    "step",
-                    [ "zoom" ],
-                    [
-                        "step",
-                        [
-                            "number",
-                            [ "get", "sizerank" ]
-                        ],
-                        0,
-                        5,
-                        0.6
-                    ],
-                    17,
-                    [
-                        "step",
-                        [
-                            "number",
-                            [ "get", "sizerank" ]
-                        ],
-                        0,
-                        13,
-                        0.6
-                    ]
-                ],
-                "text-halo-width": 1.2,
-                "text-color": [
-                    "match",
-                    [ "get", "class" ],
-                    "food_and_drink",
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(40, 95%, 70%)",
-                        0.3,
-                        "hsl(40, 95%, 43%)" ],
-                    "park_like",
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(110, 70%, 80%)",
-                        0.3,
-                        "hsl(110, 70%, 28%)" ],
-                    "education",
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(30, 50%, 70%)",
-                        0.3,
-                        "hsl(30, 50%, 43%)" ],
-                    "medical",
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(0, 70%, 70%)",
-                        0.3,
-                        "hsl(0, 70%, 58%)" ],
-                    "sport_and_leisure",
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(190, 60%, 80%)",
-                        0.3,
-                        "hsl(190, 60%, 48%)" ],
-                    [ "store_like", "food_and_drink_stores" ],
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(210, 70%, 80%)",
-                        0.3,
-                        "hsl(210, 70%, 58%)" ],
-                    [ "commercial_services", "motorist", "lodging" ],
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(260, 70%, 80%)",
-                        0.3,
-                        "hsl(260, 70%, 63%)" ],
-                    [ "arts_and_entertainment", "historic", "landmark" ],
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(320, 70%, 80%)",
-                        0.3,
-                        "hsl(320, 70%, 63%)" ],
-                    [ "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.25,
-                        "hsl(210, 20%, 80%)",
-                        0.3,
-                        "hsl(210, 20%, 46%)" ]
-                ],
-                "text-halo-blur": 0.5,
-                "icon-opacity": 0.6,
-                "text-halo-color": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "measure-light", "brightness" ],
-                    0.25,
-                    "hsl(0, 0%, 0%)",
-                    0.3,
-                    "hsl(0, 0%, 100%)"
-                ]
-            }
-        },
-        {
-            "id": "poi-label-close",
+            "id": "poi-label",
             "type": "symbol",
             "metadata": {
                 "mapbox:group": "Point of interest labels, poi-labels"
@@ -7527,9 +7438,9 @@ window.dynamic = {
                         [ "pitch" ],
                         true,
                         40,
-                        [ "<", [ "distance-from-center" ], 1 ],
+                        [ "<", [ "distance-from-center" ], 1.2 ],
                         50,
-                        [ "<", [ "distance-from-center" ], 0.8 ],
+                        [ "<", [ "distance-from-center" ], 1.1 ],
                         55,
                         [ "<=", [ "distance-from-center" ], 1 ]
                     ]
@@ -7576,7 +7487,7 @@ window.dynamic = {
                         [ "number", [ "get", "sizerank" ] ],
                         [ "literal", [ 0, 0 ] ],
                         5,
-                        [ "literal", [ 0, 0.8 ] ]
+                        [ "literal", [ 0, 1 ] ]
                     ],
                     17,
                     [
@@ -7584,7 +7495,7 @@ window.dynamic = {
                         [ "number", [ "get", "sizerank" ] ],
                         [ "literal", [ 0, 0 ] ],
                         13,
-                        [ "literal", [ 0, 0.8 ] ]
+                        [ "literal", [ 0, 1 ] ]
                     ]
                 ],
                 "text-anchor": [
@@ -7625,7 +7536,7 @@ window.dynamic = {
                     [ "step", [ "number", [ "get", "sizerank" ] ], 0, 13, 1 ]
                 ],
                 "text-halo-width": 1,
-                "text-halo-blur": 0.2,
+                "text-halo-blur": 0,
                 "text-halo-color": [
                     "interpolate",
                     [ "linear" ],
@@ -7646,7 +7557,7 @@ window.dynamic = {
                         0.25,
                         "hsl(40, 95%, 70%)",
                         0.3,
-                        "hsl(40, 95%, 43%)"
+                        "hsl(30, 100%, 48%)"
                     ],
                     "park_like",
                     [
@@ -7666,7 +7577,7 @@ window.dynamic = {
                         0.25,
                         "hsl(30, 50%, 70%)",
                         0.3,
-                        "hsl(30, 50%, 43%)"
+                        "hsl(30, 50%, 38%)"
                     ],
                     "medical",
                     [
@@ -7676,7 +7587,7 @@ window.dynamic = {
                         0.25,
                         "hsl(0, 70%, 70%)",
                         0.3,
-                        "hsl(0, 70%, 58%)"
+                        "hsl(0, 90%, 60%)"
                     ],
                     "sport_and_leisure",
                     [
@@ -7686,7 +7597,7 @@ window.dynamic = {
                         0.25,
                         "hsl(190, 60%, 70%)",
                         0.3,
-                        "hsl(190, 60%, 48%)"
+                        "hsl(190, 75%, 38%)"
                     ],
                     [ "store_like", "food_and_drink_stores" ],
                     [
@@ -7696,7 +7607,7 @@ window.dynamic = {
                         0.25,
                         "hsl(210, 70%, 75%)",
                         0.3,
-                        "hsl(210, 70%, 58%)"
+                        "hsl(210, 75%, 53%)"
                     ],
                     [ "commercial_services", "motorist", "lodging" ],
                     [
@@ -7706,7 +7617,7 @@ window.dynamic = {
                         0.25,
                         "hsl(260, 70%, 75%)",
                         0.3,
-                        "hsl(260, 70%, 63%)"
+                        "hsl(250, 75%, 60%)"
                     ],
                     [ "arts_and_entertainment", "historic", "landmark" ],
                     [
@@ -7716,7 +7627,7 @@ window.dynamic = {
                         0.25,
                         "hsl(320, 70%, 75%)",
                         0.3,
-                        "hsl(320, 70%, 63%)"
+                        "hsl(320, 85%, 60%)"
                     ],
                     [
                         "interpolate",
@@ -7725,298 +7636,13 @@ window.dynamic = {
                         0.25,
                         "hsl(210, 20%, 70%)",
                         0.3,
-                        "hsl(210, 20%, 46%)"
+                        "hsl(210, 20%, 43%)"
                     ]
                 ]
             }
         },
         {
-            "id": "transit-label-far",
-            "type": "symbol",
-            "metadata": { "mapbox:group": "Transit, transit-labels" },
-            "source": "composite",
-            "source-layer": "transit_stop_label",
-            "minzoom": 12,
-            "filter": [
-                "all",
-                [
-                    "step",
-                    [ "zoom" ],
-                    [
-                        "all",
-                        [
-                            "<=",
-                            [ "get", "filterrank" ],
-                            4
-                        ],
-                        [
-                            "match",
-                            [ "get", "mode" ],
-                            "rail",
-                            true,
-                            "metro_rail",
-                            true,
-                            false
-                        ],
-                        [
-                            "!=",
-                            [ "get", "stop_type" ],
-                            "entrance"
-                        ]
-                    ],
-                    14,
-                    [
-                        "all",
-                        [
-                            "match",
-                            [ "get", "mode" ],
-                            "rail",
-                            true,
-                            "metro_rail",
-                            true,
-                            false
-                        ],
-                        [
-                            "!=",
-                            [ "get", "stop_type" ],
-                            "entrance"
-                        ]
-                    ],
-                    15,
-                    [
-                        "all",
-                        [
-                            "match",
-                            [ "get", "mode" ],
-                            "rail",
-                            true,
-                            "metro_rail",
-                            true,
-                            "ferry",
-                            true,
-                            "light_rail",
-                            true,
-                            false
-                        ],
-                        [
-                            "!=",
-                            [ "get", "stop_type" ],
-                            "entrance"
-                        ]
-                    ],
-                    16,
-                    [
-                        "all",
-                        [
-                            "match",
-                            [ "get", "mode" ],
-                            "bus",
-                            false,
-                            true
-                        ],
-                        [
-                            "!=",
-                            [ "get", "stop_type" ],
-                            "entrance"
-                        ]
-                    ],
-                    17,
-                    [
-                        "!=",
-                        [ "get", "stop_type" ],
-                        "entrance"
-                    ],
-                    19,
-                    true
-                ],
-                [
-                    "case",
-                    [
-                        "<=",
-                        [
-                            "pitch"
-                        ],
-                        40.0
-                    ],
-                    false,
-                    [
-                        "step",
-                        [ "pitch" ],
-                        false,
-                        40,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 1 ],
-                            [ "<", [ "distance-from-center" ], 2 ]
-                        ],
-                        50,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 0.8 ],
-                            [ "<", [ "distance-from-center" ], 1.2 ]
-                        ],
-                        55,
-                        [
-                            "all",
-                            [ ">=", [ "distance-from-center" ], 0.4 ],
-                            [ "<", [ "distance-from-center" ], 0.8 ]
-                        ],
-                        60,
-                        [
-                            "all",
-                            [ ">", [ "distance-from-center" ], -0.1 ],
-                            [ "<", [ "distance-from-center" ], 0.4 ]
-                        ]
-                    ]
-                ]
-            ],
-            "layout": {
-                "text-size": 12,
-                "icon-image": [
-                    "case",
-                    [
-                        "to-boolean",
-                        [
-                            "coalesce",
-                            [
-                                "image", [ "concat", [ "string", [ "get", "network" ] ], "-dark" ]
-                            ],
-                            ""
-                        ]
-                    ],
-                    [
-                        "image",
-                        [ "concat", [ "string", [ "get", "network" ] ], "-dark" ],
-                        [ "string", [ "get", "network" ] ]
-                    ],
-                    [
-                        "image",
-                        [ "string", [ "get", "network" ] ],
-                        [ "string", [ "get", "network" ] ]
-                    ]
-                ],
-                "text-font": [ "DIN Pro Medium", "Arial Unicode MS Regular" ],
-                "text-justify": [
-                    "match",
-                    [ "get", "stop_type" ],
-                    "entrance",
-                    "left",
-                    "center"
-                ],
-                "text-offset": [
-                    "match",
-                    [ "get", "stop_type" ],
-                    "entrance",
-                    [ "literal", [ 1, 0 ] ],
-                    [ "literal", [ 0, 0.8 ] ]
-                ],
-                "text-anchor": [
-                    "match",
-                    [ "get", "stop_type" ],
-                    "entrance",
-                    "left",
-                    "top"
-                ],
-                "text-field": [
-                    "step",
-                    [ "zoom" ],
-                    [ "format", "", { } ],
-                    13,
-                    [
-                        "match",
-                        [ "get", "mode" ],
-                        [ "metro_rail", "rail" ],
-                        [
-                            "format",
-                            [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
-                            { }
-                        ],
-                        [ "format", "", { } ]
-                    ],
-                    14,
-                    [
-                        "match",
-                        [ "get", "mode" ],
-                        [ "bicycle", "bus" ],
-                        [ "format", "", { } ],
-                        [
-                            "format",
-                            [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
-                            { }
-                        ]
-                    ],
-                    18,
-                    [
-                        "format",
-                        [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
-                        { }
-                    ]
-                ],
-                "text-letter-spacing": 0.01,
-                "text-max-width": [
-                    "match",
-                    [ "get", "stop_type" ],
-                    "entrance",
-                    15,
-                    9
-                ]
-            },
-            "paint": {
-                "icon-image-cross-fade": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "measure-light", "brightness" ],
-                    0.25,
-                    0.0,
-                    0.3,
-                    1.0
-                ],
-                "text-opacity": 0.6,
-                "text-halo-width": 0.5,
-                "text-color": [
-                    "match",
-                    [ "get", "network" ],
-                    "tokyo-metro",
-                    "hsl(180, 50%, 30%)",
-                    "mexico-city-metro",
-                    "hsl(25, 100%, 63%)",
-                    [
-                        "barcelona-metro",
-                        "delhi-metro",
-                        "hong-kong-mtr",
-                        "milan-metro",
-                        "osaka-subway"
-                    ],
-                    "hsl(0, 90%, 47%)",
-                    [
-                        "boston-t",
-                        "washington-metro"
-                    ],
-                    "hsl(230, 18%, 20%)",
-                    [
-                        "chongqing-rail-transit",
-                        "kiev-metro",
-                        "singapore-mrt",
-                        "taipei-metro"
-                    ],
-                    "hsl(140, 90%, 25%)",
-                    "hsl(225, 60%, 58%)"
-                ],
-                "text-halo-blur": 0.5,
-                "icon-opacity": 0.6,
-                "text-halo-color": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "measure-light", "brightness" ],
-                    0.1,
-                    "hsl(0, 0%, 0%)",
-                    0.4,
-                    "hsl(0, 0%, 100%)"
-                ]
-            }
-        },
-        {
-            "id": "transit-label-close",
+            "id": "transit-label",
             "type": "symbol",
             "metadata": { "mapbox:group": "Transit, transit-labels" },
             "source": "composite",
@@ -8242,7 +7868,7 @@ window.dynamic = {
                 ],
                 "text-emissive-strength": 1.5,
                 "text-halo-width": 1,
-                "text-halo-blur": 0.2,
+                "text-halo-blur": 0,
                 "text-halo-color": [
                     "interpolate",
                     [ "linear" ],
@@ -9155,7 +8781,7 @@ window.dynamic = {
             "type": "directional",
             "properties": {
                 "direction": [
-                    330,
+                    180,
                     20
                 ],
                 "color": [
@@ -9165,9 +8791,9 @@ window.dynamic = {
                     255.0,
                     1.0
                 ],
-                "intensity": 0.4,
+                "intensity": 0.3,
                 "cast-shadows": true,
-                "shadow-intensity": 1.0
+                "shadow-intensity": 0.20000000298023225
             }
         }
     ]

@@ -7714,11 +7714,11 @@
       "value": "number",
       "length": 3,
       "default": [1, 1, 1],
-      "doc": "The scale of the model.",
+      "doc": "The scale of the model. Expressions that are zoom-dependent are not supported if using GeoJSON or vector tile as the model layer source.",
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
-        "parameters": ["feature", "feature-state"]
+        "parameters": ["feature", "feature-state", "zoom"]
       },
       "sdk-support": {
           "basic functionality": {
@@ -7762,7 +7762,7 @@
     "model-color": {
       "type": "color",
       "default": "#ffffff",
-      "doc": "The tint color of the model layer. model-color-mix-intensity (defaults to 0) defines tint(mix) intensity - this means that, this color is not used unless model-color-mix-intensity gets value greater than 0.",
+      "doc": "The tint color of the model layer. model-color-mix-intensity (defaults to 0) defines tint(mix) intensity - this means that, this color is not used unless model-color-mix-intensity gets value greater than 0. Expressions that depend on measure-light are not supported when using GeoJSON or vector tile as the model layer source.",
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
@@ -7788,10 +7788,10 @@
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
-      "doc": "Intensity of model-color (on a scale from 0 to 1) in color mix with original 3D model's colors. Higher number will present a higher model-color contribution in mix.",
+      "doc": "Intensity of model-color (on a scale from 0 to 1) in color mix with original 3D model's colors. Higher number will present a higher model-color contribution in mix. Expressions that depend on measure-light are not supported when using GeoJSON or vector tile as the model layer source.",
       "expression": {
         "interpolated": true,
-        "parameters": ["zoom", "feature", "feature-state"]
+        "parameters": ["feature", "feature-state", "measure-light"]
       },
       "sdk-support": {
           "basic functionality": {
@@ -7891,10 +7891,10 @@
       "minimum": 0,
       "maximum": 5,
       "units": "number",
-      "doc": "Strength of the emission. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors)",
+      "doc": "Strength of the emission. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors). Expressions that depend on measure-light are not supported when using GeoJSON or vector tile as the model layer source.",
       "expression": {
         "interpolated": true,
-        "parameters": ["zoom", "feature", "feature-state"]
+        "parameters": ["feature", "feature-state", "measure-light"]
       },
       "sdk-support": {
           "basic functionality": {

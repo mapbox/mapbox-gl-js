@@ -5,18 +5,22 @@ import ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import {isFunction} from '../function/index.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
-import {supportsPropertyExpression} from '../util/properties.js';
+import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties.js';
+import {isGlobalPropertyConstant} from '../expression/is_constant.js';
 
 import type {ValidationOptions} from './validate.js';
+import {createPropertyExpression} from '../expression/index.js';
 
 export type PropertyValidationOptions = ValidationOptions & {
     objectKey: string;
     layerType: string;
+    layer: Object;
 }
 
 export default function validateProperty(options: PropertyValidationOptions, propertyType: string): Array<ValidationError> {
     const key = options.key;
     const style = options.style;
+    const layer = options.layer;
     const styleSpec = options.styleSpec;
     const value = options.value;
     const propertyKey = options.objectKey;
@@ -57,6 +61,15 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         }
         if (propertyKey === 'text-font' && isFunction(deepUnbundle(value)) && unbundle(value.type) === 'identity') {
             errors.push(new ValidationError(key, value, '"text-font" does not support identity functions'));
+        }
+    } else if (options.layerType === 'model' && propertyType === 'paint' && layer && layer.layout && layer.layout.hasOwnProperty('model-id')) {
+        if (supportsPropertyExpression(valueSpec) && (supportsLightExpression(valueSpec) || supportsZoomExpression(valueSpec))) {
+            // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
+            const expression = createPropertyExpression(deepUnbundle(value), valueSpec);
+            const expressionObj = (expression.value: any).expression || (expression.value: any)._styleExpression.expression;
+            if (expressionObj && (!isGlobalPropertyConstant(expressionObj, ['zoom']) || !isGlobalPropertyConstant(expressionObj, ['measure-light']))) {
+                errors.push(new ValidationError(key, value, `${propertyKey} does not support zoom or measure-light expressions when the model layer source is vector tile or GeoJSON.`));
+            }
         }
     }
 
