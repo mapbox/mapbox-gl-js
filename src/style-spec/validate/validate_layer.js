@@ -64,7 +64,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         } else {
             type = unbundle(parent.type);
         }
-    } else if (!(type === 'background' || type === 'sky')) {
+    } else if (!(type === 'background' || type === 'sky' || type === 'slot')) {
         if (!layer.source) {
             errors.push(new ValidationError(key, layer, 'missing required property "source"'));
         } else {

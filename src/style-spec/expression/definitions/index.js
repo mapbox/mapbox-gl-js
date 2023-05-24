@@ -142,6 +142,14 @@ function get(key: string, obj: {[string]: any}) {
     return typeof v === 'undefined' ? null : v;
 }
 
+function getConfig(ctx: EvaluationContext, key: string, scope: string) {
+    if (scope.length) {
+        key += `\u{1f}${scope}`;
+    }
+    const v = ctx.getConfig(key);
+    return v ? v.evaluate(ctx) : null;
+}
+
 function binarySearch(v: any, a: {[number]: any}, i: number, j: number) {
     while (i <= j) {
         const m = (i + j) >> 1;
@@ -231,6 +239,18 @@ CompoundExpression.register(expressions, {
             ], [
                 [StringType, ObjectType],
                 (ctx, [key, obj]) => get(key.evaluate(ctx), obj.evaluate(ctx))
+            ]
+        ]
+    },
+    'config': {
+        type: ValueType,
+        overloads: [
+            [
+                [StringType],
+                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx), '')
+            ], [
+                [StringType, StringType],
+                (ctx, [key, scope]) => getConfig(ctx, key.evaluate(ctx), scope.evaluate(ctx))
             ]
         ]
     },

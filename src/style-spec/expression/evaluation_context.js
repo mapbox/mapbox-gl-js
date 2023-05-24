@@ -1,6 +1,7 @@
 // @flow
 
 import {Color} from './values.js';
+import type {Expression} from './expression.js';
 
 import type Point from '@mapbox/point-geometry';
 import type {FormattedSection} from './types/formatted.js';
@@ -87,6 +88,10 @@ class EvaluationContext {
             cached = this._parseColorCache[input] = Color.parse(input);
         }
         return cached;
+    }
+
+    getConfig(_: string): ?Expression {
+        return null;
     }
 }
 

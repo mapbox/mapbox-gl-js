@@ -1,0 +1,35 @@
+{
+    "version": 8,
+    "schema": {
+        "color": {
+            "default": "red",
+            "metadata": {
+                "mapbox:title": "Road Color"
+            }
+        },
+        "font": {
+            "default": [
+                "literal",
+                [
+                    "DIN Pro Regular",
+                    "Arial Unicode MS Regular"
+                ]
+            ],
+            "type": "string",
+            "array": true
+        },
+        "size": {
+            "default": 10,
+            "type": "number",
+            "minValue": 6,
+            "maxValue": 24,
+            "stepValue": 2 
+        },
+        "join": {
+            "default": "miter",
+            "values": [ "miter", "round" ]
+        }
+    },
+    "sources": {},
+    "layers": []
+}

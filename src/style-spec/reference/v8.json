@@ -96,6 +96,31 @@
       "type": "camera",
       "doc": "Global setting to control additional camera intrinsics parameters, e.g. projection type (perspective / orthographic)."
     },
+    "imports": {
+      "type": "array",
+      "value": "import",
+      "doc": "Imports other styles into this style.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
+        }
+      }
+    },
+    "schema": {
+      "type": "schema",
+      "doc": "Definition of the schema for configuration options.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
+        }
+      }
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -159,6 +184,88 @@
         "spruce1-lod1": "asset://spruce1-lod1.glb",
         "spruce1-lod2": "asset://spruce1-lod2.glb"
       }
+    }
+  },
+  "import": {
+    "id": {
+      "type": "string",
+      "doc": "Unique import name.",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "doc": "The URL of the style.",
+      "required": true
+    },
+    "config": {
+      "type": "config",
+      "doc": "Configuration values for the imported style's options."
+    },
+    "data": {
+      "type": "$root",
+      "doc": "The inlined style that must correspond to the contents of the specified URL."
+    }
+  },
+  "config": {
+    "*": {
+      "type": "*",
+      "doc": "Value of the imported style's configuration option."
+    }
+  },
+  "schema": {
+    "*": {
+      "type": "option",
+      "doc": "Specification of a configuration option."
+    }
+  },
+  "option": {
+    "default": {
+      "type": "*",
+      "doc": "Default configuration value for this option.",
+      "required": true
+    },
+    "type": {
+      "type": "enum",
+      "doc": "The type this value is coerced to after evaluating the expression. If unspecified, the result is returned as is and is not validated.",
+      "values": {
+        "string": {
+          "doc": "The result will be coerced to a string."
+        },
+        "number": {
+          "doc": "The result will be coerced to a number."
+        },
+        "boolean": {
+          "doc": "The result will be coerced to a boolean."
+        },
+        "color": {
+          "doc": "The result will be coerced to a color."
+        }
+      }
+    },
+    "array": {
+      "type": "boolean",
+      "doc": "If true, this option is returned as an array"
+    },
+    "minValue": {
+      "type": "number",
+      "doc": "If this option is a number, this specifies the minimum allowed value. Values lower than this will be clamped to the minimum value."
+    },
+    "maxValue": {
+      "type": "number",
+      "doc": "If this option is a number, this specifies the maximum allowed value. Values higher than this will be clamped to the maximum value."
+    },
+    "stepValue": {
+      "type": "number",
+      "doc": "If this option is a number, this specifies the increment between allowed values. Values will be rounded towards the nearest allowed value."
+    },
+    "values": {
+      "type": "array",
+      "value": "*",
+      "doc": "If this option is specified, the result must be one of the given values. Otherwise, the default value is used instead."
+    },
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the layer, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     }
   },
   "models" : {
@@ -871,6 +978,17 @@
               "android": "10.0.0"
             }
           }
+        },
+        "slot": {
+          "doc": "Marks the position of a slot.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "3.0.0",
+              "android": "11.0.0",
+              "ios": "11.0.0",
+              "macos": "11.0.0"
+            }
+          }
         }
       },
       "doc": "Rendering type of this layer.",
@@ -882,11 +1000,23 @@
     },
     "source": {
       "type": "string",
-      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background`."
+      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background` and `slot`."
     },
     "source-layer": {
       "type": "string",
       "doc": "Layer to use from a vector tile source. Required for vector tile sources; prohibited for all other source types, including GeoJSON sources."
+    },
+    "slot": {
+      "type": "string",
+      "doc": "The slot this layer is assigned to. If specified, and a slot with that name exists, it will be placed at that position in the layer order.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
+        }
+      }
     },
     "minzoom": {
       "type": "number",
@@ -3069,6 +3199,18 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          }
+        }
+      },
+      "config": {
+        "doc": "Retrieves the configuration value for the given option.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.0.0",
+            "android": "11.0.0",
+            "ios": "11.0.0",
+            "macos": "11.0.0"
           }
         }
       },

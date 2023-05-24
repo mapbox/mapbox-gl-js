@@ -90,7 +90,7 @@ class VectorTileSource extends Evented implements Source {
         extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
         this._options = extend({type: 'vector'}, options);
 
-        this._collectResourceTiming = options.collectResourceTiming;
+        this._collectResourceTiming = !!options.collectResourceTiming;
 
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');

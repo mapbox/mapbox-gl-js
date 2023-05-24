@@ -1,0 +1,19 @@
+{
+    "version": 8,
+    "imports": [
+        {
+            "id": "streets",
+            "url": "mapbox://styles/mapbox/streets-v12",
+            "config": {
+                "borders": false
+            },
+            "data": {
+                "version": 8,
+                "sources": {},
+                "layers": []
+            }
+        }
+    ],
+    "sources": {},
+    "layers": []
+}
