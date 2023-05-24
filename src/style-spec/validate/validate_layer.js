@@ -138,7 +138,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
                         '*'(options) {
-                            return validatePaintProperty(extend({layerType: type}, options));
+                            return validatePaintProperty(extend({layerType: type, layer}, options));
                         }
                     }
                 });
