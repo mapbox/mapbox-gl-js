@@ -572,12 +572,12 @@ export default class Popup extends Evented {
         if (this.options.anchor) { return this.options.anchor; }
 
         const map = this._map;
-        const padding = this._map.transform.padding;
         const container = this._container;
         const pos = this._pos;
 
         if (!map || !container || !pos) return 'bottom';
 
+        const padding = this._map.transform.padding;
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
