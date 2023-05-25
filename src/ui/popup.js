@@ -14,21 +14,14 @@ import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 import type Map from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import type {PaddingOptions} from '../geo/edge_insets.js';
 import type Marker from './marker.js';
-
-/**
- * A helper type: converts all Object type values to non-maybe types.
- */
-type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
 
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true,
     focusAfterOpen: true,
     className: '',
-    maxWidth: "240px",
-    padding: {top:0, left:0, right:0, bottom:0}
+    maxWidth: "240px"
 };
 
 export type Offset = number | PointLike | {[_: Anchor]: PointLike};
@@ -41,8 +34,7 @@ export type PopupOptions = {
     anchor?: Anchor,
     offset?: Offset,
     className?: string,
-    maxWidth?: string,
-    padding?: PaddingOptions
+    maxWidth?: string
 };
 
 const focusQuerySelector = [
@@ -120,7 +112,6 @@ export default class Popup extends Evented {
     _trackPointer: boolean;
     _pos: ?Point;
     _anchor: Anchor;
-    _padding: Required<PaddingOptions>;
     _classList: Set<string>;
     _marker: ?Marker;
 
@@ -128,7 +119,6 @@ export default class Popup extends Evented {
         super();
         this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
-        this._padding = this._getPadding();
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
     }
@@ -578,23 +568,11 @@ export default class Popup extends Evented {
         this._update(event.point);
     }
 
-    _getPadding(): Required<PaddingOptions> {
-        if (!this.options.padding) {
-            return defaultOptions.padding;
-        }
-
-        return {
-            top: this.options.padding.top || 0,
-            left: this.options.padding.left || 0,
-            bottom: this.options.padding.bottom || 0,
-            right: this.options.padding.right || 0,
-        };
-    }
-
     _getAnchor(bottomY: number): Anchor {
         if (this.options.anchor) { return this.options.anchor; }
 
         const map = this._map;
+        const padding = this._map.transform.padding;
         const container = this._container;
         const pos = this._pos;
 
@@ -603,24 +581,25 @@ export default class Popup extends Evented {
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height + this._padding.top;
-        const isBottom = pos.y > map.transform.height - height - this._padding.bottom;
-        const isLeft = pos.x < width / 2 + this._padding.left;
-        const isRight = pos.x > map.transform.width - width / 2 - this._padding.right;
+        const isTop = pos.y + bottomY < height + padding.top;
+        const isLeft = pos.x < width / 2 + padding.left;
+        const isRight = pos.x > map.transform.width - width / 2 - padding.right;
+        const isTopOnEitherSide = pos.y + bottomY < height / 2  + padding.top;
+        const isBottomOnEitherSide = pos.y > map.transform.height - height / 2 - padding.bottom;
 
-        if (isTop) {
-            if (isLeft) return 'top-left';
-            if (isRight) return 'top-right';
-            return 'top';
+        if (isLeft) {
+            if (isTopOnEitherSide) return 'top-left';
+            if (isBottomOnEitherSide) return 'bottom-left';
+            return 'left';
         }
-        if (isBottom) {
-            if (isLeft) return 'bottom-left';
-            if (isRight) return 'bottom-right';
-        }
-        if (isLeft) return 'left';
-        if (isRight) return 'right';
 
-        return 'bottom';
+        if (isRight) {
+            if (isTopOnEitherSide) return 'top-right';
+            if (isBottomOnEitherSide) return 'bottom-right';
+            return 'right';
+        }
+
+        return isTop ? 'top' : 'bottom';
     }
 
     _updateClassList() {

@@ -481,8 +481,8 @@ test('Popup', (t) => {
 
         test('Popup respects padding and changes anchor accordingly', (t) => {
             const map = createMap(t);
-            const padding = {top: 10, bottom: 10, left: 10, right: 10};
-            const popup = new Popup({padding})
+            map.setPadding({top: 10, bottom: 10, left: 10, right: 10});
+            const popup = new Popup()
                 .setText('Test')
                 .setLngLat([0, 0])
                 .addTo(map);
