@@ -577,7 +577,7 @@ export default class Popup extends Evented {
 
         if (!map || !container || !pos) return 'bottom';
 
-        const padding = this._map.transform.padding;
+        const padding = map.transform.padding;
         const paddingTop = (padding.top || 0);
         const paddingBottom = (padding.bottom || 0);
         const paddingLeft = (padding.left || 0);
