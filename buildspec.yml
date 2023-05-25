@@ -12,4 +12,5 @@ phases:
       - yarn --ignore-engines
   build:
     commands:
-      - ./build/publish.sh
+      # - ./build/publish.sh
+      - echo "Publishing to NPM is disabled for the internal builds."
