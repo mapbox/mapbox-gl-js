@@ -14,7 +14,7 @@ import {vec3, vec4, mat3, mat4} from 'gl-matrix';
 import SegmentVector from '../../data/segment.js';
 import {members as globeLayoutAttributes} from '../../terrain/globe_attributes.js';
 import posAttributes from '../../data/pos_attributes.js';
-import {TriangleIndexArray, GlobeVertexArray, LineIndexArray, PosArray} from '../../data/array_types.js';
+import {TriangleIndexArray, GlobeVertexArray, PosArray} from '../../data/array_types.js';
 import {Aabb, Ray} from '../../util/primitives.js';
 import LngLat, {earthRadius} from '../lng_lat.js';
 import LngLatBounds from '../lng_lat_bounds.js';
@@ -718,9 +718,6 @@ export class GlobeSharedBuffers {
     _gridIndexBuffer: IndexBuffer;
     _gridSegments: Array<GridLodSegments>;
 
-    _wireframeIndexBuffer: IndexBuffer;
-    _wireframeSegments: Array<SegmentVector>;
-
     constructor(context: Context) {
         this._createGrid(context);
         this._createPoles(context);
@@ -736,11 +733,6 @@ export class GlobeSharedBuffers {
         for (const segments of this._gridSegments) {
             segments.withSkirts.destroy();
             segments.withoutSkirts.destroy();
-        }
-
-        if (this._wireframeIndexBuffer) {
-            this._wireframeIndexBuffer.destroy();
-            for (const segments of this._wireframeSegments) segments.destroy();
         }
     }
 
@@ -917,37 +909,5 @@ export class GlobeSharedBuffers {
 
     getPoleBuffers(z: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
         return [this._poleNorthVertexBuffer, this._poleSouthVertexBuffer, this._poleIndexBuffer, this._poleSegments[z]];
-    }
-
-    getWirefameBuffers(context: Context, lod: number): [VertexBuffer, IndexBuffer, SegmentVector] {
-        if (!this._wireframeSegments) {
-            const wireframeIndices = new LineIndexArray();
-            const quadExt = GLOBE_VERTEX_GRID_SIZE;
-            const vertexExt = quadExt + 1 + (EMBED_SKIRTS ? 2 : 0);
-
-            const iterOffset = EMBED_SKIRTS ? 1 : 0;
-
-            this._wireframeSegments = [];
-            for (let k = 0, primitiveOffset = 0; k < GLOBE_LATITUDINAL_GRID_LOD_TABLE.length; k++) {
-                const latitudinalLod = GLOBE_LATITUDINAL_GRID_LOD_TABLE[k];
-                for (let j = iterOffset; j < latitudinalLod + iterOffset; j++) {
-                    for (let i = iterOffset; i < quadExt + iterOffset; i++) {
-                        const index = j * vertexExt + i;
-                        wireframeIndices.emplaceBack(index, index + 1);
-                        wireframeIndices.emplaceBack(index, index + vertexExt);
-                        wireframeIndices.emplaceBack(index + vertexExt, index + 1);
-                    }
-                }
-
-                const numVertices = (latitudinalLod + 1) * vertexExt;
-                const numPrimitives = latitudinalLod * quadExt * 3;
-
-                this._wireframeSegments.push(SegmentVector.simpleSegment(0, primitiveOffset, numVertices, numPrimitives));
-                primitiveOffset += numPrimitives;
-            }
-
-            this._wireframeIndexBuffer = context.createIndexBuffer(wireframeIndices);
-        }
-        return [this._gridBuffer, this._wireframeIndexBuffer, this._wireframeSegments[lod]];
     }
 }

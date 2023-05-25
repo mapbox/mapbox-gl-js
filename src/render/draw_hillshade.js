@@ -68,7 +68,7 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
 
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+    program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, tileBoundsBuffer,
         tileBoundsIndexBuffer, tileBoundsSegments);
 }
@@ -121,7 +121,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
 
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getMercatorTileBoundsBuffers();
 
-    painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
+    painter.useProgram('hillshadePrepare').draw(painter, gl.TRIANGLES,
         depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),
         layer.id, tileBoundsBuffer,

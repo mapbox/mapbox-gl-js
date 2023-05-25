@@ -202,7 +202,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         shadowRenderer.setupShadowsFromMatrix(sortedMesh.nodeModelMatrix, program);
     }
 
-    program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+    program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, dynamicBuffers);
 }
@@ -271,7 +271,7 @@ function drawShadowCaster(mesh: Mesh, matrix: Mat4, painter: Painter, layer: Mod
     const definesValues = ['DEPTH_TEXTURE'];
     const program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
     const context = painter.context;
-    program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
+    program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, undefined);
 }
@@ -526,7 +526,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
             for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
                 /* $FlowIgnore[prop-missing] modelDepth uses u_instance and model uses u_normal_matrix for packing instance data */
                 uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
-                program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+                program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
                 undefined, dynamicBuffers);
             }
@@ -605,7 +605,7 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         );
         const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-        program.draw(context, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.backCCW,
+        program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
             undefined, dynamicBuffers);
     }

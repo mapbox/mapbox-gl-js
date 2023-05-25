@@ -121,9 +121,9 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
 
         painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
-        program.draw(painter.context, drawMode, depthMode,
+        program.draw(painter, drawMode, depthMode,
             painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
-            layer.paint, painter.transform.zoom, programConfiguration);
+            layer.paint, painter.transform.zoom, programConfiguration, undefined);
     }
 }

@@ -150,7 +150,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         const renderLine = (stencilMode: StencilMode) => {
-            program.draw(context, gl.TRIANGLES, depthMode,
+            program.draw(painter, gl.TRIANGLES, depthMode,
                 stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                 layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2]);

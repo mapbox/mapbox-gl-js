@@ -1,0 +1,104 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "showLayers2DWireframe": true,
+      "showLayers3DWireframe": true,
+      "allowed": 0.008
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-74.0135, 40.7153],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "pitch": 0,
+  "zoom": 16.00,
+  "bearing": 320,
+  "center": [
+    -74.0115,
+    40.7143
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-opacity": 1.0
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale": [10, 10, 10],
+        "model-type": "location-indicator"
+      }
+    }
+  ]
+}

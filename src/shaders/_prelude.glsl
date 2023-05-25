@@ -22,3 +22,19 @@ vec3 sRGBToLinear(vec3 srgbIn)
 {
     return vec3(pow(srgbIn.xyz, vec3(2.2)));
 }
+
+// Apply depth for wireframe overlay to reduce z-fighting
+#if __VERSION__ >= 300
+    #define _HANDLE_WIREFRAME_DEPTH gl_FragDepth = gl_FragCoord.z - 0.0001;
+#else
+    #define _HANDLE_WIREFRAME_DEPTH
+#endif
+
+#ifdef DEBUG_WIREFRAME
+    // Debug wireframe uses premultiplied alpha blending (alpha channel is left unchanged)
+    #define HANDLE_WIREFRAME_DEBUG \
+        gl_FragColor = vec4(0.7, 0.0, 0.0, 0.7); \
+        _HANDLE_WIREFRAME_DEPTH;
+#else
+    #define HANDLE_WIREFRAME_DEBUG
+#endif

@@ -16,8 +16,6 @@ attribute vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 
 varying vec2 v_pos0;
 
-const float wireframeOffset = 1e3;
-
 float mercatorXfromLng(float lng) {
     return (180.0 + lng) / 360.0;
 }
@@ -82,10 +80,6 @@ void main() {
 #endif
 
     float height = elevation(tile_pos);
-
-#ifdef TERRAIN_WIREFRAME
-    height += wireframeOffset;
-#endif
 
     globe_pos += up_vector * height;
 

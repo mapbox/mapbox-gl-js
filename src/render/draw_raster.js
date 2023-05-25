@@ -98,13 +98,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         if (source instanceof ImageSource) {
             if (source.boundsBuffer && source.boundsSegments) program.draw(
-                context, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
+                painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else {
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
         }

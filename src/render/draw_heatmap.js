@@ -72,7 +72,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
 
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
+            program.draw(painter, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
                 heatmapUniformValues(painter, coord,
                     tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
@@ -148,7 +148,7 @@ function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
+    painter.useProgram('heatmapTexture').draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,

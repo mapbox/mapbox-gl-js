@@ -342,7 +342,11 @@ class Map extends Camera {
     _controlPositions: {[_: string]: HTMLElement};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
+
     _showTerrainWireframe: ?boolean;
+    _showLayers2DWireframe: ?boolean;
+    _showLayers3DWireframe: ?boolean;
+
     _showQueryGeometry: ?boolean;
     _showCollisionBoxes: ?boolean;
     _showPadding: ?boolean;
@@ -3278,7 +3282,11 @@ class Map extends Camera {
         if (this.style) {
             this.painter.render(this.style, {
                 showTileBoundaries: this.showTileBoundaries,
-                showTerrainWireframe: this.showTerrainWireframe,
+                wireframe: {
+                    terrain: this.showTerrainWireframe,
+                    layers2D: this.showLayers2DWireframe,
+                    layers3D: this.showLayers3DWireframe
+                },
                 showOverdrawInspector: this._showOverdrawInspector,
                 showQueryGeometry: !!this._showQueryGeometry,
                 showTileAABBs: this.showTileAABBs,
@@ -3749,6 +3757,46 @@ class Map extends Camera {
     set showTerrainWireframe(value: boolean) {
         if (this._showTerrainWireframe === value) return;
         this._showTerrainWireframe = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render a wireframe
+     * on top of 2D layers. Useful for debugging.
+     *
+     * The wireframe is always red and is drawn only for 2D layers.
+     *
+     * @name showLayers2DWireframe
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @example
+     * map.showLayers2DWireframe = true;
+     */
+    get showLayers2DWireframe(): boolean { return !!this._showLayers2DWireframe; }
+    set showLayers2DWireframe(value: boolean) {
+        if (this._showLayers2DWireframe === value) return;
+        this._showLayers2DWireframe = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render a wireframe
+     * on top of 3D layers. Useful for debugging.
+     *
+     * The wireframe is always red and is drawn only for 3D layers.
+     *
+     * @name showLayers3DWireframe
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @example
+     * map.showLayers3DWireframe = true;
+     */
+    get showLayers3DWireframe(): boolean { return !!this._showLayers3DWireframe; }
+    set showLayers3DWireframe(value: boolean) {
+        if (this._showLayers3DWireframe === value) return;
+        this._showLayers3DWireframe = value;
         this._update();
     }
 

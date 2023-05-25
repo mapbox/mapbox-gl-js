@@ -39,7 +39,13 @@ const skip = [
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-zero-pitch",
     "render-tests/model-layer/buildings-trees-shadows-fog",
     "render-tests/model-layer/buildings-trees-shadows-fog-terrain",
-    "render-tests/model-layer/buildings-trees-shadows-casting"
+    "render-tests/model-layer/buildings-trees-shadows-casting",
+
+    // Debug wireframe for webgl2 only
+    "render-tests/wireframe/globe-high-exaggeration",
+    "render-tests/wireframe/multiple-layers",
+    "render-tests/wireframe/terrain",
+    "render-tests/wireframe/terrain-high-exaggeration",
 ];
 
 export default {todo, skip};
