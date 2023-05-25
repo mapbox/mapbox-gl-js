@@ -30,6 +30,7 @@ uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
 uniform vec3 u_up_vector;
+uniform bool u_is_halo;
 
 #ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_tile_id;
@@ -41,6 +42,9 @@ uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
+#if __VERSION__ >= 300
+flat varying float v_draw_halo;
+#endif
 varying vec2 v_data0;
 varying vec3 v_data1;
 
@@ -183,6 +187,10 @@ void main() {
 #endif
     float gamma_scale = gl_Position.w;
 
+#if __VERSION__ >= 300
+    v_draw_halo = u_is_halo && gl_InstanceID == 0 ? 1.0 : 0.0;
+#endif
+    
     v_data0 = a_tex / u_texsize;
     v_data1 = vec3(gamma_scale, size, out_fade_opacity);
 }

@@ -381,7 +381,8 @@ class Program<Us: UniformBindings> {
          currentProperties: any,
          zoom: ?number,
          configuration: ?ProgramConfiguration,
-         dynamicLayoutBuffers: ?Array<?VertexBuffer>) {
+         dynamicLayoutBuffers: ?Array<?VertexBuffer>,
+         instanceCount: ?number) {
 
         const context = painter.context;
         const gl = context.gl;
@@ -422,12 +423,22 @@ class Program<Us: UniformBindings> {
                 dynamicLayoutBuffers ? dynamicLayoutBuffers : []
             );
 
-            gl.drawElements(
-                drawMode,
-                segment.primitiveLength * primitiveSize,
-                gl.UNSIGNED_SHORT,
-                segment.primitiveOffset * primitiveSize * 2);
-
+            if (context.isWebGL2 && instanceCount && instanceCount > 1) {
+                /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
+                const gl2 = (gl: WebGL2RenderingContext);
+                gl2.drawElementsInstanced(
+                    drawMode,
+                    segment.primitiveLength * primitiveSize,
+                    gl.UNSIGNED_SHORT,
+                    segment.primitiveOffset * primitiveSize * 2,
+                    instanceCount);
+            } else {
+                gl.drawElements(
+                    drawMode,
+                    segment.primitiveLength * primitiveSize,
+                    gl.UNSIGNED_SHORT,
+                    segment.primitiveOffset * primitiveSize * 2);
+            }
             if (drawMode === gl.TRIANGLES) {
                 // Handle potential wireframe rendering for current draw call
                 this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
