@@ -182,7 +182,8 @@ void main() {
     float gamma_scale = gl_Position.w;
 
 #if __VERSION__ >= 300
-    v_draw_halo = u_is_halo && gl_InstanceID == 0 ? 1.0 : 0.0;
+    // Cast to float is required to fix a rendering error in Swiftshader
+    v_draw_halo = (u_is_halo && float(gl_InstanceID) == 0.0) ? 1.0 : 0.0;
 #endif
 
     v_data0.xy = a_tex / u_texsize;
