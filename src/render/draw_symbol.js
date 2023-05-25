@@ -471,24 +471,32 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 
         painter.uploadCommonLightUniforms(painter.context, state.program);
 
-        if (state.isSDF) {
+        if (context.isWebGL2 && state.hasHalo) {
             const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
-            if (state.hasHalo) {
-                uniformValues['u_is_halo'] = 1;
-                drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues);
-            }
+            uniformValues['u_is_halo'] = 1;
+            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues, 2);
             uniformValues['u_is_halo'] = 0;
+        } else {
+            if (state.isSDF) {
+                const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
+                if (state.hasHalo) {
+                    uniformValues['u_is_halo'] = 1;
+                    drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues, 1);
+                }
+                uniformValues['u_is_halo'] = 0;
+            }
+            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, state.uniformValues, 1);
         }
-        drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, state.uniformValues);
     }
 }
 
-function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolSDFUniformsType>) {
+function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolSDFUniformsType>, instanceCount: number) {
     const context = painter.context;
     const gl = context.gl;
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer];
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,
-        painter.transform.zoom, buffers.programConfigurations.get(layer.id), dynamicBuffers);
+        painter.transform.zoom, buffers.programConfigurations.get(layer.id), dynamicBuffers,
+        instanceCount);
 }

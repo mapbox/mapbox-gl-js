@@ -1,11 +1,14 @@
 #define SDF_PX 8.0
 
-uniform bool u_is_halo;
 uniform sampler2D u_texture;
 uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
+uniform bool u_is_halo;
 
+#if __VERSION__ >= 300
+flat varying float v_draw_halo;
+#endif
 varying vec2 v_data0;
 varying vec3 v_data1;
 
@@ -36,7 +39,14 @@ void main() {
     lowp vec4 color = fill_color;
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
     lowp float buff = (256.0 - 64.0) / 256.0;
-    if (u_is_halo) {
+
+    bool draw_halo;
+#if __VERSION__ >= 300
+    draw_halo = v_draw_halo > 0.0;
+#else
+    draw_halo = u_is_halo;
+#endif
+    if (draw_halo) {
         color = halo_color;
         gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
         buff = (6.0 - halo_width / fontScale) / SDF_PX;
