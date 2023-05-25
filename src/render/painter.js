@@ -54,6 +54,8 @@ import {lightsUniformValues} from '../../3d-style/render/lights.js';
 
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer.js';
 
+import {WireframeDebugCache} from "./wireframe_cache.js";
+
 const draw = {
     symbol,
     circle,
@@ -92,10 +94,15 @@ export type CanvasCopyInstances = {
     timeStamps: number[]
 }
 
+type WireframeOptions = {
+    terrain: boolean,
+    layers2D: boolean,
+    layers3D: boolean,
+};
+
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
-    showTerrainWireframe: boolean,
     showQueryGeometry: boolean,
     showTileAABBs: boolean,
     showPadding: boolean,
@@ -106,7 +113,8 @@ type PainterOptions = {
     gpuTimingDeferredRender: boolean,
     fadeDuration: number,
     isInitialLoad: boolean,
-    speedIndexTiming: boolean
+    speedIndexTiming: boolean,
+    wireframe: WireframeOptions,
 }
 
 type TileBoundsBuffers = {|
@@ -179,6 +187,8 @@ class Painter {
 
     _shadowRenderer: ?ShadowRenderer;
 
+    _wireframeDebugCache: WireframeDebugCache;
+
     constructor(gl: WebGLRenderingContext, transform: Transform, isWebGL2: boolean = false) {
         this.context = new Context(gl, isWebGL2);
         this.transform = transform;
@@ -201,6 +211,8 @@ class Painter {
         this.conflationActive = false;
         this.replacementSource = new ReplacementSource();
         this._shadowRenderer = new ShadowRenderer(this);
+
+        this._wireframeDebugCache = new WireframeDebugCache();
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -246,6 +258,10 @@ class Painter {
 
     get shadowRenderer(): ?ShadowRenderer {
         return this._shadowRenderer && this._shadowRenderer.enabled ? this._shadowRenderer : null;
+    }
+
+    get wireframeDebugCache(): WireframeDebugCache {
+        return this._wireframeDebugCache;
     }
 
     /*
@@ -354,7 +370,7 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        this.useProgram('clippingMask').draw(context, gl.TRIANGLES,
+        this.useProgram('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
             '$clipping', this.viewportBuffer,
@@ -409,7 +425,7 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled,
+            program.draw(this, gl.TRIANGLES, DepthMode.disabled,
             // Tests will always pass, and ref value will be written to stencil buffer.
             new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
             ColorMode.disabled, CullFaceMode.disabled, clippingMaskUniformValues(tileID.projMatrix),
@@ -512,6 +528,9 @@ class Painter {
     }
 
     render(style: Style, options: PainterOptions) {
+        // Update debug cache, i.e. clear all unused buffers
+        this._wireframeDebugCache.update(this.frameCounter);
+
         this.style = style;
         this.options = options;
 
@@ -1125,6 +1144,7 @@ class Painter {
         if (this.debugOverlayTexture) {
             this.debugOverlayTexture.destroy();
         }
+        this._wireframeDebugCache.destroy();
     }
 
     prepareDrawTile() {

@@ -115,7 +115,11 @@ const Demo3D = function() {
         showTiles: false,
         showCollisions: false,
         showOverdraw: false,
-        terrainWireframe: false,
+        wireframe: {
+            terrain: false,
+            layers2D: false,
+            layers3D: false,
+        },
         tileAABBDebug: false,
         freezeTileCoverage: false
     };
@@ -255,9 +259,17 @@ window.onload = function() {
         debug.addInput(demo3d.debug, 'showOverdraw').on('change', (ev) => {
             map.showOverdrawInspector = demo3d.debug.showOverdraw;
         });
-        debug.addInput(demo3d.debug, 'terrainWireframe').on('change', (ev) => {
-            map.showTerrainWireframe = demo3d.debug.terrainWireframe;
+
+        const wireframePane = debug.addFolder({title:'Wireframe', expanded: true});
+        wireframePane.addInput(demo3d.debug.wireframe, 'terrain');
+        wireframePane.addInput(demo3d.debug.wireframe, 'layers2D');
+        wireframePane.addInput(demo3d.debug.wireframe, 'layers3D');
+        wireframePane.on('change', (ev) => {
+            map.showTerrainWireframe = demo3d.debug.wireframe.terrain;
+            map.showLayers2DWireframe = demo3d.debug.wireframe.layers2D;
+            map.showLayers3DWireframe = demo3d.debug.wireframe.layers3D;
         });
+
         debug.addInput(demo3d.debug, 'tileAABBDebug').on('change', (ev) => {
             map.showTileAABBs = demo3d.debug.tileAABBDebug;
         });

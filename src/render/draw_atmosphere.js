@@ -162,7 +162,7 @@ class Atmosphere {
             const colorMode = alphaPass ? this.colorModeWriteAlpha : this.colorModeAlphaBlendedWriteRGB;
             const name = alphaPass ? "atmosphere_glow_alpha" : "atmosphere_glow";
             if (buffer) {
-                program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+                program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
                         colorMode, CullFaceMode.backCW, uniforms, name,
                         buffer.vertexBuffer, buffer.indexBuffer, buffer.segments);
             }
@@ -222,7 +222,7 @@ class Atmosphere {
         painter.uploadCommonUniforms(context, program);
 
         if (this.starsVx && this.starsIdx) {
-            program.draw(context, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
+            program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 this.colorModeAlphaBlendedWriteRGB, CullFaceMode.disabled, uniforms, "atmosphere_stars",
                 this.starsVx, this.starsIdx, this.starsSegments);
         }

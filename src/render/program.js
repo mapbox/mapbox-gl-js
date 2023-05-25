@@ -26,13 +26,16 @@ import type {ShadowUniformsType} from '../../3d-style/render/shadow_uniforms.js'
 
 import type SegmentVector from '../data/segment.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
-import type IndexBuffer from '../gl/index_buffer.js';
-import type DepthMode from '../gl/depth_mode.js';
-import type StencilMode from '../gl/stencil_mode.js';
-import type ColorMode from '../gl/color_mode.js';
+import IndexBuffer from '../gl/index_buffer.js';
+import DepthMode from '../gl/depth_mode.js';
+import StencilMode from '../gl/stencil_mode.js';
+import ColorMode from '../gl/color_mode.js';
 import type CullFaceMode from '../gl/cull_face_mode.js';
 import type {UniformBindings, UniformValues} from './uniform_binding.js';
 import type {BinderUniform} from '../data/program_configuration.js';
+import Painter from './painter.js';
+import type {Segment} from "../data/segment";
+import Color from '../style-spec/util/color.js';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -57,6 +60,19 @@ function getTokenizedAttributes(array: Array<string>): Array<string> {
     return result;
 }
 
+const debugWireframe2DLayerProgramNames = [
+    'fill', 'fillOutline', 'fillPattern',
+    'line', 'linePattern',
+    'background', 'backgroundPattern',
+    "hillshade",
+    "raster"];
+
+const debugWireframe3DLayerProgramNames = [
+    "stars",
+    "fillExtrusion",  "fillExtrusionGroundEffect",
+    "model",
+    "symbolSDF", "symbolIcon", "symbolTextAndIcon"];
+
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
     attributes: {[_: string]: number};
@@ -69,6 +85,10 @@ class Program<Us: UniformBindings> {
     lightsUniforms: ?LightsUniformsType;
     globeUniforms: ?GlobeUniformsType;
     shadowUniforms: ?ShadowUniformsType;
+
+    name: string;
+    configuration: ?ProgramConfiguration;
+    fixedDefines: string[];
 
     static cacheKey(source: ShaderSource, name: string, defines: string[], programConfiguration: ?ProgramConfiguration): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -88,6 +108,10 @@ class Program<Us: UniformBindings> {
                 fixedDefines: string[]) {
         const gl = context.gl;
         this.program = ((gl.createProgram(): any): WebGLProgram);
+
+        this.configuration = configuration;
+        this.name = name;
+        this.fixedDefines = [...fixedDefines];
 
         const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
@@ -236,8 +260,114 @@ class Program<Us: UniformBindings> {
         }
     }
 
+    _drawDebugWireframe(painter: Painter, depthMode: $ReadOnly<DepthMode>,
+        stencilMode: $ReadOnly<StencilMode>,
+        colorMode: $ReadOnly<ColorMode>,
+        indexBuffer: IndexBuffer, segment: Segment,
+        currentProperties: any, zoom: ?number, configuration: ?ProgramConfiguration) {
+
+        const wireframe = painter.options.wireframe;
+
+        if (wireframe.terrain === false && wireframe.layers2D === false && wireframe.layers3D === false) {
+            return;
+        }
+
+        const context = painter.context;
+
+        // Wireframe for WebGL2 only
+        if (!context.isWebGL2) {
+            return;
+        }
+
+        const subjectForWireframe = (() => {
+            // Terrain
+            if (wireframe.terrain && (this.name === 'terrainRaster' || this.name === 'globeRaster')) {
+                return true;
+            }
+
+            const drapingInProgress = painter._terrain && painter._terrain.renderingToTexture;
+
+            // 2D
+            if (wireframe.layers2D && !drapingInProgress) {
+                if (debugWireframe2DLayerProgramNames.includes(this.name)) {
+                    return true;
+                }
+            }
+
+            // 3D
+            if (wireframe.layers3D) {
+                if (debugWireframe3DLayerProgramNames.includes(this.name)) {
+                    return true;
+                }
+            }
+
+            return false;
+        })();
+
+        if (!subjectForWireframe) {
+            return;
+        }
+
+        const gl = context.gl;
+        const linesIndexBuffer = painter.wireframeDebugCache.getLinesFromTrianglesBuffer(painter.frameCounter, indexBuffer, context);
+
+        if (!linesIndexBuffer) {
+            return;
+        }
+
+        const debugDefines = [...this.fixedDefines];
+        debugDefines.push("DEBUG_WIREFRAME");
+        // $FlowIgnore[incompatible-call] defines are saved as string whereas useProgram has restrictions
+        const debugProgram = painter.useProgram(this.name, this.configuration, debugDefines);
+
+        context.program.set(debugProgram.program);
+
+        const copyUniformValues = (group: string, pSrc: any, pDst: any) => {
+            if (pSrc[group] && pDst[group]) {
+                for (const name in pSrc[group]) {
+                    if (pDst[group][name]) {
+                        pDst[group][name].set(pDst.program, name, pSrc[group][name].current);
+                    }
+                }
+            }
+        };
+
+        if (configuration) {
+            configuration.setUniforms(debugProgram.program, context, debugProgram.binderUniforms, currentProperties, {zoom: (zoom: any)});
+        }
+
+        copyUniformValues("fixedUniforms", this, debugProgram);
+        copyUniformValues("terrainUniforms", this, debugProgram);
+        copyUniformValues("globeUniforms", this, debugProgram);
+        copyUniformValues("fogUniforms", this, debugProgram);
+        copyUniformValues("lightsUniforms", this, debugProgram);
+        copyUniformValues("shadowUniforms", this, debugProgram);
+
+        linesIndexBuffer.bind();
+
+        // Debug wireframe uses premultiplied alpha blending (alpha channel is left unchanged)
+        context.setColorMode(new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE],
+            Color.transparent, [true, true, true, false]));
+        context.setDepthMode(new DepthMode(depthMode.func === gl.LESS ? gl.LEQUAL : depthMode.func, DepthMode.ReadOnly, depthMode.range));
+        context.setStencilMode(StencilMode.disabled);
+
+        gl.drawElements(
+            gl.LINES,
+            segment.primitiveLength * 3 * 2, // One triangle corresponds to 3 lines (each has 2 indices)
+            gl.UNSIGNED_SHORT,
+            segment.primitiveOffset * 3 * 2 * 2 // One triangles corresponds to 3 lines (2 indices * 2 bytes per index)
+        );
+
+        // Revert to non-wireframe parameters
+        indexBuffer.bind();
+        context.program.set(this.program);
+        context.setDepthMode(depthMode);
+        context.setStencilMode(stencilMode);
+        context.setColorMode(colorMode);
+    }
+
     draw(
-         context: Context,
+         painter: Painter,
          drawMode: DrawMode,
          depthMode: $ReadOnly<DepthMode>,
          stencilMode: $ReadOnly<StencilMode>,
@@ -253,6 +383,7 @@ class Program<Us: UniformBindings> {
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffers: ?Array<?VertexBuffer>) {
 
+        const context = painter.context;
         const gl = context.gl;
 
         if (this.failedToCreate) return;
@@ -296,6 +427,12 @@ class Program<Us: UniformBindings> {
                 segment.primitiveLength * primitiveSize,
                 gl.UNSIGNED_SHORT,
                 segment.primitiveOffset * primitiveSize * 2);
+
+            if (drawMode === gl.TRIANGLES) {
+                // Handle potential wireframe rendering for current draw call
+                this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
+                    currentProperties, zoom, configuration);
+            }
         }
     }
 }

@@ -21,4 +21,6 @@ void main() {
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
+
+    HANDLE_WIREFRAME_DEBUG;
 }

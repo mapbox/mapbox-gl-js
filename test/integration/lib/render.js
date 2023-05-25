@@ -226,6 +226,8 @@ async function renderMap(style, options) {
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
     if (options.showTerrainWireframe) map.showTerrainWireframe = true;
+    if (options.showLayers2DWireframe) map.showLayers2DWireframe = true;
+    if (options.showLayers3DWireframe) map.showLayers3DWireframe = true;
     if (options.showPadding) map.showPadding = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
     if (options.fadeDuration) map._isInitialLoad = false;

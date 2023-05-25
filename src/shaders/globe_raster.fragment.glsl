@@ -57,10 +57,8 @@ void main() {
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
     gl_FragColor = color;
-#ifdef TERRAIN_WIREFRAME
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 0.8);
-#endif
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
+    HANDLE_WIREFRAME_DEBUG;
 }

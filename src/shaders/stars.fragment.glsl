@@ -31,4 +31,6 @@ void main() {
     vec3 color = vec3(1.0, 1.0, 1.0);
     alpha *= v_intensity;
     gl_FragColor = vec4(color * alpha, alpha);
+
+    HANDLE_WIREFRAME_DEBUG;
 }

@@ -77,7 +77,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         }
         if (!buffers) continue;
         if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
-        program.draw(context, gl.LINES,
+        program.draw(painter, gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
             CullFaceMode.disabled,
@@ -128,7 +128,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         const uniforms = collisionCircleUniformValues(batch.transform, batch.invTransform, tr, batch.projection);
 
         circleProgram.draw(
-            context,
+            painter,
             gl.TRIANGLES,
             DepthMode.disabled,
             StencilMode.disabled,

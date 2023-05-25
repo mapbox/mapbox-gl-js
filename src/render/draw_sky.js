@@ -4,7 +4,6 @@ import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
-import Context from '../gl/context.js';
 import Texture from './texture.js';
 import Program from './program.js';
 import {smoothstep} from '../util/util.js';
@@ -85,7 +84,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
 
     painter.uploadCommonUniforms(context, program);
 
-    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+    program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
@@ -105,13 +104,14 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     painter.uploadCommonUniforms(context, program);
 
-    program.draw(context, gl.TRIANGLES, depthMode, StencilMode.disabled,
+    program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<any>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
+function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>, faceRotate: Mat4, sunDirection: [number, number, number], i: number) {
+    const context = painter.context;
     const gl = context.gl;
 
     const atmosphereColor = layer.paint.get('sky-atmosphere-color');
@@ -128,7 +128,7 @@ function drawSkyboxFace(context: Context, layer: SkyLayer, program: Program<any>
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);
 
-    program.draw(context, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
+    program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
         uniformValues, 'skyboxCapture', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
@@ -168,26 +168,26 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     // +x;
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, -Math.PI * 0.5);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 0);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 0);
     // -x
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, Math.PI * 0.5);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 1);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 1);
     // +y
     mat4.identity(faceRotate);
     mat4.rotateX(faceRotate, faceRotate, -Math.PI * 0.5);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 2);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 2);
     // -y
     mat4.identity(faceRotate);
     mat4.rotateX(faceRotate, faceRotate, Math.PI * 0.5);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 3);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 3);
     // +z
     mat4.identity(faceRotate);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 4);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 4);
     // -z
     mat4.identity(faceRotate);
     mat4.rotateY(faceRotate, faceRotate, Math.PI);
-    drawSkyboxFace(context, layer, program, faceRotate, sunDirection, 5);
+    drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 5);
 
     context.viewport.set([0, 0, painter.width, painter.height]);
 }

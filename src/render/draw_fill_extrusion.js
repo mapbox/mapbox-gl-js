@@ -171,6 +171,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
+        // debugger;
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion'), programConfiguration, baseDefines);
 
@@ -235,7 +236,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (painter.terrain || replacementActive) dynamicBuffers.push(bucket.centroidVertexBuffer);
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
 
-        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
@@ -282,7 +283,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
-        program.draw(context, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
+        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
             groundEffect.segments, layer.paint, painter.transform.zoom,
             programConfiguration);

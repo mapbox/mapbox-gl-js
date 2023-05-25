@@ -17,16 +17,11 @@ varying vec4 v_pos_light_view_1;
 varying float v_depth;
 #endif
 
-const float wireframeOffset = 0.00015;
-
 void main() {
     vec3 decomposedPosAndSkirt = decomposeToPosAndSkirt(a_pos);
     float skirt = decomposedPosAndSkirt.z;
     vec2 decodedPos = decomposedPosAndSkirt.xy;
     float elevation = elevation(decodedPos) - skirt * u_skirt_height;
-#ifdef TERRAIN_WIREFRAME
-    elevation += wireframeOffset;
-#endif
     v_pos0 = decodedPos / 8192.0;
     gl_Position = u_matrix * vec4(decodedPos, elevation, 1.0);
 
