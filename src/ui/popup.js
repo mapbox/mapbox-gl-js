@@ -578,14 +578,19 @@ export default class Popup extends Evented {
         if (!map || !container || !pos) return 'bottom';
 
         const padding = this._map.transform.padding;
+        const paddingTop = (padding.top || 0);
+        const paddingBottom = (padding.bottom || 0);
+        const paddingLeft = (padding.left || 0);
+        const paddingRight = (padding.right || 0);
+
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height + padding.top;
-        const isLeft = pos.x < width / 2 + padding.left;
-        const isRight = pos.x > map.transform.width - width / 2 - padding.right;
-        const isTopOnEitherSide = pos.y + bottomY < height / 2  + padding.top;
-        const isBottomOnEitherSide = pos.y > map.transform.height - height / 2 - padding.bottom;
+        const isTop = pos.y + bottomY < height + paddingTop;
+        const isLeft = pos.x < width / 2 + paddingLeft;
+        const isRight = pos.x > map.transform.width - width / 2 - paddingRight;
+        const isTopOnEitherSide = pos.y + bottomY < height / 2  + paddingTop;
+        const isBottomOnEitherSide = pos.y > map.transform.height - height / 2 - paddingBottom;
 
         if (isLeft) {
             if (isTopOnEitherSide) return 'top-left';
