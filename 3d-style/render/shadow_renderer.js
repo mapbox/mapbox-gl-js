@@ -364,7 +364,7 @@ function calculateGroundShadowFactor(directionalLight: Lights<Directional>, ambi
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)
-    // A: Ambient light coming into the surface; taking into account color, intensity and direction
+    // A: Ambient light coming into the surface; taking into account color and intensity
     // D: Directional light coming into the surface; taking into account color, intensity and direction
     const shadow = [
         ambStrength[0] > 0.0 ? ambStrength[0] / (ambStrength[0] + dirStrength[0]) : 0.0,

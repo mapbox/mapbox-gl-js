@@ -77,17 +77,27 @@ float ao_shade = 1.0;
 #endif // FAUX_AO
 
 #ifdef LIGHTING_3D_MODE
+
+float flood_radiance = 0.0;
+#ifdef FLOOD_LIGHT
+    flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
+#endif // FLOOD_LIGHT
 #ifdef RENDER_SHADOWS
-    float lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
-    color.rgb = apply_lighting(color.rgb, normal, lighting_factor);
+#ifdef FLOOD_LIGHT
+    color.rgb = apply_lighting(color.rgb, normal);
+    float shadowed_lighting_factor = shadowed_light_factor_biased(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    vec3 flood_light_color = u_flood_light_color * u_opacity;
+    color.rgb = apply_shadow_to_lit_color_with_flood_light_on_extruded_walls(color.rgb, normal, flood_radiance, flood_light_color, shadowed_lighting_factor);
+#else // FLOOD_LIGHT
+    float shadowed_lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb = apply_lighting(color.rgb, normal, shadowed_lighting_factor);
+#endif // !FLOOD_LIGHT 
 #else // RENDER_SHADOWS
     color.rgb = apply_lighting(color.rgb, normal);
-#endif // !RENDER_SHADOWS
-
 #ifdef FLOOD_LIGHT
-    float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
     color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
 #endif // FLOOD_LIGHT
+#endif // !RENDER_SHADOWS
 
     color *= u_opacity;
 #endif // LIGHTING_3D_MODE
