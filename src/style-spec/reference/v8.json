@@ -4538,7 +4538,9 @@
       "required": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "2.6.0"
+          "js": "2.6.0",
+          "ios": "10.5.0",
+          "android": "10.5.0"
         }
       }
     },
