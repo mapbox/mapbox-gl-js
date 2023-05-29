@@ -179,6 +179,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 cachePut(request, cacheableResponse, requestTime);
             }
             complete = true;
+            if (response.status === 204) return; // No content
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
         }).catch(err => {
             if (!aborted) callback(new Error(err.message));

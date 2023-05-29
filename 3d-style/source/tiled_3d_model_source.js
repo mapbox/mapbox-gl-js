@@ -13,6 +13,7 @@ import loadTileJSON from '../../src/source/load_tilejson.js';
 import TileBounds from '../../src/source/tile_bounds.js';
 import {extend} from '../../src/util/util.js';
 import {postTurnstileEvent} from '../../src/util/mapbox.js';
+import type {OverscaledTileID} from '../../src/source/tile_id.js';
 
 class Tiled3DModelSource extends Evented implements Source {
     type: 'batched-model';
@@ -49,7 +50,7 @@ class Tiled3DModelSource extends Evented implements Source {
         this.roundZoom = true;
         this.usedInConflation = true;
         this.dispatcher = dispatcher;
-        this.reparseOverscaled = true;
+        this.reparseOverscaled = false;
         this.scheme = 'xyz';
         this._loaded = false;
         this.setEventedParent(eventedParent);
@@ -91,6 +92,11 @@ class Tiled3DModelSource extends Evented implements Source {
 
     hasTransition(): boolean {
         return false;
+    }
+
+    // $FlowFixMe[method-unbinding]
+    hasTile(tileID: OverscaledTileID): boolean {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     loaded(): boolean {
