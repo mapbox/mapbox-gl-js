@@ -578,16 +578,23 @@ class Painter {
             };
 
             const orderedLayers = layerIds.map(id => this.style._layers[id]);
-            const conflationLayersInStyle = orderedLayers.map(layer => this.layerUsedInConflation(layer, getLayerSource(layer)));
+            const conflationLayersInStyle = [];
 
-            if (conflationLayersInStyle) {
+            for (const layer of orderedLayers) {
+                if (this.layerUsedInConflation(layer, getLayerSource(layer))) {
+                    conflationLayersInStyle.push(layer);
+                }
+            }
+
+            // Check we have more than one conflation layer
+            if (conflationLayersInStyle && conflationLayersInStyle.length > 1) {
                 // Some layer types such as fill extrusions and models might have interdependencies
                 // where certain features should be replaced by overlapping features from another layer with higher
                 // precedence. A special data structure 'replacementSource' is used to compute regions
                 // on visible tiles where potential overlap might occur between features of different layers.
                 const conflationSources = [];
 
-                for (const layer of orderedLayers) {
+                for (const layer of conflationLayersInStyle) {
                     const sourceCache = this.style._getLayerSourceCache(layer);
 
                     if (!sourceCache || !sourceCache.used || !sourceCache.getSource().usedInConflation) {
@@ -1258,6 +1265,10 @@ class Painter {
      */
     layerUsedInConflation(layer: StyleLayer, source: ?Source): boolean {
         if (!layer.is3D()) {
+            return false;
+        }
+
+        if (layer.minzoom && layer.minzoom > this.transform.zoom) {
             return false;
         }
 

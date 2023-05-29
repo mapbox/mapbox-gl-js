@@ -150,10 +150,12 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
     kind: Kind;
     isStateDependent: boolean;
     _styleExpression: StyleExpression;
+    isLightConstant: ?boolean;
 
-    constructor(kind: Kind, expression: StyleExpression) {
+    constructor(kind: Kind, expression: StyleExpression, isLightConstant: ?boolean) {
         this.kind = kind;
         this._styleExpression = expression;
+        this.isLightConstant = isLightConstant;
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
     }
 
@@ -269,9 +271,9 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     if (!zoomCurve) {
         return success(isFeatureConstant ?
             // $FlowFixMe[method-unbinding]
-            (new ZoomConstantExpression('constant', expression.value): ConstantExpression) :
+            (new ZoomConstantExpression('constant', expression.value, isLightConstant): ConstantExpression) :
             // $FlowFixMe[method-unbinding]
-            (new ZoomConstantExpression('source', expression.value): SourceExpression));
+            (new ZoomConstantExpression('source', expression.value, isLightConstant): SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;

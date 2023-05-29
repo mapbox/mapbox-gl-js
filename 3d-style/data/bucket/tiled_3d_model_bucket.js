@@ -16,6 +16,10 @@ import {ReplacementSource} from '../../source/replacement_source.js';
 import {FeatureVertexArray} from '../../../src/data/array_types.js';
 import {number as interpolate} from '../../../src/style-spec/util/interpolate.js';
 import {clamp} from '../../../src/util/util.js';
+import {DEMSampler} from '../../../src/terrain/elevation.js';
+import type {Terrain} from '../../../src/terrain/terrain.js';
+import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
+import assert from 'assert';
 
 function getNodeHeight(node: Node): number {
     let height = 0;
@@ -85,9 +89,12 @@ class Tiled3dModelBucket implements Bucket {
     terrainTile: ?CanonicalTileID;
     terrainExaggeration: ?number;
     replacementUpdateTime: number;
+    elevationReadFromZ: number;
+    dirty: boolean;
+    brightness: ?number;
 
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
-    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean) {
+    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, brightness: ?number) {
         this.nodes = nodes;
         this.id = id;
         this.modelTraits |= ModelTraits.CoordinateSpaceTile;
@@ -100,6 +107,9 @@ class Tiled3dModelBucket implements Bucket {
         this.terrainExaggeration = 1;
         this.projection = {name: 'mercator'};
         this.replacementUpdateTime = 0;
+        this.elevationReadFromZ = 0xff; // Re-read if underlying DEM zoom changes.
+        this.brightness = brightness;
+        this.dirty = true;
     }
     update() {
         console.log("Update 3D model bucket");
@@ -136,19 +146,33 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    needsReEvaluation(painter: Painter, demTile: ?CanonicalTileID): boolean {
-        const zoom = painter.transform.zoom;
+    needsReEvaluation(painter: Painter, zoom: number, layer: ModelStyleLayer): boolean {
         const projection = painter.transform.projectionOptions;
-        const exaggeration = painter.terrain ? painter.terrain.exaggeration() : 1;
-        // Need to check if ModelLayer PaintProperties changed
-        if (Math.floor(zoom) !== Math.floor(this.zoom) || projection.name !== this.projection.name ||
-           demTile !== this.terrainTile || exaggeration !== this.terrainExaggeration) {
-            this.zoom = zoom;
+        const calculatedBrightness = painter.style.calculateLightsBrightness();
+        const brightnessChanged = this.brightness !== calculatedBrightness;
+        if (this.dirty || projection.name !== this.projection.name ||
+            expressionRequiresReevaluation(layer.paint.get('model-color-mix-intensity').value, brightnessChanged) ||
+            expressionRequiresReevaluation(layer.paint.get('model-roughness').value, brightnessChanged) ||
+            expressionRequiresReevaluation(layer.paint.get('model-emissive-strength').value, brightnessChanged) ||
+            expressionRequiresReevaluation(layer.paint.get('model-height-based-emissive-strength-multiplier').value, brightnessChanged)) {
+            this.dirty = false;
             this.projection = projection;
-            this.terrainExaggeration = exaggeration;
+            this.brightness = calculatedBrightness;
             return true;
         }
+
         return false;
+    }
+
+    evaluateScale(painter: Painter, layer: ModelStyleLayer) {
+        if (painter.transform.zoom === this.zoom) return;
+        this.zoom = painter.transform.zoom;
+        const nodesInfo = this.getNodesInfo();
+        const canonical = this.id.canonical;
+        for (const nodeInfo of nodesInfo) {
+            const evaluationFeature = nodeInfo.feature;
+            nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
+        }
     }
 
     evaluate(layer: ModelStyleLayer) {
@@ -159,6 +183,7 @@ class Tiled3dModelBucket implements Bucket {
             const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
             const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
             const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
+            const canonical = this.id.canonical;
 
             if (hasFeatures) {
                 for (let i = 0; i < PartNames.length; i++) {
@@ -166,7 +191,6 @@ class Tiled3dModelBucket implements Bucket {
                     if (part.length) {
                         evaluationFeature.properties['part'] = part;
                     }
-                    const canonical = this.id.canonical;
                     const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical);
                     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, {}, canonical);
                     nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
@@ -182,7 +206,31 @@ class Tiled3dModelBucket implements Bucket {
                                          previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged);
             }
+            nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
+        }
+    }
 
+    elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID) {
+
+        const demTile = terrain.findDEMTileFor(coord);
+        if (demTile === this.terrainTile && exaggeration === this.terrainExaggeration) return;
+
+        if (terrain && demTile && demTile.dem && demTile.tileID.overscaledZ !== this.elevationReadFromZ) {
+            this.elevationReadFromZ = demTile.tileID.overscaledZ;
+            const dem = DEMSampler.create(terrain, this.id, demTile);
+            if (!dem) return;
+            for (const nodeInfo of this.getNodesInfo()) {
+                const node = nodeInfo.node;
+                if (!node.footprint || !node.footprint.vertices || !node.footprint.vertices.length) {
+                    continue;
+                }
+                const vertices = node.footprint.vertices;
+                let elevation = dem.getElevationAt(vertices[0].x, vertices[0].y, true, true);
+                for (let i = 1; i < vertices.length; i++) {
+                    elevation = Math.min(elevation, dem.getElevationAt(vertices[i].x, vertices[i].y, true, true));
+                }
+                node.elevation = elevation;
+            }
         }
     }
 
@@ -219,10 +267,10 @@ class Tiled3dModelBucket implements Bucket {
         return !this.nodes.length;
     }
 
-    updateReplacement(coord: OverscaledTileID, source: ReplacementSource): boolean {
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource) {
         // Replacement has to be re-checked if the source has been updated since last time
         if (source.updateTime === this.replacementUpdateTime) {
-            return false;
+            return;
         }
 
         this.replacementUpdateTime = source.updateTime;
@@ -235,9 +283,12 @@ class Tiled3dModelBucket implements Bucket {
             // Node is visible if its footprint passes the replacement check
             nodesInfo[i].hiddenByReplacement = !!node.footprint && !activeReplacements.find(region => region.footprint === node.footprint);
         }
-
-        return true;
     }
+}
+
+function expressionRequiresReevaluation(e: any, brightnessChanged: boolean): boolean {
+    assert(e.kind === 'constant' || e instanceof ZoomConstantExpression);
+    return !e.isLightConstant && brightnessChanged;
 }
 
 function encodeEmissionToByte(emission: number) {

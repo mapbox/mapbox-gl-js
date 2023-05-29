@@ -6,7 +6,7 @@ import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
 import type {Mesh, Node} from '../data/model.js';
-import {ModelTraits} from '../data/model.js';
+import {ModelTraits, DefaultModelScale} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 import Transform from '../../src/geo/transform.js';
@@ -23,7 +23,7 @@ import {convertModelMatrixForGlobe} from '../util/model_util.js';
 import {warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
-import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
+import Tiled3dModelBucket, {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
@@ -408,7 +408,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
         for (let i = 0; i < instances.instancedDataArray.length; ++i) {
             const x = instances.instancedDataArray.float32[i * 16] | 0;
             const y = instances.instancedDataArray.float32[i * 16 + 1] | 0;
-            const elevation = (dem ? exaggeration * dem.getElevationAt(x, y, true) : 0) + instances.instancesEvaluatedElevation[i];
+            const elevation = (dem ? exaggeration * dem.getElevationAt(x, y, true, true) : 0) + instances.instancesEvaluatedElevation[i];
             instances.instancedDataArray.float32[i * 16 + 6] = elevation;
         }
     }
@@ -539,10 +539,14 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
     }
 }
 
-function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, layer: ModelStyleLayer, coord: OverscaledTileID, tileMatrix: Mat4, zScaleMatrix: Mat4, negCameraPosMatrix: Mat4) {
+const normalScale = [1.0, -1.0, 1.0];
+
+function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, painter: Painter, layer: ModelStyleLayer, coord: OverscaledTileID, tileMatrix: Mat4, zScaleMatrix: Mat4, negCameraPosMatrix: Mat4) {
     if (painter.renderPass === 'opaque') {
         return;
     }
+
+    const node = nodeInfo.node;
     const context = painter.context;
     for (const mesh of node.meshes) {
         const definesValues = [];
@@ -554,6 +558,22 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         }
 
         const modelMatrix = [...tileMatrix];
+        const scale = nodeInfo.evaluatedScale;
+        let elevation = 0;
+        if (painter.terrain && node.elevation) {
+            elevation = node.elevation * painter.terrain.exaggeration();
+        }
+        const anchorX = node.anchor ? node.anchor[0] : 0;
+        const anchorY = node.anchor ? node.anchor[1] : 0;
+
+        mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
+            anchorY * (scale[1] - 1),
+            elevation]);
+        if (scale !== DefaultModelScale) {
+            /* $FlowIgnore[incompatible-call] scale should always be an array */
+            mat4.scale(modelMatrix, modelMatrix, scale);
+        }
+
         mat4.multiply(modelMatrix, modelMatrix, node.matrix);
         const isShadowPass = painter.renderPass === 'shadow';
         if (isShadowPass) {
@@ -573,7 +593,7 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
         mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
         const normalMatrix = mat4.invert([], lightingMatrix);
         mat4.transpose(normalMatrix, normalMatrix);
-        mat4.scale(normalMatrix, normalMatrix, [1.0, -1.0, 1.0]);
+        mat4.scale(normalMatrix, normalMatrix, normalScale);
 
         const worldViewProjection = mat4.multiply([], painter.transform.projMatrix, modelMatrix);
 
@@ -613,26 +633,23 @@ function drawBatchedNode(node: Node, modelTraits: number, painter: Painter, laye
 
 function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
     const exaggeration = painter.terrain ? painter.terrain.exaggeration() : 0;
+    const zoom = painter.transform.zoom;
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        // Check for terrainTile
-        let demTile;
-        let canonicalDem;
+        // Conflation
+        if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
+        // evaluate scale
+        bucket.evaluateScale(painter, layer);
+        // Compute elevation
         if (painter.terrain && exaggeration > 0) {
-            const terrain = painter.terrain;
-            demTile = terrain.findDEMTileFor(coord);
-            if (demTile && demTile.tileID) {
-                canonicalDem = demTile.tileID.canonical;
-            }
+            bucket.elevationUpdate(painter.terrain, exaggeration, coord);
         }
-        let shouldReEvaluate = bucket.needsReEvaluation(painter, canonicalDem);
-        if (painter.conflationActive && bucket.updateReplacement(coord, painter.replacementSource)) {
-            shouldReEvaluate = true;
+        if (bucket.needsReEvaluation(painter, zoom, layer)) {
+            bucket.evaluate(layer);
         }
-        if (!shouldReEvaluate) continue;
-        bucket.evaluate(layer);
+
     }
 }
 
@@ -665,7 +682,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
         for (const nodeInfo of nodesInfo) {
             if (nodeInfo.hiddenByReplacement) continue;
             if (!nodeInfo.node.meshes) continue;
-            drawBatchedNode(nodeInfo.node, bucket.modelTraits, painter, layer, coord, tileMatrix, zScaleMatrix, negCameraPosMatrix);
+            drawBatchedNode(nodeInfo, bucket.modelTraits, painter, layer, coord, tileMatrix, zScaleMatrix, negCameraPosMatrix);
         }
     }
 }

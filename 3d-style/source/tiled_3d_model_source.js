@@ -126,6 +126,16 @@ class Tiled3DModelSource extends Evented implements Source {
             // schedule tile reloading after it has been loaded
             tile.reloadCallback = callback;
         } else {
+            // If the tile has already been parsed we may just need to reevaluate
+            if (tile.buckets) {
+                const buckets = Object.values(tile.buckets);
+                for (const bucket of buckets) {
+                    // $FlowIgnore[incompatible-use] All buckets are Tiled3DModelBuckets
+                    bucket.dirty = true;
+                }
+                tile.state = 'loaded';
+                return;
+            }
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
