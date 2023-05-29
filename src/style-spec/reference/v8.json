@@ -7922,7 +7922,7 @@
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
-        "parameters": ["zoom", "feature", "feature-state"]
+        "parameters": ["feature", "feature-state"]
       },
       "sdk-support": {
           "basic functionality": {
