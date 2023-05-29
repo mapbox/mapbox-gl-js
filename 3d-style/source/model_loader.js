@@ -4,7 +4,7 @@ import type {Footprint, Mesh, Node, Material, ModelTexture, Sampler, AreaLight} 
 import type {TextureImage} from '../../src/render/texture.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
-import type {Vec3} from 'gl-matrix';
+import type {Vec2, Vec3} from 'gl-matrix';
 import {mat4, vec3} from 'gl-matrix';
 import {TriangleIndexArray,
     ModelLayoutArray,
@@ -293,21 +293,30 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
     if (nodeDesc.scale) {
         mat4.scale(node.matrix, node.matrix, [nodeDesc.scale[0], nodeDesc.scale[1], nodeDesc.scale[2]]);
     }
-
-    if (nodeDesc.extras) {
-        node.footprint = convertFootprint(nodeDesc);
-    }
-
     if (nodeDesc.mesh !== undefined) {
         node.meshes = meshes[nodeDesc.mesh];
     }
     if (nodeDesc.extras) {
+        if (nodeDesc.extras.ground) {
+            node.footprint = convertFootprint(nodeDesc.extras.ground);
+        }
         if (nodeDesc.extras.id) {
             node.id = nodeDesc.extras.id;
         }
         if (nodeDesc.extras.lights) {
             const base64Lights = nodeDesc.extras.lights;
             node.lights = decodeLights(base64Lights);
+        }
+        if (node.meshes) {
+            const anchor: Vec2 = [0, 0];
+            for (const mesh of node.meshes) {
+                const bounds = mesh.aabb;
+                anchor[0] += bounds.min[0] + bounds.max[0];
+                anchor[1] += bounds.min[1] + bounds.max[1];
+            }
+            anchor[0] = Math.floor(anchor[0] / node.meshes.length / 2);
+            anchor[1] = Math.floor(anchor[1] / node.meshes.length / 2);
+            node.anchor = anchor;
         }
     }
 
@@ -319,15 +328,13 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
         }
         node.children = children;
     }
+
     return node;
 }
 
-function convertFootprint(desc: Object): ?Footprint {
-    if (!desc.extras) {
-        return null;
-    }
+function convertFootprint(groundObject: Object): ?Footprint {
 
-    const groundContainer = desc.extras.ground;
+    const groundContainer = groundObject;
     if (!groundContainer || !Array.isArray(groundContainer) || groundContainer.length === 0) {
         return null;
     }

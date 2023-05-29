@@ -8,7 +8,7 @@ import type IndexBuffer from '../../src/gl/index_buffer.js';
 import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types.js';
 import {StructArray} from '../../src/util/struct_array.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
-import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
+import type {Mat4, Vec2, Vec3, Vec4, Quat} from 'gl-matrix';
 import type Context from "../../src/gl/context.js";
 import {Aabb} from '../../src/util/primitives.js';
 import {mat4, vec4} from 'gl-matrix';
@@ -103,6 +103,8 @@ export type Node = {
     footprint: ?Footprint;
     lights: Array<AreaLight>;
     lightMeshIndex: number;
+    elevation: ?number;
+    anchor: ?Vec2;
 }
 
 export const ModelTraits = {
@@ -110,6 +112,8 @@ export const ModelTraits = {
     CoordinateSpaceYUp : 2, // not used yet.
     HasMapboxMeshFeatures : 1 << 2
 };
+
+export const DefaultModelScale = [1, 1, 1];
 
 export default class Model {
     id: string;

@@ -34,9 +34,9 @@ class Tiled3dWorkerTile {
     projection: Projection;
     status: 'parsing' | 'done';
     reloadCallback: ?WorkerTileCallback;
-    data: ArrayBuffer;
+    brightness: ?number;
 
-    constructor(params: WorkerTileParameters) {
+    constructor(params: WorkerTileParameters, brightness: ?number) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
@@ -48,6 +48,7 @@ class Tiled3dWorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.enableTerrain = !!params.enableTerrain;
         this.projection = params.projection;
+        this.brightness = brightness;
     }
 
     async parse(data: ArrayBuffer, layerIndex: StyleLayerIndex, params: WorkerTileParameters, callback: WorkerTileCallback) {
@@ -64,7 +65,7 @@ class Tiled3dWorkerTile {
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
                 const extensions = b3dm.gltf.json.extensionsUsed;
-                const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"));
+                const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
                 // $FlowIgnore[incompatible-call] we are sure layer is a ModelStyleLayer here.
                 bucket.evaluate((layer));
                 buckets[layer.id] = bucket;
@@ -84,7 +85,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     loading: {[_: number]: Tiled3dWorkerTile };
     loaded: {[_: number]: Tiled3dWorkerTile };
     brightness: ?number;
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, brightness: ?number) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData: ?any, brightness: ?number) {
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.brightness = brightness;
@@ -94,7 +95,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
 
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
-        const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params);
+        const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness);
         getArrayBuffer(params.request, (err: ?Error, data: ?ArrayBuffer) => {
             const aborted = !this.loading[uid];
             delete this.loading[uid];
@@ -105,8 +106,6 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 return callback(err);
             }
             if (data) {
-                // Store rawdata
-                workerTile.data = data;
                 workerTile.parse(data, this.layerIndex, params, callback);
             }
             this.loaded = this.loaded || {};
@@ -131,7 +130,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.data, this.layerIndex, params, callback);
+                    this.loadTile(params, callback);
                 }
                 callback(err, data);
             };
@@ -139,13 +138,8 @@ class Tiled3dModelWorkerSource implements WorkerSource {
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = done;
             } else if (workerTile.status === 'done') {
-                // reparse data if the tile is present
-                if (workerTile.data) {
-                    workerTile.parse(workerTile.data, this.layerIndex, params, callback);
-                } else {
-                    // If there is no data, load do the request again
-                    this.loadTile(params, callback);
-                }
+                // do the request again
+                this.loadTile(params, callback);
             }
         }
     }
