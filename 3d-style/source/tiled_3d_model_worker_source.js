@@ -17,8 +17,7 @@ import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import type {Bucket} from '../../src/data/bucket.js';
 import {CanonicalTileID, OverscaledTileID} from '../../src/source/tile_id.js';
 import type Projection from '../../src/geo/projection/projection.js';
-import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {load3DTile} from '../util/loaders.js';
 
 class Tiled3dWorkerTile {
     tileID: OverscaledTileID;
@@ -58,8 +57,7 @@ class Tiled3dWorkerTile {
         const layerFamilies = layerIndex.familiesBySource[params.source];
         const featureIndex = new FeatureIndex(tileID, params.promoteId);
         featureIndex.bucketLayerIDs = [];
-        const b3dm = await parse(data, Tiles3DLoader,
-            {worker: false, gltf: {decompressMeshes: true, postProcess: false, loadBuffers: true, loadImages: true}});
+        const b3dm = await load3DTile(data);
         const nodes = convertB3dm(b3dm.gltf, 1.0 / tileToMeter(params.tileID.canonical));
         for (const sourceLayerId in layerFamilies) {
             for (const family of layerFamilies[sourceLayerId]) {

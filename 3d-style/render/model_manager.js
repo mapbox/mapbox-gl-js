@@ -6,10 +6,10 @@ import assert from 'assert';
 import Model from '../data/model.js';
 import convertModel from '../source/model_loader.js';
 
-import {load} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
 import {RequestManager} from '../../src/util/mapbox.js';
 import Painter from '../../src/render/painter.js';
+
+import {loadGLTF} from '../util/loaders.js';
 
 class ModelManager extends Evented {
     models: {[_: string]: Model};
@@ -29,7 +29,7 @@ class ModelManager extends Evented {
     async load(modelUris: Object) {
         for (const modelId in modelUris) {
             const modelUri = modelUris[modelId];
-            const gltf = await load(modelUri, GLTFLoader, {gltf: {postProcess: false, loadBuffers: true, loadImages: true}});
+            const gltf = await loadGLTF(modelUri);
             const nodes = convertModel(gltf);
             const model = new Model(modelId, modelUri, undefined, undefined, nodes);
             model.computeBoundsAndApplyParent();

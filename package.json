@@ -122,6 +122,7 @@
     "build-token": "node build/generate-access-token-script.js",
     "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/versions/rollup_config_benchmarks.js",
     "watch-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js -w",
+    "build-loaders": "rollup -c rollup.config.loaders.js",
     "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",
     "start": "run-p build-token watch-css watch-dev watch-benchmarks start-server",
     "start-debug": "run-p build-token watch-css watch-dev start-server",
@@ -147,7 +148,7 @@
     "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
     "test-style-spec": "cd src/style-spec && npm test",
-    "prepublishOnly": "run-s build-flow-types build-dev build-prod-min build-prod build-csp build-css build-style-spec",
+    "prepublishOnly": "run-s build-flow-types build-loaders build-dev build-prod-min build-prod build-csp build-css build-style-spec",
     "print-release-url": "node build/print-release-url.js",
     "check-bundle-size": "node build/check-bundle-size.js",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"

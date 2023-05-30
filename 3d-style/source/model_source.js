@@ -10,9 +10,7 @@ import type Map from '../../src/ui/map.js';
 import type {ModelSourceSpecification} from '../../src/style-spec/types.js';
 import Model from '../data/model.js';
 import convertModel from './model_loader.js';
-
-import {load} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {loadGLTF} from '../util/loaders.js';
 
 /**
  * A source containing single models.
@@ -48,7 +46,7 @@ class ModelSource extends Evented implements Source {
         /* $FlowIgnore[prop-missing] we don't need the full spec of model_source as it's only used for testing*/
         for (const modelId in this._options.models) {
             const modelSpec = this._options.models[modelId];
-            const gltf = await load(modelSpec.uri, GLTFLoader, {gltf: {postProcess: false, loadBuffers: true, loadImages: true}});
+            const gltf = await loadGLTF(modelSpec.uri);
             const nodes = convertModel(gltf);
             const model = new Model(modelId, modelSpec.uri, modelSpec.position, modelSpec.orientation, nodes);
             model.computeBoundsAndApplyParent();
