@@ -226,6 +226,7 @@ jobs:
             - v0-linux-yarn-{{ .Branch }}-
             - v0-linux-yarn-
       - run: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
+      - run: yarn run build-loaders
       - run: yarn run build-dev
       - save_cache:
           key: v0-linux-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
@@ -530,6 +531,7 @@ jobs:
           key: v0-mac-yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
            - ~/.cache/yarn
+      - run: yarn run build-loaders
       - run: yarn run build-dev
       - persist_to_workspace:
           root: ~/
@@ -607,6 +609,7 @@ jobs:
             npm install -g yarn
             refreshenv
       - run: yarn --frozen-lockfile
+      - run: yarn run build-loaders
       - run: yarn run build-dev
       - run:
           name: Clean up workspace to persist faster
