@@ -89,23 +89,18 @@ vec4 apply_lighting_with_emission_ground(vec4 color, float emissive_strength) {
     return mix(apply_lighting_ground(color), color, emissive_strength);
 }
 
-vec3 apply_shadow_to_lit_color_with_flood_light_on_extruded_walls(vec3 litColor, vec3 normal, float flood_radiance, vec3 flood_light_color, float shadowed_light_factor) {
-    // Apply flood lighting.
-    vec3 color = mix(litColor, flood_light_color, flood_radiance);
-
-    // Calculate the factor by which we regulate how much shadows affect the shaded area.
-    // Note that we use a skewed normal here to make the area where ground and walls meet
-    // have a consistent and continuous floodlit look.
-    vec3 N = normalize(mix(normal, vec3(0.0, 0.0, 1.0), flood_radiance));
-    float NdotL = max(dot(N, u_lighting_directional_dir), 0.0);
-    vec3 ambient_contrib = calculate_ambient_directional_factor(N) * u_lighting_ambient_color;
-    vec3 directional_contrib = u_lighting_directional_color * NdotL;
-
-    // Factor that takes lit color to shadowed lit color.
+vec3 apply_flood_lighting(vec3 flood_light_color, float fully_occluded_factor, float occlusion) {
+    vec3 ambient_contrib = u_lighting_ambient_color;
+    vec3 directional_contrib = u_lighting_directional_color * u_lighting_directional_dir.z;
     vec3 shadow_factor = linearTosRGB(ambient_contrib / (ambient_contrib + directional_contrib));
 
-    color *= mix(shadow_factor, vec3(1.0), shadowed_light_factor);
-    return color;
+    // Compute final color by interpolating between the fully occluded and
+    // and fully lit colors. Use a more steep ramp to avoid shadow acne
+    // on low angles
+    vec3 fully_occluded_color = flood_light_color * mix(shadow_factor, vec3(1.0), fully_occluded_factor);
+    float occlusion_ramp = smoothstep(0.0, 0.2, 1.0 - occlusion);
+
+    return mix(fully_occluded_color, flood_light_color, occlusion_ramp);
 }
 
 #endif // LIGHTING_3D_MODE
