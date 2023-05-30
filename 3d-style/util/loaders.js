@@ -1,7 +1,8 @@
 // @flow
 /* global document: false, self: false, mapboxglLoaders: false, importScripts: false */
 
-import {isWorker} from '../../src/util/util.js';
+import config from '../../src/util/config.js';
+import {isWorker, warnOnce} from '../../src/util/util.js';
 
 let loadingPromise: Promise<any> | void;
 
@@ -25,8 +26,13 @@ async function waitForLoaders() {
 
     // $FlowFixMe expecting a global variable
     if (typeof mapboxglLoaders === 'undefined') {
-        loadingPromise = loadJS(`${self.origin}/dist/mapbox-gl-loaders.js`);
-        await loadingPromise;
+        const loadersUrl = config.LOADERS_URL ? config.LOADERS_URL : `${self.origin}/dist/mapbox-gl-loaders.js`;
+        try {
+            loadingPromise = loadJS(loadersUrl);
+            await loadingPromise;
+        } catch (e) {
+            warnOnce(`Could not load bundle from ${loadersUrl}.`);
+        }
     }
 
     loadingPromise = undefined;
