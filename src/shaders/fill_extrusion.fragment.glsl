@@ -88,7 +88,7 @@ float flood_radiance = 0.0;
     float occlusion = shadow_occlusion(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
 
     // Compute both FE and flood lights separately and interpolate between the two.
-    // `litColor` uses pretty much `shadowed_light_factor_normal` as the directional component.
+    // "litColor" uses pretty much "shadowed_light_factor_normal" as the directional component.
     vec3 litColor = apply_lighting(color.rgb, normal, (1.0 - u_shadow_intensity * occlusion) * ndotl);
     vec3 floodLitColor = apply_flood_lighting(u_flood_light_color * u_opacity, 1.0 - u_shadow_intensity, occlusion);
 
