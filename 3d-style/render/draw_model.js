@@ -557,7 +557,7 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
         const mesh = node.meshes[i];
         const isLight = i === node.lightMeshIndex;
         if (isLight) {
-            if (!isLightBeamPass && !painter.terrain) {
+            if (!isLightBeamPass && !painter.terrain && painter.shadowRenderer) {
                 if (painter.currentLayer < painter.firstLightBeamLayer) {
                     painter.firstLightBeamLayer = painter.currentLayer;
                 }
