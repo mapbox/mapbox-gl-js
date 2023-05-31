@@ -23,8 +23,8 @@
           "color": "rgba(250.0, 250.0, 230.0, 1.0)",
           "intensity": 0.7,
           "direction": [
-            230.0,
-            45.0
+            192.0,
+            34.0
           ],
           "cast-shadows": true,
           "shadow-intensity": 1.0

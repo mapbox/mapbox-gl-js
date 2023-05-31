@@ -24,7 +24,7 @@
           "intensity": 0.7,
           "direction": [
             230.0,
-            45.0
+            0.0
           ],
           "cast-shadows": true,
           "shadow-intensity": 1.0

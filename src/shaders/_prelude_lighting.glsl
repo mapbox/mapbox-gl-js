@@ -89,4 +89,17 @@ vec4 apply_lighting_with_emission_ground(vec4 color, float emissive_strength) {
     return mix(apply_lighting_ground(color), color, emissive_strength);
 }
 
+vec3 apply_flood_lighting(vec3 flood_light_color, float fully_occluded_factor, float occlusion) {
+    highp vec3 ambient_contrib = u_lighting_ambient_color;
+    highp vec3 directional_contrib = u_lighting_directional_color * u_lighting_directional_dir.z;
+    vec3 shadow_factor = linearTosRGB(ambient_contrib / (ambient_contrib + directional_contrib + 1e-5));
+
+    // Compute final color by interpolating between the fully occluded
+    // and fully lit colors. Use a more steep ramp to avoid shadow acne on low angles.
+    vec3 fully_occluded_color = flood_light_color * mix(shadow_factor, vec3(1.0), fully_occluded_factor);
+    float occlusion_ramp = smoothstep(0.0, 0.2, 1.0 - occlusion);
+
+    return mix(fully_occluded_color, flood_light_color, occlusion_ramp);
+}
+
 #endif // LIGHTING_3D_MODE

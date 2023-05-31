@@ -13,7 +13,7 @@
         "id": "environment",
         "properties": {
           "color": "rgba(200.0, 200.0, 255.0, 1.0)",
-          "intensity": 0.3
+          "intensity": 0.0
         }
       },
       {
@@ -21,7 +21,7 @@
         "id": "sun_light",
         "properties": {
           "color": "rgba(250.0, 250.0, 230.0, 1.0)",
-          "intensity": 0.7,
+          "intensity": 0.0,
           "direction": [
             230.0,
             45.0

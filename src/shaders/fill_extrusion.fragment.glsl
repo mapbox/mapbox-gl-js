@@ -77,17 +77,32 @@ float ao_shade = 1.0;
 #endif // FAUX_AO
 
 #ifdef LIGHTING_3D_MODE
+
+float flood_radiance = 0.0;
+#ifdef FLOOD_LIGHT
+    flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
+#endif // FLOOD_LIGHT
 #ifdef RENDER_SHADOWS
-    float lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
-    color.rgb = apply_lighting(color.rgb, normal, lighting_factor);
+#ifdef FLOOD_LIGHT
+    float ndotl = max(0.0, dot(normal, u_shadow_direction));
+    float occlusion = shadow_occlusion(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+
+    // Compute both FE and flood lights separately and interpolate between the two.
+    // "litColor" uses pretty much "shadowed_light_factor_normal" as the directional component.
+    vec3 litColor = apply_lighting(color.rgb, normal, (1.0 - u_shadow_intensity * occlusion) * ndotl);
+    vec3 floodLitColor = apply_flood_lighting(u_flood_light_color * u_opacity, 1.0 - u_shadow_intensity, occlusion);
+
+    color.rgb = mix(litColor, floodLitColor, flood_radiance);
+#else // FLOOD_LIGHT
+    float shadowed_lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb = apply_lighting(color.rgb, normal, shadowed_lighting_factor);
+#endif // !FLOOD_LIGHT 
 #else // RENDER_SHADOWS
     color.rgb = apply_lighting(color.rgb, normal);
-#endif // !RENDER_SHADOWS
-
 #ifdef FLOOD_LIGHT
-    float flood_radiance = (1.0 - min(h / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_floodlight;
     color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
 #endif // FLOOD_LIGHT
+#endif // !RENDER_SHADOWS
 
     color *= u_opacity;
 #endif // LIGHTING_3D_MODE
