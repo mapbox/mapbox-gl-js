@@ -59,13 +59,14 @@ class Tiled3dWorkerTile {
         featureIndex.bucketLayerIDs = [];
         const b3dm = await load3DTile(data);
         const nodes = convertB3dm(b3dm.gltf, 1.0 / tileToMeter(params.tileID.canonical));
+        const hasMapboxMeshFeatures = b3dm.gltf.json.extensionsUsed && b3dm.gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
         for (const sourceLayerId in layerFamilies) {
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
                 const extensions = b3dm.gltf.json.extensionsUsed;
                 const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
-                // $FlowIgnore[incompatible-call] we are sure layer is a ModelStyleLayer here.
-                bucket.evaluate((layer));
+                // Upload to GPU without waiting for evaluation if we are in diffuse path
+                if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                 buckets[layer.id] = bucket;
             }
         }
