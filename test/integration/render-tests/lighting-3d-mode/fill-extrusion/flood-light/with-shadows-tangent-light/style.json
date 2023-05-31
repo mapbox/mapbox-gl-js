@@ -1,0 +1,87 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 512,
+        "height": 512,
+        "allowed": 0.0006
+      }
+    },
+    "lights": [
+      {
+        "type": "ambient",
+        "id": "environment",
+        "properties": {
+          "color": "rgba(200.0, 200.0, 255.0, 1.0)",
+          "intensity": 0.3
+        }
+      },
+      {
+        "type": "directional",
+        "id": "sun_light",
+        "properties": {
+          "color": "rgba(250.0, 250.0, 230.0, 1.0)",
+          "intensity": 0.7,
+          "direction": [
+            192.0,
+            34.0
+          ],
+          "cast-shadows": true,
+          "shadow-intensity": 1.0
+        }
+      }
+    ],
+    "sources": {
+      "mapbox": {
+        "type": "vector",
+        "maxzoom": 16,
+        "tiles": [
+          "local://tiles/{z}-{x}-{y}.mvt"
+        ]
+      }
+    },
+    "pitch": 55,
+    "zoom": 17.5,
+    "bearing": 115,
+    "center": [
+      -74.0101,
+      40.7160
+    ],
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "lightgray"
+        }
+      },
+      {
+        "id": "extrusion",
+        "type": "fill-extrusion",
+        "source": "mapbox",
+        "source-layer": "building",
+        "paint": {
+          "fill-extrusion-color": "white",
+          "fill-extrusion-height": [
+            "get",
+            "height"
+          ],
+          "fill-extrusion-opacity": 1.0,
+          "fill-extrusion-flood-light-wall-radius": [
+            "get", "height"
+          ],
+          "fill-extrusion-flood-light-ground-radius": 10.0,
+          "fill-extrusion-flood-light-color": [
+            "rgb",
+            255,
+            255,
+            127
+          ],
+          "fill-extrusion-flood-light-intensity": 1.0
+        },
+        "layout": {
+          "fill-extrusion-edge-radius": 0.99
+        }
+      }
+    ]
+  }
