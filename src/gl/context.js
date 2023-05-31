@@ -67,7 +67,6 @@ class Context {
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
-    extRenderToTextureHalfFloat: any;
     extStandardDerivatives: any;
     extDebugRendererInfo: any;
     extTimerQuery: any;
@@ -88,8 +87,6 @@ class Context {
                 deleteVertexArrayOES: gl2.deleteVertexArray.bind(gl),
                 bindVertexArrayOES: gl2.bindVertexArray.bind(gl)
             };
-
-            gl2.getExtension('EXT_color_buffer_float');
         }
 
         this.clearColor = new ClearColor(this);
@@ -143,7 +140,8 @@ class Context {
 
         if (!isWebGL2) this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (isWebGL2 || (this.extTextureHalfFloat && gl.getExtension('OES_texture_half_float_linear'))) {
-            this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
+            gl.getExtension('EXT_color_buffer_half_float');
+            gl.getExtension('EXT_color_buffer_float');
         }
         this.extStandardDerivatives = isWebGL2 || gl.getExtension('OES_standard_derivatives');
 
