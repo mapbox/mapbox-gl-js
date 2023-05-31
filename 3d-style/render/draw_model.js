@@ -301,6 +301,9 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     };
 
     const modelSource = sourceCache.getSource();
+    if (painter.renderPass === 'light-beam' && modelSource.type !== 'batched-model') {
+        return;
+    }
 
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
@@ -548,7 +551,22 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
 
     const node = nodeInfo.node;
     const context = painter.context;
-    for (const mesh of node.meshes) {
+    const isLightBeamPass = painter.renderPass === 'light-beam';
+
+    for (let i = 0; i < node.meshes.length; ++i) {
+        const mesh = node.meshes[i];
+        const isLight = i === node.lightMeshIndex;
+        if (isLight) {
+            if (!isLightBeamPass && !painter.terrain) {
+                if (painter.currentLayer < painter.firstLightBeamLayer) {
+                    painter.firstLightBeamLayer = painter.currentLayer;
+                }
+                continue;
+            }
+        } else if (isLightBeamPass) {
+            continue;
+        }
+
         const definesValues = [];
         const dynamicBuffers = [];
         setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
@@ -623,7 +641,7 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
                 material,
                 layer
         );
-        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        const depthMode = new DepthMode(context.gl.LEQUAL, isLight ? DepthMode.ReadOnly : DepthMode.ReadWrite, painter.depthRangeFor3D);
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
