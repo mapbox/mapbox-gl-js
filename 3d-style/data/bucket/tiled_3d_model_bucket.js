@@ -92,7 +92,7 @@ class Tiled3dModelBucket implements Bucket {
     elevationReadFromZ: number;
     dirty: boolean;
     brightness: ?number;
-
+    needsUpload: boolean;
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, brightness: ?number) {
         this.nodes = nodes;
@@ -110,6 +110,7 @@ class Tiled3dModelBucket implements Bucket {
         this.elevationReadFromZ = 0xff; // Re-read if underlying DEM zoom changes.
         this.brightness = brightness;
         this.dirty = true;
+        this.needsUpload = false;
     }
     update() {
         console.log("Update 3D model bucket");
@@ -118,15 +119,15 @@ class Tiled3dModelBucket implements Bucket {
         console.log("populate 3D model bucket");
     }
     uploadPending(): boolean {
-        return !this.uploaded;
+        return !this.uploaded || this.needsUpload;
     }
 
     upload(context: Context) {
-        if (this.uploaded) return;
+        if (!this.needsUpload) return;
         const nodesInfo = this.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
             const node = nodeInfo.node;
-            if (!node.meshes[0].indexArray.arrayBuffer) {
+            if (this.uploaded) {
                 this.updatePbrBuffer(node);
                 continue;
             }
@@ -137,6 +138,7 @@ class Tiled3dModelBucket implements Bucket {
             destroyNodeArrays(nodeInfo.node);
         }
         this.uploaded = true;
+        this.needsUpload = false;
     }
 
     updatePbrBuffer(node: Node) {
@@ -150,7 +152,7 @@ class Tiled3dModelBucket implements Bucket {
         const projection = painter.transform.projectionOptions;
         const calculatedBrightness = painter.style.calculateLightsBrightness();
         const brightnessChanged = this.brightness !== calculatedBrightness;
-        if (this.dirty || projection.name !== this.projection.name ||
+        if (!this.uploaded || this.dirty || projection.name !== this.projection.name ||
             expressionRequiresReevaluation(layer.paint.get('model-color-mix-intensity').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-roughness').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-emissive-strength').value, brightnessChanged) ||
@@ -160,7 +162,6 @@ class Tiled3dModelBucket implements Bucket {
             this.brightness = calculatedBrightness;
             return true;
         }
-
         return false;
     }
 
@@ -201,10 +202,10 @@ class Tiled3dModelBucket implements Bucket {
                     nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
                 }
                 delete evaluationFeature.properties['part'];
-                this.uploaded = false;
                 const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
                                          previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged);
+                this.needsUpload = true;
             }
             nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
         }

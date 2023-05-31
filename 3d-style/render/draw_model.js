@@ -676,7 +676,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
-        if (!bucket) continue;
+        if (!bucket || bucket.uploadPending()) continue;
         const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
         const nodesInfo = bucket.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
