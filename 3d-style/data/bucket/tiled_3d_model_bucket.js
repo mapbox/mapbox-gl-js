@@ -141,11 +141,16 @@ class Tiled3dModelBucket implements Bucket {
         this.needsUpload = false;
     }
 
-    updatePbrBuffer(node: Node) {
-        if (!node.meshes) return;
+    updatePbrBuffer(node: Node): boolean {
+        let result = false;
+        if (!node.meshes) return result;
         for (const mesh of node.meshes) {
-            mesh.pbrBuffer.updateData(mesh.featureArray);
+            if (mesh.pbrBuffer) {
+                mesh.pbrBuffer.updateData(mesh.featureArray);
+                result = true;
+            }
         }
+        return result;
     }
 
     needsReEvaluation(painter: Painter, zoom: number, layer: ModelStyleLayer): boolean {
@@ -205,9 +210,11 @@ class Tiled3dModelBucket implements Bucket {
                 const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
                                          previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged);
-                this.needsUpload = true;
             }
             nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
+            if (!this.updatePbrBuffer(nodeInfo.node)) {
+                this.needsUpload = true;
+            }
         }
     }
 

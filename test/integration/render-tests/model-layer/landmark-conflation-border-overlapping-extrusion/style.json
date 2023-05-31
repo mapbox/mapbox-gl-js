@@ -5,7 +5,10 @@
       "standardDerivatives": true,
       "height": 512,
       "width": 512,
-      "allowed": 0.00025
+      "allowed": 0.00025,
+       "operations": [
+        ["wait"]
+      ]
     }
   },
   "sources": {
