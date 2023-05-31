@@ -42,8 +42,8 @@ vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
 uniform highp sampler2D u_dem;
 uniform highp sampler2D u_dem_prev;
 #else
-uniform sampler2D u_dem;
-uniform sampler2D u_dem_prev;
+uniform highp sampler2D u_dem;
+uniform highp sampler2D u_dem_prev;
 #endif
 uniform vec4 u_dem_unpack;
 uniform vec2 u_dem_tl;
