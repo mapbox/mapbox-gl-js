@@ -34,6 +34,10 @@ class ModelStyleLayer extends StyleLayer {
         return true;
     }
 
+    hasLightBeamPass(): boolean {
+        return true;
+    }
+
     // $FlowFixMe[method-unbinding]
     queryRadius(): number {
         return 0;

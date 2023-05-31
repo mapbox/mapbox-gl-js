@@ -88,7 +88,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js'
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
-export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[],
     timeStamps: number[]
@@ -184,6 +184,7 @@ class Painter {
     _atmosphere: ?Atmosphere;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
+    firstLightBeamLayer: number;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -769,6 +770,7 @@ class Painter {
         this.renderPass = 'translucent';
 
         this.currentLayer = 0;
+        this.firstLightBeamLayer = Number.MAX_SAFE_INTEGER;
 
         let shadowLayers = 0;
         const shadowRenderer = this.shadowRenderer;
@@ -814,6 +816,21 @@ class Painter {
             // Render ground shadows after the last shadow caster layer
             if (!terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
                 shadowRenderer.drawGroundShadows();
+
+                if (this.firstLightBeamLayer <= this.currentLayer) { // render light beams for 3D models (all are before ground shadows)
+                    const saveCurrentLayer = this.currentLayer;
+                    this.renderPass = 'light-beam';
+                    for (this.currentLayer = this.firstLightBeamLayer; this.currentLayer <= saveCurrentLayer; this.currentLayer++) {
+                        const layer = this.style._layers[layerIds[this.currentLayer]];
+                        if (!layer.hasLightBeamPass()) continue;
+
+                        const sourceCache = style._getLayerSourceCache(layer);
+                        const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+                        this.renderLayer(this, sourceCache, layer, coords);
+                    }
+                    this.currentLayer = saveCurrentLayer;
+                    this.renderPass = 'translucent';
+                }
             }
 
             ++this.currentLayer;

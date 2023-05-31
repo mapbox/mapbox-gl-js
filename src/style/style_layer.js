@@ -279,6 +279,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    hasLightBeamPass(): boolean {
+        return false;
+    }
+
     resize() {
         // noop
     }
