@@ -232,11 +232,11 @@ float shadowed_light_factor(highp vec4 light_view_pos0, highp vec4 light_view_po
 }
 
 float shadow_occlusion(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
+    float NDotL = dot(N, u_shadow_direction);
     if (NDotL < 0.0)
         return 1.0;
     
-    highp float bias = calculate_shadow_bias(NDotL);
+    float bias = calculate_shadow_bias(NDotL);
     return shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 }
 

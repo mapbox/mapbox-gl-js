@@ -90,8 +90,8 @@ vec4 apply_lighting_with_emission_ground(vec4 color, float emissive_strength) {
 }
 
 vec3 apply_flood_lighting(vec3 flood_light_color, float fully_occluded_factor, float occlusion) {
-    vec3 ambient_contrib = u_lighting_ambient_color;
-    vec3 directional_contrib = u_lighting_directional_color * u_lighting_directional_dir.z;
+    highp vec3 ambient_contrib = u_lighting_ambient_color;
+    highp vec3 directional_contrib = u_lighting_directional_color * u_lighting_directional_dir.z;
     vec3 shadow_factor = linearTosRGB(ambient_contrib / (ambient_contrib + directional_contrib + 1e-5));
 
     // Compute final color by interpolating between the fully occluded and
