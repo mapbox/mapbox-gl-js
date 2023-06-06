@@ -178,9 +178,10 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     // array here. TODO: There might be no need to copy element by element to mesh.indexArray.
     const indexAccessor = (typeof indicesIdx === "object") ? indicesIdx : gltf.json.accessors[indicesIdx];
     assert(typeof indicesIdx === "number" || (primitive.extensions && primitive.extensions.hasOwnProperty("KHR_draco_mesh_compression")));
-    mesh.indexArray.reserve(indexAccessor.count);
+    const numTriangles = indexAccessor.count / 3;
+    mesh.indexArray.reserve(numTriangles);
     const indexArrayBuffer = getBufferData(gltf, indexAccessor);
-    for (let i = 0;  i < indexAccessor.count; i++) {
+    for (let i = 0; i < numTriangles; i++) {
         mesh.indexArray.emplaceBack(indexArrayBuffer[i * 3], indexArrayBuffer[i * 3 + 1], indexArrayBuffer[i * 3 + 2]);
     }
 
