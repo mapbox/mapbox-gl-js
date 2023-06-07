@@ -218,12 +218,12 @@ test('GlyphManager locally generates latin glyphs', (t) => {
 
     const manager = createGlyphManager('sans-serif', true);
 
-    manager.getGlyphs({'Arial Unicode MS': ['A']}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [65]}, (err, result) => {
         t.ifError(err);
         const glyphs = result['Arial Unicode MS'].glyphs;
-        t.equal(glyphs['A'].metrics.advance, 10);
-        t.equal(glyphs['A'].metrics.width, 14);
-        t.equal(glyphs['A'].metrics.height, 18);
+        t.equal(glyphs[65].metrics.advance, 10);
+        t.equal(glyphs[65].metrics.width, 14);
+        t.equal(glyphs[65].metrics.height, 18);
         t.end();
     });
 });
