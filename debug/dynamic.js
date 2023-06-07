@@ -155,7 +155,7 @@ window.dynamic = {
         },
         "mbx-3dbuildings": {
             "type": "batched-model",
-            "url": "mapbox://mapbox.mbx-3dbuildings-stg"
+            "url": "mapbox://mapbox.mbx-3dbuildings-v1"
         }
     },
     "sprite": "mapbox://sprites/mapbox-map-design/clhrnvstg01yh01pn02ty6w7p/82qb27u5bmlfnboenyglbwsa3",
