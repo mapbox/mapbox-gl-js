@@ -184,7 +184,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     for (let i = 0; i < numTriangles; i++) {
         mesh.indexArray.emplaceBack(indexArrayBuffer[i * 3], indexArrayBuffer[i * 3 + 1], indexArrayBuffer[i * 3 + 2]);
     }
-
+    mesh.indexArray._trim();
     // vertices
     mesh.vertexArray = new ModelLayoutArray();
     const positionAccessor = (typeof attributeMap.POSITION === "object") ? attributeMap.POSITION : gltf.json.accessors[attributeMap.POSITION];
@@ -193,7 +193,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     for (let i = 0; i < positionAccessor.count; i++) {
         mesh.vertexArray.emplaceBack(vertexArrayBuffer[i * 3], vertexArrayBuffer[i * 3 + 1], vertexArrayBuffer[i * 3 + 2]);
     }
-
+    mesh.vertexArray._trim();
     // bounding box
     mesh.aabb = new Aabb(positionAccessor.min, positionAccessor.max);
     mesh.centroid = computeCentroid(indexArrayBuffer, vertexArrayBuffer);
@@ -216,6 +216,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
                     mesh.colorArray.emplaceBack(colorArrayBuffer[i * 4], colorArrayBuffer[i * 4 + 1], colorArrayBuffer[i * 4 + 2], colorArrayBuffer[i * 4 + 3]);
                 }
             }
+            mesh.colorArray._trim();
         } else if (colorAccessor.componentType === GLTF_USHORT && numElements === 4) {
             mesh.colorArray = new Color4fLayoutArray();
             mesh.colorArray.resize(colorAccessor.count);
@@ -239,6 +240,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
         for (let i = 0;  i < normalAccessor.count; i++) {
             mesh.normalArray.emplaceBack(normalArrayBuffer[i * 3], normalArrayBuffer[i * 3 + 1], normalArrayBuffer[i * 3 + 2]);
         }
+        mesh.normalArray._trim();
     }
     // texcoord
     if (attributeMap.TEXCOORD_0 !== undefined && textures.length > 0) {
@@ -249,6 +251,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
         for (let i = 0;  i < texcoordAccessor.count; i++) {
             mesh.texcoordArray.emplaceBack(texcoordArrayBuffer[i * 2], texcoordArrayBuffer[i * 2 + 1]);
         }
+        mesh.texcoordArray._trim();
     }
 
     // Material
