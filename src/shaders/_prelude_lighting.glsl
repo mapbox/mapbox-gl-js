@@ -44,7 +44,7 @@ vec3 apply_lighting(vec3 color, vec3 normal, float dir_factor) {
     float ambient_directional_factor = calculate_ambient_directional_factor(normal);
     vec3 ambient_contrib = ambient_directional_factor * u_lighting_ambient_color;
     vec3 directional_contrib = u_lighting_directional_color * dir_factor;
-    return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + directional_contrib));
+    return linearProduct(color, ambient_contrib + directional_contrib);
 }
 
 vec4 apply_lighting(vec4 color, vec3 normal, float dir_factor) {
@@ -69,7 +69,7 @@ vec3 apply_lighting_ground(vec3 color) {
     // Emulate sky being brighter close to the main light source
     float ambient_directional_factor = calculate_ambient_directional_factor(vec3(0.0, 0.0, 1.0));
     vec3 ambient_contrib = u_lighting_ambient_color * ambient_directional_factor;
-    return linearTosRGB(sRGBToLinear(color) * (ambient_contrib + u_lighting_directional_color * NdotL));
+    return linearProduct(color, ambient_contrib + u_lighting_directional_color * NdotL);
 }
 
 vec4 apply_lighting_ground(vec4 color) {

@@ -20,7 +20,13 @@ vec3 linearTosRGB(vec3 color)
 // sRGB to linear approximation
 vec3 sRGBToLinear(vec3 srgbIn)
 {
-    return vec3(pow(srgbIn.xyz, vec3(2.2)));
+    return pow(srgbIn, vec3(2.2));
+}
+
+// equivalent to linearTosRGB(sRGBToLinear(srgbIn) * k)
+vec3 linearProduct(vec3 srgbIn, vec3 k)
+{
+    return srgbIn * pow(k, vec3(1./2.2));
 }
 
 // Apply depth for wireframe overlay to reduce z-fighting
