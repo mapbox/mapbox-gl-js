@@ -1,6 +1,6 @@
 // @flow
 
-import {FillExtrusionGroundLayoutArray, FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray} from '../array_types.js';
+import {FillExtrusionGroundLayoutArray, FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray, PosArray} from '../array_types.js';
 
 import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
 import SegmentVector from '../segment.js';
@@ -26,7 +26,7 @@ import {ReplacementSource, regionsEquals, footprintTrianglesIntersect} from '../
 import {clamp} from '../../util/util.js';
 import type {ClippedPolygon} from '../../util/polygon_clipping.js';
 import type {Vec3} from 'gl-matrix';
-import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -45,7 +45,6 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
-import type {Footprint} from '../../../3d-style/data/model.js';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -85,6 +84,20 @@ function addGlobeExtVertex(vertexArray: FillExtrusionExtArray, pos: {x: number, 
         normal[0] * encode, normal[1] * encode, normal[2] * encode);
 }
 
+class FootprintSegment {
+    vertexOffset: number;
+    vertexCount: number;
+    indexOffset: number;
+    indexCount: number;
+
+    constructor() {
+        this.vertexOffset = 0;
+        this.vertexCount = 0;
+        this.indexOffset = 0;
+        this.indexCount = 0;
+    }
+}
+
 // Stores centroid buffer content (one entry per feature as opposite to one entry per
 // vertex in the buffer). This information is used to do conflation vs 3d model layers.
 // PartData and BorderCentroidData are split because PartData is stored for every
@@ -94,10 +107,8 @@ export class PartData {
     vertexArrayOffset: number;
     vertexCount: number;
     flags: number;
-    footprintVertexStart: number;
-    footprintVertexCount: number;
-    footprintIndexStart: number;
-    footprintIndexCount: number;
+    footprintSegIdx: number;
+    footprintSegLen: number;
     min: Point;
     max: Point;
 
@@ -109,6 +120,8 @@ export class PartData {
         this.vertexArrayOffset = 0;
         this.vertexArrayOffset = 0;
         this.flags = 0;
+        this.footprintSegIdx = -1;
+        this.footprintSegLen = 0;
         this.min = new Point(Number.MAX_VALUE, Number.MAX_VALUE);
         this.max = new Point(-Number.MAX_VALUE, -Number.MAX_VALUE);
     }
@@ -317,8 +330,9 @@ class FillExtrusionBucket implements Bucket {
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
-    footprintVertices: Array<Point>;
-    footprintIndices: Array<number>;
+    footprintSegments: Array<FootprintSegment>
+    footprintVertices: PosArray;
+    footprintIndices: TriangleIndexArray;
 
     hasPattern: boolean;
     edgeRadius: number;
@@ -353,8 +367,9 @@ class FillExtrusionBucket implements Bucket {
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
         this.centroidData = [];
-        this.footprintIndices = [];
-        this.footprintVertices = [];
+        this.footprintIndices = new TriangleIndexArray();
+        this.footprintVertices = new PosArray();
+        this.footprintSegments = [];
 
         this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.centroidVertexArray = new FillExtrusionCentroidArray();
@@ -513,11 +528,6 @@ class FillExtrusionBucket implements Bucket {
 
         const edgeRadius = isPolygon ? this.edgeRadius : 0;
 
-        // Use slight padding when generating footprints for fill extrusions
-        const footprintPadding = isPolygon ? 3.0 : 0.0;
-        const footprintVertexStart = this.footprintVertices.length;
-        const footprintIndexStart = this.footprintIndices.length;
-
         for (const {polygon, bounds} of clippedPolygons) {
             // Only triangulate and draw the area of the feature if it is a polygon
             // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
@@ -531,6 +541,15 @@ class FillExtrusionBucket implements Bucket {
 
             // We use "(isPolygon ? 5 : 4) * numVertices" as an estimate to ensure whether additional segments are needed or not (see SegmentVector.MAX_VERTEX_ARRAY_LENGTH).
             const segment = this.segments.prepareSegment((isPolygon ? 5 : 4) * numVertices, this.layoutVertexArray, this.indexArray);
+
+            if (centroid.footprintSegIdx < 0) {
+                centroid.footprintSegIdx = this.footprintSegments.length;
+            }
+
+            const fpSegment = new FootprintSegment();
+            fpSegment.vertexOffset = this.footprintVertices.length;
+            fpSegment.indexOffset = this.footprintIndices.length * 3;
+
             if (isPolygon) {
                 const flattened = [];
                 const holeIndices = [];
@@ -558,32 +577,25 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
                         let {x, y} = p1;
-                        let footprintPoint = p1;
 
                         if (edgeRadius === 0) {
                             groundPolyline.push(p1);
                         }
 
-                        if (edgeRadius || footprintPadding) {
+                        if (edgeRadius) {
                             nb = p2.sub(p1)._perp()._unit();
                             const nm = na.add(nb)._unit();
                             const cosHalfAngle = na.x * nm.x + na.y * nm.y;
-                            if (edgeRadius) {
-                                const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
-                                x += offset * nm.x;
-                                y += offset * nm.y;
-                            }
-                            if (footprintPadding) {
-                                const offset = footprintPadding * Math.min(4, 1 / cosHalfAngle);
-                                footprintPoint = footprintPoint.add(nm._mult(offset));
-                            }
+                            const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
+                            x += offset * nm.x;
+                            y += offset * nm.y;
                             na = nb;
                         }
 
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
-                        this.footprintVertices.push(footprintPoint);
+                        this.footprintVertices.emplaceBack(x, y);
 
                         // triangulate as if vertices were not offset to ensure correct triangulation
                         flattened.push(p1.x, p1.y);
@@ -605,9 +617,10 @@ class FillExtrusionBucket implements Bucket {
                 assert(indices.length % 3 === 0);
 
                 for (let j = 0; j < indices.length; j += 3) {
-                    this.footprintIndices.push(indices[j]);
-                    this.footprintIndices.push(indices[j + 1]);
-                    this.footprintIndices.push(indices[j + 2]);
+                    this.footprintIndices.emplaceBack(
+                        fpSegment.vertexOffset + indices[j + 0],
+                        fpSegment.vertexOffset + indices[j + 1],
+                        fpSegment.vertexOffset + indices[j + 2]);
 
                     // clockwise winding order.
                     this.indexArray.emplaceBack(
@@ -616,6 +629,9 @@ class FillExtrusionBucket implements Bucket {
                         topIndex + indices[j + 1]);
                     segment.primitiveLength++;
                 }
+
+                fpSegment.indexCount += indices.length;
+                fpSegment.vertexCount += this.footprintVertices.length - fpSegment.vertexOffset;
             }
 
             for (let r = 0; r < polygon.length; r++) {
@@ -772,16 +788,13 @@ class FillExtrusionBucket implements Bucket {
                     this.groundEffect.addData(groundPolyline, bounds);
                 }
             }
+            this.footprintSegments.push(fpSegment);
+            ++centroid.footprintSegLen;
         }
 
         assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
 
         centroid.vertexCount = this.layoutVertexArray.length - centroid.vertexArrayOffset;
-        centroid.footprintVertexStart = footprintVertexStart;
-        centroid.footprintVertexCount = this.footprintVertices.length - footprintVertexStart;
-        centroid.footprintIndexStart = footprintIndexStart;
-        centroid.footprintIndexCount = this.footprintIndices.length - footprintIndexStart;
-
         if (centroid.vertexCount === 0) {
             return;
         }
@@ -886,8 +899,16 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
+        const transformedVertices: Array<Point> = [];
+
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
+            // Apply slight padding (one unit) to fill extrusion footprints unless chamfering is already being used.
+            // This reduces false positives where two adjacent lines would be reported overlapping due
+            // to limited precision (16 bit) of tile units.
+            const minPadding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
+            const padding = Math.max(minPadding - this.edgeRadius, 0.0);
+
             for (const centroid of this.centroidData) {
                 if (centroid.flags & PartData.HiddenByReplacement) {
                     continue;
@@ -901,14 +922,31 @@ class FillExtrusionBucket implements Bucket {
                     continue;
                 }
 
-                if (footprintsIntersect(
-                    region.footprint,
-                    this.footprintVertices,
-                    this.footprintIndices,
-                    centroid,
-                    region.footprintTileId,
-                    coord.toUnwrapped())) {
-                    centroid.flags |= PartData.HiddenByReplacement;
+                for (let i = 0; i < centroid.footprintSegLen; i++) {
+                    const seg = this.footprintSegments[centroid.footprintSegIdx + i];
+
+                    // Transform vertices to footprint's coordinate space
+                    transformedVertices.length = 0;
+
+                    transformFootprintVertices(
+                        this.footprintVertices,
+                        seg.vertexOffset,
+                        seg.vertexCount,
+                        region.footprintTileId.canonical,
+                        coord.canonical,
+                        transformedVertices);
+
+                    if (footprintTrianglesIntersect(
+                        region.footprint,
+                        transformedVertices,
+                        this.footprintIndices.uint16,
+                        seg.indexOffset,
+                        seg.indexCount,
+                        -seg.vertexOffset,
+                        -padding)) {
+                        centroid.flags |= PartData.HiddenByReplacement;
+                        break;
+                    }
                 }
             }
         }
@@ -941,6 +979,7 @@ function _getRoundedEdgeOffset(p0: Point, p1: Point, p2: Point, cosHalfAngle: nu
 
 register(FillExtrusionBucket, 'FillExtrusionBucket', {omit: ['layers', 'features']});
 register(PartData, 'PartData');
+register(FootprintSegment, 'FootprintSegment');
 register(BorderCentroidData, 'BorderCentroidData');
 register(GroundEffect, 'GroundEffect');
 
@@ -1031,24 +1070,16 @@ export function resampleFillExtrusionPolygonsForGlobe(polygons: Point[][][], til
     return subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
 }
 
-function footprintsIntersect(footprint: Footprint, vertices: Array<Point>, indices: Array<number>, centroid: PartData, footprintId: UnwrappedTileID, centroidId: UnwrappedTileID): boolean {
-    const srcId = centroidId.canonical;
-    const dstId = footprintId.canonical;
-    const zDiff = Math.pow(2.0, dstId.z - srcId.z);
+function transformFootprintVertices(vertices: PosArray, offset: number, count: number, footprintId: CanonicalTileID, centroidId: CanonicalTileID, out: Array<Point>) {
+    const zDiff = Math.pow(2.0, footprintId.z - centroidId.z);
 
-    // Convert centroid certices to footprint's coordinate space
-    const transformedIndices = indices.slice(centroid.footprintIndexStart, centroid.footprintIndexStart + centroid.footprintIndexCount);
-    const transformedVertices: Array<Point> = [];
-    const offset = centroid.footprintVertexStart;
-    const count = centroid.footprintVertexCount;
+    for (let i = 0; i < count; i++) {
+        let x = vertices.int16[(i + offset) * 2 + 0];
+        let y = vertices.int16[(i + offset) * 2 + 1];
 
-    for (let i = offset; i < offset + count; i++) {
-        const v = vertices[i];
-        const x = (v.x + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT;
-        const y = (v.y + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT;
+        x = (x + centroidId.x * EXTENT) * zDiff - footprintId.x * EXTENT;
+        y = (y + centroidId.y * EXTENT) * zDiff - footprintId.y * EXTENT;
 
-        transformedVertices.push(new Point(x, y));
+        out.push(new Point(x, y));
     }
-
-    return footprintTrianglesIntersect(footprint, transformedVertices, transformedIndices);
 }

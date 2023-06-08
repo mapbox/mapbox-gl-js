@@ -2,7 +2,7 @@ import {test} from '../../util/test.js';
 import {ReplacementSource} from '../../../3d-style/source/replacement_source.js';
 import {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id.js';
 import Point from '@mapbox/point-geometry';
-import GridIndex from 'grid-index';
+import TriangleGridIndex from '../../../src/util/triangle_grid_index.js';
 
 test('ReplacementSource', (t) => {
     const footprintSetA = [
@@ -33,10 +33,7 @@ test('ReplacementSource', (t) => {
         ].map(p => new Point(p[0], p[1]));
 
         const indices = [0, 1, 2, 2, 3, 0];
-        const grid = new GridIndex(Math.max(max.x - min.x, max.y - min.y), 8, 0);
-
-        grid.insert(0, 0, 0, max.x - min.x, max.y - min.y);
-        grid.insert(1, 0, 0, max.x - min.x, max.y - min.y);
+        const grid = new TriangleGridIndex(vertices, indices, 6);
 
         return {
             footprint: {

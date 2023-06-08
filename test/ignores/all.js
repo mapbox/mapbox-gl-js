@@ -28,8 +28,7 @@ const todo = [
     "render-tests/terrain/symbol-draping/style.json",
 
     // Requires complete landmark rendering support such as shadows and materials
-    "render-tests/model-layer/landmark-conflation-buckingham",
-    "render-tests/model-layer/landmark-conflation-multiple-model-layers"
+    "render-tests/model-layer/landmark-conflation-buckingham"
 ];
 
 const skip = [
