@@ -91,11 +91,15 @@ highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
 #ifdef TEXTURE_GATHER
     // sample at the position between 4 texels, with offset of 2 horizontally and vertically.
-    vec2 uv00 = (texel - f + 0.5) * s;
+    highp vec2 uv00 = (texel - f + 0.5) * s;
+    highp vec2 uv10 = uv00 + vec2(2.0 * s, 0);
+    highp vec2 uv01 = uv00 + vec2(0, 2.0 * s);
+    highp vec2 uv11 = uv10 + vec2(0, 2.0 * s);
+
     highp vec4 d00 = textureGather(u_shadowmap_0, uv00);
-    highp vec4 d10 = textureGather(u_shadowmap_0, uv00 + vec2(2.0 * s, 0), 0);
-    highp vec4 d01 = textureGather(u_shadowmap_0, uv00 + vec2(0, 2.0 * s), 0);
-    highp vec4 d11 = textureGather(u_shadowmap_0, uv00 + vec2(2.0 * s, 2.0 * s), 0);
+    highp vec4 d10 = textureGather(u_shadowmap_0, uv10);
+    highp vec4 d01 = textureGather(u_shadowmap_0, uv01);
+    highp vec4 d11 = textureGather(u_shadowmap_0, uv11);
     highp vec4 c00 = step(d00, vec4(compare0));
     highp vec4 c01 = step(d01, vec4(compare0));
     highp vec4 c10 = step(d10, vec4(compare0));
