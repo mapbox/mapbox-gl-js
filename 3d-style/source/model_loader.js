@@ -19,7 +19,7 @@ import earcut from 'earcut';
 import window from '../../src/util/window.js';
 import {warnOnce, base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
-import GridIndex from 'grid-index';
+import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 
 // From https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
 
@@ -301,9 +301,6 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
         node.meshes = meshes[nodeDesc.mesh];
     }
     if (nodeDesc.extras) {
-        if (nodeDesc.extras.ground) {
-            node.footprint = convertFootprint(nodeDesc.extras.ground);
-        }
         if (nodeDesc.extras.id) {
             node.id = nodeDesc.extras.id;
         }
@@ -336,9 +333,48 @@ function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>)
     return node;
 }
 
-function convertFootprint(groundObject: Object): ?Footprint {
+type FootprintMesh = {
+    vertices: Array<Point>;
+    indices: Array<number>;
+};
 
-    const groundContainer = groundObject;
+function convertFootprint(mesh: FootprintMesh): ?Footprint {
+    if (mesh.vertices.length === 0 || mesh.indices.length === 0) {
+        return null;
+    }
+
+    const [min, max] = [mesh.vertices[0].clone(), mesh.vertices[0].clone()];
+
+    for (let i = 1; i < mesh.vertices.length; ++i) {
+        const v = mesh.vertices[i];
+        min.x = Math.min(min.x, v.x);
+        min.y = Math.min(min.y, v.y);
+        max.x = Math.max(max.x, v.x);
+        max.y = Math.max(max.y, v.y);
+    }
+
+    // Use a fixed size triangle grid (8x8 cells) for acceleration intersection queries
+    // with an exception that the cell size should never be larger than 256 tile units
+    // (equals to 32x32 subdivision).
+    const optimalCellCount = Math.ceil(Math.max(max.x - min.x, max.y - min.y) / 256);
+    const cellCount = Math.max(8, optimalCellCount);
+    const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, cellCount);
+
+    return {
+        vertices: mesh.vertices,
+        indices: mesh.indices,
+        grid,
+        min,
+        max
+    };
+}
+
+function parseLegacyFootprintMesh(gltfNode: Object): ?FootprintMesh {
+    if (!gltfNode.extras || !gltfNode.extras.ground) {
+        return null;
+    }
+
+    const groundContainer = gltfNode.extras.ground;
     if (!groundContainer || !Array.isArray(groundContainer) || groundContainer.length === 0) {
         return null;
     }
@@ -366,25 +402,16 @@ function convertFootprint(groundObject: Object): ?Footprint {
         vertices.push(new Point(x, y));
     }
 
-    if (vertices.length > 1 && vertices[vertices.length - 1].equals(vertices[0])) {
-        vertices.pop();
-    }
-
     if (vertices.length < 3) {
         return null;
     }
 
+    if (vertices.length > 1 && vertices[vertices.length - 1].equals(vertices[0])) {
+        vertices.pop();
+    }
+
     // Ensure that the vertex list is defined in CW order
     let cross = 0;
-
-    const getTriangleBounds = (out: Array<number>, a: Point, b: Point, c: Point) => {
-        out[0] = Math.min(a.x, b.x, c.x);
-        out[1] = Math.min(a.y, b.y, c.y);
-        out[2] = Math.max(a.x, b.x, c.x);
-        out[3] = Math.max(a.y, b.y, c.y);
-    };
-
-    const minmax = [Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
 
     for (let i = 0; i < vertices.length; i++) {
         const a = vertices[i];
@@ -392,11 +419,6 @@ function convertFootprint(groundObject: Object): ?Footprint {
         const c = vertices[(i + 2) % vertices.length];
 
         cross += (a.x - b.x) * (c.y - b.y) - (c.x - b.x) * (a.y - b.y);
-
-        minmax[0] = Math.min(minmax[0], a.x, b.x, c.x);
-        minmax[1] = Math.min(minmax[1], a.y, b.y, c.y);
-        minmax[2] = Math.max(minmax[2], a.x, b.x, c.x);
-        minmax[3] = Math.max(minmax[3], a.y, b.y, c.y);
     }
 
     if (cross > 0) {
@@ -407,32 +429,125 @@ function convertFootprint(groundObject: Object): ?Footprint {
     // more performant intersection queries.
     const indices = earcut(vertices.flatMap(v => [v.x, v.y]), []);
 
-    const min = new Point(minmax[0], minmax[1]);
-    const max = new Point(minmax[2], minmax[3]);
-    let gridExtent = Math.max(max.x - min.x, max.y - min.y);
-
-    if (gridExtent === 0)
-        gridExtent = 1;
-
-    const grid = new GridIndex(gridExtent, 8, 0);
-    const bounds = [];
-
-    for (let i = 0, idx = 0; i < indices.length; i += 3) {
-        const v0 = vertices[indices[i + 0]];
-        const v1 = vertices[indices[i + 1]];
-        const v2 = vertices[indices[i + 2]];
-
-        getTriangleBounds(bounds, v0, v1, v2);
-        grid.insert(idx++, bounds[0] - min.x, bounds[1] - min.y, bounds[2] - min.x, bounds[3] - min.y);
+    if (indices.length === 0) {
+        return null;
     }
 
-    return {
-        vertices,
-        indices,
-        grid,
-        min,
-        max
-    };
+    return {vertices, indices};
+}
+
+function parseNodeFootprintMesh(meshes: Array<Mesh>): ?FootprintMesh {
+    const vertices: Array<Point> = [];
+    const indices: Array<number> = [];
+
+    let baseVertex = 0;
+
+    for (const mesh of meshes) {
+        baseVertex = vertices.length;
+
+        const vArray = mesh.vertexArray.float32;
+        const iArray = mesh.indexArray.uint16;
+
+        for (let i = 0; i < mesh.vertexArray.length; i++) {
+            vertices.push(new Point(vArray[i * 3 + 0], vArray[i * 3 + 1]));
+        }
+
+        for (let i = 0; i < mesh.indexArray.length * 3; i++) {
+            indices.push(iArray[i] + baseVertex);
+        }
+    }
+
+    if (indices.length % 3 !== 0) {
+        return null;
+    }
+
+    for (let i = 0; i < indices.length; i += 3) {
+        const a = vertices[indices[i + 0]];
+        const b = vertices[indices[i + 1]];
+        const c = vertices[indices[i + 2]];
+
+        if ((a.x - b.x) * (c.y - b.y) - (c.x - b.x) * (a.y - b.y) > 0) {
+            // $FlowIssue[unsupported-syntax]
+            [indices[i + 1], indices[i + 2]] = [indices[i + 2], indices[i + 1]];
+        }
+    }
+
+    return {vertices, indices};
+}
+
+function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNodes: any) {
+    // modelNodes == a list of nodes in the gltf file
+    // sceneNodes == an index array pointing to modelNodes being parsed
+    assert(convertedNodes.length === sceneNodes.length);
+
+    // Two different footprint formats are supported:
+    //  1) Legacy format where footprints are defined as a linestring json
+    //     inside extras-section of the node.
+    //  2) Version "1" where footprints are included as regular gltf meshes and
+    //     connected to correct models via matching ids.
+
+    // Find footprint-only nodes from the list.
+    const nodeFootprintLookup = {};
+    const footprintNodeIndices = new Set();
+
+    for (let i = 0; i < convertedNodes.length; i++) {
+        const gltfNode = modelNodes[sceneNodes[i]];
+
+        if (!gltfNode.extras) {
+            continue;
+        }
+
+        const fpVersion = gltfNode.extras["mapbox:footprint:version"];
+        const fpId = gltfNode.extras["mapbox:footprint:id"];
+
+        if (fpVersion || fpId) {
+            footprintNodeIndices.add(i);
+        }
+
+        if (fpVersion !== "1.0.0" || !fpId) {
+            continue;
+        }
+
+        nodeFootprintLookup[fpId] = i;
+    }
+
+    // Go through nodes and see if either of the supported footprint formats are defined
+    for (let i = 0; i < convertedNodes.length; i++) {
+        if (footprintNodeIndices.has(i)) {
+            continue;
+        }
+
+        const node = convertedNodes[i];
+        const gltfNode = modelNodes[sceneNodes[i]];
+
+        if (!gltfNode.extras) {
+            continue;
+        }
+
+        // Prefer footprint nodes over the legacy format
+        let fpMesh: ?FootprintMesh = null;
+
+        if (node.id in nodeFootprintLookup) {
+            fpMesh = parseNodeFootprintMesh(convertedNodes[nodeFootprintLookup[node.id]].meshes);
+        }
+
+        if (!fpMesh) {
+            fpMesh = parseLegacyFootprintMesh(gltfNode);
+        }
+
+        if (fpMesh) {
+            node.footprint = convertFootprint(fpMesh);
+        }
+    }
+
+    // Remove footprint nodes as they serve no other purpose
+    if (footprintNodeIndices.size > 0) {
+        const nodesToRemove = Array.from(footprintNodeIndices.values()).sort((a, b) => a - b);
+
+        for (let i = nodesToRemove.length - 1; i >= 0; i--) {
+            convertedNodes.splice(nodesToRemove[i], 1);
+        }
+    }
 }
 
 export default function convertModel(gltf: Object): Array<Node> {
@@ -449,6 +564,7 @@ export default function convertModel(gltf: Object): Array<Node> {
         const nodeDesc = gltf.json.nodes[nodeIdx];
         nodes.push(convertNode(nodeDesc, gltf, meshes));
     }
+    convertFootprints(nodes, gltfNodes, gltf.json.nodes);
     return nodes;
 }
 

@@ -129,7 +129,7 @@ class ReplacementSource {
         }
 
         for (const fp of footprints) {
-            if ((fp.footprint.grid: any).keys.length === 0) {
+            if (!fp.footprint) {
                 continue;
             }
 
@@ -307,39 +307,31 @@ function transformAabbToTile(min: Point, max: Point, id: UnwrappedTileID): {min:
     };
 }
 
-function footprintTrianglesIntersect(footprint: Footprint, vertices: Array<Point>, indices: Array<number>): boolean {
+function footprintTrianglesIntersect(footprint: Footprint, vertices: Array<Point>, indices: Array<number> | Uint16Array, indexOffset: number, indexCount: number, baseVertex: number, padding: number): boolean {
     const fpIndices = footprint.indices;
     const fpVertices = footprint.vertices;
+    const candidateTriangles = [];
 
-    for (let i = 0; i < indices.length; i += 3) {
-        const v0 = vertices[indices[i + 0]];
-        const v1 = vertices[indices[i + 1]];
-        const v2 = vertices[indices[i + 2]];
+    for (let i = indexOffset; i < indexOffset + indexCount; i += 3) {
+        const a = vertices[indices[i + 0] + baseVertex];
+        const b = vertices[indices[i + 1] + baseVertex];
+        const c = vertices[indices[i + 2] + baseVertex];
 
-        // Compute vertices relative to the minimum coordinate of the grid
-        const gridV0 = new Point(v0.x - footprint.min.x, v0.y - footprint.min.y);
-        const gridV1 = new Point(v1.x - footprint.min.x, v1.y - footprint.min.y);
-        const gridV2 = new Point(v2.x - footprint.min.x, v2.y - footprint.min.y);
+        const mnx = Math.min(a.x, b.x, c.x);
+        const mxx = Math.max(a.x, b.x, c.x);
+        const mny = Math.min(a.y, b.y, c.y);
+        const mxy = Math.max(a.y, b.y, c.y);
 
-        const mnx = Math.min(gridV0.x, gridV1.x, gridV2.x);
-        const mxx = Math.max(gridV0.x, gridV1.x, gridV2.x);
-        const mny = Math.min(gridV0.y, gridV1.y, gridV2.y);
-        const mxy = Math.max(gridV0.y, gridV1.y, gridV2.y);
+        candidateTriangles.length = 0;
+        footprint.grid.query(new Point(mnx, mny), new Point(mxx, mxy), candidateTriangles);
 
-        const matching = footprint.grid.query(mnx, mny, mxx, mxy, (bx1, by1, bx2, by2) => {
-            if (mxx < bx1 || mnx > bx2)
-                return false;
-            if (mxy < by1 || mny > by2)
-                return false;
-            return true;
-        });
+        for (let j = 0; j < candidateTriangles.length; j++) {
+            const triIdx = candidateTriangles[j];
+            const v0 = fpVertices[fpIndices[triIdx * 3 + 0]];
+            const v1 = fpVertices[fpIndices[triIdx * 3 + 1]];
+            const v2 = fpVertices[fpIndices[triIdx * 3 + 2]];
 
-        for (const triIdx of matching) {
-            const a = fpVertices[fpIndices[triIdx * 3 + 0]];
-            const b = fpVertices[fpIndices[triIdx * 3 + 1]];
-            const c = fpVertices[fpIndices[triIdx * 3 + 2]];
-
-            if (triangleIntersectsTriangle(a, b, c, v0, v1, v2)) {
+            if (triangleIntersectsTriangle(v0, v1, v2, a, b, c, padding)) {
                 return true;
             }
         }
@@ -349,7 +341,7 @@ function footprintTrianglesIntersect(footprint: Footprint, vertices: Array<Point
 }
 
 function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint, bTile: UnwrappedTileID): boolean {
-    if ((a.grid: any).keys.length === 0 || (b.grid: any).keys.length === 0) {
+    if (!a || !b) {
         return false;
     }
 
@@ -373,7 +365,7 @@ function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint,
         });
     }
 
-    return footprintTrianglesIntersect(b, queryVertices, a.indices);
+    return footprintTrianglesIntersect(b, queryVertices, a.indices, 0, a.indices.length, 0, 0);
 }
 
 export type {TileFootprint, FootprintSource, Region};

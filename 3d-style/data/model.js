@@ -21,7 +21,7 @@ import MercatorCoordinate, {getMetersPerPixelAtLatitude, getLatitudeScale, merca
 import Transform from '../../src/geo/transform.js';
 import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convertModelMatrixForGlobe} from '../util/model_util.js';
 import type Point from '@mapbox/point-geometry';
-import type GridIndex from 'grid-index';
+import type TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 
 export type Sampler = {
     minFilter: TextureFilter;
@@ -81,7 +81,7 @@ export type Mesh = {
 export type Footprint = {
     vertices: Array<Point>;
     indices: Array<number>;
-    grid: GridIndex;
+    grid: TriangleGridIndex;
     min: Point;
     max: Point;
 }

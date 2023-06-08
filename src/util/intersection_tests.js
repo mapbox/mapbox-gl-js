@@ -208,32 +208,47 @@ function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
 }
 
 // Checks whether the triangle [p0, p1, p2] is on the left side of the edge [a, b].
-function triangleLeftSideOfEdge(a: Point, b: Point, p0: Point, p1: Point, p2: Point): boolean {
-    const ex = b.x - a.x;
-    const ey = b.y - a.y;
-    if ((p0.x - a.x) * ey - (p0.y - a.y) * ex < 0) {
+function triangleLeftSideOfEdge(a: Point, b: Point, p0: Point, p1: Point, p2: Point, padding: ?number): boolean {
+    let nx = b.y - a.y;
+    let ny = a.x - b.x;
+
+    padding = padding || 0;
+
+    if (padding) {
+        const nLenSq = nx * nx + ny * ny;
+        if (nLenSq === 0) {
+            return true;
+        }
+
+        const len = Math.sqrt(nLenSq);
+        nx /= len;
+        ny /= len;
+    }
+
+    if ((p0.x - a.x) * nx + (p0.y - a.y) * ny - padding < 0) {
         return false;
-    } else if ((p1.x - a.x) * ey - (p1.y - a.y) * ex < 0) {
+    } else if ((p1.x - a.x) * nx + (p1.y - a.y) * ny - padding < 0) {
         return false;
-    } else if ((p2.x - a.x) * ey - (p2.y - a.y) * ex < 0) {
+    } else if ((p2.x - a.x) * nx + (p2.y - a.y) * ny - padding < 0) {
         return false;
     }
+
     return true;
 }
 
-function triangleIntersectsTriangle(a0: Point, b0: Point, c0: Point, a1: Point, b1: Point, c1: Point): boolean {
+function triangleIntersectsTriangle(a0: Point, b0: Point, c0: Point, a1: Point, b1: Point, c1: Point, padding: ?number): boolean {
     // Triangles are not intersecting if even one separating axis can be found
-    if (triangleLeftSideOfEdge(a0, b0, a1, b1, c1)) {
+    if (triangleLeftSideOfEdge(a0, b0, a1, b1, c1, padding)) {
         return false;
-    } else if (triangleLeftSideOfEdge(b0, c0, a1, b1, c1)) {
+    } else if (triangleLeftSideOfEdge(b0, c0, a1, b1, c1, padding)) {
         return false;
-    } else if (triangleLeftSideOfEdge(c0, a0, a1, b1, c1)) {
+    } else if (triangleLeftSideOfEdge(c0, a0, a1, b1, c1, padding)) {
         return false;
-    } else if (triangleLeftSideOfEdge(a1, b1, a0, b0, c0)) {
+    } else if (triangleLeftSideOfEdge(a1, b1, a0, b0, c0, padding)) {
         return false;
-    } else if (triangleLeftSideOfEdge(b1, c1, a0, b0, c0)) {
+    } else if (triangleLeftSideOfEdge(b1, c1, a0, b0, c0, padding)) {
         return false;
-    } else if (triangleLeftSideOfEdge(c1, a1, a0, b0, c0)) {
+    } else if (triangleLeftSideOfEdge(c1, a1, a0, b0, c0, padding)) {
         return false;
     }
     return true;
