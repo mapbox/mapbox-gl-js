@@ -21,6 +21,7 @@ import Color from '../style-spec/util/color.js';
 import Context from '../gl/context.js';
 import {Terrain} from '../terrain/terrain.js';
 import Tile from '../source/tile.js';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -165,6 +166,15 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const shadowRenderer = painter.shadowRenderer;
     const drawDepth = isShadowPass && !!shadowRenderer;
 
+    let groundShadowFactor: [number, number, number] = [0, 0, 0];
+    if (shadowRenderer) {
+        const directionalLight = painter.style.directionalLight;
+        const ambientLight = painter.style.ambientLight;
+        if (directionalLight && ambientLight) {
+            groundShadowFactor = calculateGroundShadowFactor(directionalLight, ambientLight);
+        }
+    }
+
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
@@ -222,8 +232,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
+
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity);
+                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);
             }
         }
 
