@@ -18,6 +18,10 @@ float line_df(highp vec2 a, highp vec2 b, highp vec2 p) {
     highp float r = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - r * ba);
 }
+
+#ifdef FOG
+varying highp float v_fog;
+#endif
 #endif
 
 void main() {
@@ -28,21 +32,17 @@ void main() {
     d = min(d, 1.0);
     d = 1.0 - pow(1.0 - d, u_attenuation);
     highp float effect_intensity = mix(u_flood_light_intensity, v_ao.x, u_ao_pass);
-    vec4 color = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity));
+    highp float fog = 1.0;
+#ifdef FOG
+    fog = v_fog;
+#endif
+    vec4 color = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
     gl_FragColor = color;
 #else // SDF_SUBPASS
-    vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
-    
-#ifdef FOG
-    color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
-#endif
-    gl_FragColor = color;
-
+    gl_FragColor = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
 #endif
-
     HANDLE_WIREFRAME_DEBUG;
-
-#endif
+#endif // !SDF_SUBPASS
 }

@@ -6,6 +6,9 @@ varying highp vec2 v_pos;
 varying highp vec4 v_line_segment;
 varying highp float v_flood_light_radius_tile;
 varying highp vec2 v_ao;
+#ifdef FOG
+varying highp float v_fog;
+#endif
 #endif
 
 uniform highp float u_flood_light_intensity;
@@ -15,6 +18,7 @@ uniform highp float u_ao_pass;
 uniform highp float u_meter_to_tile;
 
 uniform highp vec2 u_ao;
+
 #pragma mapbox: define highp float flood_light_ground_radius
 #pragma mapbox: define highp float base
 
@@ -41,7 +45,10 @@ void main() {
     v_pos = pos.xy;
     v_line_segment = vec4(p, q);
     v_flood_light_radius_tile = flood_radius_tile;
-    v_ao = vec2(u_ao.x, ao_radius); 
+    v_ao = vec2(u_ao.x, ao_radius);
+#ifdef FOG
+    v_fog = 1.0 - fog(fog_position(pos));
+#endif
 #endif
 
     vec2 centroid_pos = vec2(0.0);
@@ -54,9 +61,5 @@ void main() {
     hidden += float(base > 0.0); // vertex base is above ground.
     hidden += float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0); // vertex is replaced by landmark geometry.
 
-    gl_Position = mix(u_matrix * vec4(pos, 1.0), AWAY, hidden);
-
-#ifdef FOG
-    v_fog_pos = fog_position(pos);
-#endif
+    gl_Position = mix(u_matrix * vec4(pos, 1.0), AWAY, float(hidden > 0.0));
 }
