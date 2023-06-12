@@ -5242,7 +5242,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ]
       },
       "sdk-support": {
@@ -5264,7 +5265,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ]
       },
       "sdk-support": {
