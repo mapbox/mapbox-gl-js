@@ -384,7 +384,7 @@ export function getGlyphQuads(anchor: Anchor,
                 const verticalAdvance = positionedGlyph.imageName ? metrics.advance * positionedGlyph.scale :
                     ONE_EM * positionedGlyph.scale;
                 // Check wether the glyph is generated from server side or locally
-                const chr = String.fromCharCode(positionedGlyph.glyph);
+                const chr = String.fromCodePoint(positionedGlyph.glyph);
                 if (isVerticalClosePunctuation(chr)) {
                     // Place vertical punctuation in right place, pull down 1 pixel's space for close punctuations
                     tl.x += (-rectBuffer + 1) * positionedGlyph.scale;

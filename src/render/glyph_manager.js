@@ -187,13 +187,16 @@ class GlyphManager {
             return !!this.localFontFamily;
         } else {
             /* eslint-disable new-cap */
-            return !!this.localFontFamily &&
-            ((isChar['CJK Unified Ideographs'](id) ||
+            return !!this.localFontFamily && (
+                isChar['CJK Unified Ideographs'](id) ||
                 isChar['Hangul Syllables'](id) ||
                 isChar['Hiragana'](id) ||
-                isChar['Katakana'](id)) ||
+                isChar['Katakana'](id) ||
                 // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
-                isChar['CJK Symbols and Punctuation'](id));
+                isChar['CJK Symbols and Punctuation'](id) ||
+                isChar['CJK Unified Ideographs Extension A'](id) ||
+                isChar['CJK Unified Ideographs Extension B'](id) // very rare surrogate characters
+            );
             /* eslint-enable new-cap */
         }
     }
@@ -224,7 +227,7 @@ class GlyphManager {
             return this.localGlyphs[tinySDF.fontWeight][id];
         }
 
-        const char = String.fromCharCode(id);
+        const char = String.fromCodePoint(id);
         const {data, width, height, glyphWidth, glyphHeight, glyphLeft, glyphTop, glyphAdvance} = tinySDF.draw(char);
         /*
         TinySDF's "top" is the distance from the alphabetic baseline to the

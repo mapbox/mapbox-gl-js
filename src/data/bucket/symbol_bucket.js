@@ -461,8 +461,10 @@ class SymbolBucket implements Bucket {
 
     calculateGlyphDependencies(text: string, stack: {[_: number]: boolean}, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
         for (let i = 0; i < text.length; i++) {
-            stack[text.charCodeAt(i)] = true;
-            if (allowVerticalPlacement && doesAllowVerticalWritingMode) {
+            const codePoint = text.codePointAt(i);
+            if (codePoint === undefined) break;
+            stack[codePoint] = true;
+            if (allowVerticalPlacement && doesAllowVerticalWritingMode && codePoint <= 65535) {
                 const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                 if (verticalChar) {
                     stack[verticalChar.charCodeAt(0)] = true;

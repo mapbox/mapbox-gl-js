@@ -153,8 +153,8 @@ class TaggedString {
         return this.sectionIndex[index];
     }
 
-    getCharCode(index: number): number {
-        return this.text.charCodeAt(index);
+    getCodePoint(index: number): number {
+        return this.text.codePointAt(index);
     }
 
     verticalizePunctuation(skipContextChecking: boolean) {
@@ -216,7 +216,7 @@ class TaggedString {
             return;
         }
 
-        this.text += String.fromCharCode(nextImageSectionCharCode);
+        this.text += String.fromCodePoint(nextImageSectionCharCode);
         this.sections.push(SectionOptions.forImage(imageName));
         this.sectionIndex.push(this.sections.length - 1);
     }
@@ -379,7 +379,7 @@ function determineAverageLineWidth(logicalInput: TaggedString,
 
     for (let index = 0; index < logicalInput.length(); index++) {
         const section = logicalInput.getSection(index);
-        totalWidth += getGlyphAdvance(logicalInput.getCharCode(index), section, glyphMap, imagePositions, spacing, layoutTextSize);
+        totalWidth += getGlyphAdvance(logicalInput.getCodePoint(index), section, glyphMap, imagePositions, spacing, layoutTextSize);
     }
 
     const lineCount = Math.max(1, Math.ceil(totalWidth / maxWidth));
@@ -491,7 +491,7 @@ function determineLineBreaks(logicalInput: TaggedString,
 
     for (let i = 0; i < logicalInput.length(); i++) {
         const section = logicalInput.getSection(i);
-        const codePoint = logicalInput.getCharCode(i);
+        const codePoint = logicalInput.getCodePoint(i);
         if (!whitespace[codePoint]) currentX += getGlyphAdvance(codePoint, section, glyphMap, imagePositions, spacing, layoutTextSize);
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
@@ -506,7 +506,7 @@ function determineLineBreaks(logicalInput: TaggedString,
                         currentX,
                         targetWidth,
                         potentialLineBreaks,
-                        calculatePenalty(codePoint, logicalInput.getCharCode(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
+                        calculatePenalty(codePoint, logicalInput.getCodePoint(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
                         false));
             }
         }
@@ -614,7 +614,7 @@ function shapeLines(shaping: Shaping,
         for (let i = 0; i < line.length(); i++) {
             const section = line.getSection(i);
             const sectionIndex = line.getSectionIndex(i);
-            const codePoint = line.getCharCode(i);
+            const codePoint = line.getCodePoint(i);
 
             let sectionScale = section.scale;
             let metrics = null;
