@@ -1,10 +1,12 @@
 // @flow
 
 import extend from '../util/extend.js';
+import ValidationError from '../error/validation_error.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {isExpression} from '../expression/index.js';
 import {isFunction} from '../function/index.js';
 
+import validateImport from './validate_import.js';
 import validateFunction from './validate_function.js';
 import validateExpression from './validate_expression.js';
 import validateObject from './validate_object.js';
@@ -27,7 +29,6 @@ import validateProjection from './validate_projection.js';
 
 import type {StyleReference} from '../reference/latest.js';
 import type {StyleSpecification} from '../types.js';
-import type ValidationError from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 
 const VALIDATORS = {
@@ -51,7 +52,8 @@ const VALIDATORS = {
     'string': validateString,
     'formatted': validateFormatted,
     'resolvedImage': validateImage,
-    'projection': validateProjection
+    'projection': validateProjection,
+    'import': validateImport
 };
 
 // Main recursive validation function. Tracks:
