@@ -290,7 +290,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
     const shadowRenderer = painter.shadowRenderer;
-    const receiveShadows = layer.paint.get('model-cast-shadows');
+    const receiveShadows = layer.paint.get('model-receive-shadows');
     if (shadowRenderer && !receiveShadows) {
         shadowRenderer.enabled = false;
     }
