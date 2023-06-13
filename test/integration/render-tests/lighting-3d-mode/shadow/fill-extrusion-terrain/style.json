@@ -37,7 +37,7 @@
       "type": "raster-dem",
       "maxzoom": 14,
       "tileSize": 512,
-      "tiles": ["local://tiles/dem/14-8847-5550.terrain-512.png"]
+      "tiles": ["local://models/dem/14-8847-5550.terrain-512.png"]
     },
     "mapbox": {
       "type": "vector",

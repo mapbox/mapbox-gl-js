@@ -17,8 +17,7 @@
       "id": "sun_light",
       "properties": {
         "cast-shadows": true,
-        "shadow-intensity": 0.5640000104904175,
-        "intensity": 0.2599999904632569,
+        "intensity": 0.8599999904632569,
         "direction": [
           311.9219970703125,
           82.37799835205078  

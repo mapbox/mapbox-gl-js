@@ -37,14 +37,14 @@
       "type": "vector",
       "maxzoom": 16,
       "tiles": [
-        "local://models/vector/{z}-{x}-{y}.mvt"
+        "local://tiles/{z}-{x}-{y}.mvt"
       ]
     },
     "landmark": {
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://models/landmark/{x}-{y}-{z}.b3dm"
+        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
       ]
     },
     "model": {

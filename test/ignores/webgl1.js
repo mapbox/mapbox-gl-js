@@ -18,6 +18,7 @@ const skip = [
     "render-tests/model-layer/landmark-part-styling-indirect-doors-no-shadows",
     "render-tests/model-layer/landmark-terrain",
     "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/lighting-3d-mode/shadow",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/saturation",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/transparency",
