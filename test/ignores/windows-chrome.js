@@ -69,6 +69,7 @@ const skip = [
     "render-tests/fit-screen-coordinates/terrain",
 
     // Flaky on windows platform only:
-    "render-tests/measure-light/global-brightness-data-driven"
+    "render-tests/measure-light/global-brightness-data-driven",
+    "render-tests/model-layer/landmark-shadows-terrain" // Terrain makes fill extrusion height different in chrome
 ];
 export default {todo, skip};

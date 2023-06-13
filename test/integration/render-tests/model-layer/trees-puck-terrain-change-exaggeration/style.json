@@ -102,7 +102,7 @@
     "rgbterrain": {
       "type": "raster-dem",
       "tiles": [
-        "local://tiles/dem/{z}-{x}-{y}.terrain.514.png"
+        "local://models/dem/{z}-{x}-{y}.terrain.514.png"
       ],
       "maxzoom": 13,
       "tileSize": 514
@@ -182,15 +182,7 @@
       "source": "model",
       "paint": {
         "model-opacity" : 0.5,
-        "model-scale": [10, 10, 10],
-        "model-type": "location-indicator",
-        "model-color": "blue",
-        "model-color-mix-intensity": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          0,
-          1
-        ]
+        "model-scale": [10, 10, 10]
       }
     },
     {

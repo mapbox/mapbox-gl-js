@@ -62,7 +62,7 @@
     "rgbterrain": {
       "type": "raster-dem",
       "tiles": [
-        "local://tiles/dem/{z}-{x}-{y}.terrain.514.png"
+        "local://models/dem/{z}-{x}-{y}.terrain.514.png"
       ],
       "maxzoom": 13,
       "tileSize": 514
