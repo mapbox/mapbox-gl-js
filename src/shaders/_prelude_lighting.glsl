@@ -8,6 +8,7 @@
 uniform mediump vec3 u_lighting_ambient_color;
 uniform mediump vec3 u_lighting_directional_dir;        // Direction towards the light source
 uniform mediump vec3 u_lighting_directional_color;
+uniform mediump vec3 u_ground_radiance;
 
 float calculate_ambient_directional_factor(vec3 normal) {
     // NdotL Used only for ambient directionality
@@ -64,12 +65,7 @@ vec4 apply_lighting(vec4 color, vec3 normal) {
 }
 
 vec3 apply_lighting_ground(vec3 color) {
-    float NdotL = u_lighting_directional_dir.z;
-
-    // Emulate sky being brighter close to the main light source
-    float ambient_directional_factor = calculate_ambient_directional_factor(vec3(0.0, 0.0, 1.0));
-    vec3 ambient_contrib = u_lighting_ambient_color * ambient_directional_factor;
-    return linearProduct(color, ambient_contrib + u_lighting_directional_color * NdotL);
+    return color * u_ground_radiance;
 }
 
 vec4 apply_lighting_ground(vec4 color) {
