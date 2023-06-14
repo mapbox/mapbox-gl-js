@@ -36,8 +36,8 @@ function flowType(property) {
                 } else {
                     return `Array<${elementType}>`;
                 }
-            case 'sources':
-                return '{[_: string]: SourceSpecification}';
+            case '$root':
+                return 'StyleSpecification';
             case '*':
                 return 'mixed';
             default:
@@ -58,7 +58,11 @@ function flowType(property) {
 
 function flowProperty(key, property) {
     assert(property, `Property not found in the style-specification for ${key}`);
-    return `"${key}"${property.required ? '' : '?'}: ${flowType(property)}`;
+    if (key === '*') {
+        return `[_: string]: ${flowType(property)}`;
+    } else {
+        return `"${key}"${property.required ? '' : '?'}: ${flowType(property)}`;
+    }
 }
 
 function flowObjectDeclaration(key, properties) {
@@ -69,7 +73,6 @@ function flowObjectDeclaration(key, properties) {
 function flowObject(properties, indent, sealing = '') {
     return `{${sealing}
 ${Object.keys(properties)
-        .filter(k => k !== '*')
         .map(k => `    ${indent}${flowProperty(k, properties[k])}`)
         .join(',\n')}
 ${indent}${sealing}}`
@@ -101,20 +104,33 @@ function flowLayer(key) {
     delete layer.ref;
     delete layer['paint.*'];
 
-    layer.paint.type = () => {
-        return flowObject(spec[`paint_${key}`], '    ', '|');
-    };
+    if (spec[`paint_${key}`]) {
+        layer.paint.type = () => {
+            return flowObject(spec[`paint_${key}`], '    ', '|');
+        };
+    } else {
+        delete layer.paint;
+    }
 
-    layer.layout.type = () => {
-        return flowObject(spec[`layout_${key}`], '    ', '|');
-    };
+    if (spec[`layout_${key}`]) {
+        layer.layout.type = () => {
+            return flowObject(spec[`layout_${key}`], '    ', '|');
+        };
+    } else {
+        delete layer.layout;
+    }
 
-    if (key === 'background' || key === 'sky') {
+    if (key === 'background' || key === 'sky' || key === 'slot') {
         delete layer.source;
         delete layer['source-layer'];
         delete layer.filter;
     } else {
         layer.source.required = true;
+    }
+
+    if (key === 'slot') {
+        delete layer.minzoom;
+        delete layer.maxzoom;
     }
 
     return flowObjectDeclaration(flowLayerTypeName(key), layer);
@@ -201,6 +217,8 @@ export type DataDrivenPropertyValueSpecification<T> =
 
 ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 
+${flowObjectDeclaration('SourcesSpecification', spec.sources)}
+
 ${flowObjectDeclaration('LightSpecification', spec.light)}
 
 ${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
@@ -210,6 +228,14 @@ ${flowObjectDeclaration('FogSpecification', spec.fog)}
 ${flowObjectDeclaration('CameraSpecification', spec.camera)}
 
 ${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
+
+${flowObjectDeclaration('ImportSpecification', spec.import)}
+
+${flowObjectDeclaration('ConfigSpecification', spec.config)}
+
+${flowObjectDeclaration('SchemaSpecification', spec.schema)}
+
+${flowObjectDeclaration('OptionSpecification', spec.option)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 

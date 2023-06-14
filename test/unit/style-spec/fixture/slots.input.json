@@ -1,0 +1,52 @@
+{
+    "version": 8,
+    "sources": {
+        "streets": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        }
+    },
+    "layers": [
+        {
+            "id": "landcover",
+            "type": "fill",
+            "source": "streets",
+            "source-layer": "landcover",
+            "slot": "surface"
+        },
+        {
+            "id": "below-water",
+            "type": "slot"
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "streets",
+            "source-layer": "water",
+            "slot": "surface"
+        },
+        {
+            "id": "tunnel",
+            "type": "line",
+            "source": "streets",
+            "source-layer": "road",
+            "filter": [ "==", [ "get", "structure" ], "tunnel" ],
+            "slot": "roads"
+        },
+        {
+            "id": "roads",
+            "type": "line",
+            "source": "streets",
+            "source-layer": "road",
+            "filter": [ "!=", [ "get", "structure" ], "tunnel" ],
+            "slot": "roads"
+        },
+        {
+            "id": "pois",
+            "type": "symbol",
+            "source": "streets",
+            "source-layer": "pois",
+            "slot": "labels"
+        }
+    ]
+}

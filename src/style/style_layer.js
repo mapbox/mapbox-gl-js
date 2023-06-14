@@ -88,7 +88,7 @@ class StyleLayer extends Evented {
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
 
-        if (layer.type !== 'background' && layer.type !== 'sky') {
+        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;

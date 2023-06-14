@@ -65,7 +65,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
             const feature = featureWrapper.feature;
             const layer = feature.layer;
 
-            if (!layer || layer.type === 'background' || layer.type === 'sky') return;
+            if (!layer || layer.type === 'background' || layer.type === 'sky' || layer.type === 'slot') return;
 
             feature.source = layer.source;
             if (layer['source-layer']) {
