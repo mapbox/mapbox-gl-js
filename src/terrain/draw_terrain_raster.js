@@ -30,6 +30,7 @@ import {
 import extend from '../style-spec/util/extend.js';
 import type Program from '../render/program.js';
 import type VertexBuffer from "../gl/vertex_buffer.js";
+import {calculateGroundShadowFactor} from "../../3d-style/render/shadow_renderer.js";
 
 export {
     drawTerrainRaster,
@@ -295,6 +296,15 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const tr = painter.transform;
         const skirt = skirtHeight(tr.zoom, terrain.exaggeration(), terrain.sourceCache._source.tileSize);
 
+        let groundShadowFactor: [number, number, number] = [0, 0, 0];
+        if (shadowRenderer) {
+            const directionalLight = painter.style.directionalLight;
+            const ambientLight = painter.style.ambientLight;
+            if (directionalLight && ambientLight) {
+                groundShadowFactor = calculateGroundShadowFactor(directionalLight, ambientLight);
+            }
+        }
+
         {
             programMode = -1;
 
@@ -324,7 +334,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
                 }
 
-                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt);
+                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt, groundShadowFactor);
                 setShaderMode(shaderMode);
                 if (!program) {
                     continue;
@@ -363,7 +373,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
 
     for (const coord of tileIDs) {
         const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0);
+        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0, [0, 0, 0]);
         terrain.setupElevationDraw(tile, program);
 
         program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,

@@ -415,9 +415,9 @@ export function calculateGroundShadowFactor(directionalLight: Lights<Directional
     // A: Ambient light coming into the surface; taking into account color and intensity
     // D: Directional light coming into the surface; taking into account color, intensity and direction
     const shadow = [
-        ambStrength[0] > 0.0 ? ambStrength[0] / (ambStrength[0] + dirStrength[0] + 1e-5) : 0.0,
-        ambStrength[1] > 0.0 ? ambStrength[1] / (ambStrength[1] + dirStrength[1] + 1e-5) : 0.0,
-        ambStrength[2] > 0.0 ? ambStrength[2] / (ambStrength[2] + dirStrength[2] + 1e-5) : 0.0
+        ambStrength[0] > 0.0 ? ambStrength[0] / (ambStrength[0] + dirStrength[0]) : 0.0,
+        ambStrength[1] > 0.0 ? ambStrength[1] / (ambStrength[1] + dirStrength[1]) : 0.0,
+        ambStrength[2] > 0.0 ? ambStrength[2] / (ambStrength[2] + dirStrength[2]) : 0.0
     ];
 
     // Because blending will happen in sRGB space, convert the shadow factor to sRGB

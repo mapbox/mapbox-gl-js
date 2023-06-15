@@ -6,6 +6,8 @@ uniform highp vec3 u_flood_light_color;
 
 uniform highp float u_attenuation;
 
+uniform sampler2D u_fb;
+
 #ifdef SDF_SUBPASS
 varying highp vec2 v_pos;
 varying highp vec4 v_line_segment;
@@ -21,10 +23,22 @@ float line_df(highp vec2 a, highp vec2 b, highp vec2 p) {
 
 #ifdef FOG
 varying highp float v_fog;
-#endif
-#endif
+#endif // FOG
+#endif // SDF_SUBPASS
 
 void main() {
+// Note that these are used in only in draped mode. The simple clear to white is needed to ensure that the alpha channel is set to 1. 
+// This is necessary because the subsequent steps in both ground flood light and AO
+// encode DF values in tandem with gl.MIN blending mode where a value of 0 indicates the effect is fully present.
+// Once an effect is rendered, it's necessary to mark the alpha channel correctly taking into account the original values (encoded in the texture) which 
+// contain the layer emissive strength values. 
+#ifdef CLEAR_SUBPASS
+    vec4 color = vec4(1.0);
+#ifdef CLEAR_FROM_TEXTURE
+    color = texelFetch(u_fb, ivec2(gl_FragCoord.xy), 0);
+#endif // CLEAR_FROM_TEXTURE
+    gl_FragColor = color;
+#else // CLEAR_SUBPASS
 #ifdef SDF_SUBPASS
     highp float d = line_df(v_line_segment.xy, v_line_segment.zw, v_pos);
     highp float effect_radius = mix(v_flood_light_radius_tile, v_ao.y, u_ao_pass);
@@ -35,14 +49,15 @@ void main() {
     highp float fog = 1.0;
 #ifdef FOG
     fog = v_fog;
-#endif
-    vec4 color = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
-    gl_FragColor = color;
+#endif // FOG
+    gl_FragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
-    gl_FragColor = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
+vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    color = vec4(1.0);
 #endif
+    gl_FragColor = color;
     HANDLE_WIREFRAME_DEBUG;
 #endif // !SDF_SUBPASS
+#endif // !CLEAR_SUBPASS
 }
