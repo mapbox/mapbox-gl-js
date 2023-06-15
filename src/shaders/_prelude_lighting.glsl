@@ -90,8 +90,12 @@ vec3 compute_flood_lighting(vec3 flood_light_color, float fully_occluded_factor,
     // and fully lit colors. Use a more steep ramp to avoid shadow acne on low angles.
     vec3 fully_occluded_color = flood_light_color * mix(ground_shadow_factor, vec3(1.0), fully_occluded_factor);
     float occlusion_ramp = smoothstep(0.0, 0.2, 1.0 - occlusion);
-
     return mix(fully_occluded_color, flood_light_color, occlusion_ramp);
+}
+
+vec3 compute_emissive_draped(vec3 unlit_color, float fully_occluded_factor, float occlusion, vec3 ground_shadow_factor) {
+    vec3 fully_occluded_color = unlit_color * mix(ground_shadow_factor, vec3(1.0), fully_occluded_factor);
+    return mix(fully_occluded_color, unlit_color, 1.0 - occlusion);
 }
 
 #endif // LIGHTING_3D_MODE

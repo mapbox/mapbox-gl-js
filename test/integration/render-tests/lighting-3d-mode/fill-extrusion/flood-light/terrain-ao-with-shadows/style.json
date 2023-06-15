@@ -1,0 +1,98 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 512,
+        "height": 512,
+        "allowed": 0.0006,
+        "optimizeForTerrain": true,
+        "operations": [
+          ["wait"],
+          ["setTerrain", {
+            "source": "mapbox-dem",
+            "exaggeration": 1.3
+          }],
+          ["wait"]
+        ]
+      }
+    },
+    "lights": [
+      {
+        "type": "ambient",
+        "id": "environment",
+        "properties": {
+          "color": "rgba(200.0, 200.0, 255.0, 1.0)",
+          "intensity": 0.3
+        }
+      },
+      {
+        "type": "directional",
+        "id": "sun_light",
+        "properties": {
+          "color": "rgba(250.0, 250.0, 230.0, 1.0)",
+          "intensity": 0.7,
+          "direction": [
+            230.0,
+            45.0
+          ],
+          "cast-shadows": true,
+          "shadow-intensity": 1.0
+        }
+      }
+    ],
+    "sources": {
+      "mapbox": {
+        "type": "vector",
+        "maxzoom": 16,
+        "tiles": [
+          "local://tiles/{z}-{x}-{y}.mvt"
+        ]
+      },
+      "mapbox-dem": {
+        "type": "raster-dem",
+        "tiles": [
+          "local://tiles/dem/13-2413-3079.terrain.png"
+        ],
+        "maxzoom": 13,
+        "tileSize": 256
+      }
+    },
+    "pitch": 55,
+    "zoom": 17.5,
+    "bearing": 115,
+    "center": [
+      -74.0101,
+      40.7160
+    ],
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "lightgray"
+        }
+      },
+      {
+        "id": "extrusion",
+        "type": "fill-extrusion",
+        "source": "mapbox",
+        "source-layer": "building",
+        "paint": {
+          "fill-extrusion-color": "white",
+          "fill-extrusion-height": [
+            "get",
+            "height"
+          ],
+          "fill-extrusion-opacity": 1.0,
+          "fill-extrusion-ambient-occlusion-wall-radius": 10,
+          "fill-extrusion-ambient-occlusion-ground-radius": 20,
+          "fill-extrusion-ambient-occlusion-intensity": 0.6,
+          "fill-extrusion-ambient-occlusion-ground-attenuation": 0.7,
+          "fill-extrusion-flood-light-intensity": 1.0
+        },
+        "layout": {
+          "fill-extrusion-edge-radius": 0.99
+        }
+      }
+    ]
+  }

@@ -77,7 +77,8 @@ export type FillExtrusionGroundEffectUniformsType = {|
     'u_ao': Uniform2f,
     'u_flood_light_intensity': Uniform1f,
     'u_flood_light_color': Uniform3f,
-    'u_attenuation': Uniform1f
+    'u_attenuation': Uniform1f,
+    'u_fb': Uniform1i
 |};
 
 const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
@@ -141,7 +142,8 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_ao': new Uniform2f(context),
     'u_flood_light_intensity': new Uniform1f(context),
     'u_flood_light_color': new Uniform3f(context),
-    'u_attenuation': new Uniform1f(context)
+    'u_attenuation': new Uniform1f(context),
+    'u_fb': new Uniform1i(context)
 });
 
 const identityMatrix = mat4.create();
@@ -265,7 +267,8 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_ao': ao,
         'u_flood_light_intensity': floodLightIntensity,
         'u_flood_light_color': floodLightColor,
-        'u_attenuation': attenuation
+        'u_attenuation': attenuation,
+        'u_fb': 0
     };
     return uniformValues;
 };

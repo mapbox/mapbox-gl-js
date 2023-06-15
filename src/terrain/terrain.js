@@ -238,6 +238,9 @@ export class Terrain extends Elevation {
     _initializing: ?boolean;
     _emptyDEMTextureDirty: ?boolean;
 
+    _pendingGroundEffectLayers: Array<number>;
+    framebufferCopyTexture: ?Texture;
+
     constructor(painter: Painter, style: Style) {
         super();
         this.painter = painter;
@@ -274,6 +277,7 @@ export class Terrain extends Elevation {
         this._useVertexMorphing = true;
         this._exaggeration = 1;
         this._mockSourceCache = new MockSourceCache(style.map);
+        this._pendingGroundEffectLayers = [];
     }
 
     set style(style: Style) {
@@ -397,6 +401,7 @@ export class Terrain extends Elevation {
             this._depthFBO = undefined;
             this._depthTexture = undefined;
         }
+        if (this.framebufferCopyTexture) this.framebufferCopyTexture.destroy();
     }
 
     // Implements Elevation::_source.
@@ -722,8 +727,9 @@ export class Terrain extends Elevation {
         const drapedLayerBatch = this._drapedRenderBatches.shift();
         assert(drapedLayerBatch.start === startLayerIndex);
 
-        const accumulatedDrapes = [];
         const layerIds = painter.style.order;
+
+        const accumulatedDrapes = [];
 
         let poolIndex = 0;
         for (const proxy of proxies) {
@@ -767,6 +773,26 @@ export class Terrain extends Elevation {
                     currentStencilSource = sourceCache ? sourceCache.id : null;
                 }
                 painter.renderLayer(painter, sourceCache, layer, coords);
+            }
+
+            const isLastBatch = this._drapedRenderBatches.length === 0;
+            if (isLastBatch) {
+                for (const id of this._pendingGroundEffectLayers) {
+                    const layer = painter.style._layers[layerIds[id]];
+                    if (layer.isHidden(painter.transform.zoom)) continue;
+
+                    const sourceCache = painter.style._getLayerSourceCache(layer);
+                    const proxiedCoords = sourceCache ? this.proxyToSource[proxy.key][sourceCache.id] : [proxy];
+                    if (!proxiedCoords) continue;
+
+                    const coords = ((proxiedCoords: any): Array<OverscaledTileID>);
+                    context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
+                    if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
+                        this._setupStencil(fbo, proxiedCoords, layer, sourceCache);
+                        currentStencilSource = sourceCache ? sourceCache.id : null;
+                    }
+                    painter.renderLayer(painter, sourceCache, layer, coords);
+                }
             }
 
             if (this.renderedToTile) {
@@ -1036,6 +1062,7 @@ export class Terrain extends Elevation {
         }
 
         const batches: Array<RenderBatch> = [];
+        this._pendingGroundEffectLayers = [];
 
         let currentLayer = 0;
         let layer = this._style._layers[layerIds[currentLayer]];
@@ -1050,6 +1077,9 @@ export class Terrain extends Elevation {
                 continue;
             }
             if (!this._style.isLayerDraped(layer)) {
+                if (layer.type === 'fill-extrusion') {
+                    this._pendingGroundEffectLayers.push(currentLayer);
+                }
                 if (batchStart !== undefined) {
                     batches.push({start: batchStart, end: currentLayer - 1});
                     batchStart = undefined;
@@ -1068,6 +1098,16 @@ export class Terrain extends Elevation {
         if (this._style.map._optimizeForTerrain) {
             // Draped first approach should result in a single or no batch
             assert(batches.length === 1 || batches.length === 0);
+        }
+
+        if (batches.length !== 0) {
+            const lastBatch = batches[batches.length - 1];
+            const groundEffectLayersComeLast = this._pendingGroundEffectLayers.every((id: number) => {
+                return id > lastBatch.end;
+            });
+            if (!groundEffectLayersComeLast) {
+                warnOnce('fill-extrusion with flood lighting and/or ground ambient occlusion should be moved to be on top of all draped layers.');
+            }
         }
 
         this._drapedRenderBatches = batches;

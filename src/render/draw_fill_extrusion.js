@@ -23,6 +23,8 @@ import {sRGBToLinearAndScale} from '../util/util.js';
 import Color from '../style-spec/util/color.js';
 import Tile from '../source/tile.js';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer.js';
+import {RGBAImage} from "../util/image.js";
+import Texture from './texture.js';
 
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
@@ -30,10 +32,14 @@ import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_st
 
 export default draw;
 
+type GroundEffectSubpassType = 'clear' | 'sdf' | 'color';
+
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     const opacity = layer.paint.get('fill-extrusion-opacity');
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const terrain = painter.terrain;
+    const rtt = terrain && terrain.renderingToTexture;
     if (opacity === 0) {
         return;
     }
@@ -64,63 +70,158 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
-        const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
         const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1: any));
 
-        if (opacity === 1 && noPattern) {
-            const colorMode = painter.colorModeForRenderPass();
+        if (!rtt) {
+            const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-            drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
+            if (opacity === 1 && noPattern) {
+                const colorMode = painter.colorModeForRenderPass();
 
-        } else {
-            // Draw transparent buildings in two passes so that only the closest surface is drawn.
-            // First draw all the extrusions into only the depth buffer. No colors are drawn.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                StencilMode.disabled,
-                ColorMode.disabled,
-                conflateLayer);
+                drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
 
-            // Then draw all the extrusions a second type, only coloring fragments if they have the
-            // same depth value as the closest fragment in the previous pass. Use the stencil buffer
-            // to prevent the second draw in cases where we have coincident polygons.
-            drawExtrusionTiles(painter, source, layer, coords, depthMode,
-                painter.stencilModeFor3D(),
-                painter.colorModeForRenderPass(),
-                conflateLayer);
+            } else {
+                // Draw transparent buildings in two passes so that only the closest surface is drawn.
+                // First draw all the extrusions into only the depth buffer. No colors are drawn.
+                drawExtrusionTiles(painter, source, layer, coords, depthMode,
+                    StencilMode.disabled,
+                    ColorMode.disabled,
+                    conflateLayer);
 
-            painter.resetStencilClippingMasks();
+                // Then draw all the extrusions a second type, only coloring fragments if they have the
+                // same depth value as the closest fragment in the previous pass. Use the stencil buffer
+                // to prevent the second draw in cases where we have coincident polygons.
+                drawExtrusionTiles(painter, source, layer, coords, depthMode,
+                    painter.stencilModeFor3D(),
+                    painter.colorModeForRenderPass(),
+                    conflateLayer);
+
+                painter.resetStencilClippingMasks();
+            }
         }
 
+        // Note that when rendering ground effects in immediate mode the implementation below assumes that the alpha channel of the main framebuffer is unused and set to 1.
+        // In draped mode this assumption no longer holds (since layer emissiveness is also encoded in the alpha channel) and therefore few more steps are required to implement the ground flood light and AO correctly.
         const lighting3DMode = painter.style.enable3dLights();
         const noTerrain = !terrain;
         const noGlobe = painter.transform.projection.name !== 'globe';
+        const immediateMode = noTerrain && noGlobe;
         const webGL2 = !!painter.context.isWebGL2;
-        if (webGL2 && lighting3DMode && noPattern && noTerrain && noGlobe) {
+
+        if (webGL2 && lighting3DMode && noPattern && (immediateMode || rtt)) {
+            assert(immediateMode ? !rtt : !!rtt);
+
             const opacity = layer.paint.get('fill-extrusion-opacity');
             const aoIntensity = layer.paint.get('fill-extrusion-ambient-occlusion-intensity');
             const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-ground-radius');
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
             const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
-            const showOverdraw = painter._showOverdrawInspector;
+            const aoEnabled = aoIntensity > 0 && aoRadius > 0;
+            const floodLightEnabled = floodLightIntensity > 0;
+
             const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
-            const pass = (aoPass: boolean) => {
+
+            const passImmediate = (aoPass: boolean) => {
+                const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, true);
                 const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
                 const attenuation = lerp(0.1, 3, t);
-                const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, true);
-                if (!showOverdraw) {
+                const showOverdraw = painter._showOverdrawInspector;
+
+                {
+                    // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
+                    /* $FlowFixMe[incompatible-call] */
+                    const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                     /* $FlowFixMe[prop-missing] */
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
-                    drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorSdfPass, CullFaceMode.disabled, aoPass, true, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
                 }
-                const colorColorPass = new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
-                drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, false, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+
+                {
+                    // Draw the effects.
+                    const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
+                    const colorColorPass = new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                }
             };
 
-            if (aoIntensity > 0 && aoRadius > 0) {
-                pass(true);
-            }
-            if (floodLightIntensity > 0) {
-                pass(false);
+            if (rtt) {
+                const passDraped = (aoPass: boolean, framebufferCopyTexture?: Texture) => {
+                    assert(framebufferCopyTexture);
+
+                    const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, false);
+                    const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
+                    const attenuation = lerp(0.1, 3, t);
+
+                    {
+                        // Clear framebuffer's alpha channel to 1 since we're using gl.MIN blend operation in the subsequent steps.
+                        const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true]);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    }
+
+                    {
+                        // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
+                        /* $FlowFixMe[incompatible-call] */
+                        const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+                        /* $FlowFixMe[prop-missing] */
+                        const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    }
+
+                    {
+                        // Draw the effects. The inverse of the alpha channel is used so that in the next pass we can correctly incorporate it with the emissive strength values that are also encoded in the alpha channel (now present in the texture).
+                        const srcColorFactor = aoPass ? gl.ZERO : gl.ONE_MINUS_DST_ALPHA; // For AO, it's enough to multiply the color with the intensity.
+                        const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
+                        const colorColorPass = new ColorMode([srcColorFactor, gl.DST_ALPHA, gl.ONE_MINUS_DST_ALPHA, gl.ZERO], Color.transparent, [true, true, true, true]);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    }
+
+                    {
+                        // Re-write to the alpha channel of the framebuffer based on existing values (of ground effects) and emissive values (saved to texture in earlier step).
+                        // Note that in draped mode an alpha value of 1 indicates fully emissiveness for a fragment and a value of 0 means fully lit (3d lighting).
+
+                        // We don't really need to encode the alpha values for AO as the layers have already been multiplied by its intensity. The gl.FUNC_ADD (as blending equation) and gl.ZERO (as dest alpha factor) would ensure this.
+                        const dstAlphaFactor = aoPass ? gl.ZERO : gl.ONE;
+                        /* $FlowFixMe[prop-missing] */
+                        const blendEquation = aoPass ? gl.FUNC_ADD : gl.MAX;
+                        const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, dstAlphaFactor], Color.transparent, [false, false, false, true], blendEquation);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, framebufferCopyTexture);
+                    }
+                };
+
+                if (aoEnabled || floodLightEnabled) {
+                    painter.prepareDrawTile();
+                    let framebufferCopyTexture;
+                    // Save the alpha channel of the framebuffer used by emissive layers.
+                    if (terrain) { // Condition is anywyas guaranteed by rtt variable. Used only to suppress flow errors.
+                        const width = terrain.drapeBufferSize[0];
+                        const height = terrain.drapeBufferSize[1];
+                        framebufferCopyTexture = terrain.framebufferCopyTexture;
+                        if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
+                            if (framebufferCopyTexture) framebufferCopyTexture.destroy();
+                            framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
+                                new RGBAImage({width, height}), gl.RGBA);
+                        }
+                        framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
+                    }
+                    // Render ground AO.
+                    if (aoEnabled) {
+                        passDraped(true, framebufferCopyTexture);
+                    }
+                    // Render ground flood light.
+                    if (floodLightEnabled) {
+                        passDraped(false, framebufferCopyTexture);
+                    }
+                }
+            } else { // immediate mode
+                // Render ground AO.
+                if (aoEnabled) {
+                    passImmediate(true);
+                }
+                // Render ground flood light.
+                if (floodLightEnabled) {
+                    passImmediate(false);
+                }
             }
         }
     }
@@ -268,11 +369,19 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, sdfSubpass: boolean, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, framebufferCopyTexture: ?Texture) {
     const context = painter.context;
+    const gl = context.gl;
     const tr = painter.transform;
     const defines = ([]: any);
-    if (sdfSubpass) {
+    if (subpass === 'clear') {
+        defines.push('CLEAR_SUBPASS');
+        if (framebufferCopyTexture) {
+            defines.push('CLEAR_FROM_TEXTURE');
+            context.activeTexture.set(gl.TEXTURE0);
+            framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        }
+    } else if (subpass === 'sdf') {
         defines.push('SDF_SUBPASS');
     }
     for (const coord of coords) {

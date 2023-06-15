@@ -103,10 +103,6 @@ class SkyLayer extends StyleLayer {
         return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
 
-    is3D(): boolean {
-        return false;
-    }
-
     isSky(): boolean {
         return true;
     }

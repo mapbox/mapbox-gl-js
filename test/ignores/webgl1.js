@@ -34,6 +34,8 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/with-shadows-tangent-light",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/with-shadows-zero-light-contribution",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/with-shadows-zero-polar-angle",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/terrain-ao-with-shadows",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/terrain-flood-light-with-shadows",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
