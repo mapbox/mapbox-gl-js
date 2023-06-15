@@ -144,6 +144,7 @@ void main() {
     // https://lxjk.github.io/2017/10/01/Stop-Using-Normal-Matrix.html
     vec3 squared_scale = vec3(x_squared_scale, y_squared_scale, z_squared_scale);
     normal_3f = rs * ((u_lighting_matrix * vec4(normal_3f, 0.0)).xyz / squared_scale);
+    normal_3f = normalize(normal_3f);
 #else
     normal_3f = vec3(normal_matrix * vec4(normal_3f, 0));
 #endif
@@ -156,8 +157,22 @@ void main() {
 #endif
 
 #ifdef RENDER_SHADOWS
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(local_pos, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(local_pos, 1);
-    v_depth_shadows = gl_Position.w;
+    vec3 shadow_pos = local_pos;
+#ifdef NORMAL_OFFSET
+#ifdef HAS_ATTRIBUTE_a_normal_3f
+#ifdef MODEL_POSITION_ON_GPU
+     // flip the xy to bring it to the same, wrong, fill extrusion normal orientation toward inside.
+     // See the explanation in shadow_normal_offset.
+     vec3 offset = shadow_normal_offset(vec3(-normal_3f.xy, normal_3f.z));
+     shadow_pos += offset * shadow_normal_offset_multiplier0();
+#else
+    vec3 offset = shadow_normal_offset_model(normalize(normal_3f));
+    shadow_pos += offset * shadow_normal_offset_multiplier0();
 #endif
+#endif // HAS_ATTRIBUTE_a_normal_3f
+#endif // NORMAL_OFFSET
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(shadow_pos, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(shadow_pos, 1);
+    v_depth_shadows = gl_Position.w;
+#endif // RENDER_SHADOWS
 }

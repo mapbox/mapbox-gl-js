@@ -136,6 +136,7 @@ class Program<Us: UniformBindings> {
             preludeLightingSource,
             prelude.vertexSource,
             preludeFog.vertexSource,
+            preludeShadow.vertexSource,
             preludeTerrain.vertexSource,
             source.vertexSource).join('\n');
 

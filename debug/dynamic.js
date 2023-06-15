@@ -8793,7 +8793,7 @@ window.dynamic = {
                 ],
                 "intensity": 0.3,
                 "cast-shadows": true,
-                "shadow-intensity": 0.20000000298023225
+                "shadow-intensity": 1
             }
         }
     ]

@@ -14,8 +14,9 @@ uniform sampler2D u_shadowmap_1;
 
 uniform float u_shadow_intensity;
 uniform float u_texel_size;
+uniform highp vec3 u_shadow_normal_offset; // [tileToMeter, offsetCascade0, offsetCascade1]
 uniform vec2 u_fade_range;
-uniform highp vec3 u_shadow_direction;
+uniform mediump vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
@@ -202,8 +203,12 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
 }
 
 highp float calculate_shadow_bias(float NDotL) {
+#ifdef NORMAL_OFFSET
+    return 0.5 * u_shadow_bias.x;
+#else
     // Slope scale based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
     return 0.5 * (u_shadow_bias.x + clamp(u_shadow_bias.y * tan(acos(NDotL)), 0.0, u_shadow_bias.z));
+#endif
 }
 
 float shadowed_light_factor_normal(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {

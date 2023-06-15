@@ -3,7 +3,6 @@ const todo = [
 
 // Tests not supported on WebGL 1
 const skip = [
-    "render-tests/model-layer/lighting-3d-mode/model-shadow",
     "render-tests/model-layer/ground-shadow-fog",
     "render-tests/model-layer/landmark-conflation-multiple-model-layers",
     "render-tests/model-layer/landmark-mbx",
@@ -18,6 +17,8 @@ const skip = [
     "render-tests/model-layer/landmark-part-styling-indirect-doors-no-shadows",
     "render-tests/model-layer/landmark-terrain",
     "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/trees-shadow-scaled",
+    "render-tests/model-layer/lighting-3d-mode/model-shadow",
     "render-tests/model-layer/lighting-3d-mode/shadow",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/saturation",

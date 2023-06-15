@@ -15,7 +15,7 @@ import {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id.js';
 import Painter from '../../src/render/painter.js';
 import Program from '../../src/render/program.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
-import {mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
+import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate.js';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util.js';
 
 import type {LightProps as Directional} from '../style/directional_light_properties.js';
@@ -30,14 +30,18 @@ import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import type {Mat4, Vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program.js';
+import EXTENT from "../../src/data/extent.js";
 
 type ShadowCascade = {
     framebuffer: Framebuffer,
     texture: Texture,
     matrix: Mat4,
     far: number,
+    boundingSphereRadius: number,
     frustum: Frustum
 };
+
+type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
 
 const cascadeCount = 2;
 const shadowMapResolution = 2048;
@@ -50,6 +54,8 @@ export class ShadowRenderer {
     _depthMode: DepthMode;
     _uniformValues: UniformValues<ShadowUniformsType>;
 
+    useNormalOffset: boolean;
+
     constructor(painter: Painter) {
         this.painter = painter;
         this._enabled = false;
@@ -57,6 +63,8 @@ export class ShadowRenderer {
         this._cascades = [];
         this._depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]);
         this._uniformValues = defaultShadowUniformValues();
+
+        this.useNormalOffset = false;
     }
 
     destroy() {
@@ -114,7 +122,13 @@ export class ShadowRenderer {
                     fbo.colorAttachment.set(colorTexture.texture);
                 }
 
-                this._cascades.push({framebuffer: fbo, texture: depthTexture, matrix: mat4.create(), far: 0, frustum: new Frustum([[]], [[]])});
+                this._cascades.push({
+                    framebuffer: fbo,
+                    texture: depthTexture,
+                    matrix: [],
+                    far: 0,
+                    boundingSphereRadius: 0,
+                    frustum: new Frustum([[]], [[]])});
             }
         }
 
@@ -153,7 +167,9 @@ export class ShadowRenderer {
                 }
             }
 
-            cascade.matrix = createLightMatrix(transform, shadowDirection, near, far, shadowMapResolution, verticalRange);
+            const [matrix, radius] = createLightMatrix(transform, shadowDirection, near, far, shadowMapResolution, verticalRange);
+            cascade.matrix = matrix;
+            cascade.boundingSphereRadius = radius;
 
             mat4.invert(cameraInvProj, cascade.matrix);
             cascade.frustum = Frustum.fromInvProjectionMatrix(cameraInvProj, 1, 0, true);
@@ -279,7 +295,7 @@ export class ShadowRenderer {
         return Float32Array.from(matrix);
     }
 
-    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<*>) {
+    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<*>, normalOffsetMode: ?ShadowNormalOffsetMode, tileOverscaledZ: number = 0) {
         if (!this._enabled) {
             return;
         }
@@ -299,16 +315,37 @@ export class ShadowRenderer {
             this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
+        this.useNormalOffset = !!normalOffsetMode;
+
+        if (this.useNormalOffset) {
+            const meterInTiles = tileToMeter(unwrappedTileID.canonical);
+            const texelScale = 2.0 / transform.tileSize * EXTENT / shadowMapResolution;
+            const shadowTexelInTileCoords0 = texelScale * this._cascades[0].boundingSphereRadius;
+            const shadowTexelInTileCoords1 = texelScale * this._cascades[1].boundingSphereRadius;
+            // Instanced model tiles could have smoothened (shared among neighbor faces) normals. Normal is not surface normal
+            // and this is why it is needed to increase the offset. 3.0 in case of model-tile could be alternatively replaced by
+            // 2.0 if normal would not get scaled by dotScale in shadow_normal_offset().
+            const tileTypeMultiplier = (normalOffsetMode === 'vector-tile') ? 1.0 : 3.0;
+            const scale = tileTypeMultiplier / Math.pow(2, tileOverscaledZ - unwrappedTileID.canonical.z - (1 - transform.zoom + Math.floor(transform.zoom)));
+            const offset0 = shadowTexelInTileCoords0 * scale;
+            const offset1 = shadowTexelInTileCoords1 * scale;
+            uniforms["u_shadow_normal_offset"] = [meterInTiles, offset0, offset1];
+            uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
+        } else {
+            uniforms["u_shadow_bias"] = [0.00036, 0.0012, 0.012];
+        }
         program.setShadowUniformValues(context, uniforms);
     }
 
-    setupShadowsFromMatrix(worldMatrix: Mat4, program: Program<*>) {
+    setupShadowsFromMatrix(worldMatrix: Mat4, program: Program<*>, normalOffset: boolean = false) {
         if (!this._enabled) {
             return;
         }
+
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = this._uniformValues;
+
         const lightMatrix = new Float64Array(16);
         for (let i = 0; i < cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
@@ -316,6 +353,17 @@ export class ShadowRenderer {
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
             this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
+
+        this.useNormalOffset = normalOffset;
+
+        if (normalOffset) {
+            const scale = 5.0; // Experimentally found value
+            uniforms["u_shadow_normal_offset"] = [1.0, scale, scale]; // meterToTile isn't used
+            uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
+        } else {
+            uniforms["u_shadow_bias"] = [0.00036, 0.0012, 0.012];
+        }
+
         program.setShadowUniformValues(context, uniforms);
     }
 
@@ -382,7 +430,7 @@ function createLightMatrix(
     near: number,
     far: number,
     resolution: number,
-    verticalRange: number): Float64Array {
+    verticalRange: number): [Float64Array, number] {
     const zoom = transform.zoom;
     const scale = transform.scale;
     const ws = transform.worldSize;
@@ -469,13 +517,14 @@ function createLightMatrix(
     // The mercatorZfromZoom term gets used for the first cascade when zoom level is very high.
     // The radius term gets used for the second cascade in most cases and for the first cascade at lower zoom levels.
     const radiusPx = sphereRadius * ws;
-    const lightMatrixNearZ = Math.min(transform._mercatorZfromZoom(17) * ws * -2.0, radiusPx * -2.0);
+    const lightMatrixNearZ = Math.min(transform._mercatorZfromZoom(14) * ws * -2.0, radiusPx * -2.0);
+    const lightMatrixFarZ = (radiusPx + verticalRange * pixelsPerMeter) / shadowDirection[2];
 
-    const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, (radiusPx + verticalRange * pixelsPerMeter) / shadowDirection[2]);
+    const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, lightMatrixFarZ);
     const lightWorldToClip = new Float64Array(16);
     mat4.multiply(lightWorldToClip, lightViewToClip, lightWorldToView);
 
-    // Move light camera in discrete steps in order to remove shimmering when translating
+    // Move light camera in discrete steps in order to reduce shimmering when translating
     const alignedCenter = vec3.fromValues(Math.floor(sphereCenter[0] * 1e6) / 1e6 * ws, Math.floor(sphereCenter[1] * 1e6) / 1e6 * ws, 0.);
 
     const halfResolution = 0.5 * resolution;
@@ -493,5 +542,5 @@ function createLightMatrix(
     mat4.translate(truncMatrix, truncMatrix, offsetVec);
     mat4.multiply(lightWorldToClip, truncMatrix, lightWorldToClip);
 
-    return lightWorldToClip;
+    return [lightWorldToClip, radiusPx];
 }

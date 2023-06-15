@@ -82,6 +82,7 @@ import modelVert from '../../3d-style/shaders/model.vertex.glsl';
 import modelFrag from '../../3d-style/shaders/model.fragment.glsl';
 import modelDepthVert from '../../3d-style/shaders/model_depth.vertex.glsl';
 import modelDepthFrag from '../../3d-style/shaders/model_depth.fragment.glsl';
+import preludeShadowVert from '../../3d-style/shaders/_prelude_shadow.vertex.glsl';
 import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.glsl';
 
 export let preludeTerrain = {};
@@ -94,11 +95,12 @@ parseUsedPreprocessorDefines(preludeLighting, commonDefines);
 parseUsedPreprocessorDefines(preludeTerrainVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFogFrag, commonDefines);
+parseUsedPreprocessorDefines(preludeShadowVert, commonDefines);
 parseUsedPreprocessorDefines(preludeShadowFrag, commonDefines);
 
 preludeTerrain = compile('', preludeTerrainVert);
 preludeFog = compile(preludeFogFrag, preludeFogVert);
-preludeShadow = compile(preludeShadowFrag, '');
+preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;

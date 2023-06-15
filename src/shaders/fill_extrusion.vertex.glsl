@@ -128,8 +128,15 @@ void main() {
     v_height = h;
 
 #ifdef RENDER_SHADOWS
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(pos, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(pos, 1);
+    vec3 shd_pos0 = pos;
+    vec3 shd_pos1 = pos;
+#ifdef NORMAL_OFFSET
+    vec3 offset = shadow_normal_offset(normal);
+    shd_pos0 += offset * shadow_normal_offset_multiplier0();
+    shd_pos1 += offset * shadow_normal_offset_multiplier1();
+#endif
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(shd_pos0, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
     v_depth = gl_Position.w;
 #endif
 

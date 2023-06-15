@@ -184,6 +184,8 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const dynamicBuffers = [];
 
     setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+    const shadowRenderer = painter.shadowRenderer;
+    if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
     const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
     let fogMatrixArray = null;
@@ -196,7 +198,6 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
 
     const isShadowPass = painter.renderPass === 'shadow';
-    const shadowRenderer = painter.shadowRenderer;
 
     if (!isShadowPass && shadowRenderer) {
         shadowRenderer.setupShadowsFromMatrix(sortedMesh.nodeModelMatrix, program);
@@ -291,12 +292,18 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     }
     const shadowRenderer = painter.shadowRenderer;
     const receiveShadows = layer.paint.get('model-receive-shadows');
-    if (shadowRenderer && !receiveShadows) {
-        shadowRenderer.enabled = false;
+    if (shadowRenderer) {
+        shadowRenderer.useNormalOffset = true;
+        if (!receiveShadows) {
+            shadowRenderer.enabled = false;
+        }
     }
     const cleanup = () => {
-        if (shadowRenderer && !receiveShadows) {
-            shadowRenderer.enabled = true;
+        if (shadowRenderer) {
+            shadowRenderer.useNormalOffset = true;
+            if (!receiveShadows) {
+                shadowRenderer.enabled = true;
+            }
         }
     };
 
@@ -514,7 +521,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                     cameraPos);
                 if (shadowRenderer) {
                     if (!renderData.shadowUniformsInitialized) {
-                        shadowRenderer.setupShadows(coord.toUnwrapped(), program);
+                        shadowRenderer.setupShadows(coord.toUnwrapped(), program, 'model-tile', coord.overscaledZ);
                         renderData.shadowUniformsInitialized = true;
                     } else {
                         program.setShadowUniformValues(context, shadowRenderer.getShadowUniformValues());
@@ -617,7 +624,7 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
 
         const shadowRenderer = painter.shadowRenderer;
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadowsFromMatrix(modelMatrix, program);
+            shadowRenderer.setupShadowsFromMatrix(modelMatrix, program, true);
         }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), fogMatrixArray);
