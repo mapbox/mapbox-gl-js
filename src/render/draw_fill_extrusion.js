@@ -166,6 +166,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
     const drawDepth = isShadowPass && !!shadowRenderer;
+    if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = true;
 
     let groundShadowFactor: [number, number, number] = [0, 0, 0];
     if (shadowRenderer) {
@@ -200,7 +201,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program);
+            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
         }
 
         if (image) {
@@ -252,6 +253,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             bucket.segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
     }
+    if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = false;
 }
 
 function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
