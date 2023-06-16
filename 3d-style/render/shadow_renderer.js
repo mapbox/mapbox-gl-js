@@ -251,7 +251,7 @@ export class ShadowRenderer {
 
         const shadowColor = calculateGroundShadowFactor(directionalLight, ambientLight);
 
-        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
         for (const id of tiles) {
             const unwrapped = id.toUnwrapped();
