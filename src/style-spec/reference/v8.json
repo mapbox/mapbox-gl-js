@@ -3754,7 +3754,7 @@
         }
       },
       "measure-light": {
-        "doc": "",
+        "doc": "Returns a requested property of the light configuration based on the supplied options. Currently the only supported option is `brightness` which returns the global brightness value of the lights on a scale of 0 to 1, where 0 means total darkness and 1 means full brightness. This expression works only with 3D light, i.e. when `lights` root property is defined.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
