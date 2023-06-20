@@ -130,7 +130,7 @@ import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
 import tileBoundsAttributes from '../src/data/bounds_attributes.js';
-import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
+import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes.js';
 
 // layout vertex arrays
@@ -262,6 +262,9 @@ createStructArrayLayoutType(createLayout([{
 
 // Fill extrusion specific array
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
+
+// Fill extrusion ground effect specific array
+createStructArrayType('fill_extrusion_hidden_by_landmark', hiddenByLandmarkAttributes);
 
 // Globe extension arrays
 createStructArrayType('circle_globe_ext', circleGlobeAttributesExt);

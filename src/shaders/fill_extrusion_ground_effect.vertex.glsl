@@ -1,5 +1,5 @@
 attribute highp vec4 a_pos_end;
-attribute highp vec2 a_centroid_pos;
+attribute highp float a_hidden_by_landmark;
 
 #ifdef SDF_SUBPASS
 varying highp vec2 v_pos;
@@ -51,15 +51,15 @@ void main() {
 #endif
 #endif
 
-    vec2 centroid_pos = vec2(0.0);
+    float hidden_by_landmark = 0.0;
 #ifdef HAS_CENTROID
-    centroid_pos = a_centroid_pos;
+    hidden_by_landmark = a_hidden_by_landmark;
 #endif
 
     float isFloodlit = float(flood_light_ground_radius > 0.0 && u_flood_light_intensity > 0.0);
     float hidden = mix(1.0 - isFloodlit, isFloodlit, u_ao_pass);
     hidden += float(base > 0.0); // vertex base is above ground.
-    hidden += float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0); // vertex is replaced by landmark geometry.
+    hidden += hidden_by_landmark;
 
     gl_Position = mix(u_matrix * vec4(pos, 1.0), AWAY, float(hidden > 0.0));
 }

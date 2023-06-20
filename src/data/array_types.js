@@ -1139,6 +1139,35 @@ class StructArrayLayout4ui3f20 extends StructArray {
 StructArrayLayout4ui3f20.prototype.bytesPerElement = 20;
 register(StructArrayLayout4ui3f20, 'StructArrayLayout4ui3f20');
 
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Uint8[1]
+ *
+ * @private
+ */
+class StructArrayLayout1ub1 extends StructArray {
+    uint8: Uint8Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0);
+    }
+
+    emplace(i: number, v0: number): number {
+        const o1 = i * 1;
+        this.uint8[o1 + 0] = v0;
+        return i;
+    }
+}
+
+StructArrayLayout1ub1.prototype.bytesPerElement = 1;
+register(StructArrayLayout1ub1, 'StructArrayLayout1ub1');
+
 class CollisionBoxStruct extends Struct {
     _structArray: CollisionBoxArray;
     get projectedAnchorX(): number { return this._structArray.int16[this._pos2 + 0]; }
@@ -1380,6 +1409,7 @@ export {
     StructArrayLayout2f8,
     StructArrayLayout16f64,
     StructArrayLayout4ui3f20,
+    StructArrayLayout1ub1,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout4i8 as RasterBoundsArray,
@@ -1418,5 +1448,6 @@ export {
     StructArrayLayout3f12 as NormalLayoutArray,
     StructArrayLayout16f64 as InstanceVertexArray,
     StructArrayLayout4ui3f20 as FeatureVertexArray,
+    StructArrayLayout1ub1 as FillExtrusionHiddenByLandmarkArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };
