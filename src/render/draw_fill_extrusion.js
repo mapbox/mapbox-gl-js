@@ -133,14 +133,14 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                     /* $FlowFixMe[prop-missing] */
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
-                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                 }
 
                 {
                     // Draw the effects.
                     const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
                     const colorColorPass = new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
-                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                 }
             };
 
@@ -155,7 +155,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     {
                         // Clear framebuffer's alpha channel to 1 since we're using gl.MIN blend operation in the subsequent steps.
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true]);
-                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                     }
 
                     {
@@ -164,7 +164,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                         /* $FlowFixMe[prop-missing] */
                         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
-                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                     }
 
                     {
@@ -172,7 +172,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const srcColorFactor = aoPass ? gl.ZERO : gl.ONE_MINUS_DST_ALPHA; // For AO, it's enough to multiply the color with the intensity.
                         const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
                         const colorColorPass = new ColorMode([srcColorFactor, gl.DST_ALPHA, gl.ONE_MINUS_DST_ALPHA, gl.ZERO], Color.transparent, [true, true, true, true]);
-                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                     }
 
                     {
@@ -184,7 +184,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         /* $FlowFixMe[prop-missing] */
                         const blendEquation = aoPass ? gl.FUNC_ADD : gl.MAX;
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, dstAlphaFactor], Color.transparent, [false, false, false, true], blendEquation);
-                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, framebufferCopyTexture);
+                        drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, framebufferCopyTexture);
                     }
                 };
 
@@ -369,7 +369,7 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, framebufferCopyTexture: ?Texture) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, framebufferCopyTexture: ?Texture) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -383,6 +383,9 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
         }
     } else if (subpass === 'sdf') {
         defines.push('SDF_SUBPASS');
+    }
+    if (replacementActive) {
+        defines.push('HAS_CENTROID');
     }
     for (const coord of coords) {
         const tile = source.getTile(coord);
@@ -403,12 +406,15 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
         const ao = [aoIntensity, aoRadius * meterToTile];
         const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation);
 
+        const dynamicBuffers = [];
+        if (replacementActive) dynamicBuffers.push(bucket.groundEffect.hiddenByLandmarkVertexBuffer);
+
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
             groundEffect.segments, layer.paint, painter.transform.zoom,
-            programConfiguration);
+            programConfiguration, dynamicBuffers);
     }
 }
 

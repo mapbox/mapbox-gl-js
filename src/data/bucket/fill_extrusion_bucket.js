@@ -1,14 +1,15 @@
 // @flow
 
-import {FillExtrusionGroundLayoutArray, FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray, PosArray} from '../array_types.js';
+import {FillExtrusionGroundLayoutArray, FillExtrusionLayoutArray, FillExtrusionExtArray, FillExtrusionCentroidArray, FillExtrusionHiddenByLandmarkArray, PosArray} from '../array_types.js';
 
-import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttributes, fillExtrusionAttributesExt} from './fill_extrusion_attributes.js';
+import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttributes, fillExtrusionAttributesExt, hiddenByLandmarkAttributes} from './fill_extrusion_attributes.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
 import EXTENT from '../extent.js';
 import earcut from 'earcut';
 import {VectorTileFeature} from '@mapbox/vector-tile';
+import type {Feature} from "../../style-spec/expression";
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
@@ -106,6 +107,8 @@ export class PartData {
     centroidXY: Point;
     vertexArrayOffset: number;
     vertexCount: number;
+    groundVertexArrayOffset: number;
+    groundVertexCount: number;
     flags: number;
     footprintSegIdx: number;
     footprintSegLen: number;
@@ -118,7 +121,9 @@ export class PartData {
     constructor() {
         this.centroidXY = new Point(0, 0);
         this.vertexArrayOffset = 0;
-        this.vertexArrayOffset = 0;
+        this.vertexCount = 0;
+        this.groundVertexArrayOffset = 0;
+        this.groundVertexCount = 0;
         this.flags = 0;
         this.footprintSegIdx = -1;
         this.footprintSegLen = 0;
@@ -252,6 +257,10 @@ export class GroundEffect {
     vertexArray: FillExtrusionGroundLayoutArray;
     vertexBuffer: VertexBuffer;
 
+    hiddenByLandmarkVertexArray: FillExtrusionHiddenByLandmarkArray;
+    hiddenByLandmarkVertexBuffer: VertexBuffer;
+    needsHiddenByLandmarkUpdate: boolean;
+
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
@@ -264,7 +273,10 @@ export class GroundEffect {
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
+        this.hiddenByLandmarkVertexArray = new FillExtrusionHiddenByLandmarkArray();
     }
+
+    hasData(): boolean { return this.vertexArray.length !== 0; }
 
     addData(polyline: Array<Point>, bounds: [Point, Point]) {
         const n = polyline.length;
@@ -293,16 +305,61 @@ export class GroundEffect {
         }
     }
 
+    addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness: ?number) {
+        if (!this.hasData()) return;
+        this.programConfigurations.populatePaintArrays(this.vertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+    }
+
     upload(context: Context) {
+        if (!this.hasData()) return;
         this.vertexBuffer = context.createVertexBuffer(this.vertexArray, fillExtrusionGroundAttributes.members);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
+    }
+
+    uploadPaintProperties(context: Context) {
+        if (!this.hasData()) return;
         this.programConfigurations.upload(context);
+    }
+
+    update(states: FeatureStates, vtLayer: IVectorTileLayer, layers: any, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
+        if (!this.hasData()) return;
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+    }
+
+    updateHiddenByLandmark(data: PartData) {
+        if (!this.hasData()) return;
+        const offset = data.groundVertexArrayOffset;
+        const vertexArrayBounds = data.groundVertexCount + data.groundVertexArrayOffset;
+        assert(vertexArrayBounds <= this.hiddenByLandmarkVertexArray.length);
+        assert(this.hiddenByLandmarkVertexArray.length === this.vertexArray.length);
+        if (data.groundVertexCount === 0) return;
+        const hide = data.flags & PartData.HiddenByReplacement ? 1 : 0;
+        for (let i = offset; i < vertexArrayBounds; ++i) {
+            this.hiddenByLandmarkVertexArray.emplace(i, hide);
+        }
+        this.needsHiddenByLandmarkUpdate = true;
+    }
+
+    uploadHiddenByLandmark(context: Context) {
+        if (!this.hasData() || !this.needsHiddenByLandmarkUpdate) {
+            return;
+        }
+        if (!this.hiddenByLandmarkVertexBuffer && this.hiddenByLandmarkVertexArray.length > 0) {
+            // Create centroids vertex buffer
+            this.hiddenByLandmarkVertexBuffer = context.createVertexBuffer(this.hiddenByLandmarkVertexArray, hiddenByLandmarkAttributes.members, true);
+        } else if (this.hiddenByLandmarkVertexBuffer) {
+            this.hiddenByLandmarkVertexBuffer.updateData(this.hiddenByLandmarkVertexArray);
+        }
+        this.needsHiddenByLandmarkUpdate = false;
     }
 
     destroy() {
         if (!this.vertexBuffer) return;
         this.vertexBuffer.destroy();
         this.indexBuffer.destroy();
+        if (this.hiddenByLandmarkVertexBuffer) {
+            this.hiddenByLandmarkVertexBuffer.destroy();
+        }
         this.segments.destroy();
         this.programConfigurations.destroy();
     }
@@ -429,7 +486,7 @@ class FillExtrusionBucket implements Bucket {
     update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
         if (!this.stateDependentLayers.length) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
-        this.groundEffect.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
+        this.groundEffect.update(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
     }
 
     isEmpty(): boolean {
@@ -451,11 +508,13 @@ class FillExtrusionBucket implements Bucket {
 
             this.groundEffect.upload(context);
         }
+        this.groundEffect.uploadPaintProperties(context);
         this.programConfigurations.upload(context);
         this.uploaded = true;
     }
 
     uploadCentroid(context: Context) {
+        this.groundEffect.uploadHiddenByLandmark(context);
         if (!this.needsCentroidUpdate) {
             return;
         }
@@ -493,6 +552,7 @@ class FillExtrusionBucket implements Bucket {
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
         centroid.vertexArrayOffset = this.layoutVertexArray.length;
+        centroid.groundVertexArrayOffset = this.groundEffect.vertexArray.length;
 
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
@@ -795,6 +855,7 @@ class FillExtrusionBucket implements Bucket {
         assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
 
         centroid.vertexCount = this.layoutVertexArray.length - centroid.vertexArrayOffset;
+        centroid.groundVertexCount = this.groundEffect.vertexArray.length - centroid.groundVertexArrayOffset;
         if (centroid.vertexCount === 0) {
             return;
         }
@@ -817,7 +878,7 @@ class FillExtrusionBucket implements Bucket {
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
-        this.groundEffect.programConfigurations.populatePaintArrays(this.groundEffect.vertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+        this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness);
     }
 
     sortBorders() {
@@ -851,6 +912,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     writeCentroidToBuffer(data: PartData) {
+        this.groundEffect.updateHiddenByLandmark(data);
         const offset = data.vertexArrayOffset;
         const vertexArrayBounds = data.vertexCount + data.vertexArrayOffset;
         assert(vertexArrayBounds <= this.centroidVertexArray.length);
@@ -871,7 +933,9 @@ class FillExtrusionBucket implements Bucket {
 
     createCentroidsBuffer() {
         assert(this.centroidVertexArray.length === 0);
+        assert(this.groundEffect.hiddenByLandmarkVertexArray.length === 0);
         this.centroidVertexArray.resize(this.layoutVertexArray.length);
+        this.groundEffect.hiddenByLandmarkVertexArray.resize(this.groundEffect.vertexArray.length);
         for (const centroid of this.centroidData) {
             this.writeCentroidToBuffer(centroid);
         }
