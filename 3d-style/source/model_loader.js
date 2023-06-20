@@ -645,8 +645,8 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         const halfWidth = width / fallOff / 2.0;
         // right ground extruded looking out from door
         // x Coordinate is used to model angle (for spot)
-        mesh.colorArray.emplaceBack(-halfWidth, -horizontalSpread, -1, 0.8);
-        mesh.colorArray.emplaceBack(halfWidth, -horizontalSpread, -1, 0.8);
+        mesh.colorArray.emplaceBack(-halfWidth - horizontalSpread, -1, halfWidth, 0.8);
+        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1, halfWidth, 0.8);
         // keep shine at bottom of door even for reduced emissive strength
         mesh.colorArray.emplaceBack(-halfWidth, 0, halfWidth, 1.3);
         mesh.colorArray.emplaceBack(halfWidth, 0, halfWidth, 1.3);
