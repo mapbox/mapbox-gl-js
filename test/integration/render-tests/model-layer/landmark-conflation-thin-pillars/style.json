@@ -1,0 +1,120 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "width": 512,
+      "allowed": 0.00027,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.b3dm"
+      ]
+    }
+  },
+  "zoom": 17.95,
+  "center": [
+    -0.1246,
+    51.4980
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "3d-buildings",
+      "source": "mapbox",
+      "layout": {
+        "fill-extrusion-edge-radius": 0.4
+      },
+      "paint": {
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "number",
+            [
+              "get",
+              "height"
+            ]
+          ],
+          0.0,
+          [
+            "rgba",
+            22.0,
+            14.000000953674317,
+            35.0,
+            1.0
+          ],
+          50.0,
+          [
+            "rgba",
+            0.0,
+            97.00000762939453,
+            95.0,
+            1.0
+          ],
+          100.0,
+          [
+            "rgba",
+            85.0,
+            233.00001525878907,
+            255.0,
+            1.0
+          ]
+        ],
+        "fill-extrusion-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "fill-extrusion-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source-layer": "building",
+      "type": "fill-extrusion"
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark"
+    }
+  ]
+}

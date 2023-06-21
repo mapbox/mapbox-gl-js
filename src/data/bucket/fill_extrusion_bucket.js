@@ -655,7 +655,7 @@ class FillExtrusionBucket implements Bucket {
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
-                        this.footprintVertices.emplaceBack(x, y);
+                        this.footprintVertices.emplaceBack(p1.x, p1.y);
 
                         // triangulate as if vertices were not offset to ensure correct triangulation
                         flattened.push(p1.x, p1.y);
@@ -967,11 +967,9 @@ class FillExtrusionBucket implements Bucket {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
-            // Apply slight padding (one unit) to fill extrusion footprints unless chamfering is already being used.
-            // This reduces false positives where two adjacent lines would be reported overlapping due
-            // to limited precision (16 bit) of tile units.
-            const minPadding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
-            const padding = Math.max(minPadding - this.edgeRadius, 0.0);
+            // Apply slight padding (one unit) to fill extrusion footprints. This reduces false positives where
+            // two adjacent lines would be reported overlapping due to limited precision (16 bit) of tile units.
+            const padding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
 
             for (const centroid of this.centroidData) {
                 if (centroid.flags & PartData.HiddenByReplacement) {
