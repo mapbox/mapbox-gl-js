@@ -18,6 +18,7 @@ import validateEnum from './validate_enum.js';
 import validateFilter from './validate_filter.js';
 import validateLayer from './validate_layer.js';
 import validateSource from './validate_source.js';
+import validateModel from './validate_model.js';
 import validateLight from './validate_light.js';
 import validateLights from './validate_lights.js';
 import validateTerrain from './validate_terrain.js';
@@ -45,6 +46,7 @@ const VALIDATORS = {
     'layer': validateLayer,
     'object': validateObject,
     'source': validateSource,
+    'model': validateModel,
     'light': validateLight,
     'light-3d': validateLights,
     'terrain': validateTerrain,

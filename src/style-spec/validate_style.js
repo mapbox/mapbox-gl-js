@@ -36,6 +36,7 @@ export default function validateStyle(style: StyleSpecification | string | Buffe
 
 export {
     validateSource as source,
+    validateModel as model,
     validateLight as light,
     validateLayer as layer,
     validateFilter as filter,

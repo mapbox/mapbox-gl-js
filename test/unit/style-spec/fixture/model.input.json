@@ -1,0 +1,9 @@
+{
+    "version": 8,
+    "sources": {},
+    "layers": [],
+    "models": {
+      "spruce1-lod0": "asset://spruce1-lod0.glb",
+      "spruce1-lod1": "mapbox://spruce1-lod1.glb"
+    }
+}

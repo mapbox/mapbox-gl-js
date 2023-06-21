@@ -219,6 +219,8 @@ ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 
 ${flowObjectDeclaration('SourcesSpecification', spec.sources)}
 
+${flowObjectDeclaration('ModelsSpecification', spec.models)}
+
 ${flowObjectDeclaration('LightSpecification', spec.light)}
 
 ${flowObjectDeclaration('TerrainSpecification', spec.terrain)}
@@ -241,6 +243,8 @@ ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key
 
 export type SourceSpecification =
 ${spec.source.map(key => `    | ${flowSourceTypeName(key)}`).join('\n')}
+
+export type ModelSpecification = ${flowType(spec.model)};
 
 ${lightTypes.map(key => flowLight(key)).join('\n\n')}
 
