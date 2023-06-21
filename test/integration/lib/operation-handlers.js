@@ -45,6 +45,14 @@ export const operationHandlers = {
             throw new Error(`addImage opertation failed with src ${image.src}`);
         };
     },
+    addModel(map, params, doneCb) {
+        map.addModel(params[0], params[1]);
+        doneCb();
+    },
+    removeModel(map, params, doneCb) {
+        map.removeModel(params[0]);
+        doneCb();
+    },
     addLayer(map, params, doneCb) {
         map.addLayer(params[0], params[1]);
         waitForRender(map, () => true, doneCb);

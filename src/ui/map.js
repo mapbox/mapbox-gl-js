@@ -2333,6 +2333,86 @@ class Map extends Camera {
         return this.style.listImages();
     }
 
+    /** @section {Models} */
+
+    // eslint-disable-next-line jsdoc/require-returns
+    /**
+     * Add a model to the style. This model can be displayed on the map like any other model in the style
+     * using the model ID in conjunction with a 2D vector layer. This API can also be used for updating
+     * a model. If the model for a given `modelId` was already added, it gets replaced by the new model.
+     *
+     * @param {string} id The ID of the model.
+     * @param {string} url Pointing to the model to load.
+     *
+     * @example
+     * // If the style does not already contain a model with ID 'tree',
+     * // load a tree model and then use a geojson to show it.
+     * map.addModel('tree', 'http://path/to/my/tree.glb');
+     * map.addLayer({
+     *     "id": "tree-layer",
+     *     "type": "model",
+     *     "source": "trees",
+     *     "source-layer": "trees",
+     *     "layout": {
+     *         "model-id": "tree"
+     *     }
+     *});
+     *
+     */
+    addModel(id: string, url: string) {
+        this._lazyInitEmptyStyle();
+        this.style.addModel(id, url);
+    }
+
+    /**
+     * Check whether or not a model with a specific ID exists in the style. This checks both models
+     * in the style and any models that have been added at runtime using {@link Map#addModel}.
+     *
+     * @param {string} id The ID of the model.
+     *
+     * @returns {boolean} A Boolean indicating whether the model exists.
+     * @example
+     * // Check if a model with the ID 'tree' exists in
+     * // the style.
+     * const treeModelExists = map.hasModel('tree');
+     */
+    hasModel(id: string): boolean {
+        if (!id) {
+            this.fire(new ErrorEvent(new Error('Missing required model id')));
+            return false;
+        }
+        return this.style.hasModel(id);
+    }
+
+    /**
+     * Remove an model from a style. This can be a model from the style original
+     *  or any models that have been added at runtime using {@link Map#addModel}.
+     *
+     * @param {string} id The ID of the model.
+     *
+     * @example
+     * // If an model with the ID 'tree' exists in
+     * // the style, remove it.
+     * if (map.hasModel('tree')) map.removeModel('tree');
+     */
+    removeModel(id: string) {
+        this.style.removeModel(id);
+    }
+
+    /**
+    * Returns an Array of strings containing the IDs of all models currently available in the map.
+    * This includes both models from the style and any models that have been added at runtime using {@link Map#addModel}.
+    *
+    * @returns {Array<string>} An Array of strings containing the names of all model IDs currently available in the map.
+    *
+    * @example
+    * const allModels = map.listModels();
+    *
+    */
+    listModels(): Array<string> {
+        return this.style.listModels();
+    }
+
     /** @section {Layers} */
 
     /**

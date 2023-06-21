@@ -145,7 +145,7 @@ class Style extends Evented {
     stylesheet: StyleSpecification;
     dispatcher: Dispatcher;
     imageManager: ImageManager;
-    modelManager: ?ModelManager;
+    modelManager: ModelManager;
     glyphManager: GlyphManager;
     light: Light;
     terrain: ?Terrain;
@@ -195,6 +195,8 @@ class Style extends Evented {
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
         this.imageManager.setEventedParent(this);
+        this.modelManager = new ModelManager(map._requestManager);
+        this.modelManager.setEventedParent(this);
         this.glyphManager = new GlyphManager(map._requestManager,
             options.localFontFamily ?
                 LocalGlyphMode.all :
@@ -351,14 +353,8 @@ class Style extends Evented {
         if (this.stylesheet.lights) {
             this.setLights(this.stylesheet.lights);
         }
-        if (!this.stylesheet.models || (this.stylesheet.models instanceof Object && Object.keys(this.stylesheet.models).length === 0) || this._validate(validateModels, 'models', this.stylesheet.models)) {
-            if (this.modelManager) {
-                this.modelManager.setEventedParent(null);
-            }
-            this.modelManager = undefined;
-        } else {
-            this.modelManager = new ModelManager(this.stylesheet.models, this.map._requestManager);
-            this.modelManager.setEventedParent(this);
+        if (this.stylesheet.models && (this.stylesheet.models instanceof Object && Object.keys(this.stylesheet.models).length !== 0) && !this._validate(validateModels, 'models', this.stylesheet.models)) {
+            this.modelManager.addStyleModels(this.stylesheet.models);
         }
 
         this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
@@ -474,7 +470,7 @@ class Style extends Evented {
         if (!this.imageManager.isLoaded())
             return false;
 
-        if (this.modelManager && !this.modelManager.isLoaded())
+        if (this.stylesheet.models && !this.modelManager.isLoaded())
             return false;
 
         return true;
@@ -760,6 +756,29 @@ class Style extends Evented {
     listImages(): Array<string> {
         this._checkLoaded();
         return this._availableImages.slice();
+    }
+
+    addModel(id: string, url: string): this {
+        this.modelManager.addModel(id, url);
+        this._changed = true;
+        return this;
+    }
+
+    hasModel(id: string): boolean {
+        return this.modelManager.hasModel(id);
+    }
+
+    removeModel(id: string): this {
+        if (!this.hasModel(id)) {
+            return this.fire(new ErrorEvent(new Error('No model with this ID exists.')));
+        }
+        this.modelManager.removeModel(id);
+        return this;
+    }
+
+    listModels(): Array<string> {
+        this._checkLoaded();
+        return this.modelManager.listModels();
     }
 
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {

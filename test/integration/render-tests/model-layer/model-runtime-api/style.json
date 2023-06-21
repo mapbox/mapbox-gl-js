@@ -1,0 +1,93 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.00025,
+      "operations": [
+        ["wait"],
+        ["addModel", "maple", "./models/maple.glb"],
+        ["addModel", "maple1", "./models/maple1.glb"],
+        ["addModel", "oak1", "./models/oak1.glb"],
+        ["addModel", "oak2", "./models/oak2.glb"],
+        ["addModel", "oak3", "./models/oak3.glb"],
+        ["addModel", "spur1", "./models/spur1.glb"],
+        ["wait"],
+        ["addLayer", {
+              "id": "tree-layer",
+              "type": "model",
+              "source": "trees",
+              "source-layer": "trees",
+              "layout": {
+                "model-id": ["match", ["get", "tree_type"],
+                  "broadleaved",
+                  ["match", ["%", ["id"], 6],
+                    0, "maple",
+                    1, "maple1",
+                    2, "spur1",
+                    3, "oak1",
+                    4, "oak2",
+                    "oak3"],
+                  ["match", ["%", ["id"], 2],
+                    0, "oak1", "oak2"]
+                ]
+              }
+        }],
+        ["sleep", 700],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+  "pitch": 62,
+  "zoom": 17.2,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    }
+  ]
+}
