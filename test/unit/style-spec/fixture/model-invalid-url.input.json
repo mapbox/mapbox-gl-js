@@ -1,0 +1,9 @@
+{
+    "version": 8,
+    "sources": {},
+    "layers": [],
+    "models": {
+      "spruce1-lod0": {},
+      "spruce1-lod1": "http ://example.com"
+    }
+}

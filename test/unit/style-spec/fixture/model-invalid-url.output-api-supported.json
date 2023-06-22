@@ -1,0 +1,10 @@
+[
+  {
+    "message": "models.spruce1-lod0: string expected, \"object\" found",
+    "line": 6
+  },
+  {
+    "message": "models.spruce1-lod1: invalid url \"http ://example.com\"",
+    "line": 7
+  }
+]

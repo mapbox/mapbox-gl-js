@@ -177,14 +177,19 @@
       ]
     },
     "models": {
-      "type": "*",
-      "doc": "specific models used in the style",
+      "type": "models",
+      "doc": "Specification of models used in the style.",
       "example": {
         "spruce1-lod0": "asset://spruce1-lod0.glb",
         "spruce1-lod1": "asset://spruce1-lod1.glb",
         "spruce1-lod2": "asset://spruce1-lod2.glb"
       }
     }
+  },
+  "model": {
+    "type": "string",
+    "doc": "A URL to a model resource. Supported protocols are `http:`, `https:`, and `mapbox://<Model ID>`.",
+    "required": true
   },
   "import": {
     "id": {
@@ -269,14 +274,10 @@
     }
   },
   "models" : {
-    "type" : "*",
-    "value": "models",
-    "doc": "Specific models used in the style",
-    "example": {
-        "spruce1-lod0": "asset://spruce1-lod0.glb",
-        "spruce1-lod1": "asset://spruce1-lod1.glb",
-        "spruce1-lod2": "asset://spruce1-lod2.glb"
-      }
+    "*": {
+      "type": "model",
+      "doc": "A URL to a model resource. Supported protocols are `http:`, `https:`, and `mapbox://<Model ID>`."
+    }
   },
   "light-3d": {
     "id": {

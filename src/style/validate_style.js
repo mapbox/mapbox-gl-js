@@ -23,7 +23,7 @@ export {
     validateLight,
     validateTerrain,
     validateLights,
-    validateModels,
+    validateModel,
     validateFog,
     validateLayer,
     validateFilter,

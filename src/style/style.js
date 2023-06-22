@@ -28,7 +28,6 @@ import {
     validateFilter,
     validateTerrain,
     validateLights,
-    validateModels,
     emitValidationErrors as _emitValidationErrors
 } from './validate_style.js';
 import {QueryGeometry} from '../style/query_geometry.js';
@@ -353,7 +352,8 @@ class Style extends Evented {
         if (this.stylesheet.lights) {
             this.setLights(this.stylesheet.lights);
         }
-        if (this.stylesheet.models && (this.stylesheet.models instanceof Object && Object.keys(this.stylesheet.models).length !== 0) && !this._validate(validateModels, 'models', this.stylesheet.models)) {
+
+        if (this.stylesheet.models) {
             this.modelManager.addStyleModels(this.stylesheet.models);
         }
 

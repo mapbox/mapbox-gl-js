@@ -78,11 +78,15 @@ export type StyleSpecification = {|
     "transition"?: TransitionSpecification,
     "projection"?: ProjectionSpecification,
     "layers": Array<LayerSpecification>,
-    "models"?: mixed
+    "models"?: ModelsSpecification
 |}
 
 export type SourcesSpecification = {
     [_: string]: SourceSpecification
+}
+
+export type ModelsSpecification = {
+    [_: string]: ModelSpecification
 }
 
 export type LightSpecification = {|
@@ -229,6 +233,8 @@ export type SourceSpecification =
     | VideoSourceSpecification
     | ImageSourceSpecification
     | ModelSourceSpecification
+
+export type ModelSpecification = string;
 
 export type AmbientLightSpecification = {|
     "id": string,
