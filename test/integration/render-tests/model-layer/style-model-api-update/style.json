@@ -1,0 +1,76 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "allowed": 0.00035,
+      "operations": [
+        ["addModel", "tree", "./models/tree.glb"],
+        ["wait"],
+        ["sleep", 500],
+        ["addModel", "tree", "./models/nested-cubes.glb"],
+        ["wait"],
+        ["sleep", 500]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "geojson",
+      "data": "local://data/trees.geojson"
+    }
+  },
+  "pitch": 60,
+  "bearing": 0,
+  "zoom": 15,
+  "center": [
+    -122.40784,
+    37.78432
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": "tree"
+      },
+      "paint": {
+        "model-scale": [ 10.0, 15.0, 15.0 ]
+      }
+    }
+  ]
+}
