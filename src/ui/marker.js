@@ -88,7 +88,6 @@ export default class Marker extends Evented {
     _updateFrameId: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
-    _classList: Set<string>;
 
     constructor(options?: Options, legacyOptions?: Options) {
         super();
@@ -167,6 +166,7 @@ export default class Marker extends Evented {
         }
 
         if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');
+        this._element.classList.add('mapboxgl-marker');
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
         });
@@ -178,10 +178,13 @@ export default class Marker extends Evented {
         for (const key in anchorTranslate) {
             classList.remove(`mapboxgl-marker-anchor-${key}`);
         }
-        this._classList = new Set([
-            ...this._element.classList,
+        classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
+        const optionClasses = new Set([
             ...(options && options.className ? options.className.trim().split(/\s+/) : [])
         ]);
+        optionClasses.forEach((className) => {
+            this._element.classList.add(className);
+        });
 
         this._popup = null;
     }
@@ -564,17 +567,6 @@ export default class Marker extends Evented {
         return rotation ? `rotateZ(${rotation}deg)` : '';
     }
 
-    _updateClassList() {
-        if (!this._element) return;
-
-        const classes = [...this._classList];
-        classes.push('mapboxgl-marker');
-        if (this._anchor) {
-            classes.push(`mapboxgl-marker-anchor-${this._anchor}`);
-        }
-        this._element.className = classes.join(' ');
-    }
-
     _update(delaySnap?: boolean) {
         window.cancelAnimationFrame(this._updateFrameId);
         const map = this._map;
@@ -612,8 +604,6 @@ export default class Marker extends Evented {
                 this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
-
-        this._updateClassList();
     }
 
     /**
@@ -652,8 +642,7 @@ export default class Marker extends Evented {
      * marker.addClassName('some-class');
      */
     addClassName(className: string): this {
-        this._classList.add(className);
-        this._updateClassList();
+        this._element.classList.add(className);
         return this;
     }
 
@@ -669,8 +658,7 @@ export default class Marker extends Evented {
      * marker.removeClassName('some');
      */
     removeClassName(className: string): this {
-        this._classList.delete(className);
-        this._updateClassList();
+        this._element.classList.remove(className);
         return this;
     }
 
@@ -686,15 +674,7 @@ export default class Marker extends Evented {
      * marker.toggleClassName('highlighted');
      */
     toggleClassName(className: string): boolean {
-        let finalState: boolean;
-        if (this._classList.delete(className)) {
-            finalState = false;
-        } else {
-            this._classList.add(className);
-            finalState = true;
-        }
-        this._updateClassList();
-        return finalState;
+        return this._element.classList.toggle(className);
     }
 
     _onMove(e: MapMouseEvent | MapTouchEvent) {
