@@ -663,7 +663,7 @@ export default class Marker extends Evented {
      * @param {string} className Non-empty string with CSS class name to remove from marker element.
      *
      * @returns {Marker} Returns itself to allow for method chaining.
-     * 
+     *
      * @example
      * const marker = new mapboxgl.Marker({className: 'some classes'});
      * marker.removeClassName('some');
