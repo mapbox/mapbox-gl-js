@@ -179,10 +179,8 @@ export default class Marker extends Evented {
             classList.remove(`mapboxgl-marker-anchor-${key}`);
         }
         classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
-        const optionClasses = new Set([
-            ...(options && options.className ? options.className.trim().split(/\s+/) : [])
-        ]);
-        optionClasses.forEach((className) => {
+        const classNames = options && options.className ? options.className.trim().split(/\s+/) : [];
+        classNames.forEach((className) => {
             this._element.classList.add(className);
         });
 
