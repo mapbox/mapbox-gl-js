@@ -292,7 +292,7 @@ class GeolocateControl extends Evented {
         }
 
         if (this.options.showUserLocation) {
-            this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
+            this._userLocationDotMarker.removeClassName('mapboxgl-user-location-dot-stale');
         }
 
         this.fire(new Event('geolocate', position));
@@ -364,9 +364,9 @@ class GeolocateControl extends Evented {
     _updateMarkerRotation() {
         if (this._userLocationDotMarker && typeof this._heading === 'number') {
             this._userLocationDotMarker.setRotation(this._heading);
-            this._dotElement.classList.add('mapboxgl-user-location-show-heading');
+            this._userLocationDotMarker.addClassName('mapboxgl-user-location-show-heading');
         } else {
-            this._dotElement.classList.remove('mapboxgl-user-location-show-heading');
+            this._userLocationDotMarker.removeClassName('mapboxgl-user-location-show-heading');
             this._userLocationDotMarker.setRotation(0);
         }
     }
@@ -406,7 +406,7 @@ class GeolocateControl extends Evented {
         }
 
         if (this._watchState !== 'OFF' && this.options.showUserLocation) {
-            this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
+            this._userLocationDotMarker.addClassName('mapboxgl-user-location-dot-stale');
         }
 
         this.fire(new Event('error', error));
