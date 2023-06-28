@@ -1,4 +1,5 @@
 import {test} from '../../util/test.js';
+import '../../../src/util/global_worker_pool.js';
 import Worker from '../../../src/source/worker.js';
 import window from '../../../src/util/window.js';
 

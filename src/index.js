@@ -29,6 +29,7 @@ import {prewarm, clearPrewarmedResources} from './util/global_worker_pool.js';
 import {clearTileCache} from './util/tile_request_cache.js';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils.js';
 import {FreeCameraOptions} from './ui/free_camera.js';
+import {getLoadersUrl, setLoadersUrl} from '../3d-style/util/loaders.js';
 import browser from './util/browser.js';
 
 const exported = {
@@ -230,11 +231,11 @@ const exported = {
      * </script>
      */
     get loadersUrl(): string {
-        return config.LOADERS_URL;
+        return getLoadersUrl();
     },
 
     set loadersUrl(url: string) {
-        config.LOADERS_URL = url;
+        setLoadersUrl(url);
     },
 
     /**

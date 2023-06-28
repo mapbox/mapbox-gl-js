@@ -2,15 +2,45 @@
 /* global document: false, self: false, mapboxglLoaders: false, importScripts: false */
 
 import config from '../../src/util/config.js';
+import browser from '../../src/util/browser.js';
+import Dispatcher from '../../src/util/dispatcher.js';
+import getWorkerPool from '../../src/util/global_worker_pool.js';
+import {Evented} from '../../src/util/evented.js';
 import {isWorker, warnOnce} from '../../src/util/util.js';
 
+let dispatcher = null;
 let loadingPromise: Promise<any> | void;
+let loadersUrl: ?string;
 
-function loadJS(url: string) {
+const defaultLoadersUrl = process.env.ROLLUP_WATCH ?
+    `${self.origin}/dist/mapbox-gl-loaders.js` :
+    config.LOADERS_URL;
+
+export function getLoadersUrl(): string {
+    if (isWorker() && self.worker && self.worker.loadersUrl) {
+        return self.worker.loadersUrl;
+    }
+
+    return loadersUrl ? loadersUrl : defaultLoadersUrl;
+}
+
+export function setLoadersUrl(url: string) {
+    loadersUrl = browser.resolveURL(url);
+
+    if (!dispatcher) {
+        dispatcher = new Dispatcher(getWorkerPool(), new Evented());
+    }
+
+    // Sets the loaders URL in all workers.
+    dispatcher.broadcast('setLoadersUrl', loadersUrl);
+}
+
+function loadBundle(url: string) {
     if (isWorker()) {
         importScripts(url);
         return new Promise(resolve => resolve());
     }
+
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = url;
@@ -26,9 +56,9 @@ async function waitForLoaders() {
 
     // $FlowFixMe expecting a global variable
     if (typeof mapboxglLoaders === 'undefined') {
-        const loadersUrl = config.LOADERS_URL ? config.LOADERS_URL : `${self.origin}/dist/mapbox-gl-loaders.js`;
+        const loadersUrl = getLoadersUrl();
         try {
-            loadingPromise = loadJS(loadersUrl);
+            loadingPromise = loadBundle(loadersUrl);
             await loadingPromise;
         } catch (e) {
             warnOnce(`Could not load bundle from ${loadersUrl}.`);

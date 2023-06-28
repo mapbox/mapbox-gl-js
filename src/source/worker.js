@@ -45,6 +45,7 @@ export default class Worker {
     defaultProjection: Projection;
     isSpriteLoaded: {[_: string]: boolean };
     referrer: ?string;
+    loadersUrl: ?string
     terrain: ?boolean;
     brightness: ?number;
 
@@ -237,6 +238,10 @@ export default class Worker {
         } catch (e) {
             callback(e.toString());
         }
+    }
+
+    setLoadersUrl(map: string, loadersUrl: string) {
+        this.loadersUrl = loadersUrl;
     }
 
     getAvailableImages(mapId: string): Array<string> {
