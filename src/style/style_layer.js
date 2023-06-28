@@ -43,6 +43,7 @@ class StyleLayer extends Evented {
     type: string;
     source: string;
     sourceLayer: ?string;
+    slot: ?string;
     minzoom: ?number;
     maxzoom: ?number;
     filter: FilterSpecification | void;
@@ -93,6 +94,8 @@ class StyleLayer extends Evented {
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
         }
+
+        if (layer.slot) this.slot = layer.slot;
 
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout);

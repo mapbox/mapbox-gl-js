@@ -2116,7 +2116,7 @@ class Map extends Camera {
      * @see [Example: Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource(id: string): ?Source {
-        return this.style.getSource(id);
+        return this.style.getOwnSource(id);
     }
 
     /** @section {Images} */
@@ -2622,7 +2622,7 @@ class Map extends Camera {
      * @see [Example: Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer(id: string): ?StyleLayer {
-        return this.style.getLayer(id);
+        return this.style.getOwnLayer(id);
     }
 
     /**

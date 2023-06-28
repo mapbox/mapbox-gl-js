@@ -68,26 +68,58 @@ function getSourceErrors(source: Object, i: number): Array<ValidationError> {
     return errors;
 }
 
-function getSourcesErrors(sources: Object): Array<ValidationError> {
+function getMaxSourcesErrors(sourcesCount: number): Array<ValidationError> {
     const errors = [];
-    let count = 0;
+    if (sourcesCount > MAX_SOURCES_IN_STYLE) {
+        errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
+    }
+    return errors;
+}
+
+function getSourcesErrors(sources: Object): {errors: Array<ValidationError>, sourcesCount: number} {
+    const errors = [];
+    let sourcesCount = 0;
 
     Object.keys(sources).forEach((s: string, i: number) => {
         const sourceErrors = getSourceErrors(sources[s], i);
 
         // If source has errors, skip counting
         if (!sourceErrors.length) {
-            count = count + getSourceCount(sources[s]);
+            sourcesCount = sourcesCount + getSourceCount(sources[s]);
         }
 
         errors.push(...sourceErrors);
     });
 
-    if (count > MAX_SOURCES_IN_STYLE) {
-        errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
-    }
+    return {errors, sourcesCount};
+}
 
-    return errors;
+function getImportErrors(imports: Array<Object> = []): {errors: Array<ValidationError>, sourcesCount: number} {
+    let errors: Array<ValidationError> = [];
+
+    let sourcesCount = 0;
+    const validateImports = (imports: Array<Object> = []) => {
+        for (const importSpec of imports) {
+            const style = importSpec.data;
+            if (!style) continue;
+
+            if (style.imports) {
+                validateImports(style.imports);
+            }
+
+            errors = errors.concat(getRootErrors(style, Object.keys(v8.$root)));
+
+            if (style.sources) {
+                const sourcesErrors = getSourcesErrors(style.sources);
+                sourcesCount += sourcesErrors.sourcesCount;
+                errors = errors.concat(sourcesErrors.errors);
+            }
+        }
+    };
+
+    validateImports(imports);
+
+    return {errors, sourcesCount};
 }
 
 function getRootErrors(style: Object, specKeys: Array<any>): Array<ValidationError> {
@@ -180,10 +212,20 @@ export default function validateMapboxApiSupported(style: Object, styleSpec: Obj
     let errors = validateStyle(s, styleSpec)
         .concat(getRootErrors(s, Object.keys(v8.$root)));
 
+    let sourcesCount = 0;
     if (s.sources) {
-        errors = errors.concat(getSourcesErrors(s.sources));
+        const sourcesErrors = getSourcesErrors(s.sources);
+        sourcesCount += sourcesErrors.sourcesCount;
+        errors = errors.concat(sourcesErrors.errors);
     }
+
+    if (s.imports) {
+        const importsErrors = getImportErrors(s.imports);
+        sourcesCount += importsErrors.sourcesCount;
+        errors = errors.concat(importsErrors.errors);
+    }
+
+    errors = errors.concat(getMaxSourcesErrors(sourcesCount));
 
     return errors;
 }
-

@@ -1,0 +1,29 @@
+{
+  "version": 8,
+  "imports": [
+    {
+      "id": "streets",
+      "url": "mapbox://styles/mapbox/streets-v12",
+      "config": {
+        "borders": false
+      },
+      "data": {
+        "version": 8,
+        "sources": {
+          "one": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v6"
+          }
+        },
+        "layers": []
+      }
+    }
+  ],
+  "sources": {
+      "two": {
+        "type": "vector",
+        "url": "mapbox://mapbox.mapbox-streets-v6,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen"
+      }
+  },
+  "layers": []
+}

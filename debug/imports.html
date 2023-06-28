@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script type="module">
+        const fetchStreetsStyle = async () => {
+            const token = mapboxgl.accessToken;
+            const styleUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${token}`;
+            const style = await fetch(styleUrl).then(response => response.json());
+
+            // Add `below-road-network` slot
+            const roadNetworkIdx = style.layers.findIndex(layer => layer.id === 'tunnel-minor-case');
+            style.layers.splice(roadNetworkIdx, 0, {
+                id: 'below-road-network',
+                type: 'slot'
+            });
+
+            return style;
+        };
+
+        const streetsStyle = await fetchStreetsStyle();
+
+        const style = {
+            version: 8,
+            imports: [
+                {
+                    id: 'streets',
+                    // Use streets style as a basemap style
+                    url: 'mapbox://styles/mapbox/streets-v12',
+                    data: streetsStyle,
+                },
+                {
+                    id: 'trees',
+                    url: 'mapbox://styles/mapbox/streets-v12',
+                    data: {
+                        version: 8,
+                        sources: {
+                            trees: {
+                                type: 'geojson',
+                                data: 'http://localhost:9966/test/integration/data/trees.geojson'
+                            }
+                        },
+                        models: {
+                            tree: 'http://localhost:9966/test/integration/models/tree-metallic.glb',
+                            'tree-diffuse': 'http://localhost:9966/test/integration/models/tree-no-material.glb'
+                        },
+                        layers: [
+                            {
+                                id: 'tree-layer',
+                                type: 'model',
+                                source: 'trees',
+                                layout: {
+                                    'model-id': 'tree'
+                                },
+                                paint: {
+                                    'model-scale': [70.0, 50.0, 50.0],
+                                    'model-rotation': ['match', ['%', ['get', 'id'], 4],
+                                        0, ['literal', [0.0, 0.0, 0.0]],
+                                        1, ['literal', [0.0, 0.0, 60.0]],
+                                        2, ['literal', [10.0, 0.0, 180.0]],
+                                        ['literal', [0.0, -3.0, -90]]],
+                                    'model-color': 'red',
+                                    'model-color-mix-intensity': 1.0
+                                }
+                            },
+                            {
+                                id: 'tree-layer-diffuse',
+                                type: 'model',
+                                source: 'trees',
+                                layout: {
+                                    'model-id': 'tree-diffuse'
+                                },
+                                paint: {
+                                    'model-rotation': ['match', ['%', ['get', 'id'], 4],
+                                        0, ['literal', [0.0, 0.0, 0.0]],
+                                        1, ['literal', [0.0, 0.0, 60.0]],
+                                        2, ['literal', [10.0, 0.0, 180.0]],
+                                        ['literal', [0.0, -3.0, -90]]],
+                                    'model-scale': [70.0, 50.0, 50.0],
+                                    'model-translation': [0, 0, 100]
+                                }
+                            },
+                        ]
+                    }
+                }
+            ],
+            sources: {
+                satellite: {
+                    type: 'raster',
+                    url: 'mapbox://mapbox.satellite',
+                    tileSize: 256
+                }
+            },
+            layers: [
+                {
+                    'id': 'satellite',
+                    'type': 'raster',
+                    'source': 'satellite',
+                    // Display satellite imagery below road network
+                    'slot': 'below-road-network'
+                },
+            ]
+        };
+
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            center: [-122.40784, 37.78432],
+            zoom: 15,
+            pitch: 60,
+            bearing: 0,
+            style,
+            // style: 'mapbox://styles/mapbox/streets-v12',
+            hash: true,
+            projection: 'globe'
+        });
+
+    </script>
+</body>
+
+</html>

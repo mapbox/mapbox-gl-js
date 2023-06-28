@@ -9,7 +9,6 @@ import EXTENT from '../data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';
-import {values} from '../util/util.js';
 import {isMapAuthenticated} from '../util/mapbox.js';
 import posAttributes from '../data/pos_attributes.js';
 import boundsAttributes from '../data/bounds_attributes.js';
@@ -82,6 +81,7 @@ import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
 import type ImageManager from './image_manager.js';
 import type GlyphManager from './glyph_manager.js';
+import type ModelManager from '../../3d-style/render/model_manager.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js';
@@ -156,6 +156,7 @@ class Painter {
     options: PainterOptions;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
+    modelManager: ModelManager;
     depthRangeFor3D: DepthRangeType;
     opaquePassCutoff: number;
     frameCounter: number;
@@ -535,15 +536,19 @@ class Painter {
         this.style = style;
         this.options = options;
 
+        const layers = this.style._layers;
+        const layerIds = this.style.order;
+        const orderedLayers = layerIds.map(id => layers[id]);
+        const sourceCaches = this.style._sourceCaches;
+
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
+        this.modelManager = style.modelManager;
 
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
         this.imageManager.beginFrame();
 
-        const layerIds = this.style.order;
-        const sourceCaches = this.style._sourceCaches;
         let conflationSourcesInStyle = 0;
         let conflationActiveThisFrame = false;
 
@@ -578,7 +583,6 @@ class Painter {
                 return cache.getSource();
             };
 
-            const orderedLayers = layerIds.map(id => this.style._layers[id]);
             const conflationLayersInStyle = [];
 
             for (const layer of orderedLayers) {
@@ -619,9 +623,9 @@ class Painter {
         this.conflationActive = conflationActiveThisFrame;
 
         this.opaquePassCutoff = Infinity;
-        for (let i = 0; i < layerIds.length; i++) {
-            const layerId = layerIds[i];
-            if (this.style._layers[layerId].is3D()) {
+        for (let i = 0; i < orderedLayers.length; i++) {
+            const layer = orderedLayers[i];
+            if (layer.is3D()) {
                 this.opaquePassCutoff = i;
                 break;
             }
@@ -643,8 +647,7 @@ class Painter {
         }
 
         // upload pass
-        for (const layerId of layerIds) {
-            const layer = this.style._layers[layerId];
+        for (const layer of orderedLayers) {
             if (layer.isHidden(this.transform.zoom)) continue;
             const sourceCache = style._getLayerSourceCache(layer);
             this.uploadLayer(this, layer, sourceCache);
@@ -672,8 +675,7 @@ class Painter {
         // later: in doing this we avoid doing expensive framebuffer restores.
         this.renderPass = 'offscreen';
 
-        for (const layerId of layerIds) {
-            const layer = this.style._layers[layerId];
+        for (const layer of orderedLayers) {
             const sourceCache = style._getLayerSourceCache(layer);
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
@@ -683,7 +685,7 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
-        this.depthRangeFor3D = [0, 1 - ((style.order.length + 2) * this.numSublayers * this.depthEpsilon)];
+        this.depthRangeFor3D = [0, 1 - ((orderedLayers.length + 2) * this.numSublayers * this.depthEpsilon)];
 
         // Terrain depth offscreen render pass ==========================
         // With terrain on, renders the depth buffer into a texture.
@@ -734,7 +736,7 @@ class Painter {
 
         if (!this.terrain) {
             for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style._getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
@@ -756,7 +758,7 @@ class Painter {
         const isTransitioning = globeToMercatorTransition(this.transform.zoom) > 0.0;
         if ((isTransitioning || this.transform.projection.name !== 'globe') && this.transform.isHorizonVisible()) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
-                const layer = this.style._layers[layerIds[this.currentLayer]];
+                const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style._getLayerSourceCache(layer);
                 if (!layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
@@ -779,7 +781,7 @@ class Painter {
         }
 
         while (this.currentLayer < layerIds.length) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
+            const layer = orderedLayers[this.currentLayer];
             const sourceCache = style._getLayerSourceCache(layer);
 
             // Nothing to draw in translucent pass for sky layers, advance
@@ -821,7 +823,7 @@ class Painter {
                     const saveCurrentLayer = this.currentLayer;
                     this.renderPass = 'light-beam';
                     for (this.currentLayer = this.firstLightBeamLayer; this.currentLayer <= saveCurrentLayer; this.currentLayer++) {
-                        const layer = this.style._layers[layerIds[this.currentLayer]];
+                        const layer = orderedLayers[this.currentLayer];
                         if (!layer.hasLightBeamPass()) continue;
 
                         const sourceCache = style._getLayerSourceCache(layer);
@@ -843,8 +845,7 @@ class Painter {
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             //Use source with highest maxzoom
             let selectedSource = null;
-            const layers = values(this.style._layers);
-            layers.forEach((layer) => {
+            orderedLayers.forEach((layer) => {
                 const sourceCache = style._getLayerSourceCache(layer);
                 if (sourceCache && !layer.isHidden(this.transform.zoom)) {
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {

@@ -212,9 +212,9 @@ export function upload(painter: Painter, sourceCache: SourceCache) {
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
-        if (painter.style.modelManager) {
+        if (painter.modelManager) {
             // Do it here, to prevent modelManager handling in Painter.
-            painter.style.modelManager.upload(painter);
+            painter.modelManager.upload(painter);
         }
         return;
     }
@@ -444,8 +444,8 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 
     const mercCameraPos = (painter.transform.getFreeCameraOptions().position: any);
-    if (!painter.style.modelManager) return;
-    const modelManager = painter.style.modelManager;
+    if (!painter.modelManager) return;
+    const modelManager = painter.modelManager;
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
@@ -713,8 +713,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 }
 
 function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter) {
-    if (!painter.style.modelManager) return true;
-    const modelManager = painter.style.modelManager;
+    if (!painter.modelManager) return true;
+    const modelManager = painter.modelManager;
     if (!painter.shadowRenderer) return true;
     const shadowRenderer = painter.shadowRenderer;
     assert(painter.renderPass === 'shadow');
