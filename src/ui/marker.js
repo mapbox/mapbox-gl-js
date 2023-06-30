@@ -180,9 +180,7 @@ export default class Marker extends Evented {
         }
         classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
         const classNames = options && options.className ? options.className.trim().split(/\s+/) : [];
-        classNames.forEach((className) => {
-            this._element.classList.add(className);
-        });
+        classList.add(...classNames);
 
         this._popup = null;
     }
