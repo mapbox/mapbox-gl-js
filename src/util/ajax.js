@@ -179,7 +179,6 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 cachePut(request, cacheableResponse, requestTime);
             }
             complete = true;
-            if (response.status === 204) return; // No content
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
         }).catch(err => {
             if (!aborted) callback(new Error(err.message));
@@ -200,7 +199,6 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
 function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     const xhr: XMLHttpRequest = new window.XMLHttpRequest();
-
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
     if (requestParameters.type === 'arrayBuffer') {
         xhr.responseType = 'arraybuffer';

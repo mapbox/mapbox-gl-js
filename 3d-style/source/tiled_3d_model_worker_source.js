@@ -104,9 +104,14 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 if (!aborted) this.loaded[uid] = workerTile;
                 return callback(err);
             }
-            if (data) {
-                workerTile.parse(data, this.layerIndex, params, callback);
+
+            if (!data || data.byteLength === 0) {
+                workerTile.status = 'done';
+                this.loaded[uid] = workerTile;
+                return callback();
             }
+
+            workerTile.parse(data, this.layerIndex, params, callback);
             this.loaded = this.loaded || {};
             this.loaded[uid] = workerTile;
         });

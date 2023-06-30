@@ -146,11 +146,13 @@ class Tiled3DModelSource extends Evented implements Source {
             if (err) {
                 return callback(err);
             }
-            if (data && data.resourceTiming)
-                tile.resourceTiming = data.resourceTiming;
-            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
 
-            tile.buckets = {...tile.buckets, ...data.buckets};
+            if (data) {
+                if (data.resourceTiming) tile.resourceTiming = data.resourceTiming;
+                if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
+                tile.buckets = {...tile.buckets, ...data.buckets};
+            }
+
             tile.state = 'loaded';
             callback(null);
         }
