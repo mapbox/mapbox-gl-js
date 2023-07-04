@@ -48,6 +48,7 @@ import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
+const TANGENT_CUTOFF = 4;
 
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
@@ -69,12 +70,13 @@ function addVertex(vertexArray: FillExtrusionLayoutArray, x: number, y: number, 
     );
 }
 
-function addGroundVertex(vertexArray: FillExtrusionLayoutArray, p: Point, end: Point, start: number, bottom: number) {
+function addGroundVertex(vertexArray: FillExtrusionGroundLayoutArray, p: Point, q: Point, start: number, bottom: number, angle: number) {
     vertexArray.emplaceBack(
         p.x,
         p.y,
-        (end.x << 1) + start,
-        (end.y << 1) + bottom
+        (q.x << 1) + start,
+        (q.y << 1) + bottom,
+        angle
     );
 }
 
@@ -278,24 +280,27 @@ export class GroundEffect {
 
     hasData(): boolean { return this.vertexArray.length !== 0; }
 
-    addData(polyline: Array<Point>, bounds: [Point, Point]) {
+    addData(polyline: Array<Point>, angularOffsetFactors: Array<number>, bounds: [Point, Point]) {
         const n = polyline.length;
+        assert(n === angularOffsetFactors.length);
         if (n > 2) {
             const segment = this.segments.prepareSegment(n * 4, this.vertexArray, this.indexArray);
             for (let i = 0; i < n; i++) {
                 const j = i === n - 1 ? 0 : i + 1;
                 const pa = polyline[i];
                 const pb = polyline[j];
+                const a0 = angularOffsetFactors[i];
+                const a1 = angularOffsetFactors[j];
 
                 if (isEdgeOutsideBounds(pa, pb, bounds) ||
                     (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) continue;
 
                 const idx = segment.vertexLength;
 
-                addGroundVertex(this.vertexArray, pa, pb, 1, 1);
-                addGroundVertex(this.vertexArray, pa, pb, 1, 0);
-                addGroundVertex(this.vertexArray, pa, pb, 0, 1);
-                addGroundVertex(this.vertexArray, pa, pb, 0, 0);
+                addGroundVertex(this.vertexArray, pa, pb, 1, 1, a0);
+                addGroundVertex(this.vertexArray, pa, pb, 1, 0, a0);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 1, a1);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
                 segment.vertexLength += 4;
 
                 this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
@@ -586,6 +591,18 @@ class FillExtrusionBucket implements Bucket {
             }
         }
 
+        const concavity = (a: Point, b: Point) => {
+            return a.x * b.y - a.y * b.x < 0 ? -1 : 1;
+        };
+
+        const tanAngleClamped = (angle: number) => {
+            return Math.min(TANGENT_CUTOFF, Math.max(-TANGENT_CUTOFF, Math.tan(angle))) / TANGENT_CUTOFF * FACTOR;
+        };
+
+        const getAngularOffsetFactor = (a: Point, b: Point, angle: number) => {
+            return tanAngleClamped(angle) * concavity(a, b);
+        };
+
         const edgeRadius = isPolygon ? this.edgeRadius : 0;
 
         for (const {polygon, bounds} of clippedPolygons) {
@@ -624,6 +641,7 @@ class FillExtrusionBucket implements Bucket {
 
                     // Geometry used by ground flood light and AO.
                     const groundPolyline: Array<Point> = [];
+                    const angularOffsetFactors: Array<number> = [];
 
                     // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
                     let na, nb;
@@ -638,18 +656,20 @@ class FillExtrusionBucket implements Bucket {
 
                         let {x, y} = p1;
 
-                        if (edgeRadius === 0) {
-                            groundPolyline.push(p1);
-                        }
+                        nb = p2.sub(p1)._perp()._unit();
+                        const nm = na.add(nb)._unit();
+                        const cosHalfAngle = na.x * nm.x + na.y * nm.y;
 
                         if (edgeRadius) {
-                            nb = p2.sub(p1)._perp()._unit();
-                            const nm = na.add(nb)._unit();
-                            const cosHalfAngle = na.x * nm.x + na.y * nm.y;
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
                             x += offset * nm.x;
                             y += offset * nm.y;
-                            na = nb;
+                        }
+
+                        if (edgeRadius === 0) {
+                            groundPolyline.push(p1);
+                            const factor = getAngularOffsetFactor(na, nb, Math.acos(cosHalfAngle));
+                            angularOffsetFactors.push(factor);
                         }
 
                         addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
@@ -666,10 +686,12 @@ class FillExtrusionBucket implements Bucket {
                             const n = projection.upVector(canonical, x, y);
                             addGlobeExtVertex(array, projectedP, n);
                         }
+
+                        na = nb;
                     }
 
                     if (edgeRadius === 0) {
-                        this.groundEffect.addData(groundPolyline, bounds);
+                        this.groundEffect.addData(groundPolyline, angularOffsetFactors, bounds);
                     }
                 }
 
@@ -699,9 +721,10 @@ class FillExtrusionBucket implements Bucket {
                 borderCentroidData.startRing(centroid, ring[0]);
                 let isPrevCornerConcave = ring.length > 4 && isAOConcaveAngle(ring[ring.length - 2], ring[0], ring[1]);
                 let offsetPrev = edgeRadius ? getRoundedEdgeOffset(ring[ring.length - 2], ring[0], ring[1], edgeRadius) : 0;
-
+                let prevAngularOffsetFactor = tanAngleClamped(Math.PI / 4);
                 // Geometry used by ground flood light and AO.
                 const groundPolyline: Array<Point> = [];
+                const angularOffsetFactors: Array<number> = [];
 
                 let kFirst;
 
@@ -762,14 +785,23 @@ class FillExtrusionBucket implements Bucket {
 
                         if (isNaN(offsetNext)) offsetNext = 0;
                         const nEdge = p1.sub(p0)._unit();
+                        const mEdge = p2.sub(p1)._unit();
+
                         p0 = p0.add(nEdge.mult(offsetPrev))._round();
                         p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
 
-                        na = nb;
+                        const pa = ring[i].add(mEdge.mult(offsetNext))._round();
+                        const pap1 = pa.sub(p1)._perp()._unit();
+                        const currentAngularOffsetFactor = getAngularOffsetFactor(na, pap1, Math.acos(getCosHalfAngle(na, pap1)));
 
                         groundPolyline.push(p0);
+                        angularOffsetFactors.push(prevAngularOffsetFactor);
                         groundPolyline.push(p1);
+                        angularOffsetFactors.push(currentAngularOffsetFactor);
+
+                        prevAngularOffsetFactor = getAngularOffsetFactor(pap1, nb, Math.acos(getCosHalfAngle(nb, pap1)));
+                        na = nb;
                     }
 
                     const k = segment.vertexLength;
@@ -845,7 +877,7 @@ class FillExtrusionBucket implements Bucket {
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
                 if (edgeRadius) {
-                    this.groundEffect.addData(groundPolyline, bounds);
+                    this.groundEffect.addData(groundPolyline, angularOffsetFactors, bounds);
                 }
             }
             this.footprintSegments.push(fpSegment);

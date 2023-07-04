@@ -1,4 +1,5 @@
 attribute highp vec4 a_pos_end;
+attribute highp float a_angular_offset_factor;
 attribute highp float a_hidden_by_landmark;
 
 #ifdef SDF_SUBPASS
@@ -22,6 +23,8 @@ uniform highp vec2 u_ao;
 #pragma mapbox: define highp float flood_light_ground_radius
 #pragma mapbox: define highp float base
 
+const float TANGENT_CUTOFF = 4.0;
+
 void main() {
     #pragma mapbox: initialize highp float flood_light_ground_radius
     #pragma mapbox: initialize highp float base
@@ -35,11 +38,18 @@ void main() {
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
     float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass);
 
-    vec2 offset_along_edge = v * effect_radius * (0.5 - start_bottom.x) * 2.0;
-    vec2 extrusion = vec2(-v.y, v.x) * effect_radius * (start_bottom.y - 1.0);
+    float angular_offset_factor = a_angular_offset_factor / EXTENT * TANGENT_CUTOFF;
+    float angular_offset = angular_offset_factor * effect_radius;
+
+    float top = 1.0 - start_bottom.y;
+
+    float side = (0.5 - start_bottom.x) * 2.0;
+    vec2 extrusion_parallel = v * side * mix(effect_radius / 10.0, angular_offset, top);
+
+    vec2 extrusion_perp = vec2(v.y, -v.x) * effect_radius * top;
 
     vec3 pos = vec3(mix(q, p, start_bottom.x), 0.0);
-    pos.xy += offset_along_edge + extrusion;
+    pos.xy += extrusion_parallel + extrusion_perp;
 
 #ifdef SDF_SUBPASS
     v_pos = pos.xy;

@@ -127,7 +127,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                 const attenuation = lerp(0.1, 3, t);
                 const showOverdraw = painter._showOverdrawInspector;
 
-                {
+                if (!showOverdraw) {
                     // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
                     /* $FlowFixMe[incompatible-call] */
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -138,9 +138,9 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                 {
                     // Draw the effects.
-                    const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
-                    const colorColorPass = new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
-                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, showOverdraw ? painter.colorModeForRenderPass() : colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
+                    const stencilColorPass = showOverdraw ? StencilMode.disabled : new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
+                    const colorColorPass = showOverdraw ? painter.colorModeForRenderPass() : new ColorMode([gl.ONE_MINUS_DST_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
+                    drawGroundEffect(painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer);
                 }
             };
 
