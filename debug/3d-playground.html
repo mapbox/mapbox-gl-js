@@ -58,7 +58,9 @@
 <div id='elevationDebug'></div>
 <div id='config'></div>
 
+<!-- TODO: USE MODULE BUNDLER HERE -->
 <script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
+<script type='text/javascript' src="https://unpkg.com/csscolorparser@1.0.3/csscolorparser.js"></script>
 <script src='/debug/dynamic.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -142,10 +144,10 @@ function updateLights(enable, loadFromStyleIfPresent) {
     const currentLights = map.getLights();
     if (currentLights && loadFromStyleIfPresent) {
         demo3d.enable3dLights = true;
-        let c = currentLights[0].properties.color.slice(1);
-        demo3d.directionalLightColor = {r: c[0], g: c[1], b: c[2]};
-        c = currentLights[1].properties.color.slice(1);
-        demo3d.ambientLightColor = {r: c[0], g: c[1], b: c[2]};
+        const cDirectional = parseCSSColor(currentLights[0].properties.color); // eslint-disable-line
+        demo3d.directionalLightColor = {r: cDirectional[0], g: cDirectional[1], b: cDirectional[2]};
+        const cAmbient = parseCSSColor(currentLights[1].properties.color); // eslint-disable-line
+        demo3d.ambientLightColor = {r: cAmbient[0], g: cAmbient[1], b: cAmbient[2]};
         demo3d.directionalLightCastShadows = currentLights[0].properties['cast-shadows'];
         demo3d.directionalLightShadowIntensity = currentLights[0].properties['shadow-intensity'];
         demo3d.directionalLightIntensity = currentLights[0].properties.intensity;

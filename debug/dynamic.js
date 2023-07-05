@@ -1,6 +1,6 @@
 window.dynamic = {
     "version": 8,
-    "name": "3D dynamic map",
+    "name": "Mapbox Standard",
     "metadata": {
         "mapbox:type": "default",
         "mapbox:origin": "streets-v12",
@@ -153,12 +153,12 @@ window.dynamic = {
             "type": "vector",
             "url": "mapbox://mapbox.mapbox-models-v1"
         },
-        "mbx-3dbuildings": {
+        "3dbuildings": {
             "type": "batched-model",
-            "url": "mapbox://mapbox.mbx-3dbuildings-v1"
+            "url": "mapbox://mapbox.mapbox-3dbuildings-v1-beta"
         }
     },
-    "sprite": "mapbox://sprites/mapbox-map-design/clhrnvstg01yh01pn02ty6w7p/82qb27u5bmlfnboenyglbwsa3",
+    "sprite": "mapbox://sprites/mapbox/standard-beta/73jrw2iv9yt1v27bf6hw4p4cn",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "projection": { "name": "globe" },
     "layers": [
@@ -454,6 +454,51 @@ window.dynamic = {
             }
         },
         {
+            "id": "hillshade",
+            "type": "fill",
+            "metadata": { "mapbox:group": "Terrain, land" },
+            "source": "composite",
+            "source-layer": "hillshade",
+            "maxzoom": 16,
+            "layout": { },
+            "paint": {
+                "fill-emissive-strength": 0.6,
+                "fill-color": 
+                [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "measure-light", "brightness" ],
+                    0.05,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        "shadow",
+                        "hsla(40, 20%, 5%, 0.18)",
+                        "hsla(20, 20%, 100%, 0.12)"
+                    ],
+                    0.2,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        "shadow",
+                        "hsla(40, 41%, 21%, 0.06)",
+                        "hsla(20, 20%, 100%, 0.12)"
+                    ]
+                ],
+                "fill-opacity":
+                [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    14,
+                    1,
+                    16,
+                    0
+                ],
+                "fill-antialias": false
+            }
+        },
+        {
             "id": "pitch-outline",
             "type": "line",
             "metadata": { "mapbox:group": "Land & water, land" },
@@ -614,40 +659,6 @@ window.dynamic = {
             }
         },
         {
-            "id": "hillshade",
-            "type": "fill",
-            "metadata": { "mapbox:group": "Terrain, land" },
-            "source": "composite",
-            "source-layer": "hillshade",
-            "maxzoom": 16,
-            "layout": { },
-            "paint": {
-                "fill-emissive-strength": 0.8,
-                "fill-color": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    14,
-                    [
-                        "match",
-                        [ "get", "class" ],
-                        "shadow",
-                        "hsla(40, 41%, 21%, 0.06)",
-                        "hsla(20, 20%, 100%, 0.12)"
-                    ],
-                    16,
-                    [
-                        "match",
-                        [ "get", "class" ],
-                        "shadow",
-                        "hsla(40, 41%, 21%, 0)",
-                        "hsla(20, 20%, 100%, 0)"
-                    ]
-                ],
-                "fill-antialias": false
-            }
-        },
-        {
             "id": "land-structure-polygon",
             "type": "fill",
             "metadata": { "mapbox:group": "Land & water, built" },
@@ -660,7 +671,7 @@ window.dynamic = {
                 [ "==", [ "geometry-type" ], "Polygon" ]
             ],
             "layout": { },
-            "paint": { "fill-color": "#f5f1f0" }
+            "paint": { "fill-color": "hsl(12, 20%, 95%)" }
         },
         {
             "id": "land-structure-line",
@@ -685,7 +696,7 @@ window.dynamic = {
                     20,
                     40
                 ],
-                "line-color": "#f5f1f0"
+                "line-color": "hsl(12, 20%, 95%)"
             }
         },
         {
@@ -808,7 +819,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -853,7 +864,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -903,7 +914,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -949,7 +960,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -988,7 +999,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -1033,7 +1044,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -1073,7 +1084,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -1253,7 +1264,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#d2d7e4",
+                "line-color": "hsl(223, 25%, 86%)",
                 "line-dasharray": [ 0.2, 0.1 ]
             }
         },
@@ -1292,7 +1303,7 @@ window.dynamic = {
                     22,
                     100
                 ],
-                "line-color": "#d2d7e4"
+                "line-color": "hsl(223, 25%, 86%)"
             }
         },
         {
@@ -1331,7 +1342,7 @@ window.dynamic = {
                     22,
                     180
                 ],
-                "line-color": "#d2d7e4"
+                "line-color": "hsl(223, 25%, 86%)"
             }
         },
         {
@@ -1408,7 +1419,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#d2d7e4",
+                "line-color": "hsl(223, 25%, 86%)",
                 "line-opacity": [ "step", [ "zoom" ], 0, 14, 1 ]
             }
         },
@@ -1449,7 +1460,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#d2d7e4"
+                "line-color": "hsl(223, 25%, 86%)"
             }
         },
         {
@@ -1484,7 +1495,7 @@ window.dynamic = {
                     22,
                     260
                 ],
-                "line-color": "#d2d7e4"
+                "line-color": "hsl(223, 25%, 86%)"
             }
         },
         {
@@ -1513,7 +1524,7 @@ window.dynamic = {
                     22,
                     280
                 ],
-                "line-color": "#d2d7e4"
+                "line-color": "hsl(223, 25%, 86%)"
             }
         },
         {
@@ -1745,13 +1756,13 @@ window.dynamic = {
             "minzoom": 8,
             "filter": [ "==", [ "get", "type" ], "ferry" ],
             "paint": {
-                "line-emissive-strength":  [
+                "line-emissive-strength": [
                     "interpolate",
                     [ "linear" ],
                     [ "zoom" ],
-                    12,
-                    0.0,
                     13,
+                    0.3,
+                    14,
                     0.5
                 ],
                 "line-color": [
@@ -1790,7 +1801,15 @@ window.dynamic = {
             "minzoom": 8,
             "filter": [ "==", [ "get", "type" ], "ferry_auto" ],
             "paint": {
-                "line-emissive-strength": 0.5,
+                "line-emissive-strength": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    13,
+                    0.3,
+                    14,
+                    0.5
+                ],
                 "line-color": [
                     "interpolate",
                     [ "linear" ],
@@ -1890,7 +1909,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#d1c7c7",
+                "line-color": "hsl(0, 10%, 80%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -1930,7 +1949,7 @@ window.dynamic = {
                     22,
                     100
                 ],
-                "line-color": "#d1c7c7"
+                "line-color": "hsl(0, 10%, 80%)"
             }
         },
         {
@@ -1963,7 +1982,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#d1c7c7",
+                "line-color": "hsl(0, 10%, 80%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2214,7 +2233,7 @@ window.dynamic = {
                 [ "==", [ "geometry-type" ], "Polygon" ]
             ],
             "layout": { "visibility": "none" },
-            "paint": { "fill-color": "#bfc6d9", "fill-outline-color": "#a3adc2" }
+            "paint": { "fill-color": "hsl(224, 25%, 80%)", "fill-outline-color": "hsl(221, 20%, 70%)" }
         },
         {
             "id": "gate-fence-hedge-shade",
@@ -2322,7 +2341,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "circle-color": "#bfc6d9",
+                "circle-color": "hsl(224, 25%, 80%)",
                 "circle-stroke-width": [
                     "interpolate",
                     [ "linear" ],
@@ -2334,7 +2353,7 @@ window.dynamic = {
                     18,
                     2
                 ],
-                "circle-stroke-color": "#a3adc2",
+                "circle-stroke-color": "hsl(221, 20%, 70%)",
                 "circle-pitch-alignment": "map"
             }
         },
@@ -2374,7 +2393,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2421,7 +2440,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2469,7 +2488,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2517,7 +2536,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2558,7 +2577,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2605,7 +2624,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2674,7 +2693,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -2730,7 +2749,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "circle-color": "#bfc6d9",
+                "circle-color": "hsl(224, 25%, 80%)",
                 "circle-pitch-alignment": "map"
             }
         },
@@ -2760,7 +2779,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#bfc6d9",
+                "line-color": "hsl(224, 25%, 80%)",
                 "line-dasharray": [ 0.2, 0.1 ]
             }
         },
@@ -2803,7 +2822,7 @@ window.dynamic = {
                     22,
                     100
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -2842,7 +2861,7 @@ window.dynamic = {
                     22,
                     180
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -2926,7 +2945,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#bfc6d9",
+                "line-color": "hsl(224, 25%, 80%)",
                 "line-opacity": [ "step", [ "zoom" ], 0, 14, 1 ]
             }
         },
@@ -2967,7 +2986,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -3014,7 +3033,7 @@ window.dynamic = {
                     22,
                     260
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -3055,7 +3074,7 @@ window.dynamic = {
                     22,
                     280
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -3229,7 +3248,7 @@ window.dynamic = {
                     16,
                     2
                 ],
-                "line-color": "#a6a6a6",
+                "line-color": "hsl(0, 0%, 65%)",
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -3261,7 +3280,7 @@ window.dynamic = {
             ],
             "paint": {
                 "line-emissive-strength": 0.9,
-                "line-color": "#a6a6a6",
+                "line-color": "hsl(0, 0%, 65%)",
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -3527,7 +3546,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#ddd5d5",
+                "line-color": "hsl(0, 11%, 85%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -3569,7 +3588,7 @@ window.dynamic = {
                     18,
                     7
                 ],
-                "line-color": "#d1c7c7"
+                "line-color": "hsl(0, 10%, 80%)"
             }
         },
         {
@@ -3600,7 +3619,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#d1c7c7",
+                "line-color": "hsl(0, 10%, 80%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -3963,7 +3982,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4054,7 +4073,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4143,7 +4162,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4220,7 +4239,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4310,7 +4329,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4387,7 +4406,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -4427,7 +4446,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#a3adc2",
+                "line-color": "hsl(221, 20%, 70%)",
                 "line-dasharray": [ 0.2, 0.1 ]
             }
         },
@@ -4467,7 +4486,7 @@ window.dynamic = {
                     22,
                     100
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -4503,7 +4522,7 @@ window.dynamic = {
                     22,
                     180
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -4622,7 +4641,7 @@ window.dynamic = {
                     22,
                     200
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -4666,7 +4685,7 @@ window.dynamic = {
                     22,
                     260
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -4704,7 +4723,7 @@ window.dynamic = {
                     22,
                     280
                 ],
-                "line-color": "#bfc6d9"
+                "line-color": "hsl(224, 25%, 80%)"
             }
         },
         {
@@ -4898,7 +4917,7 @@ window.dynamic = {
                     22,
                     2
                 ],
-                "line-color": "#94a0b8",
+                "line-color": "hsl(220, 20%, 65%)",
                 "line-gap-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -5201,7 +5220,7 @@ window.dynamic = {
                     16,
                     2
                 ],
-                "line-color": "#a6a6a6",
+                "line-color": "hsl(0, 0%, 65%)",
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -5234,7 +5253,7 @@ window.dynamic = {
             "layout": { },
             "paint": {
                 "line-emissive-strength": 0.9,
-                "line-color": "#a6a6a6",
+                "line-color": "hsl(0, 0%, 65%)",
                 "line-width": [
                     "interpolate",
                     [ "exponential", 1.5 ],
@@ -5464,48 +5483,6 @@ window.dynamic = {
                     7,
                     [ "literal", [ 2, 1.5 ] ]
                 ]
-            }
-        },
-        {
-            "id": "trees-shadow",
-            "type": "circle",
-            "source": "trees",
-            "source-layer": "tree",
-            "paint": {
-                "circle-blur": 1,
-                "circle-color": [ "rgba", 0, 50, 30, 1 ],
-                "circle-opacity": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    15,
-                    0,
-                    19,
-                    0.3
-                ],
-                "circle-pitch-alignment": "map",
-                "circle-pitch-scale": "map",
-                "circle-radius": [
-                    "interpolate",
-                    [ "exponential", 1.75 ],
-                    [ "zoom" ],
-                    12,
-                    2,
-                    22,
-                    200
-                ],
-                "circle-translate": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    17,
-                    [ "literal", [ 1, 1 ] ],
-                    20,
-                    [ "literal", [ 1, 1 ] ],
-                    22,
-                    [ "literal", [ 5, 5 ] ]
-                ],
-                "circle-translate-anchor": "map"
             }
         },
         {
@@ -5875,15 +5852,25 @@ window.dynamic = {
                         [ "get", "class" ],
                         [
                             "motorway",
-                            "trunk",
-                            "primary",
-                            "secondary",
-                            "tertiary"
+                            "trunk"
                         ],
                         true,
                         false
                     ],
                     12,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary",
+                            "secondary"
+                        ],
+                        true,
+                        false
+                    ],
+                    13,
                     [
                         "match",
                         [ "get", "class" ],
@@ -6001,18 +5988,18 @@ window.dynamic = {
                     [ "linear" ],
                     [ "measure-light", "brightness" ],
                     0.28,
-                    "hsl(0, 0%, 100%)",
+                    "hsl(0, 0%, 95%)",
                     0.3,
-                    "hsl(0, 0%, 0%)"
+                    "hsl(0,  0%, 5%)"
                 ],
                 "text-halo-color": [
                     "interpolate",
                     [ "linear" ],
                     [ "measure-light", "brightness" ],
                     0.25,
-                    "hsl(0, 0%, 0%)",
+                    "hsl(0, 0%, 5%)",
                     0.3,
-                    "hsl(0, 0%, 100%)"
+                    "hsl(0, 0%, 95%)"
                 ],
                 "text-halo-width": 1,
                 "text-halo-blur": 1
@@ -6203,7 +6190,7 @@ window.dynamic = {
             }
         },
         {
-            "id": "3d_building",
+            "id": "3d-building",
             "type": "fill-extrusion",
             "metadata": { "mapbox:group": "Buildings, built" },
             "source": "composite",
@@ -6218,6 +6205,70 @@ window.dynamic = {
                 "fill-extrusion-edge-radius": 0.4
             },
             "paint": {
+                "fill-extrusion-flood-light-color": [
+                    "rgba",
+                    245,
+                    243,
+                    171,
+                    1.0
+                ],
+                "fill-extrusion-flood-light-ground-radius":[
+                    "step",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],
+                    0.0,
+                    30.0,
+                    [
+                      "random",
+                      30.0,
+                      300.0,
+                      [
+                        "id"
+                      ]
+                    ]
+                  ],
+                "fill-extrusion-flood-light-intensity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "measure-light",
+                        "brightness"
+                    ],
+                    0.0,
+                    0.3,
+                    0.05,
+                    0
+                ],
+                "fill-extrusion-flood-light-wall-radius": [
+                    "case",
+                  [">",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],100],
+                  [
+                    "/",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],
+                    3.0
+                  ],
+                  0
+                  ],
                 "fill-extrusion-vertical-scale": [
                     "interpolate",
                     ["linear"],
@@ -6225,7 +6276,7 @@ window.dynamic = {
                     15, 0,
                     15.3, 1
                 ],
-                "fill-extrusion-ambient-occlusion-intensity": 0.2,
+                "fill-extrusion-ambient-occlusion-intensity": 0.15,
                 "fill-extrusion-base": [ "get", "min_height" ],
                 "fill-extrusion-color": [
                     "interpolate",
@@ -6292,7 +6343,7 @@ window.dynamic = {
             "id": "building-models",
             "minzoom": 14.0,
             "paint": {
-                "model-ambient-occlusion-intensity": 0.6,
+                "model-ambient-occlusion-intensity": 0.75,
                 "model-color": [
                     "match",
                     [
@@ -6427,12 +6478,12 @@ window.dynamic = {
                         2.5
                     ],
                     "logo",
-                    0.8,
+                    0.6,
                     "window",
                     [
                         "random",
-                        0.4,
-                        1.2,
+                        0.5,
+                        0.8,
                         [
                             "id"
                         ]
@@ -6505,7 +6556,7 @@ window.dynamic = {
                 ],
                 "model-type": "common-3d"
             },
-            "source": "mbx-3dbuildings",
+            "source": "3dbuildings",
             "type": "model"
         },
         {
@@ -6565,8 +6616,21 @@ window.dynamic = {
                 "text-field": [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ]
             },
             "paint": {
-                "text-color": "hsl(200, 68%, 57%)",
-                "text-halo-color": "hsla(20, 17%, 100%, 0.5)"
+                "text-color": 
+                [
+                    "interpolate",
+                    [
+                      "linear"
+                    ],
+                    [
+                      "measure-light",
+                      "brightness"
+                    ],
+                    0.3,
+                    "hsl(200, 12%, 44%)",
+                    0.4,
+                    "hsl(200, 68%, 42%)"
+                ]
             }
         },
         {
@@ -6810,30 +6874,33 @@ window.dynamic = {
                 "text-field": [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ]
             },
             "paint": {
-                "text-color": [
-                    "match",
-                    [ "get", "class" ],
-                    [ "bay", "ocean", "sea" ],
+                "text-color": 
+                [
+                    "interpolate",
                     [
-                        "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.3,
-                        "hsl(200, 96%, 85%)",
-                        0.4,
-                        "hsl(200, 96%, 57%)"
+                      "linear"
                     ],
                     [
-                        "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.3,
-                        "hsl(200, 68%, 85%)",
-                        0.4,
-                        "hsl(200, 68%, 57%)"
+                      "measure-light",
+                      "brightness"
+                    ],
+                    0.3,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        [ "bay", "ocean", "sea" ],
+                            "hsl(200, 40%, 44%)",
+                            "hsl(200, 32%, 44%)"
+                    ],
+                    0.4,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        [ "bay", "ocean", "sea" ],
+                            "hsl(200, 96%, 42%)",
+                            "hsl(200, 88%, 42%)"
                     ]
-                ],
-                "text-halo-color": "hsla(20, 17%, 100%, 0.5)"
+                ]
             }
         },
         {
@@ -6906,29 +6973,31 @@ window.dynamic = {
                 ]
             },
             "paint": {
-                "text-emissive-strength": 1,
-                "text-halo-width": 1.2,
-                "text-color": [
-                    "match",
-                    [ "get", "class" ],
-                    [ "bay", "ocean", "sea" ],
+                "text-color": 
+                [
+                    "interpolate",
                     [
-                        "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.3,
-                        "hsl(200, 96%, 85%)",
-                        0.4,
-                        "hsl(200, 96%, 57%)"
+                      "linear"
                     ],
                     [
-                        "interpolate",
-                        [ "linear" ],
-                        [ "measure-light", "brightness" ],
-                        0.3,
-                        "hsl(200, 68%, 85%)",
-                        0.4,
-                        "hsl(200, 68%, 57%)"
+                      "measure-light",
+                      "brightness"
+                    ],
+                    0.3,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        [ "bay", "ocean", "sea" ],
+                            "hsl(200, 40%, 44%)",
+                            "hsl(200, 32%, 44%)"
+                    ],
+                    0.4,
+                    [
+                        "match",
+                        [ "get", "class" ],
+                        [ "bay", "ocean", "sea" ],
+                            "hsl(200, 96%, 44%)",
+                            "hsl(200, 88%, 44%)"
                     ]
                 ]
             }
@@ -7260,7 +7329,7 @@ window.dynamic = {
             },
             "source": "composite",
             "source-layer": "structure",
-            "minzoom": 16,
+            "minzoom": 17,
             "filter": [
                 "all",
                 [ "==", [ "get", "class" ], "gate" ],
@@ -7359,11 +7428,13 @@ window.dynamic = {
                     [ "pitch" ],
                     true,
                     40,
-                    [ "<=", [ "distance-from-center" ], 0.4 ],
+                    [ "<", [ "distance-from-center" ], 0.4 ],
                     50,
                     [ "<", [ "distance-from-center" ], 0.2 ],
+                    55,
+                    [ "<", [ "distance-from-center" ], 0 ],
                     60,
-                    [ "<", [ "distance-from-center" ], -0.5 ]
+                    [ "<=", [ "distance-from-center" ], -0.4 ]
                 ]
             ],
             "layout": {
@@ -7421,7 +7492,21 @@ window.dynamic = {
                 [
                     "<=",
                     [ "number", [ "get", "filterrank" ] ],
-                    [ "+", [ "step", [ "zoom" ], 0, 16, 1, 17, 2 ], 1 ]
+                    ["+", ["step", ["zoom"], 1, 16, 2, 17, 3],
+                    [
+                        "match",
+                        ["get", "class"],
+                        "park_like",
+                        4,
+                        "visitor_amenities",
+                        4,
+                        "store_like",
+                        3,
+                        "lodging",
+                        1,
+                        2
+                    ]
+                ]
                 ],
                 [
                     "case",
@@ -7440,9 +7525,11 @@ window.dynamic = {
                         40,
                         [ "<", [ "distance-from-center" ], 1.2 ],
                         50,
-                        [ "<", [ "distance-from-center" ], 1.1 ],
+                        [ "<", [ "distance-from-center" ], 1 ],
                         55,
-                        [ "<=", [ "distance-from-center" ], 1 ]
+                        [ "<", [ "distance-from-center" ], 0.8 ],
+                        60,
+                        [ "<=", [ "distance-from-center" ], 0.6 ]
                     ]
                 ]
             ],
@@ -7460,6 +7547,7 @@ window.dynamic = {
                     { }
                 ],
                 "text-font": [ "DIN Pro Medium", "Arial Unicode MS Regular" ],
+                "text-padding": 4,
                 "icon-image": [
                     "case",
                     [ "has", "maki_beta" ],
@@ -8058,7 +8146,7 @@ window.dynamic = {
             "layout": {
                 "text-field": [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
                 "text-transform": "uppercase",
-                "text-font": [ "DIN Pro Regular", "Arial Unicode MS Regular" ],
+                "text-font": [ "DIN Pro Medium", "Arial Unicode MS Regular" ],
                 "text-letter-spacing": [
                     "match",
                     [ "get", "type" ],
@@ -8073,23 +8161,31 @@ window.dynamic = {
                     [ "cubic-bezier", 0.5, 0, 1, 1 ],
                     [ "zoom" ],
                     11,
-                    [ "match", [ "get", "type" ], "suburb", 11, 10.5 ],
+                    [ "match", [ "get", "type" ], "suburb", 12, 11.5 ],
                     15,
-                    [ "match", [ "get", "type" ], "suburb", 15, 14 ]
+                    [ "match", [ "get", "type" ], "suburb", 16, 15 ]
                 ]
             },
             "paint": {
-                "text-emissive-strength": 1.5,
+                "text-emissive-strength": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "measure-light", "brightness" ],
+                    0.28,
+                    1.0,
+                    0.3,
+                    1.5
+                ],
                 "text-halo-color": [
                     "interpolate",
                     [ "linear" ],
                     [ "measure-light", "brightness" ],
                     0.25,
-                    "hsl(0, 0%, 0%)",
+                    "hsla(0, 0%, 0%, 0.5)",
                     0.3,
                     "hsl(0, 0%, 100%)"
                 ],
-                "text-halo-width": 1,
+                "text-halo-width": 1.3,
                 "text-color": [
                     "interpolate",
                     [ "linear" ],
@@ -8097,9 +8193,8 @@ window.dynamic = {
                     0.28,
                     "hsl(220, 30%, 85%)",
                     0.3,
-                    "hsl(220, 30%, 40%)"
-                ],
-                "text-halo-blur": 0.5
+                    "hsl(234, 21%, 25%)"
+                ]
             }
         },
         {
@@ -8622,12 +8717,12 @@ window.dynamic = {
             }
         }
     ],
-    "created": "2022-12-05T11:53:33.759Z",
-    "modified": "2022-12-05T13:12:18.297Z",
-    "id": "clbaqhsmh008b14s3krjt74yu",
-    "owner": "mapbox-map-design",
+    "created": "2023-06-20T17:31:18.306Z",
+    "modified": "2023-06-28T10:59:54.682Z",
+    "id": "standard-beta",
+    "owner": "mapbox",
     "visibility": "public",
-    "protected": false,
+    "protected": true,
     "draft": false,
     "fog": {
         "range": [
@@ -8748,7 +8843,7 @@ window.dynamic = {
                 "zoom"
             ],
             5.0,
-            0.1,
+            0.2,
             7.0,
             [
                 "interpolate",
@@ -8766,14 +8861,8 @@ window.dynamic = {
             "id": "ambient",
             "type": "ambient",
             "properties": {
-                "color": [
-                    "rgba",
-                    255.0,
-                    255.0,
-                    255.0,
-                    1.0
-                ],
-                "intensity": 0.7
+                "color":  "hsl(0, 0%, 100%)",
+                "intensity": 0.8
             }
         },
         {
@@ -8784,14 +8873,8 @@ window.dynamic = {
                     180,
                     20
                 ],
-                "color": [
-                    "rgba",
-                    255.0,
-                    255.0,
-                    255.0,
-                    1.0
-                ],
-                "intensity": 0.3,
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2,
                 "cast-shadows": true,
                 "shadow-intensity": 1
             }

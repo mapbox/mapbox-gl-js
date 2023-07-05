@@ -23,7 +23,7 @@ export const placementOpacityAttributes: StructArrayLayout = createLayout([
 ], 4);
 
 export const iconTransitioningAttributes: StructArrayLayout = createLayout([
-    {name: 'a_texb', components: 2, type: 'Uint8'}
+    {name: 'a_texb', components: 2, type: 'Uint16'}
 ]);
 
 export const collisionVertexAttributes: StructArrayLayout = createLayout([
