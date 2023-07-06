@@ -128,7 +128,7 @@ const empty = emptyStyle();
 
 export type StyleOptions = {
     validate?: boolean,
-    localFontFamily?: string,
+    localFontFamily?: ?string,
     localIdeographFontFamily?: string,
 
     modelManager?: ModelManager;
@@ -1622,6 +1622,8 @@ class Style extends Evented {
     }
 
     serialize(): StyleSpecification {
+        this._checkLoaded();
+
         const sources = {};
         for (const cacheId in this._sourceCaches) {
             const source = this._sourceCaches[cacheId].getSource();

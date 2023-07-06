@@ -82,6 +82,18 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('default style', (t) => {
+        t.stub(Map.prototype, '_detectMissingCSS');
+
+        const stub = t.stub(Map.prototype, 'setStyle');
+        new Map({container: window.document.createElement('div'), testMode: false});
+
+        t.ok(stub.calledOnce);
+        t.equal(stub.getCall(0).args[0], 'mapbox://styles/mapbox/standard-beta');
+
+        t.end();
+    });
+
     t.test('disablePerformanceMetricsCollection', (t) => {
         const map = createMap(t, {performanceMetricsCollection: false});
         map.once('idle', () => {

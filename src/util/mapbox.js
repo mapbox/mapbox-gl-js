@@ -48,7 +48,7 @@ export class RequestManager {
     _customAccessToken: ?string;
     _silenceAuthErrors: boolean;
 
-    constructor(transformRequestFn?: RequestTransformFunction, customAccessToken?: string, silenceAuthErrors: ?boolean) {
+    constructor(transformRequestFn?: ?RequestTransformFunction, customAccessToken?: ?string, silenceAuthErrors: ?boolean) {
         this._transformRequestFn = transformRequestFn;
         this._customAccessToken = customAccessToken;
         this._silenceAuthErrors = !!silenceAuthErrors;

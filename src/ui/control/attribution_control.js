@@ -9,7 +9,7 @@ import type Map, {ControlPosition} from '../map.js';
 
 type Options = {
     compact?: boolean,
-    customAttribution?: string | Array<string>
+    customAttribution?: ?string | ?Array<string>
 };
 
 /**

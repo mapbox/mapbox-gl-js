@@ -202,7 +202,7 @@ class Camera extends Evented {
 
     +_preloadTiles: (transform: Transform | Array<Transform>, callback?: Callback<any>) => any;
 
-    constructor(transform: Transform, options: {bearingSnap: number, respectPrefersReducedMotion: ?boolean}) {
+    constructor(transform: Transform, options: {bearingSnap: number, respectPrefersReducedMotion?: boolean}) {
         super();
         this._moving = false;
         this._zooming = false;

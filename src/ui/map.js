@@ -34,6 +34,7 @@ import SourceCache from '../source/source_cache.js';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
 import {setCacheLimits} from '../util/tile_request_cache.js';
 import {Debug} from '../util/debug.js';
+import config from '../util/config.js';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
@@ -73,6 +74,7 @@ import type StyleLayer from '../style/style_layer.js';
 import type {Source} from '../source/source.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {QueryResult} from '../data/feature_index.js';
+import type {EasingOptions} from './camera.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -91,18 +93,24 @@ export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
 export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 type MapOptions = {
+    style: StyleSpecification | string | void,
     hash?: boolean | string,
     interactive?: boolean,
     container: HTMLElement | string,
     bearingSnap?: number,
+    clickTolerance?: number,
+    pitchWithRotate?: boolean,
     attributionControl?: boolean,
     customAttribution?: string | Array<string>,
     logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
     preserveDrawingBuffer?: boolean,
     antialias?: boolean,
+    useWebGL2?: boolean,
     refreshExpiredTiles?: boolean,
+    bounds?: LngLatBoundsLike,
     maxBounds?: LngLatBoundsLike,
+    fitBoundsOptions?: EasingOptions,
     scrollZoom?: boolean,
     minZoom?: ?number,
     maxZoom?: ?number,
@@ -121,6 +129,7 @@ type MapOptions = {
     zoom?: number,
     bearing?: number,
     pitch?: number,
+    projection?: ProjectionSpecification | string,
     optimizeForTerrain?: boolean,
     renderWorldCopies?: boolean,
     minTileCacheSize?: number,
@@ -129,9 +138,11 @@ type MapOptions = {
     accessToken: string,
     testMode: ?boolean,
     locale?: Object,
-    projection?: ProjectionSpecification | string,
     language?: string,
-    worldview?: string
+    worldview?: string,
+    crossSourceCollisions?: boolean,
+    collectResourceTiming?: boolean,
+    respectPrefersReducedMotion?: boolean,
 };
 
 const defaultMinZoom = -2;
@@ -172,6 +183,8 @@ const defaultOptions = {
     hash: false,
     attributionControl: true,
 
+    antialias: false,
+    useWebGL2: false,
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
     trackResize: true,
@@ -186,7 +199,9 @@ const defaultOptions = {
     accessToken: null,
     fadeDuration: 300,
     respectPrefersReducedMotion: true,
-    crossSourceCollisions: true
+    crossSourceCollisions: true,
+    collectResourceTiming: false,
+    testMode: false,
 };
 
 /**
@@ -205,7 +220,7 @@ const defaultOptions = {
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {Object | string} options.style The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object | string} [options.style='mapbox://styles/mapbox/standard-beta'] The map's Mapbox style. This must be an a JSON object conforming to
  *     the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL
  *     to such JSON. Can accept a null value to allow adding a style manually.
  *
@@ -213,12 +228,13 @@ const defaultOptions = {
  *     where `:owner` is your Mapbox account name and `:style` is the style ID. You can also use a
  *     [Mapbox-owned style](https://docs.mapbox.com/api/maps/styles/#mapbox-styles):
  *
- *     * `mapbox://styles/mapbox/streets-v11`
- *     * `mapbox://styles/mapbox/outdoors-v11`
- *     * `mapbox://styles/mapbox/light-v10`
- *     * `mapbox://styles/mapbox/dark-v10`
+ *     * `mapbox://styles/mapbox/standard-beta`
+ *     * `mapbox://styles/mapbox/streets-v12`
+ *     * `mapbox://styles/mapbox/outdoors-v12`
+ *     * `mapbox://styles/mapbox/light-v11`
+ *     * `mapbox://styles/mapbox/dark-v11`
  *     * `mapbox://styles/mapbox/satellite-v9`
- *     * `mapbox://styles/mapbox/satellite-streets-v11`
+ *     * `mapbox://styles/mapbox/satellite-streets-v12`
  *     * `mapbox://styles/mapbox/navigation-day-v1`
  *     * `mapbox://styles/mapbox/navigation-night-v1`.
  *
@@ -261,7 +277,7 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial [bearing](https://docs.mapbox.com/help/glossary/camera#bearing) (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial [pitch](https://docs.mapbox.com/help/glossary/camera#pitch) (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {LngLatBoundsLike} [options.bounds=null] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
- * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
+ * @param {Object} [options.fitBoundsOptions=null] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
  * @param {'auto' | string | string[]} [options.language=null] A string with a BCP 47 language tag, or an array of such strings representing the desired languages used for the map's labels and UI components. Languages can only be set on Mapbox vector tile sources.
  *     By default, GL JS will not set a language so that the language of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *     Valid language strings must be a [BCP-47 language code](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_subtags). Unsupported BCP-47 codes will not include any translations. Invalid codes will result in an recoverable error.
@@ -284,7 +300,7 @@ const defaultOptions = {
  *     In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *     Set to `false`, to enable font settings from the map's style for these glyph ranges. Note that [Mapbox Studio](https://studio.mapbox.com/) sets this value to `false` by default.
  *     The purpose of this option is to avoid bandwidth-intensive glyph server requests. For an example of this option in use, see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs).
- * @param {string} [options.localFontFamily=false] Defines a CSS
+ * @param {string} [options.localFontFamily=null] Defines a CSS
  *     font-family for locally overriding generation of all glyphs. Font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *     If set, this option overrides the setting in localIdeographFontFamily.
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
@@ -355,8 +371,8 @@ class Map extends Camera {
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
-    _minTileCacheSize: number;
-    _maxTileCacheSize: number;
+    _minTileCacheSize: ?number;
+    _maxTileCacheSize: ?number;
     _frame: ?Cancelable;
     _renderNextFrame: ?boolean;
     _styleDirty: ?boolean;
@@ -387,7 +403,7 @@ class Map extends Camera {
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
-    _localFontFamily: string;
+    _localFontFamily: ?string;
     _requestManager: RequestManager;
     _locale: Object;
     _removed: boolean;
@@ -463,7 +479,7 @@ class Map extends Camera {
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(PerformanceMarkers.create);
 
-        options = extend({}, defaultOptions, options);
+        options = (extend({}, defaultOptions, options): typeof defaultOptions & MapOptions);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than or equal to minZoom`);
@@ -536,7 +552,7 @@ class Map extends Camera {
             this._container = window.document.getElementById(options.container);
 
             if (!this._container) {
-                throw new Error(`Container '${options.container}' not found.`);
+                throw new Error(`Container '${options.container.toString()}' not found.`);
             }
         } else if (options.container instanceof window.HTMLElement) {
             this._container = options.container;
@@ -593,8 +609,9 @@ class Map extends Camera {
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
 
-        if (options.style) {
-            this.setStyle(options.style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+        if (options.style || !options.testMode) {
+            const style = options.style || config.DEFAULT_STYLE;
+            this.setStyle(style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
         }
 
         if (options.projection) {
@@ -602,7 +619,7 @@ class Map extends Camera {
         }
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
-        this._hash = options.hash && (new Hash(hashName)).addTo(this);
+        if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
@@ -612,9 +629,10 @@ class Map extends Camera {
                 pitch: options.pitch
             });
 
-            if (options.bounds) {
+            const bounds = options.bounds;
+            if (bounds) {
                 this.resize();
-                this.fitBounds(options.bounds, extend({}, options.fitBoundsOptions, {duration: 0}));
+                this.fitBounds(bounds, extend({}, options.fitBoundsOptions, {duration: 0}));
             }
         }
 

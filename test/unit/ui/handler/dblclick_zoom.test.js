@@ -6,8 +6,7 @@ import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    t.stub(Map.prototype, '_authenticate');
-    return new Map({container: DOM.create('div', '', window.document.body)});
+    return new Map({container: DOM.create('div', '', window.document.body), testMode: true});
 }
 
 function simulateDoubleTap(map, delay = 100) {
