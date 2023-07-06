@@ -27,7 +27,8 @@ type Options = {
     rotation?: number,
     rotationAlignment?: string,
     pitchAlignment?: string,
-    occludedOpacity?: number
+    occludedOpacity?: number,
+    className?: string
 };
 
 /**
@@ -46,6 +47,7 @@ type Options = {
  * @param {string} [options.pitchAlignment='auto'] `'map'` aligns the `Marker` to the plane of the map. `'viewport'` aligns the `Marker` to the plane of the viewport. `'auto'` automatically matches the value of `rotationAlignment`.
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
+ * @param {string} [options.className] Space-separated CSS class names to add to marker element.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -177,6 +179,8 @@ export default class Marker extends Evented {
             classList.remove(`mapboxgl-marker-anchor-${key}`);
         }
         classList.add(`mapboxgl-marker-anchor-${this._anchor}`);
+        const classNames = options && options.className ? options.className.trim().split(/\s+/) : [];
+        classList.add(...classNames);
 
         this._popup = null;
     }
@@ -621,6 +625,52 @@ export default class Marker extends Evented {
         this._offset = Point.convert(offset);
         this._update();
         return this;
+    }
+
+    /**
+     * Adds a CSS class to the marker element.
+     *
+     * @param {string} className Non-empty string with CSS class name to add to marker element.
+     * @returns {Marker} Returns itself to allow for method chaining.
+     *
+     * @example
+     * const marker = new mapboxgl.Marker();
+     * marker.addClassName('some-class');
+     */
+    addClassName(className: string): this {
+        this._element.classList.add(className);
+        return this;
+    }
+
+    /**
+     * Removes a CSS class from the marker element.
+     *
+     * @param {string} className Non-empty string with CSS class name to remove from marker element.
+     *
+     * @returns {Marker} Returns itself to allow for method chaining.
+     *
+     * @example
+     * const marker = new mapboxgl.Marker({className: 'some classes'});
+     * marker.removeClassName('some');
+     */
+    removeClassName(className: string): this {
+        this._element.classList.remove(className);
+        return this;
+    }
+
+    /**
+     * Add or remove the given CSS class on the marker element, depending on whether the element currently has that class.
+     *
+     * @param {string} className Non-empty string with CSS class name to add/remove.
+     *
+     * @returns {boolean} If the class was removed return `false`. If the class was added, then return `true`.
+     *
+     * @example
+     * const marker = new mapboxgl.Marker();
+     * marker.toggleClassName('highlighted');
+     */
+    toggleClassName(className: string): boolean {
+        return this._element.classList.toggle(className);
     }
 
     _onMove(e: MapMouseEvent | MapTouchEvent) {

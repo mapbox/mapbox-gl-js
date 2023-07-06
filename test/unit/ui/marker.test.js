@@ -83,6 +83,128 @@ test('Marker#addTo adds the marker element to the canvas container', (t) => {
     t.end();
 });
 
+test('Marker adds classes from className option, methods for class manipulation work properly', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({className: 'some classes'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const markerElement = marker.getElement();
+    t.ok(markerElement.classList.contains('some'));
+    t.ok(markerElement.classList.contains('classes'));
+
+    marker.addClassName('addedClass');
+    t.ok(markerElement.classList.contains('addedClass'));
+
+    marker.removeClassName('addedClass');
+    t.ok(!markerElement.classList.contains('addedClass'));
+
+    marker.toggleClassName('toggle');
+    t.ok(markerElement.classList.contains('toggle'));
+
+    marker.toggleClassName('toggle');
+    t.ok(!markerElement.classList.contains('toggle'));
+
+    t.end();
+});
+
+test('Marker adds classes from element option, make sure it persists between class manipulations', (t) => {
+    const map = createMap(t);
+    const el = window.document.createElement('div');
+    el.className = 'marker';
+
+    const marker = new Marker({element: el})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const markerElement = marker.getElement();
+    t.ok(markerElement.classList.contains('marker'));
+
+    marker.addClassName('addedClass');
+    t.ok(markerElement.classList.contains('addedClass'));
+    t.ok(markerElement.classList.contains('marker'));
+
+    marker.removeClassName('addedClass');
+    t.ok(!markerElement.classList.contains('addedClass'));
+    t.ok(markerElement.classList.contains('marker'));
+
+    marker.toggleClassName('toggle');
+    t.ok(markerElement.classList.contains('toggle'));
+    t.ok(markerElement.classList.contains('marker'));
+
+    marker.toggleClassName('toggle');
+    t.ok(!markerElement.classList.contains('toggle'));
+    t.ok(markerElement.classList.contains('marker'));
+
+    t.end();
+});
+
+test('Marker#addClassName adds classes when called before adding marker to map', (t) => {
+    const map = createMap(t);
+    const marker = new Marker();
+    marker.addClassName('some');
+    marker.addClassName('classes');
+
+    marker.setLngLat([0, 0])
+        .addTo(map);
+
+    const markerElement = marker.getElement();
+    t.ok(markerElement.classList.contains('some'));
+    t.ok(markerElement.classList.contains('classes'));
+    t.end();
+});
+
+test('Marker className option and addClassName both add classes', (t) => {
+    const map = createMap(t);
+    const marker = new Marker({className: 'some classes'});
+    marker.addClassName('even')
+        .addClassName('more');
+
+    marker.setLngLat([0, 0])
+        .addTo(map);
+
+    marker.addClassName('one-more');
+
+    const markerElement = marker.getElement();
+    t.ok(markerElement.classList.contains('some'));
+    t.ok(markerElement.classList.contains('classes'));
+    t.ok(markerElement.classList.contains('even'));
+    t.ok(markerElement.classList.contains('more'));
+    t.ok(markerElement.classList.contains('one-more'));
+    t.end();
+});
+
+test('Methods for class manipulation work properly when marker is not on map', (t) => {
+    const map = createMap(t);
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addClassName('some')
+        .addClassName('classes');
+
+    let markerElement = marker.addTo(map).getElement();
+    t.ok(markerElement.classList.contains('some'));
+    t.ok(markerElement.classList.contains('classes'));
+
+    marker.remove();
+    marker.removeClassName('some');
+    markerElement = marker.addTo(map).getElement();
+
+    t.ok(!markerElement.classList.contains('some'));
+
+    marker.remove();
+    marker.toggleClassName('toggle');
+    markerElement = marker.addTo(map).getElement();
+
+    t.ok(markerElement.classList.contains('toggle'));
+
+    marker.remove();
+    marker.toggleClassName('toggle');
+    markerElement = marker.addTo(map).getElement();
+
+    t.ok(!markerElement.classList.contains('toggle'));
+    t.end();
+});
+
 test('Marker provides LngLat accessors', (t) => {
     t.equal(new Marker().getLngLat(), undefined);
 
