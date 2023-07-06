@@ -6,7 +6,6 @@ import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import Program from './program.js';
-import {smoothstep} from '../util/util.js';
 import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
@@ -17,19 +16,14 @@ import {mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
 
 import type {Mat4} from 'gl-matrix';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 
 export default drawSky;
 
-const TRANSITION_OPACITY_ZOOM_START = 7;
-const TRANSITION_OPACITY_ZOOM_END = 8;
-
 function drawSky(painter: Painter, sourceCache: SourceCache, layer: SkyLayer) {
     const tr = painter.transform;
-    const globeOrMercator = (tr.projection.name === 'mercator' || tr.projection.name === 'globe');
-    // For non-mercator projection, use a forced opacity transition. This transition is set to be
-    // 1.0 after the sheer adjustment upper bound which ensures to be in the mercator projection.
-    // Note: we only render sky for globe projection during the transition to mercator.
-    const transitionOpacity = globeOrMercator ? 1.0 : smoothstep(TRANSITION_OPACITY_ZOOM_START, TRANSITION_OPACITY_ZOOM_END, tr.zoom);
+    // Note: we render sky for globe projection during the transition to mercator or if atmosphere is disabled.
+    const transitionOpacity = !painter._atmosphere ? 1.0 : globeToMercatorTransition(tr.zoom);
     const opacity = layer.paint.get('sky-opacity') * transitionOpacity;
     if (opacity === 0) {
         return;

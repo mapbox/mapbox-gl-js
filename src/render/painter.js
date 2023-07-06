@@ -755,8 +755,8 @@ class Painter {
         // They are drawn at max depth, they are drawn after opaque and before
         // translucent to fail depth testing and mix with translucent objects.
         this.renderPass = 'sky';
-        const isTransitioning = globeToMercatorTransition(this.transform.zoom) > 0.0;
-        if ((isTransitioning || this.transform.projection.name !== 'globe') && this.transform.isHorizonVisible()) {
+        const drawSkyOnGlobe = !this._atmosphere || globeToMercatorTransition(this.transform.zoom) > 0.0;
+        if (drawSkyOnGlobe && (this.transform.projection.name === 'globe' || this.transform.isHorizonVisible())) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style._getLayerSourceCache(layer);
