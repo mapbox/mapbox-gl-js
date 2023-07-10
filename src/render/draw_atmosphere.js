@@ -23,7 +23,7 @@ import SegmentVector from '../data/segment.js';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types.js';
 import {starsLayout} from './stars_attributes.js';
 import {starsUniformValues} from '../terrain/stars_program.js';
-import {mulberry32} from '../util/random.js';
+import {mulberry32} from '../style-spec/util/random.js';
 
 function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Vec3> {
     const sRand = mulberry32(30);

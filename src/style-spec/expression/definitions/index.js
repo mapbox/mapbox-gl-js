@@ -49,7 +49,7 @@ import Within from './within.js';
 import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
 import type {Expression, ExpressionRegistry} from '../expression.js';
-import {mulberry32} from '../../../util/random.js';
+import {mulberry32} from '../../util/random.js';
 
 const expressions: ExpressionRegistry = {
     // special forms
