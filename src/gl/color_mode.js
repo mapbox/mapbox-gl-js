@@ -8,7 +8,7 @@ export const ONE = 0x0001;
 export const ONE_MINUS_SRC_ALPHA = 0x0303;
 export const DST_COLOR = 0x0306;
 
-export class ColorMode {
+export default class ColorMode {
     blendFunction: BlendFuncType;
     blendColor: Color;
     mask: ColorMaskType;
@@ -35,5 +35,3 @@ ColorMode.disabled = new ColorMode(ColorMode.Replace, Color.transparent, [false,
 ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
 ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 ColorMode.multiply = new ColorMode([DST_COLOR, ZERO, DST_COLOR, ZERO], Color.transparent, [true, true, true, true]);
-
-export default ColorMode;

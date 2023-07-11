@@ -3,7 +3,7 @@ import Color from '../style-spec/util/color.js';
 
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
-import {ColorMode, ZERO, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode.js';
+import {default as ColorMode, ZERO, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {
     globeToMercatorTransition,
