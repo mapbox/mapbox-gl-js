@@ -51,7 +51,7 @@
       "mapbox-dem": {
         "type": "raster-dem",
         "tiles": [
-          "local://tiles/dem/13-2413-3079.terrain.png"
+          "local://tiles/dem/{z}-{x}-{y}.terrain.png"
         ],
         "maxzoom": 13,
         "tileSize": 256

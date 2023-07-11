@@ -807,7 +807,8 @@ class Transform {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
-        const useElevationData = this.elevation && !options.isTerrainDEM;
+        const hasExaggeration = this.elevation && this.elevation.exaggeration();
+        const useElevationData = hasExaggeration && !options.isTerrainDEM;
         const isMercator = this.projection.name === 'mercator';
 
         if (options.minzoom !== undefined && z < options.minzoom) return [];
@@ -824,6 +825,7 @@ class Transform {
         const meterToTile = numTiles * mercatorZfromAltitude(1, this.center.lat);
         const cameraAltitude = this._camera.position[2] / mercatorZfromAltitude(1, this.center.lat);
         const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y, cameraAltitude * (zInMeters ? 1 : meterToTile)];
+        const verticalFrustumIntersect = isGlobe || hasExaggeration;
         // Let's consider an example for !roundZoom: e.g. tileZoom 16 is used from zoom 16 all the way to zoom 16.99.
         // This would mean that the minimal distance to split would be based on distance from camera to center of 16.99 zoom.
         // The same is already incorporated in logic behind roundZoom for raster (so there is no adjustment needed in following line).
@@ -1029,7 +1031,7 @@ class Transform {
 
             // Visibility of a tile is not required if any of its ancestor is fully inside the frustum
             if (!fullyVisible) {
-                const intersectResult = it.aabb.intersects(cameraFrustum);
+                const intersectResult = verticalFrustumIntersect ? it.aabb.intersects(cameraFrustum) : it.aabb.intersectsFlat(cameraFrustum);
 
                 if (intersectResult === 0)
                     continue;
@@ -1043,6 +1045,14 @@ class Transform {
                 if (!!options.minzoom && options.minzoom > tileZoom) {
                     // Not within source tile range.
                     continue;
+                }
+
+                // Perform more precise intersection tests to cull the remaining < 1% false positives from the earlier test.
+                if (!fullyVisible) {
+                    const intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
+
+                    if (intersectResult === 0)
+                        continue;
                 }
 
                 const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));

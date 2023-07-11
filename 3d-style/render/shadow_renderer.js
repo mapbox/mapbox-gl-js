@@ -128,7 +128,7 @@ export class ShadowRenderer {
                     matrix: [],
                     far: 0,
                     boundingSphereRadius: 0,
-                    frustum: new Frustum([[]], [[]])});
+                    frustum: new Frustum()});
             }
         }
 

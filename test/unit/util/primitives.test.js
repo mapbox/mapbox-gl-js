@@ -105,6 +105,17 @@ test('primitives', (t) => {
             t.end();
         });
 
+        t.test('Aabb conservative intersection with a frustum', (t) => {
+            const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5, Math.PI / 4);
+            const aabb = new Aabb(vec3.fromValues(-10, 10, 0), vec3.fromValues(10, 12, 0));
+
+            // Intersection test should report intersection even though shapes are separate
+            t.equal(aabb.intersects(frustum), 1);
+            t.equal(aabb.intersectsPrecise(frustum), 0);
+
+            t.end();
+        });
+
         t.test('No intersection between aabb and frustum', (t) => {
             const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5);
 
