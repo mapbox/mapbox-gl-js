@@ -5,7 +5,14 @@ import StencilMode from '../gl/stencil_mode.js';
 import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import EXTENT from '../data/extent.js';
-import FillExtrusionBucket, {GroundEffect, fillExtrusionHeightLift, PartData, ELEVATION_SCALE, ELEVATION_OFFSET} from '../data/bucket/fill_extrusion_bucket.js';
+import FillExtrusionBucket, {
+    GroundEffect,
+    fillExtrusionHeightLift,
+    PartData,
+    ELEVATION_SCALE,
+    ELEVATION_OFFSET,
+    HIDDEN_BY_REPLACEMENT,
+} from '../data/bucket/fill_extrusion_bucket.js';
 import {
     fillExtrusionUniformValues,
     fillExtrusionDepthUniformValues,
@@ -431,13 +438,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     }
 
     const reconcileReplacement = (centroid1: PartData, centroid2: PartData) => {
-        const hiddenFlag = (centroid1.flags | centroid2.flags) & PartData.HiddenByReplacement;
+        const hiddenFlag = (centroid1.flags | centroid2.flags) & HIDDEN_BY_REPLACEMENT;
         if (hiddenFlag) {
-            centroid1.flags |= PartData.HiddenByReplacement;
-            centroid2.flags |= PartData.HiddenByReplacement;
+            centroid1.flags |= HIDDEN_BY_REPLACEMENT;
+            centroid2.flags |= HIDDEN_BY_REPLACEMENT;
         } else {
-            centroid1.flags &= ~PartData.HiddenByReplacement;
-            centroid2.flags &= ~PartData.HiddenByReplacement;
+            centroid1.flags &= ~HIDDEN_BY_REPLACEMENT;
+            centroid2.flags &= ~HIDDEN_BY_REPLACEMENT;
         }
     };
 

@@ -50,6 +50,9 @@ import type {IVectorTileLayer} from '@mapbox/vector-tile';
 const FACTOR = Math.pow(2, 13);
 const TANGENT_CUTOFF = 4;
 
+const HIDDEN_CENTROID: Point = new Point(0, 1);
+export const HIDDEN_BY_REPLACEMENT: number = 0x80000000;
+
 // Also declared in _prelude_terrain.vertex.glsl
 // Used to scale most likely elevation values to fit well in an uint16
 // (Elevation of Dead Sea + ELEVATION_OFFSET) * ELEVATION_SCALE is roughly 0
@@ -116,9 +119,6 @@ export class PartData {
     footprintSegLen: number;
     min: Point;
     max: Point;
-
-    static hiddenCentroid: Point = new Point(0, 1); // eslint-disable-line no-restricted-syntax
-    static HiddenByReplacement: number = 0x80000000; // eslint-disable-line no-restricted-syntax
 
     constructor() {
         this.centroidXY = new Point(0, 0);
@@ -338,7 +338,7 @@ export class GroundEffect {
         assert(vertexArrayBounds <= this.hiddenByLandmarkVertexArray.length);
         assert(this.hiddenByLandmarkVertexArray.length === this.vertexArray.length);
         if (data.groundVertexCount === 0) return;
-        const hide = data.flags & PartData.HiddenByReplacement ? 1 : 0;
+        const hide = data.flags & HIDDEN_BY_REPLACEMENT ? 1 : 0;
         for (let i = offset; i < vertexArrayBounds; ++i) {
             this.hiddenByLandmarkVertexArray.emplace(i, hide);
         }
@@ -893,7 +893,7 @@ class FillExtrusionBucket implements Bucket {
         }
 
         // hiddenCentroid {0, 1}: it is initially hidden as borders are processed later.
-        centroid.centroidXY = borderCentroidData.borders ? PartData.hiddenCentroid : this.encodeCentroid(borderCentroidData, centroid);
+        centroid.centroidXY = borderCentroidData.borders ? HIDDEN_CENTROID : this.encodeCentroid(borderCentroidData, centroid);
         this.centroidData.push(centroid);
 
         if (borderCentroidData.borders) {
@@ -937,7 +937,7 @@ class FillExtrusionBucket implements Bucket {
 
     showCentroid(borderCentroidData: BorderCentroidData) {
         const c = this.centroidData[borderCentroidData.centroidDataIndex];
-        c.flags &= PartData.HiddenByReplacement;
+        c.flags &= HIDDEN_BY_REPLACEMENT;
         c.centroidXY.x = 0;
         c.centroidXY.y = 0;
         this.writeCentroidToBuffer(c);
@@ -949,7 +949,7 @@ class FillExtrusionBucket implements Bucket {
         const vertexArrayBounds = data.vertexCount + data.vertexArrayOffset;
         assert(vertexArrayBounds <= this.centroidVertexArray.length);
         assert(this.centroidVertexArray.length === this.layoutVertexArray.length);
-        const c = data.flags & PartData.HiddenByReplacement ? PartData.hiddenCentroid : data.centroidXY;
+        const c = data.flags & HIDDEN_BY_REPLACEMENT ? HIDDEN_CENTROID : data.centroidXY;
         // All the vertex data is the same, use the first to exit early if it is not needed to re-write all.
         const firstX = this.centroidVertexArray.geta_centroid_pos0(offset);
         const firstY = this.centroidVertexArray.geta_centroid_pos1(offset);
@@ -991,7 +991,7 @@ class FillExtrusionBucket implements Bucket {
             this.createCentroidsBuffer();
         } else {
             for (const centroid of this.centroidData) {
-                centroid.flags &= ~PartData.HiddenByReplacement;
+                centroid.flags &= ~HIDDEN_BY_REPLACEMENT;
             }
         }
 
@@ -1004,7 +1004,7 @@ class FillExtrusionBucket implements Bucket {
             const padding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
 
             for (const centroid of this.centroidData) {
-                if (centroid.flags & PartData.HiddenByReplacement) {
+                if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
                     continue;
                 }
 
@@ -1038,7 +1038,7 @@ class FillExtrusionBucket implements Bucket {
                         seg.indexCount,
                         -seg.vertexOffset,
                         -padding)) {
-                        centroid.flags |= PartData.HiddenByReplacement;
+                        centroid.flags |= HIDDEN_BY_REPLACEMENT;
                         break;
                     }
                 }
