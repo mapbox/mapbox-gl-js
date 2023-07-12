@@ -297,10 +297,9 @@
           "doc": "",
           "sdk-support": {
             "basic functionality": {
-              "js": "",
-              "android": "",
-              "ios": "",
-              "macos": ""
+              "js": "3.0.0",
+              "android": "11.0.0",
+              "ios": "11.0.0"
             }
           }
         },
@@ -308,10 +307,9 @@
           "doc": "",
           "sdk-support": {
             "basic functionality": {
-              "js": "",
-              "android": "",
-              "ios": "",
-              "macos": ""
+              "js": "3.0.0",
+              "android": "11.0.0",
+              "ios": "11.0.0"
             }
           }
         }
@@ -953,9 +951,9 @@
           "doc": "A 3D model",
           "sdk-support": {
             "basic functionality": {
-              "js": "",
-              "ios": "",
-              "android": ""
+              "js": "3.0.0",
+              "android": "11.0.0",
+              "ios": "11.0.0"
             }
           }
         },
@@ -1119,9 +1117,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "property-type": "constant"
@@ -1139,14 +1137,14 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": false,
@@ -3760,8 +3758,8 @@
         "sdk-support": {
           "basic functionality": {
             "js": "3.0.0",
-            "android": "",
-            "ios": ""
+            "android": "11.0.0",
+            "ios": "11.0.0"
           }
         }
       },
@@ -4535,6 +4533,13 @@
           "zoom"
         ]
       },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
       "default": "perspective",
       "property-type": "data-constant"
     }
@@ -5013,10 +5018,9 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -5349,9 +5353,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5370,9 +5374,9 @@
       "doc": "The extent of the ambient occlusion effect on the ground beneath the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5392,9 +5396,9 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5413,9 +5417,9 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5436,9 +5440,9 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5459,14 +5463,14 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "ios": "",
-          "android": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5487,14 +5491,14 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "ios": "",
-          "android": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5514,9 +5518,9 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -5535,9 +5539,9 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     }
@@ -5922,10 +5926,9 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -6337,10 +6340,9 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -6550,16 +6552,14 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -6580,16 +6580,14 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -7555,10 +7553,9 @@
       "doc": "Emission strength",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": "",
-          "macos": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "expression": {
@@ -7822,9 +7819,9 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "property-type": "data-constant"
@@ -7843,14 +7840,14 @@
       },
       "sdk-support": {
          "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true,
@@ -7869,14 +7866,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
@@ -7893,14 +7890,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true,
@@ -7917,14 +7914,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
@@ -7942,14 +7939,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
@@ -7966,9 +7963,9 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "default": "common-3d",
@@ -7986,9 +7983,9 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "property-type": "data-constant"
@@ -8004,9 +8001,9 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "property-type": "data-constant"
@@ -8023,9 +8020,9 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "property-type": "data-constant",
@@ -8045,14 +8042,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
@@ -8070,14 +8067,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
@@ -8101,14 +8098,14 @@
       },
       "sdk-support": {
           "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         },
         "data-driven styling": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       },
       "transition": true
