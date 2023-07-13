@@ -262,8 +262,11 @@ class Frustum {
             const d = -vec3.dot(n, frustumCoords[p[1]]);
             return n.concat(d);
         });
-
-        return new Frustum((frustumCoords: any), (frustumPlanes: any));
+        const frustumPoints = [];
+        for (let i = 0; i < frustumCoords.length; i++) {
+            frustumPoints.push([frustumCoords[i][0], frustumCoords[i][1], frustumCoords[i][2]]);
+        }
+        return new Frustum((frustumPoints: any), (frustumPlanes: any));
     }
 }
 

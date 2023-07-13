@@ -146,14 +146,14 @@ test('primitives', (t) => {
             // mat4.perspective generates a projection matrix for right handed coordinate space.
             // This means that forward direction will be -z
             const expectedFrustumPoints = [
-                [-0.1, 0.1, -0.1, 1.0],
-                [0.1, 0.1, -0.1, 1.0],
-                [0.1, -0.1, -0.1, 1.0],
-                [-0.1, -0.1, -0.1, 1.0],
-                [-100.0, 100.0, -100.0, 1.0],
-                [100.0, 100.0, -100.0, 1.0],
-                [100.0, -100.0, -100.0, 1.0],
-                [-100.0, -100.0, -100.0, 1.0],
+                [-0.1, 0.1, -0.1],
+                [0.1, 0.1, -0.1],
+                [0.1, -0.1, -0.1],
+                [-0.1, -0.1, -0.1],
+                [-100.0, 100.0, -100.0],
+                [100.0, 100.0, -100.0],
+                [100.0, -100.0, -100.0],
+                [-100.0, -100.0, -100.0],
             ];
 
             // Round numbers to mitigate the precision loss
