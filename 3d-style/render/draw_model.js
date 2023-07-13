@@ -560,6 +560,7 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
     const context = painter.context;
     const isLightBeamPass = painter.renderPass === 'light-beam';
 
+    const modelMatrix = [...tileMatrix];
     for (let i = 0; i < node.meshes.length; ++i) {
         const mesh = node.meshes[i];
         const isLight = i === node.lightMeshIndex;
@@ -582,7 +583,6 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
             definesValues.push('DIFFUSE_SHADED');
         }
 
-        const modelMatrix = [...tileMatrix];
         const scale = nodeInfo.evaluatedScale;
         let elevation = 0;
         if (painter.terrain && node.elevation) {
@@ -623,8 +623,10 @@ function drawBatchedNode(nodeInfo: Tiled3dModelFeature, modelTraits: number, pai
         const worldViewProjection = mat4.multiply([], painter.transform.projMatrix, modelMatrix);
 
         const shadowRenderer = painter.shadowRenderer;
+
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadowsFromMatrix(modelMatrix, program, true);
+            shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
+            shadowRenderer.setupShadowsFromMatrix(modelMatrix, program, shadowRenderer.useNormalOffset);
         }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), fogMatrixArray);
