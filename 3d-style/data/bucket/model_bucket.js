@@ -84,6 +84,9 @@ class ModelBucket implements Bucket {
     maxScale: number; // across all dimensions, for tile AABB calculation
     maxHeight: number; // calculated from previous two, during rendering, when models are available.
     isInsideFirstShadowMapFrustum: boolean; // evaluated during first shadows pass and cached here for the second shadow pass.
+    lookup: ?Uint8Array;
+    lookupDim: number;
+    instanceCount: number;
 
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(options: BucketParameters<ModelStyleLayer>) {
@@ -101,11 +104,16 @@ class ModelBucket implements Bucket {
         this.maxVerticalOffset = 0;
         this.maxScale = 0;
         this.maxHeight = 0;
+        // reduce density, more on lower zooms and almost no reduction in overscale range.
+        // Heuristics is related to trees performance.
+        this.lookupDim = this.zoom > this.canonical.z ? 256 : this.zoom > 15 ? 75 : 100;
+        this.instanceCount = 0;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.tileToMeter = tileToMeter(canonical);
         const needGeometry = this.layers[0]._featureFilter.needGeometry;
+        this.lookup = new Uint8Array(this.lookupDim * this.lookupDim);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
@@ -129,6 +137,7 @@ class ModelBucket implements Bucket {
                 options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId].instancedDataArray.length);
             }
         }
+        this.lookup = null;
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -207,6 +216,16 @@ class ModelBucket implements Bucket {
                 if (point.x < 0 || point.x >= EXTENT || point.y < 0 || point.y >= EXTENT) {
                     continue; // Clip on tile borders to prevent duplicates
                 }
+                // reduce density
+                const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
+                const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
+                if (this.lookup) {
+                    if (this.lookup[lookupIndex] !== 0) {
+                        continue;
+                    }
+                    this.lookup[lookupIndex] = 1;
+                }
+                this.instanceCount++;
                 const i = instancedDataArray.length;
                 instancedDataArray.resize(i + 1);
                 perModelVertexArray.instancesEvaluatedElevation.push(0);

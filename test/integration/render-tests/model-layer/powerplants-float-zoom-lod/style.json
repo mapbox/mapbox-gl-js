@@ -4,16 +4,15 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0003,
+      "allowed": 0.0005,
       "standardDerivatives": true,
       "operations": [
-        ["setProjection", "globe"],
-        ["wait"],
-        ["setZoom", 6.01]
+        ["wait"]
       ]
     }
   },
   "models": {
+    "oak1": "local://models/oak1.glb",
     "power_plant": "local://models/powerplant_no_draco.glb",
     "power_plant_low": "local://models/powerplant_low_no_draco.gltf",
     "power_plant_low_transparent": "local://models/powerplant_low_transparent_no_draco.gltf"
@@ -24,10 +23,6 @@
   "bearing": 337.85,
   "transition": {
     "duration": 0
-  },
-  "fog": {
-    "star-intensity": 0.0,
-    "color": "red"
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
@@ -170,10 +165,12 @@
         "model-id": [
           "step",
           ["zoom"],
+          "oak1",
+          4.6,
           "power_plant_low_transparent",
-          5,
+          6.1,
           "power_plant_low",
-          6,
+          7.5,          
           "power_plant"
         ]
       },

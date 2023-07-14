@@ -443,14 +443,38 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         return;
     }
 
-    const mercCameraPos = (painter.transform.getFreeCameraOptions().position: any);
+    const mercCameraPos = (tr.getFreeCameraOptions().position: any);
+    //  LOD computation done in 2D space (terrain not taken into account).
+    const mercCameraPosVec = [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z - tr.pixelsPerMeter / tr.worldSize * tr._centerAltitude];
+    const forward = painter.transform._camera.forward();
+    const distanceXYZ = [0, 0, 0];
+    const tilePos = [0, 0, 0];
+
     if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
+    if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) return;
+    const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
+    const evaluationParameters = {...layer.layout.get("model-id").parameters};
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
+        let tileZoom = bucket.zoom;
+        // Distance from camera plane to point of a tile closest to camera to calculate effective zoom.
+        // To be more aggressive on zooms just above integer zooms, selected point it not the corner but
+        // a point between center and tile corner
+        tilePos[0] = coord.wrap + (coord.canonical.x + (painter.transform.bearing < 0 ? 0.75 : 0.25)) / (1 << coord.canonical.z);
+        tilePos[1] = (coord.canonical.y + (Math.abs(painter.transform.bearing) < 90 ? 0.75 : 0.25)) / (1 << coord.canonical.z);
+        vec3.sub(distanceXYZ, tilePos, mercCameraPosVec);
+        const dist = Math.max(0., vec3.dot(distanceXYZ, forward));
+        tileZoom = painter.transform._zoomFromMercatorZ(dist);
+        const largeTileCutoff = 400;
+        if (painter.transform.pitch > 30 && tileZoom < painter.transform.zoom && bucket.instanceCount > largeTileCutoff) {
+            tileZoom -= 0.5; // further reduce LOD for large tiles further above the center
+        }
+        evaluationParameters.zoom = tileZoom;
+        const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
 
         renderData.shadowUniformsInitialized = false;
         if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
@@ -468,14 +492,18 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         updateModelBucketsElevation(painter, bucket, coord);
 
         // camera position in the tile coordinates
-        let cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], (1 << coord.canonical.z));
+        let cameraPos = vec3.scale([], mercCameraPosVec, (1 << coord.canonical.z));
         cameraPos = [(cameraPos[0] - coord.canonical.x - coord.wrap * (1 << coord.canonical.z)) * EXTENT,
             (cameraPos[1] - coord.canonical.y) * EXTENT, cameraPos[2] * EXTENT];
 
-        for (const modelId in bucket.instancesPerModel) {
+        for (let modelId in bucket.instancesPerModel) {
+            // From effective tile zoom (distance to camera) and calculate model to use.
+            const modelInstances = bucket.instancesPerModel[modelId];
+            if (modelInstances.features.length > 0) {
+                modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
+            }
             const model = modelManager.getModel(modelId);
             if (!model) continue;
-            const modelInstances = bucket.instancesPerModel[modelId];
             for (const node of model.nodes) {
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
             }

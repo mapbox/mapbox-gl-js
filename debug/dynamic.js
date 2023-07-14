@@ -5516,6 +5516,85 @@ window.dynamic = {
                                 ],
                                 0.0
                             ],
+                            "pine1-lod4",
+                            "pine2-lod4"
+                        ],
+                        "palm",
+                        "palm1-lod4",
+                        [
+                            "case",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                0.0
+                            ],
+                            "oak1-lod4",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                1.0
+                            ],
+                            "oak2-lod4",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    4.0
+                                ],
+                                2.0
+                            ],
+                            "maple1-lod4",
+                            "maple2-lod4"
+                        ]
+                    ],
+                    15.5,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "leaf_type"
+                        ],
+                        "needleleaved",
+                        [
+                            "case",
+                            [
+                                "==",
+                                [
+                                    "%",
+                                    [
+                                        "number",
+                                        [
+                                            "id"
+                                        ]
+                                    ],
+                                    2.0
+                                ],
+                                0.0
+                            ],
                             "pine1-lod3",
                             "pine2-lod3"
                         ],
@@ -5571,7 +5650,7 @@ window.dynamic = {
                             "maple2-lod3"
                         ]
                     ],
-                    16.0,
+                    16.5,
                     [
                         "match",
                         [
@@ -5650,7 +5729,7 @@ window.dynamic = {
                             "maple2-lod2"
                         ]
                     ],
-                    17.0,
+                    17.5,
                     [
                         "match",
                         [
