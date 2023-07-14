@@ -444,8 +444,8 @@ vec4 finalColor;
 
 #ifdef HAS_TEXTURE_u_emissionTexture
     emissive.rgb *= sRGBToLinear(texture2D(u_emissionTexture, uv_2f).rgb);
-    color += emissive.rgb;
 #endif
+    color += emissive.rgb;
 
     // Apply transparency
     float opacity = mat.baseColor.w * u_opacity;
