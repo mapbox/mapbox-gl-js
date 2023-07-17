@@ -517,7 +517,7 @@ function createLightMatrix(
     // The mercatorZfromZoom term gets used for the first cascade when zoom level is very high.
     // The radius term gets used for the second cascade in most cases and for the first cascade at lower zoom levels.
     const radiusPx = sphereRadius * ws;
-    const lightMatrixNearZ = Math.min(transform._mercatorZfromZoom(14) * ws * -2.0, radiusPx * -2.0);
+    const lightMatrixNearZ = Math.min(transform._mercatorZfromZoom(17) * ws * -2.0, radiusPx * -2.0);
     const lightMatrixFarZ = (radiusPx + verticalRange * pixelsPerMeter) / shadowDirection[2];
 
     const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, lightMatrixFarZ);
