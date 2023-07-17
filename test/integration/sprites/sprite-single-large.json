@@ -1,0 +1,18 @@
+{
+  "restaurant-512": {
+    "x": 0,
+    "y": 0,
+    "width": 512,
+    "height": 512,
+    "pixelRatio": 1,
+    "sdf": false
+  },
+  "restaurant-512-secondary": {
+    "x": 512,
+    "y": 0,
+    "width": 512,
+    "height": 512,
+    "pixelRatio": 1,
+    "sdf": false
+  }
+}
