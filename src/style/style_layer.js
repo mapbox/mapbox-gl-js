@@ -16,6 +16,7 @@ import ProgramConfiguration from '../data/program_configuration.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 
 import type {FeatureState} from '../style-spec/expression/index.js';
+import type {Expression} from '../style-spec/expression/expression.js';
 import type {Bucket} from '../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index.js';
@@ -29,7 +30,7 @@ import type {
     PropertyValueSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
-import type Map from '../ui/map.js';
+import type MapboxMap from '../ui/map.js';
 import type {StyleSetterOptions} from './style.js';
 import type {TilespaceQueryGeometry} from './query_geometry.js';
 import type {DEMSampler} from '../terrain/elevation.js';
@@ -59,6 +60,8 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
     _filterCompiled: boolean;
 
+    options: ?Map<string, Expression>;
+
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                               feature: IVectorTileFeature,
@@ -70,10 +73,10 @@ class StyleLayer extends Evented {
                               elevationHelper: ?DEMSampler,
                               layoutVertexArrayOffset: number) => boolean | number;
 
-    +onAdd: ?(map: Map) => void;
-    +onRemove: ?(map: Map) => void;
+    +onAdd: ?(map: MapboxMap) => void;
+    +onRemove: ?(map: MapboxMap) => void;
 
-    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>) {
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, options?: ?Map<string, Expression>) {
         super();
 
         this.id = layer.id;
@@ -95,14 +98,16 @@ class StyleLayer extends Evented {
             this.filter = layer.filter;
         }
 
+        this.options = options;
+
         if (layer.slot) this.slot = layer.slot;
 
         if (properties.layout) {
-            this._unevaluatedLayout = new Layout(properties.layout);
+            this._unevaluatedLayout = new Layout(properties.layout, options);
         }
 
         if (properties.paint) {
-            this._transitionablePaint = new Transitionable(properties.paint);
+            this._transitionablePaint = new Transitionable(properties.paint, options);
 
             for (const property in layer.paint) {
                 this.setPaintProperty(property, layer.paint[property], {validate: false});

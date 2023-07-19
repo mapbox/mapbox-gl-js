@@ -32,14 +32,14 @@ test('load tile', (t) => {
 test('isolates different instances\' data', (t) => {
     const worker = new Worker(_self);
 
-    worker.setLayers(0, [
+    worker.setLayers(0, {layers: [
         {id: 'one', type: 'circle'}
-    ], () => {});
+    ], options: new Map()}, () => {});
 
-    worker.setLayers(1, [
+    worker.setLayers(1, {layers: [
         {id: 'one', type: 'circle'},
         {id: 'two', type: 'circle'},
-    ], () => {});
+    ], options: new Map()}, () => {});
 
     t.notEqual(worker.layerIndexes[0], worker.layerIndexes[1]);
     t.end();

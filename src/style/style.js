@@ -19,6 +19,8 @@ import Dispatcher from '../util/dispatcher.js';
 import Lights from '../../3d-style/style/lights.js';
 import {properties as ambientProps} from '../../3d-style/style/ambient_light_properties.js';
 import {properties as directionalProps} from '../../3d-style/style/directional_light_properties.js';
+import {createExpression} from '../style-spec/expression/index.js';
+
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
 import {
@@ -83,7 +85,8 @@ import type {
     FogSpecification,
     ProjectionSpecification,
     TransitionSpecification,
-    PropertyValueSpecification
+    PropertyValueSpecification,
+    ConfigSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator, ValidationErrors} from './validate_style.js';
@@ -95,6 +98,7 @@ import type {PointLike} from '@mapbox/point-geometry';
 import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters} from './properties.js';
 import ModelManager from '../../3d-style/render/model_manager.js';
+import type {Expression} from '../style-spec/expression/expression.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -131,12 +135,13 @@ export type StyleOptions = {
     localFontFamily?: ?string,
     localIdeographFontFamily?: string,
 
-    modelManager?: ModelManager;
+    modelManager?: ModelManager,
 
     namespace?: string,
-    importDepth?: number;
-    importsCache?: Map<string, StyleSpecification>;
+    importDepth?: number,
+    importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
+    config?: Map<string, Expression>
 };
 
 export type StyleSetterOptions = {
@@ -146,6 +151,7 @@ export type StyleSetterOptions = {
 export type StyleImport = {|
     id: string,
     style: Style,
+    config?: ?ConfigSpecification
 |};
 
 const MAX_IMPORT_DEPTH = 5;
@@ -174,6 +180,8 @@ class Style extends Evented {
     importsCache: Map<string, StyleSpecification>;
     // Keeps track of ancestors' Style URLs.
     resolvedImports: Set<string>;
+
+    options: Map<string, Expression>;
 
     _ownOrder: Array<string>;
     _ownLayers: {[string]: StyleLayer};
@@ -264,6 +272,8 @@ class Style extends Evented {
         this._order = [];
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
+
+        this.options = options.config || new Map();
 
         this._resetUpdates();
 
@@ -370,6 +380,15 @@ class Style extends Evented {
         const done = () => {
             this._mergeLayers();
             this._mergeSources();
+
+            // merge options from imports to root
+            for (const importSpec of this.imports) {
+                for (const [key, value] of importSpec.style.options.entries()) {
+                    this.options.set(makeFQID(key, importSpec.id), value);
+                }
+            }
+            this.dispatcher.broadcast('setLayers', {layers: this._serializeLayers(this._ownOrder), options: this.options});
+
             this.fire(new Event('data', {dataType: 'style'}));
             this.fire(new Event('style.load'));
         };
@@ -386,6 +405,17 @@ class Style extends Evented {
                 makeFQID(importSpec.id, this.namespace) :
                 importSpec.id;
 
+            const config = new Map();
+            const importConfig = importSpec.config;
+            if (importConfig) {
+                for (const key of Object.keys(importConfig)) {
+                    const expressionParsed = createExpression(importConfig[key]);
+                    if (expressionParsed.result === 'success') {
+                        config.set(key, expressionParsed.value.expression);
+                    }
+                }
+            }
+
             const style = new Style(this.map, {
                 namespace,
                 importDepth: this.importDepth + 1,
@@ -394,6 +424,7 @@ class Style extends Evented {
                 resolvedImports: new Set(this.resolvedImports),
                 // Use shared ModelManager between Styles
                 modelManager: this.modelManager,
+                config
             });
 
             // Bubble all events fired by the style to the map.
@@ -419,13 +450,32 @@ class Style extends Evented {
                 style.loadEmpty();
             }
 
-            this.imports.push({id: importSpec.id, style});
+            this.imports.push({
+                id: importSpec.id,
+                style,
+                config: importSpec.config
+            });
         }
 
         Promise.all(waitForStyles).then(done);
     }
 
     _load(json: StyleSpecification, validate: boolean) {
+        const schema = json.schema;
+        if (schema) {
+            for (const id of Object.keys(schema)) {
+                // already set by config
+                if (this.options.has(id)) continue;
+
+                const expression = schema[id].default;
+
+                const expressionParsed = createExpression(expression);
+                if (expressionParsed.result === 'success') {
+                    this.options.set(id, expressionParsed.value.expression);
+                }
+            }
+        }
+
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
         }
@@ -455,7 +505,7 @@ class Style extends Evented {
         this._ownLayers = {};
         this._serializedLayers = {};
         for (const layer of layers) {
-            const styleLayer = createStyleLayer(layer);
+            const styleLayer = createStyleLayer(layer, this.options);
             styleLayer.id = makeFQID(styleLayer.id, this.namespace);
             if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.namespace);
 
@@ -485,8 +535,6 @@ class Style extends Evented {
             this.modelManager.addStyleModels(Object.fromEntries(models));
         }
 
-        this.dispatcher.broadcast('setLayers', this._serializeLayers(this._ownOrder));
-
         this.light = new Light(this.stylesheet.light);
         if (this.stylesheet.terrain && !this.terrainSetForDrapingOnly()) {
             // $FlowFixMe[incompatible-call] - Flow can't infer that terrain is not undefined
@@ -496,14 +544,10 @@ class Style extends Evented {
             this._createFog(this.stylesheet.fog);
         }
 
-        if (!this.stylesheet.camera) {
-            this.stylesheet.camera = {
-                "camera-projection": "perspective"
-            };
-        }
+        const camera = this.stylesheet.camera = this.stylesheet.camera || {"camera-projection": "perspective"};
 
         // Trigger transform update
-        this.map.setCamera(this.stylesheet.camera);
+        this.map.setCamera(camera);
 
         this._mergeLayers();
         this._mergeSources();
@@ -512,6 +556,7 @@ class Style extends Evented {
         if (json.imports) {
             this._loadImports(json.imports, validate);
         } else {
+            this.dispatcher.broadcast('setLayers', {layers: this._serializeLayers(this._ownOrder), options: this.options});
             this.fire(new Event('style.load'));
         }
     }
@@ -1145,11 +1190,11 @@ class Style extends Evented {
                 const parameters = this._getTransitionParameters({duration: 0});
                 switch (light.type) {
                 case 'ambient':
-                    this.ambientLight = new Lights<Ambient>(light, ambientProps);
+                    this.ambientLight = new Lights<Ambient>(light, ambientProps, this.options);
                     this.ambientLight.updateTransitions(parameters);
                     break;
                 case 'directional':
-                    this.directionalLight = new Lights<Directional>(light, directionalProps);
+                    this.directionalLight = new Lights<Directional>(light, directionalProps, this.options);
                     this.directionalLight.updateTransitions(parameters);
                     break;
                 default:
@@ -1243,7 +1288,7 @@ class Style extends Evented {
 
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
 
-            layer = createStyleLayer(layerObject);
+            layer = createStyleLayer(layerObject, this.options);
 
         } else {
             if (typeof layerObject.source === 'object') {
@@ -1256,7 +1301,7 @@ class Style extends Evented {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject);
+            layer = createStyleLayer(layerObject, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});

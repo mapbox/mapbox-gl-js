@@ -1,0 +1,140 @@
+{
+    "version": 8,
+    "imports": [
+        {
+            "id": "standard",
+            "url": "/debug/dynamic.json",
+            "config": {
+                "font": "Roboto",
+                "lightPreset": "night",
+                "showPointOfInterestLabels": true,
+                "showTransitLabels": true,
+                "showPlaceLabels": true,
+                "showRoadLabels": true
+            }
+        }
+    ],
+    "sources": {
+        "streets": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        },
+        "routeNYC": {
+            "url": "mapbox://mel-anie.cl2al4wiw0zt923jqlcpuaqcj-4tqk7",
+            "type": "vector"
+        },
+        "mapbox://mapbox.mapbox-traffic-v2-beta": {
+            "url": "mapbox://mapbox.mapbox-traffic-v2-beta",
+            "type": "vector"
+        },
+        "mapbox://mapbox.mapbox-incidents-v2-beta": {
+            "url": "mapbox://mapbox.mapbox-incidents-v2-beta",
+            "type": "vector"
+        }
+    },
+    "sprite": "mapbox://sprites/mapbox-map-design/cljgy6rh400e301qs2lvc86ot/e2y8z26g463c7mz8risq30ddu",
+    "projection": { "name": "globe" },
+    "layers": [
+        {
+            "id": "traffic",
+            "type": "line",
+            "slot": "middle",
+            "source": "mapbox://mapbox.mapbox-traffic-v2-beta",
+            "source-layer": "traffic",
+            "minzoom": 6,
+            "filter": [
+                "all",
+                ["has", "congestion"],
+                ["==", ["geometry-type"], "LineString"]
+            ],
+            "layout": {"line-cap": "round", "line-join": "round"},
+            "paint": {
+                "line-color": [
+                    "case",
+                    ["has", "closed"],
+                    "#000000",
+                    [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "congestion"],
+                        39,
+                        "hsla(120, 69%, 47%, 0)",
+                        40,
+                        "hsl(30, 100%, 60%)",
+                        60,
+                        "hsl(10, 100%, 60%)",
+                        80,
+                        "hsl(0, 100%, 40%)"
+                    ]
+                ],
+                "line-width": [
+                    "interpolate",
+                    ["exponential", 1.5],
+                    ["zoom"],
+                    5,
+                    1,
+                    18,
+                    10,
+                    22,
+                    14
+                ]
+            }
+        },
+        {
+            "id": "routeline-nyc",
+            "type": "line",
+            "slot": "middle",
+            "source": "routeNYC",
+            "source-layer": "routeline_nyc_including_puck",
+            "filter": ["match", ["get", "name"], ["puck"], false, true],
+            "layout": {
+                "line-join": "round", 
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-emissive-strength": 1,
+                "line-border-width": 2,
+                "line-border-color": "hsl(215, 80%, 40%)",
+                "line-width": [
+                    "interpolate",
+                    ["exponential", 1.5],
+                    ["zoom"],
+                    5,
+                    1,
+                    16,
+                    14,
+                    18,
+                    20,
+                    22,
+                    80
+                ],
+                "line-color": "hsl(215, 90%, 60%)"
+            }
+        },
+        {
+            "id": "routeline-nyc-puck",
+            "type": "symbol",
+            "slot": "top",
+            "source": "routeNYC",
+            "source-layer": "routeline_nyc_including_puck",
+            "filter": ["match", ["get", "name"], ["puck"], true, false],
+            "layout": {
+                "icon-image": "pin",
+                "icon-rotation-alignment": "map",
+                "icon-rotate": 26,
+                "icon-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    5,
+                    0.5,
+                    16,
+                    1,
+                    22,
+                    2
+                ]
+            },
+            "paint": {}
+        }
+    ]
+}

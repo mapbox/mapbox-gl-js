@@ -167,6 +167,14 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
         return serialized;
     }
 
+    if (input instanceof Map) {
+        const properties = {'$name': 'Map'};
+        for (const [key, value] of input.entries()) {
+            properties[key] = serialize(value);
+        }
+        return properties;
+    }
+
     if (typeof input === 'object') {
         const klass = (input.constructor: any);
         const name = klass._classRegistryKey;
@@ -238,6 +246,17 @@ export function deserialize(input: Serialized): mixed {
 
     if (typeof input === 'object') {
         const name = (input: any).$name || 'Object';
+
+        if (name === 'Map') {
+            const map = new Map();
+            for (const key of Object.keys(input)) {
+                // $FlowFixMe[incompatible-type]
+                if (key === '$name') continue;
+                const value = (input: SerializedObject)[key];
+                map.set(key, deserialize(value));
+            }
+            return map;
+        }
 
         const {klass} = registry[name];
         if (!klass) {

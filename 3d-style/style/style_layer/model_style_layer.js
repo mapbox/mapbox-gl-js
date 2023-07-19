@@ -7,6 +7,7 @@ import properties from './model_style_layer_properties.js';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties.js';
 import type {BucketParameters} from '../../../src/data/bucket.js';
 import {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue} from '../../../src/style/properties.js';
+import type {Expression} from '../../../src/style-spec/expression/expression.js';
 
 class ModelStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -14,8 +15,8 @@ class ModelStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
     layout: PossiblyEvaluated<LayoutProps>;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
     }
 
     createBucket(parameters: BucketParameters<ModelStyleLayer>): ModelBucket {

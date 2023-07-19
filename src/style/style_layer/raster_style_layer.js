@@ -10,6 +10,7 @@ import {RGBAImage} from '../../util/image.js';
 import type {PaintProps} from './raster_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
+import type {Expression} from '../../style-spec/expression/expression.js';
 
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -19,8 +20,8 @@ class RasterStyleLayer extends StyleLayer {
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
         this._updateColorRamp();
     }
 

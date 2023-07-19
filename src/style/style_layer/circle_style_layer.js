@@ -16,6 +16,7 @@ import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordi
 import EXTENT from '../../data/extent.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
+import type {Expression} from '../../style-spec/expression/expression.js';
 import type Transform from '../../geo/transform.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './circle_style_layer_properties.js';
@@ -32,8 +33,8 @@ class CircleStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
     }
 
     createBucket(parameters: BucketParameters<CircleStyleLayer>): CircleBucket<CircleStyleLayer> {

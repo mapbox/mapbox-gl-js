@@ -27,6 +27,7 @@ import type {
 import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
 import type {Callback} from '../types/callback.js';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types.js';
+import type {Expression} from '../style-spec/expression/expression.js';
 import type {PluginState} from './rtl_text_plugin.js';
 import type Projection from '../geo/projection/projection.js';
 
@@ -144,8 +145,8 @@ export default class Worker {
         callback();
     }
 
-    setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
-        this.getLayerIndex(mapId).replace(layers);
+    setLayers(mapId: string, params: {layers: Array<LayerSpecification>, options: Map<string, Expression>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId).replace(params.layers, params.options);
         callback();
     }
 

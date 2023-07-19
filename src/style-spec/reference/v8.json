@@ -1074,7 +1074,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1097,7 +1106,16 @@
           "js": "2.0.0",
           "ios": "10.0.0",
           "android": "10.0.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1119,8 +1137,12 @@
         "basic functionality": {
           "js": "3.0.0",
           "android": "11.0.0",
-          "ios": "11.0.0"
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     },
@@ -1202,7 +1224,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1252,7 +1283,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1276,7 +1316,16 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1300,7 +1349,16 @@
           "android": "5.1.0",
           "ios": "3.6.0",
           "macos": "0.5.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     },
@@ -1316,7 +1374,16 @@
           "js": "v2.10.0",
           "android": "10.7.0",
           "ios": "10.7.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -1489,7 +1556,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -2907,7 +2983,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -2931,7 +3016,16 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -2955,7 +3049,16 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
         }
+      },
+      "expression": {
+        "interpolated": false
       },
       "property-type": "constant"
     }
@@ -7978,8 +8081,7 @@
       "doc": "Enable/Disable shadow casting for this layer",
       "transition": false,
       "expression": {
-        "interpolated": false,
-        "parameters": []
+        "interpolated": false
       },
       "sdk-support": {
           "basic functionality": {
@@ -7996,8 +8098,7 @@
       "doc": "Enable/Disable shadow receiving for this layer",
       "transition": false,
       "expression": {
-        "interpolated": false,
-        "parameters": []
+        "interpolated": false
       },
       "sdk-support": {
           "basic functionality": {

@@ -1,6 +1,7 @@
 // @flow
 
 import type {LightsSpecification} from '../../src/style-spec/types.js';
+import type {Expression} from '../../src/style-spec/expression/expression.js';
 import {Evented} from '../../src/util/evented.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated} from '../../src/style/properties.js';
 import type {TransitionParameters} from '../../src/style/properties.js';
@@ -12,10 +13,10 @@ class Lights<P: Object> extends Evented {
     properties: PossiblyEvaluated<P>;
     _options: LightsSpecification;
 
-    constructor(options: LightsSpecification, properties: Properties<P>) {
+    constructor(options: LightsSpecification, properties: Properties<P>, configOptions?: ?Map<string, Expression>) {
         super();
         this._options = options;
-        this._transitionable = new Transitionable(properties);
+        this._transitionable = new Transitionable(properties, configOptions);
         this._transitionable.setTransitionOrValue(options.properties);
         this._transitioning = this._transitionable.untransitioned();
     }

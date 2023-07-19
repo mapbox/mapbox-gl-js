@@ -176,7 +176,7 @@
     "line": 916
   },
   {
-    "message": "layers[50].layout.visibility: expected one of [visible, none], [\"literal\",true] found",
+    "message": "layers[50].layout.visibility: Expected string but found boolean instead.",
     "line": 925
   },
   {

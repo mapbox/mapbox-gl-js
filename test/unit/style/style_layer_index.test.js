@@ -17,7 +17,7 @@ test('StyleLayerIndex#replace', (t) => {
     t.equal(families[1][0].id, '2');
     t.equal(families[1][1].id, '3');
 
-    index.replace([]);
+    index.replace([], new Map());
     t.deepEqual(index.familiesBySource, {});
 
     t.end();

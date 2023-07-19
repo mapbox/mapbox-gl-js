@@ -72,7 +72,7 @@ class CompoundExpression implements Expression {
         for (const [params, evaluate] of overloads) {
             // Use a fresh context for each attempted signature so that, if
             // we eventually succeed, we haven't polluted `context.errors`.
-            signatureContext = new ParsingContext(context.registry, context.path, null, context.scope);
+            signatureContext = new ParsingContext(context.registry, context.path, null, context.scope, undefined, context.options);
 
             // First parse all the args, potentially coercing to the
             // types expected by this overload.

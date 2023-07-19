@@ -64,10 +64,10 @@ export class StyleExpression {
     _warningHistory: {[key: string]: boolean};
     _enumValues: ?{[_: string]: any};
 
-    constructor(expression: Expression, propertySpec: ?StylePropertySpecification) {
+    constructor(expression: Expression, propertySpec: ?StylePropertySpecification, options?: ?Map<string, Expression>) {
         this.expression = expression;
         this._warningHistory = {};
-        this._evaluator = new EvaluationContext();
+        this._evaluator = new EvaluationContext(options);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
     }
@@ -131,8 +131,8 @@ export function isExpression(expression: mixed): boolean {
  *
  * @private
  */
-export function createExpression(expression: mixed, propertySpec: ?StylePropertySpecification): Result<StyleExpression, Array<ParsingError>> {
-    const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined);
+export function createExpression(expression: mixed, propertySpec: ?StylePropertySpecification, options?: ?Map<string, Expression>): Result<StyleExpression, Array<ParsingError>> {
+    const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined, undefined, undefined, options);
 
     // For string-valued properties, coerce to string at the top level rather than asserting.
     const parsed = parser.parse(expression, undefined, undefined, undefined,
@@ -143,7 +143,7 @@ export function createExpression(expression: mixed, propertySpec: ?StyleProperty
         return error(parser.errors);
     }
 
-    return success(new StyleExpression(parsed, propertySpec));
+    return success(new StyleExpression(parsed, propertySpec, options));
 }
 
 export class ZoomConstantExpression<Kind: EvaluationKind> {
@@ -235,8 +235,8 @@ export type StylePropertyExpression =
     | CameraExpression
     | CompositeExpression;
 
-export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification): Result<StylePropertyExpression, Array<ParsingError>> {
-    expression = createExpression(expression, propertySpec);
+export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification, options?: ?Map<string, Expression>): Result<StylePropertyExpression, Array<ParsingError>> {
+    expression = createExpression(expression, propertySpec, options);
     if (expression.result === 'error') {
         return expression;
     }
@@ -317,12 +317,12 @@ export class StylePropertyFunction<T> {
     }
 }
 
-export function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
+export function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification, options?: ?Map<string, Expression>): StylePropertyExpression {
     if (isFunction(value)) {
         return (new StylePropertyFunction(value, specification): any);
 
     } else if (isExpression(value) || (Array.isArray(value) && value.length > 0)) {
-        const expression = createPropertyExpression(value, specification);
+        const expression = createPropertyExpression(value, specification, options);
         if (expression.result === 'error') {
             // this should have been caught in validation
             throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));

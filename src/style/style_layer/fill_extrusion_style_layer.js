@@ -13,6 +13,7 @@ import EXTENT from '../../data/extent.js';
 import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
+import type {Expression} from '../../style-spec/expression/expression.js';
 import type {BucketParameters} from '../../data/bucket.js';
 import type {PaintProps, LayoutProps} from './fill_extrusion_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
@@ -37,8 +38,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
     layout: PossiblyEvaluated<LayoutProps>;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
     }
 
     createBucket(parameters: BucketParameters<FillExtrusionStyleLayer>): FillExtrusionBucket {

@@ -16,6 +16,8 @@ import {warnOnce, degToRad} from '../../util/util.js';
 import {vec3, quat} from 'gl-matrix';
 import assert from 'assert';
 
+import type {Expression} from '../../style-spec/expression/expression.js';
+
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
     const up = [0, 0, 1];
     const rotation = quat.identity([]);
@@ -42,8 +44,8 @@ class SkyLayer extends StyleLayer {
 
     skyboxGeometry: SkyboxGeometry;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
         this._updateColorRamp();
     }
 

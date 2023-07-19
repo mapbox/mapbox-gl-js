@@ -48,8 +48,8 @@ class SymbolStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification) {
-        super(layer, properties);
+    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+        super(layer, properties, options);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {

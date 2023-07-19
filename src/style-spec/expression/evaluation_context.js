@@ -20,10 +20,11 @@ class EvaluationContext {
     canonical: null | CanonicalTileID;
     featureTileCoord: ?Point;
     featureDistanceData: ?FeatureDistanceData;
+    options: ?Map<string, Expression>;
 
     _parseColorCache: {[_: string]: ?Color};
 
-    constructor() {
+    constructor(options?: ?Map<string, Expression>) {
         this.globals = (null: any);
         this.feature = null;
         this.featureState = null;
@@ -33,6 +34,7 @@ class EvaluationContext {
         this.canonical = null;
         this.featureTileCoord = null;
         this.featureDistanceData = null;
+        this.options = options;
     }
 
     id(): number | null {
@@ -90,8 +92,8 @@ class EvaluationContext {
         return cached;
     }
 
-    getConfig(_: string): ?Expression {
-        return null;
+    getConfig(id: string): ?Expression {
+        return this.options ? this.options.get(id) : null;
     }
 }
 

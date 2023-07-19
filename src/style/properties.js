@@ -23,6 +23,7 @@ import type {
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression/index.js';
+import type {Expression} from '../style-spec/expression/expression.js';
 
 type TimePoint = number;
 
@@ -90,10 +91,10 @@ export class PropertyValue<T, R> {
     value: PropertyValueSpecification<T> | void;
     expression: StylePropertyExpression;
 
-    constructor(property: Property<T, R>, value: PropertyValueSpecification<T> | void) {
+    constructor(property: Property<T, R>, value: PropertyValueSpecification<T> | void, options?: ?Map<string, Expression>) {
         this.property = property;
         this.value = value;
-        this.expression = normalizePropertyExpression(value === undefined ? property.specification.default : value, property.specification);
+        this.expression = normalizePropertyExpression(value === undefined ? property.specification.default : value, property.specification, options);
     }
 
     isDataDriven(): boolean {
@@ -129,9 +130,9 @@ class TransitionablePropertyValue<T, R> {
     value: PropertyValue<T, R>;
     transition: TransitionSpecification | void;
 
-    constructor(property: Property<T, R>) {
+    constructor(property: Property<T, R>, options?: ?Map<string, Expression>) {
         this.property = property;
-        this.value = new PropertyValue(property, undefined);
+        this.value = new PropertyValue(property, undefined, options);
     }
 
     transitioned(parameters: TransitionParameters,
@@ -164,10 +165,12 @@ type TransitionablePropertyValues<Props: Object>
 export class Transitionable<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitionablePropertyValues<Props>;
+    _options: ?Map<string, Expression>;
 
-    constructor(properties: Properties<Props>) {
+    constructor(properties: Properties<Props>, options?: ?Map<string, Expression>) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultTransitionablePropertyValues): any);
+        this._options = options;
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
@@ -176,11 +179,11 @@ export class Transitionable<Props: Object> {
 
     setValue<S: string, T>(name: S, value: PropertyValueSpecification<T> | void) {
         if (!this._values.hasOwnProperty(name)) {
-            this._values[name] = new TransitionablePropertyValue(this._values[name].property);
+            this._values[name] = new TransitionablePropertyValue(this._values[name].property, this._options);
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
-        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
+        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._options);
     }
 
     setTransitionOrValue<P: Object>(properties: ?P) {
@@ -380,10 +383,12 @@ type PropertyValueSpecifications<Props: Object>
 export class Layout<Props: Object> {
     _properties: Properties<Props>;
     _values: PropertyValues<Props>;
+    _options: ?Map<string, Expression>;
 
-    constructor(properties: Properties<Props>) {
+    constructor(properties: Properties<Props>, options?: ?Map<string, Expression>) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultPropertyValues): any);
+        this._options = options;
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
@@ -391,7 +396,7 @@ export class Layout<Props: Object> {
     }
 
     setValue<S: string>(name: S, value: any) {
-        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
+        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._options);
     }
 
     serialize(): PropertyValueSpecifications<Props> {

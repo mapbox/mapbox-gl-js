@@ -273,7 +273,7 @@ export type FillLayerSpecification = {|
     "filter"?: FilterSpecification,
     "layout"?: {|
         "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "fill-antialias"?: PropertyValueSpecification<boolean>,
@@ -303,7 +303,7 @@ export type LineLayerSpecification = {|
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
         "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
@@ -376,7 +376,7 @@ export type SymbolLayerSpecification = {|
         "text-allow-overlap"?: PropertyValueSpecification<boolean>,
         "text-ignore-placement"?: PropertyValueSpecification<boolean>,
         "text-optional"?: PropertyValueSpecification<boolean>,
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
@@ -411,7 +411,7 @@ export type CircleLayerSpecification = {|
     "filter"?: FilterSpecification,
     "layout"?: {|
         "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
@@ -440,7 +440,7 @@ export type HeatmapLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "heatmap-radius"?: DataDrivenPropertyValueSpecification<number>,
@@ -462,8 +462,8 @@ export type FillExtrusionLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none",
-        "fill-extrusion-edge-radius"?: number
+        "visibility"?: ExpressionSpecification,
+        "fill-extrusion-edge-radius"?: ExpressionSpecification
     |},
     "paint"?: {|
         "fill-extrusion-opacity"?: PropertyValueSpecification<number>,
@@ -500,7 +500,7 @@ export type RasterLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "raster-opacity"?: PropertyValueSpecification<number>,
@@ -528,7 +528,7 @@ export type HillshadeLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "hillshade-illumination-direction"?: PropertyValueSpecification<number>,
@@ -551,7 +551,7 @@ export type ModelLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "visibility"?: "visible" | "none",
+        "visibility"?: ExpressionSpecification,
         "model-id"?: DataDrivenPropertyValueSpecification<string>
     |},
     "paint"?: {|
@@ -579,7 +579,7 @@ export type BackgroundLayerSpecification = {|
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
@@ -597,7 +597,7 @@ export type SkyLayerSpecification = {|
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
-        "visibility"?: "visible" | "none"
+        "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
         "sky-type"?: PropertyValueSpecification<"gradient" | "atmosphere">,
