@@ -46,7 +46,7 @@ tap.beforeEach(function () {
     // $FlowFixMe the assignment is intentional
     console.error = (msg) => this.fail(`console.error called -- please adjust your test (maybe stub console.error?)\n${msg}`);
     // $FlowFixMe the assignment is intentional
-    console.warn = () => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)`);
+    console.warn = (msg) => this.fail(`console.warn called -- please adjust your test (maybe stub console.warn?)\n${msg}`);
 });
 
 // $FlowFixMe[missing-this-annot]
