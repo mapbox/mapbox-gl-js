@@ -215,6 +215,9 @@ async function renderMap(style, options) {
 
     map.on('error', (e) => {
         errors.push({error: e.error.message, stack: e.error.stack});
+
+        // Log errors immediately in case test times out and doesn't have a chance to output the error messages
+        console.error(e.error.message);
     });
 
     map._authenticate = () => {};
