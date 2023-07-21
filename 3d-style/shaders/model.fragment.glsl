@@ -119,8 +119,7 @@ vec4 getBaseColor() {
 #endif
 
     // texture Color
-#ifdef HAS_TEXTURE_u_baseColorTexture
-    #ifdef HAS_ATTRIBUTE_a_uv_2f
+#if defined (HAS_TEXTURE_u_baseColorTexture) && defined (HAS_ATTRIBUTE_a_uv_2f)
     vec4 texColor = texture2D(u_baseColorTexture, uv_2f);
     if(u_alphaMask) {
         if (texColor.w < u_alphaCutoff) {
@@ -146,7 +145,6 @@ vec4 getBaseColor() {
         // gltf material
         albedo *= texColor;
     }
-#endif
 #endif
     return vec4(mix(albedo.rgb, v_color_mix.rgb, v_color_mix.a), albedo.a);
 }
@@ -193,7 +191,7 @@ highp vec3 getNormal(){
     n = normalize(cross(fdx,fdy)) * -1.0;
 #endif
 
-#ifdef HAS_TEXTURE_u_normalTexture
+#if defined(HAS_TEXTURE_u_normalTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     // Perturb normal
     vec3 nMap = texture2D( u_normalTexture, uv_2f).xyz;
     nMap = normalize(2.0* nMap - vec3(1.0));
@@ -226,7 +224,7 @@ Material getPBRMaterial() {
     mat.metallic = v_roughness_metallic_emissive_alpha.y;
     mat.baseColor.w *= v_roughness_metallic_emissive_alpha.w;
 #endif
-#ifdef HAS_TEXTURE_u_metallicRoughnessTexture
+#if defined(HAS_TEXTURE_u_metallicRoughnessTexture) && defined(HAS_ATTRIBUTE_a_uv_2f) 
     vec4 mrSample = texture2D(u_metallicRoughnessTexture, uv_2f);
     mat.perceptualRoughness *= mrSample.g;
     mat.metallic *= mrSample.b;
@@ -435,14 +433,14 @@ vec4 finalColor;
     vec3 color = computeLightContribution(mat, lightDir, lightColor);
 
     // Ambient Occlusion
-#ifdef HAS_TEXTURE_u_occlusionTexture
+#if defined (HAS_TEXTURE_u_occlusionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     float ao = (texture2D(u_occlusionTexture, uv_2f).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
     // Emission
     vec4 emissive = u_emissiveFactor;
 
-#ifdef HAS_TEXTURE_u_emissionTexture
+#if defined(HAS_TEXTURE_u_emissionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     emissive.rgb *= sRGBToLinear(texture2D(u_emissionTexture, uv_2f).rgb);
 #endif
     color += emissive.rgb;

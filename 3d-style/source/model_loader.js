@@ -254,6 +254,9 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
         mesh.texcoordArray._trim();
     }
 
+    if (attributeMap.TEXCOORD_0 === undefined && textures.length > 0) {
+        warnOnce(`Material ${JSON.stringify(primitive.material)} has textures but there are no texture coordinates`);
+    }
     // Material
     const materialIdx = primitive.material;
     const materialDesc = materialIdx !== undefined ? gltf.json.materials[materialIdx] : {defined: false};
