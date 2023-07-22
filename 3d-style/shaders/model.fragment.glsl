@@ -380,7 +380,7 @@ vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
     vec3 directLightColor = (specularTerm + diffuseTerm) * lighting_factor * lightColor;
     vec3 indirectLightColor = computeIndirectLightContribution(mat, NdotV, transformed_normal);
 
-    vec3 color = (directLightColor + indirectLightColor);
+    vec3 color = (saturate(directLightColor) + indirectLightColor);
 
     float intensityFactor = 1.0;
 #if !defined(LIGHTING_3D_MODE)
