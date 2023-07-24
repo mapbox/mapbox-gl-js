@@ -10,6 +10,7 @@ import EvaluationContext from './evaluation_context.js';
 import CompoundExpression from './compound_expression.js';
 import CollatorExpression from './definitions/collator.js';
 import Within from './definitions/within.js';
+import Distance from './definitions/distance.js';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant.js';
 import Var from './definitions/var.js';
 
@@ -203,7 +204,9 @@ function isConstant(expression: Expression) {
         // generally shouldn't change between executions, we can't serialize them
         // as constant expressions because results change based on environment.
         return false;
-    } else if (expression instanceof Within) {
+    }  else if (expression instanceof Within) {
+        return false;
+    } else if (expression instanceof Distance) {
         return false;
     }
 

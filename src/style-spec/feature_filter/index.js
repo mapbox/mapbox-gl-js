@@ -260,7 +260,7 @@ function compare(a: number, b: number) {
 
 function geometryNeeded(filter: Array<any> | boolean) {
     if (!Array.isArray(filter)) return false;
-    if (filter[0] === 'within') return true;
+    if (filter[0] === 'within' || filter[0] === 'distance') return true;
     for (let index = 1; index < filter.length; index++) {
         if (geometryNeeded(filter[index])) return true;
     }
@@ -285,7 +285,6 @@ function convertFilter(filter: ?Array<any>): mixed {
         op === '!in' ? convertNegation(convertInOp(filter[1], filter.slice(2))) :
         op === 'has' ? convertHasOp(filter[1]) :
         op === '!has' ? convertNegation(convertHasOp(filter[1])) :
-        op === 'within' ? filter :
         true;
     return converted;
 }

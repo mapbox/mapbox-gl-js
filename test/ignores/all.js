@@ -114,9 +114,6 @@ const skip = [
     "render-tests/resize/mercator",
     "render-tests/resize/globe",
 
-    // Distance expression is not implemented, test times out
-    "render-tests/distance/layout-text-size",
-
     // Extremely flaky: https://github.com/mapbox/mapbox-gl-js/issues/11726
     "query-tests/terrain/draped/lines/slope-occlusion",
 

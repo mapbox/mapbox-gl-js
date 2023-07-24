@@ -45,6 +45,7 @@ import FormatExpression from './format.js';
 import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
+import Distance from './distance.js';
 
 import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
@@ -107,7 +108,9 @@ const expressions: ExpressionRegistry = {
     // $FlowFixMe[method-unbinding]
     'var': Var,
     // $FlowFixMe[method-unbinding]
-    'within': Within
+    'within': Within,
+    // $FlowFixMe[method-unbinding]
+    'distance': Distance
 };
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
