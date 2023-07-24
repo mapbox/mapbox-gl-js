@@ -61,7 +61,7 @@
       "required": false,
       "type": "array",
       "value": "light-3d",
-      "doc": "",
+      "doc": "Array of light sources affecting the whole map and the default for 3D style, mutually exclusive with the light property",
       "example": [
         {
           "id": "environment",
@@ -291,10 +291,10 @@
     },
     "type": {
       "type": "enum",
-      "doc": "",
+      "doc": "Type of the light to be added",
       "values": {
         "ambient": {
-          "doc": "",
+          "doc": "An indirect light affecting all objects in the map adding a constant amount of light on them. It has no explicit direction and cannot cast shadows.",
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -304,7 +304,7 @@
           }
         },
         "directional": {
-          "doc": "",
+          "doc": "A light that has a direction and is located at infinite, so its rays are parallel. Simulates the sun light and it can cast shadows",
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -832,7 +832,7 @@
             "doc": "A collection of 3D models with anchor data"
           }
        },
-      "doc": ""
+      "doc": "Type of model source to be added. From single models to represent 2D layers to 3D tiled models covering a wide area."
     },
     "maxzoom": {
       "type": "number",
