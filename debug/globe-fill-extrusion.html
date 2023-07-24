@@ -50,9 +50,15 @@ map.on('style.load', function() {
     });
 
     map.setFog({});
-    map.setLight({
-        intensity: 0.3
-    });
+    map.setLights([
+        {
+            'type': 'flat',
+            'id': 'flat',
+            'properties': {
+                'intensity': 0.3
+            }
+        }
+    ]);
 
     document.getElementById('terrain-checkbox').onclick();
     document.getElementById('buildings-fauxao-slider').oninput();

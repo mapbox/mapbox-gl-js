@@ -60,7 +60,7 @@ test('Light#getLight', (t) => {
 test('Light#setLight', (t) => {
     t.test('sets light', (t) => {
         const light = new Light({});
-        light.setLight({color: 'red', "color-transition": {duration: 3000}});
+        light.setLight({color: 'red', "color-transition": {duration: 3000}}, "flat");
         light.updateTransitions({transition: true}, {});
         light.recalculate({zoom: 16, now: 1500});
         t.deepEqual(light.properties.get('color'), new Color(1, 0.5, 0.5, 1));
@@ -71,7 +71,7 @@ test('Light#setLight', (t) => {
         const light = new Light({});
         const lightSpy = t.spy(light, '_validate');
         t.stub(console, 'error');
-        light.setLight({color: 'notacolor'});
+        light.setLight({color: 'notacolor'}, "flat");
         light.updateTransitions({transition: false}, {});
         light.recalculate({zoom: 16, now: 10});
         t.ok(lightSpy.calledOnce);
@@ -84,7 +84,7 @@ test('Light#setLight', (t) => {
         const light = new Light({});
 
         const lightSpy = t.spy(light, '_validate');
-        light.setLight({color: 999}, {validate: false});
+        light.setLight({color: 999}, "flat", {validate: false});
         light.updateTransitions({transition: false}, {});
         light.recalculate({zoom: 16, now: 10});
 

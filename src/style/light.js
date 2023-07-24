@@ -47,11 +47,12 @@ class Light extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
+    id: string;
 
-    constructor(lightOptions?: LightSpecification) {
+    constructor(lightOptions?: LightSpecification, id: string = "flat") {
         super();
         this._transitionable = new Transitionable(properties);
-        this.setLight(lightOptions);
+        this.setLight(lightOptions, id);
         this._transitioning = this._transitionable.untransitioned();
     }
 
@@ -59,11 +60,12 @@ class Light extends Evented {
         return (this._transitionable.serialize(): any);
     }
 
-    setLight(light?: LightSpecification, options: StyleSetterOptions = {}) {
+    setLight(light?: LightSpecification, id: string, options: StyleSetterOptions = {}) {
         if (this._validate(validateLight, light, options)) {
             return;
         }
         this._transitionable.setTransitionOrValue<LightSpecification>(light);
+        this.id = id;
     }
 
     updateTransitions(parameters: TransitionParameters) {

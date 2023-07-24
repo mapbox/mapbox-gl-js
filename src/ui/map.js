@@ -61,6 +61,7 @@ import type {
     FilterSpecification,
     StyleSpecification,
     LightSpecification,
+    FlatLightSpecification,
     LightsSpecification,
     TerrainSpecification,
     FogSpecification,
@@ -2608,9 +2609,18 @@ class Map extends Camera {
      */
     setLights(lights: ?Array<LightsSpecification>): this {
         this._lazyInitEmptyStyle();
-        this.style.setLights(lights);
-        if (this.painter.terrain) {
-            this.painter.terrain.invalidateRenderCache = true;
+        if (lights && lights.length === 1 && lights[0].type === "flat") {
+            const flatLight: FlatLightSpecification = lights[0];
+            if (!flatLight.properties) {
+                this.style.setFlatLight({}, "flat");
+            } else {
+                this.style.setFlatLight(flatLight.properties, flatLight.id, {});
+            }
+        } else {
+            this.style.setLights(lights);
+            if (this.painter.terrain) {
+                this.painter.terrain.invalidateRenderCache = true;
+            }
         }
         return this._update(true);
     }
@@ -2623,7 +2633,15 @@ class Map extends Camera {
      * const lights = map.getLights();
      */
     getLights(): ?Array<LightsSpecification> {
-        return this.style.getLights();
+        const lights = this.style.getLights() || [];
+        if (lights.length === 0) {
+            lights.push({
+                "id": this.style.light.id,
+                "type": "flat",
+                "properties": this.style.getFlatLight()
+            });
+        }
+        return lights;
     }
 
     /**
@@ -2787,7 +2805,7 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
-     * _Note: that this API is part of the legacy light API, prefer using {@link Map#addLight} and {@link Map#removeLight}_.
+     * _Note: that this API is part of the legacy light API, prefer using {@link Map#setLights}.
      *
      * @param {LightSpecification} light Light properties to set. Must conform to the [Light Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @param {Object} [options] Options object.
@@ -2800,10 +2818,14 @@ class Map extends Camera {
      *     "intensity": 0.5
      * });
      */
+    // eslint-disable-next-line no-unused-vars
     setLight(light: LightSpecification, options: StyleSetterOptions = {}): this {
-        this._lazyInitEmptyStyle();
-        this.style.setLight(light, options);
-        return this._update(true);
+        console.log("The `map.setLight` function is deprecated, prefer using `map.setLights` with `flat` light type instead.");
+        return this.setLights([{
+            "id": "flat",
+            "type": "flat",
+            "properties": light
+        }]);
     }
 
     /**
@@ -2814,7 +2836,8 @@ class Map extends Camera {
      * const light = map.getLight();
      */
     getLight(): LightSpecification {
-        return this.style.getLight();
+        console.log("The `map.getLight` function is deprecated, prefer using `map.getLights` instead.");
+        return this.style.getFlatLight();
     }
 
     // eslint-disable-next-line jsdoc/require-returns

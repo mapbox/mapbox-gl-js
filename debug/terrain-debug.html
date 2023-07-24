@@ -109,9 +109,15 @@ map.on('style.load', function() {
             "visibility": "none"
         }
     });
-    map.setLight({
-        intensity: 0.26
-    });
+    map.setLights([
+        {
+            'type': 'flat',
+            'id': 'flat',
+            'properties': {
+                'intensity': 0.26
+            }
+        }
+    ]);
     const buildingExtrusions = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion');
     if (buildingExtrusions) {
         buildingsLayerId = buildingExtrusions;

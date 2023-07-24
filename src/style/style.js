@@ -82,6 +82,7 @@ import type {
     SourceSpecification,
     TerrainSpecification,
     LightsSpecification,
+    FlatLightSpecification,
     FogSpecification,
     ProjectionSpecification,
     TransitionSpecification,
@@ -523,8 +524,21 @@ class Style extends Evented {
             this._updateLayerCount(styleLayer, true);
         }
 
+        if (this.stylesheet.light) {
+            console.log("The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.");
+        }
+
         if (this.stylesheet.lights) {
-            this.setLights(this.stylesheet.lights);
+            if (this.stylesheet.lights.length === 1 && this.stylesheet.lights[0].type === "flat") {
+                const flatLight: FlatLightSpecification = this.stylesheet.lights[0];
+                this.light = new Light(flatLight.properties, flatLight.id);
+            } else {
+                this.setLights(this.stylesheet.lights);
+            }
+        }
+
+        if (!this.light) {
+            this.light = new Light(this.stylesheet.light);
         }
 
         if (this.stylesheet.models) {
@@ -535,7 +549,6 @@ class Style extends Evented {
             this.modelManager.addStyleModels(Object.fromEntries(models));
         }
 
-        this.light = new Light(this.stylesheet.light);
         if (this.stylesheet.terrain && !this.terrainSetForDrapingOnly()) {
             // $FlowFixMe[incompatible-call] - Flow can't infer that terrain is not undefined
             this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
@@ -1879,11 +1892,11 @@ class Style extends Evented {
         }, callback);
     }
 
-    getLight(): LightSpecification {
+    getFlatLight(): LightSpecification {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, options: StyleSetterOptions = {}) {
+    setFlatLight(lightOptions: LightSpecification, id: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -1898,7 +1911,7 @@ class Style extends Evented {
 
         const parameters = this._getTransitionParameters({duration: 300, delay: 0});
 
-        this.light.setLight(lightOptions, options);
+        this.light.setLight(lightOptions, id, options);
         this.light.updateTransitions(parameters);
     }
 

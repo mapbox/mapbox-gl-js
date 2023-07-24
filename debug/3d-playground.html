@@ -335,8 +335,13 @@ window.onload = function() {
     const skyColor = sky.addInput(demo3d, 'skyColor');
     const starIntensity = sky.addInput(demo3d, 'starIntensity', {min:0.0, max:1.0});
     sky.on('change', (ev) => {
-        map.setLight({'position': [1, demo3d.sunAzimuth, ev.value], 'anchor': 'map', intensity: demo3d.lightIntensity});
-        map.setLight({'position': [1, ev.value, demo3d.sunAltitude], 'anchor': 'map', intensity: demo3d.lightIntensity});
+        map.setLights([
+            {
+                'type': 'flat',
+                'id': 'flat',
+                'properties': {'position': [1, demo3d.sunAzimuth, demo3d.sunAltitude], 'anchor': 'map', intensity: demo3d.lightIntensity}
+            }
+        ]);
         map.setPaintProperty('sky', 'sky-atmosphere-sun-intensity', demo3d.sunIntensity);
 
         map.setPaintProperty('sky', 'sky-atmosphere-halo-color',
@@ -368,9 +373,12 @@ window.onload = function() {
         map.setLayoutProperty(demo3d.buildingExtrusion, 'fill-extrusion-edge-radius', demo3d.edgeRadius);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-rounded-roof', demo3d.roundedRoof);
 
-        const light = map.getLight();
-        light['intensity'] = demo3d.lightIntensity;
-        map.setLight(light);
+        const lights = map.getLights();
+        if (lights && lights.length > 0 && lights[0].type === "flat") {
+            const light = lights[0];
+            light['intensity'] = demo3d.lightIntensity;
+            map.setLights([light]);
+        }
     });
 
     // Flood lights
@@ -497,7 +505,13 @@ map.on('style.load', function() {
         }
     });
     map.setFog({});
-    map.setLight({intensity: demo3d.lightIntensity});
+    map.setLights([
+        {
+            'type': 'flat',
+            'id': 'flat',
+            'properties': {intensity: demo3d.lightIntensity}
+        }
+    ]);
     map.on('mousemove', (e) => {
         demo3d.debug.exaggerated = map.queryTerrainElevation(map.unproject(e.point));
         demo3d.debug.unexaggerated = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
@@ -593,7 +607,13 @@ map.on('style.load', function() {
         }
         if (demo3d.animateSky) {
             const altitude = Math.cos(skyAnimationTime + Math.PI) * 0.5 + 0.5;
-            map.setLight({'position': [1, demo3d.sunAzimuth, easeInCubic(altitude) * 90.0], 'anchor': 'map'});
+            map.setLights([
+                {
+                    'type': 'flat',
+                    'id': 'flat',
+                    'properties': {'position': [1, demo3d.sunAzimuth, easeInCubic(altitude) * 90.0], 'anchor': 'map'}
+                }
+            ]);
             skyAnimationTime += 1.0 / 60;
         }
     }, 1000.0 / 60.0);

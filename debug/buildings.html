@@ -62,7 +62,15 @@ map.on('load', () => {
         }
     });
 
-    map.setLight({intensity: 0.7});
+    map.setLights([
+        {
+            'type': 'flat',
+            'id': 'flat',
+            'properties': {
+                'intensity': 0.7
+            }
+        }
+    ]);
 });
 
 </script>

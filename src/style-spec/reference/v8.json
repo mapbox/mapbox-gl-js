@@ -50,7 +50,7 @@
     },
     "light": {
       "type": "light",
-      "doc": "The global light source.",
+      "doc": "The global light source. Note: This API is deprecated. Prefer using `flat` light type instead in the `lights` API.",
       "example": {
         "anchor": "viewport",
         "color": "white",
@@ -312,13 +312,24 @@
               "ios": "11.0.0"
             }
           }
+        },
+        "flat": {
+          "doc": "A global directional light source which is only applied on 3D layers and hillshade layers. Using this type disables other light sources.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "3.0.0",
+              "android": "11.0.0",
+              "ios": "11.0.0"
+            }
+          }
         }
       }
     }
   },
   "properties": [
     "properties_light_directional",
-    "properties_light_ambient"
+    "properties_light_ambient",
+    "properties_light_flat"
   ],
   "properties_light_directional": {
     "direction": {
@@ -425,6 +436,114 @@
       },
       "transition": true,
       "doc": "A multiplier for the color of the ambient light."
+    }
+  },
+  "properties_light_flat": {
+    "anchor": {
+      "type": "enum",
+      "default": "viewport",
+      "values": {
+        "map": {
+          "doc": "The position of the light source is aligned to the rotation of the map."
+        },
+        "viewport": {
+          "doc": "The position of the light source is aligned to the rotation of the viewport."
+        }
+      },
+      "property-type": "data-constant",
+      "transition": false,
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "Whether extruded geometries are lit relative to the map or viewport.",
+      "example": "map",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        }
+      }
+    },
+    "position": {
+      "type": "array",
+      "default": [
+        1.15,
+        210,
+        30
+      ],
+      "length": 3,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "doc": "Position of the light source relative to lit (extruded) geometries, in [r radial coordinate, a azimuthal angle, p polar angle] where r indicates the distance from the center of the base of an object to its light, a indicates the position of the light relative to 0° (0° when `light.anchor` is set to `viewport` corresponds to the top of the viewport, or 0° when `light.anchor` is set to `map` corresponds to due north, and degrees proceed clockwise), and p indicates the height of the light (from 0°, directly above, to 180°, directly below).",
+      "example": [
+        1.5,
+        90,
+        80
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Color tint for lighting extruded geometries.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.5,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0",
+          "android": "5.1.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
+        }
+      }
     }
   },
   "sources": {

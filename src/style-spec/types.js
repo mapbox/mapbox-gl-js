@@ -257,9 +257,21 @@ export type DirectionalLightSpecification = {|
     "type": "directional"
 |}
 
+export type FlatLightSpecification = {|
+    "id": string,
+    "properties"?: {|
+        "anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "position"?: PropertyValueSpecification<[number, number, number]>,
+        "color"?: PropertyValueSpecification<ColorSpecification>,
+        "intensity"?: PropertyValueSpecification<number>
+    |},
+    "type": "flat"
+|}
+
 export type LightsSpecification =
     | AmbientLightSpecification
-    | DirectionalLightSpecification;
+    | DirectionalLightSpecification
+    | FlatLightSpecification;
 
 export type FillLayerSpecification = {|
     "id": string,

@@ -3984,7 +3984,13 @@ test('Map', (t) => {
             map.setLights(lights);
             t.deepEqual(map.getLights(), lights);
             map.setLights(null);
-            t.equal(map.getLights(), null);
+            t.deepEqual(map.getLights(), [
+                {
+                    "id": "flat",
+                    "properties": {},
+                    "type": "flat"
+                }
+            ]);
 
             t.end();
         });

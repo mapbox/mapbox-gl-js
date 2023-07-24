@@ -61,6 +61,17 @@ export const operationHandlers = {
         map.setLights(params[0]);
         waitForRender(map, () => true, doneCb);
     },
+    setLight(map, params, doneCb) {
+        // Backward compatibility
+        map.setLights([
+            {
+                "id": "flat",
+                "type": "flat",
+                "properties": params[0]
+            }
+        ]);
+        waitForRender(map, () => true, doneCb);
+    },
     addCustomLayer(map, params, doneCb) {
         map.addLayer(new customLayerImplementations[params[0]](), params[1]);
         waitForRender(map, () => true, doneCb);
