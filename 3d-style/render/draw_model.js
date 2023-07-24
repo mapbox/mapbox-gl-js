@@ -407,10 +407,19 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
             exaggeration = 0;
         }
     }
+
+    if (exaggeration === 0) {
+        bucket.terrainElevationMin = 0;
+        bucket.terrainElevationMax = 0;
+    }
+
     if (exaggeration === bucket.validForExaggeration &&
         (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID === bucket.validForDEMTile))) {
         return;
     }
+
+    let elevationMin: ?number;
+    let elevationMax: ?number;
 
     for (const modelId in bucket.instancesPerModel) {
         const instances = bucket.instancesPerModel[modelId];
@@ -420,8 +429,14 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
             const y = instances.instancedDataArray.float32[i * 16 + 1] | 0;
             const elevation = (dem ? exaggeration * dem.getElevationAt(x, y, true, true) : 0) + instances.instancesEvaluatedElevation[i];
             instances.instancedDataArray.float32[i * 16 + 6] = elevation;
+            elevationMin = elevationMin ? Math.min(bucket.terrainElevationMin, elevation) : elevation;
+            elevationMax = elevationMax ? Math.max(bucket.terrainElevationMax, elevation) : elevation;
         }
     }
+
+    bucket.terrainElevationMin = elevationMin ? elevationMin : 0;
+    bucket.terrainElevationMax = elevationMax ? elevationMax : 0;
+
     bucket.validForExaggeration = exaggeration;
     bucket.validForDEMTile = dem && dem._demTile ? dem._demTile.tileID : undefined;
     bucket.uploaded = false;
@@ -476,6 +491,8 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         evaluationParameters.zoom = tileZoom;
         const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
 
+        updateModelBucketsElevation(painter, bucket, coord);
+
         renderData.shadowUniformsInitialized = false;
         if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
             const shadowRenderer = painter.shadowRenderer;
@@ -489,7 +506,6 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
             renderData.aabb.max[2] = 0;
             if (calculateTileShadowPassCulling(bucket, renderData, painter)) continue;
         }
-        updateModelBucketsElevation(painter, bucket, coord);
 
         // camera position in the tile coordinates
         let cameraPos = vec3.scale([], mercCameraPosVec, (1 << coord.canonical.z));
@@ -765,6 +781,11 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
         if (allModelsLoaded) bucket.maxHeight = maxHeight;
     }
     aabb.max[2] = maxHeight;
+
+    // Take into account bucket placement on DEM
+    aabb.min[2] += bucket.terrainElevationMin;
+    aabb.max[2] += bucket.terrainElevationMax;
+
     vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix);
     vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix);
     const intersection = aabb.intersects(shadowRenderer.getCurrentCascadeFrustum());

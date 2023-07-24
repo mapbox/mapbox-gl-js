@@ -87,6 +87,9 @@ class ModelBucket implements Bucket {
     lookup: ?Uint8Array;
     lookupDim: number;
     instanceCount: number;
+    // Bucket min/max terrain elevation among instance positions taking exaggeration value into account
+    terrainElevationMin: number;
+    terrainElevationMax: number;
 
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(options: BucketParameters<ModelStyleLayer>) {
@@ -108,6 +111,9 @@ class ModelBucket implements Bucket {
         // Heuristics is related to trees performance.
         this.lookupDim = this.zoom > this.canonical.z ? 256 : this.zoom > 15 ? 75 : 100;
         this.instanceCount = 0;
+
+        this.terrainElevationMin = 0;
+        this.terrainElevationMax = 0;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
