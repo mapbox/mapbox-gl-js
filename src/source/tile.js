@@ -156,6 +156,7 @@ class Tile {
     _tileDebugTextSegments: SegmentVector;
     _tileDebugTextIndexBuffer: IndexBuffer;
     _globeTileDebugTextBuffer: ?VertexBuffer;
+    _lastUpdatedBrightness: ?number;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -400,10 +401,20 @@ class Tile {
         }
     }
 
-    prepare(imageManager: ImageManager) {
+    prepare(imageManager: ImageManager, painter: ?Painter) {
         if (this.imageAtlas) {
             this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture);
         }
+
+        if (!painter || !this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) {
+            return;
+        }
+        const brightness = painter.style.getBrightness();
+        if (brightness === this._lastUpdatedBrightness) {
+            return;
+        }
+        this._lastUpdatedBrightness = brightness;
+        this.updateBuckets(undefined, painter);
     }
 
     // Queries non-symbol features rendered for this tile.
@@ -553,9 +564,14 @@ class Tile {
             return;
         }
 
+        this.updateBuckets(states, painter);
+    }
+
+    updateBuckets(states: ?LayerFeatureStates, painter: Painter) {
+        if (!this.latestFeatureIndex) return;
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
-        const brightness = painter.style.calculateLightsBrightness();
+        const brightness = painter.style.getBrightness();
 
         for (const id in this.buckets) {
             if (!painter.style.hasLayer(id)) continue;
@@ -564,8 +580,11 @@ class Tile {
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceLayerStates = states[sourceLayerId];
-            if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+            let sourceLayerStates = {};
+            if (states) {
+                sourceLayerStates = states[sourceLayerId];
+                if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+            }
 
             // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};

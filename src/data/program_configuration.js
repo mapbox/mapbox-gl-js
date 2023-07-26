@@ -80,7 +80,7 @@ function packColor(color: Color): [number, number] {
 
 interface AttributeBinder {
     populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness: ?number, formattedSection?: FormattedSection): void;
-    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number): void;
+    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): void;
     upload(Context): void;
     destroy(): void;
 }
@@ -178,8 +178,8 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, newLength, value);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: ?number) {
-        const value = this.expression.evaluate({zoom: 0, options: {brightness}}, feature, featureState, undefined, availableImages);
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
+        const value = this.expression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, value);
     }
 
@@ -202,7 +202,7 @@ class SourceExpressionBinder implements AttributeBinder {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
                 this.paintVertexBuffer.updateData(this.paintVertexArray);
             } else {
-                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
             }
         }
     }
@@ -252,9 +252,9 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, newLength, min, max);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: ?number) {
-        const min = this.expression.evaluate({zoom: this.zoom, options: {brightness}}, feature, featureState, undefined, availableImages);
-        const max = this.expression.evaluate({zoom: this.zoom + 1, options: {brightness}}, feature, featureState, undefined, availableImages);
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
+        const min = this.expression.evaluate({zoom: this.zoom, brightness}, feature, featureState, undefined, availableImages);
+        const max = this.expression.evaluate({zoom: this.zoom + 1, brightness}, feature, featureState, undefined, availableImages);
         this._setPaintValue(start, end, min, max);
     }
 
@@ -278,7 +278,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
                 this.paintVertexBuffer.updateData(this.paintVertexArray);
             } else {
-                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
             }
         }
     }
@@ -345,7 +345,7 @@ class PatternCompositeBinder implements AttributeBinder {
 
     upload(context: Context) {
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
         }
     }
 
@@ -449,9 +449,11 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number): boolean {
+    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): boolean {
         let dirty: boolean = false;
-        for (const id in featureStates) {
+        const keys = Object.keys(featureStates);
+        const ids = keys.length === 0 ? featureMap.ids : keys;
+        for (const id of ids) {
             const positions = featureMap.getPositions(id);
 
             for (const pos of positions) {
@@ -460,11 +462,11 @@ export default class ProgramConfiguration {
                 for (const property in this.binders) {
                     const binder = this.binders[property];
                     if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
-                         binder instanceof PatternCompositeBinder) && (binder: any).expression.isStateDependent === true) {
+                         binder instanceof PatternCompositeBinder) && ((binder: any).expression.isStateDependent === true || (binder: any).expression.isLightConstant === false)) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
                         (binder: any).expression = value.value;
-                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id], availableImages, imagePositions, brightness);
+                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id.toString()], availableImages, imagePositions, brightness);
                         dirty = true;
                     }
                 }
@@ -598,7 +600,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: IVectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, availableImages, imagePositions, brightness) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, availableImages, imagePositions, brightness || 0) || this.needsUpload;
         }
     }
 

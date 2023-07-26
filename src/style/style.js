@@ -1262,6 +1262,10 @@ class Style extends Evented {
         return (directionalBrightness + ambientBrightness) / 2.0;
     }
 
+    getBrightness(): ?number {
+        return this._brightness;
+    }
+
     getLights(): ?Array<LightsSpecification> {
         if (!this.enable3dLights()) return null;
         const lights = [];

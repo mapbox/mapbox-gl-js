@@ -484,9 +484,11 @@ class FillExtrusionBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
-        if (!this.stateDependentLayers.length) return;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
-        this.groundEffect.update(states, vtLayer, this.stateDependentLayers, availableImages, imagePositions, brightness);
+        const withStateUpdates = Object.keys(states).length !== 0;
+        if (withStateUpdates && !this.stateDependentLayers.length) return;
+        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+        this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, brightness);
     }
 
     isEmpty(): boolean {

@@ -175,7 +175,7 @@ class SourceCache extends Evented {
         for (const i in this._tiles) {
             const tile = this._tiles[i];
             tile.upload(context);
-            tile.prepare(this.map.style.imageManager);
+            tile.prepare(this.map.style.imageManager, this.map ? this.map.painter : null);
         }
     }
 

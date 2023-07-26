@@ -645,9 +645,11 @@ class SymbolBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
-        if (!this.stateDependentLayers.length) return;
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions, brightness);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, availableImages, imagePositions, brightness);
+        const withStateUpdates = Object.keys(states).length !== 0;
+        if (withStateUpdates && !this.stateDependentLayers.length) return;
+        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
     }
 
     isEmpty(): boolean {

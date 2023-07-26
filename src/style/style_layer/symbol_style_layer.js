@@ -132,6 +132,8 @@ class SymbolStyleLayer extends StyleLayer {
             const override = new FormatSectionOverride(overriden);
             const styleExpression = new StyleExpression(override, overriden.property.specification);
             let expression = null;
+            // eslint-disable-next-line no-warning-comments
+            // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
                 // $FlowFixMe[method-unbinding]
                 expression = (new ZoomConstantExpression('source', styleExpression): SourceExpression);

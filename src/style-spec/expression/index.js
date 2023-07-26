@@ -172,15 +172,17 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     kind: Kind;
     zoomStops: Array<number>;
     isStateDependent: boolean;
+    isLightConstant: ?boolean;
 
     _styleExpression: StyleExpression;
     interpolationType: ?InterpolationType;
 
-    constructor(kind: Kind, expression: StyleExpression, zoomStops: Array<number>, interpolationType?: InterpolationType) {
+    constructor(kind: Kind, expression: StyleExpression, zoomStops: Array<number>, interpolationType?: InterpolationType, isLightConstant: ?boolean) {
         this.kind = kind;
         this.zoomStops = zoomStops;
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
+        this.isLightConstant = isLightConstant;
         this.interpolationType = interpolationType;
     }
 
@@ -209,6 +211,7 @@ export type ConstantExpression = interface {
 export type SourceExpression = interface {
     kind: 'source',
     isStateDependent: boolean,
+    isLightConstant: ?boolean;
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
 };
 
@@ -223,6 +226,7 @@ export type CameraExpression = interface {
 export interface CompositeExpression {
     kind: 'composite';
     isStateDependent: boolean;
+    isLightConstant: ?boolean;
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any;
     +interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -280,9 +284,9 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
 
     return success(isFeatureConstant ?
         // $FlowFixMe[method-unbinding]
-        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType): CameraExpression) :
+        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant): CameraExpression) :
         // $FlowFixMe[method-unbinding]
-        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType): CompositeExpression));
+        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant): CompositeExpression));
 }
 
 import {isFunction, createFunction} from '../function/index.js';
