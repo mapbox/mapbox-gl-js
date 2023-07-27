@@ -9,6 +9,7 @@ function createMapWithCooperativeGestures(t) {
     return new Map({
         container: DOM.create('div', '', window.document.body),
         cooperativeGestures: true,
+        useWebGL2: false,
         testMode: true
     });
 }

@@ -10,6 +10,7 @@ function createMap(t, clickTolerance, dragPan) {
         container: DOM.create('div', '', window.document.body),
         clickTolerance: clickTolerance || 0,
         dragPan: dragPan || true,
+        useWebGL2: false,
         testMode: true,
     });
 }

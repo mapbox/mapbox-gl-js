@@ -76,6 +76,7 @@ test('Map', (t) => {
         t.throws(() => {
             new Map({
                 container: 'anElementIdWhichDoesNotExistInTheDocument',
+                useWebGL2: false,
                 testMode: true
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
@@ -86,7 +87,7 @@ test('Map', (t) => {
         t.stub(Map.prototype, '_detectMissingCSS');
 
         const stub = t.stub(Map.prototype, 'setStyle');
-        new Map({container: window.document.createElement('div'), testMode: false});
+        new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: false});
 
         t.ok(stub.calledOnce);
         t.equal(stub.getCall(0).args[0], 'mapbox://styles/mapbox/standard-beta');
@@ -245,7 +246,7 @@ test('Map', (t) => {
     t.test('emits load event after a style is set', (t) => {
         t.stub(Map.prototype, '_detectMissingCSS');
         t.stub(Map.prototype, '_authenticate');
-        const map = new Map({container: window.document.createElement('div'), testMode: true});
+        const map = new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
 
         map.on('load', fail);
 
@@ -320,7 +321,7 @@ test('Map', (t) => {
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
-            const map = new Map({container: window.document.createElement('div'), testMode: true});
+            const map = new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
             t.equal(map.setStyle({
                 version: 8,
                 sources: {},
@@ -400,7 +401,7 @@ test('Map', (t) => {
         t.test('style transform overrides unmodified map transform', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div'), testMode: true});
+            const map = new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
 
             map.transform.setMaxBounds(LngLatBounds.convert([-120, -60, 140, 80]));
             map.transform.resize(600, 400);
@@ -419,7 +420,7 @@ test('Map', (t) => {
         t.test('style transform does not override map transform modified via options', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div'), zoom: 10, center: [-77.0186, 38.8888], testMode: true});
+            const map = new Map({container: window.document.createElement('div'), zoom: 10, center: [-77.0186, 38.8888], useWebGL2: false, testMode: true});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
             map.on('style.load', () => {
@@ -434,7 +435,7 @@ test('Map', (t) => {
         t.test('style transform does not override map transform modified via setters', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             t.stub(Map.prototype, '_authenticate');
-            const map = new Map({container: window.document.createElement('div'), testMode: true});
+            const map = new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
             t.ok(map.transform.unmodified);
             map.setZoom(10);
             map.setCenter([-77.0186, 38.8888]);
@@ -580,7 +581,7 @@ test('Map', (t) => {
             window.document.styleSheets.length = 1;
             const style = createStyle();
             const div = window.document.createElement('div');
-            let map = new Map({style, container: div, testMode: true});
+            let map = new Map({style, container: div, useWebGL2: false, testMode: true});
             map.setZoom(3);
             map.on('load', () => {
                 map.setProjection('globe');
@@ -591,7 +592,7 @@ test('Map', (t) => {
                 t.equal(style.terrain, undefined);
                 map.remove();
 
-                map = new Map({style, container: div, testMode: true});
+                map = new Map({style, container: div, useWebGL2: false, testMode: true});
                 t.equal(map.getProjection().name, 'mercator');
                 t.equal(map.getTerrain(), null);
                 t.equal(style.terrain, undefined);
@@ -2504,6 +2505,7 @@ test('Map', (t) => {
 
         const map = new Map({
             container,
+            useWebGL2: false,
             testMode: true
         });
         map.remove();
@@ -3877,7 +3879,7 @@ test('Map', (t) => {
         window.document.styleSheets[0] = styleSheet;
         window.document.styleSheets.length = 1;
 
-        new Map({container: window.document.createElement('div'), testMode: true});
+        new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
 
         t.notok(stub.calledOnce);
         t.end();
@@ -3885,7 +3887,7 @@ test('Map', (t) => {
 
     t.test('should warn when CSS is missing', (t) => {
         const stub = t.stub(console, 'warn');
-        new Map({container: window.document.createElement('div'), testMode: true});
+        new Map({container: window.document.createElement('div'), useWebGL2: false, testMode: true});
 
         t.ok(stub.calledOnce);
 

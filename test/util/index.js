@@ -6,6 +6,7 @@ export function createMap(t, options, callback) {
     const container = window.document.createElement('div');
     const defaultOptions = {
         container,
+        useWebGL2: false,
         interactive: false,
         attributionControl: false,
         trackResize: true,

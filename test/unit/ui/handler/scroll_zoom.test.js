@@ -15,6 +15,7 @@ function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({
         container: DOM.create('div', '', window.document.body),
+        useWebGL2: false,
         testMode: true,
         style: {
             "version": 8,
@@ -29,6 +30,7 @@ function createMapWithCooperativeGestures(t) {
     return new Map({
         container: DOM.create('div', '', window.document.body),
         cooperativeGestures: true,
+        useWebGL2: false,
         testMode: true,
     });
 }
