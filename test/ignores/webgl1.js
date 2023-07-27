@@ -25,6 +25,7 @@ const skip = [
     "render-tests/model-layer/style-model-api-add",
     "render-tests/model-layer/style-model-api-update",
     "render-tests/model-layer/model-runtime-api",
+    "render-tests/model-layer/trees-shadows-terrain-high-altitude",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/zero-radius",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/saturation",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/transparency",

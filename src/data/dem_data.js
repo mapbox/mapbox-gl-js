@@ -111,7 +111,7 @@ export default class DEMData {
     }
 
     _idx(x: number, y: number): number {
-        if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
+        if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError(`out of range source coordinates for DEM; coords = (${x}, ${y}), dim = ${this.dim}, stride = ${this.stride}`);
         return (y + 1) * this.stride + (x + 1);
     }
 
