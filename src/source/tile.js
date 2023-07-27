@@ -401,9 +401,9 @@ class Tile {
         }
     }
 
-    prepare(imageManager: ImageManager, painter: ?Painter) {
+    prepare(imageManager: ImageManager, painter: ?Painter, scope: string) {
         if (this.imageAtlas) {
-            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture);
+            this.imageAtlas.patchUpdatedImages(imageManager, this.imageAtlasTexture, scope);
         }
 
         if (!painter || !this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) {

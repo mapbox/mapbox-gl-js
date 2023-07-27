@@ -59,6 +59,7 @@ export type DataDrivenPropertyValueSpecification<T> =
 
 export type StyleSpecification = {|
     "version": 8,
+    "fragment"?: boolean,
     "name"?: string,
     "metadata"?: mixed,
     "center"?: Array<number>,

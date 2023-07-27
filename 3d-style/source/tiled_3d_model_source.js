@@ -18,6 +18,7 @@ import type {OverscaledTileID} from '../../src/source/tile_id.js';
 class Tiled3DModelSource extends Evented implements Source {
     type: 'batched-model';
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     tileBounds: TileBounds;
@@ -116,6 +117,7 @@ class Tiled3DModelSource extends Evented implements Source {
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             source: this.id,
+            scope: this.scope,
             showCollisionBoxes: this.map.showCollisionBoxes,
             isSymbolTile: tile.isSymbolTile
         };

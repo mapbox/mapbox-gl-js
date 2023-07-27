@@ -67,6 +67,7 @@ import type {Cancelable} from '../types/cancelable.js';
 class GeoJSONSource extends Evented implements Source {
     type: 'geojson';
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;
@@ -126,6 +127,7 @@ class GeoJSONSource extends Evented implements Source {
         // third-party sources to hack/reuse GeoJSONSource.
         this.workerOptions = extend({
             source: this.id,
+            scope: this.scope,
             cluster: options.cluster || false,
             geojsonVtOptions: {
                 buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
@@ -219,7 +221,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     getClusterExpansionZoom(clusterId: number, callback: Callback<number>): this {
-        this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id}, callback);
+        this.actor.send('geojson.getClusterExpansionZoom', {clusterId, source: this.id, scope: this.scope}, callback);
         return this;
     }
 
@@ -247,7 +249,7 @@ class GeoJSONSource extends Evented implements Source {
      * });
      */
     getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>): this {
-        this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id}, callback);
+        this.actor.send('geojson.getClusterChildren', {clusterId, source: this.id, scope: this.scope}, callback);
         return this;
     }
 
@@ -280,6 +282,7 @@ class GeoJSONSource extends Evented implements Source {
     getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>): this {
         this.actor.send('geojson.getClusterLeaves', {
             source: this.id,
+            scope: this.scope,
             clusterId,
             limit,
             offset
@@ -303,6 +306,7 @@ class GeoJSONSource extends Evented implements Source {
 
         this._loaded = false;
         const options = extend({}, this.workerOptions);
+        options.scope = this.scope;
         const data = this._data;
         if (typeof data === 'string') {
             options.request = this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source);
@@ -355,6 +359,7 @@ class GeoJSONSource extends Evented implements Source {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
+            scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId
@@ -390,7 +395,7 @@ class GeoJSONSource extends Evented implements Source {
     // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
+        this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
     }
 
     // $FlowFixMe[method-unbinding]

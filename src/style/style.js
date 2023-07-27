@@ -136,13 +136,17 @@ export type StyleOptions = {
     localFontFamily?: ?string,
     localIdeographFontFamily?: string,
 
+    dispatcher?: Dispatcher,
+    imageManager?: ImageManager,
+    glyphManager?: GlyphManager,
     modelManager?: ModelManager,
 
-    namespace?: string,
+    scope?: string,
     importDepth?: number,
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
-    config?: Map<string, Expression>
+    config?: Map<string, Expression>,
+    camera?: StyleSpecification['camera'],
 };
 
 export type StyleSetterOptions = {
@@ -174,13 +178,14 @@ class Style extends Evented {
     terrain: ?Terrain;
     fog: ?Fog;
 
+    scope: string;
     imports: Array<StyleImport>;
-    namespace: ?string;
     importDepth: number;
     // Shared cache of imported stylesheets
     importsCache: Map<string, StyleSpecification>;
     // Keeps track of ancestors' Style URLs.
     resolvedImports: Set<string>;
+    parentCamera: ?StyleSpecification['camera'];
 
     options: Map<string, Expression>;
 
@@ -231,25 +236,39 @@ class Style extends Evented {
         this.map = map;
 
         this.imports = [];
-        this.namespace = options.namespace;
+        // Empty string indicates the root Style scope.
+        this.scope = options.scope || '';
         this.importDepth = options.importDepth || 0;
         this.importsCache = options.importsCache || new Map();
         this.resolvedImports = options.resolvedImports || new Set();
+        this.parentCamera = options.camera;
 
         this._ownOrder = [];
         this._ownLayers = {};
         this._ownSourceCaches = {};
 
-        this.dispatcher = new Dispatcher(getWorkerPool(), this);
-        this.imageManager = new ImageManager();
-        this.imageManager.setEventedParent(this);
-        this.modelManager = new ModelManager(map._requestManager);
-        this.modelManager.setEventedParent(this);
-        this.glyphManager = new GlyphManager(map._requestManager,
-            options.localFontFamily ?
-                LocalGlyphMode.all :
-                (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
-            options.localFontFamily || options.localIdeographFontFamily);
+        if (options.dispatcher) {
+            this.dispatcher = options.dispatcher;
+        } else {
+            this.dispatcher = new Dispatcher(getWorkerPool(), this);
+        }
+
+        if (options.imageManager) {
+            this.imageManager = options.imageManager;
+        } else {
+            this.imageManager = new ImageManager();
+            this.imageManager.setEventedParent(this);
+        }
+
+        if (options.glyphManager) {
+            this.glyphManager = options.glyphManager;
+        } else {
+            this.glyphManager = new GlyphManager(map._requestManager,
+                options.localFontFamily ?
+                    LocalGlyphMode.all :
+                    (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
+                options.localFontFamily || options.localIdeographFontFamily);
+        }
 
         if (options.modelManager) {
             this.modelManager = options.modelManager;
@@ -382,13 +401,39 @@ class Style extends Evented {
             this._mergeLayers();
             this._mergeSources();
 
-            // merge options from imports to root
-            for (const importSpec of this.imports) {
-                for (const [key, value] of importSpec.style.options.entries()) {
-                    this.options.set(makeFQID(key, importSpec.id), value);
+            // Merge options and overridable properties from imports to root style
+            for (const {style, id} of this.imports) {
+                for (const [key, value] of style.options.entries()) {
+                    this.options.set(makeFQID(key, id), value);
                 }
+
+                if (style.stylesheet.camera != null)
+                    this.stylesheet.camera = style.stylesheet.camera;
+
+                if (style.stylesheet.projection != null)
+                    this.stylesheet.projection = style.stylesheet.projection;
+
+                if (style.stylesheet.light != null)
+                    this.light = style.light;
+
+                if (style.ambientLight != null)
+                    this.ambientLight = style.ambientLight;
+
+                if (style.directionalLight != null)
+                    this.directionalLight = style.directionalLight;
+
+                if (style.terrain != null)
+                    this.terrain = style.terrain;
+
+                if (style.fog != null)
+                    this.fog = style.fog;
             }
-            this.dispatcher.broadcast('setLayers', {layers: this._serializeLayers(this._ownOrder), options: this.options});
+
+            this.dispatcher.broadcast('setLayers', {
+                layers: this._serializeLayers(this._ownOrder),
+                scope: this.scope,
+                options: this.options
+            });
 
             this.fire(new Event('data', {dataType: 'style'}));
             this.fire(new Event('style.load'));
@@ -402,8 +447,8 @@ class Style extends Evented {
 
         const waitForStyles = [];
         for (const importSpec of imports) {
-            const namespace = this.namespace ?
-                makeFQID(importSpec.id, this.namespace) :
+            const scope = this.scope ?
+                makeFQID(importSpec.id, this.scope) :
                 importSpec.id;
 
             const config = new Map();
@@ -418,14 +463,19 @@ class Style extends Evented {
             }
 
             const style = new Style(this.map, {
-                namespace,
+                scope,
                 importDepth: this.importDepth + 1,
                 importsCache: this.importsCache,
                 // Clone resolvedImports so it's not being shared between siblings
                 resolvedImports: new Set(this.resolvedImports),
-                // Use shared ModelManager between Styles
+                // Use shared Dispatcher and assets Managers between Styles
+                dispatcher: this.dispatcher,
+                imageManager: this.imageManager,
+                glyphManager: this.glyphManager,
                 modelManager: this.modelManager,
-                config
+                // Pass the parent camera to the child style so it can be used as a fallback
+                camera: this.stylesheet.camera,
+                config,
             });
 
             // Bubble all events fired by the style to the map.
@@ -463,6 +513,19 @@ class Style extends Evented {
 
     _load(json: StyleSpecification, validate: boolean) {
         const schema = json.schema;
+
+        // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
+        // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
+        if (this.importDepth === 0 && (json.fragment || schema)) {
+            const style = extend({}, empty, {imports: [{
+                id: 'basemap',
+                data: json
+            }]});
+
+            this._load(style, validate);
+            return;
+        }
+
         if (schema) {
             for (const id of Object.keys(schema)) {
                 // already set by config
@@ -486,34 +549,35 @@ class Style extends Evented {
         this._updateMapProjection();
 
         for (const id in json.sources) {
-            const fqid = makeFQID(id, this.namespace);
+            const fqid = makeFQID(id, this.scope);
             this.addSource(fqid, json.sources[id], {validate: false});
         }
         this._changed = false; // avoid triggering redundant style update after adding initial sources
         if (json.sprite) {
             this._loadSprite(json.sprite);
         } else {
-            this.imageManager.setLoaded(true);
-            this.dispatcher.broadcast('spriteLoaded', true);
+            this.imageManager.setLoaded(true, this.scope);
+            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
         }
 
-        this.glyphManager.setURL(json.glyphs);
+        this.glyphManager.setURL(json.glyphs, this.scope);
 
         const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
 
-        this._ownOrder = layers.map((layer) => makeFQID(layer.id, this.namespace));
+        this._ownOrder = layers.map((layer) => makeFQID(layer.id, this.scope));
 
         this._ownLayers = {};
         this._serializedLayers = {};
         for (const layer of layers) {
             const styleLayer = createStyleLayer(layer, this.options);
-            styleLayer.id = makeFQID(styleLayer.id, this.namespace);
-            if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.namespace);
+            styleLayer.id = makeFQID(styleLayer.id, this.scope);
+            styleLayer.scope = this.scope;
+            if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
 
             if (styleLayer.type === 'model') {
                 const modelId = styleLayer.getLayoutProperty('model-id');
                 if (modelId && typeof modelId === 'string') {
-                    styleLayer.setLayoutProperty('model-id', makeFQID(modelId, this.namespace));
+                    styleLayer.setLayoutProperty('model-id', makeFQID(modelId, this.scope));
                 }
             }
 
@@ -544,20 +608,25 @@ class Style extends Evented {
         if (this.stylesheet.models) {
             const models = Object
                 .entries(this.stylesheet.models)
-                .map(([k, v]) => [makeFQID(k, this.namespace), v]);
+                .map(([k, v]) => [makeFQID(k, this.scope), v]);
 
             this.modelManager.addStyleModels(Object.fromEntries(models));
         }
 
-        if (this.stylesheet.terrain && !this.terrainSetForDrapingOnly()) {
-            // $FlowFixMe[incompatible-call] - Flow can't infer that terrain is not undefined
-            this._createTerrain(this.stylesheet.terrain, DrapeRenderMode.elevated);
+        const terrain = this.stylesheet.terrain;
+        if (terrain && !this.terrainSetForDrapingOnly()) {
+            this._createTerrain(terrain, DrapeRenderMode.elevated);
         }
+
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
         }
 
-        const camera = this.stylesheet.camera = this.stylesheet.camera || {"camera-projection": "perspective"};
+        // Given a stylesheet, in order of priority, we select:
+        //  1. the stylesheet camera
+        //  2. the parent's style camera
+        //  3. perspective camera (fallback)
+        const camera = this.stylesheet.camera = this.stylesheet.camera || this.parentCamera || {'camera-projection': 'perspective'};
 
         // Trigger transform update
         this.map.setCamera(camera);
@@ -569,7 +638,12 @@ class Style extends Evented {
         if (json.imports) {
             this._loadImports(json.imports, validate);
         } else {
-            this.dispatcher.broadcast('setLayers', {layers: this._serializeLayers(this._ownOrder), options: this.options});
+            this.dispatcher.broadcast('setLayers', {
+                layers: this._serializeLayers(this._ownOrder),
+                scope: this.scope,
+                options: this.options
+            });
+
             this.fire(new Event('style.load'));
         }
     }
@@ -693,14 +767,17 @@ class Style extends Evented {
                 this.fire(new ErrorEvent(err));
             } else if (images) {
                 for (const id in images) {
-                    this.imageManager.addImage(id, images[id]);
+                    this.imageManager.addImage(id, this.scope, images[id]);
                 }
             }
 
-            this.imageManager.setLoaded(true);
-            this._availableImages = this.imageManager.listImages();
-            this.dispatcher.broadcast('setImages', this._availableImages);
-            this.dispatcher.broadcast('spriteLoaded', true);
+            this.imageManager.setLoaded(true, this.scope);
+            this._availableImages = this.imageManager.listImages(this.scope);
+            this.dispatcher.broadcast('setImages', {
+                scope: this.scope,
+                images: this._availableImages
+            });
+            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
     }
@@ -931,6 +1008,7 @@ class Style extends Evented {
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
+            scope: this.scope,
             removedIds
         });
     }
@@ -996,33 +1074,36 @@ class Style extends Evented {
         if (this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
-        this.imageManager.addImage(id, image);
+        this.imageManager.addImage(id, this.scope, image);
         this._afterImageUpdated(id);
         return this;
     }
 
     updateImage(id: string, image: StyleImage) {
-        this.imageManager.updateImage(id, image);
+        this.imageManager.updateImage(id, this.scope, image);
     }
 
     getImage(id: string): ?StyleImage {
-        return this.imageManager.getImage(id);
+        return this.imageManager.getImage(id, this.scope);
     }
 
     removeImage(id: string): this {
         if (!this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
-        this.imageManager.removeImage(id);
+        this.imageManager.removeImage(id, this.scope);
         this._afterImageUpdated(id);
         return this;
     }
 
     _afterImageUpdated(id: string) {
-        this._availableImages = this.imageManager.listImages();
+        this._availableImages = this.imageManager.listImages(this.scope);
         this._changedImages[id] = true;
         this._changed = true;
-        this.dispatcher.broadcast('setImages', this._availableImages);
+        this.dispatcher.broadcast('setImages', {
+            scope: this.scope,
+            images: this._availableImages
+        });
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
@@ -1075,6 +1156,7 @@ class Style extends Evented {
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
         const sourceInstance = createSource(id, source, this.dispatcher, this);
+        sourceInstance.scope = this.scope;
 
         sourceInstance.setEventedParent(this, () => ({
             isSourceLoaded: this._isSourceCacheLoaded(id),
@@ -2272,9 +2354,8 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {icons: Array<string>, source: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[_: string]: StyleImage}>) {
-
-        this.imageManager.getImages(params.icons, callback);
+    getImages(mapId: string, params: {icons: Array<string>, source: string, scope: string, tileID: OverscaledTileID, type: string}, callback: Callback<{[_: string]: StyleImage}>) {
+        this.imageManager.getImages(params.icons, params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
         // is not reloaded unecessarily. Without this forced update the reload could happen in cases
@@ -2295,8 +2376,8 @@ class Style extends Evented {
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
-    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
-        this.glyphManager.getGlyphs(params.stacks, callback);
+    getGlyphs(mapId: string, params: {stacks: {[_: string]: Array<number>}, scope: string}, callback: Callback<{[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
+        this.glyphManager.getGlyphs(params.stacks, params.scope, callback);
     }
 
     getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {

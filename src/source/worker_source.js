@@ -17,6 +17,7 @@ import type Projection from '../geo/projection/projection.js';
 
 export type TileParameters = {
     source: string,
+    scope: string;
     uid: number,
 };
 

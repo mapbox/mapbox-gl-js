@@ -40,6 +40,7 @@ const TRANSITION_SUFFIX = '-transition';
 
 class StyleLayer extends Evented {
     id: string;
+    scope: string;
     metadata: mixed;
     type: string;
     source: string;

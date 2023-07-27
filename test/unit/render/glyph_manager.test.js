@@ -53,7 +53,7 @@ test('GlyphManager requests 0-255 PBF', (t) => {
     createLoadGlyphRangeStub(t);
     const manager = createGlyphManager();
 
-    manager.getGlyphs({'Arial Unicode MS': [55]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [55]}, undefined, (err, result) => {
         t.ifError(err);
         t.equal(result['Arial Unicode MS'].glyphs['55'].metrics.advance, 12);
         t.end();
@@ -64,7 +64,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) 
     const stub = createLoadGlyphRangeStub(t);
     const manager = createGlyphManager();
 
-    manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
+    manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
         t.ifError(err);
         t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
         t.equal(stub.calledOnce, true);
@@ -72,7 +72,7 @@ test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) 
         // We remove all requests as in getGlyphs code.
         delete manager.entries['Arial Unicode MS'].requests[0];
 
-        manager.getGlyphs({'Arial Unicode MS': [0.5]}, (err) => {
+        manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
             t.ifError(err);
             t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
             t.equal(stub.calledOnce, true);
@@ -88,7 +88,7 @@ test('GlyphManager requests remote CJK PBF', (t) => {
 
     const manager = createGlyphManager();
 
-    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, (err, results) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, results) => {
         t.ifError(err);
         t.equal(results['Arial Unicode MS'].glyphs[0x5e73], null); // The fixture returns a PBF without the glyph we requested
         t.end();
@@ -112,11 +112,11 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
     const manager = createGlyphManager('sans-serif');
 
     //Request char that overlaps Katakana range
-    manager.getGlyphs({'Arial Unicode MS': [0x3005]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x3005]}, undefined, (err, result) => {
         t.ifError(err);
         t.notEqual(result['Arial Unicode MS'].glyphs[0x3005], null);
         //Request char from Katakana range (te)
-        manager.getGlyphs({'Arial Unicode MS': [0x30C6]}, (err, result) => {
+        manager.getGlyphs({'Arial Unicode MS': [0x30C6]}, undefined, (err, result) => {
             t.ifError(err);
             const glyph = result['Arial Unicode MS'].glyphs[0x30c6];
             //Ensure that te is locally generated.
@@ -132,7 +132,7 @@ test('GlyphManager generates CJK PBF locally', (t) => {
 
     const manager = createGlyphManager('sans-serif');
 
-    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, result) => {
         t.ifError(err);
         t.equal(result['Arial Unicode MS'].glyphs[0x5e73].metrics.advance, 24);
         t.end();
@@ -145,7 +145,7 @@ test('GlyphManager generates Katakana PBF locally', (t) => {
     const manager = createGlyphManager('sans-serif');
 
     // Katakana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
         t.ifError(err);
         t.equal(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance, 24);
         t.end();
@@ -158,7 +158,7 @@ test('GlyphManager generates Hiragana PBF locally', (t) => {
     const manager = createGlyphManager('sans-serif');
 
     //Hiragana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x3066]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x3066]}, undefined, (err, result) => {
         t.ifError(err);
         t.equal(result['Arial Unicode MS'].glyphs[0x3066].metrics.advance, 24);
         t.end();
@@ -188,10 +188,10 @@ test('GlyphManager caches locally generated glyphs', (t) => {
     const manager = createGlyphManager('sans-serif');
 
     // Katakana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
         t.ifError(err);
         t.equal(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance, 24);
-        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, () => {
+        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, () => {
             t.equal(drawCallCount, 1);
             t.end();
         });
@@ -218,7 +218,7 @@ test('GlyphManager locally generates latin glyphs', (t) => {
 
     const manager = createGlyphManager('sans-serif', true);
 
-    manager.getGlyphs({'Arial Unicode MS': [65]}, (err, result) => {
+    manager.getGlyphs({'Arial Unicode MS': [65]}, undefined, (err, result) => {
         t.ifError(err);
         const glyphs = result['Arial Unicode MS'].glyphs;
         t.equal(glyphs[65].metrics.advance, 10);

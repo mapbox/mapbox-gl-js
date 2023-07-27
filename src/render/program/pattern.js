@@ -51,13 +51,15 @@ function patternUniformValues(painter: Painter, tile: Tile): UniformValues<Patte
     };
 }
 
-function bgPatternUniformValues(image: ResolvedImage, painter: Painter,
-        tile: {tileID: OverscaledTileID, tileSize: number}
+function bgPatternUniformValues(
+    image: ResolvedImage,
+    scope: string,
+    painter: Painter,
+    tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
-
-    const imagePos = painter.imageManager.getPattern(image.toString());
+    const imagePos = painter.imageManager.getPattern(image.toString(), scope);
     assert(imagePos);
-    const {width, height} = painter.imageManager.getPixelSize();
+    const {width, height} = painter.imageManager.getPixelSize(scope);
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
     const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;

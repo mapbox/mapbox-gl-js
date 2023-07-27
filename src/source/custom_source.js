@@ -148,8 +148,8 @@ export type CustomSourceInterface<T> = {
 }
 
 class CustomSource<T> extends Evented implements Source {
-
     id: string;
+    scope: string;
     type: 'custom';
     scheme: string;
     minzoom: number;

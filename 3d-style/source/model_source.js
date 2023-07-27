@@ -21,6 +21,7 @@ import {loadGLTF} from '../util/loaders.js';
 class ModelSource extends Evented implements Source {
     type: 'model';
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;

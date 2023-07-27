@@ -28,7 +28,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
-    if (painter.isPatternMissing(image)) return;
+    if (painter.isPatternMissing(image, layer.scope)) return;
 
     const pass = (!image && color.a === 1 && opacity === 1 && painter.opaquePassEnabledForLayer()) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
@@ -48,7 +48,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     if (image) {
         context.activeTexture.set(gl.TEXTURE0);
-        painter.imageManager.bind(painter.context);
+        painter.imageManager.bind(painter.context, layer.scope);
     }
 
     for (const tileID of tileIDs) {
@@ -60,7 +60,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, {tileID, tileSize}) :
+            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, {tileID, tileSize}) :
             backgroundUniformValues(matrix, emissiveStrength, opacity, color);
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);

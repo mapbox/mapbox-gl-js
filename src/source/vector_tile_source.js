@@ -52,6 +52,7 @@ import type {WorkerTileResult} from './worker_source.js';
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     url: string;
@@ -226,6 +227,7 @@ class VectorTileSource extends Evented implements Source {
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             source: this.id,
+            scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId,
@@ -302,7 +304,7 @@ class VectorTileSource extends Evented implements Source {
             delete tile.request;
         }
         if (tile.actor) {
-            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id});
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }
     }
 
@@ -310,7 +312,7 @@ class VectorTileSource extends Evented implements Source {
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         if (tile.actor) {
-            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id});
+            tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }
     }
 

@@ -58,7 +58,7 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
-    url: ?string;
+    urls: {[scope: string]: ?string};
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
@@ -68,6 +68,7 @@ class GlyphManager {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
+        this.urls = {};
         this.entries = {};
         this.localGlyphs = {
             // Only these four font weights are supported
@@ -78,12 +79,18 @@ class GlyphManager {
         };
     }
 
-    setURL(url: ?string) {
-        this.url = url;
+    setURL(url: ?string, scope: string) {
+        this.urls[scope] = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
+    getGlyphs(glyphs: {[stack: string]: Array<number>}, scope: string, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         const all = [];
+
+        const url = this.urls[scope];
+        if (!url) {
+            callback(new Error('Missing glyph URL'));
+            return;
+        }
 
         for (const stack in glyphs) {
             for (const id of glyphs[stack]) {
@@ -130,7 +137,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestManager,
+                GlyphManager.loadGlyphRange(stack, range, url, this.requestManager,
                     (err, response: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                         if (response) {
                             entry.ascender = response.ascender;

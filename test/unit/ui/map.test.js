@@ -3921,7 +3921,7 @@ test('Map', (t) => {
 
         t.notok(map.hasImage(id));
 
-        map.style.imageManager.getImages([id], () => {
+        map.style.imageManager.getImages([id], '', () => {
             t.equals(called, id);
             t.ok(map.hasImage(id));
             t.end();

@@ -39,6 +39,7 @@ import {CanonicalTileID} from './tile_id.js';
 export interface Source {
     +type: string;
     id: string;
+    scope: string;
     minzoom: number,
     maxzoom: number,
     tileSize: number,

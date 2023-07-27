@@ -200,11 +200,11 @@ test('Style#loadURL', (t) => {
 
             t.equal(spy.getCall(0).args[0].target, map);
             t.equal(spy.getCall(0).args[0].dataType, 'style');
-            t.equal(spy.getCall(0).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(0).args[0].style.scope, '');
 
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
-            t.equal(spy.getCall(1).args[0].style.namespace, 'streets');
+            t.equal(spy.getCall(1).args[0].style.scope, 'streets');
 
             t.end();
         });
@@ -232,17 +232,17 @@ test('Style#loadURL', (t) => {
             // initial root style 'data' event
             t.equal(spy.getCall(0).args[0].target, map);
             t.equal(spy.getCall(0).args[0].dataType, 'style');
-            t.equal(spy.getCall(0).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(0).args[0].style.scope, '');
 
             // child style 'data' event
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
-            t.equal(spy.getCall(1).args[0].style.namespace, 'streets');
+            t.equal(spy.getCall(1).args[0].style.scope, 'streets');
 
             // final root style 'data' event
             t.equal(spy.getCall(2).args[0].target, map);
             t.equal(spy.getCall(2).args[0].dataType, 'style');
-            t.equal(spy.getCall(2).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(2).args[0].style.scope, '');
 
             t.end();
         });
@@ -383,11 +383,11 @@ test('Style#loadJSON', (t) => {
 
             t.equal(spy.getCall(0).args[0].target, map);
             t.equal(spy.getCall(0).args[0].dataType, 'style');
-            t.equal(spy.getCall(0).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(0).args[0].style.scope, '');
 
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
-            t.equal(spy.getCall(1).args[0].style.namespace, 'streets');
+            t.equal(spy.getCall(1).args[0].style.scope, 'streets');
 
             t.end();
         });
@@ -413,17 +413,17 @@ test('Style#loadJSON', (t) => {
             // initial root style 'data' event
             t.equal(spy.getCall(0).args[0].target, map);
             t.equal(spy.getCall(0).args[0].dataType, 'style');
-            t.equal(spy.getCall(0).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(0).args[0].style.scope, '');
 
             // child style 'data' event
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
-            t.equal(spy.getCall(1).args[0].style.namespace, 'streets');
+            t.equal(spy.getCall(1).args[0].style.scope, 'streets');
 
             // final root style 'data' event
             t.equal(spy.getCall(2).args[0].target, map);
             t.equal(spy.getCall(2).args[0].dataType, 'style');
-            t.equal(spy.getCall(2).args[0].style.namespace, undefined);
+            t.equal(spy.getCall(2).args[0].style.scope, '');
 
             t.end();
         });
@@ -522,7 +522,7 @@ test('Style#loadJSON', (t) => {
 });
 
 test('Style#addSource', (t) => {
-    t.test('same id in different namespaces', (t) => {
+    t.test('same id in different scopes', (t) => {
         const style = new Style(new StubMap());
 
         const initialStyle = createStyleJSON({
@@ -583,7 +583,7 @@ test('Style#addSource', (t) => {
 });
 
 test('Style#removeSource', (t) => {
-    t.test('same id in different namespaces is intact', (t) => {
+    t.test('same id in different scopes is intact', (t) => {
         const style = new Style(new StubMap());
 
         const initialStyle = createStyleJSON({
@@ -671,7 +671,7 @@ test('Style#addLayer', (t) => {
         style.loadJSON(initialStyle);
     });
 
-    t.test('fire error on referencing before from different namespace', (t) => {
+    t.test('fire error on referencing before from different scope', (t) => {
         const map = new StubMap();
         const style = new Style(map);
         style.setEventedParent(map, {style});
@@ -701,7 +701,7 @@ test('Style#addLayer', (t) => {
 });
 
 test('Style#removeLayer', (t) => {
-    t.test('fire error on removing layer from different namespace', (t) => {
+    t.test('fire error on removing layer from different scope', (t) => {
         const map = new StubMap();
         const style = new Style(map);
         style.setEventedParent(map, {style});
@@ -770,7 +770,7 @@ test('Style#moveLayer', (t) => {
         style.loadJSON(initialStyle);
     });
 
-    t.test('fires an error on moving layer from different namespace', (t) => {
+    t.test('fires an error on moving layer from different scope', (t) => {
         const style = new Style(new StubMap());
 
         const initialStyle = createStyleJSON({
@@ -897,6 +897,389 @@ test('Style#_mergeLayers', (t) => {
         });
 
         style.loadJSON(initialStyle);
+    });
+
+    t.end();
+});
+
+test('Style#getLights', (t) => {
+    t.test('resolves lights from import', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({lights: [
+                    {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+                    {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+                ]})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getLights(), [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+            ]);
+            t.end();
+        });
+    });
+
+    t.test('overrides lights in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+            ],
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({lights: [
+                    {id: 'sun', type: 'directional', properties: {intensity: 0.6}},
+                    {id: 'environment', type: 'ambient', properties: {intensity: 0.6}}
+                ]})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getLights(), [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.6}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.6}}
+            ]);
+            t.end();
+        });
+    });
+
+    t.test('empty lights in import does not override lights in root style', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+            ],
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON()
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getLights(), [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+            ]);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#getTerrain', (t) => {
+    t.test('resolves terrain from import', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({
+                    terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            maxzoom: 14
+                        }
+                    },
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 1.5});
+            t.end();
+        });
+    });
+
+    t.test('overrides terrain in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'first',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({
+                    terrain: {source: 'dem', exaggeration: 1},
+                    sources: {
+                        'dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            maxzoom: 14
+                        }
+                    },
+                    imports: [{
+                        id: 'second',
+                        url: '/styles/streets-v12.json',
+                        data: createStyleJSON({
+                            terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+                            sources: {
+                                'mapbox-dem': {
+                                    type: 'raster-dem',
+                                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                                    tileSize: 256,
+                                    maxzoom: 14
+                                }
+                            },
+                        })
+                    }]
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 1.5});
+            t.end();
+        });
+    });
+
+    t.test('empty terrain in import does not override terrain in root style', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+            sources: {
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: 256,
+                    maxzoom: 14
+                }
+            },
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({terrain: undefined})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 1.5});
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#getFog', (t) => {
+    t.test('resolves fog from import', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({fog: {range: [1, 2], color: 'white', 'horizon-blend': 0}})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            const fog = style.getFog();
+            t.ok(fog);
+            t.equal(fog.color, 'white');
+            t.deepEqual(fog.range, [1, 2]);
+            t.equal(fog['horizon-blend'], 0);
+            t.end();
+        });
+    });
+
+    t.test('overrides fog in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'first',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({
+                    fog: {range: [1, 2], color: 'white', 'horizon-blend': 0},
+                    imports: [{
+                        id: 'second',
+                        url: '/styles/streets-v12.json',
+                        data: createStyleJSON({fog: {range: [0, 1], color: 'blue', 'horizon-blend': 0.5}})
+                    }]
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            const fog = style.getFog();
+            t.ok(fog);
+            t.equal(fog.color, 'blue');
+            t.deepEqual(fog.range, [0, 1]);
+            t.equal(fog['horizon-blend'], 0.5);
+            t.end();
+        });
+    });
+
+    t.test('empty fog in import does not override fog in root style', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            fog: {range: [1, 2], color: 'white', 'horizon-blend': 0},
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({fog: undefined})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            const fog = style.getFog();
+            t.ok(fog);
+            t.equal(fog.color, 'white');
+            t.deepEqual(fog.range, [1, 2]);
+            t.equal(fog['horizon-blend'], 0);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Camera', (t) => {
+    t.test('resolves camera from import', (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({camera: {'camera-projection': 'orthographic'}})
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.camera, {'camera-projection': 'orthographic'});
+            t.end();
+        });
+    });
+
+    t.test('overrides camera in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'first',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({
+                    camera: {'camera-projection': 'perspective'},
+                    imports: [{
+                        id: 'second',
+                        url: '/styles/streets-v12.json',
+                        data: createStyleJSON({camera: {'camera-projection': 'orthographic'}})
+                    }]
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.camera, {'camera-projection': 'orthographic'});
+            t.end();
+        });
+    });
+
+    t.test('empty camera in import does not override camera in root style', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            camera: {'camera-projection': 'orthographic'},
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON()
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.camera, {'camera-projection': 'orthographic'});
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Projection', (t) => {
+    t.test('resolves projection from import', (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({projection: {name: 'globe'}})
+            }],
+        }));
+
+        const spy = t.spy(map, '_prioritizeAndUpdateProjection');
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.projection, {name: 'globe'});
+            t.deepEqual(spy.lastCall.args[1], {name: 'globe'});
+            t.end();
+        });
+    });
+
+    t.test('overrides projection in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            imports: [{
+                id: 'first',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON({
+                    projection: {name: 'globe'},
+                    imports: [{
+                        id: 'second',
+                        url: '/styles/streets-v12.json',
+                        data: createStyleJSON({projection: {name: 'albers'}})
+                    }]
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.projection, {name: 'albers'});
+            t.end();
+        });
+    });
+
+    t.test('empty projection in import does not override projection in root style', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            projection: {name: 'albers'},
+            imports: [{
+                id: 'streets',
+                url: '/styles/streets-v12.json',
+                data: createStyleJSON()
+            }],
+        }));
+
+        style.on('style.load', () => {
+            t.deepEqual(style.stylesheet.projection, {name: 'albers'});
+            t.end();
+        });
     });
 
     t.end();

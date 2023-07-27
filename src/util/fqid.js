@@ -2,9 +2,9 @@
 
 const FQIDSeparator = '\u001F';
 
-export function makeFQID(id: string, namespace: ?string): string {
-    if (!namespace) return id;
-    return `${id}${FQIDSeparator}${namespace}`;
+export function makeFQID(id: string, scope: ?string): string {
+    if (!scope) return id;
+    return `${id}${FQIDSeparator}${scope}`;
 }
 
 export function getNameFromFQID(fqid: string): string {

@@ -542,7 +542,6 @@ class Painter {
         const sourceCaches = this.style._sourceCaches;
 
         this.imageManager = style.imageManager;
-        this.glyphManager = style.glyphManager;
         this.modelManager = style.modelManager;
 
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
@@ -1043,10 +1042,10 @@ class Painter {
      * @returns true if a needed image is missing and rendering needs to be skipped.
      * @private
      */
-    isPatternMissing(image: ?ResolvedImage): boolean {
+    isPatternMissing(image: ?ResolvedImage, scope: string): boolean {
         if (image === null) return true;
         if (image === undefined) return false;
-        return !this.imageManager.getPattern(image.toString());
+        return !this.imageManager.getPattern(image.toString(), scope);
     }
 
     terrainRenderModeElevated(): boolean {

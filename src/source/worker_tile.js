@@ -43,6 +43,7 @@ class WorkerTile {
     pixelRatio: number;
     tileSize: number;
     source: string;
+    scope: string;
     promoteId: ?PromoteIdSpecification;
     overscaling: number;
     showCollisionBoxes: boolean;
@@ -70,6 +71,7 @@ class WorkerTile {
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
+        this.scope = params.scope;
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
@@ -236,7 +238,7 @@ class WorkerTile {
 
         const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
-            actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result) => {
+            actor.send('getGlyphs', {uid: this.uid, stacks, scope: this.scope}, (err, result) => {
                 if (!error) {
                     error = err;
                     glyphMap = result;
@@ -249,7 +251,7 @@ class WorkerTile {
 
         const icons = Object.keys(options.iconDependencies);
         if (icons.length) {
-            actor.send('getImages', {icons, source: this.source, tileID: this.tileID, type: 'icons'}, (err, result) => {
+            actor.send('getImages', {icons, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'}, (err, result) => {
                 if (!error) {
                     error = err;
                     iconMap = result;
@@ -262,7 +264,7 @@ class WorkerTile {
 
         const patterns = Object.keys(options.patternDependencies);
         if (patterns.length) {
-            actor.send('getImages', {icons: patterns, source: this.source, tileID: this.tileID, type: 'patterns'}, (err, result) => {
+            actor.send('getImages', {icons: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'}, (err, result) => {
                 if (!error) {
                     error = err;
                     patternMap = result;

@@ -78,9 +78,10 @@ const backgroundPatternUniformValues = (
     opacity: number,
     painter: Painter,
     image: ResolvedImage,
+    scope: string,
     tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> => extend(
-    bgPatternUniformValues(image, painter, tile),
+    bgPatternUniformValues(image, scope, painter, tile),
     {
         'u_matrix': matrix,
         'u_emissive_strength': emissiveStrength,

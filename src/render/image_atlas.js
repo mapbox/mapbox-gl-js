@@ -122,12 +122,12 @@ export default class ImageAtlas {
         }
     }
 
-    patchUpdatedImages(imageManager: ImageManager, texture: Texture) {
-        this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id));
-        imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks);
-        for (const name in imageManager.updatedImages) {
-            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name), texture);
-            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name), texture);
+    patchUpdatedImages(imageManager: ImageManager, texture: Texture, scope: string) {
+        this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
+        imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
+        for (const name in imageManager.getUpdatedImages(scope)) {
+            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name, scope), texture);
+            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name, scope), texture);
         }
     }
 

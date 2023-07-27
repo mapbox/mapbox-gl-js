@@ -37,14 +37,14 @@ import type Projection from '../geo/projection/projection.js';
 export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
-    layerIndexes: {[_: string]: StyleLayerIndex };
-    availableImages: {[_: string]: Array<string> };
+    layerIndexes: {[mapId: string]: {[scope: string]: StyleLayerIndex }};
+    availableImages: {[mapId: string]: {[scope: string]: Array<string>}};
     workerSourceTypes: {[_: string]: Class<WorkerSource> };
     workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
-    demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
+    demWorkerSources: {[mapId: string]: {[scope: string]: {[sourceId: string]: RasterDEMTileWorkerSource }}};
     projections: {[_: string]: Projection };
     defaultProjection: Projection;
-    isSpriteLoaded: {[_: string]: boolean };
+    isSpriteLoaded: {[mapId: string]: {[scope: string]: boolean}};
     referrer: ?string;
     loadersUrl: ?string
     terrain: ?boolean;
@@ -107,21 +107,30 @@ export default class Worker {
         this.referrer = referrer;
     }
 
-    spriteLoaded(mapId: string, bool: boolean) {
-        this.isSpriteLoaded[mapId] = bool;
+    spriteLoaded(mapId: string, params: {scope: string, isLoaded: boolean}) {
+        if (!this.isSpriteLoaded[mapId])
+            this.isSpriteLoaded[mapId] = {};
+
+        this.isSpriteLoaded[mapId][params.scope] = params.isLoaded;
         for (const workerSource in this.workerSources[mapId]) {
             const ws = this.workerSources[mapId][workerSource];
             for (const source in ws) {
                 if (ws[source] instanceof VectorTileWorkerSource) {
-                    ws[source].isSpriteLoaded = bool;
+                    ws[source].isSpriteLoaded = params.isLoaded;
                     ws[source].fire(new Event('isSpriteLoaded'));
                 }
             }
         }
     }
 
-    setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
-        this.availableImages[mapId] = images;
+    setImages(mapId: string, params: {scope: string, images: Array<string>}, callback: WorkerTileCallback) {
+        const {scope, images} = params;
+
+        if (!this.availableImages[mapId]) {
+            this.availableImages[mapId] = {};
+        }
+
+        this.availableImages[mapId][scope] = images;
         for (const workerSource in this.workerSources[mapId]) {
             const ws = this.workerSources[mapId][workerSource];
             for (const source in ws) {
@@ -145,13 +154,13 @@ export default class Worker {
         callback();
     }
 
-    setLayers(mapId: string, params: {layers: Array<LayerSpecification>, options: Map<string, Expression>}, callback: WorkerTileCallback) {
-        this.getLayerIndex(mapId).replace(params.layers, params.options);
+    setLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, options: Map<string, Expression>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
         callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>}, callback: WorkerTileCallback) {
-        this.getLayerIndex(mapId).update(params.layers, params.removedIds);
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, removedIds: Array<string>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds);
         callback();
     }
 
@@ -160,13 +169,13 @@ export default class Worker {
         // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params.type, params.source).loadTile(p, callback);
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(p, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({buildQuadTree: this.terrain}, params) : params;
-        this.getDEMWorkerSource(mapId, params.source).loadTile(p, callback);
+        this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(p, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
@@ -174,17 +183,17 @@ export default class Worker {
         // $FlowFixMe[method-unbinding]
         const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
         p.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params.type, params.source).reloadTile(p, callback);
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(p, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).abortTile(params, callback);
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).abortTile(params, callback);
     }
 
     removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type, params.source).removeTile(params, callback);
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).removeTile(params, callback);
     }
 
     removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
@@ -245,8 +254,12 @@ export default class Worker {
         this.loadersUrl = loadersUrl;
     }
 
-    getAvailableImages(mapId: string): Array<string> {
-        let availableImages = this.availableImages[mapId];
+    getAvailableImages(mapId: string, scope: string): Array<string> {
+        if (!this.availableImages[mapId]) {
+            this.availableImages[mapId] = {};
+        }
+
+        let availableImages = this.availableImages[mapId][scope];
 
         if (!availableImages) {
             availableImages = [];
@@ -255,19 +268,27 @@ export default class Worker {
         return availableImages;
     }
 
-    getLayerIndex(mapId: string): StyleLayerIndex {
-        let layerIndexes = this.layerIndexes[mapId];
-        if (!layerIndexes) {
-            layerIndexes = this.layerIndexes[mapId] = new StyleLayerIndex();
+    getLayerIndex(mapId: string, scope: string): StyleLayerIndex {
+        if (!this.layerIndexes[mapId]) {
+            this.layerIndexes[mapId] = {};
         }
-        return layerIndexes;
+
+        let layerIndex = this.layerIndexes[mapId][scope];
+
+        if (!layerIndex) {
+            layerIndex = this.layerIndexes[mapId][scope] = new StyleLayerIndex();
+        }
+
+        return layerIndex;
     }
 
-    getWorkerSource(mapId: string, type: string, source: string): WorkerSource {
+    getWorkerSource(mapId: string, type: string, source: string, scope: string): WorkerSource {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type])
             this.workerSources[mapId][type] = {};
+        if (!this.isSpriteLoaded[mapId])
+            this.isSpriteLoaded[mapId] = {};
 
         if (!this.workerSources[mapId][type][source]) {
             // use a wrapped actor so that we can attach a target mapId param
@@ -280,9 +301,9 @@ export default class Worker {
             };
             this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)(
                 (actor: any),
-                this.getLayerIndex(mapId),
-                this.getAvailableImages(mapId),
-                this.isSpriteLoaded[mapId],
+                this.getLayerIndex(mapId, scope),
+                this.getAvailableImages(mapId, scope),
+                this.isSpriteLoaded[mapId][scope],
                 undefined,
                 this.brightness);
         }
@@ -290,15 +311,18 @@ export default class Worker {
         return this.workerSources[mapId][type][source];
     }
 
-    getDEMWorkerSource(mapId: string, source: string): RasterDEMTileWorkerSource {
+    getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {
         if (!this.demWorkerSources[mapId])
             this.demWorkerSources[mapId] = {};
 
-        if (!this.demWorkerSources[mapId][source]) {
-            this.demWorkerSources[mapId][source] = new RasterDEMTileWorkerSource();
+        if (!this.demWorkerSources[mapId][scope])
+            this.demWorkerSources[mapId][scope] = {};
+
+        if (!this.demWorkerSources[mapId][scope][source]) {
+            this.demWorkerSources[mapId][scope][source] = new RasterDEMTileWorkerSource();
         }
 
-        return this.demWorkerSources[mapId][source];
+        return this.demWorkerSources[mapId][scope][source];
     }
 
     enforceCacheSizeLimit(mapId: string, limit: number) {

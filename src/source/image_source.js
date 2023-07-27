@@ -95,6 +95,7 @@ function getPerspectiveTransform(w: number, h: number, x1: number, y1: number, x
 class ImageSource extends Evented implements Source {
     type: string;
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;

@@ -49,6 +49,7 @@ import type {
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';
     id: string;
+    scope: string;
     minzoom: number;
     maxzoom: number;
     url: string;

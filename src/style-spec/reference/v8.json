@@ -10,6 +10,11 @@
       "doc": "Style specification version number. Must be 8.",
       "example": 8
     },
+    "fragment": {
+      "type": "boolean",
+      "doc": "Indicates that a style is a fragment style.",
+      "example": true
+    },
     "name": {
       "type": "string",
       "doc": "A human-readable name for the style.",

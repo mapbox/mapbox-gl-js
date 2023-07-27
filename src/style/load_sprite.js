@@ -10,9 +10,7 @@ import type {RequestManager} from '../util/mapbox.js';
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
 
-export default function(baseURL: string,
-                          requestManager: RequestManager,
-                          callback: Callback<{[_: string]: StyleImage}>): Cancelable {
+export default function(baseURL: string, requestManager: RequestManager, callback: Callback<{[_: string]: StyleImage}>): Cancelable {
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
