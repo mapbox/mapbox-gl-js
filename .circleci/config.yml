@@ -314,7 +314,9 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: yarn run test-unit
+      - run: 
+          command: yarn run test-unit
+          no_output_timeout: 5m
 
   test-query:
     <<: *linux-defaults
