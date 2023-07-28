@@ -7,7 +7,7 @@ import MercatorCoordinate, {
     mercatorYfromLat,
     MAX_MERCATOR_LATITUDE
 } from '../mercator_coordinate.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {degToRad, radToDeg, clamp, smoothstep, getColumn, shortestAngle} from '../../util/util.js';
 import {vec3, vec4, mat3, mat4} from 'gl-matrix';

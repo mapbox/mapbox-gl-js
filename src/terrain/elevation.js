@@ -4,7 +4,7 @@ import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordin
 import DEMData from '../data/dem_data.js';
 import SourceCache from '../source/source_cache.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';

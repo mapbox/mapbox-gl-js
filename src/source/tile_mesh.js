@@ -2,7 +2,7 @@
 // logic for generating non-Mercator adaptive raster tile reprojection meshes with MARTINI
 
 import tileTransform from '../geo/projection/tile_transform.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import {TileBoundsArray, TriangleIndexArray} from '../data/array_types.js';
 

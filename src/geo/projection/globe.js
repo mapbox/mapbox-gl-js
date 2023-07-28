@@ -1,6 +1,6 @@
 // @flow
 import {mat4, vec3} from 'gl-matrix';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import LngLat from '../lng_lat.js';
 import {degToRad} from '../../util/util.js';
 import MercatorCoordinate, {

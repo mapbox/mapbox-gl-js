@@ -15,7 +15,7 @@ import type Painter from '../painter.js';
 import type {UniformValues} from '../uniform_binding.js';
 import type Tile from '../../source/tile.js';
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 
 export type FillExtrusionUniformsType = {|
     'u_matrix': UniformMatrix4f,

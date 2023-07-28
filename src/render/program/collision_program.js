@@ -5,7 +5,7 @@ import {
     Uniform2f,
     UniformMatrix4f
 } from '../uniform_binding.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import type Context from '../../gl/context.js';
 import type {UniformValues} from '../uniform_binding.js';
 import type Transform from '../../geo/transform.js';

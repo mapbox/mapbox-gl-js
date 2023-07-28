@@ -11,7 +11,7 @@ import Texture from '../render/texture.js';
 import Program from '../render/program.js';
 import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
 import {prepareDEMTexture} from '../render/draw_hillshade.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {clamp, warnOnce} from '../util/util.js';
 import assert from 'assert';
 import {vec3, mat4, vec4} from 'gl-matrix';

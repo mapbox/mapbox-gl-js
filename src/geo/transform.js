@@ -8,7 +8,7 @@ import {tileAABB} from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
 import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';

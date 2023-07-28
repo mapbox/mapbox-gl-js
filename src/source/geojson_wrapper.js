@@ -5,7 +5,7 @@ import Point from '@mapbox/point-geometry';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 // $FlowFixMe[method-unbinding]
 const toGeoJSON = VectorTileFeature.prototype.toGeoJSON;
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 
 import type {GeoJSONFeature} from '@mapbox/geojson-types';
 import type {IVectorTile, IVectorTileLayer, IVectorTileFeature} from '@mapbox/vector-tile';

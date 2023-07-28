@@ -1,6 +1,6 @@
 // @flow
 
-import EXTENT from '../../../src/data/extent.js';
+import EXTENT from '../../../src/style-spec/data/extent.js';
 import {register} from '../../../src/util/web_worker_transfer.js';
 import loadGeometry from '../../../src/data/load_geometry.js';
 import toEvaluationFeature from '../../../src/data/evaluation_feature.js';

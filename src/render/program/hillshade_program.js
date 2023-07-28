@@ -10,7 +10,7 @@ import {
     UniformMatrix4f,
     Uniform4f
 } from '../uniform_binding.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 import type Context from '../../gl/context.js';

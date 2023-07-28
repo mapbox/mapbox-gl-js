@@ -13,7 +13,7 @@ import ProgramConfiguration from '../../data/program_configuration.js';
 import {Ray} from '../../util/primitives.js';
 import assert from 'assert';
 import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
 import type {Expression} from '../../style-spec/expression/expression.js';

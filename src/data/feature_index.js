@@ -4,7 +4,7 @@ import Point from '@mapbox/point-geometry';
 
 import loadGeometry from './load_geometry.js';
 import toEvaluationFeature from './evaluation_feature.js';
-import EXTENT from './extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 import Grid from 'grid-index';
 import DictionaryCoder from '../util/dictionary_coder.js';

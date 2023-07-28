@@ -9,7 +9,7 @@ import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration.js';
 import {vec3, vec4} from 'gl-matrix';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';

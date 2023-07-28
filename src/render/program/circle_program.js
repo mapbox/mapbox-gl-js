@@ -17,7 +17,7 @@ import type Painter from '../painter.js';
 import browser from '../../util/browser.js';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 
 export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,

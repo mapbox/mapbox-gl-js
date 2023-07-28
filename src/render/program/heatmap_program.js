@@ -17,7 +17,7 @@ import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer.
 import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 
 export type HeatmapUniformsType = {|
     'u_extrude_scale': Uniform1f,

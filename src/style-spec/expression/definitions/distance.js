@@ -22,7 +22,7 @@ import type {BBox} from '../../util/geometry_util.js';
 import CheapRuler from "cheap-ruler";
 import Point from "@mapbox/point-geometry";
 import TinyQueue from "tinyqueue";
-import EXTENT from "../../../data/extent.js";
+import EXTENT from "../../data/extent.js";
 
 type DistanceGeometry =
     | GeoJSONPoint

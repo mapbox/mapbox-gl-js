@@ -1,6 +1,6 @@
 // @flow
 
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 
 import {SymbolInstanceArray} from '../data/array_types.js';
 import KDBush from 'kdbush';

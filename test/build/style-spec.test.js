@@ -22,11 +22,17 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
             input: `${styleSpecDirectory}/style-spec.js`,
             plugins: [{
                 resolveId: (id, importer) => {
-                    if (
-                        /^[\/\.]/.test(id) ||
-                        isBuiltin(id) ||
-                        /node_modules/.test(importer)
-                    ) {
+                    if (isBuiltin(id) || /node_modules/.test(id) || /node_modules/.test(importer)) {
+                        return null;
+                    }
+
+                    if (!styleSpecPackage.dependencies[id]) {
+                        if (!path.resolve(importer, id).startsWith(styleSpecDirectory)) {
+                            t.fail(`Import outside of the style-spec package: ${id} (imported from ${importer})`);
+                        }
+                    }
+
+                    if (/^[\/\.]/.test(id)) {
                         return null;
                     }
 

@@ -1,6 +1,6 @@
 // @flow
 
-import EXTENT from '../../src/data/extent.js';
+import EXTENT from '../../src/style-spec/data/extent.js';
 import {UnwrappedTileID} from "../../src/source/tile_id.js";
 import {triangleIntersectsTriangle} from "../../src/util/intersection_tests.js";
 import Point from '@mapbox/point-geometry';

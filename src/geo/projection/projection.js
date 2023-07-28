@@ -4,7 +4,7 @@ import {mercatorZfromAltitude} from '../mercator_coordinate.js';
 import Point from '@mapbox/point-geometry';
 import {farthestPixelDistanceOnPlane} from './far_z.js';
 import {mat4} from 'gl-matrix';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import tileTransform from './tile_transform.js';
 
 import type Transform from '../../geo/transform.js';

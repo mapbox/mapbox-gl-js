@@ -6,7 +6,7 @@ import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttr
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
-import EXTENT from '../extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import earcut from 'earcut';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 import type {Feature} from "../../style-spec/expression";

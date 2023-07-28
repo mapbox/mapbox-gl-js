@@ -1,7 +1,7 @@
 // @flow
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate.js';
-import EXTENT from '../../data/extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives.js';
 import {aabbForTileOnGlobe} from './globe_util.js';

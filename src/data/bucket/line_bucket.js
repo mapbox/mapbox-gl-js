@@ -7,7 +7,7 @@ import {members as layoutAttributesExt} from './line_attributes_ext.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
-import EXTENT from '../extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {register} from '../../util/web_worker_transfer.js';

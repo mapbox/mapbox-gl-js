@@ -5,7 +5,7 @@ import window from '../util/window.js';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import SegmentVector from '../data/segment.js';
 import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from '../data/array_types.js';

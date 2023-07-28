@@ -30,7 +30,7 @@ import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import type {Mat4, Vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program.js';
-import EXTENT from "../../src/data/extent.js";
+import EXTENT from '../../src/style-spec/data/extent.js';
 
 type ShadowCascade = {
     framebuffer: Framebuffer,

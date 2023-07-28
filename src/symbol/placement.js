@@ -1,7 +1,7 @@
 // @flow
 
 import CollisionIndex from './collision_index.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import ONE_EM from './one_em.js';
 import * as symbolSize from './symbol_size.js';
 import * as projection from './projection.js';

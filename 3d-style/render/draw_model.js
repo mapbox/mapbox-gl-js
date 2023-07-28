@@ -10,7 +10,7 @@ import {ModelTraits, DefaultModelScale} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 import Transform from '../../src/geo/transform.js';
-import EXTENT from '../../src/data/extent.js';
+import EXTENT from '../../src/style-spec/data/extent.js';
 import StencilMode from '../../src/gl/stencil_mode.js';
 import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';

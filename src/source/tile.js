@@ -25,7 +25,7 @@ import tileTransform from '../geo/projection/tile_transform.js';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import posAttributes, {posAttributesGlobeExt} from '../data/pos_attributes.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../data/segment.js';
 import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition, interpolateVec3} from '../geo/projection/globe_util.js';

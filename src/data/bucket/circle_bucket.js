@@ -8,7 +8,7 @@ import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
-import EXTENT from '../extent.js';
+import EXTENT from '../../style-spec/data/extent.js';
 import {register} from '../../util/web_worker_transfer.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 

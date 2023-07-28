@@ -3,7 +3,7 @@
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 
 import {extend} from '../util/util.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 

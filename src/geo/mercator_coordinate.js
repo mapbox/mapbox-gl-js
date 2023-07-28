@@ -4,7 +4,7 @@ import LngLat, {earthCircumference} from '../geo/lng_lat.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import {clamp, degToRad} from '../util/util.js';
 import {CanonicalTileID} from '../source/tile_id.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 25.5;

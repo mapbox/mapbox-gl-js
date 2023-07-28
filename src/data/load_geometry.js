@@ -2,7 +2,7 @@
 
 import {warnOnce, clamp} from '../util/util.js';
 
-import EXTENT from './extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js';
 import resample from '../geo/projection/resample.js';
 import Point from '@mapbox/point-geometry';

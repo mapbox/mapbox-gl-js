@@ -2,7 +2,7 @@
 
 import {mat2} from 'gl-matrix';
 
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 
 import type {OverscaledTileID} from './tile_id.js';
 import type Transform from '../geo/transform.js';

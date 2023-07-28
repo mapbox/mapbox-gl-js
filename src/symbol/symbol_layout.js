@@ -13,7 +13,7 @@ import {
 } from '../util/script_detection.js';
 import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility.js';
 import classifyRings from '../util/classify_rings.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {SIZE_PACK_FACTOR} from './symbol_size.js';

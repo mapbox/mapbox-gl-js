@@ -3,7 +3,7 @@
 import Point from '@mapbox/point-geometry';
 import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util.js';
 import {polygonIntersectsBox, polygonContainsPoint} from '../util/intersection_tests.js';
-import EXTENT from '../data/extent.js';
+import EXTENT from '../style-spec/data/extent.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type Transform from '../geo/transform.js';
 import type Tile from '../source/tile.js';
