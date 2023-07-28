@@ -176,6 +176,9 @@ class Tile {
         this.hasRTLText = false;
         this.dependencies = {};
         this.isRaster = isRaster;
+        if (painter && painter.style) {
+            this._lastUpdatedBrightness = painter.style.getBrightness();
+        }
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
