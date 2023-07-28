@@ -11,16 +11,18 @@ import Painter from '../../src/render/painter.js';
 
 import {loadGLTF} from '../util/loaders.js';
 
+import type {ModelsSpecification} from '../../src/style-spec/types.js';
+
 class ModelManager extends Evented {
-    models: {[_: string]: Model};
-    loaded: boolean;
+    models: {[scope: string]: {[id: string]: Model}};
+    loaded: {[scope: string]: boolean};
     requestManager: RequestManager;
 
     constructor(requestManager: RequestManager) {
         super();
         this.requestManager = requestManager;
-        this.models = {};
-        this.loaded = false;
+        this.models = {'': {}};
+        this.loaded = {};
     }
 
     async loadModel(id: string, url: string): Promise<Model> {
@@ -31,59 +33,70 @@ class ModelManager extends Evented {
         return model;
     }
 
-    async load(modelUris: Object) {
+    async load(modelUris: {[string]: string}, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
+        this.loaded[scope] = false;
         for (const modelId in modelUris) {
             const modelUri = modelUris[modelId];
             const model = await this.loadModel(modelId, modelUri);
-            this.models[modelId] = model;
+            this.models[scope][modelId] = model;
         }
-        this.loaded = true;
+        this.loaded[scope] = true;
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
     isLoaded(): boolean {
-        return this.loaded;
+        for (const loaded in this.loaded) {
+            if (!this.loaded[loaded]) return false;
+        }
+        return true;
     }
 
-    hasModel(id: string): boolean {
-        return !!this.getModel(id);
+    hasModel(id: string, scope: string): boolean {
+        return !!this.getModel(id, scope);
     }
 
-    getModel(id: string): ?Model {
-        return this.models[id];
+    getModel(id: string, scope: string): ?Model {
+        if (!this.models[scope]) this.models[scope] = {};
+        return this.models[scope][id];
     }
 
-    async addModel(id: string, url: string) {
+    async addModel(id: string, url: string, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
         // Destroy model if it exists
-        if (this.models[id]) {
-            this.removeModel(id);
+        if (this.hasModel(id, scope)) {
+            this.removeModel(id, scope);
         }
-        const model = await this.loadModel(id, this.requestManager.normalizeModelURL(url));
-        this.models[id] = model;
+        this.load({[id]: this.requestManager.normalizeModelURL(url)}, scope);
     }
 
-    addStyleModels(_models: Object) {
-        const modelUris = {..._models};
-        for (const modelId in modelUris) {
-            modelUris[modelId] = this.requestManager.normalizeModelURL(modelUris[modelId]);
+    addModels(models: ModelsSpecification, scope: string) {
+        const modelUris = {};
+        for (const modelId in models) {
+            modelUris[modelId] = this.requestManager.normalizeModelURL(models[modelId]);
         }
-        this.load(modelUris);
+
+        this.load(modelUris, scope);
     }
 
-    removeModel(id: string) {
-        assert(this.models[id]);
-        const model = this.models[id];
-        delete this.models[id];
+    removeModel(id: string, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
+        assert(this.models[scope][id]);
+
+        const model = this.models[scope][id];
+        delete this.models[scope][id];
         model.destroy();
     }
 
-    listModels(): Array<string> {
-        return Object.keys(this.models);
+    listModels(scope: string): Array<string> {
+        if (!this.models[scope]) this.models[scope] = {};
+        return Object.keys(this.models[scope]);
     }
 
-    upload(painter: Painter) {
-        for (const modelId in this.models) {
-            this.models[modelId].upload(painter.context);
+    upload(painter: Painter, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
+        for (const modelId in this.models[scope]) {
+            this.models[scope][modelId].upload(painter.context);
         }
     }
 }

@@ -893,7 +893,7 @@ class Painter {
         if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
             (painter.terrain && layer.type === 'custom')) {
             if (upload[`${layer.type}Upload`]) {
-                upload[`${layer.type}Upload`](painter, sourceCache);
+                upload[`${layer.type}Upload`](painter, sourceCache, layer.scope);
             }
         }
         this.gpuTimingEnd();

@@ -208,13 +208,13 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
             undefined, dynamicBuffers);
 }
 
-export function upload(painter: Painter, sourceCache: SourceCache) {
+export function upload(painter: Painter, sourceCache: SourceCache, scope: string) {
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         if (painter.modelManager) {
             // Do it here, to prevent modelManager handling in Painter.
-            painter.modelManager.upload(painter);
+            painter.modelManager.upload(painter, scope);
         }
         return;
     }
@@ -504,7 +504,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
             renderData.aabb.min.fill(0);
             renderData.aabb.max[0] = renderData.aabb.max[1] = EXTENT;
             renderData.aabb.max[2] = 0;
-            if (calculateTileShadowPassCulling(bucket, renderData, painter)) continue;
+            if (calculateTileShadowPassCulling(bucket, renderData, painter, layer.scope)) continue;
         }
 
         // camera position in the tile coordinates
@@ -518,7 +518,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
             if (modelInstances.features.length > 0) {
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
-            const model = modelManager.getModel(modelId);
+            const model = modelManager.getModel(modelId, layer.scope);
             if (!model) continue;
             for (const node of model.nodes) {
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
@@ -758,7 +758,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     }
 }
 
-function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter) {
+function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter, scope: string) {
     if (!painter.modelManager) return true;
     const modelManager = painter.modelManager;
     if (!painter.shadowRenderer) return true;
@@ -770,7 +770,7 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
     if (maxHeight === 0) {
         let maxDim = 0;
         for (const modelId in bucket.instancesPerModel) {
-            const model = modelManager.getModel(modelId);
+            const model = modelManager.getModel(modelId, scope);
             if (!model) {
                 allModelsLoaded = false;
                 continue;

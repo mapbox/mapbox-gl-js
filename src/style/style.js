@@ -574,13 +574,6 @@ class Style extends Evented {
             styleLayer.scope = this.scope;
             if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
 
-            if (styleLayer.type === 'model') {
-                const modelId = styleLayer.getLayoutProperty('model-id');
-                if (modelId && typeof modelId === 'string') {
-                    styleLayer.setLayoutProperty('model-id', makeFQID(modelId, this.scope));
-                }
-            }
-
             styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
             this._layers[styleLayer.id] = styleLayer;
             this._ownLayers[styleLayer.id] = styleLayer;
@@ -606,11 +599,7 @@ class Style extends Evented {
         }
 
         if (this.stylesheet.models) {
-            const models = Object
-                .entries(this.stylesheet.models)
-                .map(([k, v]) => [makeFQID(k, this.scope), v]);
-
-            this.modelManager.addStyleModels(Object.fromEntries(models));
+            this.modelManager.addModels(this.stylesheet.models, this.scope);
         }
 
         const terrain = this.stylesheet.terrain;
@@ -1116,26 +1105,26 @@ class Style extends Evented {
         this._checkLoaded();
         if (this._validate(validateModel, `models.${id}`, url, null, options)) return this;
 
-        this.modelManager.addModel(id, url);
+        this.modelManager.addModel(id, url, this.scope);
         this._changed = true;
         return this;
     }
 
     hasModel(id: string): boolean {
-        return this.modelManager.hasModel(id);
+        return this.modelManager.hasModel(id, this.scope);
     }
 
     removeModel(id: string): this {
         if (!this.hasModel(id)) {
             return this.fire(new ErrorEvent(new Error('No model with this ID exists.')));
         }
-        this.modelManager.removeModel(id);
+        this.modelManager.removeModel(id, this.scope);
         return this;
     }
 
     listModels(): Array<string> {
         this._checkLoaded();
-        return this.modelManager.listModels();
+        return this.modelManager.listModels(this.scope);
     }
 
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
