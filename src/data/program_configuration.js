@@ -461,11 +461,11 @@ export default class ProgramConfiguration {
                 const value = layer.paint.get(property);
                 (binder: any).expression = value.value;
                 for (const id of ids) {
-                    const positions = featureMap.getPositions(id);
-                    for (const pos of positions) {
-                        const feature = vtLayer.feature(pos.index);
-                        (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id.toString()], availableImages, imagePositions, brightness);
-                    }
+                    const state = featureStates[id.toString()];
+                    featureMap.eachPosition(id, (index, start, end) => {
+                        const feature = vtLayer.feature(index);
+                        (binder: AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
+                    });
                 }
                 dirty = true;
             }
