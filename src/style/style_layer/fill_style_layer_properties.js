@@ -19,10 +19,12 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type LayoutProps = {|
     "fill-sort-key": DataDrivenProperty<number>,
+    "visibility": DataConstantProperty<"visible" | "none">,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
     "fill-sort-key": new DataDrivenProperty(styleSpec["layout_fill"]["fill-sort-key"]),
+    "visibility": new DataConstantProperty(styleSpec["layout_fill"]["visibility"]),
 });
 
 export type PaintProps = {|

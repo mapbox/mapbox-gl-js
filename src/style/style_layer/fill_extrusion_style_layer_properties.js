@@ -18,10 +18,12 @@ import type Formatted from '../../style-spec/expression/types/formatted.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 
 export type LayoutProps = {|
+    "visibility": DataConstantProperty<"visible" | "none">,
     "fill-extrusion-edge-radius": DataConstantProperty<number>,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
+    "visibility": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["visibility"]),
     "fill-extrusion-edge-radius": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["fill-extrusion-edge-radius"]),
 });
 

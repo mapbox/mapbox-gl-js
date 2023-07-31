@@ -50,6 +50,7 @@ class StyleLayer extends Evented {
     maxzoom: ?number;
     filter: FilterSpecification | void;
     visibility: 'visible' | 'none' | void;
+    isConfigDependent: boolean;
 
     _unevaluatedLayout: Layout<any>;
     +layout: mixed;
@@ -84,6 +85,7 @@ class StyleLayer extends Evented {
         this.type = layer.type;
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
+        this.isConfigDependent = false;
 
         if (layer.type === 'custom') return;
 
@@ -105,6 +107,7 @@ class StyleLayer extends Evented {
 
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout, options);
+            this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
         }
 
         if (properties.paint) {
@@ -116,6 +119,7 @@ class StyleLayer extends Evented {
             for (const property in layer.layout) {
                 this.setLayoutProperty(property, layer.layout[property], {validate: false});
             }
+            this.isConfigDependent = this.isConfigDependent || this._transitionablePaint.isConfigDependent;
 
             this._transitioningPaint = this._transitionablePaint.untransitioned();
             //$FlowFixMe
@@ -139,12 +143,12 @@ class StyleLayer extends Evented {
             }
         }
 
-        if (name === 'visibility') {
-            this.visibility = value;
-            return;
-        }
-
         this._unevaluatedLayout.setValue(name, value);
+        this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
+
+        if (name === 'visibility') {
+            this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0});
+        }
     }
 
     getPaintProperty(name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
@@ -172,6 +176,7 @@ class StyleLayer extends Evented {
             const oldValue = transitionable.value;
 
             this._transitionablePaint.setValue(name, value);
+            this.isConfigDependent = this.isConfigDependent || this._transitionablePaint.isConfigDependent;
             this._handleSpecialPaintPropertyUpdate(name);
 
             const newValue = this._transitionablePaint._values[name].value;
@@ -240,11 +245,6 @@ class StyleLayer extends Evented {
             'layout': this._unevaluatedLayout && this._unevaluatedLayout.serialize(),
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         };
-
-        if (this.visibility) {
-            output.layout = output.layout || {};
-            output.layout.visibility = this.visibility;
-        }
 
         return filterObject(output, (value, key) => {
             return value !== undefined &&

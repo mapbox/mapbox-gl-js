@@ -149,6 +149,7 @@ export function createExpression(expression: mixed, propertySpec: ?StyleProperty
 export class ZoomConstantExpression<Kind: EvaluationKind> {
     kind: Kind;
     isStateDependent: boolean;
+    isConfigDependent: boolean;
     _styleExpression: StyleExpression;
     isLightConstant: ?boolean;
 
@@ -157,6 +158,7 @@ export class ZoomConstantExpression<Kind: EvaluationKind> {
         this._styleExpression = expression;
         this.isLightConstant = isLightConstant;
         this.isStateDependent = kind !== ('constant': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
+        this.isConfigDependent = !isConstant.isConfigConstant(expression.expression);
     }
 
     evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection): any {
@@ -173,6 +175,7 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
     zoomStops: Array<number>;
     isStateDependent: boolean;
     isLightConstant: ?boolean;
+    isConfigDependent: boolean;
 
     _styleExpression: StyleExpression;
     interpolationType: ?InterpolationType;
@@ -183,6 +186,7 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera': EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         this.isLightConstant = isLightConstant;
+        this.isConfigDependent = !isConstant.isConfigConstant(expression.expression);
         this.interpolationType = interpolationType;
     }
 
@@ -205,6 +209,7 @@ export class ZoomDependentExpression<Kind: EvaluationKind> {
 
 export type ConstantExpression = interface {
     kind: 'constant',
+    isConfigDependent: boolean,
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
 }
 
@@ -212,11 +217,14 @@ export type SourceExpression = interface {
     kind: 'source',
     isStateDependent: boolean,
     isLightConstant: ?boolean;
+    isConfigDependent: boolean,
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any,
 };
 
 export type CameraExpression = interface {
     kind: 'camera',
+    isStateDependent: boolean,
+    isConfigDependent: boolean,
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>,
@@ -227,6 +235,7 @@ export interface CompositeExpression {
     kind: 'composite';
     isStateDependent: boolean;
     isLightConstant: ?boolean;
+    isConfigDependent: boolean;
     +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState, canonical?: CanonicalTileID, availableImages?: Array<string>, formattedSection?: FormattedSection) => any;
     +interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -340,6 +349,7 @@ export function normalizePropertyExpression<T>(value: PropertyValueSpecification
         }
         return {
             kind: 'constant',
+            isConfigDependent: false,
             evaluate: () => constant
         };
     }

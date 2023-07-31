@@ -63,6 +63,7 @@ export type LayoutProps = {|
     "text-allow-overlap": DataConstantProperty<boolean>,
     "text-ignore-placement": DataConstantProperty<boolean>,
     "text-optional": DataConstantProperty<boolean>,
+    "visibility": DataConstantProperty<"visible" | "none">,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
@@ -107,6 +108,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["text-allow-overlap"]),
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
+    "visibility": new DataConstantProperty(styleSpec["layout_symbol"]["visibility"]),
 });
 
 export type PaintProps = {|

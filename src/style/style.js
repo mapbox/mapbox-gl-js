@@ -55,7 +55,7 @@ import {
 import PauseablePlacement from './pauseable_placement.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
-import {makeFQID, getNameFromFQID} from '../util/fqid.js';
+import {makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -210,6 +210,7 @@ class Style extends Evented {
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
+    _optionsChanged: boolean;
     _updatedSources: {[_: string]: 'clear' | 'reload'};
     _updatedLayers: {[_: string]: true};
     _removedLayers: {[_: string]: StyleLayer};
@@ -219,6 +220,7 @@ class Style extends Evented {
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
     _brightness: ?number;
+    _configDependentLayers: Set<string>;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -295,6 +297,7 @@ class Style extends Evented {
         this._markersNeedUpdate = false;
 
         this.options = options.config || new Map();
+        this._configDependentLayers = new Set();
 
         this._resetUpdates();
 
@@ -520,7 +523,8 @@ class Style extends Evented {
         if (this.importDepth === 0 && (json.fragment || schema)) {
             const style = extend({}, empty, {imports: [{
                 id: 'basemap',
-                data: json
+                data: json,
+                url: ''
             }]});
 
             this._load(style, validate);
@@ -573,6 +577,7 @@ class Style extends Evented {
             const styleLayer = createStyleLayer(layer, this.options);
             styleLayer.id = makeFQID(styleLayer.id, this.scope);
             styleLayer.scope = this.scope;
+            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.id);
             if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
 
             styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
@@ -889,7 +894,22 @@ class Style extends Evented {
             const removedIds = Object.keys(this._removedLayers);
 
             if (updatedIds.length || removedIds.length) {
-                this._updateWorkerLayers(updatedIds, removedIds);
+                const updatesByScope = {};
+
+                for (const id of updatedIds) {
+                    const scope = getScopeFromFQID(id);
+                    const updates = updatesByScope[scope] = updatesByScope[scope] || {updatedIds: [], removedIds: []};
+                    updates.updatedIds.push(id);
+                }
+                for (const id of removedIds) {
+                    const scope = getScopeFromFQID(id);
+                    const updates = updatesByScope[scope] = updatesByScope[scope] || {updatedIds: [], removedIds: []};
+                    updates.removedIds.push(id);
+                }
+
+                for (const [scope, {updatedIds, removedIds}] of (Object.entries(updatesByScope): any)) {
+                    this.getFragmentById(scope)._updateWorkerLayers(updatedIds, removedIds);
+                }
             }
             for (const id in this._updatedSources) {
                 const action = this._updatedSources[id];
@@ -999,7 +1019,8 @@ class Style extends Evented {
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
             scope: this.scope,
-            removedIds
+            removedIds,
+            options: this.options
         });
     }
 
@@ -1287,7 +1308,7 @@ class Style extends Evented {
                 }
             }
 
-            const evaluationParameters = new EvaluationParameters(this.z, {
+            const evaluationParameters = new EvaluationParameters(this.z || 0, {
                 now: browser.now(),
                 transition: this.getTransition()
             });
@@ -1354,6 +1375,37 @@ class Style extends Evented {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
+    getFragmentById(importId?: string): Style {
+        if (!importId) return this;
+
+        const importSpec = this.imports.find(({id}) => id === importId);
+        if (!importSpec) throw new Error(`Style import not found: ${importId}`);
+
+        return importSpec.style;
+    }
+
+    setConfigProperty(key: string, value: any, importId?: string) {
+        const expressionParsed = createExpression(value);
+
+        if (expressionParsed.result === 'success') {
+            const expression = expressionParsed.value.expression;
+
+            const fragment = this.getFragmentById(importId);
+            fragment.options.set(key, expression);
+
+            for (const id of fragment._configDependentLayers) {
+                const layer = this.getLayer(id);
+                if (layer) {
+                    this._updateLayer(layer);
+                }
+            }
+            this._changed = true;
+
+        } else {
+            emitValidationErrors(this, expressionParsed.value);
+        }
+    }
+
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
@@ -1397,6 +1449,8 @@ class Style extends Evented {
             this._serializedLayers[layer.id] = layer.serialize();
             this._updateLayerCount(layer, true);
         }
+
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
 
         const index = before ? this._ownOrder.indexOf(before) : this._ownOrder.length;
         if (before && index === -1) {
@@ -1503,6 +1557,7 @@ class Style extends Evented {
         delete this._serializedLayers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
+        this._configDependentLayers.delete(id);
 
         if (layer.onRemove) {
             layer.onRemove(this.map);
@@ -1626,6 +1681,7 @@ class Style extends Evented {
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
         layer.setLayoutProperty(name, value, options);
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
         this._updateLayer(layer);
     }
 
@@ -1657,6 +1713,7 @@ class Style extends Evented {
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
         const requiresRelayout = layer.setPaintProperty(name, value, options);
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }

@@ -23,6 +23,7 @@ export type LayoutProps = {|
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
     "line-sort-key": DataDrivenProperty<number>,
+    "visibility": DataConstantProperty<"visible" | "none">,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
@@ -31,6 +32,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
     "line-sort-key": new DataDrivenProperty(styleSpec["layout_line"]["line-sort-key"]),
+    "visibility": new DataConstantProperty(styleSpec["layout_line"]["visibility"]),
 });
 
 export type PaintProps = {|

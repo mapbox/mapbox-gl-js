@@ -30,11 +30,12 @@ class StyleLayerIndex {
     replace(layerConfigs: Array<LayerSpecification>, options?: ?Map<string, Expression>) {
         this._layerConfigs = {};
         this._layers = {};
-        this._options = options;
-        this.update(layerConfigs, []);
+        this.update(layerConfigs, [], options);
     }
 
-    update(layerConfigs: Array<LayerSpecification>, removedIds: Array<string>) {
+    update(layerConfigs: Array<LayerSpecification>, removedIds: Array<string>, options: ?Map<string, Expression>) {
+        this._options = options;
+
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 

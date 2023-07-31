@@ -18,10 +18,12 @@ import type Formatted from '../../../src/style-spec/expression/types/formatted.j
 import type ResolvedImage from '../../../src/style-spec/expression/types/resolved_image.js';
 
 export type LayoutProps = {|
+    "visibility": DataConstantProperty<"visible" | "none">,
     "model-id": DataDrivenProperty<string>,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
+    "visibility": new DataConstantProperty(styleSpec["layout_model"]["visibility"]),
     "model-id": new DataDrivenProperty(styleSpec["layout_model"]["model-id"]),
 });
 

@@ -19,10 +19,12 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type LayoutProps = {|
     "circle-sort-key": DataDrivenProperty<number>,
+    "visibility": DataConstantProperty<"visible" | "none">,
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
     "circle-sort-key": new DataDrivenProperty(styleSpec["layout_circle"]["circle-sort-key"]),
+    "visibility": new DataConstantProperty(styleSpec["layout_circle"]["visibility"]),
 });
 
 export type PaintProps = {|

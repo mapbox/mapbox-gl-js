@@ -166,11 +166,13 @@ export class Transitionable<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitionablePropertyValues<Props>;
     _options: ?Map<string, Expression>;
+    isConfigDependent: boolean;
 
     constructor(properties: Properties<Props>, options?: ?Map<string, Expression>) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultTransitionablePropertyValues): any);
         this._options = options;
+        this.isConfigDependent = false;
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
@@ -184,6 +186,7 @@ export class Transitionable<Props: Object> {
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
         this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._options);
+        this.isConfigDependent = this.isConfigDependent || this._values[name].value.expression.isConfigDependent;
     }
 
     setTransitionOrValue<P: Object>(properties: ?P) {
@@ -384,11 +387,13 @@ export class Layout<Props: Object> {
     _properties: Properties<Props>;
     _values: PropertyValues<Props>;
     _options: ?Map<string, Expression>;
+    isConfigDependent: boolean;
 
     constructor(properties: Properties<Props>, options?: ?Map<string, Expression>) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultPropertyValues): any);
         this._options = options;
+        this.isConfigDependent = false;
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
@@ -397,6 +402,7 @@ export class Layout<Props: Object> {
 
     setValue<S: string>(name: S, value: any) {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._options);
+        this.isConfigDependent = this.isConfigDependent || this._values[name].expression.isConfigDependent;
     }
 
     serialize(): PropertyValueSpecifications<Props> {

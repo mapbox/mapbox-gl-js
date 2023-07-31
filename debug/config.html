@@ -18,13 +18,29 @@
 <script src='../debug/access_token_generated.js'></script>
 <script>
 
-mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LW1hcC1kZXNpZ24iLCJhIjoiY2syeHpiaHlrMDJvODNidDR5azU5NWcwdiJ9.x0uSqSWGXdoFKuHZC5Eo_Q';
-
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-122.4194, 37.7749],
-    style: 'fragments/fragment-navigation-NY.json'
+    style: {
+        "version": 8,
+        "imports": [
+            {
+                "id": "standard",
+                "url": "mapbox://styles/mapbox/standard-beta",
+                "config": {
+                    "font": "Roboto",
+                    "lightPreset": "night",
+                    "showPointOfInterestLabels": true,
+                    "showTransitLabels": true,
+                    "showPlaceLabels": true,
+                    "showRoadLabels": true
+                }
+            }
+        ],
+        "sources": {},
+        "layers": []
+    }
 });
 
 </script>

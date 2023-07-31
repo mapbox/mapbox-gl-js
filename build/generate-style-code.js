@@ -142,11 +142,9 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
     const layoutSpec = spec[`layout_${type}`] ?? {};
     const paintSpec = spec[`paint_${type}`] ?? {};
     const layoutProperties = Object.keys(layoutSpec).reduce((memo, name) => {
-        if (name !== 'visibility') {
-            layoutSpec[name].name = name;
-            layoutSpec[name].type_ = type;
-            memo.push(layoutSpec[name]);
-        }
+        layoutSpec[name].name = name;
+        layoutSpec[name].type_ = type;
+        memo.push(layoutSpec[name]);
         return memo;
     }, []);
 

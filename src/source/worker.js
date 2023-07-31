@@ -159,8 +159,8 @@ export default class Worker {
         callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, removedIds: Array<string>}, callback: WorkerTileCallback) {
-        this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds);
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, removedIds: Array<string>, options: Map<string, Expression>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
         callback();
     }
 

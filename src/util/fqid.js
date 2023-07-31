@@ -11,3 +11,8 @@ export function getNameFromFQID(fqid: string): string {
     const sep = fqid.indexOf(FQIDSeparator);
     return sep >= 0 ? fqid.slice(0, sep) : fqid;
 }
+
+export function getScopeFromFQID(fqid: string): string {
+    const sep = fqid.indexOf(FQIDSeparator);
+    return sep >= 0 ? fqid.slice(sep + 1) : '';
+}
