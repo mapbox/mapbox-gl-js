@@ -59,6 +59,7 @@ export type WorkerTileResult = {
     collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,
     resourceTiming?: Array<PerformanceResourceTiming>,
+    brightness: number,
     // Only used for benchmarking:
     glyphMap?: {[_: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}} | null,
     iconMap?: {[_: string]: StyleImage} | null,

@@ -291,6 +291,7 @@ class Tile {
         if (data.lineAtlas) {
             this.lineAtlas = data.lineAtlas;
         }
+        this._lastUpdatedBrightness = data.brightness;
     }
 
     /**

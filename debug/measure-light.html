@@ -328,10 +328,17 @@ map.on('style.load', function() {
                 ],
                 "text-color": [
                     "case",
-                    ["<",
-                        ["measure-light", "brightness"], 0.5],
-                    "black",
-                    "white"
+                    [">", ["get", "sizerank"], 14],
+                    [
+                        "interpolate",
+                        ["linear"],
+                        ["measure-light", "brightness"],
+                        0.25,
+                        "blue",
+                        0.5,
+                        "yellow"
+                    ],
+                    "black"
                 ]
             },
             "source": "composite",

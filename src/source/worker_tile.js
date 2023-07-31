@@ -106,7 +106,7 @@ class WorkerTile {
             glyphDependencies: {},
             lineAtlas,
             availableImages,
-            brightness
+            brightness: brightness || 0.0
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -154,7 +154,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
 
-                recalculateLayers(family, this.zoom, availableImages);
+                recalculateLayers(family, this.zoom, options.brightness, availableImages);
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
@@ -196,7 +196,7 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        recalculateLayers(bucket.layers, this.zoom, availableImages);
+                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
                         performSymbolLayout(bucket,
                             glyphMap,
                             glyphAtlas.positions,
@@ -212,7 +212,7 @@ class WorkerTile {
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
                          bucket instanceof FillExtrusionBucket)) {
-                        recalculateLayers(bucket.layers, this.zoom, availableImages);
+                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
                         // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
                         const imagePositions: SpritePositions = imageAtlas.patternPositions;
                         bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, brightness);
@@ -227,6 +227,7 @@ class WorkerTile {
                     glyphAtlasImage: glyphAtlas.image,
                     lineAtlas,
                     imageAtlas,
+                    brightness: options.brightness,
                     // Only used for benchmarking:
                     glyphMap: this.returnDependencies ? glyphMap : null,
                     iconMap: this.returnDependencies ? iconMap : null,
@@ -281,9 +282,9 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number, availableImages: Array<string>) {
+function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number, brightness: number, availableImages: Array<string>) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    const parameters = new EvaluationParameters(zoom);
+    const parameters = new EvaluationParameters(zoom, {brightness});
     for (const layer of layers) {
         layer.recalculate(parameters, availableImages);
     }
