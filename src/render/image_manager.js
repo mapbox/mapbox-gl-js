@@ -55,13 +55,22 @@ class ImageManager extends Evented {
         this.images = {};
         this.updatedImages = {};
         this.callbackDispatchedThisFrame = {};
-        this.loaded = {'': false};
+        this.loaded = {};
         this.requestors = [];
 
         this.patterns = {};
-        this.atlasImage = {'': new RGBAImage({width: 1, height: 1})};
+        this.atlasImage = {};
         this.atlasTexture = {};
         this.dirty = true;
+    }
+
+    createScope(scope: string) {
+        this.images[scope] = {};
+        this.loaded[scope] = false;
+        this.updatedImages[scope] = {};
+        this.patterns[scope] = {};
+        this.callbackDispatchedThisFrame[scope] = {};
+        this.atlasImage[scope] = new RGBAImage({width: 1, height: 1});
     }
 
     isLoaded(): boolean {
@@ -91,13 +100,10 @@ class ImageManager extends Evented {
     }
 
     getImage(id: string, scope: string): ?StyleImage {
-        if (!this.images[scope]) this.images[scope] = {};
         return this.images[scope][id];
     }
 
     addImage(id: string, scope: string, image: StyleImage) {
-        if (!this.images[scope]) this.images[scope] = {};
-
         assert(!this.images[scope][id]);
         if (this._validate(id, image)) {
             this.images[scope][id] = image;
@@ -144,9 +150,6 @@ class ImageManager extends Evented {
     }
 
     updateImage(id: string, scope: string, image: StyleImage) {
-        if (!this.images[scope]) this.images[scope] = {};
-        if (!this.updatedImages[scope]) this.updatedImages[scope] = {};
-
         const oldImage = this.images[scope][id];
         assert(oldImage);
         assert(oldImage.data.width === image.data.width);
@@ -157,9 +160,6 @@ class ImageManager extends Evented {
     }
 
     removeImage(id: string, scope: string) {
-        if (!this.images[scope]) this.images[scope] = {};
-        if (!this.patterns[scope]) this.patterns[scope] = {};
-
         assert(this.images[scope][id]);
         const image = this.images[scope][id];
         delete this.images[scope][id];
@@ -171,26 +171,24 @@ class ImageManager extends Evented {
     }
 
     listImages(scope: string): Array<string> {
-        if (!this.images[scope]) this.images[scope] = {};
         return Object.keys(this.images[scope]);
     }
 
     getImages(ids: Array<string>, scope: string, callback: Callback<{[_: string]: StyleImage}>) {
-        if (!this.images[scope]) this.images[scope] = {};
-
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
-        if (!this.isLoaded()) {
+        const isLoaded = !!this.loaded[scope];
+        if (!isLoaded) {
             for (const id of ids) {
                 if (!this.images[scope][id]) {
                     hasAllDependencies = false;
                 }
             }
         }
-        if (this.isLoaded() || hasAllDependencies) {
+        if (isLoaded || hasAllDependencies) {
             this._notify(ids, scope, callback);
         } else {
             this.requestors.push({ids, scope, callback});
@@ -202,7 +200,6 @@ class ImageManager extends Evented {
     }
 
     _notify(ids: Array<string>, scope: string, callback: Callback<{[_: string]: StyleImage}>) {
-        if (!this.images[scope]) this.images[scope] = {};
         const response = {};
 
         for (const id of ids) {
@@ -233,13 +230,11 @@ class ImageManager extends Evented {
     // Pattern stuff
 
     getPixelSize(scope: string): Size {
-        if (!this.atlasImage[scope]) this.atlasImage[scope] = new RGBAImage({width: 1, height: 1});
         const {width, height} = this.atlasImage[scope];
         return {width, height};
     }
 
     getPattern(id: string, scope: string): ?ImagePosition {
-        if (!this.patterns[scope]) this.patterns[scope] = {};
         const pattern = this.patterns[scope][id];
 
         const image = this.getImage(id, scope);
@@ -282,8 +277,6 @@ class ImageManager extends Evented {
     }
 
     _updatePatternAtlas(scope: string) {
-        if (!this.patterns[scope]) this.patterns[scope] = {};
-
         const bins = [];
         for (const id in this.patterns[scope]) {
             bins.push(this.patterns[scope][id].bin);
@@ -315,12 +308,12 @@ class ImageManager extends Evented {
     }
 
     beginFrame() {
-        this.callbackDispatchedThisFrame = {};
+        for (const scope in this.images) {
+            this.callbackDispatchedThisFrame[scope] = {};
+        }
     }
 
     dispatchRenderCallbacks(ids: Array<string>, scope: string) {
-        if (!this.callbackDispatchedThisFrame[scope]) this.callbackDispatchedThisFrame[scope] = {};
-
         for (const id of ids) {
             // the callback for the image was already dispatched for a different frame
             if (this.callbackDispatchedThisFrame[scope][id]) continue;

@@ -259,6 +259,7 @@ class Style extends Evented {
             this.imageManager = new ImageManager();
             this.imageManager.setEventedParent(this);
         }
+        this.imageManager.createScope(this.scope);
 
         if (options.glyphManager) {
             this.glyphManager = options.glyphManager;
