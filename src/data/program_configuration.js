@@ -453,23 +453,21 @@ export default class ProgramConfiguration {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
         const ids = keys.length === 0 ? featureMap.ids : keys;
-        for (const id of ids) {
-            const positions = featureMap.getPositions(id);
-
-            for (const pos of positions) {
-                const feature = vtLayer.feature(pos.index);
-
-                for (const property in this.binders) {
-                    const binder = this.binders[property];
-                    if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
-                         binder instanceof PatternCompositeBinder) && ((binder: any).expression.isStateDependent === true || (binder: any).expression.isLightConstant === false)) {
-                        //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
-                        const value = layer.paint.get(property);
-                        (binder: any).expression = value.value;
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
+                 binder instanceof PatternCompositeBinder) && ((binder: any).expression.isStateDependent === true || (binder: any).expression.isLightConstant === false)) {
+                //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
+                const value = layer.paint.get(property);
+                (binder: any).expression = value.value;
+                for (const id of ids) {
+                    const positions = featureMap.getPositions(id);
+                    for (const pos of positions) {
+                        const feature = vtLayer.feature(pos.index);
                         (binder: AttributeBinder).updatePaintArray(pos.start, pos.end, feature, featureStates[id.toString()], availableImages, imagePositions, brightness);
-                        dirty = true;
                     }
                 }
+                dirty = true;
             }
         }
         return dirty;

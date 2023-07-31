@@ -413,7 +413,10 @@ class Tile {
             return;
         }
         const brightness = painter.style.getBrightness();
-        if (brightness === this._lastUpdatedBrightness) {
+        if (!this._lastUpdatedBrightness && !brightness) {
+            return;
+        }
+        if (this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
         this._lastUpdatedBrightness = brightness;
