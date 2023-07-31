@@ -96,7 +96,7 @@ export default function tileTransform(id: Object, projection: Projection): TileT
 export function tileAABB(tr: Transform, numTiles: number, z: number, x: number, y: number, wrap: number, min: number, max: number, projection: Projection): Aabb {
     if (projection.name === 'globe') {
         const tileId = new CanonicalTileID(z, x, y);
-        return aabbForTileOnGlobe(tr, numTiles, tileId);
+        return aabbForTileOnGlobe(tr, numTiles, tileId, false);
     }
 
     const tt = tileTransform({z, x, y}, projection);

@@ -20,6 +20,7 @@ import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile
 import {
     calculateGlobeMatrix,
     polesInViewport,
+    aabbForTileOnGlobe,
     GLOBE_ZOOM_THRESHOLD_MIN,
     GLOBE_ZOOM_THRESHOLD_MAX,
     GLOBE_SCALE_MATCH_LATITUDE
@@ -1029,13 +1030,24 @@ class Transform {
             const y = it.y;
             let fullyVisible = it.fullyVisible;
 
+            const isPoleNeighbourAndGlobeProjection = () => {
+                return this.projection.name === 'globe' && (it.y === 0 || it.y === (1 << it.zoom) - 1);
+            };
+
             // Visibility of a tile is not required if any of its ancestor is fully inside the frustum
             if (!fullyVisible) {
-                const intersectResult = verticalFrustumIntersect ? it.aabb.intersects(cameraFrustum) : it.aabb.intersectsFlat(cameraFrustum);
+                let intersectResult = verticalFrustumIntersect ? it.aabb.intersects(cameraFrustum) : it.aabb.intersectsFlat(cameraFrustum);
 
-                if (intersectResult === 0)
+                // For globe projection and pole neighboouring tiles - clip against pole segments as well
+                if (intersectResult === 0 && isPoleNeighbourAndGlobeProjection()) {
+                    const tileId = new CanonicalTileID(it.zoom, x, y);
+                    const poleAABB = aabbForTileOnGlobe(this, numTiles, tileId, true);
+                    intersectResult = poleAABB.intersects(cameraFrustum);
+                }
+
+                if (intersectResult === 0) {
                     continue;
-
+                }
                 fullyVisible = intersectResult === 2;
             }
 
@@ -1049,10 +1061,19 @@ class Transform {
 
                 // Perform more precise intersection tests to cull the remaining < 1% false positives from the earlier test.
                 if (!fullyVisible) {
-                    const intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
 
-                    if (intersectResult === 0)
+                    let intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
+
+                    // For globe projection and pole neighboouring tiles - clip against pole segments as well
+                    if (intersectResult === 0 && isPoleNeighbourAndGlobeProjection()) {
+                        const tileId = new CanonicalTileID(it.zoom, x, y);
+                        const poleAABB = aabbForTileOnGlobe(this, numTiles, tileId, true);
+                        intersectResult = poleAABB.intersectsPrecise(cameraFrustum);
+                    }
+
+                    if (intersectResult === 0) {
                         continue;
+                    }
                 }
 
                 const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));

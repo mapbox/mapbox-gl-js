@@ -239,7 +239,8 @@ function transformPoints(corners: Array<Vec3>, globeMatrix: Mat4, scale: number)
 }
 
 // Returns AABB in world/camera space scaled by numTiles / tr.worldSize
-export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID): Aabb {
+// extendToPoles - extend tiles neighboring to north / south pole segments with the north/south pole point
+export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: CanonicalTileID, extendToPoles: boolean): Aabb {
     const scale = numTiles / tr.worldSize;
     const m = tr.globeMatrix;
 
@@ -263,7 +264,8 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // Simplified aabb is computed by first encapsulating 4 transformed corner points of the tile.
     // The resulting aabb is not complete yet as curved edges of the tile might span outside of the boundaries.
     // It is enough to extend the aabb to contain only the edge that's closest to the center point.
-    const bounds = tileCornersToBounds(tileId);
+    const bounds = tileCornersToBounds(tileId, extendToPoles);
+
     const corners = boundsToECEF(bounds);
 
     // Transform the corners to world space
@@ -363,10 +365,10 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     return new Aabb(cornerMin, cornerMax);
 }
 
-export function tileCornersToBounds({x, y, z}: CanonicalTileID): LngLatBounds {
+export function tileCornersToBounds({x, y, z}: CanonicalTileID, extendToPoles: boolean = false): LngLatBounds {
     const s = 1.0 / (1 << z);
-    const sw = new LngLat(lngFromMercatorX(x * s), latFromMercatorY((y + 1) * s));
-    const ne = new LngLat(lngFromMercatorX((x + 1) * s), latFromMercatorY(y * s));
+    const sw = new LngLat(lngFromMercatorX(x * s), y === (1 << z) - 1 && extendToPoles ? -90 : latFromMercatorY((y + 1) * s));
+    const ne = new LngLat(lngFromMercatorX((x + 1) * s), y === 0 && extendToPoles ? 90 : latFromMercatorY(y * s));
     return new LngLatBounds(sw, ne);
 }
 

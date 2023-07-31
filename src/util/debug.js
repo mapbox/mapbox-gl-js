@@ -109,7 +109,7 @@ export const Debug: {
         if (!tr.freezeTileCoverage) {
             Debug.aabbCorners = coords.map(coord => {
                 // Get tile AABBs in world/pixel space scaled by worldSize
-                const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical);
+                const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical, false);
                 const corners = aabb.getCorners();
                 // Store AABBs as rectangular prisms in ECEF, this allows viewing them from other angles
                 // when transform.freezeTileCoverage is enabled.
