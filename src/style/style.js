@@ -1384,7 +1384,7 @@ class Style extends Evented {
         return importSpec.style;
     }
 
-    setConfigProperty(key: string, value: any, importId?: string) {
+    setConfigProperty(importId: string, key: string, value: any) {
         const expressionParsed = createExpression(value);
 
         if (expressionParsed.result === 'success') {

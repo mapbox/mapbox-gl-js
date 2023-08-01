@@ -2803,15 +2803,15 @@ class Map extends Camera {
     /**
      * Sets the value of a configuration property in the currently set style.
      *
+     * @param {string} importId The name of the imported style to set the config for (e.g. `basemap`).
      * @param {string} configName The name of the configuration property from the style.
      * @param {*} value The value of the configuration property. Must be of a type appropriate for the property, as defined by the style configuration schema.
-     * @param {string} [importId] The name of the imported style to set the config for (e.g. `basemap`). Applied to the root style if not specified.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.setConfigProperty('showLabels', false);
      */
-    setConfigProperty(configName: string, value: any, importId?: string): this {
-        this.style.setConfigProperty(configName, value, importId);
+    setConfigProperty(importId: string, configName: string, value: any): this {
+        this.style.setConfigProperty(importId, configName, value);
         return this._update(true);
     }
 
