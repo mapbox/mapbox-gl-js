@@ -12,11 +12,13 @@ type SerializedFeaturePositionMap = {
 // A transferable data structure that maps feature ids to their indices and buffer offsets
 export default class FeaturePositionMap {
     ids: Array<number>;
+    uniqueIds: Array<number>;
     positions: Array<number>;
     indexed: boolean;
 
     constructor() {
         this.ids = [];
+        this.uniqueIds = [];
         this.positions = [];
         this.indexed = false;
     }
@@ -71,6 +73,11 @@ export default class FeaturePositionMap {
         // so TypedArray vs Array distinction that flow points out doesn't matter
         map.ids = (obj.ids: any);
         map.positions = (obj.positions: any);
+        let prev;
+        for (const id of map.ids) {
+            if (id !== prev) map.uniqueIds.push(id);
+            prev = id;
+        }
         map.indexed = true;
         return map;
     }

@@ -452,7 +452,10 @@ export default class ProgramConfiguration {
     updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): boolean {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
-        const ids = keys.length === 0 ? featureMap.ids : keys;
+        const ids = keys.length === 0 ? featureMap.uniqueIds : keys;
+        if (ids.length === 0) {
+            return false;
+        }
         for (const property in this.binders) {
             const binder = this.binders[property];
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||

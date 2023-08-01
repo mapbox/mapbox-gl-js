@@ -31,6 +31,8 @@ test('FeaturePositionMap', (t) => {
             {index: 6, start: 5, end: 7}
         ]);
 
+        t.same(featureMap2.uniqueIds, [2, 3, 4, 7]);
+
         t.end();
     });
 
