@@ -14,7 +14,8 @@ function createWorkerTile() {
         source: 'source',
         tileID: new OverscaledTileID(1, 0, 1, 1, 1),
         overscaling: 1,
-        projection: getProjection({name: 'mercator'})
+        projection: getProjection({name: 'mercator'}),
+        brightness: 0
     });
 }
 

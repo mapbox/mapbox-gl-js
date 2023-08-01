@@ -135,7 +135,8 @@ export default class TileParser {
             returnDependencies,
             promoteId: undefined,
             isSymbolTile: false,
-            projection: getProjection({name: 'mercator'})
+            projection: getProjection({name: 'mercator'}),
+            brightness: 0
         });
 
         const vectorTile = new VectorTile(new Protobuf(tile.buffer));
@@ -148,7 +149,7 @@ export default class TileParser {
                     resolve(result);
                 }
             };
-            workerTile.parse(vectorTile, this.layerIndex, [], (this.actor: any), callback, 0);
+            workerTile.parse(vectorTile, this.layerIndex, [], (this.actor: any), callback);
         });
     }
 }

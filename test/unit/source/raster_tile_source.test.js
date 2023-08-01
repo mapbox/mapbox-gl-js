@@ -15,6 +15,7 @@ function createSource(options, transformCallback) {
         _requestManager: new RequestManager(transformCallback),
         style: {
             _clearSource: () => {},
+            getBrightness: () => { return 0.0; },
         }
     });
 

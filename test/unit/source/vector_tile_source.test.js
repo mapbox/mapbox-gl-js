@@ -28,6 +28,7 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
         _requestManager: new RequestManager(transformCallback, customAccessToken),
         style: {
             _clearSource: () => {},
+            getBrightness: () => { return 0.0; },
         }
     });
 

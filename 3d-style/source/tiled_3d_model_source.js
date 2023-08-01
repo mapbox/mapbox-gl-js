@@ -119,7 +119,8 @@ class Tiled3DModelSource extends Evented implements Source {
             source: this.id,
             scope: this.scope,
             showCollisionBoxes: this.map.showCollisionBoxes,
-            isSymbolTile: tile.isSymbolTile
+            isSymbolTile: tile.isSymbolTile,
+            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0
         };
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();

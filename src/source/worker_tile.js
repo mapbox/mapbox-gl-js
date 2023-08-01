@@ -53,6 +53,7 @@ class WorkerTile {
     isSymbolTile: ?boolean;
     projection: Projection;
     tileTransform: TileTransform;
+    brightness: number;
 
     status: 'parsing' | 'done';
     data: IVectorTile;
@@ -81,9 +82,10 @@ class WorkerTile {
         this.isSymbolTile = params.isSymbolTile;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
+        this.brightness = params.brightness;
     }
 
-    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback, brightness: ?number) {
+    parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;
@@ -106,7 +108,7 @@ class WorkerTile {
             glyphDependencies: {},
             lineAtlas,
             availableImages,
-            brightness: brightness || 0.0
+            brightness: this.brightness
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -207,7 +209,7 @@ class WorkerTile {
                             this.tileID.canonical,
                             this.tileZoom,
                             this.projection,
-                            brightness);
+                            this.brightness);
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||
@@ -215,7 +217,7 @@ class WorkerTile {
                         recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
                         // $FlowFixMe[incompatible-type] Flow can't interpret ImagePosition as SpritePosition for some reason here
                         const imagePositions: SpritePositions = imageAtlas.patternPositions;
-                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, brightness);
+                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
                     }
                 }
 

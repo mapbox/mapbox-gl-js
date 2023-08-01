@@ -362,7 +362,8 @@ class GeoJSONSource extends Evented implements Source {
             scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,
-            promoteId: this.promoteId
+            promoteId: this.promoteId,
+            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0
         };
 
         tile.request = this.actor.send(message, params, (err, data) => {

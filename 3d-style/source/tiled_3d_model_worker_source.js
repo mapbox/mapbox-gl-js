@@ -129,6 +129,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
             const workerTile = loaded[uid];
             workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
+            workerTile.brightness = params.brightness;
 
             const done = (err: ?Error, data: ?WorkerTileResult) => {
                 const reloadCallback = workerTile.reloadCallback;

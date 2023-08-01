@@ -888,6 +888,18 @@ class Style extends Evented {
             return;
         }
 
+        if (this.ambientLight) {
+            this.ambientLight.recalculate(parameters);
+        }
+        if (this.directionalLight) {
+            this.directionalLight.recalculate(parameters);
+        }
+        const newBrightness = this.calculateLightsBrightness();
+        if (newBrightness !== this._brightness) {
+            this._brightness = newBrightness;
+            this.dispatcher.broadcast('setBrightness', newBrightness);
+        }
+
         const changed = this._changed;
         if (this._changed) {
             const updatedIds = Object.keys(this._updatedLayers);
@@ -978,19 +990,7 @@ class Style extends Evented {
         if (this.fog) {
             this.fog.recalculate(parameters);
         }
-        if (this.ambientLight) {
-            this.ambientLight.recalculate(parameters);
-        }
-        if (this.directionalLight) {
-            this.directionalLight.recalculate(parameters);
-        }
         this.z = parameters.zoom;
-
-        const newBrightness = this.calculateLightsBrightness();
-        if (newBrightness !== this._brightness) {
-            this._brightness = newBrightness;
-            this.dispatcher.broadcast('setBrightness', newBrightness);
-        }
 
         if (this._markersNeedUpdate) {
             this._updateMarkersOpacity();

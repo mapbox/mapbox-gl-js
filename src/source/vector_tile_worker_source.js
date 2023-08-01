@@ -222,7 +222,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                     }
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 };
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, workerTileCallback, this.brightness);
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, workerTileCallback);
             };
 
             if (this.isSpriteLoaded) {
@@ -256,13 +256,14 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
+            workerTile.brightness = params.brightness;
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
 
             const done = (err: ?Error, data: ?WorkerTileResult) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, reloadCallback, this.brightness);
+                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, reloadCallback);
                 }
                 callback(err, data);
             };
@@ -272,7 +273,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             } else if (workerTile.status === 'done') {
                 // if there was no vector tile data on the initial load, don't try and re-parse tile
                 if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done, this.brightness);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done);
                 } else {
                     done();
                 }
