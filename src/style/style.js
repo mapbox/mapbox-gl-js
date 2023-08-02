@@ -888,16 +888,9 @@ class Style extends Evented {
             return;
         }
 
-        if (this.ambientLight) {
-            this.ambientLight.recalculate(parameters);
-        }
-        if (this.directionalLight) {
-            this.directionalLight.recalculate(parameters);
-        }
-        const newBrightness = this.calculateLightsBrightness();
-        if (newBrightness !== this._brightness) {
-            this._brightness = newBrightness;
-            this.dispatcher.broadcast('setBrightness', newBrightness);
+        if (parameters.brightness !== this._brightness) {
+            this._brightness = parameters.brightness;
+            this.dispatcher.broadcast('setBrightness', parameters.brightness);
         }
 
         const changed = this._changed;

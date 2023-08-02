@@ -3381,9 +3381,20 @@ class Map extends Camera {
                 now,
                 fadeDuration,
                 pitch,
-                transition: this.style.getTransition(),
-                brightness: this.style.calculateLightsBrightness()
+                transition: this.style.getTransition()
             });
+
+            if (this.style.ambientLight) {
+                this.style.ambientLight.recalculate(parameters);
+            }
+            if (this.style.directionalLight) {
+                this.style.directionalLight.recalculate(parameters);
+            }
+
+            const brightness = this.style.calculateLightsBrightness();
+            if (brightness !== undefined) {
+                parameters.brightness = (brightness || 0.0);
+            }
 
             this.style.update(parameters);
         }
