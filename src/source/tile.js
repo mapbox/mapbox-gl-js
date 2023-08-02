@@ -499,6 +499,15 @@ class Tile {
         return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
     }
 
+    bucketsLoaded(): boolean {
+        for (const id in this.buckets) {
+            if (this.buckets[id].uploadPending())
+                return false;
+        }
+
+        return true;
+    }
+
     patternsLoaded(): boolean {
         return !!this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
     }

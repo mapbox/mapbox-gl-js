@@ -5,6 +5,7 @@ const todo = [
 const skip = [
     "render-tests/model-layer/ground-shadow-fog",
     "render-tests/model-layer/landmark-conflation-multiple-model-layers",
+    "render-tests/model-layer/landmark-conflation-multiple-sources",
     "render-tests/model-layer/landmark-mbx",
     "render-tests/model-layer/landmark-mbx-shadows",
     "render-tests/model-layer/landmark-emission-strength",
