@@ -4084,7 +4084,7 @@ test('Map', (t) => {
         const version = map.version;
         t.test('returns version string', (t) => {
             t.ok(version);
-            t.match(version, /^2\.[0-9]+\.[0-9]+(-dev|-beta\.[1-9])?$/);
+            t.match(version, /^3\.[0-9]+\.[0-9]+(-dev|-beta\.[1-9])?$/);
             t.end();
         });
         t.test('cannot be set', (t) => {
