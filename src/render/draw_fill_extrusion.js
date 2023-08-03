@@ -26,7 +26,6 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate.js'
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
 import Context from '../gl/context.js';
 import {Terrain} from '../terrain/terrain.js';
-import {sRGBToLinearAndScale} from '../util/util.js';
 import Color from '../style-spec/util/color.js';
 import Tile from '../source/tile.js';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer.js';

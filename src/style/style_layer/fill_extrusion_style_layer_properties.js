@@ -38,7 +38,6 @@ export type PaintProps = {|
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>,
     "fill-extrusion-ambient-occlusion-intensity": DataConstantProperty<number>,
     "fill-extrusion-ambient-occlusion-radius": DataConstantProperty<number>,
-    "fill-extrusion-rounded-roof": DataConstantProperty<boolean>,
     "fill-extrusion-ambient-occlusion-wall-radius": DataConstantProperty<number>,
     "fill-extrusion-ambient-occlusion-ground-radius": DataConstantProperty<number>,
     "fill-extrusion-ambient-occlusion-ground-attenuation": DataConstantProperty<number>,
@@ -48,6 +47,7 @@ export type PaintProps = {|
     "fill-extrusion-flood-light-ground-radius": DataDrivenProperty<number>,
     "fill-extrusion-flood-light-ground-attenuation": DataConstantProperty<number>,
     "fill-extrusion-vertical-scale": DataConstantProperty<number>,
+    "fill-extrusion-rounded-roof": DataConstantProperty<boolean>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -61,7 +61,6 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-vertical-gradient": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-gradient"]),
     "fill-extrusion-ambient-occlusion-intensity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-intensity"]),
     "fill-extrusion-ambient-occlusion-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-radius"]),
-    "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
     "fill-extrusion-ambient-occlusion-wall-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-wall-radius"]),
     "fill-extrusion-ambient-occlusion-ground-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-ground-radius"]),
     "fill-extrusion-ambient-occlusion-ground-attenuation": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-ground-attenuation"]),
@@ -71,6 +70,7 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-flood-light-ground-radius": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-ground-radius"]),
     "fill-extrusion-flood-light-ground-attenuation": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-ground-attenuation"]),
     "fill-extrusion-vertical-scale": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-scale"]),
+    "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

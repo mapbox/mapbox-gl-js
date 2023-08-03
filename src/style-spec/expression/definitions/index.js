@@ -123,10 +123,6 @@ function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
     return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
-function has(key: string, obj: {[string]: any}): boolean {
-    return key in obj;
-}
-
 function hsla(ctx: EvaluationContext, [h, s, l, a]: Array<Expression>) {
     h = h.evaluate(ctx);
     s = s.evaluate(ctx);
@@ -138,6 +134,10 @@ function hsla(ctx: EvaluationContext, [h, s, l, a]: Array<Expression>) {
     const color = Color.parse(colorFunction);
     if (!color) throw new RuntimeError(`Failed to parse HSLA color: ${colorFunction}`);
     return color;
+}
+
+function has(key: string, obj: {[string]: any}): boolean {
+    return key in obj;
 }
 
 function get(key: string, obj: {[string]: any}) {

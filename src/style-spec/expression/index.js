@@ -45,15 +45,15 @@ export interface Feature {
 export type FeatureState = {[_: string]: any};
 
 export interface GlobalProperties {
-    +zoom: number;
-    +pitch?: number;
-    +heatmapDensity?: number;
-    +lineProgress?: number;
-    +rasterValue?: number;
-    +skyRadialProgress?: number;
-    +isSupportedScript?: (_: string) => boolean;
-    +accumulated?: Value;
-    +brightness?: number;
+    zoom: number,
+    pitch?: number,
+    heatmapDensity?: number,
+    lineProgress?: number,
+    rasterValue?: number,
+    skyRadialProgress?: number,
+    +isSupportedScript?: (_: string) => boolean,
+    accumulated?: Value,
+    brightness?: number
 }
 
 export class StyleExpression {

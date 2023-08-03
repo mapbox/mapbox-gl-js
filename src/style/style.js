@@ -2096,10 +2096,10 @@ class Style extends Evented {
                     options[name] = styleSpec.terrain[name].default;
                 }
             }
-            for (const key in options) {
-                if (!deepEqual(options[key], currSpec[key])) {
-                    terrain.set(options);
-                    this.stylesheet.terrain = options;
+            for (const key in terrainOptions) {
+                if (!deepEqual(terrainOptions[key], currSpec[key])) {
+                    terrain.set(terrainOptions);
+                    this.stylesheet.terrain = terrainOptions;
                     const parameters = this._getTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
                     break;

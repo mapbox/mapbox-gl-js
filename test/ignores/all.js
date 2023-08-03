@@ -164,6 +164,17 @@ const skip = [
 
     // Dithering of fog is always enabled in GL-JS
     "render-tests/fog/dithering-runtime-off",
+
+    // Needs updated model fixtures
+    "render-tests/model-layer/landmark-conflation-border-overlapping-extrusion",
+    "render-tests/model-layer/landmark-conflation-borders",
+    "render-tests/model-layer/landmark-conflation-borders-add-layer",
+    "render-tests/model-layer/landmark-conflation-borders-terrain",
+    "render-tests/model-layer/landmark-conflation-multiple-model-layers",
+    "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/landmark-terrain",
+    "render-tests/model-layer/lighting-3d-mode/shadow",
+    "render-tests/model-layer/landmark-conflation-multiple-sources",
 ];
 
 export default {todo, skip};

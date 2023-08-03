@@ -2376,7 +2376,6 @@ class Map extends Camera {
      *         "model-id": "tree"
      *     }
      *});
-     *
      */
     addModel(id: string, url: string) {
         this._lazyInitEmptyStyle();
@@ -2426,7 +2425,6 @@ class Map extends Camera {
     *
     * @example
     * const allModels = map.listModels();
-    *
     */
     listModels(): Array<string> {
         return this.style.listModels();

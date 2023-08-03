@@ -15,14 +15,14 @@ import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/ver
 import ONE_EM from './one_em.js';
 import {warnOnce} from '../util/util.js';
 
-type Size = {| fixed: number, stretch: number |};
-
 export type TextureCoordinate = {
     x: number,
     y: number,
     w: number,
     h: number
 };
+
+type Size = {| fixed: number, stretch: number |};
 
 /**
  * A textured quad for rendering a single icon or glyph.

@@ -489,7 +489,6 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-vertical-gradient"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
         "fill-extrusion-ambient-occlusion-radius"?: PropertyValueSpecification<number>,
-        "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-ambient-occlusion-wall-radius"?: PropertyValueSpecification<number>,
         "fill-extrusion-ambient-occlusion-ground-radius"?: PropertyValueSpecification<number>,
         "fill-extrusion-ambient-occlusion-ground-attenuation"?: PropertyValueSpecification<number>,
@@ -498,7 +497,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
-        "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>
+        "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>,
+        "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>
     |}
 |}
 
