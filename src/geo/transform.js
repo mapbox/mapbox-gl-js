@@ -1686,14 +1686,12 @@ class Transform {
         return this.mercatorMatrix.slice();
     }
 
-    globeToMercatorMatrix(): ?Array<number> {
-        if (this.projection.name === 'globe') {
-            const pixelsToMerc = 1 / this.worldSize;
-            const m = mat4.fromScaling([], [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
-            mat4.multiply(m, m, this.globeMatrix);
-            return m;
-        }
-        return undefined;
+    globeToMercatorMatrix(): Array<number> {
+        assert(this.projection.name === 'globe');
+        const pixelsToMerc = 1 / this.worldSize;
+        const m = mat4.fromScaling([], [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
+        mat4.multiply(m, m, this.globeMatrix);
+        return m;
     }
 
     recenterOnTerrain() {

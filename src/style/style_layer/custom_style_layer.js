@@ -5,9 +5,10 @@ import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type Map from '../../ui/map.js';
 import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
+import {warnOnce} from '../../util/util.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 
-type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number, centerInMercator: ?Array<number>, pixelsPerMeterRatio: ?number) => void;
+type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => void;
 
 /**
  * Interface for custom style layers. This is a specification for
@@ -155,6 +156,7 @@ export type CustomLayerInterface = {
     type: "custom",
     renderingMode: "2d" | "3d",
     render: CustomRenderMethod,
+    getShaderProgram: ?(projection: ?ProjectionSpecification) => ?WebGLProgram,
     prerender: ?CustomRenderMethod,
     renderToTile: ?(gl: WebGLRenderingContext, tileId: MercatorCoordinate) => void,
     shouldRerenderTiles: ?() => boolean,
@@ -189,13 +191,57 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
     return errors;
 }
 
+export function customLayerVertexHeader(): string {
+    return `
+        uniform mat4 u_projection;
+        uniform mat4 u_mercatorProjection;
+        uniform float u_isGlobe;
+        uniform float u_transition;
+
+        vec4 project_custom_layer(vec3 pos_merc, vec3 pos_ecef) {
+            if (u_isGlobe == 1.0) {
+                vec4 projected_pos = u_projection * vec4(pos_ecef, 1.0);
+                projected_pos /= projected_pos.w;
+
+                if (u_transition > 0.0) {
+                    vec4 mercator = u_mercatorProjection * vec4(pos_merc, 1.0);
+                    mercator /= mercator.w;
+                    projected_pos = mix(projected_pos, mercator, u_transition);
+                }
+
+                return projected_pos;
+            } else {
+                return u_projection * vec4(pos_merc, 1.0);
+            }
+        }
+    `;
+}
+
 class CustomStyleLayer extends StyleLayer {
 
     implementation: CustomLayerInterface;
 
+    uniformLocation: {string: WebGLUniformLocation};
+
     constructor(implementation: CustomLayerInterface) {
         super(implementation, {});
         this.implementation = implementation;
+        this.uniformLocation = {};
+    }
+
+    setUniform(gl: WebGLRenderingContext, program: WebGLProgram, name: string, value: number | Array<number>) {
+        this.uniformLocation[name] = this.uniformLocation[name] || gl.getUniformLocation(program, name);
+        if (this.uniformLocation[name]) {
+            if (Array.isArray(value)) {
+                gl.uniformMatrix4fv(this.uniformLocation[name], false, value);
+            } else if (typeof value === 'number') {
+                gl.uniform1f(this.uniformLocation[name], value);
+            } else {
+                assert(false, "Unimplemented custom uniform type");
+            }
+        } else {
+            warnOnce(`Layer "${this.id}" is missing uniform location "${name}", make sure to include shader prelude with map.customLayerVertexHeader as part of your custom layer shader source`);
+        }
     }
 
     is3D(): boolean {
