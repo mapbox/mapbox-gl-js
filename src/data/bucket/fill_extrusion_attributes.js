@@ -8,7 +8,8 @@ export const fillExtrusionAttributes: StructArrayLayout = createLayout([
 ]);
 
 export const fillExtrusionGroundAttributes: StructArrayLayout = createLayout([
-    {name: 'a_pos_end', components: 4, type: 'Int16'}
+    {name: 'a_pos_end', components: 4, type: 'Int16'},
+    {name: 'a_angular_offset_factor', components: 1, type: 'Int16'}
 ]);
 
 export const centroidAttributes: StructArrayLayout = createLayout([

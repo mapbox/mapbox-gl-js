@@ -48,6 +48,7 @@ import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
+const TANGENT_CUTOFF = 4;
 
 const HIDDEN_CENTROID: Point = new Point(0, 1);
 export const HIDDEN_BY_REPLACEMENT: number = 0x80000000;
@@ -72,12 +73,13 @@ function addVertex(vertexArray: FillExtrusionLayoutArray, x: number, y: number, 
     );
 }
 
-function addGroundVertex(vertexArray: FillExtrusionLayoutArray, p: Point, end: Point, start: number, bottom: number) {
+function addGroundVertex(vertexArray: FillExtrusionGroundLayoutArray, p: Point, q: Point, start: number, bottom: number, angle: number) {
     vertexArray.emplaceBack(
         p.x,
         p.y,
-        (end.x << 1) + start,
-        (end.y << 1) + bottom
+        (q.x << 1) + start,
+        (q.y << 1) + bottom,
+        angle
     );
 }
 
@@ -253,6 +255,23 @@ class BorderCentroidData {
     }
 }
 
+function concavity(a: Point, b: Point) {
+    return a.x * b.y - a.y * b.x < 0 ? -1 : 1;
+}
+
+function tanAngleClamped(angle: number) {
+    return Math.min(TANGENT_CUTOFF, Math.max(-TANGENT_CUTOFF, Math.tan(angle))) / TANGENT_CUTOFF * FACTOR;
+}
+
+function getAngularOffsetFactor(p0: Point, p: Point, p1: Point) {
+    const na = p.sub(p0)._perp()._unit();
+    const nb = p1.sub(p)._perp()._unit();
+    const nm = na.add(nb)._unit();
+    const cosHalfAngle = clamp(na.x * nm.x + na.y * nm.y, -1, 1);
+    const factor = tanAngleClamped(Math.acos(cosHalfAngle)) * concavity(na, nb);
+    return factor;
+}
+
 export class GroundEffect {
     vertexArray: FillExtrusionGroundLayoutArray;
     vertexBuffer: VertexBuffer;
@@ -282,20 +301,34 @@ export class GroundEffect {
         const n = polyline.length;
         if (n > 2) {
             const segment = this.segments.prepareSegment(n * 4, this.vertexArray, this.indexArray);
+            let prevFactor = 0.0;
+            {
+                const p0 = polyline[n - 1];
+                const p = polyline[0];
+                const p1 = polyline[1];
+                prevFactor = getAngularOffsetFactor(p0, p, p1);
+            }
             for (let i = 0; i < n; i++) {
                 const j = i === n - 1 ? 0 : i + 1;
+                const k = j === n - 1 ? 0 : j + 1;
+
                 const pa = polyline[i];
                 const pb = polyline[j];
+                const pc = polyline[k];
+
+                const a0 = prevFactor;
+                const a1 = getAngularOffsetFactor(pa, pb, pc);
+                prevFactor = a1;
 
                 if (isEdgeOutsideBounds(pa, pb, bounds) ||
                     (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) continue;
 
                 const idx = segment.vertexLength;
 
-                addGroundVertex(this.vertexArray, pa, pb, 1, 1);
-                addGroundVertex(this.vertexArray, pa, pb, 1, 0);
-                addGroundVertex(this.vertexArray, pa, pb, 0, 1);
-                addGroundVertex(this.vertexArray, pa, pb, 0, 0);
+                addGroundVertex(this.vertexArray, pa, pb, 1, 1, a0);
+                addGroundVertex(this.vertexArray, pa, pb, 1, 0, a0);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 1, a1);
+                addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
                 segment.vertexLength += 4;
 
                 this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
@@ -590,6 +623,12 @@ class FillExtrusionBucket implements Bucket {
 
         const edgeRadius = isPolygon ? this.edgeRadius : 0;
 
+        const isDuplicate = (coords: Array<Point>, a: Point) => {
+            if (coords.length === 0) return false;
+            const b = coords[coords.length - 1];
+            return a.x === b.x && a.y === b.y;
+        };
+
         for (const {polygon, bounds} of clippedPolygons) {
             // Only triangulate and draw the area of the feature if it is a polygon
             // Other feature types (e.g. LineString) do not have area, so triangulation is pointless / undefined
@@ -640,7 +679,7 @@ class FillExtrusionBucket implements Bucket {
 
                         let {x, y} = p1;
 
-                        if (edgeRadius === 0) {
+                        if (edgeRadius === 0 && !isDuplicate(groundPolyline, p1)) {
                             groundPolyline.push(p1);
                         }
 
@@ -671,6 +710,9 @@ class FillExtrusionBucket implements Bucket {
                     }
 
                     if (edgeRadius === 0) {
+                        if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
+                            groundPolyline.pop();
+                        }
                         this.groundEffect.addData(groundPolyline, bounds);
                     }
                 }
@@ -770,8 +812,8 @@ class FillExtrusionBucket implements Bucket {
 
                         na = nb;
 
-                        groundPolyline.push(p0);
-                        groundPolyline.push(p1);
+                        if (!isDuplicate(groundPolyline, p0)) groundPolyline.push(p0);
+                        if (!isDuplicate(groundPolyline, p1)) groundPolyline.push(p1);
                     }
 
                     const k = segment.vertexLength;
@@ -847,6 +889,9 @@ class FillExtrusionBucket implements Bucket {
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
                 if (edgeRadius) {
+                    if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
+                        groundPolyline.pop();
+                    }
                     this.groundEffect.addData(groundPolyline, bounds);
                 }
             }
