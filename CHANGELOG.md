@@ -1,3 +1,27 @@
+## 3.0.0-beta.1
+
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md).
+
+### ✨ Features and improvements
+
+- Introduced a new 3D Lights API that supports directional and ambient light sources to give you control of lighting and shadows in your map when using 3D objects.
+- Added new APIs for `fill-extrusion` and other layers to support 3D lighting styling.
+- Added support for shadows, casted from fill extrusions.
+- Introduced flood lighting for both the walls of the extruded buildings and the ground beneath them.
+- Introduced ambient occlusion to affect the ground beneath the extruded buildings.
+- Introduced rounding fill extrusion edges for a smoother appearance.
+- Introduced the `icon-image-cross-fade` property, which controls the transitioning between the two variants of an icon image.
+- Introduced raster colorization via `raster-color` paint properties.
+- Introduced `hsl` and `hsla` color expressions: These expressions allow you to define colors using hue, saturation, and lightness format.
+- Introduced `random` expression: Generate random values using this expression. Use this expression to generate random values, which can be particularly helpful for introducing randomness into your map data.
+- Introduced `measureLight` expression lights configuration property: Create dynamic styles based on lighting conditions.
+- Introduced `config` expression: Retrieves the configuration value for the given option.
+- Introduced `raster-value` expression: Returns the raster value of a pixel computed via `raster-color-mix`.
+- Introduced `distance` expression: Returns the shortest distance in meters between the evaluated feature and the input geometry.
+- Introducing support for nested and configurable styles. You can now import other styles into your main style, with updates to imported styles automatically reflected in your main style. Configuration properties can be set for imported styles, making them customizable.
+- Introduced concept of `slot`s, pre-specified locations in the style, where your layer can be added (e.g., on top of existing land layers but below all labels).
+- When no `style` option is provided to the Map constructor, the Mapbox Standard Style is now enabled as a default.
+
 ## 2.15.0
 
 ## Features ✨ and improvements 🏁
