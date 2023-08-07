@@ -2,8 +2,6 @@
 
 Mapbox GL JS v3 enables the **Mapbox Standard Style**, a new realistic **3D lighting** system, building and terrain **shadows** and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data.
 
-**Note**: The Mapbox GL JS v3 source code will be available on our GitHub repository soon.
-
 ## Update Dependencies
 
 Mapbox GL JS v3 is supported in most modern browsers. Mapbox GL JS v3 is backwards-compatible and existing layers and APIs will continue to work as expected. To use the new Mapbox GL JS v3 beta in your project, you need to import it using the Mapbox GL JS CDN or install the `mapbox-gl` npm package.
