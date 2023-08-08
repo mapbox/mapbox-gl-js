@@ -43,11 +43,14 @@ export type WorkerTileParameters = RequestedTileParameters & {
     brightness: number
 };
 
+export type DEMSourceEncoding = "mapbox" | "terrarium";
+
 export type WorkerDEMTileParameters = TileParameters & {
     coord: { z: number, x: number, y: number, w: number },
     rawImageData: ImageData | ImageBitmap,
-    encoding: "mapbox" | "terrarium",
+    encoding: DEMSourceEncoding,
     padding: number,
+    convertToFloat: boolean,
     buildQuadTree?: boolean
 };
 

@@ -10,7 +10,7 @@ uniform vec4 u_unpack;
 
 float getElevation(vec2 coord) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
-    return texture2D(u_image, coord).a / 4.0;
+    return texture(u_image, coord).r / 4.0;
 #else
     // Convert encoded elevation value to meters
     vec4 data = texture2D(u_image, coord) * 255.0;

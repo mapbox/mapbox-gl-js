@@ -82,11 +82,16 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
     context.pixelStoreUnpackPremultiplyAlpha.set(false);
     const textureStride = dem.stride;
     tile.demTexture = tile.demTexture || painter.getTileTexture(textureStride);
-    const pixelData = dem.getPixels();
+    const demImage = dem.getPixels();
+
+    // Dem encoding should match painters expectations about floating point DEM usage
+    assert((dem.encoding === 'float') === painter.terrainUseFloatDEM());
     if (tile.demTexture) {
-        tile.demTexture.update(pixelData, {premultiply: false});
+        tile.demTexture.update(demImage, {premultiply: false});
     } else {
-        tile.demTexture = new Texture(context, pixelData, gl.RGBA, {premultiply: false});
+        /* $FlowFixMe[cannot-resolve-name] */
+        const gl2 = (context.gl: WebGL2RenderingContext);
+        tile.demTexture = new Texture(context, demImage, painter.terrainUseFloatDEM() ? gl2.R32F : gl.RGBA, {premultiply: false});
     }
     tile.needsDEMTextureUpload = false;
 }

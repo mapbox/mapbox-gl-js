@@ -34,6 +34,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
+        const convertDEMTexturesToFloatFormat = this.map?.painter?.terrainUseFloatDEM();
         // $FlowFixMe[missing-this-annot]
         function imageLoaded(err: ?Error, img: ?TextureImage, cacheControl: ?string, expires: ?string) {
             delete tile.request;
@@ -65,7 +66,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     scope: this.scope,
                     rawImageData,
                     encoding: this.encoding,
-                    padding
+                    padding,
+                    convertToFloat: convertDEMTexturesToFloatFormat
                 };
 
                 if (!tile.actor || tile.state === 'expired') {

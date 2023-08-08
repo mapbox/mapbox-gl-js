@@ -4,6 +4,8 @@ import window from '../util/window.js';
 
 import type Context from '../gl/context.js';
 import type {RGBAImage, AlphaImage} from '../util/image.js';
+import {Float32Image} from '../util/image.js';
+import assert from 'assert';
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>
@@ -30,6 +32,7 @@ type EmptyImage = {
 export type TextureImage =
     | RGBAImage
     | AlphaImage
+    | Float32Image
     | HTMLImageElement
     | HTMLCanvasElement
     | HTMLVideoElement
@@ -55,12 +58,14 @@ class Texture {
         this.update(image, options);
     }
 
-    update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}, position?: { x: number, y: number }) {
+    update(image: TextureImage, options: ?{ premultiply?: boolean, useMipmap?: boolean }, position?: { x: number, y: number }) {
         const {width, height} = image;
         const {context} = this;
         const {gl} = context;
         const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
+        /* $FlowFixMe[cannot-resolve-name] */
+        const gl2 = (context.gl: WebGL2RenderingContext);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
@@ -80,6 +85,7 @@ class Texture {
                 gl.texImage2D(gl.TEXTURE_2D, 0, this.format, baseFormat, gl.UNSIGNED_BYTE, image);
             } else {
                 let internalFormat = this.format;
+                let format = this.format;
                 let type = gl.UNSIGNED_BYTE;
 
                 if (this.format === gl.DEPTH_COMPONENT) {
@@ -89,16 +95,31 @@ class Texture {
                     type = gl.UNSIGNED_SHORT;
                 }
 
+                /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
+                if (this.format === gl2.R32F) {
+                    assert(image instanceof Float32Image);
+                    type = gl2.FLOAT;
+                    format = gl2.RED;
+                }
                 // $FlowFixMe prop-missing - Flow can't refine image type here
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, this.format, type, image.data);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, image.data);
             }
         } else {
             const {x, y} = position || {x: 0, y: 0};
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, gl.RGBA, gl.UNSIGNED_BYTE, image);
             } else {
+                let format = this.format;
+                let type = gl.UNSIGNED_BYTE;
+
+                if (this.format === gl2.R32F) {
+                    assert(image instanceof Float32Image);
+
+                    format = gl2.RED;
+                    type = gl2.FLOAT;
+                }
                 // $FlowFixMe prop-missing - Flow can't refine image type here
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, gl.RGBA, gl.UNSIGNED_BYTE, image.data);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, format, type, image.data);
             }
         }
 

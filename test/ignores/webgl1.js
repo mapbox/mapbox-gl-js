@@ -66,6 +66,7 @@ const skip = [
     "render-tests/wireframe/multiple-layers",
     "render-tests/wireframe/terrain",
     "render-tests/wireframe/terrain-high-exaggeration",
+    "render-tests/wireframe/wireframe-interpolation-vis",
 ];
 
 export default {todo, skip};

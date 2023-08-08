@@ -144,5 +144,23 @@ export class RGBAImage {
     }
 }
 
+export class Float32Image {
+    width: number;
+    height: number;
+
+    data: Float32Array;
+
+    constructor(size: Size, data: Uint8Array | Float32Array) {
+        this.width = size.width;
+        this.height = size.height;
+
+        if (data instanceof Uint8Array) {
+            this.data = new Float32Array(data.buffer);
+        } else {
+            this.data = data;
+        }
+    }
+}
+
 register(AlphaImage, 'AlphaImage');
 register(RGBAImage, 'RGBAImage');

@@ -1,10 +1,13 @@
 // @flow
-import {RGBAImage} from '../util/image.js';
+import {RGBAImage, Float32Image} from '../util/image.js';
 
 import {warnOnce, clamp} from '../util/util.js';
 import {register} from '../util/web_worker_transfer.js';
+import type {DEMSourceEncoding} from '../source/worker_source.js';
 import DemMinMaxQuadTree from './dem_tree.js';
 import assert from 'assert';
+
+export type DEMEncoding = DEMSourceEncoding | "float";
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
@@ -16,11 +19,10 @@ import assert from 'assert';
 // surrounding pixel values to compute the slope at that pixel, and we cannot accurately calculate the slope at pixels on a
 // tile's edge without backfilling from neighboring tiles.
 
-export type DEMEncoding = "mapbox" | "terrarium";
-
 const unpackVectors = {
     mapbox: [6553.6, 25.6, 0.1, 10000.0],
-    terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
+    terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0],
+    float: [1, 1, 1, 1]
 };
 
 function unpackMapbox(r: number, g: number, b: number): number {
@@ -38,6 +40,7 @@ function unpackTerrarium(r: number, g: number, b: number): number {
 export default class DEMData {
     uid: number;
     pixels: Uint8Array;
+    pixelsMod: Uint8Array;
     stride: number;
     dim: number;
     encoding: DEMEncoding;
@@ -50,40 +53,54 @@ export default class DEMData {
 
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
-    constructor(uid: number, data: ImageData, encoding: DEMEncoding, borderReady: boolean = false, buildQuadTree: boolean = false): void {
+    constructor(uid: number, data: ImageData, sourceEncoding: DEMSourceEncoding,
+        convertToFloat: boolean, borderReady: boolean = false, buildQuadTree: boolean = false): void {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
-        if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return warnOnce(
-            `"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`
+        if (sourceEncoding && sourceEncoding !== "mapbox" && sourceEncoding !== "terrarium") return warnOnce(
+            `"${sourceEncoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`
         );
         this.stride = data.height;
         const dim = this.dim = data.height - 2;
         const values = new Uint32Array(data.data.buffer);
         this.pixels = new Uint8Array(data.data.buffer);
-        this.encoding = encoding || 'mapbox';
+        this.encoding = sourceEncoding || 'mapbox';
         this.borderReady = borderReady;
 
-        if (borderReady) return;
-
-        // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
-        // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
-        // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
-        for (let x = 0; x < dim; x++) {
-            // left vertical border
-            values[this._idx(-1, x)] = values[this._idx(0, x)];
-            // right vertical border
-            values[this._idx(dim, x)] = values[this._idx(dim - 1, x)];
-            // left horizontal border
-            values[this._idx(x, -1)] = values[this._idx(x, 0)];
-            // right horizontal border
-            values[this._idx(x, dim)] = values[this._idx(x, dim - 1)];
+        if (!borderReady) {
+            // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
+            // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
+            // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
+            for (let x = 0; x < dim; x++) {
+                // left vertical border
+                values[this._idx(-1, x)] = values[this._idx(0, x)];
+                // right vertical border
+                values[this._idx(dim, x)] = values[this._idx(dim - 1, x)];
+                // left horizontal border
+                values[this._idx(x, -1)] = values[this._idx(x, 0)];
+                // right horizontal border
+                values[this._idx(x, dim)] = values[this._idx(x, dim - 1)];
+            }
+            // corners
+            values[this._idx(-1, -1)] = values[this._idx(0, 0)];
+            values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
+            values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
+            values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
         }
-        // corners
-        values[this._idx(-1, -1)] = values[this._idx(0, 0)];
-        values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
-        values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
-        values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
-        if (buildQuadTree) this._buildQuadTree();
+
+        if (buildQuadTree) {
+            this._buildQuadTree();
+        }
+
+        if (convertToFloat) {
+            const floatView = new Float32Array(data.data.buffer);
+            const unpack = this.encoding === "terrarium" ? unpackTerrarium : unpackMapbox;
+            for (let i = 0; i < values.length; ++i) {
+                const byteIdx = i * 4;
+                floatView[i] = unpack(this.pixels[byteIdx], this.pixels[byteIdx + 1], this.pixels[byteIdx + 2]);
+            }
+            this.encoding = "float";
+        }
     }
 
     _buildQuadTree() {
@@ -97,9 +114,15 @@ export default class DEMData {
             x = clamp(x, -1, this.dim);
             y = clamp(y, -1, this.dim);
         }
-        const index = this._idx(x, y) * 4;
+        const idx = this._idx(x, y);
+        if (this.encoding === "float") {
+            const floatView = new Float32Array(this.pixels.buffer);
+            return floatView[idx];
+        }
+
+        const byteIndex = idx * 4;
         const unpack = this.encoding === "terrarium" ? unpackTerrarium : unpackMapbox;
-        return unpack(this.pixels[index], this.pixels[index + 1], this.pixels[index + 2]);
+        return unpack(this.pixels[byteIndex], this.pixels[byteIndex + 1], this.pixels[byteIndex + 2]);
     }
 
     static getUnpackVector(encoding: DEMEncoding): [number, number, number, number] {
@@ -111,11 +134,11 @@ export default class DEMData {
     }
 
     _idx(x: number, y: number): number {
-        if (x < -1 || x >= this.dim + 1 ||  y < -1 || y >= this.dim + 1) throw new RangeError(`out of range source coordinates for DEM; coords = (${x}, ${y}), dim = ${this.dim}, stride = ${this.stride}`);
+        if (x < -1 || x >= this.dim + 1 || y < -1 || y >= this.dim + 1) throw new RangeError('out of range source coordinates for DEM data');
         return (y + 1) * this.stride + (x + 1);
     }
 
-    static pack(altitude: number, encoding: DEMEncoding): [number, number, number, number] {
+    static pack(altitude: number, encoding: DEMSourceEncoding): [number, number, number, number] {
         const color = [0, 0, 0, 0];
         const vector = DEMData.getUnpackVector(encoding);
         let v = Math.floor((altitude + vector[3]) / vector[2]);
@@ -127,8 +150,12 @@ export default class DEMData {
         return color;
     }
 
-    getPixels(): RGBAImage {
-        return new RGBAImage({width: this.stride, height: this.stride}, this.pixels);
+    getPixels(): RGBAImage | Float32Image {
+        if (this.encoding === 'float') {
+            return new Float32Image({width: this.stride, height: this.stride}, this.pixels);
+        } else {
+            return new RGBAImage({width: this.stride, height: this.stride}, this.pixels);
+        }
     }
 
     backfillBorder(borderTile: DEMData, dx: number, dy: number): void {

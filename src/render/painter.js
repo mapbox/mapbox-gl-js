@@ -1053,6 +1053,11 @@ class Painter {
         return this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture;
     }
 
+    terrainUseFloatDEM(): boolean {
+        const context = this.context;
+        return context.isWebGL2 && context.extTextureFloatLinear !== undefined && context.extTextureFloatLinear !== null;
+    }
+
     /**
      * Returns #defines that would need to be injected into every Program
      * based on the current state of Painter.
@@ -1090,6 +1095,7 @@ class Painter {
             }
         }
         if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
+        if (this.terrainUseFloatDEM()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         // When terrain is active, fog is rendered as part of draping, not as part of tile

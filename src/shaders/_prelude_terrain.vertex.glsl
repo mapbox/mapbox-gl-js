@@ -50,7 +50,7 @@ uniform vec2 u_dem_tl;
 uniform vec2 u_dem_tl_prev;
 uniform float u_dem_scale;
 uniform float u_dem_scale_prev;
-uniform float u_dem_size;
+uniform float u_dem_size; // Texture size without 1px border padding
 uniform float u_dem_lerp;
 uniform float u_exaggeration;
 uniform float u_meter_to_dem;
@@ -72,7 +72,7 @@ float decodeElevation(vec4 v) {
 float currentElevation(vec2 apos) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
     vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale + u_dem_tl) + 1.5) / (u_dem_size + 2.0);
-    return u_exaggeration * texture2D(u_dem, pos).a;
+    return u_exaggeration * texture(u_dem, pos).r;
 #else
     float dd = 1.0 / (u_dem_size + 2.0);
     vec4 r = tileUvToDemSample(apos / 8192.0, u_dem_size, u_dem_scale, u_dem_tl);
@@ -80,9 +80,6 @@ float currentElevation(vec2 apos) {
     vec2 f = r.zw;
 
     float tl = decodeElevation(texture2D(u_dem, pos));
-#ifdef TERRAIN_DEM_NEAREST_FILTER
-    return u_exaggeration * tl;
-#endif
     float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)));
     float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)));
     float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)));
@@ -94,7 +91,7 @@ float currentElevation(vec2 apos) {
 float prevElevation(vec2 apos) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
     vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale_prev + u_dem_tl_prev) + 1.5) / (u_dem_size + 2.0);
-    return u_exaggeration * texture2D(u_dem_prev, pos).a;
+    return u_exaggeration * texture(u_dem_prev, pos).r;
 #else
     float dd = 1.0 / (u_dem_size + 2.0);
     vec4 r = tileUvToDemSample(apos / 8192.0, u_dem_size, u_dem_scale_prev, u_dem_tl_prev);
@@ -163,10 +160,10 @@ float occlusionFade(vec4 frag) {
 
 vec4 fourSample(vec2 pos, vec2 off) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
-    float tl = texture2D(u_dem, pos).a;
-    float tr = texture2D(u_dem, pos + vec2(off.x, 0.0)).a;
-    float bl = texture2D(u_dem, pos + vec2(0.0, off.y)).a;
-    float br = texture2D(u_dem, pos + off).a;
+    float tl = texture(u_dem, pos).r;
+    float tr = texture(u_dem, pos + vec2(off.x, 0.0)).r;
+    float bl = texture(u_dem, pos + vec2(0.0, off.y)).r;
+    float br = texture(u_dem, pos + off).r;
 #else
     vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
     float tl = dot(demtl, u_dem_unpack);

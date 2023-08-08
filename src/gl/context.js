@@ -73,6 +73,7 @@ class Context {
     extStandardDerivatives: any;
     extDebugRendererInfo: any;
     extTimerQuery: any;
+    extTextureFloatLinear: any;
 
     extTextureFilterAnisotropicForceOff: boolean;
     extStandardDerivativesForceOff: boolean;
@@ -141,6 +142,7 @@ class Context {
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
+        this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
         if (!isWebGL2) this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
         if (isWebGL2 || (this.extTextureHalfFloat && gl.getExtension('OES_texture_half_float_linear'))) {
             this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');

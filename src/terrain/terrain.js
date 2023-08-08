@@ -1,5 +1,4 @@
 // @flow
-
 import Point from '@mapbox/point-geometry';
 import SourceCache from '../source/source_cache.js';
 import {OverscaledTileID} from '../source/tile_id.js';
@@ -42,7 +41,7 @@ import DEMData from '../data/dem_data.js';
 import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
-import {RGBAImage} from '../util/image.js';
+import {RGBAImage, Float32Image} from '../util/image.js';
 import {globeMetersToEcef} from '../geo/projection/globe_util.js';
 import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 
@@ -583,15 +582,30 @@ export class Terrain extends Elevation {
         context.activeTexture.set(gl.TEXTURE2);
 
         const min = this._getLoadedAreaMinimum();
-        const image = new RGBAImage(
-            {width: 1, height: 1},
-            new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
-        );
+
+        const getTextureParameters = () => {
+            if (this.painter.terrainUseFloatDEM()) {
+                /* $FlowFixMe[cannot-resolve-name] */
+                const gl2 = (context.gl: WebGL2RenderingContext);
+                const image = new Float32Image(
+                    {width: 1, height: 1},
+                    new Float32Array([min]));
+                return [gl2.R32F, image];
+            } else {
+                const image = new RGBAImage(
+                    {width: 1, height: 1},
+                    new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
+                );
+                return [gl.RGBA, image];
+            }
+        };
+
+        const [internalFormat, image] = getTextureParameters();
 
         this._emptyDEMTextureDirty = false;
         let texture = this._emptyDEMTexture;
         if (!texture) {
-            texture = this._emptyDEMTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
+            texture = this._emptyDEMTexture = new Texture(context, image, internalFormat, {premultiply: false});
         } else {
             texture.update(image, {premultiply: false});
         }
@@ -613,7 +627,7 @@ export class Terrain extends Elevation {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
-        uniforms['u_dem_size'] = this.sourceCache.getSource().tileSize;
+
         uniforms['u_exaggeration'] = this.exaggeration();
 
         let demTile = null;
@@ -633,20 +647,35 @@ export class Terrain extends Elevation {
             }
         }
 
+        const filteringForDemTile = (tile: any) => {
+            if (!tile || !tile.demTexture) {
+                return gl.NEAREST;
+            }
+
+            return this.painter.terrainUseFloatDEM() ? gl.LINEAR : gl.NEAREST;
+        };
+
+        const setDemSizeUniform = (demTexture: Texture) => {
+            uniforms['u_dem_size'] = demTexture.size[0] === 1 ? 1 : demTexture.size[0] - 2;
+        };
+
         if (prevDemTile && demTile) {
             // Both DEM textures are expected to be correctly set if geomorphing is enabled
             context.activeTexture.set(gl.TEXTURE2);
-            (demTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            (demTile.demTexture: any).bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
             context.activeTexture.set(gl.TEXTURE4);
-            (prevDemTile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-
+            (prevDemTile.demTexture: any).bind(filteringForDemTile(prevDemTile), gl.CLAMP_TO_EDGE);
+            if (demTile.demTexture) {
+                setDemSizeUniform(demTile.demTexture);
+            }
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
             context.activeTexture.set(gl.TEXTURE2);
             const demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
                 (demTile.demTexture: any) : this.emptyDEMTexture;
-            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
+            setDemSizeUniform(demTexture);
         }
 
         context.activeTexture.set(gl.TEXTURE3);
