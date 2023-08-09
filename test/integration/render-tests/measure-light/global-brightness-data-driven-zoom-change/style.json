@@ -1,0 +1,222 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setZoom", 5.0
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "environment",
+              "properties": {
+                "intensity": 0.9
+              }
+            },
+            {
+              "type": "directional",
+              "id": "sun_light",
+              "properties": {
+                "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+                "intensity": 0.9,
+                "direction": [
+                  200.0,
+                  30.0
+                ]
+              }
+            }
+          ]
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setZoom", 0.0
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "zoom": 2.0,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.1
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.1,
+        "direction": [
+          200.0,
+          30.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Polygon",
+              "id": 0,
+              "coordinates": [
+                [
+                  [
+                    20,
+                    -10
+                  ],
+                  [
+                    20,
+                    10
+                  ],
+                  [
+                    40,
+                    10
+                  ],
+                  [
+                    40,
+                    -10
+                  ],
+                  [
+                    20,
+                    -10
+                  ]
+                ]
+              ]
+            },
+            "properties": {
+              "class": "grass"
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 1,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -10,
+                    -10
+                  ],
+                  [
+                    -10,
+                    10
+                  ],
+                  [
+                    10,
+                    10
+                  ],
+                  [
+                    10,
+                    -10
+                  ],
+                  [
+                    -10,
+                    -10
+                  ]
+                ]
+              ]
+            },
+            "properties": {
+              "class": "trees"
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -40,
+                    -10
+                  ],
+                  [
+                    -40,
+                    10
+                  ],
+                  [
+                    -20,
+                    10
+                  ],
+                  [
+                    -20,
+                    -10
+                  ],
+                  [
+                    -40,
+                    -10
+                  ]
+                ]
+              ]
+            },
+            "properties": {
+              "class": "grass"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "class"
+            ],
+            "grass"
+          ],
+          "blue",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.2
+            ],
+            "green",
+            "yellow"
+          ]
+        ]
+      }
+    }
+  ]
+}

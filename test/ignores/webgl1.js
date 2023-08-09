@@ -49,6 +49,7 @@ const skip = [
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-vertical-scale",
     "render-tests/lighting-3d-mode/shadow/high-pitch-terrain",
+    "render-tests/measure-light/global-brightness-zoom-based-model",
 
     // Orthographic camera projection tests with shadows
     "render-tests/model-layer/camera-projection/with-shadows/camera-orthographic-high-pitch",
