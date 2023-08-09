@@ -504,7 +504,7 @@ export default class Marker extends Evented {
         const map = this._map;
         const alignment = this.getPitchAlignment();
 
-        // `viewport', 'auto' and invalid arugments do no pitch transformation.
+        // `viewport', 'auto' and invalid arguments do no pitch transformation.
         if (!map || !pos || alignment !== 'map') {
             return ``;
         }
