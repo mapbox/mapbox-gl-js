@@ -83,7 +83,9 @@ With Mapbox Standard, we are also introducing a new paradigm for how to interact
 * The Mapbox Standard style features 4 light presets: "Day", "Dusk", "Dawn", and "Night". The style light preset can be changed from the default, "Day", to another preset with a single line of code:
 
 ```js
-map.setConfigProperty('basemap', 'lightPreset', 'dusk');
+map.on('style.load', () => {
+    map.setConfigProperty('basemap', 'lightPreset', 'dusk');
+});
 ```
 
 Changing the light preset will alter the colors and shadows on your map to reflect the time of day. For more information, refer to the [Lighting API](#lighting-api) section.
@@ -91,7 +93,9 @@ Changing the light preset will alter the colors and shadows on your map to refle
 Similarly, you can set other configuration properties on the Standard style such as showing POIs, place labels, or specific fonts:
 
 ```js
-map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+map.on('style.load', () => {
+    map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+});
 ```
 
 The Standard style offers 6 configuration properties for developers to change when they import it into their own style:
