@@ -155,9 +155,10 @@ class Tiled3dModelBucket implements Bucket {
 
     needsReEvaluation(painter: Painter, zoom: number, layer: ModelStyleLayer): boolean {
         const projection = painter.transform.projectionOptions;
-        const calculatedBrightness = painter.style.calculateLightsBrightness();
+        const calculatedBrightness = painter.style.getBrightness();
         const brightnessChanged = this.brightness !== calculatedBrightness;
         if (!this.uploaded || this.dirty || projection.name !== this.projection.name ||
+            expressionRequiresReevaluation(layer.paint.get('model-color').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-color-mix-intensity').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-roughness').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-emissive-strength').value, brightnessChanged) ||
