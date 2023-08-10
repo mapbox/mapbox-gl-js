@@ -57,3 +57,10 @@ Will validate the given style JSON and print errors to stdout. Provide a
 `--json` flag to get JSON output.
 
 To validate that a style can be uploaded to the Mapbox Styles API, use the `--mapbox-api-supported` flag.
+
+## License
+
+This project uses the standard Mapbox license, which is designed to provide flexibility for our customers and a sustained foundation for the development of our technology. Please consult LICENSE.txt for its specific details.
+
+We understand that the Mapbox Style Specification embodied in this module may be useful in a wide variety of projects. If you are interested in using this module in a manner not expressly permitted by its license, please do not hesitate to contact legal@mapbox.com with details of what you have in mind.
+```

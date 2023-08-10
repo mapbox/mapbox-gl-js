@@ -8,7 +8,7 @@
     "mapbox-gl",
     "mapbox-gl-js"
   ],
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE.txt",
   "main": "./dist/index.cjs",
   "module": "./dist/index.es.js",
   "type": "module",
