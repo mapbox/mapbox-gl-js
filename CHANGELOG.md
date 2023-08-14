@@ -21,6 +21,7 @@ Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting s
 - Introducing support for nested and configurable styles. You can now import other styles into your main style, with updates to imported styles automatically reflected in your main style. Configuration properties can be set for imported styles, making them customizable.
 - Introduced concept of `slot`s, pre-specified locations in the style, where your layer can be added (e.g., on top of existing land layers but below all labels).
 - When no `style` option is provided to the Map constructor, the Mapbox Standard Style is now enabled as a default.
+- WebGL2 is now enabled by default.
 
 ## 2.15.0
 
