@@ -3254,16 +3254,17 @@ class Map extends Camera {
         this._detectMissingCSS();
 
         const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+        this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
+
         if (this._interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
+            this._canvas.setAttribute('tabindex', '0');
         }
 
-        this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
         // $FlowFixMe[method-unbinding]
         this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
         // $FlowFixMe[method-unbinding]
         this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
-        this._canvas.setAttribute('tabindex', '0');
         this._canvas.setAttribute('aria-label', this._getUIString('Map.Title'));
         this._canvas.setAttribute('role', 'region');
 
