@@ -88,7 +88,7 @@
     "pretty-bytes": "^6.0.0",
     "puppeteer-core": "^21.0.3",
     "qrcode-terminal": "^0.12.0",
-    "rollup": "^3.26.2",
+    "rollup": "^3.28.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-unassert": "^0.6.0",
     "selenium-webdriver": "^4.10.0",
