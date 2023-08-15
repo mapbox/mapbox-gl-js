@@ -3,7 +3,7 @@ orbs:
   aws-cli: circleci/aws-cli@3.1.4
   browser-tools: circleci/browser-tools@1.4.2
   macos: circleci/macos@2.3.6
-  win: circleci/windows@4.1.1
+  win: circleci/windows@5.0.0
 
 workflows:
   version: 2
@@ -212,6 +212,8 @@ mac-defaults: &mac-defaults
 
 windows-defaults: &windows-defaults
   executor:
+    # windows-server-2022-gui:current
+    # https://circleci.com/developer/machine/image/windows-server-2022-gui
     name: win/default
   working_directory: ~/mapbox-gl-js
 
@@ -314,7 +316,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: 
+      - run:
           command: yarn run test-unit
           no_output_timeout: 5m
 
@@ -606,11 +608,10 @@ jobs:
       - run:
           name: Setup Node.js and Yarn
           command: |
-            choco uninstall nvm.portable
             $nodeVersion = Get-Content .nvmrc
-            choco install nodejs --version $nodeVersion
+            nvm install $nodeVersion
+            nvm use $nodeVersion
             npm install -g yarn
-            refreshenv
       - run: yarn --frozen-lockfile
       - run: yarn run build-loaders
       - run: yarn run build-dev
@@ -640,11 +641,10 @@ jobs:
       - run:
           name: Setup Node.js and Yarn
           command: |
-            choco uninstall nvm.portable
             $nodeVersion = Get-Content .nvmrc
-            choco install nodejs --version $nodeVersion
+            nvm install $nodeVersion
+            nvm use $nodeVersion
             npm install -g yarn
-            refreshenv
       # The browser-tools orb doesn't work on Windows, so we install chrome manually.
       - run:
           name: Installing Chrome on Windows
