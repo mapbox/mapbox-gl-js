@@ -20,6 +20,8 @@ const skip = [
     "render-tests/model-layer/landmark-part-styling-indirect-doors-no-shadows",
     "render-tests/model-layer/landmark-terrain",
     "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/landmark-shadows-opacity",
+    "render-tests/model-layer/landmark-shadows-totally-transparent",
     "render-tests/model-layer/trees-shadow-scaled",
     "render-tests/model-layer/lighting-3d-mode/model-shadow",
     "render-tests/model-layer/lighting-3d-mode/shadow",
@@ -48,8 +50,14 @@ const skip = [
     "render-tests/lighting-3d-mode/shadow/fill-extrusion",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",
+    "render-tests/lighting-3d-mode/shadow/fill-extrusion-translucent",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-vertical-scale",
     "render-tests/lighting-3d-mode/shadow/high-pitch-terrain",
+    "render-tests/lighting-3d-mode/shadow/intensity-zero",
+    "render-tests/lighting-3d-mode/shadow/pitch-limit",
+    "render-tests/lighting-3d-mode/shadow/pitch-max-distance",
+    "render-tests/lighting-3d-mode/shadow/shimmering",
+    "render-tests/lighting-3d-mode/shadow/viewport-padding",
     "render-tests/measure-light/global-brightness-zoom-based-model",
 
     // Orthographic camera projection tests with shadows

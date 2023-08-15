@@ -339,10 +339,9 @@
   "properties_light_directional": {
     "direction": {
       "type": "array",
-      "default": [
-        210,
-        30
-      ],
+      "default": [210, 30],
+      "minimum": [0, 0],
+      "maximum": [360, 90],
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -354,10 +353,7 @@
         ]
       },
       "doc": "Direction of the light source specified as [a azimuthal angle, p polar angle] where a indicates the azimuthal angle of the light relative to north (in degrees and proceeding clockwise), and p indicates polar angle of the light (from 0°, directly above, to 180°, directly below).",
-      "example": [
-        90,
-        80
-      ]
+      "example": [90, 40]
     },
     "color": {
       "type": "color",

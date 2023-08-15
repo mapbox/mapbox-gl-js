@@ -1,60 +1,39 @@
 {
   "version": 8,
-   "metadata": {
+  "metadata": {
     "test": {
-      "standardDerivatives": true,
-      "width": 512,
-      "height": 512,
-      "allowed": 0.0021,
-      "optimizeForTerrain": true
+      "height": 256
     }
   },
   "lights": [
     {
       "type": "ambient",
-      "id": "test_ambient"
+      "id": "environment"
     },
     {
       "type": "directional",
-      "id": "test_directional",
+      "id": "sun_light",
       "properties": {
-        "cast-shadows" : true,
-        "color": "rgba(255, 255, 255, 1)"
+        "cast-shadows": true,
+        "shadow-intensity": 0.0
       }
     }
   ],
   "sources": {
-     "mapbox-dem": {
-      "type": "raster-dem",
-      "maxzoom": 14,
-      "tileSize": 512,
-      "tiles": ["local://models/dem/14-8847-5550.terrain-512.png"]
-    },
     "mapbox": {
       "type": "vector",
       "maxzoom": 16,
       "tiles": [
-        "local://models/vector/{z}-{x}-{y}.mvt"
-      ]
-    },
-    "landmark": {
-      "type": "batched-model",
-      "maxzoom": 14,
-      "tiles": [
-        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
+        "local://tiles/{z}-{x}-{y}.mvt"
       ]
     }
   },
-  "terrain": {
-    "source": "mapbox-dem",
-    "exaggeration": 1.3
-  },
-  "pitch": 61.00,
-  "zoom": 18.0,
-  "bearing": 11.97,
+  "pitch": 36.50,
+  "zoom": 17.00,
+  "bearing": 320,
   "center": [
-    14.3956,
-    50.0838
+    -74.0133,
+    40.7155
   ],
   "layers": [
     {
@@ -90,13 +69,9 @@
       "source-layer": "building",
       "paint": {
         "fill-extrusion-color": "white",
-        "fill-extrusion-height": ["get", "height"]
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-opacity": 0.5
       }
-    },
-    {
-      "id": "landmark",
-      "type": "model",
-      "source": "landmark"
     }
   ]
 }
