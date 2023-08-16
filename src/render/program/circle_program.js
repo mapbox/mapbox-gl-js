@@ -77,7 +77,7 @@ const circleUniformValues = (
     }
 
     const values = {
-        'u_camera_to_center_distance': transform.cameraToCenterDistance,
+        'u_camera_to_center_distance': painter.transform.getCameraToCenterDistance(transform.projection),
         'u_matrix': painter.translatePosMatrix(
             coord.projMatrix,
             tile,
