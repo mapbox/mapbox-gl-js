@@ -393,6 +393,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     if (replacementActive) {
         defines.push('HAS_CENTROID');
     }
+    const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
@@ -409,8 +410,10 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
             layer.paint.get('fill-extrusion-translate-anchor'));
 
         const meterToTile = 1 / bucket.tileToMeter;
+        const zoom = painter.transform.zoom;
         const ao = [aoIntensity, aoRadius * meterToTile];
-        const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation);
+        const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;
+        const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile);
 
         const dynamicBuffers = [];
         if (replacementActive) dynamicBuffers.push(bucket.groundEffect.hiddenByLandmarkVertexBuffer);
@@ -419,7 +422,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
-            groundEffect.segments, layer.paint, painter.transform.zoom,
+            groundEffect.segments, layer.paint, zoom,
             programConfiguration, dynamicBuffers);
     }
 }

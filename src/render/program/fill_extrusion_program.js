@@ -78,6 +78,7 @@ export type FillExtrusionGroundEffectUniformsType = {|
     'u_flood_light_intensity': Uniform1f,
     'u_flood_light_color': Uniform3f,
     'u_attenuation': Uniform1f,
+    'u_edge_radius': Uniform1f,
     'u_fb': Uniform1i
 |};
 
@@ -143,6 +144,7 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_flood_light_intensity': new Uniform1f(context),
     'u_flood_light_color': new Uniform3f(context),
     'u_attenuation': new Uniform1f(context),
+    'u_edge_radius': new Uniform1f(context),
     'u_fb': new Uniform1i(context)
 });
 
@@ -257,7 +259,8 @@ const fillExtrusionGroundEffectUniformValues = (
     ao: [number, number],
     floodLightIntensity: number,
     floodLightColor: [number, number, number],
-    attenuation: number
+    attenuation: number,
+    edgeRadius: number
 ): UniformValues<FillExtrusionGroundEffectUniformsType> => {
     const uniformValues = {
         'u_matrix': matrix,
@@ -268,6 +271,7 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_flood_light_intensity': floodLightIntensity,
         'u_flood_light_color': floodLightColor,
         'u_attenuation': attenuation,
+        'u_edge_radius': edgeRadius,
         'u_fb': 0
     };
     return uniformValues;

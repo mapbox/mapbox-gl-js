@@ -17,6 +17,7 @@ uniform highp float u_flood_light_intensity;
 uniform highp mat4 u_matrix;
 uniform highp float u_ao_pass;
 uniform highp float u_meter_to_tile;
+uniform highp float u_edge_radius; // in tile coords
 
 uniform highp vec2 u_ao;
 
@@ -36,7 +37,7 @@ void main() {
     float flood_radius_tile = flood_light_ground_radius * u_meter_to_tile;
     vec2 v = normalize(q - p);
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
-    float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass);
+    float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass) + u_edge_radius;
 
     float angular_offset_factor = a_angular_offset_factor / EXTENT * TANGENT_CUTOFF;
     float angular_offset = angular_offset_factor * effect_radius;
@@ -46,14 +47,18 @@ void main() {
     float side = (0.5 - start_bottom.x) * 2.0;
     vec2 extrusion_parallel = v * side * mix(effect_radius / 10.0, angular_offset, top);
 
-    vec2 extrusion_perp = vec2(v.y, -v.x) * effect_radius * top;
+    vec2 perp = vec2(v.y, -v.x);
+    vec2 extrusion_perp = perp * effect_radius * top;
 
     vec3 pos = vec3(mix(q, p, start_bottom.x), 0.0);
     pos.xy += extrusion_parallel + extrusion_perp;
 
 #ifdef SDF_SUBPASS
     v_pos = pos.xy;
-    v_line_segment = vec4(p, q);
+    // Shift the line segment against which we compute the signed distance values. 
+    // This allows us to achieve pleasant results without having to add additional
+    // vertices when fill-extrusion-edge-radius is non-zero. 
+    v_line_segment = vec4(p, q) + perp.xyxy * u_edge_radius;
     v_flood_light_radius_tile = flood_radius_tile;
     v_ao = vec2(u_ao.x, ao_radius);
 #ifdef FOG

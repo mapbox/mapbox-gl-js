@@ -622,6 +622,7 @@ class FillExtrusionBucket implements Bucket {
         }
 
         const edgeRadius = isPolygon ? this.edgeRadius : 0;
+        const optimiseGround = edgeRadius > 0 && this.zoom < 17;
 
         const isDuplicate = (coords: Array<Point>, a: Point) => {
             if (coords.length === 0) return false;
@@ -677,23 +678,25 @@ class FillExtrusionBucket implements Bucket {
                         const p1 = ring[i];
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
 
-                        let {x, y} = p1;
-
-                        if (edgeRadius === 0 && !isDuplicate(groundPolyline, p1)) {
-                            groundPolyline.push(p1);
-                        }
+                        const q = p1.clone();
 
                         if (edgeRadius) {
                             nb = p2.sub(p1)._perp()._unit();
                             const nm = na.add(nb)._unit();
                             const cosHalfAngle = na.x * nm.x + na.y * nm.y;
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
-                            x += offset * nm.x;
-                            y += offset * nm.y;
+                            q.x += offset * nm.x;
+                            q.y += offset * nm.y;
+                            q.x = Math.round(q.x);
+                            q.y = Math.round(q.y);
                             na = nb;
                         }
 
-                        addVertex(this.layoutVertexArray, x, y, 0, 0, 1, 1, 0);
+                        if ((edgeRadius === 0 || optimiseGround) && !isDuplicate(groundPolyline, q)) {
+                            groundPolyline.push(q);
+                        }
+
+                        addVertex(this.layoutVertexArray, q.x, q.y, 0, 0, 1, 1, 0);
                         segment.vertexLength++;
 
                         this.footprintVertices.emplaceBack(p1.x, p1.y);
@@ -703,13 +706,13 @@ class FillExtrusionBucket implements Bucket {
 
                         if (isGlobe) {
                             const array: any = this.layoutVertexExtArray;
-                            const projectedP = projection.projectTilePoint(x, y, canonical);
-                            const n = projection.upVector(canonical, x, y);
+                            const projectedP = projection.projectTilePoint(q.x, q.y, canonical);
+                            const n = projection.upVector(canonical, q.x, q.y);
                             addGlobeExtVertex(array, projectedP, n);
                         }
                     }
 
-                    if (edgeRadius === 0) {
+                    if (edgeRadius === 0 || optimiseGround) {
                         if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                             groundPolyline.pop();
                         }
@@ -812,8 +815,10 @@ class FillExtrusionBucket implements Bucket {
 
                         na = nb;
 
-                        if (!isDuplicate(groundPolyline, p0)) groundPolyline.push(p0);
-                        if (!isDuplicate(groundPolyline, p1)) groundPolyline.push(p1);
+                        if (this.zoom >= 17) {
+                            if (!isDuplicate(groundPolyline, p0)) groundPolyline.push(p0);
+                            if (!isDuplicate(groundPolyline, p1)) groundPolyline.push(p1);
+                        }
                     }
 
                     const k = segment.vertexLength;
@@ -888,7 +893,7 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
-                if (edgeRadius) {
+                if (edgeRadius && this.zoom >= 17) {
                     if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                         groundPolyline.pop();
                     }
