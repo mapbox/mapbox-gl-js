@@ -168,9 +168,12 @@ class AttributionControl {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
                 const source = sourceCache.getSource();
-                if (source.attribution && attributions.indexOf(source.attribution) < 0) {
+                if (source?.attribution && attributions.indexOf(source.attribution) < 0) {
                     // $FlowFixMe[incompatible-call] - Flow can't infer that attribution is a string
-                    attributions.push(source.attribution);
+                    if (typeof source.attribution === "string") {
+                        const attributionRoleRemoved = source.attribution.replaceAll(`role=\"listitem\"`, "");
+                        attributions.push(attributionRoleRemoved);
+                    }
                 }
             }
         }
