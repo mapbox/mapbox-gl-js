@@ -46,8 +46,8 @@ void main() {
 #ifdef PROJECTION_GLOBE_VIEW
     // Angle between dir and globe center
     highp vec3 closest_point = globe_pos_dot_dir * dir;
-    float closest_point_to_center = length(closest_point - u_globe_pos);
-    float theta = asin(clamp(closest_point_to_center / length(u_globe_pos), -1.0, 1.0));
+    highp float closest_point_to_center = length(closest_point - u_globe_pos);
+    highp float theta = asin(clamp(closest_point_to_center / length(u_globe_pos), -1.0, 1.0));
 
     // Backward facing closest point rays should be treated separately
     horizon_angle = globe_pos_dot_dir < 0.0 ?
