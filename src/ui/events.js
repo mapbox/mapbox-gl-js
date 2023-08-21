@@ -1504,6 +1504,24 @@ export type MapEvent =
     | 'style.load'
 
     /**
+     * Fired immediately after imported style resources have been downloaded
+     * and the first visually complete rendering of the base style extended with the imported style has occurred.
+     *
+     * @event style.import.load
+     * @memberof Map
+     * @instance
+     * @example
+     * // Initialize the map
+     * const map = new mapboxgl.Map({});
+     * // Set an event listener that fires
+     * // when the style import has finished loading.
+     * map.on('style.import.load', () => {
+     *     console.log('A style import load event occurred.');
+     * });
+     */
+    | 'style.import.load'
+
+    /**
      * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.
      *
      * @private

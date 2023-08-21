@@ -5,4 +5,4 @@ else
   arg="${@}"
 fi
 
-node_modules/.bin/tap --node-arg=--no-warnings --node-arg=--experimental-loader --node-arg=./build/node-loader.js $arg
+node_modules/.bin/tap --node-arg=--no-warnings --node-arg=--experimental-loader --node-arg=./build/node-loader.js --timeout 0 $arg

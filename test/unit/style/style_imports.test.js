@@ -183,6 +183,32 @@ test('Style#loadURL', (t) => {
         style.loadURL('/style.json');
     });
 
+    t.test('fires "style.import.load"', (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
+        });
+
+        const spy = t.spy();
+        map.on('style.import.load', spy);
+
+        style.on('style.load', () => {
+            t.ok(spy.calledOnce);
+
+            t.equal(spy.getCall(0).args[0].target, map);
+            t.equal(spy.getCall(0).args[0].style.scope, 'streets');
+
+            t.end();
+        });
+
+        window.server.respondWith('/style.json', JSON.stringify(initialStyle));
+        window.server.respondWith('/styles/streets-v12.json', JSON.stringify(createStyleJSON()));
+        style.loadURL('/style.json');
+    });
+
     t.test('fires "dataloading"', (t) => {
         const map = new StubMap();
         const style = new Style(map);
@@ -359,6 +385,31 @@ test('Style#loadJSON', (t) => {
 
             t.ok(stub.calledOnce);
             t.equal(nestedStyle.imports.length, 0);
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('fires "style.import.load"', (t) => {
+        const map = new StubMap();
+
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/styles/streets-v12.json', data: createStyleJSON()}],
+        });
+
+        const spy = t.spy();
+        map.on('style.import.load', spy);
+
+        style.on('style.load', () => {
+            t.ok(spy.calledOnce);
+
+            t.equal(spy.getCall(0).args[0].target, map);
+            t.equal(spy.getCall(0).args[0].style.scope, 'streets');
+
             t.end();
         });
 

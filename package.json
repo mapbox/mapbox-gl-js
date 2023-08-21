@@ -134,7 +134,7 @@
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s build-loaders test-render test-query test-expressions",
     "test-suite-clean": "find test/integration/{render,query, expressions}-tests -mindepth 2 -type d -exec test -e \"{}/actual.png\" \\; -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "build/run-tap --reporter classic --timeout 0 --no-coverage test/unit",
+    "test-unit": "build/run-tap --reporter classic --no-coverage test/unit",
     "test-build": "build/run-tap --no-coverage test/build/**/*.test.js",
     "test-browser": "build/run-tap --jobs=1 --reporter spec --no-coverage -- test/browser/**/*.test.js",
     "watch-render": "npm run build-loaders && cross-env SUITE_NAME=render testem -f test/integration/testem/testem.js",

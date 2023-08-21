@@ -440,7 +440,7 @@ class Style extends Evented {
             });
 
             this.fire(new Event('data', {dataType: 'style'}));
-            this.fire(new Event('style.load'));
+            this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
         };
 
         // We take the root style into account when calculating the import depth.
@@ -485,7 +485,7 @@ class Style extends Evented {
             // Bubble all events fired by the style to the map.
             style.setEventedParent(this.map, {style});
 
-            const waitForStyle = new Promise(resolve => style.on('style.load', resolve));
+            const waitForStyle = new Promise(resolve => style.on('style.import.load', resolve));
             waitForStyles.push(waitForStyle);
 
             // Load empty style if one of the ancestors was already
@@ -521,12 +521,8 @@ class Style extends Evented {
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
         if (this.importDepth === 0 && (json.fragment || schema)) {
-            const style = extend({}, empty, {imports: [{
-                id: 'basemap',
-                data: json,
-                url: ''
-            }]});
-
+            const basemap = {id: 'basemap', data: json, url: ''};
+            const style = extend({}, empty, {imports: [basemap]});
             this._load(style, validate);
             return;
         }
@@ -639,7 +635,7 @@ class Style extends Evented {
                 options: this.options
             });
 
-            this.fire(new Event('style.load'));
+            this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
         }
     }
 
