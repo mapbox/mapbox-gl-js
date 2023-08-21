@@ -1183,6 +1183,7 @@ class Style extends Evented {
         }
 
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
+        this._mergeSources();
 
         this._changed = true;
     }
@@ -1211,6 +1212,7 @@ class Style extends Evented {
 
         const sourceCaches = this._getSourceCaches(id);
         for (const sourceCache of sourceCaches) {
+            delete this._ownSourceCaches[id];
             delete this._sourceCaches[sourceCache.id];
             delete this._updatedSources[sourceCache.id];
             sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
@@ -1219,6 +1221,7 @@ class Style extends Evented {
         }
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
+        this._mergeSources();
 
         source.setEventedParent(null);
         if (source.onRemove) {

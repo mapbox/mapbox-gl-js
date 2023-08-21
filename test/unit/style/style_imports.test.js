@@ -583,7 +583,7 @@ test('Style#addSource', (t) => {
 });
 
 test('Style#removeSource', (t) => {
-    t.test('same id in different scopes is intact', (t) => {
+    t.test('same id in different scope is intact', (t) => {
         const style = new Style(new StubMap());
 
         const initialStyle = createStyleJSON({
@@ -595,7 +595,9 @@ test('Style#removeSource', (t) => {
 
         style.on('style.load', () => {
             style.removeSource('mapbox');
-            t.ok(style.getSource(makeFQID('mapbox', 'streets')) instanceof VectorTileSource);
+            t.notOk(style.getSource('mapbox'), 'source in parent style is removed');
+            t.notOk(style.getOwnSource('mapbox'), 'source in parent style is removed');
+            t.ok(style.getSource(makeFQID('mapbox', 'streets')) instanceof VectorTileSource, 'source in child style is intact');
             t.end();
         });
 
@@ -701,6 +703,27 @@ test('Style#addLayer', (t) => {
 });
 
 test('Style#removeLayer', (t) => {
+    t.test('same id in different scope is intact', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            layers: [{id: 'background', type: 'background'}],
+            imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
+                layers: [{id: 'background', type: 'background'}]
+            })}],
+        });
+
+        style.on('style.load', () => {
+            style.removeLayer('background');
+            t.notOk(style.getLayer('background'), 'layer in parent style is removed');
+            t.notOk(style.getOwnLayer('background'), 'layer in parent style is removed');
+            t.ok(style.getLayer(makeFQID('background', 'streets')), 'layer in child style is intact');
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
     t.test('fire error on removing layer from different scope', (t) => {
         const map = new StubMap();
         const style = new Style(map);
