@@ -2240,6 +2240,10 @@ class Style extends Evented {
     }
 
     _remove() {
+        for (const {style} of this.imports) {
+            style._remove();
+        }
+
         if (this._request) {
             this._request.cancel();
             this._request = null;
@@ -2249,10 +2253,6 @@ class Style extends Evented {
             this._spriteRequest = null;
         }
         rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
-
-        for (const {style} of this.imports) {
-            style._remove();
-        }
 
         this._mergeLayers();
         this._mergeSources();

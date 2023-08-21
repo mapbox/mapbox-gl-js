@@ -39,6 +39,9 @@ test('WorkerPool', (t) => {
         t.equal(workersTerminated, 4);
         t.notOk(pool.workers);
 
+        t.comment('doesn\'t throw when terminating multiple times');
+        t.doesNotThrow(() => { pool.release('map-1'); });
+
         t.end();
     });
 
