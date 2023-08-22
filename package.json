@@ -96,7 +96,7 @@
     "shuffle-seed": "^1.1.6",
     "sinon": "^15.1.0",
     "st": "^3.0.0",
-    "stylelint": "^15.10.2",
+    "stylelint": "^15.10.3",
     "stylelint-config-standard": "^34.0.0",
     "tap": "~16.3.2",
     "tape": "^5.6.6",
