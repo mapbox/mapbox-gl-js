@@ -143,6 +143,11 @@ class StyleLayer extends Evented {
             }
         }
 
+        if (this.type === 'custom' && name === 'visibility') {
+            this.visibility = value;
+            return;
+        }
+
         this._unevaluatedLayout.setValue(name, value);
         this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
 
