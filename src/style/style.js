@@ -191,7 +191,7 @@ class Style extends Evented {
 
     _ownOrder: Array<string>;
     _ownLayers: {[string]: StyleLayer};
-    _ownSourceCaches: {[string]: SourceCache};
+    _ownSources: {[string]: Source};
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -247,7 +247,7 @@ class Style extends Evented {
 
         this._ownOrder = [];
         this._ownLayers = {};
-        this._ownSourceCaches = {};
+        this._ownSources = {};
 
         if (options.dispatcher) {
             this.dispatcher = options.dispatcher;
@@ -1141,7 +1141,7 @@ class Style extends Evented {
     addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
-        if (this.getSource(id) !== undefined) {
+        if (this.getOwnSource(id) !== undefined) {
             throw new Error('There is already a source with this ID');
         }
 
@@ -1155,7 +1155,7 @@ class Style extends Evented {
 
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
-        const sourceInstance = createSource(id, source, this.dispatcher, this);
+        const sourceInstance = this._ownSources[id] = createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 
         sourceInstance.setEventedParent(this, () => ({
@@ -1166,7 +1166,7 @@ class Style extends Evented {
 
         const addSourceCache = (onlySymbols: boolean) => {
             const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
-            const sourceCache = this._ownSourceCaches[id] = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
+            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
             (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
             sourceCache.style = this;
 
@@ -1193,7 +1193,7 @@ class Style extends Evented {
     removeSource(id: string): this {
         this._checkLoaded();
 
-        const source = this.getSource(id);
+        const source = this.getOwnSource(id);
         if (!source) {
             throw new Error('There is no source with this ID');
         }
@@ -1208,13 +1208,13 @@ class Style extends Evented {
 
         const sourceCaches = this._getSourceCaches(id);
         for (const sourceCache of sourceCaches) {
-            delete this._ownSourceCaches[id];
             delete this._sourceCaches[sourceCache.id];
             delete this._updatedSources[sourceCache.id];
             sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
             sourceCache.setEventedParent(null);
             sourceCache.clearTiles();
         }
+        delete this._ownSources[id];
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
         this._mergeSources();
@@ -1235,8 +1235,8 @@ class Style extends Evented {
     setGeoJSONSourceData(id: string, data: GeoJSON | string) {
         this._checkLoaded();
 
-        assert(this.getSource(id) !== undefined, 'There is no source with this ID');
-        const geojsonSource: GeoJSONSource = (this.getSource(id): any);
+        assert(this.getOwnSource(id) !== undefined, 'There is no source with this ID');
+        const geojsonSource: GeoJSONSource = (this.getOwnSource(id): any);
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
@@ -1259,8 +1259,7 @@ class Style extends Evented {
      * @returns {?Source} The source object.
      */
     getOwnSource(id: string): ?Source {
-        const sourceCache = this._getOwnSourceCache(id);
-        return sourceCache && sourceCache.getSource();
+        return this._ownSources[id];
     }
 
     _getSources(): Source[] {
@@ -1607,7 +1606,7 @@ class Style extends Evented {
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {
         this._checkLoaded();
 
-        const layer = this.getLayer(layerId);
+        const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot have zoom extent.`)));
             return;
@@ -1627,7 +1626,7 @@ class Style extends Evented {
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getLayer(layerId);
+        const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be filtered.`)));
             return;
@@ -1657,14 +1656,19 @@ class Style extends Evented {
      * @returns {*} The layer's filter, if any.
      */
     getFilter(layerId: string): ?FilterSpecification {
-        const layer = this.getLayer(layerId);
-        return layer && clone(layer.filter);
+        const layer = this.getOwnLayer(layerId);
+        if (!layer) {
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be filtered.`)));
+            return;
+        }
+
+        return clone(layer.filter);
     }
 
     setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getLayer(layerId);
+        const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
             return;
@@ -1684,7 +1688,7 @@ class Style extends Evented {
      * @returns {*} The property value.
      */
     getLayoutProperty(layerId: string, name: string): ?PropertyValueSpecification<mixed> {
-        const layer = this.getLayer(layerId);
+        const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
             return;
@@ -1696,7 +1700,7 @@ class Style extends Evented {
     setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getLayer(layerId);
+        const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
             return;
@@ -1715,15 +1719,20 @@ class Style extends Evented {
     }
 
     getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
-        const layer = this.getLayer(layerId);
-        return layer && layer.getPaintProperty(name);
+        const layer = this.getOwnLayer(layerId);
+        if (!layer) {
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
+            return;
+        }
+
+        return layer.getPaintProperty(name);
     }
 
     setFeatureState(target: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const source = this.getSource(sourceId);
+        const source = this.getOwnSource(sourceId);
 
         if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
@@ -1751,7 +1760,7 @@ class Style extends Evented {
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
-        const source = this.getSource(sourceId);
+        const source = this.getOwnSource(sourceId);
 
         if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
@@ -1781,7 +1790,7 @@ class Style extends Evented {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const source = this.getSource(sourceId);
+        const source = this.getOwnSource(sourceId);
 
         if (!source) {
             this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
@@ -1808,11 +1817,9 @@ class Style extends Evented {
         this._checkLoaded();
 
         const sources = {};
-        for (const cacheId in this._ownSourceCaches) {
-            const source = this._ownSourceCaches[cacheId].getSource();
-            if (!sources[source.id]) {
-                sources[source.id] = source.serialize();
-            }
+        for (const sourceId in this._ownSources) {
+            const source = this._ownSources[sourceId];
+            sources[source.id] = source.serialize();
         }
 
         return filterObject({
@@ -1955,11 +1962,12 @@ class Style extends Evented {
 
         for (const id in this._sourceCaches) {
             const sourceId = this._sourceCaches[id].getSource().id;
+            if (!this._ownSources[sourceId]) continue;
             if (params.layers && !includedSources[sourceId]) continue;
             sourceResults.push(
                 queryRenderedFeatures(
                     this._sourceCaches[id],
-                    this._layers,
+                    this._ownLayers,
                     this._serializedLayers,
                     queryGeometryStruct,
                     params,
@@ -1974,7 +1982,7 @@ class Style extends Evented {
             // for symbol results, and treat it as an extra source to merge
             sourceResults.push(
                 queryRenderedSymbols(
-                    this._layers,
+                    this._ownLayers,
                     this._serializedLayers,
                     // $FlowFixMe[method-unbinding]
                     this._getLayerSourceCache.bind(this),
@@ -2428,10 +2436,6 @@ class Style extends Evented {
 
     _getSourceCache(source: string): SourceCache | void {
         return this._otherSourceCaches[source];
-    }
-
-    _getOwnSourceCache(source: string): SourceCache | void {
-        return this._ownSourceCaches[source];
     }
 
     _getLayerSourceCache(layer: StyleLayer): SourceCache | void {
