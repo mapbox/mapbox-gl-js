@@ -18,6 +18,7 @@ type Config = {|
   MAX_PARALLEL_IMAGE_REQUESTS: number,
   LOADERS_URL: string,
   DEFAULT_STYLE: string,
+  GLYPHS_URL: string,
 |};
 
 let mapboxHTTPURLRegex;
@@ -78,7 +79,8 @@ const config: Config = {
     ACCESS_TOKEN: null,
     DEFAULT_STYLE: 'mapbox://styles/mapbox/standard-beta',
     MAX_PARALLEL_IMAGE_REQUESTS: 16,
-    LOADERS_URL: 'https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl-loaders.js'
+    LOADERS_URL: 'https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl-loaders.js',
+    GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
 };
 
 export default config;

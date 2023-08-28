@@ -2,6 +2,7 @@ import Style from '../../../src/style/style.js';
 import Transform from '../../../src/geo/transform.js';
 import StyleLayer from '../../../src/style/style_layer.js';
 import VectorTileSource from '../../../src/source/vector_tile_source.js';
+import GlyphManager from '../../../src/render/glyph_manager.js';
 import {Event, Evented} from '../../../src/util/evented.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
 
@@ -1353,6 +1354,28 @@ test('Projection', (t) => {
         style.on('style.load', () => {
             t.deepEqual(style.stylesheet.projection, {name: 'albers'});
             t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Glyphs', (t) => {
+    t.test('fallbacks to the default glyphs URL', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            fragment: true,
+        }));
+
+        style.on('style.load', () => {
+            t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate) => {
+                t.equal(urlTemplate, 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
+                t.equal(style.serialize().glyphs, undefined);
+                t.end();
+            });
+
+            style.glyphManager.getGlyphs({'Arial Unicode MS': [55]}, '');
         });
     });
 

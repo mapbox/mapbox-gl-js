@@ -56,7 +56,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
     const errors = [];
 
     if (options.layerType === 'symbol') {
-        if (propertyKey === 'text-field' && style && !style.glyphs) {
+        if (propertyKey === 'text-field' && style && !style.glyphs && !style.imports) {
             errors.push(new ValidationError(key, value, 'use of "text-field" requires a style "glyphs" property'));
         }
         if (propertyKey === 'text-font' && isFunction(deepUnbundle(value)) && unbundle(value.type) === 'identity') {

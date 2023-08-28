@@ -1808,8 +1808,8 @@ class Style extends Evented {
         this._checkLoaded();
 
         const sources = {};
-        for (const cacheId in this._sourceCaches) {
-            const source = this._sourceCaches[cacheId].getSource();
+        for (const cacheId in this._ownSourceCaches) {
+            const source = this._ownSourceCaches[cacheId].getSource();
             if (!sources[source.id]) {
                 sources[source.id] = source.serialize();
             }
@@ -2230,9 +2230,12 @@ class Style extends Evented {
         if (options && options.validate === false) {
             return false;
         }
+
+        // Fallback to the default glyphs URL if none is specified
+        const style = extend({}, this.serialize());
         return emitValidationErrors(this, validate.call(validateStyle, extend({
             key,
-            style: this.serialize(),
+            style,
             value,
             styleSpec
         }, props)));

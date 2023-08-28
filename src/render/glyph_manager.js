@@ -4,6 +4,7 @@ import loadGlyphRange from '../style/load_glyph_range.js';
 
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block.js';
+import config from '../util/config.js';
 import {asyncAll} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
 
@@ -86,11 +87,8 @@ class GlyphManager {
     getGlyphs(glyphs: {[stack: string]: Array<number>}, scope: string, callback: Callback<{[stack: string]: {glyphs: {[_: number]: ?StyleGlyph}, ascender?: number, descender?: number}}>) {
         const all = [];
 
-        const url = this.urls[scope];
-        if (!url) {
-            callback(new Error('Missing glyph URL'));
-            return;
-        }
+        // Fallback to the default glyphs URL if none is specified
+        const url = this.urls[scope] || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
             for (const id of glyphs[stack]) {
