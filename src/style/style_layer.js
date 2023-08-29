@@ -143,11 +143,12 @@ class StyleLayer extends Evented {
             }
         }
 
-        this._unevaluatedLayout.setValue(name, value);
-        this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
+        this?._unevaluatedLayout?.setValue(name, value);
+        this.isConfigDependent = this.isConfigDependent || !!this?._unevaluatedLayout?.isConfigDependent;
 
         if (name === 'visibility') {
-            this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0});
+            const visibility = this.type === "custom" ? value : this?._unevaluatedLayout?._values?.visibility?.possiblyEvaluate({zoom: 0});
+            this.visibility = visibility;
         }
     }
 
