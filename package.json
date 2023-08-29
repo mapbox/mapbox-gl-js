@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
-    "@babel/eslint-parser": "^7.22.10",
+    "@babel/eslint-parser": "^7.22.11",
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/rest": "^20.0.1",
