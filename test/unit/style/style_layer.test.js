@@ -254,6 +254,21 @@ test('StyleLayer#setLayoutProperty', (t) => {
         t.end();
     });
 
+    t.test('sets and updates visibility property to custom type layer', (t) => {
+        const layer = createStyleLayer({
+            "id": "custom",
+            "type": "custom"
+        });
+
+        layer.setLayoutProperty('visibility', 'none');
+        t.deepEqual(layer.getLayoutProperty('visibility'), 'none');
+
+        layer.setLayoutProperty('visibility', 'visible');
+        t.deepEqual(layer.getLayoutProperty('visibility'), 'visible');
+
+        t.end();
+    });
+
     t.end();
 });
 
