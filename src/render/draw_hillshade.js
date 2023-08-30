@@ -26,7 +26,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const context = painter.context;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-    const colorMode = painter.colorModeForRenderPass();
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(0);
 
     // When rendering to texture, coordinates are already sorted: primary by
     // proxy id and secondary sort is by Z.

@@ -283,9 +283,7 @@ export class Terrain extends Elevation {
         // $FlowFixMe[method-unbinding]
         style.on('data', this._onStyleDataEvent.bind(this));
         // $FlowFixMe[method-unbinding]
-        style.on('neworder', this._checkRenderCacheEfficiency.bind(this));
         this._style = style;
-        this._checkRenderCacheEfficiency();
         this._style.map.on('moveend', () => {
             this._clearLineLayersFromRenderCache();
         });
@@ -355,17 +353,6 @@ export class Terrain extends Elevation {
         const demScale = this.sourceCache.getSource().tileSize / GRID_DIM;
         const proxyTileSize = this.proxySourceCache.getSource().tileSize;
         return demScale * proxyTileSize;
-    }
-
-    _checkRenderCacheEfficiency() {
-        const renderCacheInfo = this.renderCacheEfficiency(this._style);
-        if (this._style.map._optimizeForTerrain) {
-            assert(renderCacheInfo.efficiency === 100);
-        } else if (renderCacheInfo.efficiency !== 100) {
-            warnOnce(`Terrain render cache efficiency is not optimal (${renderCacheInfo.efficiency}%) and performance
-                may be affected negatively, consider placing all background, fill and line layers before layer
-                with id '${renderCacheInfo.firstUndrapedLayer}' or create a map using optimizeForTerrain: true option.`);
-        }
     }
 
     _onStyleDataEvent(event: any) {
@@ -852,38 +839,21 @@ export class Terrain extends Elevation {
         assert(this._drapedRenderBatches.length === 0);
     }
 
-    renderCacheEfficiency(style: Style): Object {
+    isLayerOrderingCorrect(style: Style): boolean {
         const layerCount = style.order.length;
 
-        if (layerCount === 0) {
-            return {efficiency: 100.0};
-        }
-
-        let uncacheableLayerCount = 0;
-        let drapedLayerCount = 0;
-        let reachedUndrapedLayer = false;
-        let firstUndrapedLayer;
-
+        let drapedMax = -1;
+        let immediateMin = layerCount;
         for (let i = 0; i < layerCount; ++i) {
             const layer = style._layers[style.order[i]];
-            if (!this._style.isLayerDraped(layer)) {
-                if (!reachedUndrapedLayer) {
-                    reachedUndrapedLayer = true;
-                    firstUndrapedLayer = layer.id;
-                }
+            if (this._style.isLayerDraped(layer)) {
+                drapedMax = Math.max(drapedMax, i);
             } else {
-                if (reachedUndrapedLayer) {
-                    ++uncacheableLayerCount;
-                }
-                ++drapedLayerCount;
+                immediateMin = Math.min(immediateMin, i);
             }
         }
 
-        if (drapedLayerCount === 0) {
-            return {efficiency: 100.0};
-        }
-
-        return {efficiency: (1.0 - uncacheableLayerCount / drapedLayerCount) * 100.0, firstUndrapedLayer};
+        return immediateMin > drapedMax;
     }
 
     getMinElevationBelowMSL(): number {
@@ -1124,10 +1094,8 @@ export class Terrain extends Elevation {
             batches.push({start: batchStart, end: currentLayer - 1});
         }
 
-        if (this._style.map._optimizeForTerrain) {
-            // Draped first approach should result in a single or no batch
-            assert(batches.length === 1 || batches.length === 0);
-        }
+        // Draped first approach should result in a single or no batch
+        assert(batches.length === 1 || batches.length === 0);
 
         if (batches.length !== 0) {
             const lastBatch = batches[batches.length - 1];

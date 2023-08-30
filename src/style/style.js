@@ -161,8 +161,8 @@ export type StyleImport = {|
 
 const MAX_IMPORT_DEPTH = 5;
 
-// Symbols are draped only for specific cases: see isLayerDraped
-const drapedLayers = {'fill': true, 'line': true, 'background': true, "hillshade": true, "raster": true};
+// Symbols are draped only on native and for certain cases only
+const drapedLayers = new Set(['fill', 'line', 'background', "hillshade", "raster"]);
 
 /**
  * @private
@@ -854,7 +854,7 @@ class Style extends Evented {
     }
 
     get order(): Array<string> {
-        if (this.map._optimizeForTerrain && this.terrain) {
+        if (this.terrain) {
             assert(this._drapedFirstOrder.length === this._order.length, 'drapedFirstOrder doesn\'t match order');
             return this._drapedFirstOrder;
         }
@@ -866,7 +866,7 @@ class Style extends Evented {
         // $FlowFixMe[prop-missing]
         // $FlowFixMe[incompatible-use]
         if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped();
-        return drapedLayers[layer.type];
+        return drapedLayers.has(layer.type);
     }
 
     _checkLoaded(): void {
@@ -2186,7 +2186,7 @@ class Style extends Evented {
     }
 
     _updateDrapeFirstLayers() {
-        if (!this.map._optimizeForTerrain || !this.terrain) {
+        if (!this.terrain) {
             return;
         }
 

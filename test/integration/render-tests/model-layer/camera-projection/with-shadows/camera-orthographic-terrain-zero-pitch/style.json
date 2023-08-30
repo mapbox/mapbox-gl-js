@@ -4,8 +4,7 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.0008,
-      "optimizeForTerrain": true
+      "allowed": 0.0008
     }
   },
   "terrain": {

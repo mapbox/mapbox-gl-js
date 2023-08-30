@@ -22,7 +22,6 @@ fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).
     const {
         width, height,
         fadeDuration = 0,
-        optimizeForTerrain = false,
         localIdeographFontFamily = false,
         projection, debug
     } = style.metadata.test;
@@ -38,7 +37,6 @@ fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).
         style,
         transformRequest,
         fadeDuration,
-        optimizeForTerrain,
         localIdeographFontFamily,
         projection,
         interactive: false,

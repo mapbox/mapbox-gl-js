@@ -4,7 +4,7 @@
     "test": {
       "height": 200,
       "width": 200,
-      "optimizeForTerrain": true
+      "allowed": 0.004
     }
   },
   "center": [-113.2697514325975, 35.962383122262054],

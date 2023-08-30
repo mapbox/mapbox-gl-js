@@ -500,7 +500,7 @@ class Painter {
 
     colorModeForDrapableLayerRenderPass(emissiveStrengthForDrapedLayers?: number): $ReadOnly<ColorMode> {
         const deferredDrapingEnabled = () => {
-            return this.style && this.style.enable3dLights() && this.terrain && this.terrain.renderingToTexture && this.style.map._optimizeForTerrain;
+            return this.style && this.style.enable3dLights() && this.terrain && this.terrain.renderingToTexture;
         };
 
         const gl = this.context.gl;
@@ -1075,12 +1075,10 @@ class Painter {
             // In case of terrain and map optimized for terrain mode flag
             // Lighting is deferred to terrain stage
             if (name === 'globeRaster' || name === 'terrainRaster') {
-                if (this.style.map._optimizeForTerrain) {
-                    defines.push('LIGHTING_3D_MODE');
-                    defines.push('LIGHTING_3D_ALPHA_EMISSIVENESS');
-                }
+                defines.push('LIGHTING_3D_MODE');
+                defines.push('LIGHTING_3D_ALPHA_EMISSIVENESS');
             } else {
-                if (!rtt || !this.style.map._optimizeForTerrain) {
+                if (!rtt) {
                     defines.push('LIGHTING_3D_MODE');
                 }
             }

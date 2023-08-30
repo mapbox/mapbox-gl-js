@@ -206,7 +206,6 @@ async function renderMap(style, options) {
         useWebGL2,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
-        optimizeForTerrain: options.optimizeForTerrain || false,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         projection: options.projection,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,

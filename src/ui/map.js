@@ -131,7 +131,6 @@ type MapOptions = {
     bearing?: number,
     pitch?: number,
     projection?: ProjectionSpecification | string,
-    optimizeForTerrain?: boolean,
     renderWorldCopies?: boolean,
     minTileCacheSize?: number,
     maxTileCacheSize?: number,
@@ -189,7 +188,6 @@ const defaultOptions = {
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
     trackResize: true,
-    optimizeForTerrain: true,
     renderWorldCopies: true,
     refreshExpiredTiles: true,
     minTileCacheSize: null,
@@ -289,7 +287,6 @@ const defaultOptions = {
  *     are rendered. By default, GL JS will not set a worldview so that the worldview of Mapbox tiles will be determined by the vector tile source's TileJSON.
  *     Valid worldview strings must be an [ISO alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes). Unsupported
  *     ISO alpha-2 codes will fall back to the TileJSON's default worldview. Invalid codes will result in a recoverable error.
- * @param {boolean} [options.optimizeForTerrain=true] With terrain on, if `true`, the map will render for performance priority, which may lead to layer reordering allowing to maximize performance (layers that are draped over terrain will be drawn first, including fill, line, background, hillshade and raster). Otherwise, if set to `false`, the map will always be drawn for layer order priority.
  * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
  *     - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
  *     container, there will be blank space beyond 180 and -180 degrees longitude.
@@ -395,7 +392,6 @@ class Map extends Camera {
     _fadeDuration: number;
     _crossSourceCollisions: boolean;
     _collectResourceTiming: boolean;
-    _optimizeForTerrain: boolean;
     _renderTaskQueue: TaskQueue;
     _domRenderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
@@ -521,7 +517,6 @@ class Map extends Camera {
         this._isInitialLoad = true;
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._collectResourceTiming = options.collectResourceTiming;
-        this._optimizeForTerrain = options.optimizeForTerrain;
         this._language = this._parseLanguage(options.language);
         this._worldview = options.worldview;
         this._renderTaskQueue = new TaskQueue();

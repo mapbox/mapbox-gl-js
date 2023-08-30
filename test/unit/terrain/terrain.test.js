@@ -1041,8 +1041,7 @@ test('Render cache efficiency', (t) => {
                     }
                 },
                 layers: []
-            },
-            optimizeForTerrain: false
+            }
         });
 
         map.on('style.load', () => {
@@ -1073,8 +1072,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'symbol',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('undraped1');
                     t.end();
                 });
@@ -1095,8 +1093,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'symbol',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('undraped1');
@@ -1124,8 +1121,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'fill',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 75);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('draped3');
@@ -1154,8 +1150,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'fill',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 50);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('draped3');
@@ -1195,8 +1190,7 @@ test('Render cache efficiency', (t) => {
                     }
                 },
                 layers: []
-            },
-            optimizeForTerrain: true
+            }
         });
 
         map.on('style.load', () => {
@@ -1227,8 +1221,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'symbol',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('undraped1');
                     t.end();
                 });
@@ -1249,8 +1242,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'symbol',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('undraped1');
@@ -1278,8 +1270,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'fill',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('draped3');
@@ -1308,8 +1299,7 @@ test('Render cache efficiency', (t) => {
                         'type': 'fill',
                         'source': 'geojson'
                     });
-                    const renderCacheInfo = map.painter.terrain.renderCacheEfficiency(map.painter.style);
-                    t.equal(renderCacheInfo.efficiency, 100);
+                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
                     map.removeLayer('draped1');
                     map.removeLayer('draped2');
                     map.removeLayer('draped3');
