@@ -2,6 +2,10 @@
 
 const FQIDSeparator = '\u001F';
 
+export function isFQID(id: string): boolean {
+    return id.indexOf(FQIDSeparator) >= 0;
+}
+
 export function makeFQID(id: string, scope: ?string): string {
     if (!scope) return id;
     return `${id}${FQIDSeparator}${scope}`;

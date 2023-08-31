@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {test} from '../../util/test.js';
 import {extend} from '../../../src/util/util.js';
 import window from '../../../src/util/window.js';
@@ -14,7 +15,7 @@ import Fog from '../../../src/style/fog.js';
 import Color from '../../../src/style-spec/util/color.js';
 import {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import {performanceEvent_} from '../../../src/util/mapbox.js';
-import assert from 'assert';
+import {makeFQID} from '../../../src/util/fqid.js';
 
 function createStyleSource() {
     return {
@@ -4220,6 +4221,58 @@ test('Map', (t) => {
     });
 
     t.end();
+});
+
+test('Disallow usage of FQID separator in the public APIs', (t) => {
+    const map = createMap(t);
+
+    const spy = t.spy();
+    map.on('error', spy);
+
+    map.on('style.load', () => {
+        map.getLayer(makeFQID('id', 'scope'));
+        map.addLayer({id: makeFQID('id', 'scope')});
+        map.moveLayer(makeFQID('id', 'scope'));
+        map.removeLayer(makeFQID('id', 'scope'));
+
+        map.getLayoutProperty(makeFQID('id', 'scope'));
+        map.setLayoutProperty(makeFQID('id', 'scope'));
+
+        map.getPaintProperty(makeFQID('id', 'scope'));
+        map.setPaintProperty(makeFQID('id', 'scope'));
+
+        map.setLayerZoomRange(makeFQID('id', 'scope'));
+
+        map.getFilter(makeFQID('id', 'scope'));
+        map.setFilter(makeFQID('id', 'scope'));
+
+        map.getSource(makeFQID('id', 'scope'));
+        map.addSource(makeFQID('id', 'scope'));
+        map.removeSource(makeFQID('id', 'scope'));
+        map.isSourceLoaded(makeFQID('id', 'scope'));
+
+        map.getFeatureState({source: makeFQID('id', 'scope')});
+        map.setFeatureState({source: makeFQID('id', 'scope')});
+        map.removeFeatureState({source: makeFQID('id', 'scope')});
+
+        map.querySourceFeatures(makeFQID('id', 'scope'));
+        map.queryRenderedFeatures([0, 0], {layers: [makeFQID('id', 'scope')]});
+
+        map.on('click', makeFQID('id', 'scope'), () => {});
+        map.once('click', makeFQID('id', 'scope'), () => {});
+        map.off('click', makeFQID('id', 'scope'));
+
+        const callCount = 22;
+        t.equal(spy.callCount, callCount);
+
+        for (let i = 0; i <= callCount - 1; i++) {
+            const event = spy.getCall(i).firstArg;
+            t.ok(event);
+            t.match(event.error, /can't contain special symbols/);
+        }
+
+        t.end();
+    });
 });
 
 function createStyle() {
