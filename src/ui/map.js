@@ -622,10 +622,10 @@ class Map extends Camera {
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
-        if ((options.center && !(options.center[0] === 0 && options.center[1] === 0)) || !this._hash || !this._hash._onHashChange()) {
+        if ((options.zoom && options.zoom !== defaultOptions.zoom) || (options.center && !(options.center[0] === defaultOptions.center[0] && options.center[1] === defaultOptions.center[1])) || !this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
-                center: options.center,
-                zoom: options.zoom,
+                center: options?.center ? options.center : defaultOptions.center,
+                zoom: options?.zoom ? options.zoom : defaultOptions.zoom,
                 bearing: options.bearing,
                 pitch: options.pitch
             });
