@@ -1479,6 +1479,8 @@ class Style extends Evented {
             layer.onAdd(this.map);
         }
 
+        layer.scope = this.scope;
+
         this._mergeLayers();
     }
 
