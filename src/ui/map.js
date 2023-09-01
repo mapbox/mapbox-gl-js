@@ -622,7 +622,7 @@ class Map extends Camera {
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
-        if (!this._hash || !this._hash._onHashChange()) {
+        if ((options.center && !(options.center[0] === 0 && options.center[1] === 0)) || !this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
                 center: options.center,
                 zoom: options.zoom,
