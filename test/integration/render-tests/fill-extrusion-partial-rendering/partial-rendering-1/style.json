@@ -1,0 +1,116 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0009,
+      "operations": [
+        ["wait"],
+        [
+          "check",
+          "renderedVerticesCount",
+          "3d-buildings",
+          60010,
+          "Expect reduced vertex count due to precise frustum culling. ~2/4 * 112399"
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "zoom": 15.90,
+  "center": [
+    2.352,
+    48.860
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "3d-buildings",
+      "source": "mapbox",
+      "layout": {
+        "fill-extrusion-edge-radius": 1.0
+      },
+      "paint": {
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "number",
+            [
+              "get",
+              "height"
+            ]
+          ],
+          0.0,
+          [
+            "rgba",
+            22.0,
+            14.000000953674317,
+            35.0,
+            1.0
+          ],
+          50.0,
+          [
+            "rgba",
+            0.0,
+            97.00000762939453,
+            95.0,
+            1.0
+          ],
+          100.0,
+          [
+            "rgba",
+            85.0,
+            233.00001525878907,
+            255.0,
+            1.0
+          ]
+        ],
+        "fill-extrusion-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "fill-extrusion-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source-layer": "building",
+      "type": "fill-extrusion"
+    }
+  ]
+}

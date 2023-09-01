@@ -178,6 +178,12 @@ const skip = [
     "render-tests/model-layer/landmark-terrain",
     "render-tests/model-layer/lighting-3d-mode/shadow",
     "render-tests/model-layer/landmark-conflation-multiple-sources",
+
+    // Not implemented in gl-js
+    "render-tests/fill-extrusion-partial-rendering/partial-rendering-0",
+    "render-tests/fill-extrusion-partial-rendering/partial-rendering-1",
+    "render-tests/fill-extrusion-partial-rendering/partial-rendering-2",
+    "render-tests/fill-extrusion-partial-rendering/partial-rendering-3"
 ];
 
 export default {todo, skip};
