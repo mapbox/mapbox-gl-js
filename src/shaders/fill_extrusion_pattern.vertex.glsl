@@ -37,16 +37,16 @@ varying vec3 v_ao;
 varying vec3 v_normal;
 #endif
 
-#pragma mapbox: define lowp float base
-#pragma mapbox: define lowp float height
-#pragma mapbox: define lowp vec4 pattern
-#pragma mapbox: define lowp float pixel_ratio
+#pragma mapbox: define highp float base
+#pragma mapbox: define highp float height
+#pragma mapbox: define mediump vec4 pattern
+#pragma mapbox: define highp float pixel_ratio
 
 void main() {
-    #pragma mapbox: initialize lowp float base
-    #pragma mapbox: initialize lowp float height
+    #pragma mapbox: initialize highp float base
+    #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize mediump vec4 pattern
-    #pragma mapbox: initialize lowp float pixel_ratio
+    #pragma mapbox: initialize highp float pixel_ratio
 
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;
