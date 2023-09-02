@@ -191,5 +191,31 @@ function getQuadkey(z: number, x: number, y: number) {
     return quadkey;
 }
 
+// For all four borders: 0 - left, 1, right, 2 - top, 3 - bottom
+export const neighborCoord = [
+    (coord: OverscaledTileID): OverscaledTileID => {
+        let x = coord.canonical.x - 1;
+        let w = coord.wrap;
+        if (x < 0) {
+            x = (1 << coord.canonical.z) - 1;
+            w--;
+        }
+        return new OverscaledTileID(coord.overscaledZ, w, coord.canonical.z, x, coord.canonical.y);
+    },
+    (coord: OverscaledTileID): OverscaledTileID => {
+        let x = coord.canonical.x + 1;
+        let w = coord.wrap;
+        if (x === 1 << coord.canonical.z) {
+            x = 0;
+            w++;
+        }
+        return new OverscaledTileID(coord.overscaledZ, w, coord.canonical.z, x, coord.canonical.y);
+    },
+    (coord: OverscaledTileID): OverscaledTileID => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        (coord.canonical.y === 0 ? 1 << coord.canonical.z : coord.canonical.y) - 1),
+    (coord: OverscaledTileID): OverscaledTileID => new OverscaledTileID(coord.overscaledZ, coord.wrap, coord.canonical.z, coord.canonical.x,
+        coord.canonical.y === (1 << coord.canonical.z) - 1 ? 0 : coord.canonical.y + 1)
+];
+
 register(CanonicalTileID, 'CanonicalTileID');
 register(OverscaledTileID, 'OverscaledTileID', {omit: ['projMatrix']});

@@ -50,6 +50,13 @@ import type {IVectorTileLayer} from '@mapbox/vector-tile';
 const FACTOR = Math.pow(2, 13);
 const TANGENT_CUTOFF = 4;
 
+const QUAD_VERTS = 4;
+const QUAD_TRIS = 2;
+// In flood lighting a line segment is extruded based on the flood light radius to form a quad.
+// The tile is divided into four regions (left, right, top and bottom).
+// As an example when a quad crosses the left border it belongs to the left region.
+const TILE_REGIONS = 4;
+
 const HIDDEN_CENTROID: Point = new Point(0, 1);
 export const HIDDEN_BY_REPLACEMENT: number = 0x80000000;
 
@@ -263,13 +270,49 @@ function tanAngleClamped(angle: number) {
     return Math.min(TANGENT_CUTOFF, Math.max(-TANGENT_CUTOFF, Math.tan(angle))) / TANGENT_CUTOFF * FACTOR;
 }
 
-function getAngularOffsetFactor(p0: Point, p: Point, p1: Point) {
-    const na = p.sub(p0)._perp()._unit();
-    const nb = p1.sub(p)._perp()._unit();
+function getAngularOffsetFactor(na: Point, nb: Point): number {
     const nm = na.add(nb)._unit();
     const cosHalfAngle = clamp(na.x * nm.x + na.y * nm.y, -1, 1);
     const factor = tanAngleClamped(Math.acos(cosHalfAngle)) * concavity(na, nb);
     return factor;
+}
+
+const borderCheck = [
+    (a: Point): boolean => { return a.x < 0; }, // left
+    (a: Point): boolean => { return a.x > EXTENT; }, // right
+    (a: Point): boolean => { return a.y < 0; }, // top
+    (a: Point): boolean => { return a.y > EXTENT; } // bottom
+];
+
+// Checks which region a quad belongs to. A quad belongs to left, right, top, bottom if
+// it intersects with the left, right, top, bottom borders of the tile respectively.
+// If a quad doesn't intersect any of the borders, it is assumed to be in the "default" region.
+// Ids 0, 1, 2, 3 and 4 are denoting, left, right, top, bottom and default regions respectively.
+// Note that a quad can also belong to more than one region (e.g. when it intersects with left and right borders).
+function getTileRegions(pa: Point, pb: Point, na: Point, maxRadius: number) {
+    const regions = [4];
+    if (maxRadius === 0) return regions;
+
+    // Approximate the position of the extruded points by using a quad.
+    na._mult(maxRadius);
+    const c = pa.sub(na);
+    const d = pb.sub(na);
+
+    const points = [pa, pb, c, d];
+    for (let i = 0; i < TILE_REGIONS; i++) {
+        for (const point of points) {
+            if (borderCheck[i](point)) {
+                regions.push(i);
+                break;
+            }
+        }
+    }
+    return regions;
+}
+
+type GroundQuad = {
+    id: number;
+    region: number; // 0 - left, 1 - right, 2 - top, 3 - bottom, 4 - rest
 }
 
 export class GroundEffect {
@@ -283,7 +326,11 @@ export class GroundEffect {
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
-    segments: SegmentVector;
+    _segments: SegmentVector;
+
+    segmentToGroundQuads: {[number]: Array<GroundQuad>};
+    segmentToRegionTriCounts: {[number]: Array<number>};
+    regionSegments: {[number]: ?SegmentVector};
 
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
 
@@ -291,22 +338,43 @@ export class GroundEffect {
         this.vertexArray = new FillExtrusionGroundLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
-        this.segments = new SegmentVector();
+        this._segments = new SegmentVector();
         this.hiddenByLandmarkVertexArray = new FillExtrusionHiddenByLandmarkArray();
+        this.segmentToGroundQuads = {};
+        this.segmentToGroundQuads[0] = [];
+        this.segmentToRegionTriCounts = {};
+        this.segmentToRegionTriCounts[0] = [0, 0, 0, 0, 0];
+        this.regionSegments = {};
+    }
+
+    getDefaultSegment(): any {
+        const segments = this.regionSegments[4];
+        assert(segments);
+        return segments;
     }
 
     hasData(): boolean { return this.vertexArray.length !== 0; }
 
-    addData(polyline: Array<Point>, bounds: [Point, Point]) {
+    addData(polyline: Array<Point>, bounds: [Point, Point], maxRadius: number) {
         const n = polyline.length;
         if (n > 2) {
-            const segment = this.segments.prepareSegment(n * 4, this.vertexArray, this.indexArray);
-            let prevFactor = 0.0;
+            let sid = Math.max(0, this._segments.get().length - 1);
+            const groundQuads = this.segmentToGroundQuads[sid];
+            const segment = this._segments._prepareSegment(n * 4, this.vertexArray.length, groundQuads.length);
+            const newSegmentAdded = sid !== this._segments.get().length - 1;
+            if (newSegmentAdded) {
+                sid++;
+                this.segmentToGroundQuads[sid] = [];
+                this.segmentToRegionTriCounts[sid] = [0, 0, 0, 0, 0];
+            }
+            let prevFactor;
             {
-                const p0 = polyline[n - 1];
-                const p = polyline[0];
-                const p1 = polyline[1];
-                prevFactor = getAngularOffsetFactor(p0, p, p1);
+                const pa = polyline[n - 1];
+                const pb = polyline[0];
+                const pc = polyline[1];
+                const na = pb.sub(pa)._perp()._unit();
+                const nb = pc.sub(pb)._perp()._unit();
+                prevFactor = getAngularOffsetFactor(na, nb);
             }
             for (let i = 0; i < n; i++) {
                 const j = i === n - 1 ? 0 : i + 1;
@@ -316,12 +384,17 @@ export class GroundEffect {
                 const pb = polyline[j];
                 const pc = polyline[k];
 
+                const na = pb.sub(pa)._perp()._unit();
+                const nb = pc.sub(pb)._perp()._unit();
+                const factor = getAngularOffsetFactor(na, nb);
                 const a0 = prevFactor;
-                const a1 = getAngularOffsetFactor(pa, pb, pc);
-                prevFactor = a1;
+                const a1 = factor;
 
                 if (isEdgeOutsideBounds(pa, pb, bounds) ||
-                    (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) continue;
+                    (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) {
+                    prevFactor = factor;
+                    continue;
+                }
 
                 const idx = segment.vertexLength;
 
@@ -329,13 +402,87 @@ export class GroundEffect {
                 addGroundVertex(this.vertexArray, pa, pb, 1, 0, a0);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 1, a1);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
-                segment.vertexLength += 4;
+                segment.vertexLength += QUAD_VERTS;
 
-                this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
-                this.indexArray.emplaceBack(idx, idx + 3, idx + 2);
-                segment.primitiveLength += 2;
+                // When a tile belongs to more than one region it needs to be duplicated for that region.
+                const regions = getTileRegions(pa, pb, na, maxRadius); // Note: mutates na
+                for (const rid of regions) {
+                    groundQuads.push({
+                        id: idx,
+                        region: rid
+                    });
+                    this.segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
+                    segment.primitiveLength += QUAD_TRIS;
+                }
+                prevFactor = factor;
             }
         }
+    }
+
+    prepareBorderSegments() {
+        if (!this.hasData()) return;
+
+        assert(this._segments && this.segmentToGroundQuads && this.segmentToRegionTriCounts);
+        assert(!this.indexArray.length);
+
+        const segments = this._segments.get();
+        // Sort the geometry in this order: left, right, top, bottom and default regions.
+        const numSegments = segments.length;
+        for (let i = 0; i < numSegments; i++) {
+            const groundQuads = this.segmentToGroundQuads[i];
+            groundQuads.sort((a: GroundQuad, b: GroundQuad) => {
+                return a.region - b.region;
+            });
+        }
+
+        // Populate the index array.
+        for (let i = 0; i < numSegments; i++) {
+            const groundQuads = this.segmentToGroundQuads[i];
+            const segment = segments[i];
+            const regionTriCounts = this.segmentToRegionTriCounts[i];
+
+            const totalTriCount = regionTriCounts.reduce((acc: number, a: number) => { return acc + a; }, 0);
+            assert(segment.primitiveLength === totalTriCount);
+
+            // For each segment create 5 additional segments each representing a region.
+            let regionTriCountOffset = 0;
+            for (let k = 0; k <= TILE_REGIONS; k++) {
+                const triCount = regionTriCounts[k];
+                assert(triCount % QUAD_TRIS === 0);
+
+                if (triCount !== 0) {
+                    let segmentVector = this.regionSegments[k];
+                    // Lazy initialise the segment vector. During rendering if no such vector exists
+                    // it means that no geometry from this tile intersects the corresponding border.
+                    // We therefore can skip the said border to speed up rendering.
+                    if (!segmentVector) {
+                        segmentVector = this.regionSegments[k] = new SegmentVector();
+                    }
+
+                    const nSegment: any = {
+                        vertexOffset: segment.vertexOffset,
+                        primitiveOffset: segment.primitiveOffset + regionTriCountOffset,
+                        vertexLength: segment.vertexLength,
+                        primitiveLength: triCount
+                    };
+                    segmentVector.get().push(nSegment);
+                }
+
+                regionTriCountOffset += triCount;
+            }
+            for (let j = 0; j < groundQuads.length; j++) {
+                const groundQuad = groundQuads[j];
+                const idx = groundQuad.id;
+                this.indexArray.emplaceBack(idx, idx + 1, idx + 3);
+                this.indexArray.emplaceBack(idx, idx + 3, idx + 2);
+            }
+        }
+
+        // Free up memory as we no longer need these.
+        this.segmentToGroundQuads = (null: any);
+        this.segmentToRegionTriCounts = (null: any);
+        this._segments.destroy();
+        this._segments = (null: any);
     }
 
     addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness: ?number) {
@@ -393,8 +540,14 @@ export class GroundEffect {
         if (this.hiddenByLandmarkVertexBuffer) {
             this.hiddenByLandmarkVertexBuffer.destroy();
         }
-        this.segments.destroy();
+        if (this._segments) this._segments.destroy();
         this.programConfigurations.destroy();
+        for (let i = 0; i <= TILE_REGIONS; i++) {
+            const segments = this.regionSegments[i];
+            if (segments) {
+                segments.destroy();
+            }
+        }
     }
 }
 
@@ -506,6 +659,7 @@ class FillExtrusionBucket implements Bucket {
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
         this.sortBorders();
+        this.groundEffect.prepareBorderSegments();
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness: ?number) {
@@ -578,6 +732,10 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness: ?number) {
+        const aoRadius = this.layers[0].paint.get('fill-extrusion-ambient-occlusion-ground-radius');
+        const floodLightRadius = this.layers[0].paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
+        const maxRadius = Math.max(aoRadius, floodLightRadius) / this.tileToMeter;
+
         const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
@@ -716,7 +874,7 @@ class FillExtrusionBucket implements Bucket {
                         if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                             groundPolyline.pop();
                         }
-                        this.groundEffect.addData(groundPolyline, bounds);
+                        this.groundEffect.addData(groundPolyline, bounds, maxRadius);
                     }
                 }
 
@@ -897,7 +1055,7 @@ class FillExtrusionBucket implements Bucket {
                     if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                         groundPolyline.pop();
                     }
-                    this.groundEffect.addData(groundPolyline, bounds);
+                    this.groundEffect.addData(groundPolyline, bounds, maxRadius);
                 }
             }
             this.footprintSegments.push(fpSegment);

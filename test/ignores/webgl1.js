@@ -47,6 +47,7 @@ const skip = [
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/terrain-flood-light-with-shadows",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/landmark-conflation-buckingham",
     "render-tests/lighting-3d-mode/fill-extrusion/flood-light/MAPS3D-967",
+    "render-tests/lighting-3d-mode/fill-extrusion/flood-light/terrain-flood-light-no-seams",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-flat-roof",
     "render-tests/lighting-3d-mode/shadow/fill-extrusion-terrain",

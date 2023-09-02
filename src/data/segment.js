@@ -24,13 +24,13 @@ class SegmentVector {
         this.segments = segments;
     }
 
-    prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray, sortKey?: number): Segment {
+    _prepareSegment(numVertices: number, vertexArrayLength: number, indexArrayLength: number, sortKey?: number): Segment {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${SegmentVector.MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
         if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH || segment.sortKey !== sortKey) {
             segment = ({
-                vertexOffset: layoutVertexArray.length,
-                primitiveOffset: indexArray.length,
+                vertexOffset: vertexArrayLength,
+                primitiveOffset: indexArrayLength,
                 vertexLength: 0,
                 primitiveLength: 0
             }: any);
@@ -38,6 +38,10 @@ class SegmentVector {
             this.segments.push(segment);
         }
         return segment;
+    }
+
+    prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray, sortKey?: number): Segment {
+        return this._prepareSegment(numVertices, layoutVertexArray.length, indexArray.length, sortKey);
     }
 
     get(): Array<Segment> {
