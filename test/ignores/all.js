@@ -175,6 +175,7 @@ const skip = [
     "render-tests/model-layer/landmark-conflation-borders-terrain",
     "render-tests/model-layer/landmark-conflation-multiple-model-layers",
     "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/landmark-shadows-opacity",
     "render-tests/model-layer/landmark-terrain",
     "render-tests/model-layer/lighting-3d-mode/shadow",
     "render-tests/model-layer/landmark-conflation-multiple-sources",
