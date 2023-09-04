@@ -726,6 +726,17 @@ test('Style#addLayer', (t) => {
         style.loadJSON(initialStyle);
     });
 
+    t.test('Checks scope exist after adding layer', (t) => {
+        const style = new Style(new StubMap());
+
+        style.on('style.load', () => {
+            style.addLayer({type: 'custom', id: 'custom', render: () => {}});
+            t.equal(style.getLayer('custom').scope, style.scope);
+            t.end();
+        });
+        style.loadJSON(createStyleJSON());
+    });
+
     t.test('fire error on referencing before from different scope', (t) => {
         const map = new StubMap();
         const style = new Style(map);
