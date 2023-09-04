@@ -1606,7 +1606,7 @@ class Transform {
      */
     horizonLineFromTop(clampToTop: boolean = true): number {
         // h is height of space above map center to horizon.
-        const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) + this.centerOffset.y;
+        const h = this.height / 2 / Math.tan(this._fov / 2) / Math.tan(Math.max(this._pitch, 0.1)) - this.centerOffset.y;
         const offset = this.height / 2 - h * (1 - this._horizonShift);
         return clampToTop ? Math.max(0, offset) : offset;
     }

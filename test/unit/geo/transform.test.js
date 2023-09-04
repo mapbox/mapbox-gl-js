@@ -1235,6 +1235,33 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('horizonLineFromTop', (t) => {
+        const transform = new Transform();
+        transform.maxPitch = 90;
+        transform.resize(800, 800);
+        transform.zoom = 10;
+        transform.center = {lng: 0, lat: 0};
+        transform.pitch = 90;
+        transform.padding = {top:0, bottom:0, left:0, right:0};
+        transform._horizonShift = 0.0;
+        const eq = (a, b, eps = 0.000001) => {
+            return Math.abs(a - b) < eps;
+        };
+
+        // Horizon line is in the center
+        t.true(eq(transform.horizonLineFromTop(), 400.0));
+
+        // Padding from top, horizon line should go down
+        transform.padding = {top:300, bottom:0, left:0, right:0};
+        t.true(eq(transform.horizonLineFromTop(), 550.0));
+
+        // Padding from bottom, horizon line should go up
+        transform.padding = {top:0, bottom:300, left:0, right:0};
+        t.true(eq(transform.horizonLineFromTop(), 250.0));
+
+        t.end();
+    });
+
     t.test('clamps pitch', (t) => {
         const transform = new Transform();
 
