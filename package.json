@@ -69,7 +69,7 @@
     "eslint-plugin-jsdoc": "^46.5.0",
     "flow-bin": "0.191.0",
     "gl": "6.0.2",
-    "glob": "^10.3.3",
+    "glob": "^10.3.4",
     "is-builtin-module": "^3.2.1",
     "jsdom": "^15.2.1",
     "json-stringify-pretty-compact": "^4.0.0",
