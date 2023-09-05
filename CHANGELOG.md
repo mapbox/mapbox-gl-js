@@ -1,6 +1,29 @@
-## 3.0.0-beta.1
+## 3.0.0-beta.2
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md).
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.1`:
+
+### ✨ Features and improvements
+
+- Improve performance of fill extrusion ground flood light & ambient occlusion effect.
+- Improve terrain sampling accuracy.
+- Add `style.import.load` event to track loading of imported style fragments and ensure `style.load` is only called once per style.
+- Allow adding symbol layers to styles with imports if they don't have a `glyphs` endpoint specified (falling back to a default Mapbox endpoint).
+- Make sure API methods that return features or layers don't leak internals of imported styles.
+- Remove `optimizeForTerrain` map option (layer rendering on terrain is always optimized now).
+
+### Bug fixes 🐞
+
+- Fix accuracy of atmosphere gradient when rendering globe.
+- Fix a bug where circle & heatmap layers rendered incorrectly in some situations.
+- Fix a bug where model colors weren't always re-evaluated when light properties changed.
+- Fix a bug where calling `setStyle` when using the Standard style failed.
+- Fix a bug where `map.removeSource` didn't work properly with the Standard style.
+- Fix a bug with `map.setLayoutProperty` not working on a `custom` layer.
+- Fix a bug with hillshade rendering on terrain when combined with new light API.
+- Fix a bug where fill extrusion flood light effect sometimes caused visible seams between tiles.
+- Fix a bug with horizon placement when map `padding` is used.
+
+## 3.0.0-beta.1
 
 ### ✨ Features and improvements
 
@@ -25,21 +48,21 @@ Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting s
 
 ## 2.15.0
 
-## Features ✨ and improvements 🏁
+### Features ✨ and improvements 🏁
 
 * Improve performance of symbol layers with identical or no text. Eliminate stuttering when zooming on maps with many identical symbols. ([#12669](https://github.com/mapbox/mapbox-gl-js/pull/12669))
 * Improve performance of clustered sources: 20% faster loading & 40–60% less memory overhead. Improve performance of symbol collisions. ([#12682](https://github.com/mapbox/mapbox-gl-js/pull/12682))
 * Add `respectPrefersReducedMotion` map option ([#12694](https://github.com/mapbox/mapbox-gl-js/pull/12694))
 * Add the `isPointOnSurface` map method to determine if the given point is located on a visible map surface. ([#12695](https://github.com/mapbox/mapbox-gl-js/pull/12695))
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Fix inconsistent spacing in the Scale control ([#12644](https://github.com/mapbox/mapbox-gl-js/pull/12644)) (h/t [kathirgounder](https://github.com/kathirgounder))
 * Fix tiles preloading when a source is not yet loaded ([#12699](https://github.com/mapbox/mapbox-gl-js/pull/12699))
 
 ## 2.14.1
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Fix a bug where certain bundling configurations involving Vite or ESBuild could produce a broken build. [#12658](https://github.com/mapbox/mapbox-gl-js/pull/12658)
 
@@ -49,7 +72,7 @@ Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting s
 
 * Support `referrerPolicy` option for the `transformRequest` function when using fetch ([#12590](https://github.com/mapbox/mapbox-gl-js/pull/12590)) (h/t [robertcepa](https://github.com/robertcepa))
 
-## Bug fixes 🐞
+### Bug fixes 🐞
 
 * Enable anisotropic filtering on tiles beyond 20 degrees pitch to prevent it from compromising image crispness on flat or low-tilted maps. ([#12577](https://github.com/mapbox/mapbox-gl-js/pull/12577))
 * Fix LngLatBounds.extend() with literal LngLat object. ([#12605](https://github.com/mapbox/mapbox-gl-js/pull/12605))
