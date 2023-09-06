@@ -83,101 +83,36 @@ highp float shadow_occlusion_1(highp vec4 pos, highp float bias) {
 highp float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     highp float compare0 = pos.z - bias;
 
-    highp vec2 texel = pos.xy / u_texel_size - vec2(1.5);
+    highp vec2 texel = pos.xy / u_texel_size - vec2(0.5);
     highp vec2 f = fract(texel);
 
     highp float s = u_texel_size;
 
-    // Perform brute force percentage-closer filtering with a 4x4 sample grid.
+    // Perform percentage-closer filtering with a 2x2 sample grid.
     // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
 #ifdef TEXTURE_GATHER
-    // sample at the position between 4 texels, with offset of 2 horizontally and vertically.
+    // sample at the position between 4 texels
     highp vec2 uv00 = (texel - f + 0.5) * s;
-    highp vec2 uv10 = uv00 + vec2(2.0 * s, 0);
-    highp vec2 uv01 = uv00 + vec2(0, 2.0 * s);
-    highp vec2 uv11 = uv10 + vec2(0, 2.0 * s);
-
-    highp vec4 d00 = textureGather(u_shadowmap_0, uv00);
-    highp vec4 d10 = textureGather(u_shadowmap_0, uv10);
-    highp vec4 d01 = textureGather(u_shadowmap_0, uv01);
-    highp vec4 d11 = textureGather(u_shadowmap_0, uv11);
-    highp vec4 c00 = step(d00, vec4(compare0));
-    highp vec4 c01 = step(d01, vec4(compare0));
-    highp vec4 c10 = step(d10, vec4(compare0));
-    highp vec4 c11 = step(d11, vec4(compare0));
-    highp float o00 = c00.a;
-    highp float o10 = c00.b;
-    highp float o20 = c10.a;
-    highp float o30 = c10.b;
-
-    highp float o01 = c00.r;
-    highp float o11 = c00.g;
-    highp float o21 = c10.r;
-    highp float o31 = c10.g;
-
-    highp float o02 = c01.a;
-    highp float o12 = c01.b;
-    highp float o22 = c11.a;
-    highp float o32 = c11.b;
-
-    highp float o03 = c01.r;
-    highp float o13 = c01.g;
-    highp float o23 = c11.r;
-    highp float o33 = c11.g;
+    highp vec4 samples = textureGather(u_shadowmap_0, uv00, 0);
+    highp vec4 stepSamples = step(samples, vec4(compare0));
 #else
     highp vec2 uv00 = (texel - f + 0.5) * s;
-    highp vec2 uv10 = uv00 + vec2(1.0 * s, 0);
-    highp vec2 uv20 = uv00 + vec2(2.0 * s, 0);
-    highp vec2 uv30 = uv00 + vec2(3.0 * s, 0);
-
+    highp vec2 uv10 = uv00 + vec2(1.0 * s, 0.0);
     highp vec2 uv01 = uv00 + vec2(0.0, 1.0 * s);
-    highp vec2 uv11 = uv01 + vec2(1.0 * s, 0);
-    highp vec2 uv21 = uv01 + vec2(2.0 * s, 0);
-    highp vec2 uv31 = uv01 + vec2(3.0 * s, 0);
+    highp vec2 uv11 = uv01 + vec2(1.0 * s, 0.0);
 
-    highp vec2 uv02 = uv01 + vec2(0.0, 1.0 * s);
-    highp vec2 uv12 = uv02 + vec2(1.0 * s, 0);
-    highp vec2 uv22 = uv02 + vec2(2.0 * s, 0);
-    highp vec2 uv32 = uv02 + vec2(3.0 * s, 0);
-
-    highp vec2 uv03 = uv02 + vec2(0.0, 1.0 * s);
-    highp vec2 uv13 = uv03 + vec2(1.0 * s, 0);
-    highp vec2 uv23 = uv03 + vec2(2.0 * s, 0);
-    highp vec2 uv33 = uv03 + vec2(3.0 * s, 0);
-
-    highp float o00 = shadow_sample_0(uv00, compare0);
-    highp float o10 = shadow_sample_0(uv10, compare0);
-    highp float o20 = shadow_sample_0(uv20, compare0);
-    highp float o30 = shadow_sample_0(uv30, compare0);
-
-    highp float o01 = shadow_sample_0(uv01, compare0);
-    highp float o11 = shadow_sample_0(uv11, compare0);
-    highp float o21 = shadow_sample_0(uv21, compare0);
-    highp float o31 = shadow_sample_0(uv31, compare0);
-
-    highp float o02 = shadow_sample_0(uv02, compare0);
-    highp float o12 = shadow_sample_0(uv12, compare0);
-    highp float o22 = shadow_sample_0(uv22, compare0);
-    highp float o32 = shadow_sample_0(uv32, compare0);
-
-    highp float o03 = shadow_sample_0(uv03, compare0);
-    highp float o13 = shadow_sample_0(uv13, compare0);
-    highp float o23 = shadow_sample_0(uv23, compare0);
-    highp float o33 = shadow_sample_0(uv33, compare0);
+    highp vec4 stepSamples = vec4(
+        shadow_sample_0(uv01, compare0),
+        shadow_sample_0(uv11, compare0),
+        shadow_sample_0(uv10, compare0),
+        shadow_sample_0(uv00, compare0)
+    );
 #endif
     // Edge tap smoothing
-    highp float value = 
-        (1.0 - f.x) * (1.0 - f.y) * o00 +
-        (1.0 - f.y) * (o10 + o20) +
-        f.x * (1.0 - f.y) * o30 +
-        (1.0 - f.x) * (o01 + o02) +
-        f.x * (o31 + o32) +
-        (1.0 - f.x) * f.y * o03 +
-        f.y * (o13 + o23) +
-        f.x * f.y * o33 +
-        o11 + o21 + o12 + o22;
+    vec4 v0 = vec4(1.0 - f.x, f.x, f.x, 1.0 - f.x);
+    vec4 v1 = vec4(f.y, f.y, 1.0 - f.y, 1.0 - f.y);
 
-    return clamp(value / 9.0, 0.0, 1.0);
+    return clamp(dot(v0 * v1, stepSamples), 0.0, 1.0);
 }
 
 float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
@@ -212,25 +147,21 @@ highp float calculate_shadow_bias(float NDotL) {
 }
 
 float shadowed_light_factor_normal(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
-    if (NDotL < 0.0)
-        return 0.0;
-    
-    highp float bias = calculate_shadow_bias(NDotL);
+    float NDotL = dot(N, u_shadow_direction);
+
+    float bias = calculate_shadow_bias(NDotL);
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
-    return (1.0 - (u_shadow_intensity * occlusion)) * NDotL;
+    return mix(0.0, (1.0 - (u_shadow_intensity * occlusion)) * NDotL, step(0.0, NDotL));
 }
 
 float shadowed_light_factor_normal_unbiased(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
-    highp float NDotL = dot(N, u_shadow_direction);
-    if (NDotL < 0.0)
-        return 0.0;
+    float NDotL = dot(N, u_shadow_direction);
 
     float bias = 0.0;
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
 
-    return (1.0 - (u_shadow_intensity * occlusion)) * NDotL;
+    return mix(0.0, (1.0 - (u_shadow_intensity * occlusion)) * NDotL, step(0.0, NDotL));
 }
 
 float shadowed_light_factor(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
