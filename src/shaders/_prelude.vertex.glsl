@@ -99,4 +99,9 @@ vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
     return (tile_units_to_pixels * pos + offset) / pattern_size;
 }
 
+#ifdef RENDER_CUTOFF
+uniform vec4 u_cutoff_params;
+varying float v_cutoff_opacity;
+#endif
+
 const vec4 AWAY = vec4(-1000.0, -1000.0, -1000.0, 1); // Normalized device coordinate that is not rendered.

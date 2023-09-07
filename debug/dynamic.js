@@ -6269,156 +6269,6 @@ window.dynamic = {
             }
         },
         {
-            "id": "3d-building",
-            "type": "fill-extrusion",
-            "metadata": { "mapbox:group": "Buildings, built" },
-            "source": "composite",
-            "source-layer": "building",
-            "minzoom": 15,
-            "filter": [
-                "all",
-                [ "==", [ "get", "extrude" ], "true" ],
-                [ "==", [ "get", "underground" ], "false" ]
-            ],
-            "layout": {
-                "fill-extrusion-edge-radius": 0.4
-            },
-            "paint": {
-                "fill-extrusion-flood-light-color": [
-                    "rgba",
-                    245,
-                    243,
-                    171,
-                    1.0
-                ],
-                "fill-extrusion-flood-light-ground-radius":[
-                    "step",
-                    [
-                      "number",
-                      [
-                        "get",
-                        "height"
-                      ]
-                    ],
-                    0.0,
-                    30.0,
-                    [
-                      "random",
-                      30.0,
-                      300.0,
-                      [
-                        "id"
-                      ]
-                    ]
-                  ],
-                "fill-extrusion-flood-light-intensity": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "measure-light",
-                        "brightness"
-                    ],
-                    0.0,
-                    0.3,
-                    0.05,
-                    0
-                ],
-                "fill-extrusion-flood-light-wall-radius": [
-                    "case",
-                  [">",
-                    [
-                      "number",
-                      [
-                        "get",
-                        "height"
-                      ]
-                    ],100],
-                  [
-                    "/",
-                    [
-                      "number",
-                      [
-                        "get",
-                        "height"
-                      ]
-                    ],
-                    3.0
-                  ],
-                  0
-                  ],
-                "fill-extrusion-vertical-scale": [
-                    "interpolate",
-                    ["linear"],
-                    ["zoom"],
-                    15, 0,
-                    15.3, 1
-                ],
-                "fill-extrusion-ambient-occlusion-intensity": 0.15,
-                "fill-extrusion-base": [ "get", "min_height" ],
-                "fill-extrusion-color": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "get", "height" ],
-                    0,
-                    "hsl(40, 43%, 93%)",
-                    200,
-                    "hsl(23, 100%, 97%)"
-                ],
-                "fill-extrusion-height": [
-                    "case",
-                    ["all",
-                    ["==", ["get", "height"], 3],
-                    ["in", ["get", "type"], ["literal", ["beach_hut", "boathouse", "bunker", "cabin", "carport", "garage", "garages", "greenhouse", "houseboat", "hut", "service", "stable", "toilets"]]]
-                ],
-                2,
-                ["all",
-                ["==", ["get", "height"], 3],
-                ["==", ["get", "type"], "bungalow"]
-                ],
-                4,
-                    ["all",
-                        ["==", ["get", "height"], 3],
-                        ["in", ["get", "type"], ["literal", ["apartments", "church", "civic", "college", "commercial", "hangar", "hotel", "industrial", "mosque", "office", "school", "university", "warehouse" ]]]
-                    ],
-                    [
-                        "random",
-                        18.0,
-                        20.0,
-                        [
-                          "id"
-                        ]
-                    ],
-                    ["==", ["get", "height"], 3],
-                    [
-                    "random",
-                    9.0,
-                    11.0,
-                    [
-                      "id"
-                    ]
-                    ],
-                    [
-                      "number",
-                      [
-                        "get",
-                        "height"
-                      ]
-                    ]
-                  ],
-                "fill-extrusion-opacity": [
-                    "interpolate",
-                    [ "linear" ],
-                    [ "zoom" ],
-                    15,
-                    0,
-                    15.3,
-                    1
-                ]
-            }
-        },
-        {
             "id": "building-models",
             "minzoom": 14.0,
             "paint": {
@@ -6637,6 +6487,156 @@ window.dynamic = {
             },
             "source": "3dbuildings",
             "type": "model"
+        },
+        {
+            "id": "3d-building",
+            "type": "fill-extrusion",
+            "metadata": { "mapbox:group": "Buildings, built" },
+            "source": "composite",
+            "source-layer": "building",
+            "minzoom": 15,
+            "filter": [
+                "all",
+                [ "==", [ "get", "extrude" ], "true" ],
+                [ "==", [ "get", "underground" ], "false" ]
+            ],
+            "layout": {
+                "fill-extrusion-edge-radius": 0.4
+            },
+            "paint": {
+                "fill-extrusion-flood-light-color": [
+                    "rgba",
+                    245,
+                    243,
+                    171,
+                    1.0
+                ],
+                "fill-extrusion-flood-light-ground-radius":[
+                    "step",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],
+                    0.0,
+                    30.0,
+                    [
+                      "random",
+                      30.0,
+                      300.0,
+                      [
+                        "id"
+                      ]
+                    ]
+                  ],
+                "fill-extrusion-flood-light-intensity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "measure-light",
+                        "brightness"
+                    ],
+                    0.0,
+                    0.3,
+                    0.05,
+                    0
+                ],
+                "fill-extrusion-flood-light-wall-radius": [
+                    "case",
+                  [">",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],100],
+                  [
+                    "/",
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ],
+                    3.0
+                  ],
+                  0
+                  ],
+                "fill-extrusion-vertical-scale": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    15, 0,
+                    15.3, 1
+                ],
+                "fill-extrusion-ambient-occlusion-intensity": 0.15,
+                "fill-extrusion-base": [ "get", "min_height" ],
+                "fill-extrusion-color": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "get", "height" ],
+                    0,
+                    "hsl(40, 43%, 93%)",
+                    200,
+                    "hsl(23, 100%, 97%)"
+                ],
+                "fill-extrusion-height": [
+                    "case",
+                    ["all",
+                    ["==", ["get", "height"], 3],
+                    ["in", ["get", "type"], ["literal", ["beach_hut", "boathouse", "bunker", "cabin", "carport", "garage", "garages", "greenhouse", "houseboat", "hut", "service", "stable", "toilets"]]]
+                ],
+                2,
+                ["all",
+                ["==", ["get", "height"], 3],
+                ["==", ["get", "type"], "bungalow"]
+                ],
+                4,
+                    ["all",
+                        ["==", ["get", "height"], 3],
+                        ["in", ["get", "type"], ["literal", ["apartments", "church", "civic", "college", "commercial", "hangar", "hotel", "industrial", "mosque", "office", "school", "university", "warehouse" ]]]
+                    ],
+                    [
+                        "random",
+                        18.0,
+                        20.0,
+                        [
+                          "id"
+                        ]
+                    ],
+                    ["==", ["get", "height"], 3],
+                    [
+                    "random",
+                    9.0,
+                    11.0,
+                    [
+                      "id"
+                    ]
+                    ],
+                    [
+                      "number",
+                      [
+                        "get",
+                        "height"
+                      ]
+                    ]
+                  ],
+                "fill-extrusion-opacity": [
+                    "interpolate",
+                    [ "linear" ],
+                    [ "zoom" ],
+                    15,
+                    0,
+                    15.3,
+                    1
+                ]
+            }
         },
         {
             "id": "waterway-label",

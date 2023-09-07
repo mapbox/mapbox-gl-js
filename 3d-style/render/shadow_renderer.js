@@ -31,6 +31,7 @@ import {mat4, vec3} from 'gl-matrix';
 import type {Mat4, Vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program.js';
 import EXTENT from '../../src/style-spec/data/extent.js';
+import {getCutoffParams} from '../../src/render/cutoff.js';
 
 type ShadowCascade = {
     framebuffer: Framebuffer,
@@ -240,7 +241,12 @@ export class ShadowRenderer {
             return;
         }
 
-        const program = painter.useProgram('groundShadow');
+        const baseDefines = ([]: any);
+        const cutoffParams = getCutoffParams(painter, painter.longestCutoffRange);
+        if (cutoffParams.shouldRenderCutoff) {
+            baseDefines.push('RENDER_CUTOFF');
+        }
+        const program = painter.useProgram('groundShadow', null, baseDefines);
 
         // Render shadows on the ground plane as an extra layer of blended "tiles"
         const tileCoverOptions = {
@@ -258,7 +264,7 @@ export class ShadowRenderer {
 
             this.setupShadows(unwrapped, program);
 
-            painter.uploadCommonUniforms(context, program, unwrapped);
+            painter.uploadCommonUniforms(context, program, unwrapped, null, cutoffParams);
 
             const uniformValues = groundShadowUniformValues(painter.transform.calculateProjMatrix(unwrapped), shadowColor);
 

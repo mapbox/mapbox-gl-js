@@ -50,6 +50,9 @@ void main() {
 #ifdef FOG
     fog = v_fog;
 #endif // FOG
+#ifdef RENDER_CUTOFF
+    fog *= v_cutoff_opacity;
+#endif // RENDER_CUTOFF
     gl_FragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
 vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);

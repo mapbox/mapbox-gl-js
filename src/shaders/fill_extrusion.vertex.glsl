@@ -1,3 +1,8 @@
+#if __VERSION__ >= 300
+#ifdef RENDER_CUTOFF
+invariant gl_Position;
+#endif
+#endif
 
 uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
@@ -219,5 +224,9 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
+#endif
+
+#ifdef RENDER_CUTOFF
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
 #endif
 }

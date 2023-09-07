@@ -46,6 +46,7 @@ import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
 import {ReplacementSource} from '../../3d-style/source/replacement_source.js';
 import type {Source} from '../source/source.js';
+import type {CutoffParams} from '../render/cutoff.js';
 
 // 3D-style related
 import model, {upload as modelUpload} from '../../3d-style/render/draw_model.js';
@@ -186,6 +187,8 @@ class Painter {
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
+    longestCutoffRange: number;
+    minCutoffZoom: number;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -212,6 +215,8 @@ class Painter {
 
         this.conflationActive = false;
         this.replacementSource = new ReplacementSource();
+        this.longestCutoffRange = 0.0;
+        this.minCutoffZoom = 0.0;
         this._shadowRenderer = new ShadowRenderer(this);
 
         this._wireframeDebugCache = new WireframeDebugCache();
@@ -573,15 +578,14 @@ class Painter {
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
         }
 
+        const getLayerSource = (layer: StyleLayer) => {
+            const cache = this.style._getLayerSourceCache(layer);
+            if (!cache || !cache.used) {
+                return null;
+            }
+            return cache.getSource();
+        };
         if (conflationSourcesInStyle) {
-            const getLayerSource = (layer: StyleLayer) => {
-                const cache = this.style._getLayerSourceCache(layer);
-                if (!cache || !cache.used) {
-                    return null;
-                }
-                return cache.getSource();
-            };
-
             const conflationLayersInStyle = [];
 
             for (const layer of orderedLayers) {
@@ -620,6 +624,24 @@ class Painter {
         // Mark conflation as active for one frame after the deactivation to give
         // consumers of the feature an opportunity to clean up
         this.conflationActive = conflationActiveThisFrame;
+
+        // Tiles on zoom level lower than the minCutoffZoom will be cut for layers with non-zero cutoffRange
+        this.minCutoffZoom = 0.0;
+        // The longest cutoff range will be used for cutting shadows if any layer has non-zero cutoffRange
+        this.longestCutoffRange = 0.0;
+        for (const layer of orderedLayers) {
+            const cutoffRange = layer.cutoffRange();
+            this.longestCutoffRange = Math.max(cutoffRange, this.longestCutoffRange);
+            if (cutoffRange > 0.0) {
+                const source = getLayerSource(layer);
+                if (source) {
+                    this.minCutoffZoom = Math.max(source.minzoom, this.minCutoffZoom);
+                }
+                if (layer.minzoom) {
+                    this.minCutoffZoom = Math.max(layer.minzoom, this.minCutoffZoom);
+                }
+            }
+        }
 
         this.opaquePassCutoff = Infinity;
         for (let i = 0; i < orderedLayers.length; i++) {
@@ -1197,7 +1219,7 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<*>, tileID: ?UnwrappedTileID, fogMatrix: ?Float32Array) {
+    uploadCommonUniforms(context: Context, program: Program<*>, tileID: ?UnwrappedTileID, fogMatrix: ?Float32Array, cutoffParams: ?CutoffParams) {
         this.uploadCommonLightUniforms(context, program);
 
         // Fog is not enabled when rendering to texture so we
@@ -1225,6 +1247,10 @@ class Painter {
                 fogMatrix);
 
             program.setFogUniformValues(context, fogUniforms);
+        }
+
+        if (cutoffParams) {
+            program.setCutoffUniformValues(context, cutoffParams.uniformValues);
         }
     }
 

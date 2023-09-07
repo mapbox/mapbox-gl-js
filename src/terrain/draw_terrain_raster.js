@@ -31,6 +31,7 @@ import extend from '../style-spec/util/extend.js';
 import type Program from '../render/program.js';
 import type VertexBuffer from "../gl/vertex_buffer.js";
 import {calculateGroundShadowFactor} from "../../3d-style/render/shadow_renderer.js";
+import {getCutoffParams} from '../render/cutoff.js';
 
 export {
     drawTerrainRaster,
@@ -281,11 +282,16 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
         let program, programMode;
         const shadowRenderer = painter.shadowRenderer;
+        const cutoffParams = getCutoffParams(painter, painter.longestCutoffRange);
 
         const setShaderMode = (mode: number) => {
             if (programMode === mode)
                 return;
-            const modes = [shaderDefines[mode]];
+            const modes = ([]: any);
+            modes.push(shaderDefines[mode]);
+            if (cutoffParams.shouldRenderCutoff) {
+                modes.push('RENDER_CUTOFF');
+            }
             program = painter.useProgram('terrainRaster', null, modes);
             programMode = mode;
         };
@@ -348,7 +354,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     shadowRenderer.setupShadows(unwrappedId, program);
                 }
 
-                painter.uploadCommonUniforms(context, program, unwrappedId);
+                painter.uploadCommonUniforms(context, program, unwrappedId, null, cutoffParams);
 
                 program.draw(painter, primitive, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
                     uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);

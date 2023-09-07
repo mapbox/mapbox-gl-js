@@ -58,9 +58,12 @@ map.on('load', () => {
             'fill-extrusion-base': ['get', 'min_height'],
             'fill-extrusion-opacity': 1,
             'fill-extrusion-ambient-occlusion-intensity': 0.5,
-            'fill-extrusion-ambient-occlusion-radius': 0.1
+            'fill-extrusion-ambient-occlusion-radius': 0.1,
+            'fill-extrusion-cutoff-fade-range': 0.5
         }
     });
+
+    map.showTileBoundaries = true;
 
     map.setLights([
         {

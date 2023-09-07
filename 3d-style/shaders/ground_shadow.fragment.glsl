@@ -16,6 +16,9 @@ void main() {
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
     vec3 shadow = mix(u_ground_shadow_factor, vec3(1.0), light);
 
+#ifdef RENDER_CUTOFF
+    shadow = mix(vec3(1.0), shadow, cutoff_opacity(u_cutoff_params, v_depth));
+#endif
 #ifdef FOG
     shadow = mix(shadow, vec3(1.0), v_fog_opacity);
 #endif

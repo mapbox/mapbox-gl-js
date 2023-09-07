@@ -36,6 +36,7 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
 import {mat4} from "gl-matrix";
+import {getCutoffParams} from './cutoff.js';
 
 export default draw;
 
@@ -47,6 +48,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     const gl = context.gl;
     const terrain = painter.terrain;
     const rtt = terrain && terrain.renderingToTexture;
+    const cutoffFadeRange = layer.paint.get('fill-extrusion-cutoff-fade-range');
     if (opacity === 0) {
         return;
     }
@@ -82,7 +84,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         if (!rtt) {
             const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-            if (opacity === 1 && noPattern) {
+            if (cutoffFadeRange === 0.0 && opacity === 1 && noPattern) {
                 const colorMode = painter.colorModeForRenderPass();
 
                 drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
@@ -254,6 +256,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3): any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
+    const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
@@ -269,6 +272,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     }
     if (floodLightIntensity > 0) {
         baseDefines.push('FLOOD_LIGHT');
+    }
+    if (cutoffParams.shouldRenderCutoff) {
+        baseDefines.push('RENDER_CUTOFF');
     }
 
     const isShadowPass = painter.renderPass === 'shadow';
@@ -348,7 +354,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             }
         }
 
-        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
@@ -382,6 +388,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     const tr = painter.transform;
     const zoom = painter.transform.zoom;
     const defines = ([]: any);
+    const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
     if (subpass === 'clear') {
         defines.push('CLEAR_SUBPASS');
         if (framebufferCopyTexture) {
@@ -394,6 +401,9 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     }
     if (replacementActive) {
         defines.push('HAS_CENTROID');
+    }
+    if (cutoffParams.shouldRenderCutoff) {
+        defines.push('RENDER_CUTOFF');
     }
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
 
@@ -408,7 +418,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
         const dynamicBuffers = [];
         if (replacementActive) dynamicBuffers.push(groundEffect.hiddenByLandmarkVertexBuffer);
 
-        painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
+        painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,

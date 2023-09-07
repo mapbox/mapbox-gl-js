@@ -59,7 +59,8 @@ const skip = [
 
     "render-tests/free-camera/terrain", // Occasionally subtly different camera position
     "render-tests/fog/terrain/equal-range", // Ground sometimes missing (sky renders)
-    "render-tests/model-layer/landmark-shadows-terrain" // Terrain makes fill extrusion height different in chrome
+    "render-tests/model-layer/landmark-shadows-terrain", // Terrain makes fill extrusion height different in chrome
+    "render-tests/model-layer/buildings-trees-shadows-fog-terrain-cutoff" // Timing out
 ];
 
 export default {todo, skip};

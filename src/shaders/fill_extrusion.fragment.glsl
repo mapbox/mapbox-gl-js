@@ -113,6 +113,10 @@ float flood_radiance = 0.0;
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
 
+#ifdef RENDER_CUTOFF
+    color *= v_cutoff_opacity;
+#endif
+
 #ifdef INDICATOR_CUTOUT
     color = applyCutout(color);
 #endif

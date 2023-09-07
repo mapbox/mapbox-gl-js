@@ -92,6 +92,7 @@ const Demo3D = function() {
     this.floodLightGroundAttenuation = 0.69;
     this.buildingColor = {r:255, g:255, b:255};
     this.buildingOpacity = 1;
+    this.cutoffFadeRange = 0.5;
     this.ambientLightColor = {r:255, g:255, b:255};
     this.ambientLightIntensity = 0.5;
     this.directionalLightColor = {r:255, g:255, b:255};
@@ -362,6 +363,7 @@ window.onload = function() {
     const verticalGradient = buildings.addInput(demo3d, 'verticalGradient');
     const buildingColor = buildings.addInput(demo3d, 'buildingColor');
     const buildingOpacity = buildings.addInput(demo3d, 'buildingOpacity', {min:0.0, max:1.0});
+    const cutoffFadeRange = buildings.addInput(demo3d, 'cutoffFadeRange', {min:0.0, max:1.0});
     const edgeRadius = buildings.addInput(demo3d, 'edgeRadius');
     const roundedRoof = buildings.addInput(demo3d, 'roundedRoof');
     const lightIntensity = buildings.addInput(demo3d, 'lightIntensity', {min:0.0, max:1.0});
@@ -370,6 +372,7 @@ window.onload = function() {
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-color',
             'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')');
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-opacity', demo3d.buildingOpacity);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-cutoff-fade-range', demo3d.cutoffFadeRange);
         map.setLayoutProperty(demo3d.buildingExtrusion, 'fill-extrusion-edge-radius', demo3d.edgeRadius);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-rounded-roof', demo3d.roundedRoof);
 
@@ -430,6 +433,8 @@ map.on('style.load', function() {
         "tileSize": 512,
         "maxzoom": 14
     });
+    map.style.setPaintProperty("trees", "model-cutoff-fade-range", 1.0);
+    map.style.setPaintProperty("3d-building", "fill-extrusion-cutoff-fade-range", 0.5);
     map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
     demo3d.buildingExtrusion = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion' && map.style.getLayer(id).sourceLayer === 'building');
     if (!demo3d.buildingExtrusion) {
@@ -449,6 +454,7 @@ map.on('style.load', function() {
                 'fill-extrusion-height': ["get", "height"],
                 'fill-extrusion-base': ["get", "min_height"],
                 'fill-extrusion-opacity': demo3d.buildingOpacity,
+                'fill-extrusion-cutoff-fade-range': demo3d.cutoffFadeRange,
                 'fill-extrusion-vertical-gradient': demo3d.verticalGradient,
                 'fill-extrusion-ambient-occlusion-radius': demo3d.aoWallRadius,
                 'fill-extrusion-ambient-occlusion-intensity': demo3d.aoIntensity,

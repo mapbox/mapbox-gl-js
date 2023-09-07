@@ -21,6 +21,7 @@ void main() {
     v_depth = gl_Position.w;
 
 #ifdef FOG
-    v_fog_opacity = fog(fog_position(a_pos));
+    v_fog_pos = fog_position(a_pos);
+    v_fog_opacity = fog(v_fog_pos);
 #endif
 }

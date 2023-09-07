@@ -44,3 +44,17 @@ vec3 linearProduct(vec3 srgbIn, vec3 k)
 #else
     #define HANDLE_WIREFRAME_DEBUG
 #endif
+
+#ifdef RENDER_CUTOFF
+// Calculates cutoff and fade out based on the supplied params and depth value
+float cutoff_opacity(vec4 cutoff_params, float depth) {
+    float near = cutoff_params.x;
+    float far = cutoff_params.y;
+    float cutoffStart = cutoff_params.z;
+    // 0.0001 subtracted to prevent division by zero
+    float cutoffEnd = cutoff_params.w - 0.0001;
+
+    float linearDepth = (depth - near) / (far - near);
+    return clamp((linearDepth - cutoffStart) / (cutoffEnd - cutoffStart), 0.0, 1.0);
+}
+#endif

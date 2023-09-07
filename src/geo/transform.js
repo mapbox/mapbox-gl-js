@@ -39,6 +39,7 @@ import type {Aabb} from '../util/primitives';
 const NUM_WORLD_COPIES = 3;
 export const DEFAULT_MIN_ZOOM = 0;
 export const DEFAULT_MAX_ZOOM = 25.5;
+export const MIN_LOD_PITCH = 60.0;
 
 type RayIntersectionResult = { p0: Vec4, p1: Vec4, t: number};
 type ElevationReference = "sea" | "ground";
@@ -782,6 +783,11 @@ class Transform {
         return result;
     }
 
+    isLODDisabled(checkPitch: boolean): boolean {
+        // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
+        return (!checkPitch || this.pitch <= MIN_LOD_PITCH) && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace;
+    }
+
     /**
      * Return all coordinates that could cover this transform for a covering
      * zoom level.
@@ -833,8 +839,7 @@ class Transform {
         // 0.02 added to compensate for precision errors, see "coveringTiles for terrain" test in transform.test.js.
         const zoomSplitDistance = this.cameraToCenterDistance / options.tileSize * (options.roundZoom ? 1 : 0.502);
 
-        // No change of LOD behavior for pitch lower than 60 and when there is no top padding: return only tile ids from the requested zoom level
-        const minZoom = this.pitch <= 60.0 && this._edgeInsets.top <= this._edgeInsets.bottom && !this._elevation && !this.projection.isReprojectedInTileSpace ? z : 0;
+        const minZoom = this.isLODDisabled(true) ? z : 0;
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).

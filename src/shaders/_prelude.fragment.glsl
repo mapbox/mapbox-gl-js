@@ -55,3 +55,8 @@ vec4 applyCutout(vec4 color) {
     return color;
 #endif
 }
+
+#ifdef RENDER_CUTOFF
+uniform highp vec4 u_cutoff_params;
+varying float v_cutoff_opacity;
+#endif

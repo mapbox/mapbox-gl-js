@@ -39,6 +39,10 @@ class ModelStyleLayer extends StyleLayer {
         return true;
     }
 
+    cutoffRange(): number {
+        return this.paint.get('model-cutoff-fade-range');
+    }
+
     // $FlowFixMe[method-unbinding]
     queryRadius(): number {
         return 0;

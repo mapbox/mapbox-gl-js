@@ -41,6 +41,7 @@ export type PaintProps = {|
     "model-emissive-strength": DataDrivenProperty<number>,
     "model-roughness": DataDrivenProperty<number>,
     "model-height-based-emissive-strength-multiplier": DataDrivenProperty<[number, number, number, number, number]>,
+    "model-cutoff-fade-range": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -57,6 +58,7 @@ const paint: Properties<PaintProps> = new Properties({
     "model-emissive-strength": new DataDrivenProperty(styleSpec["paint_model"]["model-emissive-strength"]),
     "model-roughness": new DataDrivenProperty(styleSpec["paint_model"]["model-roughness"]),
     "model-height-based-emissive-strength-multiplier": new DataDrivenProperty(styleSpec["paint_model"]["model-height-based-emissive-strength-multiplier"]),
+    "model-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_model"]["model-cutoff-fade-range"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

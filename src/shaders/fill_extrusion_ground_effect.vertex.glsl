@@ -62,7 +62,8 @@ void main() {
     v_flood_light_radius_tile = flood_radius_tile;
     v_ao = vec2(u_ao.x, ao_radius);
 #ifdef FOG
-    v_fog = 1.0 - fog(fog_position(pos));
+    v_fog_pos = fog_position(pos);
+    v_fog = 1.0 - fog(v_fog_pos);
 #endif
 #endif
 
@@ -77,4 +78,8 @@ void main() {
     hidden += hidden_by_landmark;
 
     gl_Position = mix(u_matrix * vec4(pos, 1.0), AWAY, float(hidden > 0.0));
+
+#ifdef RENDER_CUTOFF
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
+#endif
 }

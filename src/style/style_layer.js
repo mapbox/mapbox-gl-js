@@ -297,6 +297,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    cutoffRange(): number {
+        return 0.0;
+    }
+
     resize() {
         // noop
     }

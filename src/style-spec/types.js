@@ -498,7 +498,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>,
-        "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>
+        "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
+        "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification
     |}
 |}
 
@@ -580,7 +581,8 @@ export type ModelLayerSpecification = {|
         "model-ambient-occlusion-intensity"?: PropertyValueSpecification<number>,
         "model-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "model-roughness"?: DataDrivenPropertyValueSpecification<number>,
-        "model-height-based-emissive-strength-multiplier"?: DataDrivenPropertyValueSpecification<[number, number, number, number, number]>
+        "model-height-based-emissive-strength-multiplier"?: DataDrivenPropertyValueSpecification<[number, number, number, number, number]>,
+        "model-cutoff-fade-range"?: ExpressionSpecification
     |}
 |}
 

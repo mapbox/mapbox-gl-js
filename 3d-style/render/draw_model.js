@@ -28,6 +28,7 @@ import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
 import {Aabb} from '../../src/util/primitives.js';
+import {getCutoffParams} from '../../src/render/cutoff.js';
 
 export default drawModels;
 
@@ -187,7 +188,6 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
-    const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
     let fogMatrixArray = null;
     if (painter.style.fog) {
         const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
@@ -195,7 +195,13 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         fogMatrixArray = new Float32Array(fogMatrix);
     }
 
-    painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
+    const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
+    if (cutoffParams.shouldRenderCutoff) {
+        definesValues.push('RENDER_CUTOFF');
+    }
+    const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+
+    painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
 
     const isShadowPass = painter.renderPass === 'shadow';
 
@@ -541,6 +547,10 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
             let program;
             let uniformValues;
 
+            const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
+            if (cutoffParams.shouldRenderCutoff) {
+                definesValues.push('RENDER_CUTOFF');
+            }
             if (isShadowPass && shadowRenderer) {
                 program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
@@ -573,7 +583,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 }
             }
 
-            painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
+            painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
             assert(modelInstances.instancedDataArray.bytesPerElement === 64);
             const instanceUniform = isShadowPass ? "u_instance" : "u_normal_matrix";

@@ -59,6 +59,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return true;
     }
 
+    cutoffRange(): number {
+        return this.paint.get('fill-extrusion-cutoff-fade-range');
+    }
+
     getProgramIds(): string[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
         const image = patternProperty.constantOr((1: any));

@@ -132,6 +132,10 @@ void main() {
     v_fog_pos = fog_position(local_pos);
 #endif
 
+#ifdef RENDER_CUTOFF
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
+#endif
+
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
     v_depth = gl_Position.z / gl_Position.w;
 #endif

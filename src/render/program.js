@@ -19,6 +19,8 @@ import {terrainUniforms, globeUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain.js';
 import {fogUniforms} from './fog.js';
 import type {FogUniformsType} from './fog.js';
+import {cutoffUniforms} from './cutoff.js';
+import type {CutoffUniformsType} from './cutoff.js';
 import {lightsUniforms} from '../../3d-style/render/lights.js';
 import type {LightsUniformsType} from '../../3d-style/render/lights.js';
 import {shadowUniforms} from '../../3d-style/render/shadow_uniforms.js';
@@ -82,6 +84,7 @@ class Program<Us: UniformBindings> {
     failedToCreate: boolean;
     terrainUniforms: ?TerrainUniformsType;
     fogUniforms: ?FogUniformsType;
+    cutoffUniforms: ?CutoffUniformsType;
     lightsUniforms: ?LightsUniformsType;
     globeUniforms: ?GlobeUniformsType;
     shadowUniforms: ?ShadowUniformsType;
@@ -190,6 +193,9 @@ class Program<Us: UniformBindings> {
         if (fixedDefines.includes('FOG')) {
             this.fogUniforms = fogUniforms(context);
         }
+        if (fixedDefines.includes('RENDER_CUTOFF')) {
+            this.cutoffUniforms = cutoffUniforms(context);
+        }
         if (fixedDefines.includes('LIGHTING_3D_MODE')) {
             this.lightsUniforms = lightsUniforms(context);
         }
@@ -235,6 +241,18 @@ class Program<Us: UniformBindings> {
 
         for (const name in fogUniformValues) {
             uniforms[name].set(this.program, name, fogUniformValues[name]);
+        }
+    }
+
+    setCutoffUniformValues(context: Context, cutoffUniformValues: UniformValues<CutoffUniformsType>) {
+        if (!this.cutoffUniforms) return;
+        const uniforms: CutoffUniformsType = this.cutoffUniforms;
+
+        if (this.failedToCreate) return;
+        context.program.set(this.program);
+
+        for (const name in cutoffUniformValues) {
+            uniforms[name].set(this.program, name, cutoffUniformValues[name]);
         }
     }
 

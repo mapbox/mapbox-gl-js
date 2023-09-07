@@ -471,6 +471,10 @@ vec4 finalColor;
     finalColor = fog_dither(fog_apply_premultiplied(finalColor, v_fog_pos));
 #endif
 
+#ifdef RENDER_CUTOFF
+    finalColor *= v_cutoff_opacity;
+#endif
+
 #ifdef INDICATOR_CUTOUT
     finalColor = applyCutout(finalColor);
 #endif
