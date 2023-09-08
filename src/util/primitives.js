@@ -182,11 +182,27 @@ const FAR_TR = 5;
 const FAR_BR = 6;
 const FAR_BL = 7;
 
+function pointsInsideOfPlane(points: Array<Vec3>, plane: Vec4): number {
+    let pointsInside = 0;
+    const p = [0, 0, 0, 0];
+    for (let i = 0; i < points.length; i++) {
+        p[0] = points[i][0];
+        p[1] = points[i][1];
+        p[2] = points[i][2];
+        p[3] = 1.0;
+        if (vec4.dot(p, plane) >= 0) {
+            pointsInside++;
+        }
+    }
+    return pointsInside;
+}
+
 class Frustum {
     points: FrustumPoints;
     planes: FrustumPlanes;
     bounds: Aabb;
     projections: Array<Projection>;
+    frustumEdges: Array<Vec3>;
 
     constructor(points_: ?FrustumPoints, planes_: ?FrustumPlanes) {
         this.points = points_ || (new Array(8).fill([0, 0, 0]): any);
@@ -196,7 +212,7 @@ class Frustum {
 
         // Precompute a set of separating axis candidates for precise intersection tests.
         // These axes are computed as follows: (edges of aabb) x (edges of frustum)
-        const frustumEdges = [
+        this.frustumEdges = [
             vec3.sub([], this.points[NEAR_BR], this.points[NEAR_BL]),
             vec3.sub([], this.points[NEAR_TL], this.points[NEAR_BL]),
             vec3.sub([], this.points[FAR_TL], this.points[NEAR_TL]),
@@ -205,7 +221,7 @@ class Frustum {
             vec3.sub([], this.points[FAR_BL], this.points[NEAR_BL])
         ];
 
-        for (const edge of frustumEdges) {
+        for (const edge of this.frustumEdges) {
             // Cross product [1, 0, 0] x [a, b, c] == [0, -c, b]
             // Cross product [0, 1, 0] x [a, b, c] == [c, 0, -a]
             const axis0 = [0, -edge[2], edge[1]];
@@ -268,6 +284,44 @@ class Frustum {
         }
         return new Frustum((frustumPoints: any), (frustumPlanes: any));
     }
+
+    // Performs precise intersection test between the frustum and the provided convex hull.
+    // The hull consits of vertices, faces (defined as planes) and a list of edges.
+    // Intersection test is performed using separating axis theoreom.
+    intersectsPrecise(vertices: Array<Vec3>, faces: Array<Vec4>, edges: Array<Vec3>): number {
+        // Check if any of the provided faces defines a separating axis
+        for (let i = 0; i < faces.length; i++) {
+            if (!pointsInsideOfPlane(vertices, faces[i])) {
+                return 0;
+            }
+        }
+        // Check if any of the frustum planes defines a separating axis
+        for (let i = 0; i < this.planes.length; i++) {
+            if (!pointsInsideOfPlane(vertices, this.planes[i])) {
+                return 0;
+            }
+        }
+
+        for (const edge of edges) {
+            for (const frustumEdge of this.frustumEdges) {
+                const axis = vec3.cross([], edge, frustumEdge);
+                const len  = vec3.length(axis);
+                if (len === 0) {
+                    continue;
+                }
+
+                vec3.scale(axis, axis, 1 / len);
+                const projA = projectPoints((this.points: any), this.points[0], axis);
+                const projB = projectPoints((vertices: any), this.points[0], axis);
+
+                if (projA[0] > projB[1] || projB[0] > projA[1]) {
+                    return 0;
+                }
+            }
+        }
+        return 1;
+    }
+
 }
 
 class Aabb {

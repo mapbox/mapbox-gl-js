@@ -39,6 +39,7 @@
   "sources": {
     "mapbox": {
       "type": "vector",
+      "minzoom": 15,
       "maxzoom": 16,
       "tiles": [
         "local://tiles/{z}-{x}-{y}.vector.pbf"

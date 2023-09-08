@@ -35,6 +35,10 @@ class ModelStyleLayer extends StyleLayer {
         return true;
     }
 
+    canCastShadows(): boolean {
+        return true;
+    }
+
     hasLightBeamPass(): boolean {
         return true;
     }

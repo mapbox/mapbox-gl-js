@@ -23,6 +23,7 @@ import {createExpression} from '../style-spec/expression/index.js';
 
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
+import type {Vec3} from 'gl-matrix';
 import {
     validateStyle,
     validateSource,
@@ -56,6 +57,7 @@ import PauseablePlacement from './pauseable_placement.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 import {makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.js';
+import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -567,22 +569,6 @@ class Style extends Evented {
 
         this._ownOrder = layers.map((layer) => makeFQID(layer.id, this.scope));
 
-        this._ownLayers = {};
-        this._serializedLayers = {};
-        for (const layer of layers) {
-            const styleLayer = createStyleLayer(layer, this.options);
-            styleLayer.id = makeFQID(styleLayer.id, this.scope);
-            styleLayer.scope = this.scope;
-            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.id);
-            if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
-
-            styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
-            this._layers[styleLayer.id] = styleLayer;
-            this._ownLayers[styleLayer.id] = styleLayer;
-            this._serializedLayers[styleLayer.id] = styleLayer.serialize();
-            this._updateLayerCount(styleLayer, true);
-        }
-
         if (this.stylesheet.light) {
             console.log("The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.");
         }
@@ -598,6 +584,29 @@ class Style extends Evented {
 
         if (!this.light) {
             this.light = new Light(this.stylesheet.light);
+        }
+
+        this._ownLayers = {};
+        this._serializedLayers = {};
+        for (const layer of layers) {
+            const styleLayer = createStyleLayer(layer, this.options);
+            styleLayer.id = makeFQID(styleLayer.id, this.scope);
+            styleLayer.scope = this.scope;
+            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.id);
+            if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
+
+            styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
+            this._layers[styleLayer.id] = styleLayer;
+            this._ownLayers[styleLayer.id] = styleLayer;
+            this._serializedLayers[styleLayer.id] = styleLayer.serialize();
+            this._updateLayerCount(styleLayer, true);
+
+            const sourceCache = this._getLayerSourceCache(styleLayer);
+            const shadowsEnabled = !!this.directionalLight && this.directionalLight.properties.get('cast-shadows') === true;
+
+            if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
+                sourceCache.castsShadows = true;
+            }
         }
 
         if (this.stylesheet.models) {
@@ -1455,6 +1464,12 @@ class Style extends Evented {
         this._ownLayers[id] = layer;
 
         const sourceCache = this._getLayerSourceCache(layer);
+        const shadowsEnabled = !!this.directionalLight && this.directionalLight.properties.get('cast-shadows') === true;
+
+        if (sourceCache && layer.canCastShadows() && shadowsEnabled) {
+            sourceCache.castsShadows = true;
+        }
+
         if (this._removedLayers[id] && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
@@ -1551,6 +1566,20 @@ class Style extends Evented {
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
         this._configDependentLayers.delete(id);
+
+        const sourceCache = this._getLayerSourceCache(layer);
+
+        if (sourceCache && sourceCache.castsShadows) {
+            let shadowCastersLeft = false;
+            for (const key in this._ownLayers) {
+                if (this._layers[key].source === layer.source && this._layers[key].canCastShadows()) {
+                    shadowCastersLeft = true;
+                    break;
+                }
+            }
+
+            sourceCache.castsShadows = shadowCastersLeft;
+        }
 
         if (layer.onRemove) {
             layer.onRemove(this.map);
@@ -2309,8 +2338,12 @@ class Style extends Evented {
     }
 
     _updateSources(transform: Transform) {
+        let lightDirection: ?Vec3;
+        if (this.directionalLight) {
+            lightDirection = shadowDirectionFromProperties(this.directionalLight);
+        }
         for (const id in this._sourceCaches) {
-            this._sourceCaches[id].update(transform);
+            this._sourceCaches[id].update(transform, undefined, undefined, lightDirection);
         }
     }
 

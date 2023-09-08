@@ -1920,3 +1920,80 @@ test('SourceCache#_preloadTiles', (t) => {
 
     t.end();
 });
+
+test('Visible coords with shadows', (t) => {
+    const transform = new Transform();
+    transform.resize(512, 512);
+    transform.center = new LngLat(40.7125638, -74.0052634);
+    transform.zoom = 19.7;
+    transform.pitch = 69;
+    transform.bearing = 39.2;
+
+    const {sourceCache, eventedParent} = createSourceCache({
+        reparseOverscaled: true,
+        loadTile(tile, callback) {
+            tile.state = 'loaded';
+            callback(null);
+        }
+    });
+
+    sourceCache.updateCacheSize(transform);
+    sourceCache.castsShadows = true;
+    t.test('getVisibleCoordinates', (t) => {
+        eventedParent.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
+                t.equal(sourceCache.getVisibleCoordinates().length, 2);
+                t.deepEqual(sourceCache.getRenderableIds(false, false), [
+                    new OverscaledTileID(19, 0, 14, 10044, 8192).key,
+                    new OverscaledTileID(19, 0, 14, 10044, 8191).key,
+                ]);
+                t.end();
+            }
+        });
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
+
+test('shadow caster tiles', (t) => {
+    const transform = new Transform();
+    transform.resize(512, 512);
+    transform.center = new LngLat(40.7125638, -74.0052634);
+    transform.zoom = 19.7;
+    transform.pitch = 69;
+    transform.bearing = 39.2;
+
+    const {sourceCache, eventedParent} = createSourceCache({
+        reparseOverscaled: true,
+        loadTile(tile, callback) {
+            tile.state = 'loaded';
+            callback(null);
+        }
+    });
+
+    sourceCache.updateCacheSize(transform);
+    sourceCache.castsShadows = true;
+    t.test('getShadowCasterCoordinates', (t) => {
+        eventedParent.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
+                t.equal(sourceCache.getShadowCasterCoordinates().length, 6);
+                t.deepEqual(sourceCache.getRenderableIds(false, true), [
+                    new OverscaledTileID(19, 0, 14, 10044, 8193).key,
+                    new OverscaledTileID(19, 0, 14, 10043, 8193).key,
+                    new OverscaledTileID(19, 0, 14, 10044, 8192).key,
+                    new OverscaledTileID(19, 0, 14, 10043, 8192).key,
+                    new OverscaledTileID(19, 0, 14, 10044, 8191).key,
+                    new OverscaledTileID(19, 0, 14, 10043, 8191).key,
+                ]);
+                t.end();
+            }
+        });
+        sourceCache.getSource().onAdd();
+    });
+
+    t.end();
+});
+

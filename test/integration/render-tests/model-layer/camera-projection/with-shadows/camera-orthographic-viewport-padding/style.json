@@ -32,6 +32,7 @@
   "sources": {
     "mapbox": {
       "type": "vector",
+      "minzoom": 16,
       "maxzoom": 16,
       "tiles": [
         "local://tiles/{z}-{x}-{y}.mvt"

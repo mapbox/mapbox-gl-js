@@ -2433,3 +2433,60 @@ test('Style#getFog', (t) => {
 
     t.end();
 });
+
+test('Style#castShadows check', (t) => {
+    function createStyle() {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "lights": [
+                {
+                    "type": "ambient",
+                    "id": "environment",
+                    "properties": {
+                        "intensity": 0.2
+                    }
+                },
+                {
+                    "type": "directional",
+                    "id": "sun_light",
+                    "properties": {
+                        "intensity": 0.8,
+                        "cast-shadows": true,
+                        "shadow-intensity": 1.0
+                    }
+                }
+            ],
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol_id",
+                "type": "symbol",
+                "source": "geojson"
+            },
+            {
+                "id": "background_id",
+                "type": "background"
+            },
+            {
+                "id": "line_id",
+                "type": "line",
+                "source": "geojson"
+            }]
+        });
+        return style;
+    }
+
+    const style = createStyle();
+    style.on('style.load', () => {
+        const sourceCache = style._getSourceCache('geojson');
+        t.notOk(sourceCache.castsShadows);
+        style.addLayer({id: 'fillext', source: 'geojson', type: 'fill-extrusion'});
+        t.ok(sourceCache.castsShadows);
+        style.removeLayer('fillext');
+        t.notOk(sourceCache.castsShadows);
+        t.end();
+    });
+});
+

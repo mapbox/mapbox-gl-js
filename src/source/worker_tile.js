@@ -51,6 +51,7 @@ class WorkerTile {
     returnDependencies: boolean;
     enableTerrain: boolean;
     isSymbolTile: ?boolean;
+    extraShadowCaster: ?boolean;
     projection: Projection;
     tileTransform: TileTransform;
     brightness: number;
@@ -83,6 +84,7 @@ class WorkerTile {
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
         this.brightness = params.brightness;
+        this.extraShadowCaster = !!params.extraShadowCaster;
     }
 
     parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -149,8 +151,12 @@ class WorkerTile {
 
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
-                if (this.isSymbolTile !== undefined && (layer.type === 'symbol') !== this.isSymbolTile) continue;
 
+                if (this.extraShadowCaster && (!layer.is3D() || layer.type === 'model')) {
+                    // avoid to spend resources in 2D layers or 3D model layers (trees) for extra shadow casters
+                    continue;
+                }
+                if (this.isSymbolTile !== undefined && (layer.type === 'symbol') !== this.isSymbolTile) continue;
                 assert(layer.source === this.source);
                 if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;

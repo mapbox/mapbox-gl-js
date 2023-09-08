@@ -597,6 +597,8 @@ class FillExtrusionBucket implements Bucket {
 
     groundEffect: GroundEffect;
 
+    maxHeight: number;
+
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
@@ -621,6 +623,7 @@ class FillExtrusionBucket implements Bucket {
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.groundEffect = new GroundEffect(options);
+        this.maxHeight = 0;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -1089,6 +1092,9 @@ class FillExtrusionBucket implements Bucket {
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
         this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness);
+        // compute maximum height of the bucket
+        const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
+        this.maxHeight = Math.max(this.maxHeight, height);
     }
 
     sortBorders() {

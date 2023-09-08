@@ -35,6 +35,7 @@ import Texture from './texture.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
+import {Frustum} from '../util/primitives.js';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff.js';
 
@@ -333,6 +334,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         let uniformValues;
         if (isShadowPass && shadowRenderer) {
+            if (frustumCullShadowCaster(tile.tileID, bucket, painter)) {
+                continue;
+            }
             const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
             uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, verticalScale);
         } else {
@@ -714,4 +718,50 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     if (bucket.needsCentroidUpdate || (!bucket.centroidVertexBuffer && bucket.centroidVertexArray.length !== 0)) {
         bucket.uploadCentroid(context);
     }
+}
+
+const XAxis = [1, 0, 0];
+const YAxis = [0, 1, 0];
+const ZAxis = [0, 0, 1];
+
+function frustumCullShadowCaster(id: OverscaledTileID, bucket: FillExtrusionBucket, painter: Painter): boolean {
+    const transform = painter.transform;
+    const shadowRenderer = painter.shadowRenderer;
+    if (!shadowRenderer) {
+        return true;
+    }
+
+    const unwrappedId = id.toUnwrapped();
+
+    const ws = transform.tileSize * shadowRenderer._cascades[painter.currentShadowCascade].scale;
+
+    let height = bucket.maxHeight;
+    if (transform.elevation) {
+        const minmax = transform.elevation.getMinMaxForTile(id);
+        if (minmax) {
+            height += minmax.max;
+        }
+    }
+    const shadowDir = [...shadowRenderer.shadowDirection];
+    shadowDir[2] = -shadowDir[2];
+
+    const tileShadowVolume = shadowRenderer.computeSimplifiedTileShadowVolume(unwrappedId, height, ws, shadowDir);
+    if (!tileShadowVolume) {
+        return false;
+    }
+
+    // Projected shadow volume has 3-6 unique edge direction vectors.
+    // These are used for computing remaining separating axes for the intersection test
+    const edges = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
+    const isGlobe = transform.projection.name === 'globe';
+    const zoom = transform.scaleZoom(ws);
+    const cameraFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, zoom, !isGlobe);
+    const cascadeFrustum = shadowRenderer.getCurrentCascadeFrustum();
+    if (cameraFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
+        return true;
+    }
+    if (cascadeFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
+        return true;
+    }
+    return false;
 }

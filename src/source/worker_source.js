@@ -40,7 +40,8 @@ export type WorkerTileParameters = RequestedTileParameters & {
     returnDependencies?: boolean,
     enableTerrain?: boolean,
     projection: Projection,
-    brightness: number
+    brightness: number,
+    extraShadowCaster?: boolean
 };
 
 export type DEMSourceEncoding = "mapbox" | "terrarium";

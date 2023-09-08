@@ -293,6 +293,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    canCastShadows(): boolean {
+        return false;
+    }
+
     hasLightBeamPass(): boolean {
         return false;
     }

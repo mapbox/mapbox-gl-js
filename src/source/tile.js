@@ -119,6 +119,7 @@ class Tile {
     actor: ?Actor;
     vtLayers: {[_: string]: VectorTileLayer};
     isSymbolTile: ?boolean;
+    isExtraShadowCaster: ?boolean;
     isRaster: ?boolean;
     _tileTransform: TileTransform;
 

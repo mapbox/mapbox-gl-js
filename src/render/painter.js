@@ -570,12 +570,14 @@ class Painter {
         const coordsAscending: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsDescending: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsDescendingSymbol: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsShadowCasters: {[_: string]: Array<OverscaledTileID>} = {};
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             coordsAscending[id] = sourceCache.getVisibleCoordinates();
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
+            coordsShadowCasters[id] = sourceCache.getShadowCasterCoordinates();
         }
 
         const getLayerSource = (layer: StyleLayer) => {
@@ -719,7 +721,7 @@ class Painter {
         // Shadow pass ==================================================
         if (this._shadowRenderer) {
             this.renderPass = 'shadow';
-            this._shadowRenderer.drawShadowPass(this.style, coordsDescending);
+            this._shadowRenderer.drawShadowPass(this.style, coordsShadowCasters);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:

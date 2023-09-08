@@ -551,6 +551,44 @@ test('transform', (t) => {
             t.end();
         });
 
+        t.test('Extend tile coverage for shadow casters', (t) => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-146.2148, 73.1277);
+            transform.zoom = 5.08;
+            transform.pitch = 76.5;
+            transform.bearing = 0.0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512});
+
+            t.strictSame(visibleTiles, [
+                new OverscaledTileID(5, 0, 5, 3, 6),
+                new OverscaledTileID(5, 0, 5, 2, 6),
+                new OverscaledTileID(5, 0, 5, 3, 7),
+                new OverscaledTileID(5, 0, 5, 2, 7),
+                new OverscaledTileID(4, 0, 4, 1, 2),
+                new OverscaledTileID(4, 0, 4, 2, 2),
+                new OverscaledTileID(4, 0, 4, 0, 2),
+                new OverscaledTileID(3, 0, 3, 0, 0),
+                new OverscaledTileID(3, 0, 3, 1, 0)
+            ]);
+
+            const shadowCasterTiles = transform.extendTileCoverForShadows(visibleTiles, [0.25, -0.433, -0.866], 5);
+
+            t.strictSame(shadowCasterTiles, [
+                new OverscaledTileID(3, -1, 3, 7, 0),
+                new OverscaledTileID(3, -1, 3, 7, 1),
+                new OverscaledTileID(4, 0, 4, 0, 3),
+                new OverscaledTileID(4, 0, 4, 2, 3),
+                new OverscaledTileID(4, 0, 4, 3, 2),
+                new OverscaledTileID(4, 0, 4, 3, 3),
+                new OverscaledTileID(5, 0, 5, 1, 8),
+                new OverscaledTileID(5, 0, 5, 2, 8),
+                new OverscaledTileID(5, 0, 5, 3, 8)
+            ]);
+
+            t.end();
+        });
+
         t.end();
     });
 

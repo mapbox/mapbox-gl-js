@@ -68,6 +68,7 @@
     },
     "mapbox": {
       "type": "vector",
+      "minzoom": 15,
       "maxzoom": 15,
       "tiles": [
         "local://tiles/{z}-{x}-{y}.vector.pbf"
@@ -75,6 +76,7 @@
     },
     "trees": {
       "type": "vector",
+      "minzoom": 15,
       "maxzoom": 15,
       "tiles": [
         "local://tiles/trees/{z}-{x}-{y}.pbf"

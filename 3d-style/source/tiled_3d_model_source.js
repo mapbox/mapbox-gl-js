@@ -146,7 +146,8 @@ class Tiled3DModelSource extends Evented implements Source {
         function done(err: ?Error, data: any) {
             if (tile.aborted) return callback(null);
 
-            if (err) {
+            // $FlowFixMe[prop-missing] - generic Error type doesn't have status
+            if (err && err.status !== 404) {
                 return callback(err);
             }
 

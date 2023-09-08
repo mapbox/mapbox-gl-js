@@ -7,7 +7,7 @@ import DepthMode from '../../src/gl/depth_mode.js';
 import StencilMode from '../../src/gl/stencil_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import Transform from '../../src/geo/transform.js';
-import {Frustum} from '../../src/util/primitives.js';
+import {Frustum, Aabb} from '../../src/util/primitives.js';
 import Style from '../../src/style/style.js';
 import Color from '../../src/style-spec/util/color.js';
 import {FreeCamera} from '../../src/ui/free_camera.js';
@@ -28,7 +28,7 @@ import TextureSlots from './texture_slots.js';
 import assert from 'assert';
 
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4, Vec3} from 'gl-matrix';
+import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program.js';
 import EXTENT from '../../src/style-spec/data/extent.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
@@ -39,7 +39,16 @@ type ShadowCascade = {
     matrix: Mat4,
     far: number,
     boundingSphereRadius: number,
-    frustum: Frustum
+    frustum: Frustum,
+    scale: number;
+};
+
+// Describes simplified shadow volume of a tile. Consists of eight corner
+// points of the aabb (possibly transformed) and four side planes. Top and bottom
+// planes are left out as they rarely contribute visibility.
+export type TileShadowVolume = {
+    vertices: Array<Vec3>;
+    planes: Array<Vec4>;
 };
 
 type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
@@ -54,7 +63,7 @@ export class ShadowRenderer {
     _cascades: Array<ShadowCascade>;
     _depthMode: DepthMode;
     _uniformValues: UniformValues<ShadowUniformsType>;
-
+    shadowDirection: Vec3;
     useNormalOffset: boolean;
 
     constructor(painter: Painter) {
@@ -129,11 +138,13 @@ export class ShadowRenderer {
                     matrix: [],
                     far: 0,
                     boundingSphereRadius: 0,
-                    frustum: new Frustum()});
+                    frustum: new Frustum(),
+                    scale: 0});
             }
         }
 
-        const shadowDirection = shadowDirectionFromProperties(transform, directionalLight);
+        this.shadowDirection = shadowDirectionFromProperties(directionalLight);
+
         let verticalRange = 0.0;
         if (transform.elevation) {
             const elevation = transform.elevation;
@@ -168,7 +179,8 @@ export class ShadowRenderer {
                 }
             }
 
-            const [matrix, radius] = createLightMatrix(transform, shadowDirection, near, far, shadowMapResolution, verticalRange);
+            const [matrix, radius] = createLightMatrix(transform, this.shadowDirection, near, far, shadowMapResolution, verticalRange);
+            cascade.scale = transform.scale;
             cascade.matrix = matrix;
             cascade.boundingSphereRadius = radius;
 
@@ -178,7 +190,7 @@ export class ShadowRenderer {
         }
         this._uniformValues['u_fade_range'] = [this._cascades[1].far * 0.75, this._cascades[1].far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
-        this._uniformValues['u_shadow_direction'] = [shadowDirection[0], shadowDirection[1], shadowDirection[2]];
+        this._uniformValues['u_shadow_direction'] = [this.shadowDirection[0], this.shadowDirection[1], this.shadowDirection[2]];
         this._uniformValues['u_texel_size'] = 1 / shadowMapResolution;
         this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
         this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
@@ -382,9 +394,64 @@ export class ShadowRenderer {
     getCurrentCascadeFrustum(): Frustum {
         return this._cascades[this.painter.currentShadowCascade].frustum;
     }
+
+    computeSimplifiedTileShadowVolume(id: UnwrappedTileID, height: number, worldSize: number, lightDir: Vec3): TileShadowVolume {
+        if (lightDir[2] >= 0.0) {
+            return {};
+        }
+        const corners = tileAabb(id, height, worldSize).getCorners();
+        const t = height / -lightDir[2];
+        // Project vertices of bottom edges belonging to sides facing away from the light.
+        if (lightDir[0] < 0.0) {
+            vec3.add(corners[0], corners[0], [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[3], corners[3], [lightDir[0] * t, 0.0, 0.0]);
+        } else if (lightDir[0] > 0.0) {
+            vec3.add(corners[1], corners[1], [lightDir[0] * t, 0.0, 0.0]);
+            vec3.add(corners[2], corners[2], [lightDir[0] * t, 0.0, 0.0]);
+        }
+        if (lightDir[1] < 0.0) {
+            vec3.add(corners[0], corners[0], [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[1], corners[1], [0.0, lightDir[1] * t, 0.0]);
+        } else if (lightDir[1] > 0.0) {
+            vec3.add(corners[2], corners[2], [0.0, lightDir[1] * t, 0.0]);
+            vec3.add(corners[3], corners[3], [0.0, lightDir[1] * t, 0.0]);
+        }
+        const tileShadowVolume: TileShadowVolume = {};
+        /* $FlowIgnore[invalid-tuple-arity] we know corners have the same length than vertices */
+        tileShadowVolume.vertices = corners;
+        tileShadowVolume.planes = [computePlane(corners[1], corners[0], corners[4]), // top
+            computePlane(corners[2], corners[1], corners[5]), // right
+            computePlane(corners[3], corners[2], corners[6]), // bottom
+            computePlane(corners[0], corners[3], corners[7]) ];
+        return tileShadowVolume;
+    }
 }
 
-function shadowDirectionFromProperties(transform: Transform, directionalLight: Lights<Directional>): Vec3 {
+function tileAabb(id: UnwrappedTileID, height: number, worldSize: number): Aabb {
+    const tileToWorld = worldSize / (1 << id.canonical.z);
+    const minx =  id.canonical.x * tileToWorld + id.wrap * worldSize;
+    const maxx =  (id.canonical.x + 1) * tileToWorld + id.wrap * worldSize;
+    const miny =  id.canonical.y * tileToWorld + id.wrap * worldSize;
+    const maxy =  (id.canonical.y + 1) * tileToWorld + id.wrap * worldSize;
+    return new Aabb([minx, miny, 0], [maxx, maxy, height]);
+
+}
+
+function computePlane(a: Vec3, b: Vec3, c: Vec3): Vec4 {
+    const bc = vec3.sub([], c, b);
+    const ba = vec3.sub([], a, b);
+
+    const normal = vec3.cross([], bc, ba);
+    const len = vec3.length(normal);
+
+    if (len === 0) {
+        return [0, 0, 1, 0];
+    }
+    vec3.scale(normal, normal, 1 / len);
+    return [normal[0], normal[1], normal[2], -vec3.dot(normal, b)];
+}
+
+export function shadowDirectionFromProperties(directionalLight: Lights<Directional>): Vec3 {
     const direction = directionalLight.properties.get('direction');
     const spherical = cartesianPositionToSpherical(direction.x, direction.y, direction.z);
 

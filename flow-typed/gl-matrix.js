@@ -53,7 +53,8 @@ declare module "gl-matrix" {
         scale<T: Vec4>(T, Vec4, number): T,
         mul<T: Vec4>(T, Vec4, Vec4): T,
         transformMat4<T: Vec4>(T, Vec4, Mat4): T,
-        normalize<T: Vec4>(T, Vec4): T
+        normalize<T: Vec4>(T, Vec4): T,
+        dot(Vec4, Vec4): number,
     };
 
     declare var mat2: {
