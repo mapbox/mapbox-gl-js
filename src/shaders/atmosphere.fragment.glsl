@@ -40,7 +40,7 @@ void main() {
 
     highp vec3 horizon_dir = normalize(v_horizon_dir);
     float horizon_angle_mercator = dir.y < horizon_dir.y ?
-        0.0 : max(acos(dot(dir, horizon_dir)), 0.0);
+        0.0 : max(acos(clamp(dot(dir, horizon_dir), -1.0, 1.0)), 0.0);
 
     float horizon_angle;
 #ifdef PROJECTION_GLOBE_VIEW
