@@ -747,7 +747,7 @@ test('Style#removeSource', (t) => {
             }]
         }));
         style.on('style.load', () => {
-            style.update(1, 0);
+            style.update({zoom: 1, fadeDuration: 0});
             callback(style);
         });
         return style;
@@ -1334,7 +1334,7 @@ test('Style#setPaintProperty', (t) => {
         tr.resize(512, 512);
 
         style.once('style.load', () => {
-            style.update(tr.zoom, 0);
+            style.update({zoom: tr.zoom, fadeDuration: 0});
             const sourceCache = style._getSourceCache('geojson');
             const source = style.getSource('geojson');
 
@@ -1798,7 +1798,7 @@ test('Style#setLayerZoomRange', (t) => {
             t.spy(style, '_reloadSource');
 
             style.setLayerZoomRange('raster', 5, 12);
-            style.update(0);
+            style.update({zoom: 0});
             t.notOk(style._reloadSource.called, '_reloadSource should not be called for raster source');
             t.end();
         });
@@ -1978,7 +1978,7 @@ test('Style#queryRenderedFeatures', (t) => {
         style._getSourceCache('mapbox').transform = transform;
         style._getSourceCache('other').transform = transform;
 
-        style.update(0);
+        style.update({zoom: 0});
         style._updateSources(transform);
 
         t.test('returns feature type', (t) => {

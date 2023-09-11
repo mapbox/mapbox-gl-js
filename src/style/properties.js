@@ -189,7 +189,9 @@ export class Transitionable<Props: Object> {
         this.isConfigDependent = this.isConfigDependent || this._values[name].value.expression.isConfigDependent;
     }
 
-    setTransitionOrValue<P: Object>(properties: ?P) {
+    setTransitionOrValue<P: Object>(properties: ?P, options?: ?Map<string, Expression>) {
+        if (options) this._options = options;
+
         if (properties) {
             for (const name in properties) {
                 const value = properties[name];

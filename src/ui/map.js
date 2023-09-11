@@ -3497,24 +3497,10 @@ class Map extends Camera {
                 transition: this.style.getTransition()
             });
 
-            if (this.style.ambientLight) {
-                this.style.ambientLight.recalculate(parameters);
-            }
-            if (this.style.directionalLight) {
-                this.style.directionalLight.recalculate(parameters);
-            }
-
-            const brightness = this.style.calculateLightsBrightness();
-            if (brightness !== undefined) {
-                parameters.brightness = (brightness || 0.0);
-            }
-
             this.style.update(parameters);
         }
 
-        const fogIsTransitioning = this.style && this.style.fog && this.style.fog.hasTransition();
-
-        if (fogIsTransitioning) {
+        if (this.style && this.style.hasFogTransition()) {
             this.style._markersNeedUpdate = true;
             this._sourcesDirty = true;
         }

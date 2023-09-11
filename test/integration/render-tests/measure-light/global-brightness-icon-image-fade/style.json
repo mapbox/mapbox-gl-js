@@ -31,9 +31,15 @@
               }
             }
           ]
+        ],
+        [
+          "wait"
         ]
       ]
     }
+  },
+  "transition": {
+    "duration": 0
   },
   "center": [
     -113.2935,

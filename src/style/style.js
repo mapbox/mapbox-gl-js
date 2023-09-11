@@ -570,7 +570,7 @@ class Style extends Evented {
         this._ownOrder = layers.map((layer) => makeFQID(layer.id, this.scope));
 
         if (this.stylesheet.light) {
-            console.log("The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.");
+            warnOnce('The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.');
         }
 
         if (this.stylesheet.lights) {
@@ -837,12 +837,33 @@ class Style extends Evented {
         return serializedLayers;
     }
 
-    hasTransitions(): boolean {
+    hasLightTransitions(): boolean {
         if (this.light && this.light.hasTransition()) {
             return true;
         }
 
-        if (this.fog && this.fog.hasTransition()) {
+        if (this.ambientLight && this.ambientLight.hasTransition()) {
+            return true;
+        }
+
+        if (this.directionalLight && this.directionalLight.hasTransition()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    hasFogTransition(): boolean {
+        if (!this.fog) return false;
+        return this.fog.hasTransition();
+    }
+
+    hasTransitions(): boolean {
+        if (this.hasLightTransitions()) {
+            return true;
+        }
+
+        if (this.hasFogTransition()) {
             return true;
         }
 
@@ -893,9 +914,19 @@ class Style extends Evented {
             return;
         }
 
-        if (parameters.brightness !== this._brightness) {
-            this._brightness = parameters.brightness;
-            this.dispatcher.broadcast('setBrightness', parameters.brightness);
+        if (this.ambientLight) {
+            this.ambientLight.recalculate(parameters);
+        }
+
+        if (this.directionalLight) {
+            this.directionalLight.recalculate(parameters);
+        }
+
+        const brightness = this.calculateLightsBrightness();
+        parameters.brightness = brightness || 0.0;
+        if (brightness !== this._brightness) {
+            this._brightness = brightness;
+            this.dispatcher.broadcast('setBrightness', brightness);
         }
 
         const changed = this._changed;
@@ -937,7 +968,18 @@ class Style extends Evented {
                 this._layers[id].updateTransitions(parameters);
             }
 
-            this.light.updateTransitions(parameters);
+            if (this.light) {
+                this.light.updateTransitions(parameters);
+            }
+
+            if (this.ambientLight) {
+                this.ambientLight.updateTransitions(parameters);
+            }
+
+            if (this.directionalLight) {
+                this.directionalLight.updateTransitions(parameters);
+            }
+
             if (this.fog) {
                 this.fog.updateTransitions(parameters);
             }
@@ -981,13 +1023,18 @@ class Style extends Evented {
             }
         }
 
-        this.light.recalculate(parameters);
+        if (this.light) {
+            this.light.recalculate(parameters);
+        }
+
         if (this.terrain) {
             this.terrain.recalculate(parameters);
         }
+
         if (this.fog) {
             this.fog.recalculate(parameters);
         }
+
         this.z = parameters.zoom;
 
         if (this._markersNeedUpdate) {
@@ -1284,44 +1331,38 @@ class Style extends Evented {
     setLights(lights: ?Array<LightsSpecification>) {
         this._checkLoaded();
 
-        delete this.ambientLight;
-        delete this.directionalLight;
-
-        if (lights) {
-            for (const light of lights) {
-                if (this._validate(validateLights, 'lights', light)) {
-                    return;
-                }
-
-                const parameters = this._getTransitionParameters({duration: 0});
-                switch (light.type) {
-                case 'ambient':
-                    this.ambientLight = new Lights<Ambient>(light, ambientProps, this.options);
-                    this.ambientLight.updateTransitions(parameters);
-                    break;
-                case 'directional':
-                    this.directionalLight = new Lights<Directional>(light, directionalProps, this.options);
-                    this.directionalLight.updateTransitions(parameters);
-                    break;
-                default:
-                    assert(false, "Unknown light type");
-                }
-            }
-
-            const evaluationParameters = new EvaluationParameters(this.z || 0, {
-                now: browser.now(),
-                transition: this.getTransition()
-            });
-            if (this.ambientLight) {
-                this.ambientLight.recalculate(evaluationParameters);
-            }
-            if (this.directionalLight) {
-                this.directionalLight.recalculate(evaluationParameters);
-            }
-
-            this._brightness = this.calculateLightsBrightness();
-            this.dispatcher.broadcast('setBrightness', this._brightness);
+        if (!lights) {
+            delete this.ambientLight;
+            delete this.directionalLight;
+            return;
         }
+
+        for (const light of lights) {
+            if (this._validate(validateLights, 'lights', light)) {
+                return;
+            }
+
+            switch (light.type) {
+            case 'ambient':
+                if (this.ambientLight) {
+                    this.ambientLight.set(light);
+                } else {
+                    this.ambientLight = new Lights<Ambient>(light, ambientProps, this.scope, this.options);
+                }
+                break;
+            case 'directional':
+                if (this.directionalLight) {
+                    this.directionalLight.set(light);
+                } else {
+                    this.directionalLight = new Lights<Directional>(light, directionalProps, this.scope, this.options);
+                }
+                break;
+            default:
+                assert(false, `Unknown light type: ${light.type}`);
+            }
+        }
+
+        this._changed = true;
     }
 
     calculateLightsBrightness(): ?number {
@@ -1386,24 +1427,34 @@ class Style extends Evented {
 
     setConfigProperty(importId: string, key: string, value: any) {
         const expressionParsed = createExpression(value);
-
-        if (expressionParsed.result === 'success') {
-            const expression = expressionParsed.value.expression;
-
-            const fragment = this.getFragmentById(importId);
-            fragment.options.set(key, expression);
-
-            for (const id of fragment._configDependentLayers) {
-                const layer = this.getLayer(id);
-                if (layer) {
-                    this._updateLayer(layer);
-                }
-            }
-            this._changed = true;
-
-        } else {
+        if (expressionParsed.result !== 'success') {
             emitValidationErrors(this, expressionParsed.value);
+            return;
         }
+
+        const expression = expressionParsed.value.expression;
+
+        const fragment = this.getFragmentById(importId);
+        fragment.options.set(key, expression);
+
+        for (const id of fragment._configDependentLayers) {
+            const layer = this.getLayer(id);
+            if (layer) {
+                this._updateLayer(layer);
+            }
+        }
+
+        // If the root style uses the lights from the updated fragment,
+        // update the configs in the corresponding light instances.
+        if (this.ambientLight && this.ambientLight.scope === importId) {
+            this.ambientLight.updateConfig(fragment.options);
+        }
+
+        if (this.directionalLight && this.directionalLight.scope === importId) {
+            this.directionalLight.updateConfig(fragment.options);
+        }
+
+        this._changed = true;
     }
 
     /**
@@ -2073,7 +2124,7 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const parameters = this._getTransitionParameters({duration: 300, delay: 0});
+        const parameters = this._getTransitionParameters();
 
         this.light.setLight(lightOptions, id, options);
         this.light.updateTransitions(parameters);
@@ -2207,12 +2258,10 @@ class Style extends Evented {
         this._markersNeedUpdate = true;
     }
 
-    _getTransitionParameters(transitionOptions: Object): TransitionParameters {
+    _getTransitionParameters(transition: ?TransitionSpecification): TransitionParameters {
         return {
             now: browser.now(),
-            transition: extend(
-                transitionOptions,
-                this.stylesheet.transition)
+            transition: extend(this.getTransition(), transition)
         };
     }
 
@@ -2312,6 +2361,8 @@ class Style extends Evented {
         this.imageManager.setEventedParent(null);
         this.setEventedParent(null);
         this.dispatcher.remove();
+        delete this.ambientLight;
+        delete this.directionalLight;
     }
 
     _clearSource(id: string) {

@@ -50,6 +50,9 @@
       ]
     }
   },
+  "transition": {
+    "duration": 0
+  },
   "zoom": 2.0,
   "lights": [
     {

@@ -30,9 +30,15 @@
               }
             }
           ]
+        ],
+        [
+          "wait"
         ]
       ]
     }
+  },
+  "transition": {
+    "duration": 0
   },
   "zoom": 0.99,
   "center": [
