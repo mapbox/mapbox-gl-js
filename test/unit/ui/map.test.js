@@ -3858,6 +3858,15 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('should not have tabindex attribute when non-interactive', (t) => {
+        const map = createMap(t, {interactive: false});
+
+        t.notOk(map.getCanvas().getAttribute('tabindex'));
+
+        map.remove();
+        t.end();
+    });
+
     t.test('should calculate correct canvas size when transform css property is applied', (t) => {
         const map = createMap(t);
         Object.defineProperty(window, 'getComputedStyle',
