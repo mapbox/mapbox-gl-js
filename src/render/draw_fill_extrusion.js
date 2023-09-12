@@ -433,7 +433,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
-        if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect) continue;
+        if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 
         const groundEffect: GroundEffect = (bucket.groundEffect: any);
         const meterToTile = 1 / bucket.tileToMeter;
@@ -455,7 +455,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
                 if (!nTile) continue;
 
                 const nBucket: ?FillExtrusionBucket = (nTile.getBucket(layer): any);
-                if (!nBucket || nBucket.projection.name !== tr.projection.name || !nBucket.groundEffect) continue;
+                if (!nBucket || nBucket.projection.name !== tr.projection.name || !nBucket.groundEffect || (nBucket.groundEffect && !nBucket.groundEffect.hasData())) continue;
 
                 const nGroundEffect: GroundEffect = (nBucket.groundEffect: any);
                 assert(nGroundEffect.regionSegments);

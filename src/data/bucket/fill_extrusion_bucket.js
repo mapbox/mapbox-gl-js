@@ -347,12 +347,11 @@ export class GroundEffect {
         this.segmentToRegionTriCounts = {};
         this.segmentToRegionTriCounts[0] = [0, 0, 0, 0, 0];
         this.regionSegments = {};
+        this.regionSegments[4] = new SegmentVector();
     }
 
     getDefaultSegment(): any {
-        const segments = this.regionSegments[4];
-        assert(segments);
-        return segments;
+        return this.regionSegments[4];
     }
 
     hasData(): boolean { return this.vertexArray.length !== 0; }
