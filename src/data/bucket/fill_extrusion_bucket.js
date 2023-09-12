@@ -362,7 +362,7 @@ export class GroundEffect {
         if (n > 2) {
             let sid = Math.max(0, this._segments.get().length - 1);
             const groundQuads = this.segmentToGroundQuads[sid];
-            const segment = this._segments._prepareSegment(n * 4, this.vertexArray.length, groundQuads.length);
+            const segment = this._segments._prepareSegment(n * 4, this.vertexArray.length, groundQuads.length * QUAD_TRIS);
             const newSegmentAdded = sid !== this._segments.get().length - 1;
             if (newSegmentAdded) {
                 sid++;
