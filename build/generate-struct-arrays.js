@@ -168,7 +168,8 @@ import {
     placement,
     symbolInstance,
     glyphOffset,
-    lineVertex
+    lineVertex,
+    zOffsetAttributes
 } from '../src/data/bucket/symbol_attributes.js';
 
 createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
@@ -186,6 +187,7 @@ createStructArrayType('placed_symbol', placement, true);
 createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
+createStructArrayType('z_offset_vertex', zOffsetAttributes);
 
 import globeAttributes from '../src/terrain/globe_attributes.js';
 import {atmosphereLayout} from '../src/render/atmosphere_attributes.js';

@@ -42,6 +42,7 @@ import {
 } from '../source/source.js';
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features.js';
 import SourceCache from '../source/source_cache.js';
+import BuildingIndex from '../source/building_index.js';
 import GeoJSONSource from '../source/geojson_source.js';
 import styleSpec from '../style-spec/reference/latest.js';
 import getWorkerPool from '../util/global_worker_pool.js';
@@ -223,6 +224,7 @@ class Style extends Evented {
     _markersNeedUpdate: boolean;
     _brightness: ?number;
     _configDependentLayers: Set<string>;
+    _buildingIndex: BuildingIndex;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -297,6 +299,7 @@ class Style extends Evented {
         this._order = [];
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
+        this._buildingIndex = new BuildingIndex(this);
 
         this.options = options.config || new Map();
         this._configDependentLayers = new Set();
@@ -723,6 +726,7 @@ class Style extends Evented {
         sort(mergedOrder);
         this._layers = mergedLayers;
         this._updateDrapeFirstLayers();
+        this._buildingIndex.processLayersChanged();
     }
 
     terrainSetForDrapingOnly(): boolean {
@@ -1224,8 +1228,6 @@ class Style extends Evented {
             const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
             const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
             (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
-            sourceCache.style = this;
-
             sourceCache.onAdd(this.map);
         };
 
@@ -2427,6 +2429,7 @@ class Style extends Evented {
         let placementCommitted = false;
 
         const layerTiles = {};
+        const layerTilesInYOrder = {};
 
         for (const layerId of this._order) {
             const styleLayer = this._layers[layerId];
@@ -2435,9 +2438,10 @@ class Style extends Evented {
             if (!layerTiles[styleLayer.source]) {
                 const sourceCache = this._getLayerSourceCache(styleLayer);
                 if (!sourceCache) continue;
-                layerTiles[styleLayer.source] = sourceCache.getRenderableIds(true)
-                    .map((id) => sourceCache.getTileByID(id))
-                    .sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
+                const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
+                layerTilesInYOrder[styleLayer.source] = tiles.slice();
+                layerTiles[styleLayer.source] =
+                    tiles.sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
             }
 
             const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng, transform.projection);
@@ -2459,7 +2463,7 @@ class Style extends Evented {
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
             this._layerOrderChanged = false;
         }
 
@@ -2470,7 +2474,7 @@ class Style extends Evented {
             // render frame
             this.placement.setStale();
         } else {
-            this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
+            this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles, layerTilesInYOrder);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());

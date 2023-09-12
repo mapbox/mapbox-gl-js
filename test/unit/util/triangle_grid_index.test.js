@@ -96,11 +96,11 @@ test('TriangleGridIndex', (t) => {
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [1]);
+            t.strictSame(result, [1, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 1, 3, 2]);
+            t.strictSame(result, [0, 1, 2, 3]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
@@ -113,15 +113,15 @@ test('TriangleGridIndex', (t) => {
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [1]);
+            t.strictSame(result, [1, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 3, 2, 1]);
+            t.strictSame(result, [0, 2, 3, 1]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
-            t.strictSame(result, [1, 3]);
+            t.strictSame(result, [0, 1]);
             t.end();
         });
 

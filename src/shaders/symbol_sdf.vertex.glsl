@@ -3,6 +3,9 @@ attribute vec4 a_tex_size;
 attribute vec4 a_pixeloffset;
 attribute vec4 a_projected_pos;
 attribute float a_fade_opacity;
+#ifdef Z_OFFSET
+attribute float a_z_offset;
+#endif
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_globe_anchor;
 attribute vec3 a_globe_normal;
@@ -84,7 +87,11 @@ void main() {
     }
 
     vec2 tile_anchor = a_pos;
-    vec3 h = elevationVector(tile_anchor) * elevation(tile_anchor);
+    float e = elevation(tile_anchor);
+#ifdef Z_OFFSET
+    e += a_z_offset;
+#endif
+    vec3 h = elevationVector(tile_anchor) * e;
 
     float globe_occlusion_fade;
     vec3 world_pos;

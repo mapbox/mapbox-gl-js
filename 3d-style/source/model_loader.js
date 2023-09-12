@@ -1,6 +1,6 @@
 // @flow
 
-import type {Footprint, Mesh, Node, Material, ModelTexture, Sampler, AreaLight} from '../data/model.js';
+import {type Footprint, type Mesh, type Node, type Material, type ModelTexture, type Sampler, type AreaLight, HEIGHTMAP_DIM} from '../data/model.js';
 import type {TextureImage} from '../../src/render/texture.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
@@ -571,12 +571,47 @@ export default function convertModel(gltf: Object): Array<Node> {
 export function convertB3dm(gltf: Object, zScale: number): Array<Node> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
+        for (const mesh of node.meshes) {
+            parseHeightmap(mesh);
+        }
         if (node.lights) {
             node.meshes.push(createLightsMesh(node.lights, zScale));
             node.lightMeshIndex = node.meshes.length - 1;
         }
     }
     return nodes;
+}
+
+function parseHeightmap(mesh: Mesh) {
+    // This is a temporary, best effort approach, implementation that's to be removed, for Mapbox landmarks,
+    // by a implementation in tiler. It would eventually still be used for 3d party models.
+    mesh.heightmap = new Float32Array(HEIGHTMAP_DIM * HEIGHTMAP_DIM);
+    mesh.heightmap.fill(-1);
+
+    const vertices = mesh.vertexArray.float32;
+    // implementation assumes tile coordinates for x and y and -1 and later +2
+    // are to prevent going out of range
+    const xMin = mesh.aabb.min[0] - 1;
+    const yMin = mesh.aabb.min[1] - 1;
+    const xMax = mesh.aabb.max[0];
+    const yMax = mesh.aabb.max[1];
+    const xRange = xMax - xMin + 2;
+    const yRange = yMax - yMin + 2;
+    const xCellInv = HEIGHTMAP_DIM / xRange;
+    const yCellInv = HEIGHTMAP_DIM / yRange;
+
+    for (let i = 0; i < vertices.length; i += 3) {
+        const px = vertices[i + 0];
+        const py = vertices[i + 1];
+        const pz = vertices[i + 2];
+        const x = ((px - xMin) * xCellInv) | 0;
+        const y = ((py - yMin) * yCellInv) | 0;
+        assert(x >= 0 && x < HEIGHTMAP_DIM);
+        assert(y >= 0 && y < HEIGHTMAP_DIM);
+        if (pz > mesh.heightmap[y * HEIGHTMAP_DIM + x]) {
+            mesh.heightmap[y * HEIGHTMAP_DIM + x] = pz;
+        }
+    }
 }
 
 function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {

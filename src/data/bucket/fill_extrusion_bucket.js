@@ -126,6 +126,7 @@ export class PartData {
     footprintSegLen: number;
     min: Point;
     max: Point;
+    height: number;
 
     constructor() {
         this.centroidXY = new Point(0, 0);
@@ -138,6 +139,7 @@ export class PartData {
         this.footprintSegLen = 0;
         this.min = new Point(Number.MAX_VALUE, Number.MAX_VALUE);
         this.max = new Point(-Number.MAX_VALUE, -Number.MAX_VALUE);
+        this.height = 0;
     }
 
     span(): Point {
@@ -596,6 +598,7 @@ class FillExtrusionBucket implements Bucket {
     replacementUpdateTime: number;
 
     groundEffect: GroundEffect;
+    partLookup: {[_: number]: ?PartData};
 
     maxHeight: number;
 
@@ -624,6 +627,7 @@ class FillExtrusionBucket implements Bucket {
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.groundEffect = new GroundEffect(options);
         this.maxHeight = 0;
+        this.partLookup = {};
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -747,6 +751,8 @@ class FillExtrusionBucket implements Bucket {
         const borderCentroidData = new BorderCentroidData();
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
+        const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
+        centroid.height = height;
         centroid.vertexArrayOffset = this.layoutVertexArray.length;
         centroid.groundVertexArrayOffset = this.groundEffect.vertexArray.length;
 
@@ -1093,7 +1099,6 @@ class FillExtrusionBucket implements Bucket {
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
         this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness);
         // compute maximum height of the bucket
-        const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
         this.maxHeight = Math.max(this.maxHeight, height);
     }
 
@@ -1234,6 +1239,55 @@ class FillExtrusionBucket implements Bucket {
         }
 
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+    }
+
+    footprintContainsPoint(x: number, y: number, seg: FootprintSegment): boolean {
+        let c = false;
+        for (let i = 0, j = seg.vertexCount - 1; i < seg.vertexCount; j = i++) {
+            const x1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 0];
+            const y1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 1];
+            const x2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 0];
+            const y2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 1];
+            if (((y1 > y) !== (y2 > y)) && (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1)) {
+                c = !c;
+            }
+        }
+        return c;
+    }
+
+    getHeightAtTileCoord(x: number, y: number): ?{height: number, hidden: boolean} {
+        let height = 0;
+        let hidden = true;
+        assert(x > -EXTENT && y > -EXTENT && x < 2 * EXTENT && y < 2 * EXTENT);
+        const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
+        if (this.partLookup.hasOwnProperty(lookupKey)) {
+            const centroid = this.partLookup[lookupKey];
+            return centroid ? {height: centroid.height, hidden: !!(centroid.flags & HIDDEN_BY_REPLACEMENT)} : undefined;
+        }
+        for (const centroid of this.centroidData) {
+            // Perform a quick aabb-aabb check to determine
+            // whether a more precise check is required
+            if (x > centroid.max.x || centroid.min.x > x || y > centroid.max.y || centroid.min.y > y) {
+                continue;
+            }
+
+            for (let i = 0; i < centroid.footprintSegLen; i++) {
+                const seg = this.footprintSegments[centroid.footprintSegIdx + i];
+                if (this.footprintContainsPoint(x, y, seg)) {
+                    if (centroid && centroid.height > height) {
+                        height = centroid.height;
+                        this.partLookup[lookupKey] = centroid;
+                        hidden = !!(centroid.flags & HIDDEN_BY_REPLACEMENT);
+                    }
+                }
+            }
+        }
+        if (height === undefined) {
+            // nothing found, cache that info too.
+            this.partLookup[lookupKey] = undefined;
+            return;
+        }
+        return {height, hidden};
     }
 }
 

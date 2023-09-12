@@ -1833,6 +1833,37 @@
       },
       "property-type": "data-constant"
     },
+    "symbol-z-elevate": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Position symbol on buildings (both fill extrusions and models) roof tops. In order to have minimal impact on performance, this is supported only when `fill-extrusion-height` is not zoom-dependent and not edited after initial bucket creation. For fading in buildings when zooming in, fill-extrusion-vertical-scale should be used and symbols would raise with building roofs. Symbols are sorted by elevation, except in case when `viewport-y` sorting or `symbol-sort-key` are applied.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
+      "requires": [
+        {
+          "symbol-placement": [
+            "point"
+          ]
+        },
+        {
+          "symbol-z-order": [
+            "auto"
+          ]
+        }
+      ],
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "icon-allow-overlap": {
       "type": "boolean",
       "default": false,

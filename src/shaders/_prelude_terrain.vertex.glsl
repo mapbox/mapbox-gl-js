@@ -35,7 +35,6 @@ vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
     return vec3(pos, skirt);
 }
 
-
 #ifdef TERRAIN
 
 #ifdef TERRAIN_DEM_FLOAT_FORMAT

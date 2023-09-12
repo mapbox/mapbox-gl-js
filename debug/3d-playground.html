@@ -143,7 +143,7 @@ const demo3d = new Demo3D();
 
 function updateLights(enable, loadFromStyleIfPresent) {
     const currentLights = map.getLights();
-    if (currentLights && loadFromStyleIfPresent) {
+    if (currentLights && currentLights[0].type !== 'flat' && loadFromStyleIfPresent) {
         demo3d.enable3dLights = true;
         const cDirectional = parseCSSColor(currentLights[0].properties.color); // eslint-disable-line
         demo3d.directionalLightColor = {r: cDirectional[0], g: cDirectional[1], b: cDirectional[2]};

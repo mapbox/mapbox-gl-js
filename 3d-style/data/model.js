@@ -57,6 +57,8 @@ export type Material = {
     defined: boolean;
 }
 
+export const HEIGHTMAP_DIM = 64;
+
 export type Mesh = {
     // eslint-disable-next-line no-warning-comments
     indexArray: TriangleIndexArray; // TODO: Add TriangleStrip, etc
@@ -76,6 +78,7 @@ export type Mesh = {
     aabb: Aabb;
     segments: SegmentVector;
     centroid: Vec3;
+    heightmap: Float32Array;
 }
 
 export type Footprint = {

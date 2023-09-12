@@ -353,6 +353,7 @@ export type SymbolLayerSpecification = {|
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
         "symbol-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "symbol-z-order"?: PropertyValueSpecification<"auto" | "viewport-y" | "source">,
+        "symbol-z-elevate"?: PropertyValueSpecification<boolean>,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
         "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
         "icon-optional"?: PropertyValueSpecification<boolean>,

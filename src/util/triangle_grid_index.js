@@ -59,8 +59,8 @@ class TriangleGridIndex {
 
         this.cellsX = Math.max(1, Math.ceil(size.x / cellSize));
         this.cellsY = Math.max(1, Math.ceil(size.y / cellSize));
-        this.xScale = this.cellsX / size.x;
-        this.yScale = this.cellsY / size.y;
+        this.xScale = 1.0 / cellSize;
+        this.yScale = 1.0 / cellSize;
 
         const associatedTriangles = [];
 

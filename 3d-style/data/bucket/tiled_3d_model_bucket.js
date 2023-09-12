@@ -3,7 +3,7 @@
 import {register} from '../../../src/util/web_worker_transfer.js';
 import type {Bucket} from '../../../src/data/bucket.js';
 import type {Node} from '../model.js';
-import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits} from '../model.js';
+import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model.js';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import type {CanonicalTileID} from '../../../src/source/tile_id.js';
@@ -20,6 +20,7 @@ import {DEMSampler} from '../../../src/terrain/elevation.js';
 import type {Terrain} from '../../../src/terrain/terrain.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import assert from 'assert';
+import Point from '@mapbox/point-geometry';
 
 function getNodeHeight(node: Node): number {
     let height = 0;
@@ -291,6 +292,34 @@ class Tiled3dModelBucket implements Bucket {
 
             // Node is visible if its footprint passes the replacement check
             nodesInfo[i].hiddenByReplacement = !!node.footprint && !activeReplacements.find(region => region.footprint === node.footprint);
+        }
+    }
+
+    getHeightAtTileCoord(x: number, y: number): ?{height: ?number, hidden: boolean, verticalScale: number} {
+        const nodesInfo = this.getNodesInfo();
+        const candidates = [];
+
+        for (let i = 0; i < this.nodesInfo.length; i++) {
+            const nodeInfo = nodesInfo[i];
+            assert(nodeInfo.node.meshes.length > 0);
+            const mesh = nodeInfo.node.meshes[0];
+            if (x < mesh.aabb.min[0] || y < mesh.aabb.min[1] || x > mesh.aabb.max[0] || y > mesh.aabb.max[1]) continue;
+
+            assert(mesh.heightmap);
+            const xCell = ((x - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
+            const yCell = ((y - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
+            const heightmapIndex = Math.min(HEIGHTMAP_DIM - 1, yCell) * HEIGHTMAP_DIM + Math.min(HEIGHTMAP_DIM - 1, xCell);
+
+            if (mesh.heightmap[heightmapIndex] < 0 && nodeInfo.node.footprint) {
+                // unpopulated cell. If it is in the building footprint, return undefined height
+                nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
+                if (candidates.length > 0) {
+                    return {height: undefined, hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
+                }
+                continue;
+            }
+            if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
+            return {height: mesh.heightmap[heightmapIndex], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
 }

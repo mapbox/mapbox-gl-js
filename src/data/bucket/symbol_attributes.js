@@ -22,6 +22,10 @@ export const placementOpacityAttributes: StructArrayLayout = createLayout([
     {name: 'a_fade_opacity', components: 1, type: 'Uint32'}
 ], 4);
 
+export const zOffsetAttributes: StructArrayLayout = createLayout([
+    {name: 'a_z_offset', components: 1, type: 'Float32'}
+], 4);
+
 export const iconTransitioningAttributes: StructArrayLayout = createLayout([
     {name: 'a_texb', components: 2, type: 'Uint16'}
 ]);
@@ -102,11 +106,11 @@ export const placement: StructArrayLayout = createLayout([
 ]);
 
 export const symbolInstance: StructArrayLayout = createLayout([
+    {type: 'Float32', name: 'tileAnchorX'},
+    {type: 'Float32', name: 'tileAnchorY'},
     {type: 'Int16', name: 'projectedAnchorX'},
     {type: 'Int16', name: 'projectedAnchorY'},
     {type: 'Int16', name: 'projectedAnchorZ'},
-    {type: 'Float32', name: 'tileAnchorX'},
-    {type: 'Float32', name: 'tileAnchorY'},
     {type: 'Int16', name: 'rightJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'centerJustifiedTextSymbolIndex'},
     {type: 'Int16', name: 'leftJustifiedTextSymbolIndex'},
@@ -131,6 +135,7 @@ export const symbolInstance: StructArrayLayout = createLayout([
     {type: 'Uint32', name: 'crossTileID'},
     {type: 'Float32', components: 2, name: 'textOffset'},
     {type: 'Float32', name: 'collisionCircleDiameter'},
+    {type: 'Float32', name: 'zOffset'},
     {type: 'Uint8', name: 'hasIconTextFit'}
 ]);
 

@@ -14,7 +14,7 @@ import type Transform from '../geo/transform.js';
 import type StyleLayer from '../style/style_layer.js';
 import type Tile from '../source/tile.js';
 import type SymbolBucket, {SymbolBuffers, CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
-import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
+import type {CollisionBoxArray, CollisionVertexArray, StructArrayLayout1f4, SymbolInstance} from '../data/array_types.js';
 import type FeatureIndex from '../data/feature_index.js';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
@@ -22,6 +22,8 @@ import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Mat4} from 'gl-matrix';
 import type {PlacedCollisionBox} from './collision_index.js';
+import BuildingIndex from '../source/building_index.js';
+import {warnOnce} from '../util/util.js';
 
 // PlacedCollisionBox with all fields optional
 type PartialPlacedCollisionBox = $ObjMap<PlacedCollisionBox, <V>() => ?V>;
@@ -211,11 +213,13 @@ export class Placement {
     prevPlacement: ?Placement;
     zoomAtLastRecencyCheck: number;
     collisionCircleArrays: {[any]: CollisionCircleArray};
+    buildingIndex: ?BuildingIndex;
 
-    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState: ?FogState) {
+    constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState: ?FogState, buildingIndex: ?BuildingIndex) {
         this.transform = transform.clone();
         this.projection = transform.projection.name;
         this.collisionIndex = new CollisionIndex(this.transform, fogState);
+        this.buildingIndex = buildingIndex;
         this.placements = {};
         this.opacities = {};
         this.variableOffsets = {};
@@ -412,6 +416,7 @@ export class Placement {
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
+        const zOffset = layout.get('symbol-z-elevate');
 
         this.transform.setProjection(bucket.projection);
 
@@ -510,8 +515,7 @@ export class Placement {
             const updateBoxData = (box: SingleCollisionBox) => {
                 box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 const elevation = this.transform.elevation;
-                if (!elevation && !box.elevation) return;
-                box.elevation = elevation ? elevation.getAtTileOffset(box.tileID, box.tileAnchorX, box.tileAnchorY) : 0;
+                box.elevation = symbolInstance.zOffset + (elevation ? elevation.getAtTileOffset(box.tileID, box.tileAnchorX, box.tileAnchorY) : 0);
             };
 
             const textBox = collisionArrays.textBox;
@@ -794,11 +798,23 @@ export class Placement {
             seenCrossTileIDs.add(crossTileID);
         };
 
+        if (zOffset && this.buildingIndex) {
+            const tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
+            this.buildingIndex.updateZOffset(bucket, tileID);
+        }
+
         if (zOrderByViewportY) {
             assert(bucketPart.symbolInstanceStart === 0);
             const symbolIndexes = bucket.getSortedSymbolIndexes(this.transform.angle);
             for (let i = symbolIndexes.length - 1; i >= 0; --i) {
                 const symbolIndex = symbolIndexes[i];
+                placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
+            }
+            if (bucket.hasAnyZOffset) warnOnce(`${bucket.layerIds[0]} layer symbol-z-elevate: symbols are not sorted by elevation if symbol-z-order is evaluated to viewport-y`);
+        } else if (bucket.hasAnyZOffset) {
+            const indexes = bucket.getSortedIndexesByZOffset();
+            for (let i = 0; i < indexes.length; ++i) {
+                const symbolIndex = indexes[i];
                 placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
             }
         } else {
@@ -941,6 +957,11 @@ export class Placement {
         const variablePlacement = layout.get('text-variable-anchor');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const updateZOffset = bucket.zOffsetBuffersNeedUpload;
+        bucket.zOffsetBuffersNeedUpload = false;
+        let currentTextZOffsetVertex = 0;
+        let currentIconZOffsetVertex = 0;
+
         // If allow-overlap is true, we can show symbols before placement runs on them
         // But we have to wait for placement if we potentially depend on a paired icon/text
         // with allow-overlap: false.
@@ -957,6 +978,27 @@ export class Placement {
         const addOpacities = (iconOrText: SymbolBuffers, numVertices: number, opacity: number) => {
             for (let i = 0; i < numVertices / 4; i++) {
                 iconOrText.opacityVertexArray.emplaceBack(opacity);
+            }
+        };
+
+        // z offset is expected to change less frequently than the placement opacity and, if values are the same,
+        // avoid uploading arrays to buffers.
+        const addZOffsetTextVertex = (array: StructArrayLayout1f4, numVertices: number, value: number) => {
+            currentTextZOffsetVertex += numVertices;
+            if (currentTextZOffsetVertex > array.length) {
+                array.resize(currentTextZOffsetVertex);
+            }
+            for (let i = -numVertices; i < 0; i++) {
+                array.emplace(i + currentTextZOffsetVertex, value);
+            }
+        };
+        const addZOffsetIconVertex = (array: StructArrayLayout1f4, numVertices: number, value: number) => {
+            currentIconZOffsetVertex += numVertices;
+            if (currentIconZOffsetVertex > array.length) {
+                array.resize(currentIconZOffsetVertex);
+            }
+            for (let i = -numVertices; i < 0; i++) {
+                array.emplace(i + currentIconZOffsetVertex, value);
             }
         };
 
@@ -981,6 +1023,7 @@ export class Placement {
                 // store the state so that future placements use it as a starting point
                 this.opacities[crossTileID] = opacityState;
             }
+            const zOffset = updateZOffset ? symbolInstance.zOffset : 0;
 
             seenCrossTileIDs.add(crossTileID);
 
@@ -1000,6 +1043,10 @@ export class Placement {
                 addOpacities(bucket.text, numHorizontalGlyphVertices, horizontalOpacity);
                 const verticalOpacity = verticalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
                 addOpacities(bucket.text, numVerticalGlyphVertices, verticalOpacity);
+                if (updateZOffset) {
+                    addZOffsetTextVertex(bucket.text.zOffsetVertexArray, numHorizontalGlyphVertices, zOffset);
+                    addZOffsetTextVertex(bucket.text.zOffsetVertexArray, numVerticalGlyphVertices, zOffset);
+                }
 
                 // If this label is completely faded, mark it so that we don't have to calculate
                 // its position at render time. If this layer has variable placement, shift the various
@@ -1040,12 +1087,14 @@ export class Placement {
                     const horizontalOpacity = !horizontalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, numIconVertices, horizontalOpacity);
                     array.get(placedIconSymbolIndex).hidden = iconHidden;
+                    if (updateZOffset) addZOffsetIconVertex(bucket.icon.zOffsetVertexArray, numIconVertices, zOffset);
                 }
 
                 if (verticalPlacedIconSymbolIndex >= 0) {
                     const verticalOpacity = !verticalHidden ? packedOpacity : PACKED_HIDDEN_OPACITY;
                     addOpacities(bucket.icon, symbolInstance.numVerticalIconVertices, verticalOpacity);
                     array.get(verticalPlacedIconSymbolIndex).hidden = iconHidden;
+                    if (updateZOffset) addZOffsetIconVertex(bucket.icon.zOffsetVertexArray, symbolInstance.numVerticalIconVertices, zOffset);
                 }
             }
 
@@ -1123,6 +1172,14 @@ export class Placement {
         }
         if (bucket.hasTextCollisionBoxData() && bucket.textCollisionBox.collisionVertexBuffer) {
             bucket.textCollisionBox.collisionVertexBuffer.updateData(bucket.textCollisionBox.collisionVertexArray);
+        }
+        if (updateZOffset && bucket.text.zOffsetVertexBuffer) {
+            bucket.text.zOffsetVertexBuffer.updateData(bucket.text.zOffsetVertexArray);
+            assert(bucket.text.zOffsetVertexBuffer.length === bucket.text.layoutVertexArray.length);
+        }
+        if (updateZOffset && bucket.icon.zOffsetVertexBuffer) {
+            bucket.icon.zOffsetVertexBuffer.updateData(bucket.icon.zOffsetVertexArray);
+            assert(bucket.icon.zOffsetVertexBuffer.length === bucket.icon.layoutVertexArray.length);
         }
 
         assert(bucket.text.opacityVertexArray.length === bucket.text.layoutVertexArray.length / 4);

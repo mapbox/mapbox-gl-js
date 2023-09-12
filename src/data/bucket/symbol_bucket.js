@@ -6,7 +6,8 @@ import {symbolLayoutAttributes,
     collisionVertexAttributesExt,
     collisionBoxLayout,
     dynamicLayoutAttributes,
-    iconTransitioningAttributes
+    iconTransitioningAttributes,
+    zOffsetAttributes
 } from './symbol_attributes.js';
 
 import {SymbolLayoutArray,
@@ -20,7 +21,8 @@ import {SymbolLayoutArray,
     SymbolInstanceArray,
     GlyphOffsetArray,
     SymbolLineVertexArray,
-    SymbolIconTransitioningArray
+    SymbolIconTransitioningArray,
+    ZOffsetVertexArray
 } from '../array_types.js';
 
 import ONE_EM from '../../symbol/one_em.js';
@@ -52,6 +54,7 @@ import type {ProjectionSpecification} from '../../style-spec/types.js';
 import {getProjection} from '../../geo/projection/index.js';
 import type Projection from '../../geo/projection/projection.js';
 import {mat4, vec3} from 'gl-matrix';
+import assert from 'assert';
 
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
@@ -215,6 +218,9 @@ export class SymbolBuffers {
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
 
+    zOffsetVertexArray: ZOffsetVertexArray;
+    zOffsetVertexBuffer: VertexBuffer;
+
     iconTransitioningVertexArray: SymbolIconTransitioningArray;
     iconTransitioningVertexBuffer: ?VertexBuffer;
 
@@ -233,6 +239,7 @@ export class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
         this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
+        this.zOffsetVertexArray = new ZOffsetVertexArray();
     }
 
     isEmpty(): boolean {
@@ -259,6 +266,9 @@ export class SymbolBuffers {
             if (this.globeExtVertexArray.length > 0) {
                 this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
+            if (this.zOffsetVertexArray.length > 0) {
+                this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, zOffsetAttributes.members, true);
+            }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
@@ -281,6 +291,9 @@ export class SymbolBuffers {
         }
         if (this.globeExtVertexBuffer) {
             this.globeExtVertexBuffer.destroy();
+        }
+        if (this.zOffsetVertexBuffer) {
+            this.zOffsetVertexBuffer.destroy();
         }
     }
 }
@@ -423,6 +436,10 @@ class SymbolBucket implements Bucket {
     projection: ProjectionSpecification;
     projectionInstance: ?Projection;
     hasAnyIconTextFit: boolean;
+    hasAnyZOffset: boolean;
+    symbolInstanceIndexesSortedZOffset: Array<number>;
+    zOffsetSortDirty: boolean;
+    zOffsetBuffersNeedUpload: boolean;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -467,6 +484,9 @@ class SymbolBucket implements Bucket {
 
         this.sourceID = options.sourceID;
         this.projection = options.projection;
+        this.hasAnyZOffset = false;
+        this.zOffsetSortDirty = false;
+        this.zOffsetBuffersNeedUpload = false;
     }
 
     createArrays() {
@@ -1059,6 +1079,21 @@ class SymbolBucket implements Bucket {
         result.sort((aIndex, bIndex) => (rotatedYs[aIndex] - rotatedYs[bIndex]) || (featureIndexes[bIndex] - featureIndexes[aIndex]));
 
         return result;
+    }
+
+    getSortedIndexesByZOffset(): Array<number> {
+        if (!this.zOffsetSortDirty) {
+            assert(this.symbolInstanceIndexesSortedZOffset.length === this.symbolInstances.length);
+            return this.symbolInstanceIndexesSortedZOffset;
+        }
+        if (!this.symbolInstanceIndexesSortedZOffset) {
+            this.symbolInstanceIndexesSortedZOffset = [];
+            for (let i = 0; i < this.symbolInstances.length; ++i) {
+                this.symbolInstanceIndexesSortedZOffset.push(i);
+            }
+        }
+        this.zOffsetSortDirty = false;
+        return this.symbolInstanceIndexesSortedZOffset.sort((aIndex, bIndex) => this.symbolInstances.get(bIndex).zOffset - this.symbolInstances.get(aIndex).zOffset);
     }
 
     addToSortKeyRanges(symbolInstanceIndex: number, sortKey: number) {
