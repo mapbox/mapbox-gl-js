@@ -5237,7 +5237,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6146,7 +6146,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6560,7 +6560,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6772,7 +6772,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6800,7 +6800,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -7341,6 +7341,9 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": true,
+      "requires": [
+        "raster-color"
+      ],
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -7372,6 +7375,9 @@
       "value": "number",
       "property-type": "data-constant",
       "transition": true,
+      "requires": [
+        "raster-color"
+      ],
       "expression": {
         "interpolated": true,
         "parameters": [
@@ -7773,7 +7779,7 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Emission strength",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
