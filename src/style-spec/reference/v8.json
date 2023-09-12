@@ -6083,7 +6083,24 @@
     },
     "line-gradient": {
       "type": "color",
-      "doc": "Defines a gradient with which to color a line feature. Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
+      "doc": "A gradient used to color a line feature at various distances along its length. Defined using a `step` or `interpolate` expression which outputs a color for each corresponding `line-progress` input value. `line-progress` is a percentage of the line feature's total length as measured on the webmercator projected coordinate plane (a `number` between `0` and `1`).  Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
+      "example": [
+        "interpolate",
+        [ "linear" ],
+        [ "line-progress" ],
+        0,
+        "blue",
+        0.1,
+        "royalblue",
+        0.3,
+        "cyan",
+        0.5,
+        "lime",
+        0.7,
+        "yellow",
+        1,
+        "red"
+      ],
       "transition": false,
       "requires": [
         {
