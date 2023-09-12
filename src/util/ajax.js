@@ -25,7 +25,8 @@ const ResourceType = {
     Glyphs: 'Glyphs',
     SpriteImage: 'SpriteImage',
     SpriteJSON: 'SpriteJSON',
-    Image: 'Image'
+    Image: 'Image',
+    Model: 'Model'
 };
 export {ResourceType};
 

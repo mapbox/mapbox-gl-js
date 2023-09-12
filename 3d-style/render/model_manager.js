@@ -7,6 +7,7 @@ import Model from '../data/model.js';
 import convertModel from '../source/model_loader.js';
 
 import {RequestManager} from '../../src/util/mapbox.js';
+import {ResourceType} from '../../src/util/ajax.js';
 import Painter from '../../src/render/painter.js';
 
 import {loadGLTF} from '../util/loaders.js';
@@ -26,9 +27,9 @@ class ModelManager extends Evented {
     }
 
     async loadModel(id: string, url: string): Promise<Model> {
-        const gltf = await loadGLTF(url);
+        const gltf = await loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url);
         const nodes = convertModel(gltf);
-        const model = new Model(id, url, undefined, undefined, nodes);
+        const model = new Model(id, undefined, undefined, nodes);
         model.computeBoundsAndApplyParent();
         return model;
     }
