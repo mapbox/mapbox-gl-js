@@ -29,10 +29,7 @@ float calculate_ambient_directional_factor(vec3 normal) {
 
     // Value moves from vertical_factor_min at z=-1 to 1.0 at z=1
     const float vertical_factor_min = 0.92;
-    // clamp(z, -1.0, 1.0) is required because z can be very slightly out of the acceptable input
-    // range for asin, even when it has been normalized, due to limited floating point precision.
-    float vertical_factor = mix(vertical_factor_min, 1.0, asin(clamp(normal.z, -1.0, 1.0)) / PI + 0.5);
-
+    float vertical_factor = mix(vertical_factor_min, 1.0, normal.z * 0.5 + 0.5);
     return vertical_factor * ambient_directional_factor;
 }
 
