@@ -602,7 +602,7 @@ class Style extends Evented {
             this._updateLayerCount(styleLayer, true);
 
             const sourceCache = this._getLayerSourceCache(styleLayer);
-            const shadowsEnabled = !!this.directionalLight && this.directionalLight.properties.get('cast-shadows') === true;
+            const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
             if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
                 sourceCache.castsShadows = true;
@@ -1337,6 +1337,8 @@ class Style extends Evented {
             return;
         }
 
+        const transitionParameters = this._getTransitionParameters();
+
         for (const light of lights) {
             if (this._validate(validateLights, 'lights', light)) {
                 return;
@@ -1345,14 +1347,18 @@ class Style extends Evented {
             switch (light.type) {
             case 'ambient':
                 if (this.ambientLight) {
-                    this.ambientLight.set(light);
+                    const ambientLight = this.ambientLight;
+                    ambientLight.set(light);
+                    ambientLight.updateTransitions(transitionParameters);
                 } else {
                     this.ambientLight = new Lights<Ambient>(light, ambientProps, this.scope, this.options);
                 }
                 break;
             case 'directional':
                 if (this.directionalLight) {
-                    this.directionalLight.set(light);
+                    const directionalLight = this.directionalLight;
+                    directionalLight.set(light);
+                    directionalLight.updateTransitions(transitionParameters);
                 } else {
                     this.directionalLight = new Lights<Directional>(light, directionalProps, this.scope, this.options);
                 }
@@ -1362,7 +1368,18 @@ class Style extends Evented {
             }
         }
 
-        this._changed = true;
+        const evaluationParameters = new EvaluationParameters(this.z || 0, transitionParameters);
+
+        if (this.ambientLight) {
+            this.ambientLight.recalculate(evaluationParameters);
+        }
+
+        if (this.directionalLight) {
+            this.directionalLight.recalculate(evaluationParameters);
+        }
+
+        this._brightness = this.calculateLightsBrightness();
+        this.dispatcher.broadcast('setBrightness', this._brightness);
     }
 
     calculateLightsBrightness(): ?number {
@@ -1515,7 +1532,7 @@ class Style extends Evented {
         this._ownLayers[id] = layer;
 
         const sourceCache = this._getLayerSourceCache(layer);
-        const shadowsEnabled = !!this.directionalLight && this.directionalLight.properties.get('cast-shadows') === true;
+        const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
         if (sourceCache && layer.canCastShadows() && shadowsEnabled) {
             sourceCache.castsShadows = true;
@@ -1937,7 +1954,6 @@ class Style extends Evented {
         }
         this._changed = true;
         layer.invalidateCompiledFilter();
-
     }
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>): Array<mixed> {

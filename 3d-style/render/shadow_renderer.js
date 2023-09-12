@@ -98,7 +98,7 @@ export class ShadowRenderer {
 
         const shadowIntensity = directionalLight.properties.get('shadow-intensity');
 
-        if (directionalLight.properties.get('cast-shadows') !== true || shadowIntensity <= 0.0) {
+        if (!directionalLight.shadowsEnabled() || shadowIntensity <= 0.0) {
             return;
         }
 
