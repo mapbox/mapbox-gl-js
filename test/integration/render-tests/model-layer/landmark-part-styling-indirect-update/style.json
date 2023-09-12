@@ -32,11 +32,14 @@
             }
           ]
         ],
-        ["wait"],
         ["setZoom", 17.9],
-        ["wait", 500]
+        ["wait"],
+        ["wait"]
       ]
     }
+  },
+  "transition": {
+    "duration": 0
   },
   "lights": [
     {

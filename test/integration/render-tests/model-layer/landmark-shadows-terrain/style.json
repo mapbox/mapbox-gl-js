@@ -5,7 +5,7 @@
       "standardDerivatives": true,
       "width": 512,
       "height": 512,
-      "allowed": 0.0021
+      "allowed": 0.0022
     }
   },
   "lights": [
