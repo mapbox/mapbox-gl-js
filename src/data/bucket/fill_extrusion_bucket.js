@@ -360,8 +360,10 @@ export class GroundEffect {
         const n = polyline.length;
         if (n > 2) {
             let sid = Math.max(0, this._segments.get().length - 1);
-            const groundQuads = this.segmentToGroundQuads[sid];
-            const segment = this._segments._prepareSegment(n * 4, this.vertexArray.length, groundQuads.length * QUAD_TRIS);
+            const numNewVerts = n * 4;
+            const numExistingVerts = this.vertexArray.length;
+            const numExistingTris = this.segmentToGroundQuads[sid].length * QUAD_TRIS;
+            const segment = this._segments._prepareSegment(numNewVerts, numExistingVerts, numExistingTris);
             const newSegmentAdded = sid !== this._segments.get().length - 1;
             if (newSegmentAdded) {
                 sid++;
@@ -408,7 +410,7 @@ export class GroundEffect {
                 // When a tile belongs to more than one region it needs to be duplicated for that region.
                 const regions = getTileRegions(pa, pb, na, maxRadius); // Note: mutates na
                 for (const rid of regions) {
-                    groundQuads.push({
+                    this.segmentToGroundQuads[sid].push({
                         id: idx,
                         region: rid
                     });
