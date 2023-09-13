@@ -84,6 +84,9 @@ const skip = [
     "render-tests/wireframe/terrain",
     "render-tests/wireframe/terrain-high-exaggeration",
     "render-tests/wireframe/wireframe-interpolation-vis",
+
+    // Npot mipmaps textures
+    "render-tests/model-layer/npot-mipmaps",
 ];
 
 export default {todo, skip};

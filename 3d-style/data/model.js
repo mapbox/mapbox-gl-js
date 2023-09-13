@@ -54,6 +54,7 @@ export type Material = {
     emissiveFactor: [number, number, number];
     alphaMode: string;
     alphaCutoff: number;
+    doubleSided: boolean;
     defined: boolean;
 }
 

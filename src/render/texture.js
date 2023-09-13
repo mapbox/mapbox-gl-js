@@ -123,7 +123,7 @@ class Texture {
             }
         }
 
-        this.useMipmap = Boolean(options && options.useMipmap && this.isSizePowerOfTwo());
+        this.useMipmap = Boolean(options && options.useMipmap);
         if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
@@ -174,10 +174,6 @@ class Texture {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapT);
             this.wrapT = wrapT;
         }
-    }
-
-    isSizePowerOfTwo(): boolean {
-        return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
     }
 
     destroy() {

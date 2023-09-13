@@ -139,7 +139,7 @@ function convertMaterial(materialDesc: Object, textures: Array<ModelTexture>): M
     }
 
     material.pbrMetallicRoughness = pbrMetallicRoughness;
-
+    material.doubleSided = materialDesc.doubleSided;
     // just to make the rendertests the same than native
     if (materialDesc.defined === undefined) {
         material.defined = true;
