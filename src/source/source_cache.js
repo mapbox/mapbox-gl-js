@@ -537,7 +537,7 @@ class SourceCache extends Evented {
             }
         }
 
-        if (idealTileIDs.length > 0 && this.castsShadows && directionalLight) {
+        if (idealTileIDs.length > 0 && this.castsShadows && directionalLight && this.transform.projection.name !== 'globe') {
             // Extend the set of ideal tiles with potential shadow casters
             const idealZoom = transform.coveringZoomLevel({
                 tileSize: tileSize || this._source.tileSize,
