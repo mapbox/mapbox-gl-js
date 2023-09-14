@@ -223,8 +223,8 @@ class Context {
         return new IndexBuffer(this, array, dynamicDraw, noDestroy);
     }
 
-    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, noDestroy?: boolean): VertexBuffer {
-        return new VertexBuffer(this, array, attributes, dynamicDraw, noDestroy);
+    createVertexBuffer(array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, noDestroy?: boolean, instanceCount?: number): VertexBuffer {
+        return new VertexBuffer(this, array, attributes, dynamicDraw, noDestroy, instanceCount);
     }
 
     createRenderbuffer(storageFormat: number, width: number, height: number): ?WebGLRenderbuffer {

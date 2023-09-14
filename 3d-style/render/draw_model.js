@@ -535,6 +535,8 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 }
 
+const minimumInstanceCount = 20;
+
 function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
@@ -548,6 +550,10 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
             const dynamicBuffers = [];
             let program;
             let uniformValues;
+
+            if (modelInstances.instancedDataArray.length > minimumInstanceCount) {
+                definesValues.push('INSTANCED_ARRAYS');
+            }
 
             const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
             if (cutoffParams.shouldRenderCutoff) {
@@ -588,14 +594,21 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
             painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
             assert(modelInstances.instancedDataArray.bytesPerElement === 64);
-            const instanceUniform = isShadowPass ? "u_instance" : "u_normal_matrix";
             const cullFaceMode = mesh.material.doubleSided ? CullFaceMode.disabled : CullFaceMode.backCCW;
-            for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
-                /* $FlowIgnore[prop-missing] modelDepth uses u_instance and model uses u_normal_matrix for packing instance data */
-                uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
+            if  (modelInstances.instancedDataArray.length > minimumInstanceCount) {
+                dynamicBuffers.push(modelInstances.instancedDataBuffer);
                 program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
-                undefined, dynamicBuffers);
+                undefined, dynamicBuffers, modelInstances.instancedDataArray.length);
+            } else {
+                const instanceUniform = isShadowPass ? "u_instance" : "u_normal_matrix";
+                for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
+                    /* $FlowIgnore[prop-missing] modelDepth uses u_instance and model uses u_normal_matrix for packing instance data */
+                    uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
+                    program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
+                    uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                    undefined, dynamicBuffers);
+                }
             }
         }
     }

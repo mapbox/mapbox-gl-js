@@ -33,7 +33,8 @@ class VertexArrayObject {
          paintVertexBuffers: Array<VertexBuffer>,
          indexBuffer: ?IndexBuffer,
          vertexOffset: ?number,
-         dynamicVertexBuffers: Array<?VertexBuffer>) {
+         dynamicVertexBuffers: Array<?VertexBuffer>,
+         vertexAttribDivisorValue: ?number) {
 
         this.context = context;
 
@@ -61,12 +62,15 @@ class VertexArrayObject {
         );
 
         if (!context.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffers);
+            this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffers, vertexAttribDivisorValue);
         } else {
             context.bindVertexArrayOES.set(this.vao);
             for (const dynamicBuffer of dynamicVertexBuffers) {
                 if (dynamicBuffer) {
                     dynamicBuffer.bind();
+                    if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {
+                        dynamicBuffer.setVertexAttribDivisor(context.gl, program, vertexAttribDivisorValue);
+                    }
                 }
             }
             if (indexBuffer && indexBuffer.dynamicDraw) {
@@ -80,7 +84,8 @@ class VertexArrayObject {
               paintVertexBuffers: Array<VertexBuffer>,
               indexBuffer: ?IndexBuffer,
               vertexOffset: ?number,
-              dynamicVertexBuffers: Array<?VertexBuffer>) {
+              dynamicVertexBuffers: Array<?VertexBuffer>,
+              vertexAttribDivisorValue: ?number) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -129,6 +134,9 @@ class VertexArrayObject {
                 dynamicBuffer.enableAttributes(gl, program);
                 dynamicBuffer.bind();
                 dynamicBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+                if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {
+                    dynamicBuffer.setVertexAttribDivisor(gl, program, vertexAttribDivisorValue);
+                }
             }
         }
 

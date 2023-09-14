@@ -37,17 +37,18 @@ class VertexBuffer {
     dynamicDraw: ?boolean;
     context: Context;
     buffer: ?WebGLBuffer;
+    instanceCount: ?number;
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
      * @private
      */
-    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, noDestroy?: boolean) {
+    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean, noDestroy?: boolean, instanceCount?: number) {
         this.length = array.length;
         this.attributes = attributes;
         this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
-
+        this.instanceCount = instanceCount;
         this.context = context;
         const gl = context.gl;
         this.buffer = gl.createBuffer();
@@ -100,6 +101,18 @@ class VertexBuffer {
                     this.itemSize,
                     member.offset + (this.itemSize * (vertexOffset || 0))
                 );
+            }
+        }
+    }
+
+    setVertexAttribDivisor(gl: WebGLRenderingContext, program: Program<*>, value: number) {
+        for (let j = 0; j < this.attributes.length; j++) {
+            const member = this.attributes[j];
+            const attribIndex: number | void = program.attributes[member.name];
+
+            if (attribIndex !== undefined && this.instanceCount && this.instanceCount > 0) {
+                /* $FlowFixMe[prop-missing] */
+                gl.vertexAttribDivisor(attribIndex, value);
             }
         }
     }

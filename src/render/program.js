@@ -428,10 +428,10 @@ class Program<Us: UniformBindings> {
             [gl.LINE_STRIP]: 1
         }[drawMode];
 
+        const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
             const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
-
             vao.bind(
                 context,
                 this,
@@ -439,7 +439,8 @@ class Program<Us: UniformBindings> {
                 configuration ? configuration.getPaintVertexBuffers() : [],
                 indexBuffer,
                 segment.vertexOffset,
-                dynamicLayoutBuffers ? dynamicLayoutBuffers : []
+                dynamicLayoutBuffers ? dynamicLayoutBuffers : [],
+                vertexAttribDivisorValue
             );
 
             if (context.isWebGL2 && instanceCount && instanceCount > 1) {

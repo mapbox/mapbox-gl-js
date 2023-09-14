@@ -87,6 +87,19 @@ const skip = [
 
     // Npot mipmaps textures
     "render-tests/model-layer/npot-mipmaps",
+    // Instancing
+    "render-tests/model-layer/trees-light-aligned-fog",
+    "render-tests/model-layer/trees-light-aligned-update-data-driven",
+    "render-tests/model-layer/trees-light-aligned-update-data-driven-fade",
+    "render-tests/model-layer/trees-light-aligned-update-non-data-driven",
+    "render-tests/model-layer/trees-puck-terrain-exaggeration",
+    "render-tests/model-layer/trees-transition-update",
+    "render-tests/model-layer/lighting-3d-mode/light-aligned-with-buildings",
+    "render-tests/model-layer/lighting-3d-mode/model-with-ao-instance",
+    "render-tests/model-layer/power-plants-float-zoom-lod",
+    "render-tests/model-layer/power-plants-fog-mercator",
+    "render-tests/model-layer/style-model-api-add",
+    "render-tests/model-layer/style-model-api-update",
 ];
 
 export default {todo, skip};

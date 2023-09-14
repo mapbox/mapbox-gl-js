@@ -30,6 +30,7 @@ import {warnOnce} from '../../../src/util/util.js';
 import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util.js';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
+import {instanceAttributes} from '../model_attributes.js';
 
 class ModelFeature {
     feature: EvaluationFeature;
@@ -176,13 +177,13 @@ class ModelBucket implements Bucket {
     upload(context: Context) {
         // if buffer size is less than the threshold, do not upload instance buffer.
         // if instance buffer is not uploaded, instances are rendered one by one.
-        const useInstancingThreshold = Number.MAX_SAFE_INTEGER;
+        const useInstancingThreshold = 0;
         if (!this.uploaded) {
             for (const modelId in this.instancesPerModel) {
                 const perModelAttributes = this.instancesPerModel[modelId];
                 if (perModelAttributes.instancedDataArray.length < useInstancingThreshold || perModelAttributes.instancedDataArray.length === 0) continue;
                 if (!perModelAttributes.instancedDataBuffer) {
-                    perModelAttributes.instancedDataBuffer = context.createVertexBuffer(perModelAttributes.instancedDataArray, perModelAttributes.instancedDataArray.members, true);
+                    perModelAttributes.instancedDataBuffer = context.createVertexBuffer(perModelAttributes.instancedDataArray, instanceAttributes.members, true, undefined, this.instanceCount);
                 } else {
                     perModelAttributes.instancedDataBuffer.updateData(perModelAttributes.instancedDataArray);
                 }

@@ -5,10 +5,10 @@ varying highp float v_depth;
 
 #ifdef MODEL_POSITION_ON_GPU
 #ifdef INSTANCED_ARRAYS
-attribute vec4 a_instance0;
-attribute vec4 a_instance1;
-attribute vec4 a_instance2;
-attribute vec4 a_instance3;
+attribute vec4 a_normal_matrix0;
+attribute vec4 a_normal_matrix1;
+attribute vec4 a_normal_matrix2;
+attribute vec4 a_normal_matrix3;
 #else
 uniform highp mat4 u_instance;
 #endif
@@ -20,7 +20,7 @@ void main() {
 #ifdef MODEL_POSITION_ON_GPU
     highp mat4 instance;
 #ifdef INSTANCED_ARRAYS
-    instance = mat4(a_instance0, a_instance1, a_instance2, a_instance3);
+    instance = mat4(a_normal_matrix0, a_normal_matrix1, a_normal_matrix2, a_normal_matrix3);
 #else
     instance = u_instance;
 #endif
