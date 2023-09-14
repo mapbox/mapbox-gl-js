@@ -117,7 +117,7 @@ Slot | Description
 --- | ---
 `bottom` | Above polygons (land, landuse, water, etc.)
 `middle` | Above lines (roads, etc.) and behind 3D buildings
-`none` | If there is no identifier, the new layer will be placed above all existing layers in the style
+`top` | Above all existing layers in the style
 
 Set the preferred `slot` on the `Layer` object before adding it to your map and your layer will be appropriately placed in the Standard style's layer stack.
 
@@ -134,7 +134,7 @@ map.addLayer({
 });
 ```
 
-**Important**: For the new Standard style, you can only add layers to these three slots (`bottom`, `middle`, `none`) within the Standard style basemap.
+**Important**: For the new Standard style, you can only add layers to these three slots (`bottom`, `middle`, `top`) within the Standard style basemap.
 
 Like with the classic Mapbox styles, you can still use the layer position in `map.addLayer(layer, beforeId)` method when importing the Standard Style. But, this method is only applicable to custom layers you have added yourself. If you add two layers to the same slot with a specified layer position the latter will define order of the layers in that slot.
 
