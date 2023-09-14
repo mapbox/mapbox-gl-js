@@ -165,7 +165,14 @@ export default class Marker extends Evented {
             this._offset = Point.convert((options && options.offset) || [0, 0]);
         }
 
-        if (!this._element.hasAttribute('aria-label')) this._element.setAttribute('aria-label', 'Map marker');
+        if (!this._element.hasAttribute('aria-label')) {
+            this._element.setAttribute('aria-label', 'Map marker');
+        }
+
+        if (!this._element.hasAttribute('role')) {
+            this._element.setAttribute('role', 'img');
+        }
+
         this._element.classList.add('mapboxgl-marker');
         this._element.addEventListener('dragstart', (e: DragEvent) => {
             e.preventDefault();
