@@ -250,7 +250,7 @@ export class SymbolBuffers {
             this.iconTransitioningVertexArray.length === 0;
     }
 
-    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
+    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean, createZOffsetBuffer?: boolean) {
         if (this.isEmpty()) {
             return;
         }
@@ -266,7 +266,7 @@ export class SymbolBuffers {
             if (this.globeExtVertexArray.length > 0) {
                 this.globeExtVertexBuffer = context.createVertexBuffer(this.globeExtVertexArray, symbolGlobeExtAttributes.members, true);
             }
-            if (this.zOffsetVertexArray.length > 0) {
+            if (!this.zOffsetVertexBuffer && (this.zOffsetVertexArray.length > 0 || !!createZOffsetBuffer)) {
                 this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, zOffsetAttributes.members, true);
             }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
@@ -486,7 +486,7 @@ class SymbolBucket implements Bucket {
         this.projection = options.projection;
         this.hasAnyZOffset = false;
         this.zOffsetSortDirty = false;
-        this.zOffsetBuffersNeedUpload = false;
+        this.zOffsetBuffersNeedUpload = layout.get('symbol-z-elevate');
     }
 
     createArrays() {
@@ -687,8 +687,8 @@ class SymbolBucket implements Bucket {
             this.textCollisionBox.upload(context);
             this.iconCollisionBox.upload(context);
         }
-        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload);
-        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload);
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload);
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload);
         this.uploaded = true;
     }
 
