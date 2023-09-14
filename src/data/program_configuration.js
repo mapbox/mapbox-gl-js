@@ -449,13 +449,11 @@ export default class ProgramConfiguration {
         }
     }
 
-    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): boolean {
+    updatePaintArrays(featureStates: FeatureStates, featureMap: FeaturePositionMap, featureMapWithoutIds: FeaturePositionMap, vtLayer: IVectorTileLayer, layer: TypedStyleLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): boolean {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
-        const ids = keys.length === 0 ? featureMap.uniqueIds : keys;
-        if (ids.length === 0) {
-            return false;
-        }
+        const featureStateUpdate = (keys.length !== 0);
+        const ids = featureStateUpdate ? keys : featureMap.uniqueIds;
         for (const property in this.binders) {
             const binder = this.binders[property];
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
@@ -469,6 +467,15 @@ export default class ProgramConfiguration {
                         const feature = vtLayer.feature(index);
                         (binder: AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
                     });
+                }
+                if (!featureStateUpdate) {
+                    for (const id of featureMapWithoutIds.uniqueIds) {
+                        const state = featureStates[id.toString()];
+                        featureMapWithoutIds.eachPosition(id, (index, start, end) => {
+                            const feature = vtLayer.feature(index);
+                            (binder: AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
+                        });
+                    }
                 }
                 dirty = true;
             }
@@ -574,7 +581,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[_: string]: ProgramConfiguration};
     needsUpload: boolean;
     _featureMap: FeaturePositionMap;
+    _featureMapWithoutIds: FeaturePositionMap;
     _bufferOffset: number;
+    _idlessCounter: number;
 
     constructor(layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (_: string) => boolean = () => true) {
         this.programConfigurations = {};
@@ -583,7 +592,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();
+        this._featureMapWithoutIds = new FeaturePositionMap();
         this._bufferOffset = 0;
+        this._idlessCounter = 0;
     }
 
     populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness: ?number, formattedSection?: FormattedSection) {
@@ -593,6 +604,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
         if (feature.id !== undefined) {
             this._featureMap.add(feature.id, index, this._bufferOffset, length);
+        } else {
+            this._featureMapWithoutIds.add(this._idlessCounter, index, this._bufferOffset, length);
+            this._idlessCounter += 1;
         }
         this._bufferOffset = length;
 
@@ -601,7 +615,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: IVectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, vtLayer, layer, availableImages, imagePositions, brightness || 0) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, brightness || 0) || this.needsUpload;
         }
     }
 
