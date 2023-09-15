@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.00015,
+                    -0.0003
+                  ],
+                  [
+                    -0.00015,
+                    0.0003
+                  ],
+                  [
+                    0.00015,
+                    0.0003
+                  ],
+                  [
+                    0.00015,
+                    -0.0003
+                  ],
+                  [
+                    -0.00015,
+                    -0.0003
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 75,
+  "zoom": 15.5,
+  "bearing": 30,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 100,
+        "fill-extrusion-color": "gray",
+        "fill-extrusion-ambient-occlusion-intensity": 0.7
+      }
+    }
+  ],
+  "fog": {
+    "range": [-0.5, 0.5],
+    "color": "white",
+    "vertical-range": [50.0, 60.0]
+  }
+}

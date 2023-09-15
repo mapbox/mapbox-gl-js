@@ -2383,18 +2383,19 @@ test('Style#getFog', (t) => {
     const defaultRange = styleSpec.fog["range"].default;
     const defaultColor = styleSpec.fog["color"].default;
     const defaultHorizonBlend = styleSpec.fog["horizon-blend"].default;
+    const defaultVerticalRange = styleSpec.fog["vertical-range"].default;
 
     t.test('rolls up inline source into style', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
-            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0},
+            "fog": {"range": [1, 2], "color": "white", "horizon-blend": 0, "vertical-range": [0, 0]},
             "sources": {},
             "layers": []
         });
 
         style.on('style.load', () => {
-            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0});
+            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0, "vertical-range": [0, 0]});
             t.ok(style.getFog());
             t.deepEqual(style.getFog(), {
                 "range": [0, 1],
@@ -2402,7 +2403,8 @@ test('Style#getFog', (t) => {
                 "horizon-blend": 0,
                 "high-color": defaultHighColor,
                 "star-intensity": defaultStarIntensity,
-                "space-color": defaultSpaceColor
+                "space-color": defaultSpaceColor,
+                "vertical-range": defaultVerticalRange
             });
             t.end();
         });
@@ -2425,7 +2427,8 @@ test('Style#getFog', (t) => {
                 "horizon-blend": defaultHorizonBlend,
                 "high-color": defaultHighColor,
                 "star-intensity": defaultStarIntensity,
-                "space-color": defaultSpaceColor
+                "space-color": defaultSpaceColor,
+                "vertical-range": defaultVerticalRange
             });
             t.end();
         });

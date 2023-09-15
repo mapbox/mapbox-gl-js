@@ -108,7 +108,8 @@ export type FogSpecification = {|
     "high-color"?: PropertyValueSpecification<ColorSpecification>,
     "space-color"?: PropertyValueSpecification<ColorSpecification>,
     "horizon-blend"?: PropertyValueSpecification<number>,
-    "star-intensity"?: PropertyValueSpecification<number>
+    "star-intensity"?: PropertyValueSpecification<number>,
+    "vertical-range"?: PropertyValueSpecification<[number, number]>
 |}
 
 export type CameraSpecification = {|

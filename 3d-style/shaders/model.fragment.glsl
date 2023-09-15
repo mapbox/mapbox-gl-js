@@ -10,7 +10,7 @@ uniform vec4 u_emissiveFactor;
 uniform float u_metallicFactor;
 uniform float u_roughnessFactor;
 
-varying highp vec3 v_position;
+varying highp vec4 v_position_height;
 varying lowp vec4 v_color_mix;
 
 #ifdef RENDER_SHADOWS
@@ -183,10 +183,10 @@ highp vec3 getNormal(){
 #ifdef HAS_ATTRIBUTE_a_normal_3f
     n = normalize(normal_3f);
 #else
-    // Workaround for Adreno GPUs not able to do dFdx( v_position )
+    // Workaround for Adreno GPUs not able to do dFdx( v_position_height )
     // three.js/.../normal_fragment_begin.glsl.js
-    highp vec3 fdx = vec3(dFdx(v_position.x), dFdx(v_position.y), dFdx(v_position.z));
-    highp vec3 fdy = vec3(dFdy(v_position.x), dFdy(v_position.y), dFdy(v_position.z));
+    highp vec3 fdx = vec3(dFdx(v_position_height.x), dFdx(v_position_height.y), dFdx(v_position_height.z));
+    highp vec3 fdy = vec3(dFdy(v_position_height.x), dFdy(v_position_height.y), dFdy(v_position_height.z));
     // Z flipped so it is towards the camera.
     n = normalize(cross(fdx,fdy)) * -1.0;
 #endif
@@ -195,7 +195,7 @@ highp vec3 getNormal(){
     // Perturb normal
     vec3 nMap = texture2D( u_normalTexture, uv_2f).xyz;
     nMap = normalize(2.0* nMap - vec3(1.0));
-    highp vec3 v = normalize(-v_position);
+    highp vec3 v = normalize(-v_position_height.xyz);
     highp mat3 TBN = cotangentFrame(n, v, uv_2f);
     n = normalize(TBN * nMap);
 #endif
@@ -342,7 +342,7 @@ vec3 computeIndirectLightContribution(Material mat, float NdotV, vec3 normal)
 vec3 computeLightContribution(Material mat, vec3 lightPosition, vec3 lightColor)
 {
     highp vec3 n = mat.normal;
-    highp vec3 v = normalize(-v_position);
+    highp vec3 v = normalize(-v_position_height.xyz);
     highp vec3 l = normalize(lightPosition);
     highp vec3 h = normalize(v + l);
 
@@ -468,7 +468,7 @@ vec4 finalColor;
 #endif // !DIFFUSE_SHADED
 
 #ifdef FOG
-    finalColor = fog_dither(fog_apply_premultiplied(finalColor, v_fog_pos));
+    finalColor = fog_dither(fog_apply_premultiplied(finalColor, v_fog_pos, v_position_height.w));
 #endif
 
 #ifdef RENDER_CUTOFF

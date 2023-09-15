@@ -4765,6 +4765,31 @@
           "ios": "10.6.0"
         }
       }
+    },
+    "vertical-range": {
+      "type": "array",
+      "default": [0,0],
+      "minimum": 0,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Specify the vertical range, measured in meters, over which the fog should gradually fade out. When both parameters are set to zero, the fog will be rendered without any vertical constraints.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     }
   },
   "camera": {

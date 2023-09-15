@@ -24,6 +24,7 @@ type Props = {|
     "space-color": DataConstantProperty<Color>,
     "horizon-blend": DataConstantProperty<number>,
     "star-intensity": DataConstantProperty<number>,
+    "vertical-range": DataConstantProperty<[number, number]>,
 |};
 
 const fogProperties: Properties<Props> = new Properties({
@@ -33,6 +34,7 @@ const fogProperties: Properties<Props> = new Properties({
     "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
     "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
     "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
+    "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
 });
 
 class Fog extends Evented {

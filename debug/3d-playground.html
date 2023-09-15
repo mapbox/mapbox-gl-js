@@ -80,6 +80,11 @@ const Demo3D = function() {
     this.sunHaloColor = {r:255, g:255, b:255};
     this.skyColor = {r:255, g:255, b:255};
     this.starIntensity = 1.0;
+    this.fogColor = {r:255, g:255, b:255};
+    this.fogRangeMin = 3.0;
+    this.fogRangeMax = 10.0;
+    this.fogVerticalRangeMin = 100.0;
+    this.fogVerticalRangeMax = 200.0;
     this.sunIntensity = 30.0;
     this.verticalGradient = false;
     this.lightIntensity = 0.26;
@@ -335,6 +340,12 @@ window.onload = function() {
     const sunAtmosphereIntensity = sky.addInput(demo3d, 'sunAtmosphereIntensity', {min:0.0, max:1.0});
     const skyColor = sky.addInput(demo3d, 'skyColor');
     const starIntensity = sky.addInput(demo3d, 'starIntensity', {min:0.0, max:1.0});
+
+    const fogColor = sky.addInput(demo3d, 'fogColor');
+    const fogRangeMin = sky.addInput(demo3d, 'fogRangeMin', {min:-20.0, max:20.0});
+    const fogRangeMax = sky.addInput(demo3d, 'fogRangeMax', {min:-20.0, max:20.0});
+    const fogVerticalRangeMin = sky.addInput(demo3d, 'fogVerticalRangeMin', {min:0.0, max:200.0});
+    const fogVerticalRangeMax = sky.addInput(demo3d, 'fogVerticalRangeMax', {min:0.0, max:200.0});
     sky.on('change', (ev) => {
         map.setLights([
             {
@@ -349,7 +360,13 @@ window.onload = function() {
             'rgba(' + demo3d.sunHaloColor.r + ', ' + demo3d.sunHaloColor.g + ', ' + demo3d.sunHaloColor.b + ', ' + demo3d.sunHaloIntensity + ')');
         map.setPaintProperty('sky', 'sky-atmosphere-color',
             'rgba(' + demo3d.skyColor.r + ', ' + demo3d.skyColor.g + ', ' + demo3d.skyColor.b + ', ' + demo3d.sunAtmosphereIntensity + ')');
-        map.setFog({'star-intensity': demo3d.starIntensity});
+        map.setFog({
+            "color":
+            'rgba(' + demo3d.fogColor.r + ', ' + demo3d.fogColor.g + ', ' + demo3d.fogColor.b + ', 1.0)',
+            'star-intensity': demo3d.starIntensity,
+            "range": [demo3d.fogRangeMin, demo3d.fogRangeMax],
+            'vertical-range': [demo3d.fogVerticalRangeMin, demo3d.fogVerticalRangeMax]
+        });
     });
 
     // Buildings
@@ -508,7 +525,12 @@ map.on('style.load', function() {
             ]
         }
     });
-    map.setFog({});
+    map.setFog({
+        "color": 'rgba(' + demo3d.fogColor.r + ', ' + demo3d.fogColor.g + ', ' + demo3d.fogColor.b + ', 1.0)',
+        'star-intensity': demo3d.starIntensity,
+        "range": [demo3d.fogRangeMin, demo3d.fogRangeMax],
+        "vertical-range": [demo3d.fogVerticalRangeMin, demo3d.fogVerticalRangeMax]
+    });
     map.setLights([
         {
             'type': 'flat',

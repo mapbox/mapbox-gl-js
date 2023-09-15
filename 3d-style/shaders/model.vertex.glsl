@@ -40,7 +40,7 @@ varying vec4 v_pos_light_view_1;
 varying float v_depth_shadows;
 #endif
 
-varying vec3 v_position;
+varying vec4 v_position_height;
 varying lowp vec4 v_color_mix;
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
@@ -99,13 +99,14 @@ void main() {
 
     gl_Position = u_matrix * pos;
     pos.z *= meter_to_tile;
-    v_position = pos.xyz - u_camera_pos;
+    v_position_height.xyz = pos.xyz - u_camera_pos;
 #else
     local_pos = a_pos_3f;
     gl_Position = u_matrix * vec4(a_pos_3f, 1);
-    v_position = vec3(u_lighting_matrix * vec4(a_pos_3f, 1));
+    v_position_height.xyz = vec3(u_lighting_matrix * vec4(a_pos_3f, 1));
     v_color_mix = vec4(sRGBToLinear(u_color_mix.rgb), u_color_mix.a);
 #endif
+    v_position_height.w = a_pos_3f.z;
 #ifdef HAS_ATTRIBUTE_a_pbr
     vec4 albedo_c = decode_color(pbr.xy);
 

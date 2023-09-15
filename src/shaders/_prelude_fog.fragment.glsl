@@ -3,6 +3,7 @@
 uniform mediump vec4 u_fog_color;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
+uniform mediump vec2 u_fog_vertical_limit;
 uniform mediump float u_fog_temporal_offset;
 varying vec3 v_fog_pos;
 
@@ -96,6 +97,14 @@ vec4 fog_apply_premultiplied(vec4 color, vec3 pos) {
     float alpha = EPSILON + color.a;
     color.rgb = fog_apply(color.rgb / alpha, pos) * alpha;
     return color;
+}
+
+vec4 fog_apply_premultiplied(vec4 color, vec3 pos, float heightMeters) {
+    float verticalProgress = (u_fog_vertical_limit.x > 0.0 || u_fog_vertical_limit.y > 0.0) ? smoothstep(u_fog_vertical_limit.x, u_fog_vertical_limit.y, heightMeters) : 0.0;
+    // If the fog's opacity is above 90% the content needs to be faded out without the vertical visibility
+    // to avoid a hard cut when the content gets behind the cull distance
+    float opacityLimit = 1.0 - smoothstep(0.9, 1.0, fog_opacity(pos));
+    return mix(fog_apply_premultiplied(color, pos), color, min(verticalProgress, opacityLimit));
 }
 
 vec3 fog_dither(vec3 color) {
