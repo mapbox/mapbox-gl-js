@@ -8,5 +8,5 @@ outputs:
   approved-changelog-entry:
     description: 'Changelog entry has passed requirements'
 runs:
-  using: 'node18'
+  using: 'node20'
   main: 'index.js'
