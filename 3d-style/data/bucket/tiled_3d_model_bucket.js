@@ -54,6 +54,7 @@ export class Tiled3dModelFeature {
     evaluatedRMEA: Array<Vec4>;
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
+    hasTranslucentParts: boolean;
     node: Node;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
     constructor(node: Node) {
@@ -192,6 +193,7 @@ class Tiled3dModelBucket implements Bucket {
             const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
             const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
             const canonical = this.id.canonical;
+            nodeInfo.hasTranslucentParts = false;
 
             if (hasFeatures) {
                 for (let i = 0; i < PartNames.length; i++) {
@@ -207,6 +209,10 @@ class Tiled3dModelBucket implements Bucket {
                     nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
                     nodeInfo.evaluatedRMEA[i][3] = color.a;
                     nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
+
+                    if (!nodeInfo.hasTranslucentParts && color.a < 1.0) {
+                        nodeInfo.hasTranslucentParts = true;
+                    }
                 }
                 delete evaluationFeature.properties['part'];
                 const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||

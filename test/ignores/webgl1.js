@@ -94,6 +94,7 @@ const skip = [
     "render-tests/model-layer/trees-light-aligned-update-non-data-driven",
     "render-tests/model-layer/trees-puck-terrain-exaggeration",
     "render-tests/model-layer/trees-transition-update",
+    "render-tests/model-layer/trees-opacity-expression",
     "render-tests/model-layer/lighting-3d-mode/light-aligned-with-buildings",
     "render-tests/model-layer/lighting-3d-mode/model-with-ao-instance",
     "render-tests/model-layer/power-plants-float-zoom-lod",

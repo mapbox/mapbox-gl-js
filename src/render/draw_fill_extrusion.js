@@ -86,10 +86,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
             if (cutoffFadeRange === 0.0 && opacity === 1 && noPattern) {
-                const colorMode = painter.colorModeForRenderPass();
-
-                drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
-
+                drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, ColorMode.unblended, conflateLayer);
             } else {
                 // Draw transparent buildings in two passes so that only the closest surface is drawn.
                 // First draw all the extrusions into only the depth buffer. No colors are drawn.
