@@ -1663,3 +1663,36 @@ test('Style#setGeoJSONSourceData', (t) => {
         t.end();
     });
 });
+
+test('Style#setConfigProperty', (t) => {
+    t.test('Reevaluates layer visibility', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                config: {showBackground: false},
+                data: createStyleJSON({
+                    layers: [{
+                        id: 'background',
+                        type: 'background',
+                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}}]
+                })
+            }]
+        });
+
+        style.on('style.load', () => {
+            t.equal(style.getLayer(makeFQID('background', 'standard')).getLayoutProperty('visibility'), 'none');
+
+            style.setConfigProperty('standard', 'showBackground', true);
+            t.equal(style.getLayer(makeFQID('background', 'standard')).getLayoutProperty('visibility'), 'visible');
+
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.end();
+});

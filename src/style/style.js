@@ -1459,6 +1459,7 @@ class Style extends Evented {
         for (const id of fragment._configDependentLayers) {
             const layer = this.getLayer(id);
             if (layer) {
+                layer.possiblyEvaluateVisibility();
                 this._updateLayer(layer);
             }
         }
