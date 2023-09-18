@@ -664,7 +664,7 @@ const mapSessionAPI_ = new MapSessionAPI();
 export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI_.getSessionAPI.bind(mapSessionAPI_);
 
 const authenticatedMaps = new Set();
-export function storeAuthState(gl: WebGLRenderingContext, state: boolean) {
+export function storeAuthState(gl: WebGL2RenderingContext, state: boolean) {
     if (state) {
         authenticatedMaps.add(gl);
     } else {
@@ -672,11 +672,11 @@ export function storeAuthState(gl: WebGLRenderingContext, state: boolean) {
     }
 }
 
-export function isMapAuthenticated(gl: WebGLRenderingContext): boolean {
+export function isMapAuthenticated(gl: WebGL2RenderingContext): boolean {
     return authenticatedMaps.has(gl);
 }
 
-export function removeAuthState(gl: WebGLRenderingContext) {
+export function removeAuthState(gl: WebGL2RenderingContext) {
     authenticatedMaps.delete(gl);
 }
 

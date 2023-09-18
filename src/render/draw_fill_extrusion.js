@@ -113,9 +113,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const noTerrain = !terrain;
         const noGlobe = painter.transform.projection.name !== 'globe';
         const immediateMode = noTerrain && noGlobe;
-        const webGL2 = !!painter.context.isWebGL2;
 
-        if (webGL2 && lighting3DMode && noPattern && (immediateMode || rtt)) {
+        if (lighting3DMode && noPattern && (immediateMode || rtt)) {
             assert(immediateMode ? !rtt : !!rtt);
 
             const opacity = layer.paint.get('fill-extrusion-opacity');

@@ -7,10 +7,8 @@
 // See package.json#browser
 
 import jsdom from 'jsdom';
-
-import gl from 'gl';
-/*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
+import gl from './gl.js';
 
 import type {Window} from '../types/window.js';
 import type {JSDOM} from 'jsdom';
@@ -57,7 +55,7 @@ function restore(): Window {
     const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
     // $FlowFixMe[missing-this-annot]
     window.HTMLCanvasElement.prototype.getContext = function (type, attributes) {
-        if (type === 'webgl') {
+        if (type === 'webgl2') {
             if (!this._webGLContext) {
                 this._webGLContext = gl(this.width, this.height, attributes);
             }
@@ -105,7 +103,7 @@ function restore(): Window {
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
     window.WebGLTexture = window.WebGLTexture || Object;
     window.WebGLRenderbuffer = window.WebGLRenderbuffer || Object;
-    window.WebGLRenderingContext = window.WebGLRenderingContext || Object;
+    window.WebGL2RenderingContext = window.WebGL2RenderingContext || Object;
     Object.assign(_window, window); // eslint-disable-line no-restricted-properties
 
     return window;

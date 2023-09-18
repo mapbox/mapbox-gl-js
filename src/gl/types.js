@@ -1,40 +1,40 @@
 // @flow
 
 type BlendFuncConstant =
-    | $PropertyType<WebGLRenderingContext, 'ZERO'>
-    | $PropertyType<WebGLRenderingContext, 'ONE'>
-    | $PropertyType<WebGLRenderingContext, 'SRC_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_SRC_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'DST_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_DST_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'SRC_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_SRC_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'DST_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_DST_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'CONSTANT_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_CONSTANT_COLOR'>
-    | $PropertyType<WebGLRenderingContext, 'CONSTANT_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'ONE_MINUS_CONSTANT_ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'BLEND_COLOR'>;
+    | $PropertyType<WebGL2RenderingContext, 'ZERO'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE'>
+    | $PropertyType<WebGL2RenderingContext, 'SRC_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_SRC_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'DST_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_DST_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'SRC_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_SRC_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'DST_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_DST_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'CONSTANT_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_CONSTANT_COLOR'>
+    | $PropertyType<WebGL2RenderingContext, 'CONSTANT_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'ONE_MINUS_CONSTANT_ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'BLEND_COLOR'>;
 
 export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant, BlendFuncConstant, BlendFuncConstant];
 
 export type BlendEquationType =
-    | $PropertyType<WebGLRenderingContext, 'FUNC_ADD'>
-    | $PropertyType<WebGLRenderingContext, 'FUNC_SUBTRACT'>
-    | $PropertyType<WebGLRenderingContext, 'FUNC_REVERSE_SUBTRACT'>;
+    | $PropertyType<WebGL2RenderingContext, 'FUNC_ADD'>
+    | $PropertyType<WebGL2RenderingContext, 'FUNC_SUBTRACT'>
+    | $PropertyType<WebGL2RenderingContext, 'FUNC_REVERSE_SUBTRACT'>;
 
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
 export type CompareFuncType =
-    | $PropertyType<WebGLRenderingContext, 'NEVER'>
-    | $PropertyType<WebGLRenderingContext, 'LESS'>
-    | $PropertyType<WebGLRenderingContext, 'EQUAL'>
-    | $PropertyType<WebGLRenderingContext, 'LEQUAL'>
-    | $PropertyType<WebGLRenderingContext, 'GREATER'>
-    | $PropertyType<WebGLRenderingContext, 'NOTEQUAL'>
-    | $PropertyType<WebGLRenderingContext, 'GEQUAL'>
-    | $PropertyType<WebGLRenderingContext, 'ALWAYS'>;
+    | $PropertyType<WebGL2RenderingContext, 'NEVER'>
+    | $PropertyType<WebGL2RenderingContext, 'LESS'>
+    | $PropertyType<WebGL2RenderingContext, 'EQUAL'>
+    | $PropertyType<WebGL2RenderingContext, 'LEQUAL'>
+    | $PropertyType<WebGL2RenderingContext, 'GREATER'>
+    | $PropertyType<WebGL2RenderingContext, 'NOTEQUAL'>
+    | $PropertyType<WebGL2RenderingContext, 'GEQUAL'>
+    | $PropertyType<WebGL2RenderingContext, 'ALWAYS'>;
 
 export type DepthMaskType = boolean;
 
@@ -49,14 +49,14 @@ export type StencilFuncType = {
 };
 
 export type StencilOpConstant =
-    | $PropertyType<WebGLRenderingContext, 'KEEP'>
-    | $PropertyType<WebGLRenderingContext, 'ZERO'>
-    | $PropertyType<WebGLRenderingContext, 'REPLACE'>
-    | $PropertyType<WebGLRenderingContext, 'INCR'>
-    | $PropertyType<WebGLRenderingContext, 'INCR_WRAP'>
-    | $PropertyType<WebGLRenderingContext, 'DECR'>
-    | $PropertyType<WebGLRenderingContext, 'DECR_WRAP'>
-    | $PropertyType<WebGLRenderingContext, 'INVERT'>;
+    | $PropertyType<WebGL2RenderingContext, 'KEEP'>
+    | $PropertyType<WebGL2RenderingContext, 'ZERO'>
+    | $PropertyType<WebGL2RenderingContext, 'REPLACE'>
+    | $PropertyType<WebGL2RenderingContext, 'INCR'>
+    | $PropertyType<WebGL2RenderingContext, 'INCR_WRAP'>
+    | $PropertyType<WebGL2RenderingContext, 'DECR'>
+    | $PropertyType<WebGL2RenderingContext, 'DECR_WRAP'>
+    | $PropertyType<WebGL2RenderingContext, 'INVERT'>;
 
 export type StencilOpType = [StencilOpConstant, StencilOpConstant, StencilOpConstant];
 
@@ -65,22 +65,22 @@ export type TextureUnitType = number;
 export type ViewportType = [number, number, number, number];
 
 export type StencilTest =
-    | { func: $PropertyType<WebGLRenderingContext, 'NEVER'>, mask: 0 }
-    | { func: $PropertyType<WebGLRenderingContext, 'LESS'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'EQUAL'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'LEQUAL'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'GREATER'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'NOTEQUAL'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'GEQUAL'>, mask: number }
-    | { func: $PropertyType<WebGLRenderingContext, 'ALWAYS'>, mask: 0 };
+    | { func: $PropertyType<WebGL2RenderingContext, 'NEVER'>, mask: 0 }
+    | { func: $PropertyType<WebGL2RenderingContext, 'LESS'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'EQUAL'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'LEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'GREATER'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'NOTEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'GEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGL2RenderingContext, 'ALWAYS'>, mask: 0 };
 
 export type CullFaceModeType =
-    | $PropertyType<WebGLRenderingContext, 'FRONT'>
-    | $PropertyType<WebGLRenderingContext, 'BACK'>
-    | $PropertyType<WebGLRenderingContext, 'FRONT_AND_BACK'>
+    | $PropertyType<WebGL2RenderingContext, 'FRONT'>
+    | $PropertyType<WebGL2RenderingContext, 'BACK'>
+    | $PropertyType<WebGL2RenderingContext, 'FRONT_AND_BACK'>
 
 export type FrontFaceType =
-    | $PropertyType<WebGLRenderingContext, 'CW'>
-    | $PropertyType<WebGLRenderingContext, 'CCW'>
+    | $PropertyType<WebGL2RenderingContext, 'CW'>
+    | $PropertyType<WebGL2RenderingContext, 'CCW'>
 
 export type DepthBufferType = 'renderbuffer' | 'texture';

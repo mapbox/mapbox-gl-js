@@ -1,7 +1,5 @@
 // @flow
 
-import assert from 'assert';
-
 import type Program from './program.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
@@ -61,7 +59,7 @@ class VertexArrayObject {
             this.boundVertexOffset !== vertexOffset
         );
 
-        if (!context.extVertexArrayObject || isFreshBindRequired) {
+        if (isFreshBindRequired) {
             this.freshBind(program, layoutVertexBuffer, paintVertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffers, vertexAttribDivisorValue);
         } else {
             context.bindVertexArrayOES.set(this.vao);
@@ -86,38 +84,22 @@ class VertexArrayObject {
               vertexOffset: ?number,
               dynamicVertexBuffers: Array<?VertexBuffer>,
               vertexAttribDivisorValue: ?number) {
-        let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
         const context = this.context;
         const gl = context.gl;
 
-        if (context.extVertexArrayObject) {
-            if (this.vao) this.destroy();
-            this.vao = context.extVertexArrayObject.createVertexArrayOES();
-            context.bindVertexArrayOES.set(this.vao);
-            numPrevAttributes = 0;
+        if (this.vao) this.destroy();
+        this.vao = context.gl.createVertexArray();
+        context.bindVertexArrayOES.set(this.vao);
 
-            // store the arguments so that we can verify them when the vao is bound again
-            this.boundProgram = program;
-            this.boundLayoutVertexBuffer = layoutVertexBuffer;
-            this.boundPaintVertexBuffers = paintVertexBuffers;
-            this.boundIndexBuffer = indexBuffer;
-            this.boundVertexOffset = vertexOffset;
-            this.boundDynamicVertexBuffers = dynamicVertexBuffers;
-
-        } else {
-            numPrevAttributes = context.currentNumAttributes || 0;
-
-            // Disable all attributes from the previous program that aren't used in
-            // the new program. Note: attribute indices are *not* program specific!
-            for (let i = numNextAttributes; i < numPrevAttributes; i++) {
-                // WebGL breaks if you disable attribute 0.
-                // http://stackoverflow.com/questions/20305231
-                assert(i !== 0);
-                gl.disableVertexAttribArray(i);
-            }
-        }
+        // store the arguments so that we can verify them when the vao is bound again
+        this.boundProgram = program;
+        this.boundLayoutVertexBuffer = layoutVertexBuffer;
+        this.boundPaintVertexBuffers = paintVertexBuffers;
+        this.boundIndexBuffer = indexBuffer;
+        this.boundVertexOffset = vertexOffset;
+        this.boundDynamicVertexBuffers = dynamicVertexBuffers;
 
         layoutVertexBuffer.enableAttributes(gl, program);
         layoutVertexBuffer.bind();
@@ -149,7 +131,7 @@ class VertexArrayObject {
 
     destroy() {
         if (this.vao) {
-            this.context.extVertexArrayObject.deleteVertexArrayOES(this.vao);
+            this.context.gl.deleteVertexArray(this.vao);
             this.vao = null;
         }
     }

@@ -19,10 +19,6 @@ export class WireframeDebugCache {
     }
 
     getLinesFromTrianglesBuffer(frameIdx: number, indexBuffer: IndexBuffer, context: Context): ?IndexBuffer {
-        if (!context.isWebGL2) {
-            return undefined;
-        }
-
         {
             const entry = this._storage.get(indexBuffer.id);
             if (entry) {
@@ -32,13 +28,11 @@ export class WireframeDebugCache {
         }
 
         const gl = context.gl;
-        /* $FlowFixMe[cannot-resolve-name] */
-        const gl2 = (context.gl: WebGL2RenderingContext);
 
-        const bufSize = gl2.getBufferParameter(gl.ELEMENT_ARRAY_BUFFER, gl.BUFFER_SIZE);
+        const bufSize = gl.getBufferParameter(gl.ELEMENT_ARRAY_BUFFER, gl.BUFFER_SIZE);
         const bufTmp = new ArrayBuffer(bufSize);
         const intView = new Int16Array(bufTmp);
-        gl2.getBufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, new Int16Array(bufTmp));
+        gl.getBufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, new Int16Array(bufTmp));
 
         const lineIndexArray = new LineIndexArray();
 

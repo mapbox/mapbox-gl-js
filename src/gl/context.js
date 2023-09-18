@@ -26,9 +26,7 @@ type ClearArgs = {
 };
 
 class Context {
-    gl: WebGLRenderingContext;
-    isWebGL2: boolean;
-    extVertexArrayObject: any;
+    gl: WebGL2RenderingContext;
     currentNumAttributes: ?number;
     maxTextureSize: number;
 
@@ -70,7 +68,6 @@ class Context {
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
     extRenderToTextureHalfFloat: any;
-    extStandardDerivatives: any;
     extDebugRendererInfo: any;
     extTimerQuery: any;
     extTextureFloatLinear: any;
@@ -78,20 +75,8 @@ class Context {
     extTextureFilterAnisotropicForceOff: boolean;
     extStandardDerivativesForceOff: boolean;
 
-    constructor(gl: WebGLRenderingContext, isWebGL2: boolean = false) {
+    constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
-        this.isWebGL2 = isWebGL2;
-        this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
-
-        if (isWebGL2) {
-            /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
-            const gl2 = (gl: WebGL2RenderingContext);
-            this.extVertexArrayObject = {
-                createVertexArrayOES: gl2.createVertexArray.bind(gl),
-                deleteVertexArrayOES: gl2.deleteVertexArray.bind(gl),
-                bindVertexArrayOES: gl2.bindVertexArray.bind(gl)
-            };
-        }
 
         this.clearColor = new ClearColor(this);
         this.clearDepth = new ClearDepth(this);
@@ -120,7 +105,7 @@ class Context {
         this.bindTexture = new BindTexture(this);
         this.bindVertexBuffer = new BindVertexBuffer(this);
         this.bindElementBuffer = new BindElementBuffer(this);
-        this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
+        this.bindVertexArrayOES = new BindVertexArrayOES(this);
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
@@ -143,11 +128,7 @@ class Context {
         }
 
         this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
-        if (!isWebGL2) this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
-        if (isWebGL2 || (this.extTextureHalfFloat && gl.getExtension('OES_texture_half_float_linear'))) {
-            this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
-        }
-        this.extStandardDerivatives = isWebGL2 || gl.getExtension('OES_standard_derivatives');
+        this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -211,9 +192,7 @@ class Context {
         this.bindTexture.dirty = true;
         this.bindVertexBuffer.dirty = true;
         this.bindElementBuffer.dirty = true;
-        if (this.extVertexArrayObject) {
-            this.bindVertexArrayOES.dirty = true;
-        }
+        this.bindVertexArrayOES.dirty = true;
         this.pixelStoreUnpack.dirty = true;
         this.pixelStoreUnpackPremultiplyAlpha.dirty = true;
         this.pixelStoreUnpackFlipY.dirty = true;
@@ -332,9 +311,7 @@ class Context {
     unbindVAO() {
         // Unbinding the VAO prevents other things (custom layers, new buffer creation) from
         // unintentionally changing the state of the last VAO used.
-        if (this.extVertexArrayObject) {
-            this.bindVertexArrayOES.set(null);
-        }
+        this.bindVertexArrayOES.set(null);
     }
 }
 

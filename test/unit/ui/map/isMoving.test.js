@@ -7,7 +7,7 @@ import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t, proj = 'mercator') {
     t.stub(Map.prototype, '_detectMissingCSS');
-    const map = new Map({container: DOM.create('div', '', window.document.body), useWebGL2: false, testMode: true});
+    const map = new Map({container: DOM.create('div', '', window.document.body), testMode: true});
     map.setProjection(proj);
     return map;
 }

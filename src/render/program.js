@@ -40,9 +40,9 @@ import type {Segment} from "../data/segment";
 import Color from '../style-spec/util/color.js';
 
 export type DrawMode =
-    | $PropertyType<WebGLRenderingContext, 'LINES'>
-    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
-    | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
+    | $PropertyType<WebGL2RenderingContext, 'LINES'>
+    | $PropertyType<WebGL2RenderingContext, 'TRIANGLES'>
+    | $PropertyType<WebGL2RenderingContext, 'LINE_STRIP'>;
 
 type ShaderSource = {
     fragmentSource: string,
@@ -122,10 +122,10 @@ class Program<Us: UniformBindings> {
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
-        const version = context.isWebGL2 ? '#version 300 es\n' : '';
+        const version = '#version 300 es\n';
 
         const fragmentSource = version + defines.concat(
-            context.extStandardDerivatives && version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
+            version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             preludeLightingSource,
@@ -293,11 +293,6 @@ class Program<Us: UniformBindings> {
 
         const context = painter.context;
 
-        // Wireframe for WebGL2 only
-        if (!context.isWebGL2) {
-            return;
-        }
-
         const subjectForWireframe = (() => {
             // Terrain
             if (wireframe.terrain && (this.name === 'terrainRaster' || this.name === 'globeRaster')) {
@@ -443,10 +438,8 @@ class Program<Us: UniformBindings> {
                 vertexAttribDivisorValue
             );
 
-            if (context.isWebGL2 && instanceCount && instanceCount > 1) {
-                /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
-                const gl2 = (gl: WebGL2RenderingContext);
-                gl2.drawElementsInstanced(
+            if (instanceCount && instanceCount > 1) {
+                gl.drawElementsInstanced(
                     drawMode,
                     segment.primitiveLength * primitiveSize,
                     gl.UNSIGNED_SHORT,

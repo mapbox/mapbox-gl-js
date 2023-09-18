@@ -7,7 +7,7 @@ export type UniformValues<Us: Object>
     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
 
 class Uniform<T> {
-    gl: WebGLRenderingContext;
+    gl: WebGL2RenderingContext;
     location: ?WebGLUniformLocation;
     current: T;
     initialized: boolean;

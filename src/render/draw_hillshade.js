@@ -89,9 +89,7 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
     if (tile.demTexture) {
         tile.demTexture.update(demImage, {premultiply: false});
     } else {
-        /* $FlowFixMe[cannot-resolve-name] */
-        const gl2 = (context.gl: WebGL2RenderingContext);
-        tile.demTexture = new Texture(context, demImage, painter.terrainUseFloatDEM() ? gl2.R32F : gl.RGBA, {premultiply: false});
+        tile.demTexture = new Texture(context, demImage, painter.terrainUseFloatDEM() ? gl.R32F : gl.RGBA, {premultiply: false});
     }
     tile.needsDEMTextureUpload = false;
 }

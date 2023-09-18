@@ -113,7 +113,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: WebGLRenderingContext) {
+function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext) {
     const defines = [];
     let mix;
     let range;

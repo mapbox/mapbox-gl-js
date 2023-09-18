@@ -194,8 +194,8 @@ class Painter {
 
     _wireframeDebugCache: WireframeDebugCache;
 
-    constructor(gl: WebGLRenderingContext, transform: Transform, isWebGL2: boolean = false) {
-        this.context = new Context(gl, isWebGL2);
+    constructor(gl: WebGL2RenderingContext, transform: Transform) {
+        this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
@@ -1079,7 +1079,7 @@ class Painter {
 
     terrainUseFloatDEM(): boolean {
         const context = this.context;
-        return context.isWebGL2 && context.extTextureFloatLinear !== undefined && context.extTextureFloatLinear !== null;
+        return context.extTextureFloatLinear !== undefined && context.extTextureFloatLinear !== null;
     }
 
     /**

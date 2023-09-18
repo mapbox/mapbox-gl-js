@@ -62,9 +62,8 @@ function convertImages(gltf: Object): Array<TextureImage> {
 }
 
 function convertTextures(gltf: Object, images: Array<TextureImage>): Array<ModelTexture> {
-
     const textures: ModelTexture[] = [];
-    const gl = window.WebGLRenderingContext;
+    const gl = window.WebGL2RenderingContext;
     const samplersDesc = gltf.json.samplers;
     if (gltf.json.textures) {
         for (const textureDesc of gltf.json.textures) {

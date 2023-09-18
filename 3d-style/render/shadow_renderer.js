@@ -92,7 +92,7 @@ export class ShadowRenderer {
         this._enabled = false;
         this._shadowLayerCount = 0;
 
-        if (!painter.context.isWebGL2 || !directionalLight || !directionalLight.properties) {
+        if (!directionalLight || !directionalLight.properties) {
             return;
         }
 

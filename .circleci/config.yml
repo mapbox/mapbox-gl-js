@@ -127,12 +127,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-linux-chrome-webgl1-dev:
-          requires:
-            - prepare-linux
-          filters:
-            tags:
-              only: /.*/
       - test-render-linux-chrome-prod:
           requires:
             - prepare-linux
@@ -151,12 +145,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-linux-firefox-webgl1-dev:
-          requires:
-            - prepare-linux
-          filters:
-            tags:
-              only: /.*/
       - prepare-mac:
           filters:
             tags:
@@ -167,19 +155,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-render-mac-chrome-webgl1-dev:
-          requires:
-            - prepare-mac
-          filters:
-            tags:
-              only: /.*/
       - test-render-mac-safari-dev:
-          requires:
-            - prepare-mac
-          filters:
-            tags:
-              only: /.*/
-      - test-render-mac-safari-webgl1-dev:
           requires:
             - prepare-mac
           filters:
@@ -458,21 +434,6 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-linux-chrome-webgl1-dev:
-    <<: *linux-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-chrome
-      - run:
-          name: Running tests in parallel
-          command: |
-            USE_WEBGL2=false yarn run test-render
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
   test-render-linux-chrome-prod:
     <<: *linux-defaults
     steps:
@@ -504,18 +465,6 @@ jobs:
           at: ~/
       - browser-tools/install-firefox
       - run: yarn run test-render-firefox
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-linux-firefox-webgl1-dev:
-    <<: *linux-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-firefox
-      - run: USE_WEBGL2=false yarn run test-render-firefox
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
@@ -560,23 +509,6 @@ jobs:
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 
-  test-render-mac-chrome-webgl1-dev:
-    <<: *mac-defaults
-    parallelism: 3
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-chrome
-      - run:
-          name: Creating test list
-          command: |
-            circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
-      - run: USE_WEBGL2=false yarn run test-render
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
   test-render-mac-safari-dev:
     <<: *mac-defaults
     resource_class: macos.m1.large.gen1
@@ -584,18 +516,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: yarn run test-render-safari
-      - store_test_results:
-          path: test/integration/render-tests
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-
-  test-render-mac-safari-webgl1-dev:
-    <<: *mac-defaults
-    resource_class: macos.m1.large.gen1
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: USE_WEBGL2=false yarn run test-render-safari
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:

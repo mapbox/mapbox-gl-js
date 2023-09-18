@@ -8,20 +8,20 @@ import {Float32Image} from '../util/image.js';
 import assert from 'assert';
 
 export type TextureFormat =
-    | $PropertyType<WebGLRenderingContext, 'RGBA'>
-    | $PropertyType<WebGLRenderingContext, 'ALPHA'>
-    | $PropertyType<WebGLRenderingContext, 'DEPTH_COMPONENT'>;
+    | $PropertyType<WebGL2RenderingContext, 'RGBA'>
+    | $PropertyType<WebGL2RenderingContext, 'ALPHA'>
+    | $PropertyType<WebGL2RenderingContext, 'DEPTH_COMPONENT'>;
 export type TextureFilter =
-    | $PropertyType<WebGLRenderingContext, 'LINEAR'>
-    | $PropertyType<WebGLRenderingContext, 'NEAREST_MIPMAP_NEAREST'>
-    | $PropertyType<WebGLRenderingContext, 'LINEAR_MIPMAP_NEAREST'>
-    | $PropertyType<WebGLRenderingContext, 'NEAREST_MIPMAP_LINEAR'>
-    | $PropertyType<WebGLRenderingContext, 'LINEAR_MIPMAP_LINEAR'>
-    | $PropertyType<WebGLRenderingContext, 'NEAREST'>;
+    | $PropertyType<WebGL2RenderingContext, 'LINEAR'>
+    | $PropertyType<WebGL2RenderingContext, 'NEAREST_MIPMAP_NEAREST'>
+    | $PropertyType<WebGL2RenderingContext, 'LINEAR_MIPMAP_NEAREST'>
+    | $PropertyType<WebGL2RenderingContext, 'NEAREST_MIPMAP_LINEAR'>
+    | $PropertyType<WebGL2RenderingContext, 'LINEAR_MIPMAP_LINEAR'>
+    | $PropertyType<WebGL2RenderingContext, 'NEAREST'>;
 export type TextureWrap =
-    | $PropertyType<WebGLRenderingContext, 'REPEAT'>
-    | $PropertyType<WebGLRenderingContext, 'CLAMP_TO_EDGE'>
-    | $PropertyType<WebGLRenderingContext, 'MIRRORED_REPEAT'>;
+    | $PropertyType<WebGL2RenderingContext, 'REPEAT'>
+    | $PropertyType<WebGL2RenderingContext, 'CLAMP_TO_EDGE'>
+    | $PropertyType<WebGL2RenderingContext, 'MIRRORED_REPEAT'>;
 
 type EmptyImage = {
     width: number,
@@ -64,8 +64,6 @@ class Texture {
         const {gl} = context;
         const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
-        /* $FlowFixMe[cannot-resolve-name] */
-        const gl2 = (context.gl: WebGL2RenderingContext);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         context.pixelStoreUnpackFlipY.set(false);
@@ -78,7 +76,7 @@ class Texture {
             if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || (ImageBitmap && image instanceof ImageBitmap)) {
                 let baseFormat = this.format;
                 // $FlowFixMe[prop-missing] - Flow cannot check for gl.R8
-                if (context.isWebGL2 && this.format === gl.R8) {
+                if (this.format === gl.R8) {
                     // $FlowFixMe[prop-missing] - Flow cannot check for gl.RED
                     baseFormat = gl.RED;
                 }
@@ -95,11 +93,10 @@ class Texture {
                     type = gl.UNSIGNED_SHORT;
                 }
 
-                /* $FlowFixMe[cannot-resolve-name] */ // Not adding dependency to webgl2 yet.
-                if (this.format === gl2.R32F) {
+                if (this.format === gl.R32F) {
                     assert(image instanceof Float32Image);
-                    type = gl2.FLOAT;
-                    format = gl2.RED;
+                    type = gl.FLOAT;
+                    format = gl.RED;
                 }
                 // $FlowFixMe prop-missing - Flow can't refine image type here
                 gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, image.data);
@@ -112,11 +109,11 @@ class Texture {
                 let format = this.format;
                 let type = gl.UNSIGNED_BYTE;
 
-                if (this.format === gl2.R32F) {
+                if (this.format === gl.R32F) {
                     assert(image instanceof Float32Image);
 
-                    format = gl2.RED;
-                    type = gl2.FLOAT;
+                    format = gl.RED;
+                    type = gl.FLOAT;
                 }
                 // $FlowFixMe prop-missing - Flow can't refine image type here
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, format, type, image.data);

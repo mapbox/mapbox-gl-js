@@ -8,7 +8,7 @@ import browser from '../../../src/util/browser.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import window from '../../../src/util/window.js';
 import Context from '../../../src/gl/context.js';
-import gl from 'gl';
+import gl from '../../../src/util/gl.js';
 
 function createSource(options) {
     options = extend({

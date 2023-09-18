@@ -71,7 +71,7 @@ class VertexBuffer {
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
-    enableAttributes(gl: WebGLRenderingContext, program: Program<*>) {
+    enableAttributes(gl: WebGL2RenderingContext, program: Program<*>) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex: number | void = program.attributes[member.name];
@@ -87,7 +87,7 @@ class VertexBuffer {
      * @param program The active WebGL program.
      * @param vertexOffset Index of the starting vertex of the segment.
      */
-    setVertexAttribPointers(gl: WebGLRenderingContext, program: Program<*>, vertexOffset: ?number) {
+    setVertexAttribPointers(gl: WebGL2RenderingContext, program: Program<*>, vertexOffset: ?number) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex: number | void = program.attributes[member.name];
@@ -105,13 +105,12 @@ class VertexBuffer {
         }
     }
 
-    setVertexAttribDivisor(gl: WebGLRenderingContext, program: Program<*>, value: number) {
+    setVertexAttribDivisor(gl: WebGL2RenderingContext, program: Program<*>, value: number) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex: number | void = program.attributes[member.name];
 
             if (attribIndex !== undefined && this.instanceCount && this.instanceCount > 0) {
-                /* $FlowFixMe[prop-missing] */
                 gl.vertexAttribDivisor(attribIndex, value);
             }
         }

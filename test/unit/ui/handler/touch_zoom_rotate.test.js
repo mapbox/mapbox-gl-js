@@ -7,7 +7,7 @@ import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t, options = {}) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({container: DOM.create('div', '', window.document.body), useWebGL2: false, testMode: true, ...options});
+    return new Map({container: DOM.create('div', '', window.document.body), testMode: true, ...options});
 }
 
 test('TouchZoomRotateHandler fires zoomstart, zoom, and zoomend events at appropriate times in response to a pinch-zoom gesture', (t) => {

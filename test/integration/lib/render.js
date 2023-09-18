@@ -10,7 +10,6 @@ import ignoreMacChrome from '../../ignores/mac-chrome.js';
 import ignoreMacSafari from '../../ignores/mac-safari.js';
 import ignoreLinuxChrome from '../../ignores/linux-chrome.js';
 import ignoreLinuxFirefox from '../../ignores/linux-firefox.js';
-import ignoreWebGL1 from '../../ignores/webgl1.js';
 import config from '../../../src/util/config.js';
 import {clamp} from '../../../src/util/util.js';
 import {mercatorZfromAltitude} from '../../../src/geo/mercator_coordinate.js';
@@ -20,8 +19,6 @@ import pixelmatch from 'pixelmatch';
 import {vec3, vec4} from 'gl-matrix';
 
 const browserWriteFile = new Worker('../util/browser_write_file.js');
-
-const useWebGL2 = process.env.USE_WEBGL2 ? process.env.USE_WEBGL2 !== 'false' : true;
 
 // We are self-hosting test files.
 config.REQUIRE_ACCESS_TOKEN = false;
@@ -46,7 +43,7 @@ fakeCanvasContainer.style.top = '10px';
 fakeCanvasContainer.style.left = '10px';
 document.body.appendChild(fakeCanvasContainer);
 
-setupHTML({useWebGL2});
+setupHTML();
 
 const {canvas: expectedCanvas, ctx: expectedCtx} = createCanvas();
 const {canvas: diffCanvas, ctx: diffCtx} = createCanvas();
@@ -58,11 +55,6 @@ tape.onFinish(() => {
     document.body.removeChild(container);
     mapboxgl.clearPrewarmedResources();
 });
-
-function concatIgnoreList(ignoreA, ignoreB) {
-    function mergeUnique(a, b) { return a.concat(b.filter((item) => a.indexOf(item) < 0)); }
-    return {todo: mergeUnique(ignoreA.todo, ignoreB.todo), skip: mergeUnique(ignoreA.skip, ignoreB.skip)};
-}
 
 let ignoreList;
 let timeout = 30000;
@@ -85,10 +77,6 @@ if (process.env.CI) {
         ignoreList = ignoreWindowsChrome;
         timeout = 150000; // 2:30
     } else {  throw new Error('Cant determine OS with user agent:', ua); }
-
-    if (!useWebGL2) {
-        ignoreList = concatIgnoreList(ignoreList, ignoreWebGL1);
-    }
 }
 
 function checkIgnore(ignoreConfig, testName, options) {
@@ -203,7 +191,6 @@ async function renderMap(style, options) {
         attributionControl: false,
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
-        useWebGL2,
         skew: options.skew || [0, 0],
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,

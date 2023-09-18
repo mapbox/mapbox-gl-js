@@ -3,7 +3,7 @@ import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask,
 import Context from '../../../src/gl/context.js';
 import Color from '../../../src/style-spec/util/color.js';
 import {deepEqual} from '../../../src/util/util.js';
-import gl from 'gl';
+import gl from '../../../src/util/gl.js';
 
 const context = new Context(gl(10, 10));
 

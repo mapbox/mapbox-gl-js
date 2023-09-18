@@ -9,7 +9,6 @@ function createMap(t, options) {
     t.stub(Map.prototype, '_detectMissingCSS');
     return new Map(extend({
         container: DOM.create('div', '', window.document.body),
-        useWebGL2: false,
         testMode: true,
     }, options));
 }

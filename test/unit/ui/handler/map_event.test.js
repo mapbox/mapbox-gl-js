@@ -6,7 +6,7 @@ import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({interactive: false, container: DOM.create('div', '', window.document.body), useWebGL2: false, testMode: true});
+    return new Map({interactive: false, container: DOM.create('div', '', window.document.body), testMode: true});
 }
 
 test('MapEvent handler fires touch events with correct values', (t) => {

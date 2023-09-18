@@ -29,7 +29,7 @@ export interface Value<T> {
 }
 
 class BaseValue<T> implements Value<T> {
-    gl: WebGLRenderingContext;
+    gl: WebGL2RenderingContext;
     current: T;
     default: T;
     dirty: boolean;
@@ -424,18 +424,12 @@ export class BindElementBuffer extends BaseValue<?WebGLBuffer> {
 }
 
 export class BindVertexArrayOES extends BaseValue<any> {
-    vao: any;
-
-    constructor(context: Context) {
-        super(context);
-        this.vao = context.extVertexArrayObject;
-    }
     getDefault(): any {
         return null;
     }
     set(v: any) {
-        if (!this.vao || (v === this.current && !this.dirty)) return;
-        this.vao.bindVertexArrayOES(v);
+        if (!this.gl || (v === this.current && !this.dirty)) return;
+        this.gl.bindVertexArray(v);
         this.current = v;
         this.dirty = false;
     }

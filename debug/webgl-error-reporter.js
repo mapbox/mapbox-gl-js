@@ -1,4 +1,4 @@
-(function(WebGLRenderingContext) {
+(function(WebGL2RenderingContext) {
     // This function implements an error reporter for WebGL shaders. It works by wrapping
     // the WebGL calls, caching the shader source, and automatically checking for an error
     // when compileShader is invoked.
@@ -21,17 +21,17 @@
         return {errorLine: parseInt(parts[2]), errorMessage: `ERROR: ${parts[3].trim()}`};
     }
 
-    function wrapWebGLRenderingContext(WebGLRenderingContext) {
+    function wrapWebGLRenderingContext(WebGL2RenderingContext) {
         const {
             shaderSource,
             getShaderParameter,
             compileShader,
             COMPILE_STATUS,
             getShaderInfoLog
-        } = WebGLRenderingContext.prototype;
+        } = WebGL2RenderingContext.prototype;
 
         // Cache the source so that we have it available for logging in case of error
-        WebGLRenderingContext.prototype.shaderSource = function (...args) {
+        WebGL2RenderingContext.prototype.shaderSource = function (...args) {
             const shader = args[0];
             const source = args[1];
             shaderCache.set(shader, source);
@@ -39,7 +39,7 @@
             return shaderSource.apply(this, args);
         };
 
-        WebGLRenderingContext.prototype.compileShader = function (shader) {
+        WebGL2RenderingContext.prototype.compileShader = function (shader) {
             const returnValue = compileShader.call(this, shader);
 
             if (!getShaderParameter.call(this, shader, COMPILE_STATUS)) {
@@ -67,5 +67,5 @@
         }
     }
 
-    wrapWebGLRenderingContext(WebGLRenderingContext);
-}(window.WebGLRenderingContext));
+    wrapWebGLRenderingContext(WebGL2RenderingContext);
+}(window.WebGL2RenderingContext));

@@ -118,15 +118,6 @@ USE_ANGLE={INPUT} yarn run test-render
 
 Accepted inputs for `USE_ANGLE` are `metal`, `gl`, `vulkan`, `swiftshader`, and `gles`. See `chrome://flags/#use-angle` for more information on the `--use-angle` flag.
 
-### Enable WebGL 2 configuration on render tests
-
-WebGL 1 context is enabled by default.
-
-To enable usage of WebGL 2, supply value `true` to `USE_WEBGL2` in CLI, e.g.:
-```
-USE_WEBGL2=true yarn run test-render
-```
-
 ### Build Notifications
 
 The terminal window can be very noisy with both the build and the test servers running in the same session.

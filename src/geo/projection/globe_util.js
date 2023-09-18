@@ -563,9 +563,8 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Flo
 export function globeUseCustomAntiAliasing(painter: Painter, context: Context, transform: Transform): boolean {
     const transitionT = globeToMercatorTransition(transform.zoom);
     const useContextAA = painter.style.map._antialias;
-    const hasStandardDerivatives = !!context.extStandardDerivatives;
     const disabled = context.extStandardDerivativesForceOff || (painter.terrain && painter.terrain.exaggeration() > 0.0);
-    return transitionT === 0.0 && !useContextAA && !disabled && hasStandardDerivatives;
+    return transitionT === 0.0 && !useContextAA && !disabled;
 }
 
 export function getGridMatrix(id: CanonicalTileID, bounds: LngLatBounds, latitudinalLod: number, worldSize: number): Mat4 {

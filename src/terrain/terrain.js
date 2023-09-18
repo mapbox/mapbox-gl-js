@@ -572,12 +572,10 @@ export class Terrain extends Elevation {
 
         const getTextureParameters = () => {
             if (this.painter.terrainUseFloatDEM()) {
-                /* $FlowFixMe[cannot-resolve-name] */
-                const gl2 = (context.gl: WebGL2RenderingContext);
                 const image = new Float32Image(
                     {width: 1, height: 1},
                     new Float32Array([min]));
-                return [gl2.R32F, image];
+                return [gl.R32F, image];
             } else {
                 const image = new RGBAImage(
                     {width: 1, height: 1},

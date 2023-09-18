@@ -473,7 +473,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 
         painter.uploadCommonLightUniforms(painter.context, state.program);
 
-        if (context.isWebGL2 && state.hasHalo) {
+        if (state.hasHalo) {
             const uniformValues = ((state.uniformValues: any): UniformValues<SymbolSDFUniformsType>);
             uniformValues['u_is_halo'] = 1;
             drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues, 2);

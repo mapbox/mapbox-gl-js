@@ -8,7 +8,7 @@ import browser from '../../../../src/util/browser.js';
 
 function createMap(t, options) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map(extend({container: DOM.create('div', '', window.document.body), useWebGL2: false, testMode: true}, options));
+    return new Map(extend({container: DOM.create('div', '', window.document.body), testMode: true}, options));
 }
 
 test('MouseRotateHandler#isActive', (t) => {

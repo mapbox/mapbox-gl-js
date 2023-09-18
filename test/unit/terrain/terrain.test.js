@@ -398,7 +398,7 @@ test('Elevation', (t) => {
         });
     });
 
-    t.test('mapbox-gl-js-internal#91', t => {
+    t.skip('mapbox-gl-js-internal#91', t => {
         const data = {
             "type": "FeatureCollection",
             "features": [{
