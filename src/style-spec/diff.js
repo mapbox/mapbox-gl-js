@@ -2,7 +2,7 @@
 
 import isEqual from './util/deep_equal.js';
 
-import type {StyleSpecification, SourceSpecification, LayerSpecification} from './types.js';
+import type {StyleSpecification, ImportSpecification, SourceSpecification, LayerSpecification} from './types.js';
 
 type Sources = { [string]: SourceSpecification };
 
@@ -131,7 +131,17 @@ export const operations: {[_: string]: string} = {
     /*
      *  { command: 'setProjection', args: [projectionProperties] }
      */
-    setProjection: 'setProjection'
+    setProjection: 'setProjection',
+
+    /*
+     *  { command: 'addImport', args: [importProperties] }
+     */
+    addImport: 'addImport',
+
+    /*
+     *  { command: 'removeImport', args: [importId] }
+     */
+    removeImport: 'removeImport'
 };
 
 function addSource(sourceId: string, after: Sources, commands: Array<Command>) {
@@ -335,6 +345,17 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
     }
 }
 
+function diffImports(before: Array<ImportSpecification> = [], after: Array<ImportSpecification> = [], commands: Array<Command>) {
+    // no diff for the imports, must remove then add
+    for (const beforeImport of before) {
+        commands.push({command: operations.removeImport, args: [beforeImport.id]});
+    }
+
+    for (const afterImport of after) {
+        commands.push({command: operations.addImport, args: [afterImport]});
+    }
+}
+
 /**
  * Diff two stylesheet
  *
@@ -445,6 +466,8 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         // Handle changes to `layers`
         diffLayers(beforeLayers, after.layers, commands);
 
+        // Handle changes to `imports`
+        diffImports(before.imports, after.imports, commands);
     } catch (e) {
         // fall back to setStyle
         console.warn('Unable to compute style diff:', e);

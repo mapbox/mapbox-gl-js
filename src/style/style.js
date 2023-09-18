@@ -123,6 +123,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setCamera'
     // 'setGlyphs',
     // 'setSprite',
+    // 'addImport',
+    // 'removeImport',
 ]);
 
 const ignoredDiffOperations = pick(diffOperations, [
