@@ -5237,7 +5237,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -5547,8 +5550,9 @@
         ]
       },
       "transition": true,
-      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings.",
       "requires": [
+        "lights",
         "fill-extrusion-edge-radius"
       ],
       "sdk-support": {
@@ -5571,7 +5575,10 @@
         ]
       },
       "transition": true,
-      "doc": "The extent of the ambient occlusion effect on the ground beneath the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "The extent of the ambient occlusion effect on the ground beneath the extruded buildings in meters.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -5586,7 +5593,10 @@
       "default": 0.69,
       "minimum": 0.0,
       "maximum": 1.0,
-      "doc": "Provides a control to futher fine-tune the look of the ambient occlusion on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Provides a control to futher fine-tune the look of the ambient occlusion on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5606,7 +5616,10 @@
       "property-type": "data-constant",
       "type": "color",
       "default": "#ffffff",
-      "doc": "The color of the flood light effect on the walls of the extruded buildings. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "The color of the flood light effect on the walls of the extruded buildings.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5629,7 +5642,10 @@
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
-      "doc": "The intensity of the flood light color. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "The intensity of the flood light color.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5652,7 +5668,10 @@
       "units": "meters",
       "default": 0,
       "minimum": 0,
-      "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5680,7 +5699,10 @@
       "units": "meters",
       "default": 0,
       "minimum": 0,
-      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -5708,7 +5730,10 @@
       "default": 0.69,
       "minimum": 0.0,
       "maximum": 1.0,
-      "doc": "Provides a control to futher fine-tune the look of the flood light on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Provides a control to futher fine-tune the look of the flood light on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother.",
+      "requires": [
+        "lights"
+      ],
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -6163,7 +6188,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6577,7 +6605,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6789,7 +6820,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -6817,7 +6851,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -7796,7 +7833,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
