@@ -1,0 +1,95 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0021
+    }
+  },
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 1.3
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.04
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.8,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "direction": [210, 60]
+      }
+    }
+  ],
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "maxzoom": 14,
+      "tileSize": 512,
+      "tiles": ["local://models/dem/{z}-{x}-{y}.terrain.png"]
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+
+  "pitch": 79.00,
+  "zoom": 17.37,
+  "bearing": 32,
+  "center": [
+    2.327507,
+    48.862515
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"]
+      }
+    }
+  ]
+}

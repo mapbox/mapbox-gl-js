@@ -539,10 +539,12 @@ class SourceCache extends Evented {
 
         if (idealTileIDs.length > 0 && this.castsShadows && directionalLight && this.transform.projection.name !== 'globe') {
             // Extend the set of ideal tiles with potential shadow casters
-            const idealZoom = transform.coveringZoomLevel({
+            const coveringZoom = transform.coveringZoomLevel({
                 tileSize: tileSize || this._source.tileSize,
                 roundZoom: this._source.roundZoom && !updateForTerrain
             });
+
+            const idealZoom = Math.min(coveringZoom, this._source.minzoom);
 
             const shadowCasterTileIDs = transform.extendTileCoverForShadows(idealTileIDs, directionalLight, idealZoom);
 
