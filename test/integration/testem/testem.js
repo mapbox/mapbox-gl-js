@@ -5,6 +5,7 @@ const chokidar = require('chokidar');
 const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
+const os = require('os');
 const {injectMiddlewares} = require('../lib/middlewares.cjs');
 
 // hack to be able to import ES modules inside a CommonJS one
@@ -210,6 +211,10 @@ module.exports = async function() {
                 throw new Error(`Unknown value for 'use-angle': '${process.env.USE_ANGLE}'. Should be one of: ${angleBackends.join(', ')}.`);
             }
             browserFlags.push(`--use-angle=${process.env.USE_ANGLE}`);
+        }
+        // Workaround to force hardware acceleration for Virtualized Apple Silicon CI runners
+        if (ci && os.platform() === 'darwin' && os.arch() === 'arm64') {
+            browserFlags.push("--ignore-gpu-blocklist");
         }
     }
     if (browserFlags) {
