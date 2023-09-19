@@ -413,7 +413,8 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
         const ao = [aoIntensity, aoRadius * meterToTile];
         const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;
-        const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile);
+        const fbSize = framebufferCopyTexture ? framebufferCopyTexture.size[0] : 0;
+        const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile, fbSize);
 
         const dynamicBuffers = [];
         if (replacementActive) dynamicBuffers.push(groundEffect.hiddenByLandmarkVertexBuffer);

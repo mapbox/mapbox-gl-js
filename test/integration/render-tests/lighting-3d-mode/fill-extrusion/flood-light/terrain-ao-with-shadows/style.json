@@ -9,7 +9,7 @@
           ["wait"],
           ["setTerrain", {
             "source": "mapbox-dem",
-            "exaggeration": 1.3
+            "exaggeration": 0
           }],
           ["wait"]
         ]

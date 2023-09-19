@@ -4,12 +4,12 @@
       "test": {
         "width": 512,
         "height": 512,
-        "allowed": 0.0006,
+        "allowed": 0.00079,
         "operations": [
           ["wait"],
           ["setTerrain", {
             "source": "mapbox-dem",
-            "exaggeration": 1.3
+            "exaggeration": 0
           }],
           ["wait"]
         ]

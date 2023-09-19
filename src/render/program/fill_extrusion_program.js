@@ -79,7 +79,8 @@ export type FillExtrusionGroundEffectUniformsType = {|
     'u_flood_light_color': Uniform3f,
     'u_attenuation': Uniform1f,
     'u_edge_radius': Uniform1f,
-    'u_fb': Uniform1i
+    'u_fb': Uniform1i,
+    'u_fb_size': Uniform1f
 |};
 
 const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
@@ -145,7 +146,8 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_flood_light_color': new Uniform3f(context),
     'u_attenuation': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
-    'u_fb': new Uniform1i(context)
+    'u_fb': new Uniform1i(context),
+    'u_fb_size': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create();
@@ -260,7 +262,8 @@ const fillExtrusionGroundEffectUniformValues = (
     floodLightIntensity: number,
     floodLightColor: [number, number, number],
     attenuation: number,
-    edgeRadius: number
+    edgeRadius: number,
+    fbSize: number
 ): UniformValues<FillExtrusionGroundEffectUniformsType> => {
     const uniformValues = {
         'u_matrix': matrix,
@@ -272,7 +275,8 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_flood_light_color': floodLightColor,
         'u_attenuation': attenuation,
         'u_edge_radius': edgeRadius,
-        'u_fb': 0
+        'u_fb': 0,
+        'u_fb_size': fbSize
     };
     return uniformValues;
 };

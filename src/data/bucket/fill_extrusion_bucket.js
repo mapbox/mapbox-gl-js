@@ -740,9 +740,8 @@ class FillExtrusionBucket implements Bucket {
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness: ?number) {
-        const aoRadius = this.layers[0].paint.get('fill-extrusion-ambient-occlusion-ground-radius');
         const floodLightRadius = this.layers[0].paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
-        const maxRadius = Math.max(aoRadius, floodLightRadius) / this.tileToMeter;
+        const maxRadius = floodLightRadius / this.tileToMeter;
 
         const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
