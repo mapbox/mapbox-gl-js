@@ -822,7 +822,7 @@ class Style extends Evented {
         if (!this.imageManager.isLoaded())
             return false;
 
-        if (this.stylesheet.models && !this.modelManager.isLoaded())
+        if (!this.modelManager.isLoaded())
             return false;
 
         for (const {style} of this.imports) {

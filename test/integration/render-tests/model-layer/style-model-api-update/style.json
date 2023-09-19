@@ -7,10 +7,8 @@
       "operations": [
         ["addModel", "tree", "./models/tree.glb"],
         ["wait"],
-        ["sleep", 500],
         ["addModel", "tree", "./models/nested-cubes.glb"],
-        ["wait"],
-        ["sleep", 500]
+        ["wait"]
       ]
     }
   },

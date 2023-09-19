@@ -7,14 +7,11 @@
       "operations": [
         ["addModel", "tree-diffuse", "./models/tree.glb"],
         ["wait"],
-        ["sleep", 500],
         ["addModel", "tree", "./models/tree-metallic.glb"],
         ["wait"],
-        ["sleep", 500],
         ["removeModel", "tree-diffuse"],
         ["addModel", "tree-diffuse", "./models/tree-no-material.glb"],
         ["wait"],
-        ["sleep", 500],
         ["setPaintProperty", "tree-layer-combined", "model-opacity", 0.0],
         ["wait"]
       ]

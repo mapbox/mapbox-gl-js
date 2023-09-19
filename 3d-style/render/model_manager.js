@@ -16,14 +16,14 @@ import type {ModelsSpecification} from '../../src/style-spec/types.js';
 
 class ModelManager extends Evented {
     models: {[scope: string]: {[id: string]: Model}};
-    loaded: {[scope: string]: boolean};
+    numModelsLoading: {[scope: string]: number};
     requestManager: RequestManager;
 
     constructor(requestManager: RequestManager) {
         super();
         this.requestManager = requestManager;
         this.models = {'': {}};
-        this.loaded = {};
+        this.numModelsLoading = {};
     }
 
     async loadModel(id: string, url: string): Promise<Model> {
@@ -36,19 +36,22 @@ class ModelManager extends Evented {
 
     async load(modelUris: {[string]: string}, scope: string) {
         if (!this.models[scope]) this.models[scope] = {};
-        this.loaded[scope] = false;
+        if (this.numModelsLoading[scope] === undefined) this.numModelsLoading[scope] = 0;
+
         for (const modelId in modelUris) {
             const modelUri = modelUris[modelId];
+            this.numModelsLoading[scope] += 1;
             const model = await this.loadModel(modelId, modelUri);
+            this.numModelsLoading[scope] -= 1;
             this.models[scope][modelId] = model;
         }
-        this.loaded[scope] = true;
+
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
     isLoaded(): boolean {
-        for (const loaded in this.loaded) {
-            if (!this.loaded[loaded]) return false;
+        for (const scope in this.numModelsLoading) {
+            if (this.numModelsLoading[scope] > 0) return false;
         }
         return true;
     }

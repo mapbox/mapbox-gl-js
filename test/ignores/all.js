@@ -30,13 +30,6 @@ const todo = [
     // Requires complete landmark rendering support such as shadows and materials
     "render-tests/model-layer/landmark-conflation-buckingham",
 
-    // Flaky
-    // https://mapbox.atlassian.net/browse/MAPS3D-978
-    "render-tests/model-layer/landmark-mbx",
-    "render-tests/model-layer/model-runtime-api",
-    "render-tests/model-layer/style-model-api-add",
-    "render-tests/model-layer/style-model-api-update",
-
     // https://mapbox.atlassian.net/browse/MAPS3D-987
     "render-tests/model-layer/landmark-shadows-terrain"
 ];
