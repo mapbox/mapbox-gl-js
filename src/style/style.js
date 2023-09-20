@@ -165,6 +165,7 @@ export type StyleImport = {|
 |};
 
 const MAX_IMPORT_DEPTH = 5;
+const defaultTransition = {duration: 300, delay: 0};
 
 // Symbols are draped only on native and for certain cases only
 const drapedLayers = new Set(['fill', 'line', 'background', "hillshade", "raster"]);
@@ -227,6 +228,7 @@ class Style extends Evented {
     _brightness: ?number;
     _configDependentLayers: Set<string>;
     _buildingIndex: BuildingIndex;
+    _transition: TransitionSpecification;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -302,6 +304,7 @@ class Style extends Evented {
         this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
         this._buildingIndex = new BuildingIndex(this);
+        this._transition = extend({}, defaultTransition);
 
         this.options = options.config || new Map();
         this._configDependentLayers = new Set();
@@ -438,6 +441,9 @@ class Style extends Evented {
 
                 if (style.fog != null)
                     this.fog = style.fog;
+
+                if (style._transition != null)
+                    this.setTransition(style._transition);
             }
 
             this.dispatcher.broadcast('setLayers', {
@@ -625,6 +631,10 @@ class Style extends Evented {
 
         if (this.stylesheet.fog) {
             this._createFog(this.stylesheet.fog);
+        }
+
+        if (this.stylesheet.transition) {
+            this.setTransition(this.stylesheet.transition);
         }
 
         // Given a stylesheet, in order of priority, we select:
@@ -1913,8 +1923,12 @@ class Style extends Evented {
         return sourceCaches[0].getFeatureState(sourceLayer, target.id);
     }
 
+    setTransition(transition: TransitionSpecification | void) {
+        this._transition = extend({}, defaultTransition, this._transition, transition);
+    }
+
     getTransition(): TransitionSpecification {
-        return extend({duration: 300, delay: 0}, this.stylesheet && this.stylesheet.transition);
+        return extend({}, this._transition);
     }
 
     serialize(): StyleSpecification {
@@ -1932,6 +1946,7 @@ class Style extends Evented {
             metadata: this.stylesheet.metadata,
             imports: this.stylesheet.imports,
             light: this.stylesheet.light,
+            lights: this.stylesheet.lights,
             terrain: this.getTerrain() || undefined,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,

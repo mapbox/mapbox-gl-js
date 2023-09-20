@@ -1372,6 +1372,30 @@ test('Projection', (t) => {
     t.end();
 });
 
+test('Transition', (t) => {
+    t.test('Fallback to the fragment transition options', (t) => {
+        const style = new Style(new StubMap());
+
+        style.on('style.load', () => {
+            t.deepEqual(style.getTransition(), {duration: 900, delay: 200}, 'Returns the fragment transition options');
+
+            style.setTransition({duration: 0, delay: 0});
+            t.deepEqual(style.getTransition(), {duration: 0, delay: 0}, 'Returns the user-defined transition options');
+
+            t.end();
+        });
+
+        style.loadJSON(createStyleJSON({
+            transition: {duration: 600, delay: 100},
+            imports: [{id: 'standard', url: '/standard.json', data: createStyleJSON({
+                transition: {duration: 900, delay: 200},
+            })}]
+        }));
+    });
+
+    t.end();
+});
+
 test('Glyphs', (t) => {
     t.test('fallbacks to the default glyphs URL', (t) => {
         const style = new Style(new StubMap());
