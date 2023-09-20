@@ -1,6 +1,32 @@
-## 3.0.0-beta.2
+## 3.0.0-beta.3
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.1`:
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.2`:
+
+### ✨ Features and improvements
+
+- ⚠️ Breaking: drop support for WebGL 1. WebGL 2 support is now required to use GL JS v3 (thankfully it is now [universally supported](https://caniuse.com/webgl2) across browsers).
+- Add support for fading out 3D layers in the distance with `fill-extrusion-cutoff-fade-range` and `model-cutoff-fade-range` style properties.
+- Add support for controlling the vertical fog range with `vertical-range` style property.
+- Add support for elevating symbols over buildings & other 3D layers with `symbol-z-elevate` style property.
+- Improve rendering performance of the new 3D features (shadows, models and the new lighting model).
+
+### Bug fixes 🐞
+
+- Fix issues with light transitions when using `map` `setLights` or `setConfigProperty`.
+- Fix issues with shadows popping in abruptly when moving the map.
+- Fix a bug with horizon rendering on Windows/NVidia.
+- Fix `map` `transformRequest` option not being applied to model URLs.
+- Fix an edge case when rendering ground flood effect on very large buildings.
+- Fix an issue that could cause `GL_INVALID_OPERATION: Vertex buffer is not big enough for the draw call` warnings in certain map views.
+- Fix an issue with rendering of mipmapped non-square textures on models.
+- Fix an issue with light-dependent expressions not being re-evaluated on features without IDs.
+- Fix `visibility` not being re-evaluated when using `setConfigProperty`.
+- Fix various issues when calling `setStyle` on a map with style imports.
+- Accessibility fixes: remove `tabindex` when the map is not interactive; remove `role="list"` from the attribution control; add `role="img"` to markers (h/t [@kumiko-haraguchi](https://github.com/kumiko-haraguchi) and [@aviroopjana](https://github.com/aviroopjana)).
+- Fix an issue with styles not inheriting `transition` options from imports.
+- Fix an issue where an error loading Draco decompression library from CDN wasn't handled gracefully.
+
+## 3.0.0-beta.2
 
 ### ✨ Features and improvements
 
