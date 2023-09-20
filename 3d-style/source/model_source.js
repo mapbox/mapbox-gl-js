@@ -1,6 +1,6 @@
 // @flow
 
-import {Evented, Event} from '../../src/util/evented.js';
+import {Evented, ErrorEvent, Event} from '../../src/util/evented.js';
 import type {Source} from '../../src/source/source.js';
 import type Tile from '../../src/source/tile.js';
 import type {Callback} from '../../src/types/callback.js';
@@ -48,7 +48,12 @@ class ModelSource extends Evented implements Source {
         /* $FlowIgnore[prop-missing] we don't need the full spec of model_source as it's only used for testing*/
         for (const modelId in this._options.models) {
             const modelSpec = this._options.models[modelId];
-            const gltf = await loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url);
+            const gltf = await loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).catch((err) => {
+                this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${err.message}`)));
+            });
+
+            if (!gltf) continue;
+
             const nodes = convertModel(gltf);
             const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
             model.computeBoundsAndApplyParent();

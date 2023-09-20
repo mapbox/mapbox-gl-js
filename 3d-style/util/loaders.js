@@ -68,7 +68,7 @@ async function waitForLoaders() {
     loadingPromise = undefined;
 }
 
-export async function loadGLTF(url: string): Promise<any> {
+export async function loadGLTF(url: string): Promise<?Object> {
     await waitForLoaders();
     return mapboxglLoaders.load(url, mapboxglLoaders.GLTFLoader, {
         gltf: {
@@ -79,7 +79,7 @@ export async function loadGLTF(url: string): Promise<any> {
     });
 }
 
-export async function load3DTile(data: ArrayBuffer): Promise<any> {
+export async function load3DTile(data: ArrayBuffer): Promise<?Object> {
     await waitForLoaders();
     return mapboxglLoaders.parse(data, mapboxglLoaders.Tiles3DLoader, {
         worker: false,

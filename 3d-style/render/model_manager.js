@@ -1,6 +1,6 @@
 // @flow
 
-import {Event, Evented} from '../../src/util/evented.js';
+import {Event, ErrorEvent, Evented} from '../../src/util/evented.js';
 import assert from 'assert';
 
 import Model from '../data/model.js';
@@ -26,8 +26,13 @@ class ModelManager extends Evented {
         this.numModelsLoading = {};
     }
 
-    async loadModel(id: string, url: string): Promise<Model> {
-        const gltf = await loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url);
+    async loadModel(id: string, url: string): Promise<?Model> {
+        const gltf = await loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url).catch((err) => {
+            this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}: ${err.message}`)));
+        });
+
+        if (!gltf) return;
+
         const nodes = convertModel(gltf);
         const model = new Model(id, undefined, undefined, nodes);
         model.computeBoundsAndApplyParent();
@@ -43,7 +48,7 @@ class ModelManager extends Evented {
             this.numModelsLoading[scope] += 1;
             const model = await this.loadModel(modelId, modelUri);
             this.numModelsLoading[scope] -= 1;
-            this.models[scope][modelId] = model;
+            if (model) this.models[scope][modelId] = model;
         }
 
         this.fire(new Event('data', {dataType: 'style'}));

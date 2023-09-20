@@ -50,14 +50,17 @@ class Tiled3dWorkerTile {
         this.brightness = brightness;
     }
 
-    async parse(data: ArrayBuffer, layerIndex: StyleLayerIndex, params: WorkerTileParameters, callback: WorkerTileCallback) {
+    async parse(data: ArrayBuffer, layerIndex: StyleLayerIndex, params: WorkerTileParameters, callback: WorkerTileCallback): Promise<void> {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         const buckets: {[_: string]: Bucket} = {};
         const layerFamilies = layerIndex.familiesBySource[params.source];
         const featureIndex = new FeatureIndex(tileID, params.promoteId);
         featureIndex.bucketLayerIDs = [];
-        const b3dm = await load3DTile(data);
+
+        const b3dm = await load3DTile(data).catch((err) => callback(new Error(err.message)));
+        if (!b3dm) return callback(new Error('Could not parse tile'));
+
         const nodes = convertB3dm(b3dm.gltf, 1.0 / tileToMeter(params.tileID.canonical));
         const hasMapboxMeshFeatures = b3dm.gltf.json.extensionsUsed && b3dm.gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
         for (const sourceLayerId in layerFamilies) {
@@ -111,9 +114,16 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 return callback();
             }
 
-            workerTile.parse(data, this.layerIndex, params, callback);
-            this.loaded = this.loaded || {};
-            this.loaded[uid] = workerTile;
+            const workerTileCallback = (err: ?Error, result: ?WorkerTileResult) => {
+                workerTile.status = 'done';
+                this.loaded = this.loaded || {};
+                this.loaded[uid] = workerTile;
+
+                if (err || !result) callback(err);
+                else callback(null, result);
+            };
+
+            workerTile.parse(data, this.layerIndex, params, workerTileCallback);
         });
     }
 
