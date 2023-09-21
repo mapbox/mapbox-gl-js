@@ -5,6 +5,7 @@
       "width": 128,
       "height": 64,
       "operations": [
+        ["setProjection", "globe"],
         ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
         ["wait"],
         ["setFog", {}],
@@ -13,9 +14,6 @@
         ["setSize", 128, 1024]
       ]
     }
-  },
-  "projection": {
-    "name": "globe"
   },
   "center": [
     -179,
