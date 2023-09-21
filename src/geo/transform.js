@@ -851,71 +851,45 @@ class Transform {
             }
         }
 
-        let finished = false;
-
-        while (!finished) {
-            const subdivIds = [];
-
-            // Remove duplicates from new ids
-            if (out.length > 1) {
-                out.sort((a, b) => {
-                    return a.overscaledZ - b.overscaledZ ||
+        // Remove duplicates from new ids
+        if (out.length > 1) {
+            out.sort((a, b) => {
+                return a.overscaledZ - b.overscaledZ ||
                         a.wrap - b.wrap ||
                         a.canonical.z - b.canonical.z ||
                         a.canonical.x - b.canonical.x ||
                         a.canonical.y - b.canonical.y;
-                });
+            });
 
-                let i = 0;
-                let j = 0;
-                while (j < out.length) {
-                    if (!out[j].equals(out[i])) {
-                        out[++i] = out[j++];
-                    } else {
-                        ++j;
-                    }
-                }
-                out.length = i + 1;
-            }
-
-            // Remove higher zoom new IDs that overlap with other new IDs
-            const nonOverlappingIds = [];
-
-            for (const id of out) {
-                if (!out.some(ancestorCandidate => id.isChildOf(ancestorCandidate))) {
-                    nonOverlappingIds.push(id);
+            let i = 0;
+            let j = 0;
+            while (j < out.length) {
+                if (!out[j].equals(out[i])) {
+                    out[++i] = out[j++];
+                } else {
+                    ++j;
                 }
             }
+            out.length = i + 1;
+        }
 
-            // Remove new IDs that overlap with old IDs
-            out = nonOverlappingIds.filter(newId => !coveringTiles.some(oldId => {
-                // Subdivide parents of existing IDs
-                if (newId.overscaledZ < maxZoom && oldId.isChildOf(newId)) {
-                    for (let x = 0; x < 2; ++x) {
-                        for (let y = 0; y < 2; ++y) {
-                            const id = new OverscaledTileID(newId.overscaledZ + 1,
-                                                            newId.wrap,
-                                                            newId.canonical.z + 1,
-                                                            newId.canonical.x * 2 + x,
-                                                            newId.canonical.y * 2 + y);
-                            if (!id.equals(oldId)) {
-                                subdivIds.push(id);
-                            }
-                        }
-                    }
-                    return true;
-                }
+        // Remove higher zoom new IDs that overlap with other new IDs
+        const nonOverlappingIds = [];
 
-                // Remove identical IDs or children of existing IDs
-                return newId.equals(oldId) || newId.isChildOf(oldId);
-            }));
-
-            if (subdivIds.length > 0) {
-                out.push(...subdivIds);
-            } else {
-                finished = true;
+        for (const id of out) {
+            if (!out.some(ancestorCandidate => id.isChildOf(ancestorCandidate))) {
+                nonOverlappingIds.push(id);
             }
         }
+
+        // Remove new IDs that overlap with old IDs
+        out = nonOverlappingIds.filter(newId => !coveringTiles.some(oldId => {
+            if (newId.overscaledZ < maxZoom && oldId.isChildOf(newId)) {
+                return true;
+            }
+            // Remove identical IDs or children of existing IDs
+            return newId.equals(oldId) || newId.isChildOf(oldId);
+        }));
 
         return out;
     }

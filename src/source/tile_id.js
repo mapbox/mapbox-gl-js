@@ -108,6 +108,7 @@ export class OverscaledTileID {
         // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.overscaledZ === 0 || (
             parent.overscaledZ < this.overscaledZ &&
+                parent.canonical.z < this.canonical.z &&
                 parent.canonical.x === (this.canonical.x >> zDifference) &&
                 parent.canonical.y === (this.canonical.y >> zDifference));
     }

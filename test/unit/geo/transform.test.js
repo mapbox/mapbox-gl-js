@@ -577,10 +577,6 @@ test('transform', (t) => {
             t.strictSame(shadowCasterTiles, [
                 new OverscaledTileID(3, -1, 3, 7, 0),
                 new OverscaledTileID(3, -1, 3, 7, 1),
-                new OverscaledTileID(4, 0, 4, 0, 3),
-                new OverscaledTileID(4, 0, 4, 2, 3),
-                new OverscaledTileID(4, 0, 4, 3, 2),
-                new OverscaledTileID(4, 0, 4, 3, 3),
                 new OverscaledTileID(5, 0, 5, 1, 8),
                 new OverscaledTileID(5, 0, 5, 2, 8),
                 new OverscaledTileID(5, 0, 5, 3, 8)

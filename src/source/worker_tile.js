@@ -122,12 +122,21 @@ class WorkerTile {
 
             let anySymbolLayers = false;
             let anyOtherLayers = false;
+            let any3DLayer = false;
+
             for (const family of layerFamilies[sourceLayerId]) {
                 if (family[0].type === 'symbol') {
                     anySymbolLayers = true;
                 } else {
                     anyOtherLayers = true;
                 }
+                if (family[0].is3D() && family[0].type !== 'model') {
+                    any3DLayer = true;
+                }
+            }
+
+            if (this.extraShadowCaster && !any3DLayer) {
+                continue;
             }
 
             if (this.isSymbolTile === true && !anySymbolLayers) {

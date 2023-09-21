@@ -517,6 +517,7 @@ class SourceCache extends Evented {
         this._coveredTiles = {};
 
         let idealTileIDs;
+
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
         } else if (this._source.tileID) {
@@ -537,17 +538,18 @@ class SourceCache extends Evented {
             }
         }
 
-        if (idealTileIDs.length > 0 && this.castsShadows && directionalLight && this.transform.projection.name !== 'globe') {
-            // Extend the set of ideal tiles with potential shadow casters
+        if (idealTileIDs.length > 0 && this.castsShadows &&
+            directionalLight && this.transform.projection.name !== 'globe' &&
+            !this.usedForTerrain && !isRasterType(this._source.type)) {
+            // compute desired max zoom level
             const coveringZoom = transform.coveringZoomLevel({
                 tileSize: tileSize || this._source.tileSize,
                 roundZoom: this._source.roundZoom && !updateForTerrain
             });
+            const idealZoom = Math.min(coveringZoom, this._source.maxzoom);
 
-            const idealZoom = Math.min(coveringZoom, this._source.minzoom);
-
+            // find shadowCasterTiles
             const shadowCasterTileIDs = transform.extendTileCoverForShadows(idealTileIDs, directionalLight, idealZoom);
-
             for (const id of shadowCasterTileIDs) {
                 this._shadowCasterTiles[id.key] = true;
                 idealTileIDs.push(id);
