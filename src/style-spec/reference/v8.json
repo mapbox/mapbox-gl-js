@@ -5481,8 +5481,7 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state",
-          "measure-light"
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -5516,8 +5515,7 @@
         "parameters": [
           "zoom",
           "feature",
-          "feature-state",
-          "measure-light"
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
