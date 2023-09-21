@@ -6,6 +6,7 @@ import type Map from '../../ui/map.js';
 import assert from 'assert';
 import type {ValidationErrors} from '../validate_style.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
+import SourceCache from '../../source/source_cache.js';
 
 type CustomRenderMethod = (gl: WebGL2RenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number, centerInMercator: ?Array<number>, pixelsPerMeterRatio: ?number) => void;
 
@@ -206,7 +207,7 @@ class CustomStyleLayer extends StyleLayer {
         return this.implementation.prerender !== undefined;
     }
 
-    isLayerDraped(): boolean {
+    isLayerDraped(_: ?SourceCache): boolean {
         return this.implementation.renderToTile !== undefined;
     }
 

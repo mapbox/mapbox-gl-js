@@ -49,6 +49,46 @@ map.on('style.load', function() {
         "maxzoom": 14
     });
 
+    map.addSource('northPole', {
+        "type": "image",
+        "url": "/test/integration/image/pole.png",
+        "coordinates": [
+            [-180.0, 90.0],
+            [180.0, 90.0],
+            [180.0, 85.0],
+            [-180.0, 85.0]
+        ]
+    });
+
+    map.addSource('southPole', {
+        "type": "image",
+        "url": "/test/integration/image/pole.png",
+        "coordinates": [
+            [-180.0, -90.0],
+            [180.0, -90.0],
+            [180.0, -85.0],
+            [-180.0, -85.0]
+        ]
+    });
+
+    map.addLayer({
+        "id": "northPole",
+        "type": "raster",
+        "source": "northPole",
+        "paint": {
+            "raster-resampling": "nearest"
+        }
+    });
+
+    map.addLayer({
+        "id": "southPole",
+        "type": "raster",
+        "source": "southPole",
+        "paint": {
+            "raster-resampling": "nearest"
+        }
+    });
+
     map.setFog({});
     map.setLights([
         {

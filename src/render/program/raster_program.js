@@ -15,6 +15,8 @@ import type RasterStyleLayer from '../../style/style_layer/raster_style_layer.js
 
 export type RasterUniformsType = {|
     'u_matrix': UniformMatrix4f,
+    'u_normalize_matrix': UniformMatrix4f,
+    'u_globe_matrix': UniformMatrix4f,
     'u_tl_parent': Uniform2f,
     'u_scale_parent': Uniform1f,
     'u_fade_t': Uniform1f,
@@ -36,6 +38,8 @@ export type RasterDefinesType = 'RASTER_COLOR';
 
 const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
+    'u_normalize_matrix': new UniformMatrix4f(context),
+    'u_globe_matrix': new UniformMatrix4f(context),
     'u_tl_parent': new Uniform2f(context),
     'u_scale_parent': new Uniform1f(context),
     'u_fade_t': new Uniform1f(context),
@@ -55,6 +59,8 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
 
 const rasterUniformValues = (
     matrix: Float32Array,
+    normalizeMatrix: Float32Array,
+    globeMatrix: Float32Array,
     parentTL: [number, number],
     parentScaleBy: number,
     fade: {mix: number, opacity: number},
@@ -65,6 +71,8 @@ const rasterUniformValues = (
     colorRange: [number, number]
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
+    'u_normalize_matrix': normalizeMatrix,
+    'u_globe_matrix': globeMatrix,
     'u_tl_parent': parentTL,
     'u_scale_parent': parentScaleBy,
     'u_fade_t': fade.mix,

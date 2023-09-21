@@ -11,6 +11,8 @@ import type {PaintProps} from './raster_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
 import type {Expression} from '../../style-spec/expression/expression.js';
+import ImageSource from '../../source/image_source.js';
+import SourceCache from '../../source/source_cache.js';
 
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -32,6 +34,15 @@ class RasterStyleLayer extends StyleLayer {
     hasColorMap(): boolean {
         const expr = this._transitionablePaint._values['raster-color'].value;
         return !!expr.value;
+    }
+
+    isLayerDraped(sourceCache: ?SourceCache): boolean {
+        // Special handling for raster, where the drapeability depends on the source
+        // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)
+        if (sourceCache && sourceCache._source instanceof ImageSource && (sourceCache._source.onNorthPole || sourceCache._source.onSouthPole)) {
+            return false;
+        }
+        return true;
     }
 
     _handleSpecialPaintPropertyUpdate(name: string) {

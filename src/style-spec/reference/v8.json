@@ -930,7 +930,7 @@
     },
     "coordinates": {
       "required": true,
-      "doc": "Corners of image specified in longitude, latitude pairs.",
+      "doc": "Corners of image specified in longitude, latitude pairs. Note: When using globe projection, the image will be centered at the North or South Pole in the respective hemisphere if the average latitude value exceeds 85 degrees or falls below -85 degrees.",
       "type": "array",
       "length": 4,
       "value": {

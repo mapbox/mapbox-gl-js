@@ -189,6 +189,8 @@ class Painter {
     firstLightBeamLayer: number;
     longestCutoffRange: number;
     minCutoffZoom: number;
+    renderDefaultNorthPole: boolean;
+    renderDefaultSouthPole: boolean;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -220,6 +222,8 @@ class Painter {
         this._shadowRenderer = new ShadowRenderer(this);
 
         this._wireframeDebugCache = new WireframeDebugCache();
+        this.renderDefaultNorthPole = true;
+        this.renderDefaultSouthPole = true;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -703,7 +707,7 @@ class Painter {
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
             const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-            if (!(layer.type === 'custom' || layer.isSky()) && !(coords && coords.length)) continue;
+            if (!(layer.type === 'custom' || layer.type === 'raster' || layer.isSky()) && !(coords && coords.length)) continue;
 
             this.renderLayer(this, sourceCache, layer, coords);
         }
@@ -870,7 +874,7 @@ class Painter {
             let selectedSource = null;
             orderedLayers.forEach((layer) => {
                 const sourceCache = style._getLayerSourceCache(layer);
-                if (sourceCache && !layer.isHidden(this.transform.zoom)) {
+                if (sourceCache && !layer.isHidden(this.transform.zoom) && sourceCache.getVisibleCoordinates().length) {
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
                         selectedSource = sourceCache;
                     }
@@ -925,7 +929,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache?: SourceCache, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && !(coords && coords.length)) return;
+        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && layer.type !== 'raster' && !(coords && coords.length)) return;
         this.id = layer.id;
 
         this.gpuTimingStart(layer);

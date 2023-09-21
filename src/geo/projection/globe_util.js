@@ -712,6 +712,8 @@ type GridWithLods = {
 export class GlobeSharedBuffers {
     _poleNorthVertexBuffer: VertexBuffer;
     _poleSouthVertexBuffer: VertexBuffer;
+    _texturedPoleNorthVertexBuffer: VertexBuffer;
+    _texturedPoleSouthVertexBuffer: VertexBuffer;
     _poleIndexBuffer: IndexBuffer;
     _poleSegments: Array<SegmentVector>;
 
@@ -876,6 +878,8 @@ export class GlobeSharedBuffers {
 
         const northVertices = new GlobeVertexArray();
         const southVertices = new GlobeVertexArray();
+        const texturedNorthVertices = new GlobeVertexArray();
+        const texturedSouthVertices = new GlobeVertexArray();
         const polePrimitives = GLOBE_VERTEX_GRID_SIZE;
         const poleVertices = GLOBE_VERTEX_GRID_SIZE + 2;
         this._poleSegments = [];
@@ -886,13 +890,21 @@ export class GlobeSharedBuffers {
 
             northVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 0); // place the tip
             southVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 1);
+            texturedNorthVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 0.5);
+            texturedSouthVertices.emplaceBack(0, -GLOBE_RADIUS, 0, 0.5, 0.5);
 
             for (let i = 0; i <= GLOBE_VERTEX_GRID_SIZE; i++) {
-                const uvX = i / GLOBE_VERTEX_GRID_SIZE;
+                let uvX = i / GLOBE_VERTEX_GRID_SIZE;
+                let uvY = 0.0;
                 const angle = interpolate(0, endAngle, uvX);
                 const [gx, gy, gz] = csLatLngToECEF(POLE_COS, POLE_SIN, angle, GLOBE_RADIUS);
-                northVertices.emplaceBack(gx, gy, gz, uvX, 0);
-                southVertices.emplaceBack(gx, gy, gz, uvX, 1);
+                northVertices.emplaceBack(gx, gy, gz, uvX, uvY);
+                southVertices.emplaceBack(gx, gy, gz, uvX, 1.0 - uvY);
+                const rad = degToRad(angle);
+                uvX = 0.5 + 0.5 * Math.sin(rad);
+                uvY = 0.5 + 0.5 * Math.cos(rad);
+                texturedNorthVertices.emplaceBack(gx, gy, gz, uvX, uvY);
+                texturedSouthVertices.emplaceBack(gx, gy, gz, uvX, 1.0 - uvY);
             }
 
             this._poleSegments.push(SegmentVector.simpleSegment(offset, 0, poleVertices, polePrimitives));
@@ -902,13 +914,20 @@ export class GlobeSharedBuffers {
 
         this._poleNorthVertexBuffer = context.createVertexBuffer(northVertices, globeLayoutAttributes, false);
         this._poleSouthVertexBuffer = context.createVertexBuffer(southVertices, globeLayoutAttributes, false);
+        this._texturedPoleNorthVertexBuffer = context.createVertexBuffer(texturedNorthVertices, globeLayoutAttributes, false);
+        this._texturedPoleSouthVertexBuffer = context.createVertexBuffer(texturedSouthVertices, globeLayoutAttributes, false);
     }
 
     getGridBuffers(latitudinalLod: number, withSkirts: boolean): [VertexBuffer, IndexBuffer, SegmentVector] {
         return [this._gridBuffer, this._gridIndexBuffer, withSkirts ? this._gridSegments[latitudinalLod].withSkirts : this._gridSegments[latitudinalLod].withoutSkirts];
     }
 
-    getPoleBuffers(z: number): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
-        return [this._poleNorthVertexBuffer, this._poleSouthVertexBuffer, this._poleIndexBuffer, this._poleSegments[z]];
+    getPoleBuffers(z: number, textured: boolean): [VertexBuffer, VertexBuffer, IndexBuffer, SegmentVector] {
+        return [
+            textured ? this._texturedPoleNorthVertexBuffer : this._poleNorthVertexBuffer,
+            textured ? this._texturedPoleSouthVertexBuffer : this._poleSouthVertexBuffer,
+            this._poleIndexBuffer,
+            this._poleSegments[z]
+        ];
     }
 }

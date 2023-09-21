@@ -1376,8 +1376,11 @@ export class Terrain extends Elevation {
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
         const imageSource: ImageSource = ((sourceCache.getSource(): any): ImageSource);
+        // Special case where image is rendered outside of the map's bounds (eg. pole caps)
+        const tileID = imageSource.tileID;
+        if (!tileID) return;
 
-        const anchor = new Point(imageSource.tileID.x, imageSource.tileID.y)._div(1 << imageSource.tileID.z);
+        const anchor = new Point(tileID.x, tileID.y)._div(1 << tileID.z);
         // $FlowFixMe[method-unbinding]
         const aabb = imageSource.coordinates.map(MercatorCoordinate.fromLngLat).reduce((acc, coord) => {
             acc.min.x = Math.min(acc.min.x, coord.x - anchor.x);

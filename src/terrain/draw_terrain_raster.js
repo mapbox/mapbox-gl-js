@@ -227,7 +227,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     }
 
     // Render the poles.
-    if (sharedBuffers) {
+    if (sharedBuffers && (painter.renderDefaultNorthPole || painter.renderDefaultSouthPole)) {
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
@@ -238,7 +238,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const topCap = y === 0;
             const bottomCap = y === (1 << z) - 1;
 
-            const [northPoleBuffer, southPoleBuffer, indexBuffer, segment] = sharedBuffers.getPoleBuffers(z);
+            const [northPoleBuffer, southPoleBuffer, indexBuffer, segment] = sharedBuffers.getPoleBuffers(z, false);
 
             if (segment && (topCap || bottomCap)) {
                 const tile = sourceCache.getTile(coord);
@@ -261,10 +261,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
-                if (topCap) {
+                if (topCap && painter.renderDefaultNorthPole) {
                     drawPole(program, northPoleBuffer);
                 }
-                if (bottomCap) {
+                if (bottomCap && painter.renderDefaultSouthPole) {
                     poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
                     drawPole(program, southPoleBuffer);
                 }
