@@ -7401,7 +7401,7 @@
     },
     "raster-color": {
       "type": "color",
-      "doc": "Defines a color map by which to colorize a raster layer, parameterized by the `[\"raster-value\"]` expression and evaluated at 1024 uniformly spaced steps over the range specified by `raster-color-range`.",
+      "doc": "Defines a color map by which to colorize a raster layer, parameterized by the `[\"raster-value\"]` expression and evaluated at 256 uniformly spaced steps over the range specified by `raster-color-range`.",
       "transition": false,
       "sdk-support": {
         "basic functionality": {

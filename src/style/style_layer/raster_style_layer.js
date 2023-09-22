@@ -14,6 +14,8 @@ import type {Expression} from '../../style-spec/expression/expression.js';
 import ImageSource from '../../source/image_source.js';
 import SourceCache from '../../source/source_cache.js';
 
+const COLOR_RAMP_RES = 256;
+
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
@@ -62,9 +64,11 @@ class RasterStyleLayer extends StyleLayer {
             evaluationKey: 'rasterValue',
             image: this.colorRamp,
             clips: [{start, end}],
+            resolution: COLOR_RAMP_RES,
         });
         this.colorRampTexture = null;
     }
 }
 
+export { COLOR_RAMP_RES };
 export default RasterStyleLayer;
