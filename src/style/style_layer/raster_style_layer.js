@@ -70,5 +70,5 @@ class RasterStyleLayer extends StyleLayer {
     }
 }
 
-export { COLOR_RAMP_RES };
+export {COLOR_RAMP_RES};
 export default RasterStyleLayer;

@@ -9,7 +9,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding.js';
 
-import { COLOR_RAMP_RES } from '../../style/style_layer/raster_style_layer.js';
+import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer.js';
 
 import type Context from '../../gl/context.js';
 import type {UniformValues} from '../uniform_binding.js';
