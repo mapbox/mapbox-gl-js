@@ -191,7 +191,8 @@ export class ShadowRenderer {
         this._uniformValues['u_fade_range'] = [this._cascades[1].far * 0.75, this._cascades[1].far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [this.shadowDirection[0], this.shadowDirection[1], this.shadowDirection[2]];
-        this._uniformValues['u_texel_size'] = 1 / shadowMapResolution;
+        this._uniformValues['u_shadow_texel_size'] = 1 / shadowMapResolution;
+        this._uniformValues['u_shadow_map_resolution'] = shadowMapResolution;
         this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
         this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
     }

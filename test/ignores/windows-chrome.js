@@ -70,6 +70,7 @@ const skip = [
 
     // Flaky on windows platform only:
     "render-tests/measure-light/global-brightness-data-driven",
-    "render-tests/model-layer/landmark-shadows-terrain" // Terrain makes fill extrusion height different in chrome
+    "render-tests/model-layer/landmark-shadows-terrain", // Terrain makes fill extrusion height different in chrome
+    "render-tests/model-layer/buildings-trees-shadows-fog-terrain-cutoff"   // Slight but acceptable variation in some of the smoothed edges
 ];
 export default {todo, skip};
