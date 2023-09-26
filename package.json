@@ -43,7 +43,7 @@
     "@babel/eslint-parser": "^7.22.15",
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
-    "@octokit/rest": "^20.0.1",
+    "@octokit/rest": "^20.0.2",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.1",
