@@ -214,6 +214,7 @@ module.exports = async function() {
         }
         // Workaround to force hardware acceleration for Virtualized Apple Silicon CI runners
         if (ci && os.platform() === 'darwin' && os.arch() === 'arm64') {
+            browserFlags.push("--use-angle=metal");
             browserFlags.push("--ignore-gpu-blocklist");
         }
     }

@@ -39,7 +39,8 @@ const todo = [
     "render-tests/globe/globe-transforms/north-pole",
 
     // Debug rendering
-    "render-tests/terrain/wireframe"
+    "render-tests/terrain/wireframe",
+    "render-tests/wireframe/globe-high-exaggeration"
 ];
 
 const skip = [
