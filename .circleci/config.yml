@@ -511,7 +511,7 @@ jobs:
 
   test-render-mac-safari-dev:
     <<: *mac-defaults
-    resource_class: macos.m1.large.gen1
+    resource_class: macos.m1.medium.gen1
     steps:
       - attach_workspace:
           at: ~/
