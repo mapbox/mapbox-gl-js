@@ -130,7 +130,7 @@ class Tile {
     needsDEMTextureUpload: ?boolean;
     request: ?Cancelable;
     texture: any;
-    fbo: ?Framebuffer;
+    hillshadeFBO: ?Framebuffer;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;

@@ -32,6 +32,7 @@ export type PaintProps = {|
     "hillshade-shadow-color": DataConstantProperty<Color>,
     "hillshade-highlight-color": DataConstantProperty<Color>,
     "hillshade-accent-color": DataConstantProperty<Color>,
+    "hillshade-emissive-strength": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -41,6 +42,7 @@ const paint: Properties<PaintProps> = new Properties({
     "hillshade-shadow-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-shadow-color"]),
     "hillshade-highlight-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-highlight-color"]),
     "hillshade-accent-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-accent-color"]),
+    "hillshade-emissive-strength": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-emissive-strength"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

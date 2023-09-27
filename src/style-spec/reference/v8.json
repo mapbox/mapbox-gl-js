@@ -7745,7 +7745,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ]
       },
       "property-type": "data-constant"
@@ -7766,7 +7767,8 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
         ]
       },
       "property-type": "data-constant"
@@ -7787,7 +7789,31 @@
       "expression": {
         "interpolated": true,
         "parameters": [
-          "zoom"
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "hillshade-emissive-strength": {
+      "type": "number",
+      "default": 0.0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
         ]
       },
       "property-type": "data-constant"
