@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.00025
+    }
+  },
+  "sources": {
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+  "pitch": 50.4,
+  "zoom": 19.77,
+  "bearing": 199,
+  "center": [
+    -122.4200,
+    37.7796
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "trees",
+      "layout": {
+        "model-id": [
+          "step",
+          [
+            "zoom"
+          ],
+          "oak-lod",
+          5,
+          "oak"
+        ]
+      },
+      "paint": {
+      }
+    }
+  ],
+  "models": {
+    "oak": "local://models/oak1.glb",
+    "oak-lod": "local://models/oak1-lod2.glb"
+  }
+}
