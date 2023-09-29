@@ -22,13 +22,11 @@ uniform highp float u_edge_radius; // in tile coords
 uniform highp vec2 u_ao;
 
 #pragma mapbox: define highp float flood_light_ground_radius
-#pragma mapbox: define highp float base
 
 const float TANGENT_CUTOFF = 4.0;
 
 void main() {
     #pragma mapbox: initialize highp float flood_light_ground_radius
-    #pragma mapbox: initialize highp float base
 
     vec2 p = a_pos_end.xy;
     vec2 q = floor(a_pos_end.zw * 0.5);
@@ -74,7 +72,6 @@ void main() {
 
     float isFloodlit = float(flood_light_ground_radius > 0.0 && u_flood_light_intensity > 0.0);
     float hidden = mix(1.0 - isFloodlit, isFloodlit, u_ao_pass);
-    hidden += float(base > 0.0); // vertex base is above ground.
     hidden += hidden_by_landmark;
 
     gl_Position = mix(u_matrix * vec4(pos, 1.0), AWAY, float(hidden > 0.0));

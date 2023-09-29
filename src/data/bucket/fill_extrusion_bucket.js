@@ -751,6 +751,8 @@ class FillExtrusionBucket implements Bucket {
         const borderCentroidData = new BorderCentroidData();
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
+        const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
+        const onGround = base <= 0;
         const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
         centroid.height = height;
         centroid.vertexArrayOffset = this.layoutVertexArray.length;
@@ -859,7 +861,7 @@ class FillExtrusionBucket implements Bucket {
                             na = nb;
                         }
 
-                        if ((edgeRadius === 0 || optimiseGround) && !isDuplicate(groundPolyline, q)) {
+                        if (onGround && (edgeRadius === 0 || optimiseGround) && !isDuplicate(groundPolyline, q)) {
                             groundPolyline.push(q);
                         }
 
@@ -879,7 +881,7 @@ class FillExtrusionBucket implements Bucket {
                         }
                     }
 
-                    if (edgeRadius === 0 || optimiseGround) {
+                    if (onGround && (edgeRadius === 0 || optimiseGround)) {
                         if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                             groundPolyline.pop();
                         }
@@ -982,7 +984,7 @@ class FillExtrusionBucket implements Bucket {
 
                         na = nb;
 
-                        if (this.zoom >= 17) {
+                        if (onGround && this.zoom >= 17) {
                             if (!isDuplicate(groundPolyline, p0)) groundPolyline.push(p0);
                             if (!isDuplicate(groundPolyline, p1)) groundPolyline.push(p1);
                         }
@@ -1060,7 +1062,7 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
                 if (isPolygon) topIndex += (ring.length - 1);
-                if (edgeRadius && this.zoom >= 17) {
+                if (onGround && edgeRadius && this.zoom >= 17) {
                     if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                         groundPolyline.pop();
                     }
