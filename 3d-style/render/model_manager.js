@@ -41,15 +41,22 @@ class ModelManager extends Evented {
 
     async load(modelUris: {[string]: string}, scope: string) {
         if (!this.models[scope]) this.models[scope] = {};
-        if (this.numModelsLoading[scope] === undefined) this.numModelsLoading[scope] = 0;
 
-        for (const modelId in modelUris) {
-            const modelUri = modelUris[modelId];
-            this.numModelsLoading[scope] += 1;
-            const model = await this.loadModel(modelId, modelUri);
-            this.numModelsLoading[scope] -= 1;
-            if (model) this.models[scope][modelId] = model;
+        const modelIds = Object.keys(modelUris);
+        this.numModelsLoading[scope] = (this.numModelsLoading[scope] || 0) + modelIds.length;
+
+        const modelLoads = [];
+        for (const modelId of modelIds) {
+            modelLoads.push(this.loadModel(modelId, modelUris[modelId]));
         }
+
+        const results = await Promise.allSettled(modelLoads);
+
+        for (let i = 0; i < results.length; i++) {
+            const {status, value} = results[i];
+            if (status === 'fulfilled' && value) this.models[scope][modelIds[i]] = value;
+        }
+        this.numModelsLoading[scope] -= modelIds.length;
 
         this.fire(new Event('data', {dataType: 'style'}));
     }
