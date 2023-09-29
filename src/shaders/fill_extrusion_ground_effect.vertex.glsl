@@ -24,6 +24,7 @@ uniform highp vec2 u_ao;
 #pragma mapbox: define highp float flood_light_ground_radius
 
 const float TANGENT_CUTOFF = 4.0;
+const float NORM = 32767.0;
 
 void main() {
     #pragma mapbox: initialize highp float flood_light_ground_radius
@@ -37,7 +38,7 @@ void main() {
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
     float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass) + u_edge_radius;
 
-    float angular_offset_factor = a_angular_offset_factor / EXTENT * TANGENT_CUTOFF;
+    float angular_offset_factor = a_angular_offset_factor / NORM * TANGENT_CUTOFF;
     float angular_offset = angular_offset_factor * effect_radius;
 
     float top = 1.0 - start_bottom.y;

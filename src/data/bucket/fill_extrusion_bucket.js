@@ -49,6 +49,7 @@ import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
 const FACTOR = Math.pow(2, 13);
 const TANGENT_CUTOFF = 4;
+const NORM = Math.pow(2, 15) - 1;
 
 const QUAD_VERTS = 4;
 const QUAD_TRIS = 2;
@@ -269,7 +270,7 @@ function concavity(a: Point, b: Point) {
 }
 
 function tanAngleClamped(angle: number) {
-    return Math.min(TANGENT_CUTOFF, Math.max(-TANGENT_CUTOFF, Math.tan(angle))) / TANGENT_CUTOFF * FACTOR;
+    return Math.min(TANGENT_CUTOFF, Math.max(-TANGENT_CUTOFF, Math.tan(angle))) / TANGENT_CUTOFF * NORM;
 }
 
 function getAngularOffsetFactor(na: Point, nb: Point): number {
