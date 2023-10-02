@@ -46,7 +46,7 @@ export default class Worker {
     defaultProjection: Projection;
     isSpriteLoaded: {[mapId: string]: {[scope: string]: boolean}};
     referrer: ?string;
-    loadersUrl: ?string
+    dracoUrl: ?string
     terrain: ?boolean;
     brightness: ?number;
 
@@ -250,8 +250,8 @@ export default class Worker {
         }
     }
 
-    setLoadersUrl(map: string, loadersUrl: string) {
-        this.loadersUrl = loadersUrl;
+    setDracoUrl(map: string, dracoUrl: string) {
+        this.dracoUrl = dracoUrl;
     }
 
     getAvailableImages(mapId: string, scope: string): Array<string> {

@@ -16,7 +16,7 @@ type Config = {|
   RASTER_URL_PREFIX: string,
   ACCESS_TOKEN: ?string,
   MAX_PARALLEL_IMAGE_REQUESTS: number,
-  LOADERS_URL: string,
+  DRACO_URL: string,
   DEFAULT_STYLE: string,
   GLYPHS_URL: string,
 |};
@@ -79,7 +79,7 @@ const config: Config = {
     ACCESS_TOKEN: null,
     DEFAULT_STYLE: 'mapbox://styles/mapbox/standard-beta',
     MAX_PARALLEL_IMAGE_REQUESTS: 16,
-    LOADERS_URL: 'https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl-loaders.js',
+    DRACO_URL: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder_gltf.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
 };
 

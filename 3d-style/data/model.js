@@ -28,7 +28,6 @@ export type Sampler = {
     magFilter: TextureFilter;
     wrapS: TextureWrap;
     wrapT: TextureWrap;
-    mipmaps: boolean
 }
 
 export type ModelTexture = {
@@ -42,14 +41,14 @@ export type PbrMetallicRoughness = {
     baseColorFactor: Color;
     metallicFactor: number;
     roughnessFactor: number;
-    baseColorTexture: ModelTexture;
-    metallicRoughnessTexture: ModelTexture;
+    baseColorTexture: ?ModelTexture;
+    metallicRoughnessTexture: ?ModelTexture;
 }
 
 export type Material = {
-    normalTexture: ModelTexture;
-    occlusionTexture: ModelTexture;
-    emissionTexture: ModelTexture;
+    normalTexture: ?ModelTexture;
+    occlusionTexture: ?ModelTexture;
+    emissionTexture: ?ModelTexture;
     pbrMetallicRoughness: PbrMetallicRoughness;
     emissiveFactor: [number, number, number];
     alphaMode: string;
@@ -306,7 +305,8 @@ export function uploadTexture(texture: ModelTexture, context: Context, useSingle
     // $FlowFixMe[prop-missing]
     const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA;
     if (!texture.uploaded) {
-        texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap: texture.sampler.mipmaps});
+        const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
+        texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});
         texture.uploaded = true;
         texture.image = (null: any);
     }

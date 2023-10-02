@@ -82,6 +82,7 @@ declare module "gl-matrix" {
         fromScaling<T: Mat4>(T, Vec3): T,
         fromTranslation<T: Mat4>(T, Vec3): T,
         fromQuat<T: Mat4>(T, Quat): T,
+        fromRotationTranslationScale<T: Mat4>(T, Quat, Vec3, Vec3): T,
         ortho<T: Mat4>(T, number, number, number, number, number, number): T,
         perspective<T: Mat4>(T, number, number, number, number): T,
         identity<T: Mat4>(T): T,

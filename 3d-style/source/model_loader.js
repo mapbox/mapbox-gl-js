@@ -13,6 +13,8 @@ import {TriangleIndexArray,
     Color3fLayoutArray,
     Color4fLayoutArray
 } from '../../src/data/array_types.js';
+import {GLTF_TO_ARRAY_TYPE, GLTF_COMPONENTS, GLTF_USHORT, GLTF_FLOAT} from '../util/loaders.js';
+
 import Point from '@mapbox/point-geometry';
 import earcut from 'earcut';
 
@@ -21,132 +23,76 @@ import {warnOnce, base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 
-// From https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
-
-/* eslint-disable no-unused-vars */
-const GLTF_BYTE = 5120;
-const GLTF_UBYTE = 5121;
-const GLTF_SHORT = 5122;
-const GLTF_USHORT = 5123;
-const GLTF_UINT = 5125;
-const GLTF_FLOAT = 5126;
-/* eslint-enable */
-
-const ArrayTypes = {
-    "5120": Int8Array,
-    "5121": Uint8Array,
-    "5122": Int16Array,
-    "5123": Uint16Array,
-    "5125": Uint32Array,
-    "5126": Float32Array
-};
-
-const TypeTable = {
-    SCALAR: 1,
-    VEC2: 2,
-    VEC3: 3,
-    VEC4: 4,
-    MAT2: 4,
-    MAT3: 9,
-    MAT4: 16
-};
-
-function convertImages(gltf: Object): Array<TextureImage> {
-
-    const images: TextureImage[] = [];
-    for (const image of gltf.images) {
-        // eslint-disable-next-line no-warning-comments
-        images.push(image);
-    }
-    return images;
-}
-
 function convertTextures(gltf: Object, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
     const gl = window.WebGL2RenderingContext;
-    const samplersDesc = gltf.json.samplers;
     if (gltf.json.textures) {
         for (const textureDesc of gltf.json.textures) {
-            const sampler: Sampler = {magFilter: gl.LINEAR, minFilter: gl.NEAREST, wrapS: gl.REPEAT, wrapT: gl.REPEAT, mipmaps: false};
-
-            if (textureDesc.sampler !== undefined) {
-                if (samplersDesc[textureDesc.sampler].magFilter) {
-                    sampler.magFilter = samplersDesc[textureDesc.sampler].magFilter;
-                }
-                if (samplersDesc[textureDesc.sampler].minFilter) {
-                    sampler.minFilter = samplersDesc[textureDesc.sampler].minFilter;
-                }
-                // Enable mipmaps for mipmap minification filtering
-                if (sampler.minFilter >= gl.NEAREST_MIPMAP_NEAREST) {
-                    sampler.mipmaps = true;
-                }
-                if (samplersDesc[textureDesc.sampler].wrapS) {
-                    sampler.wrapS = samplersDesc[textureDesc.sampler].wrapS;
-                }
-                if (samplersDesc[textureDesc.sampler].wrapT) {
-                    sampler.wrapT = samplersDesc[textureDesc.sampler].wrapT;
-                }
-            }
-            const modelTexture: ModelTexture = {image: images[textureDesc.source], sampler, uploaded: false};
-
-            textures.push(modelTexture);
+            const sampler: Sampler = {
+                magFilter: gl.LINEAR,
+                minFilter: gl.NEAREST,
+                wrapS: gl.REPEAT,
+                wrapT: gl.REPEAT
+            };
+            if (textureDesc.sampler !== undefined) Object.assign(sampler, gltf.json.samplers[textureDesc.sampler]);
+            textures.push({
+                image: images[textureDesc.source],
+                sampler,
+                uploaded: false
+            });
         }
     }
     return textures;
 }
 
 function getBufferData(gltf: Object, accessor: Object) {
-    if (accessor.value && accessor.value.length) {
-        return accessor.value;
-    }
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
-    const buffer = gltf.buffers[ bufferView.buffer ];
-    const offset = buffer.byteOffset + (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
-    const ArrayType = ArrayTypes[ accessor.componentType ];
-    const bufferData = new ArrayType(buffer.arrayBuffer, offset, accessor.count * TypeTable[ accessor.type ]);
+    const buffer = gltf.buffers[bufferView.buffer];
+    const offset = (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
+    const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
+    const bufferData = new ArrayType(buffer, offset, accessor.count * GLTF_COMPONENTS[accessor.type]);
     return bufferData;
 }
 
 function convertMaterial(materialDesc: Object, textures: Array<ModelTexture>): Material {
-    const pbrDesc = materialDesc.pbrMetallicRoughness ? materialDesc.pbrMetallicRoughness : {};
-    const material: Material = {};
-    const pbrMetallicRoughness = {};
+    const {
+        emissiveFactor = [0, 0, 0],
+        alphaMode = 'OPAQUE',
+        alphaCutoff = 0.5,
+        normalTexture,
+        occlusionTexture,
+        emissiveTexture,
+        doubleSided
+    } = materialDesc;
 
-    const color: Color = pbrDesc.baseColorFactor ? new Color(pbrDesc.baseColorFactor[0], pbrDesc.baseColorFactor[1], pbrDesc.baseColorFactor[2], pbrDesc.baseColorFactor[3]) : Color.white;
-    pbrMetallicRoughness.baseColorFactor = color;
-    pbrMetallicRoughness.metallicFactor = pbrDesc.metallicFactor !== undefined ? pbrDesc.metallicFactor : 1.0;
-    pbrMetallicRoughness.roughnessFactor = pbrDesc.roughnessFactor !== undefined ? pbrDesc.roughnessFactor : 1.0;
-    material.emissiveFactor = materialDesc.emissiveFactor ? [materialDesc.emissiveFactor[0], materialDesc.emissiveFactor[1], materialDesc.emissiveFactor[2]] : [0, 0, 0];
-    material.alphaMode = materialDesc.alphaMode ? materialDesc.alphaMode : 'OPAQUE';
-    material.alphaCutoff = materialDesc.alphaCutoff !== undefined ? materialDesc.alphaCutoff : 0.5;
+    const {
+        baseColorFactor = [1, 1, 1, 1],
+        metallicFactor = 1.0,
+        roughnessFactor = 1.0,
+        baseColorTexture,
+        metallicRoughnessTexture
+    } = materialDesc.pbrMetallicRoughness || {};
 
-    // Textures
-    if (pbrDesc.baseColorTexture) {
-        pbrMetallicRoughness.baseColorTexture = textures[pbrDesc.baseColorTexture.index];
-    }
-    if (pbrDesc.metallicRoughnessTexture) {
-        pbrMetallicRoughness.metallicRoughnessTexture = textures[pbrDesc.metallicRoughnessTexture.index];
-    }
-    if (materialDesc.normalTexture) {
-        material.normalTexture = textures[materialDesc.normalTexture.index];
-    }
-    if (materialDesc.occlusionTexture) {
-        material.occlusionTexture = textures[materialDesc.occlusionTexture.index];
-    }
-    if (materialDesc.emissiveTexture) {
-        material.emissionTexture = textures[materialDesc.emissiveTexture.index];
-    }
-
-    material.pbrMetallicRoughness = pbrMetallicRoughness;
-    material.doubleSided = materialDesc.doubleSided;
-    // just to make the rendertests the same than native
-    if (materialDesc.defined === undefined) {
-        material.defined = true;
-    }
-    return material;
+    return {
+        pbrMetallicRoughness: {
+            baseColorFactor: new Color(...baseColorFactor),
+            metallicFactor,
+            roughnessFactor,
+            baseColorTexture: baseColorTexture ? textures[baseColorTexture.index] : undefined,
+            metallicRoughnessTexture: metallicRoughnessTexture ? textures[metallicRoughnessTexture.index] : undefined
+        },
+        doubleSided,
+        emissiveFactor,
+        alphaMode,
+        alphaCutoff,
+        normalTexture: normalTexture ? textures[normalTexture.index] : undefined,
+        occlusionTexture: occlusionTexture ? textures[occlusionTexture.index] : undefined,
+        emissionTexture: emissiveTexture ? textures[emissiveTexture.index] : undefined,
+        defined: materialDesc.defined === undefined // just to make the rendertests the same than native
+    };
 }
 
-function computeCentroid(indexArray: Array<number>, vertexArray: Array<number>): Vec3 {
+function computeCentroid(indexArray: $TypedArray, vertexArray: $TypedArray): Vec3 {
     const out = [0.0, 0.0, 0.0];
     const indexSize = indexArray.length;
     if (indexSize > 0) {
@@ -170,13 +116,11 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     const mesh: Mesh = {};
 
     // eslint-disable-next-line no-warning-comments
-    // TODO: Investigate a better way to pass arrays to StructArrays and avoid the double componentType
-    // indices
+    // TODO: Investigate a better way to pass arrays to StructArrays and avoid the double componentType indices
     mesh.indexArray = new TriangleIndexArray();
-    // When loading draco compressed buffers, loader.gl parses the buffer in worker thread and returns parsed
-    // array here. TODO: There might be no need to copy element by element to mesh.indexArray.
-    const indexAccessor = (typeof indicesIdx === "object") ? indicesIdx : gltf.json.accessors[indicesIdx];
-    assert(typeof indicesIdx === "number" || (primitive.extensions && primitive.extensions.hasOwnProperty("KHR_draco_mesh_compression")));
+    // eslint-disable-next-line no-warning-comments
+    // TODO: There might be no need to copy element by element to mesh.indexArray.
+    const indexAccessor = gltf.json.accessors[indicesIdx];
     const numTriangles = indexAccessor.count / 3;
     mesh.indexArray.reserve(numTriangles);
     const indexArrayBuffer = getBufferData(gltf, indexAccessor);
@@ -186,7 +130,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     mesh.indexArray._trim();
     // vertices
     mesh.vertexArray = new ModelLayoutArray();
-    const positionAccessor = (typeof attributeMap.POSITION === "object") ? attributeMap.POSITION : gltf.json.accessors[attributeMap.POSITION];
+    const positionAccessor = gltf.json.accessors[attributeMap.POSITION];
     mesh.vertexArray.reserve(positionAccessor.count);
     const vertexArrayBuffer = getBufferData(gltf, positionAccessor);
     for (let i = 0; i < positionAccessor.count; i++) {
@@ -199,8 +143,8 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
 
     // colors
     if (attributeMap.COLOR_0 !== undefined) {
-        const colorAccessor = (typeof attributeMap.COLOR_0 === "object") ? attributeMap.COLOR_0 : gltf.json.accessors[attributeMap.COLOR_0];
-        const numElements = TypeTable[ colorAccessor.type ];
+        const colorAccessor = gltf.json.accessors[attributeMap.COLOR_0];
+        const numElements = GLTF_COMPONENTS[colorAccessor.type];
         // We only support colors in float and uint8 format for now
         if (colorAccessor.componentType === GLTF_FLOAT) {
             mesh.colorArray = numElements === 3 ? new Color3fLayoutArray() : new Color4fLayoutArray();
@@ -233,7 +177,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     // normals
     if (attributeMap.NORMAL !== undefined) {
         mesh.normalArray = new NormalLayoutArray();
-        const normalAccessor = typeof attributeMap.NORMAL === "object" ? attributeMap.NORMAL : gltf.json.accessors[attributeMap.NORMAL];
+        const normalAccessor = gltf.json.accessors[attributeMap.NORMAL];
         mesh.normalArray.reserve(normalAccessor.count);
         const normalArrayBuffer = getBufferData(gltf, normalAccessor);
         for (let i = 0;  i < normalAccessor.count; i++) {
@@ -244,7 +188,7 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     // texcoord
     if (attributeMap.TEXCOORD_0 !== undefined && textures.length > 0) {
         mesh.texcoordArray = new TexcoordLayoutArray();
-        const texcoordAccessor = typeof attributeMap.TEXCOORD_0 === "object" ? attributeMap.TEXCOORD_0 : gltf.json.accessors[attributeMap.TEXCOORD_0];
+        const texcoordAccessor = gltf.json.accessors[attributeMap.TEXCOORD_0];
         mesh.texcoordArray.reserve(texcoordAccessor.count);
         const texcoordArrayBuffer = getBufferData(gltf, texcoordAccessor);
         for (let i = 0;  i < texcoordAccessor.count; i++) {
@@ -258,12 +202,9 @@ function convertPrimitive(primitive: Object, gltf: Object, textures: Array<Model
     const materialDesc = materialIdx !== undefined ? gltf.json.materials[materialIdx] : {defined: false};
     mesh.material = convertMaterial(materialDesc, textures);
 
-    // Mapbox mesh features, the name CUSTOM_ATTRIBUTE_3 is coming from loader.gl but instead it should be
-    // _FEATURE_RGBA4444
-    if (attributeMap.CUSTOM_ATTRIBUTE_3 !== undefined) {
-        const featureAccesor = attributeMap.CUSTOM_ATTRIBUTE_3;
-        const buffer = featureAccesor.value;
-        mesh.featureData = new Uint32Array(buffer.buffer);
+    if (attributeMap._FEATURE_RGBA4444 !== undefined) {
+        const featureAccesor = gltf.json.accessors[attributeMap._FEATURE_RGBA4444];
+        mesh.featureData = new Uint32Array(getBufferData(gltf, featureAccesor).buffer);
     }
 
     return mesh;
@@ -274,8 +215,7 @@ function convertMeshes(gltf: Object, textures: Array<ModelTexture>): Array<Array
     for (const meshDesc of gltf.json.meshes) {
         const primitives: Mesh[] = [];
         for (const primitive of meshDesc.primitives) {
-            const mesh = convertPrimitive(primitive, gltf, textures);
-            primitives.push(mesh);
+            primitives.push(convertPrimitive(primitive, gltf, textures));
         }
         meshes.push(primitives);
     }
@@ -283,50 +223,34 @@ function convertMeshes(gltf: Object, textures: Array<ModelTexture>): Array<Array
 }
 
 function convertNode(nodeDesc: Object, gltf: Object, meshes: Array<Array<Mesh>>): Node {
+    const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
     const node: Node = {};
-    // eslint-disable-next-line no-warning-comments
-    node.matrix = nodeDesc.matrix ? nodeDesc.matrix : mat4.identity([]);
-    if (nodeDesc.translation) {
-        mat4.translate(node.matrix, node.matrix, [nodeDesc.translation[0], nodeDesc.translation[1], nodeDesc.translation[2]]);
-    }
-    if (nodeDesc.rotation) {
-        const rotation = mat4.fromQuat([], [nodeDesc.rotation[0], nodeDesc.rotation[1], nodeDesc.rotation[2], nodeDesc.rotation[3]]);
-        mat4.multiply(node.matrix, node.matrix, rotation);
-    }
-    if (nodeDesc.scale) {
-        mat4.scale(node.matrix, node.matrix, [nodeDesc.scale[0], nodeDesc.scale[1], nodeDesc.scale[2]]);
-    }
-    if (nodeDesc.mesh !== undefined) {
-        node.meshes = meshes[nodeDesc.mesh];
-    }
-    if (nodeDesc.extras) {
-        if (nodeDesc.extras.id) {
-            node.id = nodeDesc.extras.id;
+    node.matrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    if (mesh !== undefined) {
+        node.meshes = meshes[mesh];
+        const anchor: Vec2 = node.anchor = [0, 0];
+        for (const mesh of node.meshes) {
+            const {min, max} = mesh.aabb;
+            anchor[0] += min[0] + max[0];
+            anchor[1] += min[1] + max[1];
         }
-        if (nodeDesc.extras.lights) {
-            const base64Lights = nodeDesc.extras.lights;
-            node.lights = decodeLights(base64Lights);
+        anchor[0] = Math.floor(anchor[0] / node.meshes.length / 2);
+        anchor[1] = Math.floor(anchor[1] / node.meshes.length / 2);
+    }
+    if (extras) {
+        if (extras.id) {
+            node.id = extras.id;
         }
-        if (node.meshes) {
-            const anchor: Vec2 = [0, 0];
-            for (const mesh of node.meshes) {
-                const bounds = mesh.aabb;
-                anchor[0] += bounds.min[0] + bounds.max[0];
-                anchor[1] += bounds.min[1] + bounds.max[1];
-            }
-            anchor[0] = Math.floor(anchor[0] / node.meshes.length / 2);
-            anchor[1] = Math.floor(anchor[1] / node.meshes.length / 2);
-            node.anchor = anchor;
+        if (extras.lights) {
+            node.lights = decodeLights(extras.lights);
         }
     }
-
-    if (nodeDesc.children) {
-        const children: Node[] = [];
-        for (const childNodeIdx of nodeDesc.children) {
-            const childNodeDesc = gltf.json.nodes[childNodeIdx];
-            children.push(convertNode(childNodeDesc, gltf, meshes));
+    if (children) {
+        const converted: Node[] = [];
+        for (const childNodeIdx of children) {
+            converted.push(convertNode(gltf.json.nodes[childNodeIdx], gltf, meshes));
         }
-        node.children = children;
+        node.children = converted;
     }
 
     return node;
@@ -550,21 +474,19 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
 }
 
 export default function convertModel(gltf: Object): Array<Node> {
-    const images = convertImages(gltf);
-    const textures = convertTextures(gltf, images);
+    const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
-    const nodes: Node[] = [];
 
     // select the correct node hierarchy
-    const scene = gltf.json.scene ? gltf.json.scenes[gltf.json.scene] : gltf.json.scenes ? gltf.json.scenes[0] : undefined;
-    const gltfNodes = scene ? scene.nodes : gltf.json.nodes;
+    const {scenes, scene, nodes} = gltf.json;
+    const gltfNodes = scenes ? scenes[scene || 0].nodes : nodes;
 
+    const resultNodes: Node[] = [];
     for (const nodeIdx of gltfNodes) {
-        const nodeDesc = gltf.json.nodes[nodeIdx];
-        nodes.push(convertNode(nodeDesc, gltf, meshes));
+        resultNodes.push(convertNode(nodes[nodeIdx], gltf, meshes));
     }
-    convertFootprints(nodes, gltfNodes, gltf.json.nodes);
-    return nodes;
+    convertFootprints(resultNodes, gltfNodes, gltf.json.nodes);
+    return resultNodes;
 }
 
 export function convertB3dm(gltf: Object, zScale: number): Array<Node> {
@@ -574,8 +496,8 @@ export function convertB3dm(gltf: Object, zScale: number): Array<Node> {
             parseHeightmap(mesh);
         }
         if (node.lights) {
+            node.lightMeshIndex = node.meshes.length;
             node.meshes.push(createLightsMesh(node.lights, zScale));
-            node.lightMeshIndex = node.meshes.length - 1;
         }
     }
     return nodes;
@@ -730,27 +652,20 @@ function decodeLights(base64: string): Array<AreaLight> {
     const lightDataFloat = new Float32Array(decoded.buffer);
     const stride = 6;
     for (let i = 0; i < lightCount; i++) {
-        const h = lightData[i * 2 * stride] / 30;
+        const height = lightData[i * 2 * stride] / 30;
         const elevation = lightData[i * 2 * stride + 1 ] / 30;
-        const bottomLeft = [lightDataFloat[i * stride + 1], lightDataFloat[i * stride + 2], elevation];
-        const bottomRight = [lightDataFloat[i * stride + 3], lightDataFloat[i * stride + 4], elevation];
-        const normal = vec3.sub([], bottomRight, bottomLeft);
-        const length = vec3.length(normal);
-        normal[2] = -normal[0];
-        normal[0] = normal[1];
-        normal[1] = normal[2];
-        normal[2] = 0;
-        vec3.scale(normal, normal, 1 / length);
         const depth = lightData[i * 2 * stride + 10] / 100;
-        const pos = vec3.add([], bottomLeft, bottomRight);
-        vec3.scale(pos, pos, 0.5);
-        lights.push({pos,
-            normal,
-            width: length,
-            height: h,
-            depth,
-            points: [ bottomLeft[0], bottomLeft[1], bottomRight[0], bottomRight[1]]
-        });
+        const x0 = lightDataFloat[i * stride + 1];
+        const y0 = lightDataFloat[i * stride + 2];
+        const x1 = lightDataFloat[i * stride + 3];
+        const y1 = lightDataFloat[i * stride + 4];
+        const dx = x1 - x0;
+        const dy = y1 - y0;
+        const width = Math.hypot(dx, dy);
+        const normal = [dy / width, -dx / width, 0];
+        const pos = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
+        const points = [x0, y0, x1, y1];
+        lights.push({pos, normal, width, height, depth, points});
     }
     return lights;
 }

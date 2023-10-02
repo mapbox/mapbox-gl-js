@@ -5,7 +5,7 @@ import type SourceCache from '../../src/source/source_cache.js';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
-import type {Mesh, Node} from '../data/model.js';
+import type {Mesh, Node, ModelTexture} from '../data/model.js';
 import {ModelTraits, DefaultModelScale} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
@@ -66,54 +66,28 @@ function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
 function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?VertexBuffer>, mesh: Mesh, painter: Painter) {
     const material = mesh.material;
-    const pbr = material.pbrMetallicRoughness;
     const context = painter.context;
 
+    const {baseColorTexture, metallicRoughnessTexture} = material.pbrMetallicRoughness;
+    const {normalTexture, occlusionTexture, emissionTexture} = material;
+
+    function setupTexture(texture: ?ModelTexture, define: string, slot: number) {
+        if (!texture) return;
+
+        definesValues.push(define);
+        context.activeTexture.set(context.gl.TEXTURE0 + slot);
+        if (texture.gfxTexture) {
+            const {minFilter, magFilter, wrapS, wrapT} = texture.sampler;
+            texture.gfxTexture.bindExtraParam(minFilter, magFilter, wrapS, wrapT);
+        }
+    }
+
     // Textures
-    if (pbr.baseColorTexture) {
-        definesValues.push('HAS_TEXTURE_u_baseColorTexture');
-        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.BaseColor);
-        const sampler = pbr.baseColorTexture.sampler;
-        if (pbr.baseColorTexture.gfxTexture) {
-            pbr.baseColorTexture.gfxTexture.bindExtraParam(sampler.minFilter, sampler.magFilter, sampler.wrapS, sampler.wrapT);
-        }
-    }
-
-    if (pbr.metallicRoughnessTexture) {
-        definesValues.push('HAS_TEXTURE_u_metallicRoughnessTexture');
-        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.MetallicRoughness);
-        const sampler = pbr.metallicRoughnessTexture.sampler;
-        if (pbr.metallicRoughnessTexture.gfxTexture) {
-            pbr.metallicRoughnessTexture.gfxTexture.bindExtraParam(sampler.minFilter, sampler.magFilter, sampler.wrapS, sampler.wrapT);
-        }
-    }
-
-    if (material.normalTexture) {
-        definesValues.push('HAS_TEXTURE_u_normalTexture');
-        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.Normal);
-        const sampler = material.normalTexture.sampler;
-        if (material.normalTexture.gfxTexture) {
-            material.normalTexture.gfxTexture.bindExtraParam(sampler.minFilter, sampler.magFilter, sampler.wrapS, sampler.wrapT);
-        }
-    }
-
-    if (material.occlusionTexture) {
-        definesValues.push('HAS_TEXTURE_u_occlusionTexture');
-        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.Occlusion);
-        const sampler = material.occlusionTexture.sampler;
-        if (material.occlusionTexture.gfxTexture) {
-            material.occlusionTexture.gfxTexture.bindExtraParam(sampler.minFilter, sampler.magFilter, sampler.wrapS, sampler.wrapT);
-        }
-    }
-
-    if (material.emissionTexture) {
-        definesValues.push('HAS_TEXTURE_u_emissionTexture');
-        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.Emission);
-        const sampler = material.emissionTexture.sampler;
-        if (material.emissionTexture.gfxTexture) {
-            material.emissionTexture.gfxTexture.bindExtraParam(sampler.minFilter, sampler.magFilter, sampler.wrapS, sampler.wrapT);
-        }
-    }
+    setupTexture(baseColorTexture, 'HAS_TEXTURE_u_baseColorTexture', TextureSlots.BaseColor);
+    setupTexture(metallicRoughnessTexture, 'HAS_TEXTURE_u_metallicRoughnessTexture', TextureSlots.MetallicRoughness);
+    setupTexture(normalTexture, 'HAS_TEXTURE_u_normalTexture', TextureSlots.Normal);
+    setupTexture(occlusionTexture, 'HAS_TEXTURE_u_occlusionTexture', TextureSlots.Occlusion);
+    setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
 
     if (mesh.texcoordBuffer) {
         definesValues.push('HAS_ATTRIBUTE_a_uv_2f');
