@@ -1978,7 +1978,9 @@ class Style extends Evented {
 
     _flattenAndSortRenderedFeatures(sourceResults: Array<any>): Array<mixed> {
         // Feature order is complicated.
-        // The order between features in two 2D layers is always determined by layer order.
+        // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
+        //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
+        //  - if terrain/globe disabled layers are not reordered
         // The order between features in two 3D layers is always determined by depth.
         // The order between a feature in a 2D layer and a 3D layer is tricky:
         //      Most often layer order determines the feature order in this case. If
@@ -1996,10 +1998,12 @@ class Style extends Evented {
 
         const isLayer3D = (layerId: string) => this._layers[layerId].type === 'fill-extrusion';
 
+        const order = this.order;
+
         const layerIndex = {};
         const features3D = [];
-        for (let l = this._order.length - 1; l >= 0; l--) {
-            const layerId = this._order[l];
+        for (let l = order.length - 1; l >= 0; l--) {
+            const layerId = order[l];
             if (isLayer3D(layerId)) {
                 layerIndex[layerId] = l;
                 for (const sourceResult of sourceResults) {
@@ -2018,8 +2022,8 @@ class Style extends Evented {
         });
 
         const features = [];
-        for (let l = this._order.length - 1; l >= 0; l--) {
-            const layerId = this._order[l];
+        for (let l = order.length - 1; l >= 0; l--) {
+            const layerId = order[l];
 
             if (isLayer3D(layerId)) {
                 // add all 3D features that are in or above the current layer

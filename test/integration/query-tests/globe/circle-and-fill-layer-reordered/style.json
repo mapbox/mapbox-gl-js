@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 500,
+      "height": 500,
+      "queryGeometry": [250, 250]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 2,
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "fill-geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ]
+          ]
+        ]
+      }
+    },
+    "circle-geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "green"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "circles",
+      "type": "circle",
+      "source": "circle-geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "red"
+      }
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "fill-geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "orange",
+        "fill-opacity": 0.5
+      }
+    }
+  ]
+}
