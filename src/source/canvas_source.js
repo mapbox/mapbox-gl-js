@@ -3,7 +3,7 @@
 import ImageSource from './image_source.js';
 
 import window from '../util/window.js';
-import Texture from '../render/texture.js';
+import Texture, {UserManagedTexture} from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
 import ValidationError from '../style-spec/error/validation_error.js';
 
@@ -213,7 +213,7 @@ class CanvasSource extends ImageSource {
 
         if (!this.texture) {
             this.texture = new Texture(context, this.canvas, context.gl.RGBA, {premultiply: true});
-        } else if (resize || this._playing) {
+        } else if ((resize || this._playing) && !(this.texture instanceof UserManagedTexture)) {
             this.texture.update(this.canvas, {premultiply: true});
         }
 

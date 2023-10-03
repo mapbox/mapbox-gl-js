@@ -181,3 +181,33 @@ class Texture {
 }
 
 export default Texture;
+export class UserManagedTexture {
+    context: Context;
+    texture: WebGLTexture;
+    minFilter: ?TextureFilter;
+    wrapS: ?TextureWrap;
+
+    constructor(context: Context, texture: WebGLTexture) {
+        this.context = context;
+        this.texture = texture;
+    }
+
+    bind(filter: TextureFilter, wrap: TextureWrap) {
+        const {context} = this;
+        const {gl} = context;
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (filter !== this.minFilter) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+            this.minFilter = filter;
+        }
+
+        if (wrap !== this.wrapS) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
+            this.wrapS = wrap;
+        }
+    }
+
+}

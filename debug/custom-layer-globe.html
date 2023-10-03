@@ -47,6 +47,31 @@ const map = new mapboxgl.Map({
 map.on('style.load', () => {
     map.addLayer(satellitesLayer); // eslint-disable-line no-undef
     map.addLayer(coloredEarthLayer); // eslint-disable-line no-undef
+    const customTexture = createTexture(map.painter.context.gl); // eslint-disable-line no-undef
+
+    map.addSource('northPole', {
+        "type": "image",
+        "coordinates": [
+            [-180.0, 90.0],
+            [180.0, 90.0],
+            [180.0, 85.0],
+            [-180.0, 85.0]
+        ]
+    });
+
+    map.getSource("northPole").setTexture({
+        "handle": customTexture,
+        "dimensions": [400.0, 400.0]
+    });
+
+    map.addLayer({
+        "id": "northPole",
+        "type": "raster",
+        "source": "northPole",
+        "paint": {
+            "raster-resampling": "nearest"
+        }
+    });
 
     document.getElementById('immediate-checkbox').onclick();
     document.getElementById('draped-checkbox').onclick();

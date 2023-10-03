@@ -924,9 +924,9 @@
       "doc": "The data type of the image source."
     },
     "url": {
-      "required": true,
+      "required": false,
       "type": "string",
-      "doc": "URL that points to an image."
+      "doc": "URL that points to an image. If the URL is not specified, the image is expected to be loaded directly during runtime."
     },
     "coordinates": {
       "required": true,

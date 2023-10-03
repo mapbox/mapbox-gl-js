@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 32,
+      "height": 32,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setCustomTexture",
+          "customSource",
+          "./image/marker_18x18.png"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    -122.514426,
+    37.562984
+  ],
+  "zoom": 13,
+  "sources": {
+    "customSource": {
+      "type": "image",
+      "coordinates": [
+        [
+          -122.51596391201019,
+          37.56238816766053
+        ],
+        [
+          -122.51467645168304,
+          37.56410183312965
+        ],
+        [
+          -122.51309394836426,
+          37.563391708549425
+        ],
+        [
+          -122.51423120498657,
+          37.56161849366671
+        ]
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "customSource",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

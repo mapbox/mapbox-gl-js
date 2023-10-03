@@ -7,7 +7,7 @@ import EXTENT from '../style-spec/data/extent.js';
 import {RasterBoundsArray} from '../data/array_types.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
-import Texture from '../render/texture.js';
+import Texture, {UserManagedTexture} from '../render/texture.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
@@ -30,6 +30,10 @@ import type Context from '../gl/context.js';
 import assert from "assert";
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
+type ImageSourceTexture = {|
+    dimensions: [number, number],
+    handle: WebGLTexture
+|};
 
 // perspective correction for texture mapping, see https://github.com/mapbox/mapbox-gl-js/issues/9158
 // adapted from https://math.stackexchange.com/a/339033/48653
@@ -100,7 +104,7 @@ class ImageSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    url: string;
+    url: ?string;
     width: number;
     height: number;
 
@@ -109,7 +113,7 @@ class ImageSource extends Evented implements Source {
     options: any;
     dispatcher: Dispatcher;
     map: Map;
-    texture: Texture | null;
+    texture: Texture | UserManagedTexture | null;
     image: HTMLImageElement | ImageBitmap | ImageData;
     // $FlowFixMe
     tileID: ?CanonicalTileID;
@@ -152,6 +156,14 @@ class ImageSource extends Evented implements Source {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
+        if (!this.url) {
+            if (newCoordinates) {
+                this.coordinates = newCoordinates;
+            }
+            this._loaded = true;
+            this._finishLoading();
+            return;
+        }
 
         this._imageRequest = getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
             this._imageRequest = null;
@@ -227,6 +239,20 @@ class ImageSource extends Evented implements Source {
         return this;
     }
 
+    setTexture(texture: ImageSourceTexture): this {
+        if (!(texture.handle instanceof WebGLTexture)) {
+            throw new Error(`The provided handle is not a WebGLTexture instance`);
+        }
+        const context = this.map.painter.context;
+        this.texture = new UserManagedTexture(context, texture.handle);
+        this.width = texture.dimensions[0];
+        this.height = texture.dimensions[1];
+        this._dirty = false;
+        this._loaded = true;
+        this._finishLoading();
+        return this;
+    }
+
     _finishLoading() {
         if (this.map) {
             this.setCoordinates(this.coordinates);
@@ -246,7 +272,7 @@ class ImageSource extends Evented implements Source {
             this._imageRequest.cancel();
             this._imageRequest = null;
         }
-        if (this.texture) this.texture.destroy();
+        if (this.texture && !(this.texture instanceof UserManagedTexture)) this.texture.destroy();
     }
 
     /**
@@ -370,12 +396,12 @@ class ImageSource extends Evented implements Source {
     // $FlowFixMe[method-unbinding]
     prepare() {
         const hasTiles = Object.keys(this.tiles).length !== 0;
-        if ((this.tileID && !hasTiles) || !this.image) return;
+        if (this.tileID && !hasTiles) return;
 
         const context = this.map.painter.context;
         const gl = context.gl;
 
-        if (this._dirty) {
+        if (this._dirty && !(this.texture instanceof UserManagedTexture)) {
             if (!this.texture) {
                 this.texture = new Texture(context, this.image, gl.RGBA);
                 this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);

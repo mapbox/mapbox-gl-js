@@ -216,7 +216,7 @@ export type VideoSourceSpecification = {|
 
 export type ImageSourceSpecification = {|
     "type": "image",
-    "url": string,
+    "url"?: string,
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
@@ -552,7 +552,8 @@ export type HillshadeLayerSpecification = {|
         "hillshade-exaggeration"?: PropertyValueSpecification<number>,
         "hillshade-shadow-color"?: PropertyValueSpecification<ColorSpecification>,
         "hillshade-highlight-color"?: PropertyValueSpecification<ColorSpecification>,
-        "hillshade-accent-color"?: PropertyValueSpecification<ColorSpecification>
+        "hillshade-accent-color"?: PropertyValueSpecification<ColorSpecification>,
+        "hillshade-emissive-strength"?: PropertyValueSpecification<number>
     |}
 |}
 

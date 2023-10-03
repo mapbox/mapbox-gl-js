@@ -131,6 +131,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const unwrappedTileID = coord.toUnwrapped();
         const tile = sourceCache.getTile(coord);
         if (renderingToTexture && !(tile && tile.hasData())) continue;
+        if (!tile.texture) continue;
 
         const projMatrix = (renderingToTexture) ? coord.projMatrix :
             painter.transform.calculateProjMatrix(unwrappedTileID, align);
