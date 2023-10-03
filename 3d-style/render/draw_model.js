@@ -17,10 +17,10 @@ import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
 import type {Mat4} from 'gl-matrix';
-import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate.js';
+import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
-import {warnOnce} from '../../src/util/util.js';
+import {clamp, warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
@@ -433,6 +433,37 @@ const renderData: RenderData = {
     aabb: new Aabb([0, 0, 0], [EXTENT, EXTENT, 0])
 };
 
+function calculateTileZoom(id: OverscaledTileID, tr: Transform): number {
+    const tiles = 1 << id.canonical.z;
+    const cameraPos = (tr.getFreeCameraOptions().position: any);
+    const elevation = tr.elevation;
+
+    // Compute tile zoom from the distance between the camera and
+    // the closest point on either tile's bottom plane or on a plane
+    // elevated to center altitude, whichever is higher. Using center altitude
+    // allows us to compensate tall tiles that have high variance in
+    // instance placement on z-axis.
+    const minx = id.canonical.x / tiles;
+    const maxx = (id.canonical.x + 1) / tiles;
+    const miny = id.canonical.y / tiles;
+    const maxy = (id.canonical.y + 1) / tiles;
+    let height = tr._centerAltitude;
+
+    if (elevation) {
+        const minmax = elevation.getMinMaxForTile(id);
+
+        if (minmax && minmax.max > height) {
+            height = minmax.max;
+        }
+    }
+
+    const distx = clamp(cameraPos.x, minx, maxx) - cameraPos.x;
+    const disty = clamp(cameraPos.y, miny, maxy) - cameraPos.y;
+    const distz = mercatorZfromAltitude(height, tr.center.lat) - cameraPos.z;
+
+    return tr._zoomFromMercatorZ(Math.sqrt(distx * distx + disty * disty + distz * distz));
+}
+
 function drawInstancedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
     const tr = painter.transform;
     if (tr.projection.name !== 'mercator') {
@@ -441,12 +472,6 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 
     const mercCameraPos = (tr.getFreeCameraOptions().position: any);
-    //  LOD computation done in 2D space (terrain not taken into account).
-    const mercCameraPosVec = [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z - tr.pixelsPerMeter / tr.worldSize * tr._centerAltitude];
-    const forward = painter.transform._camera.forward();
-    const distanceXYZ = [0, 0, 0];
-    const tilePos = [0, 0, 0];
-
     if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
     if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) return;
@@ -457,19 +482,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         const tile = source.getTile(coord);
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
-        let tileZoom = bucket.zoom;
-        // Distance from camera plane to point of a tile closest to camera to calculate effective zoom.
-        // To be more aggressive on zooms just above integer zooms, selected point it not the corner but
-        // a point between center and tile corner
-        tilePos[0] = coord.wrap + (coord.canonical.x + (painter.transform.bearing < 0 ? 0.75 : 0.25)) / (1 << coord.canonical.z);
-        tilePos[1] = (coord.canonical.y + (Math.abs(painter.transform.bearing) < 90 ? 0.75 : 0.25)) / (1 << coord.canonical.z);
-        vec3.sub(distanceXYZ, tilePos, mercCameraPosVec);
-        const dist = Math.max(0., vec3.dot(distanceXYZ, forward));
-        tileZoom = painter.transform._zoomFromMercatorZ(dist);
-        const largeTileCutoff = 400;
-        if (painter.transform.pitch > 30 && tileZoom < painter.transform.zoom && bucket.instanceCount > largeTileCutoff) {
-            tileZoom -= 0.5; // further reduce LOD for large tiles further above the center
-        }
+        const tileZoom = calculateTileZoom(coord, tr);
         evaluationParameters.zoom = tileZoom;
         const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
 
@@ -490,9 +503,12 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         }
 
         // camera position in the tile coordinates
-        let cameraPos = vec3.scale([], mercCameraPosVec, (1 << coord.canonical.z));
-        cameraPos = [(cameraPos[0] - coord.canonical.x - coord.wrap * (1 << coord.canonical.z)) * EXTENT,
-            (cameraPos[1] - coord.canonical.y) * EXTENT, cameraPos[2] * EXTENT];
+        const tiles = 1 << coord.canonical.z;
+        const cameraPos = [
+            ((mercCameraPos.x - coord.wrap) * tiles - coord.canonical.x) * EXTENT,
+            (mercCameraPos.y * tiles - coord.canonical.y) * EXTENT,
+            mercCameraPos.z * tiles * EXTENT
+        ];
 
         for (let modelId in bucket.instancesPerModel) {
             // From effective tile zoom (distance to camera) and calculate model to use.

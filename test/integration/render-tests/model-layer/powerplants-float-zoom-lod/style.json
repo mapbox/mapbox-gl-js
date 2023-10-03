@@ -17,10 +17,10 @@
     "power_plant_low": "local://models/powerplant_low_no_draco.gltf",
     "power_plant_low_transparent": "local://models/powerplant_low_transparent_no_draco.gltf"
   },
-  "center": [ -80.4664, 29.0873 ],
-  "zoom": 6.01,
-  "pitch": 70,
-  "bearing": 337.85,
+  "center": [ -80.4664, 27.0873 ],
+  "zoom": 6.31,
+  "pitch": 75,
+  "bearing": 342.85,
   "transition": {
     "duration": 0
   },
