@@ -118,6 +118,24 @@ test('Elevation', (t) => {
         });
     });
 
+    t.test('Out of bounds when sampling 514x514 tile', (t) => {
+        const map = createMap(t, {zoom: 15.1, center:[11.594417, 48.095821]});
+        map.on('style.load', () => {
+            setMockElevationTerrain(map, zeroDem, 512, 11);
+            map.once('render', () => {
+
+                t.test('Sample', t => {
+                    const points = [[8191, 8191, 1]];
+                    map.painter.terrain.getForTilePoints(new OverscaledTileID(15, 0, 15, 17439, 11377), points);
+                    t.equal(points[0][2], 0);
+                    t.end();
+                });
+
+                t.end();
+            });
+        });
+    });
+
     t.test('style diff / remove dem source cache', t => {
         const map = createMap(t);
         map.on('style.load', () => {

@@ -120,7 +120,7 @@ class BuildingIndex {
             const b: Tiled3dModelBucket = (bucket: any);
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.hidden) continue;
-            if (heightData.height === undefined && availableHeight !== undefined) return availableHeight * heightData.verticalScale;
+            if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
             return (heightData.height || 0) * heightData.verticalScale;
         }
         return 0;

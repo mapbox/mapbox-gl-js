@@ -80,7 +80,7 @@ class ModelBucket implements Bucket {
 
     // elevation is baked into vertex buffer together with evaluated instance translation
     validForExaggeration: number;
-    validForDEMTile: ?OverscaledTileID;
+    validForDEMTile: {id: ?OverscaledTileID, timestamp: number};
     maxVerticalOffset: number; // for tile AABB calculation
     maxScale: number; // across all dimensions, for tile AABB calculation
     maxHeight: number; // calculated from previous two, during rendering, when models are available.
@@ -115,6 +115,7 @@ class ModelBucket implements Bucket {
 
         this.terrainElevationMin = 0;
         this.terrainElevationMax = 0;
+        this.validForDEMTile = {id: null, timestamp: 0};
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

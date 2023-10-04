@@ -133,7 +133,8 @@ test('DEMData#backfillBorder', (t) => {
     t.test('DEMData is correctly serialized', (t) => {
         const imageData0 = createMockImage(4, 4);
         const dem0 = new DEMData(0, imageData0);
-        const serialized = serialize(dem0);
+        // eslint-disable-next-line no-unused-vars
+        const {_modifiedForSources, _timestamp, ...serialized} = serialize(dem0);
 
         t.deepEqual(serialized, {
             $name: 'DEMData',

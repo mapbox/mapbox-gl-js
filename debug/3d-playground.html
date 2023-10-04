@@ -69,7 +69,7 @@
 const Demo3D = function() {
     this.enableTerrain = false;
     this.enable3dLights = true;
-    this.terrainExaggeration = 1.5;
+    this.terrainExaggeration = 1.;
     this.animateCamera = false;
     this.style = 'dynamic';
     this.sunAltitude = 2;
@@ -444,15 +444,19 @@ let first = true;
 map.on('style.load', function() {
     // map.showOverdrawInspector =  true;
     updateLights(demo3d.enable3dLights, true);
-    map.addSource('mapbox-dem', {
-        "type": "raster-dem",
-        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-        "tileSize": 512,
-        "maxzoom": 14
-    });
+    if (!map.getSource('mapbox-dem')) {
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+            "tileSize": 514,
+            "maxzoom": 11
+        });
+    }
     map.style.setPaintProperty("trees", "model-cutoff-fade-range", 1.0);
     map.style.setPaintProperty("3d-building", "fill-extrusion-cutoff-fade-range", 0.5);
-    map.setTerrain(demo3d.enableTerrain ? {"source": "mapbox-dem", "exaggeration": 1.5} : null);
+    if (demo3d.enableTerrain && map.getTerrain() === null) {
+        map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.});
+    }
     demo3d.buildingExtrusion = map.style._order.find((id) => map.style.getLayer(id).type === 'fill-extrusion' && map.style.getLayer(id).sourceLayer === 'building');
     if (!demo3d.buildingExtrusion) {
         demo3d.buildingExtrusion = 'extrusion';

@@ -21,6 +21,10 @@ import type {Terrain} from '../../../src/terrain/terrain.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
+import browser from '../../../src/util/browser.js';
+
+const lookup = new Float32Array(512 * 512);
+const passLookup = new Uint8Array(512 * 512);
 
 function getNodeHeight(node: Node): number {
     let height = 0;
@@ -226,7 +230,7 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID) {
+    elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID, source: string) {
 
         const demTile = terrain.findDEMTileFor(coord);
         if (demTile === this.terrainTile && exaggeration === this.terrainExaggeration) return;
@@ -235,6 +239,9 @@ class Tiled3dModelBucket implements Bucket {
             this.elevationReadFromZ = demTile.tileID.overscaledZ;
             const dem = DEMSampler.create(terrain, this.id, demTile);
             if (!dem) return;
+            if (this.modelTraits & ModelTraits.HasMapboxMeshFeatures) {
+                this.updateDEM(terrain, dem, coord, source);
+            }
             for (const nodeInfo of this.getNodesInfo()) {
                 const node = nodeInfo.node;
                 if (!node.footprint || !node.footprint.vertices || !node.footprint.vertices.length) {
@@ -247,6 +254,148 @@ class Tiled3dModelBucket implements Bucket {
                 }
                 node.elevation = elevation;
             }
+        }
+    }
+
+    updateDEM(terrain: Terrain, dem: DEMSampler, coord: OverscaledTileID, source: string) {
+        let tiles = dem._dem._modifiedForSources[source];
+        if (tiles === undefined) {
+            dem._dem._modifiedForSources[source] = [];
+            tiles = dem._dem._modifiedForSources[source];
+        }
+        if (tiles.includes(coord.canonical)) {
+            return;
+        }
+
+        tiles.push(coord.canonical);
+        assert(lookup.length <= dem._dem.dim * dem._dem.dim);
+
+        let changed = false;
+        for (const nodeInfo of this.getNodesInfo()) {
+            const node = nodeInfo.node;
+            if (!node.footprint || !node.footprint.grid) {
+                continue;
+            }
+
+            const grid = node.footprint.grid;
+            const minDem = dem.tileCoordToPixel(grid.min.x, grid.min.y);
+            const maxDem = dem.tileCoordToPixel(grid.max.x, grid.max.y);
+
+            const distanceToBorder = Math.min(Math.min(dem._dem.dim - maxDem.y, minDem.x), Math.min(minDem.y, dem._dem.dim - maxDem.x));
+            if (distanceToBorder < 0) {
+                continue; // don't deal with neighbors and landmarks crossing tile borders, fix terrain only for buildings within the tile
+            }
+            // demAtt is a number of pixels we use to propagate attenuated change to surrounding pixels.
+            // this is clamped further when sampling near tile border.
+            const demAtt = clamp(distanceToBorder, 2, 5);
+            let heightAcc = 0;
+            let min = Number.POSITIVE_INFINITY;
+            let max = Number.NEGATIVE_INFINITY;
+            let count = 0;
+            let minx = Math.max(0, minDem.x - demAtt);
+            let miny = Math.max(0, minDem.y - demAtt);
+            let maxx = Math.min(maxDem.x + demAtt, dem._dem.dim - 1);
+            let maxy = Math.min(maxDem.y + demAtt, dem._dem.dim - 1);
+            for (let y = miny; y <= maxy + demAtt; ++y) {
+                for (let x = minx - demAtt; x <= maxx + demAtt; ++x) {
+                    passLookup[y * dem._dem.dim + x] = 255;
+                }
+            }
+
+            for (let celly = 0; celly < grid.cellsY; ++celly) {
+                for (let cellx = 0; cellx < grid.cellsX; ++cellx) {
+                    const cell = grid.cells[celly * grid.cellsX + cellx];
+                    if (!cell) {
+                        continue;
+                    }
+                    const demP = dem.tileCoordToPixel(grid.min.x + cellx / grid.xScale, grid.min.y + celly / grid.yScale);
+                    const demPMax = dem.tileCoordToPixel(grid.min.x + (cellx + 1) / grid.xScale, grid.min.y + (celly + 1) / grid.yScale);
+                    for (let y = demP.y; y <= Math.min(demPMax.y + 1, dem._dem.dim - 1); ++y) {
+                        for (let x = demP.x; x <= Math.min(demPMax.x + 1, dem._dem.dim - 1); ++x) {
+                            if (passLookup[y * dem._dem.dim + x] === 255) {
+                                passLookup[y * dem._dem.dim + x] = 0;
+                                const height = dem.getElevationAtPixel(x, y);
+                                min = Math.min(height, min);
+                                max = Math.max(height, max);
+                                heightAcc += height;
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            assert(count);
+            const avgHeight = heightAcc / count;
+            minx = Math.max(1, minDem.x - demAtt);
+            miny = Math.max(1, minDem.y - demAtt);
+            maxx = Math.min(maxDem.x + demAtt, dem._dem.dim - 1);
+            maxy = Math.min(maxDem.y + demAtt, dem._dem.dim - 1);
+
+            changed = true;
+            for (let y = miny; y <= maxy; ++y) {
+                for (let x = minx; x <= maxx; ++x) {
+                    if (passLookup[y * dem._dem.dim + x] === 0) {
+                        lookup[y * dem._dem.dim + x] = dem._dem.set(x, y, avgHeight);
+                    }
+                }
+            }
+
+            for (let p = 1; p < demAtt; ++p) {
+                minx = Math.max(1, minDem.x - p);
+                miny = Math.max(1, minDem.y - p);
+                maxx = Math.min(maxDem.x + p, dem._dem.dim - 1);
+                maxy = Math.min(maxDem.y + p, dem._dem.dim - 1);
+                for (let y = miny; y <= maxy; ++y) {
+                    for (let x = minx; x <= maxx; ++x) {
+                        const indexThis = y * dem._dem.dim + x;
+                        if (passLookup[indexThis] === 255) {
+                            let maxDiff = 0;
+                            let maxDiffAbs = 0;
+                            let xoffset = -1;
+                            let yoffset = -1;
+                            for (let j = -1; j <= 1; ++j) {
+                                for (let i = -1; i <= 1; ++i) {
+                                    const index = (y + j) * dem._dem.dim + x + i;
+                                    if (passLookup[index] >= p) {
+                                        continue;
+                                    }
+                                    const diff = lookup[index];
+                                    const diffAbs = Math.abs(diff);
+                                    if (diffAbs  > maxDiffAbs) {
+                                        maxDiff = diff;
+                                        maxDiffAbs = diffAbs;
+                                        xoffset = i;
+                                        yoffset = j;
+                                    }
+                                }
+                            }
+
+                            if (maxDiffAbs > 0.1) {
+                                const diagonalAttenuation = Math.abs(xoffset * yoffset) * 0.5;
+                                const attenuation = 1 - (p + diagonalAttenuation) / demAtt;
+                                assert(attenuation > 0);
+                                const prev = dem._dem.get(x, y);
+                                let next = prev + maxDiff * attenuation;
+
+                                // parent - child in the meaning of wave propagation
+                                const parent = dem._dem.get(x + xoffset, y + yoffset);
+                                const child = dem._dem.get(x - xoffset, y - yoffset, true);
+                                // prevent waves
+                                if ((next - parent) * (next - child) > 0) {
+                                    next = (parent + child) / 2;
+                                }
+                                lookup[indexThis] = dem._dem.set(x, y, next);
+                                passLookup[indexThis] = p;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (changed) {
+            dem._demTile.needsDEMTextureUpload = true;
+            dem._dem._timestamp = browser.now();
         }
     }
 
@@ -301,7 +450,7 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    getHeightAtTileCoord(x: number, y: number): ?{height: ?number, hidden: boolean, verticalScale: number} {
+    getHeightAtTileCoord(x: number, y: number): ?{height: ?number, maxHeight: number, hidden: boolean, verticalScale: number} {
         const nodesInfo = this.getNodesInfo();
         const candidates = [];
 
@@ -320,12 +469,12 @@ class Tiled3dModelBucket implements Bucket {
                 // unpopulated cell. If it is in the building footprint, return undefined height
                 nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
                 if (candidates.length > 0) {
-                    return {height: undefined, hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
+                    return {height: undefined, maxHeight: nodeInfo.feature.properties["height"], hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
                 }
                 continue;
             }
             if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
-            return {height: mesh.heightmap[heightmapIndex], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            return {height: mesh.heightmap[heightmapIndex], maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
 }

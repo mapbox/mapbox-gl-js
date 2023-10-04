@@ -156,11 +156,35 @@ window.dynamic = {
         "3dbuildings": {
             "type": "batched-model",
             "url": "mapbox://mapbox.mapbox-3dbuildings-v1-beta"
+        },
+        "mapbox-dem": {
+            "type": "raster-dem",
+            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+            "tileSize": 514,
+            "maxzoom": 11
         }
     },
     "sprite": "mapbox://sprites/mapbox/standard-beta/73jrw2iv9yt1v27bf6hw4p4cn",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "projection": { "name": "globe" },
+    "terrain": {
+        "source": "mapbox-dem",
+        "exaggeration": [
+            "interpolate",
+            [ "linear" ],
+            [ "zoom" ],
+            6,
+            0,
+            7,
+            1,
+            12,
+            1,
+            16,
+            0.2,
+            18,
+            0
+        ]   
+    },
     "layers": [
         {
             "id": "land",
@@ -454,6 +478,18 @@ window.dynamic = {
             }
         },
         {
+            "id": "mapbox-dem-hillshade",
+            "type": "hillshade",
+            "source": "mapbox-dem",
+            "minzoom": 2,
+            "paint": {
+                "hillshade-illumination-anchor": "map",
+                "hillshade-shadow-color": "hsla(0, 100%, 0%,0.2)",
+                "hillshade-highlight-color": "hsla(0, 100%, 100%, 0.8)",
+                "hillshade-accent-color": "hsla(0, 100%, 100%, 1)"
+            }
+        },
+        {
             "id": "hillshade",
             "type": "fill",
             "metadata": { "mapbox:group": "Terrain, land" },
@@ -490,8 +526,8 @@ window.dynamic = {
                     "interpolate",
                     [ "linear" ],
                     [ "zoom" ],
-                    14,
-                    1,
+                    12,
+                    0.5,
                     16,
                     0
                 ],

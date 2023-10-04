@@ -396,7 +396,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
     }
 
     if (exaggeration === bucket.validForExaggeration &&
-        (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID === bucket.validForDEMTile))) {
+        (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID === bucket.validForDEMTile.id && dem._dem._timestamp === bucket.validForDEMTile.timestamp))) {
         return;
     }
 
@@ -420,7 +420,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
     bucket.terrainElevationMax = elevationMax ? elevationMax : 0;
 
     bucket.validForExaggeration = exaggeration;
-    bucket.validForDEMTile = dem && dem._demTile ? dem._demTile.tileID : undefined;
+    bucket.validForDEMTile = dem && dem._demTile ? {id: dem._demTile.tileID, timestamp: dem._dem._timestamp} : {id: undefined, timestamp: 0};
     bucket.uploaded = false;
     bucket.upload(painter.context);
 }
@@ -629,7 +629,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         bucket.evaluateScale(painter, layer);
         // Compute elevation
         if (painter.terrain && exaggeration > 0) {
-            bucket.elevationUpdate(painter.terrain, exaggeration, coord);
+            bucket.elevationUpdate(painter.terrain, exaggeration, coord, layer.source);
         }
         if (bucket.needsReEvaluation(painter, zoom, layer)) {
             bucket.evaluate(layer);

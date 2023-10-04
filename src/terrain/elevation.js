@@ -289,7 +289,7 @@ export class DEMSampler {
         const scale = 1 << tileID.canonical.z - demTileID.canonical.z;
         const xOffset = (tileID.canonical.x / scale - demTileID.canonical.x) * dem.dim;
         const yOffset = (tileID.canonical.y / scale - demTileID.canonical.y) * dem.dim;
-        const k = demTile.tileSize / EXTENT / scale;
+        const k = dem.dim / EXTENT / scale;
 
         return new DEMSampler(demTile, k, [xOffset, yOffset]);
     }
