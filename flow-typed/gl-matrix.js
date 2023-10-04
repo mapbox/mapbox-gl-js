@@ -55,6 +55,8 @@ declare module "gl-matrix" {
         transformMat4<T: Vec4>(T, Vec4, Mat4): T,
         normalize<T: Vec4>(T, Vec4): T,
         dot(Vec4, Vec4): number,
+        min<T: Vec4>(T, Vec4, Vec4): T,
+        max<T: Vec4>(T, Vec4, Vec4): T,
     };
 
     declare var mat2: {

@@ -1212,13 +1212,17 @@ class Transform {
             const fogCullDistSq = this.fogCullDistSq;
             const horizonLineFromTop = this.horizonLineFromTop();
             result = result.filter(entry => {
-                const min = [0, 0, 0, 1];
-                const max = [EXTENT, EXTENT, 0, 1];
+                const tl = [0, 0, 0, 1];
+                const br = [EXTENT, EXTENT, 0, 1];
 
                 const fogTileMatrix = this.calculateFogTileMatrix(entry.tileID.toUnwrapped());
 
-                vec4.transformMat4(min, min, fogTileMatrix);
-                vec4.transformMat4(max, max, fogTileMatrix);
+                vec4.transformMat4(tl, tl, fogTileMatrix);
+                vec4.transformMat4(br, br, fogTileMatrix);
+
+                // the fog matrix can flip the min/max values, so we calculate them explicitly
+                const min = vec4.min([], tl, br);
+                const max = vec4.max([], tl, br);
 
                 const sqDist = getAABBPointSquareDist(min, max);
 
