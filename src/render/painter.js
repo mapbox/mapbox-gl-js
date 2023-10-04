@@ -732,13 +732,21 @@ class Painter {
         this.context.bindFramebuffer.set(null);
         this.context.viewport.set([0, 0, this.width, this.height]);
 
+        const shouldRenderAtmosphere = this.transform.projection.name === "globe" || this.transform.isHorizonVisible();
+
         // Clear buffers in preparation for drawing to the main framebuffer
         const clearColor = (() => {
             if (options.showOverdrawInspector) {
                 return Color.black;
             }
 
-            if (this.style.fog && this.transform.projection.supportsFog) {
+            if (this.style.fog && this.transform.projection.supportsFog && !shouldRenderAtmosphere) {
+                const fogColor = this.style.fog.properties.get('color').toArray01();
+
+                return new Color(...fogColor);
+            }
+
+            if (this.style.fog && this.transform.projection.supportsFog && shouldRenderAtmosphere) {
                 const spaceColor = this.style.fog.properties.get('space-color').toArray01();
 
                 return new Color(...spaceColor);
@@ -757,7 +765,7 @@ class Painter {
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
 
-        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector) {
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector && shouldRenderAtmosphere) {
             this._atmosphere.drawStars(this, this.style.fog);
         }
 
@@ -773,7 +781,7 @@ class Painter {
             }
         }
 
-        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector) {
+        if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector && shouldRenderAtmosphere) {
             this._atmosphere.drawAtmosphereGlow(this, this.style.fog);
         }
 

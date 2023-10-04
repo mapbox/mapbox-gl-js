@@ -61,7 +61,7 @@ class Atmosphere {
             // Part of internal stlye spec, not exposed to gl-js
             const starsCount = 16000;
             const sizeRange = 100.0;
-            const intensityRange = 100.0;
+            const intensityRange = 200.0;
 
             const stars = generateUniformDistributedPointsOnSphere(starsCount);
             const sRand = mulberry32(300);
@@ -74,8 +74,8 @@ class Atmosphere {
 
                 const star = vec3.scale([], stars[i], 200.0);
 
-                const size = 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand());
-                const intensity = 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand());
+                const size = Math.max(0, 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand()));
+                const intensity = Math.max(0, 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand()));
 
                 vertices.emplaceBack(star[0], star[1], star[2], -1, -1, size, intensity);
                 vertices.emplaceBack(star[0], star[1], star[2], 1, -1, size, intensity);
@@ -189,7 +189,7 @@ class Atmosphere {
         const program = painter.useProgram('stars');
 
         // Exposed in internal style spec for mobile
-        const sizeMultiplier = 0.2;
+        const sizeMultiplier = 0.15;
 
         const orientation = quat.identity([]);
 

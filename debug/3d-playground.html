@@ -79,7 +79,7 @@ const Demo3D = function() {
     this.animateSky = false;
     this.sunHaloColor = {r:255, g:255, b:255};
     this.skyColor = {r:255, g:255, b:255};
-    this.starIntensity = 1.0;
+    this.starIntensity = 0.35;
     this.fogColor = {r:255, g:255, b:255};
     this.fogRangeMin = 3.0;
     this.fogRangeMax = 10.0;
@@ -211,6 +211,7 @@ window.onload = function() {
     const style = gui.addInput(demo3d, 'style',
         {options: fillOptions([
             'mapbox/streets-v12',
+            'mapbox/standard-beta',
             'dynamic',
             'mapbox/streets-v11',
             'mapbox/satellite-streets-v11',
