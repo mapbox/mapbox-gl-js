@@ -237,7 +237,7 @@ class Tiled3dModelBucket implements Bucket {
 
         if (terrain && demTile && demTile.dem && demTile.tileID.overscaledZ !== this.elevationReadFromZ) {
             this.elevationReadFromZ = demTile.tileID.overscaledZ;
-            const dem = DEMSampler.create(terrain, this.id, demTile);
+            const dem = DEMSampler.create(terrain, coord, demTile);
             if (!dem) return;
             if (this.modelTraits & ModelTraits.HasMapboxMeshFeatures) {
                 this.updateDEM(terrain, dem, coord, source);
@@ -277,6 +277,7 @@ class Tiled3dModelBucket implements Bucket {
                 continue;
             }
 
+            // Convert the bounds of the footprint for this node from its tile coordinates to world/pixel coordinates.
             const grid = node.footprint.grid;
             const minDem = dem.tileCoordToPixel(grid.min.x, grid.min.y);
             const maxDem = dem.tileCoordToPixel(grid.max.x, grid.max.y);
@@ -288,20 +289,20 @@ class Tiled3dModelBucket implements Bucket {
             // demAtt is a number of pixels we use to propagate attenuated change to surrounding pixels.
             // this is clamped further when sampling near tile border.
             const demAtt = clamp(distanceToBorder, 2, 5);
-            let heightAcc = 0;
             let min = Number.POSITIVE_INFINITY;
             let max = Number.NEGATIVE_INFINITY;
-            let count = 0;
             let minx = Math.max(0, minDem.x - demAtt);
             let miny = Math.max(0, minDem.y - demAtt);
             let maxx = Math.min(maxDem.x + demAtt, dem._dem.dim - 1);
             let maxy = Math.min(maxDem.y + demAtt, dem._dem.dim - 1);
-            for (let y = miny; y <= maxy + demAtt; ++y) {
-                for (let x = minx - demAtt; x <= maxx + demAtt; ++x) {
+            for (let y = miny; y <= maxy; ++y) {
+                for (let x = minx; x <= maxx; ++x) {
                     passLookup[y * dem._dem.dim + x] = 255;
                 }
             }
 
+            let heightAcc = 0;
+            let count = 0;
             for (let celly = 0; celly < grid.cellsY; ++celly) {
                 for (let cellx = 0; cellx < grid.cellsX; ++cellx) {
                     const cell = grid.cells[celly * grid.cellsX + cellx];
