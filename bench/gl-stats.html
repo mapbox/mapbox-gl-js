@@ -8,12 +8,13 @@
 let now = performance.now();
 window.performance.now = () => now;
 </script>
-<script src="../dist/mapbox-gl.js"></script>
+<script src='../dist/mapbox-gl.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<link rel='stylesheet' href='../dist/mapbox-gl.css' />
 <style>.mapboxgl-canary { background-color: salmon; }</style>
 </head>
 <body style="margin: 0; padding: 0"><div id="map" style="width: 500px; height: 500px"></div></body>
 <script>
-mapboxgl.accessToken = 'MAPBOX_ACCESS_TOKEN';
 mapboxgl.workerCount = 1;
 
 var map = new mapboxgl.Map({
@@ -24,7 +25,6 @@ var map = new mapboxgl.Map({
 });
 
 const gl = map.painter.context && map.painter.context.gl || map.painter.gl;
-const vao = map.painter.context && map.painter.context.extVertexArrayObject || map.painter.extVertexArrayObject;
 
 const tileStats = {};
 const frameStats = {};
@@ -65,7 +65,7 @@ map.on('data', function onData(e) {
     hookStats(frameStats, gl, 'drawElements', 'draw');
     hookStats(frameStats, gl, 'drawArrays', 'draw');
     hookStats(frameStats, gl, 'useProgram');
-    hookStats(frameStats, vao, 'bindVertexArrayOES', 'bindVAO');
+    hookStats(frameStats, gl, 'bindVertexArray', 'bindVAO');
 
     hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData');
     hookStats(frameStats, gl, 'bufferSubData', 'bufferSubData_bytes', (args) => args[2].byteLength);

@@ -3446,9 +3446,10 @@ class Map extends Camera {
         let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
+        const gl = this.painter.context.gl;
         if (this.listens('gpu-timing-frame')) {
-            gpuTimer = extTimerQuery.createQueryEXT();
-            extTimerQuery.beginQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            gpuTimer = gl.createQuery();
+            gl.beginQuery(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
         }
 
         // A custom layer may have used the context asynchronously. Mark the state as dirty.
@@ -3557,10 +3558,10 @@ class Map extends Camera {
 
         if (gpuTimer) {
             const renderCPUTime = browser.now() - frameStartTime;
-            extTimerQuery.endQueryEXT(extTimerQuery.TIME_ELAPSED_EXT, gpuTimer);
+            gl.endQuery(extTimerQuery.TIME_ELAPSED_EXT);
             setTimeout(() => {
-                const renderGPUTime = extTimerQuery.getQueryObjectEXT(gpuTimer, extTimerQuery.QUERY_RESULT_EXT) / (1000 * 1000);
-                extTimerQuery.deleteQueryEXT(gpuTimer);
+                const renderGPUTime = gl.getQueryParameter(gpuTimer, gl.QUERY_RESULT) / (1000 * 1000);
+                gl.deleteQuery(gpuTimer);
                 this.fire(new Event('gpu-timing-frame', {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
