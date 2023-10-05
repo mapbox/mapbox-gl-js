@@ -1,6 +1,25 @@
-## 3.0.0-beta.3
+## 3.0.0-beta.4
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.2`:
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.3`:
+
+### ✨ Features and improvements
+
+- Significantly improve map loading performance on views with 3D models.
+- Significantly reduce the loaded bundle size on 3D styles by implementing a custom 3D model parsing pipeline.
+- Improve shadow rendering performance.
+- Improve flood light and ground ambient occlusion performance and rendering quality.
+- Improve rendering of stars on globe view.
+- Add `hillshade-emissive-strength` property for styling the hillshade layer with the new lighting API.
+
+### Bug fixes 🐞
+
+- Fix collisions when rendering 3D models on top of terrain.
+- Correct half-texel misalignment in `raster-color` lookup texture sampling.
+- Fix level of detail selection for models in the distance.
+- Fix the order of layers in `queryRenderedFeatures` results on maps with globe and terrain.
+- Fix an error when zooming out on certain globe views when using GL JS development bundle.
+
+## 3.0.0-beta.3
 
 ### ✨ Features and improvements
 
