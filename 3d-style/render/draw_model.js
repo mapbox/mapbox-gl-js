@@ -294,12 +294,14 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
 
-    if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         drawInstancedModels(painter, sourceCache, layer, coords);
         cleanup();
         return;
     }
+
+    if (!modelSource.loaded()) return;
+
     if (modelSource.type === 'batched-model') {
         drawBatchedModels(painter, sourceCache, layer, coords);
         cleanup();
@@ -517,7 +519,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
             const model = modelManager.getModel(modelId, layer.scope);
-            if (!model) continue;
+            if (!model || !model.uploaded) continue;
             for (const node of model.nodes) {
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
             }
