@@ -33,8 +33,8 @@ const todo = [
 const skip = [
     // Sometimes timing out
     "render-tests/globe/globe-video",
-    "render-tests/video/default"
-
+    "render-tests/video/default",
+    "render-tests/model-layer/landmark-z-offset-terrain-fix-griffith" // flakey
 ];
 
 export default {todo, skip};

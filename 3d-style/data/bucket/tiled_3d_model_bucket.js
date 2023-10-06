@@ -267,8 +267,11 @@ class Tiled3dModelBucket implements Bucket {
             return;
         }
 
+        // Resolution of the DEM data.
+        const demRes = dem._dem.dim;
+
         tiles.push(coord.canonical);
-        assert(lookup.length <= dem._dem.dim * dem._dem.dim);
+        assert(lookup.length <= demRes * demRes);
 
         let changed = false;
         for (const nodeInfo of this.getNodesInfo()) {
@@ -277,30 +280,41 @@ class Tiled3dModelBucket implements Bucket {
                 continue;
             }
 
-            // Convert the bounds of the footprint for this node from its tile coordinates to world/pixel coordinates.
+            // Convert the bounds of the footprint for this node from its tile coordinates to DEM pixel coordinates.
             const grid = node.footprint.grid;
             const minDem = dem.tileCoordToPixel(grid.min.x, grid.min.y);
             const maxDem = dem.tileCoordToPixel(grid.max.x, grid.max.y);
 
-            const distanceToBorder = Math.min(Math.min(dem._dem.dim - maxDem.y, minDem.x), Math.min(minDem.y, dem._dem.dim - maxDem.x));
+            const distanceToBorder = Math.min(Math.min(demRes - maxDem.y, minDem.x), Math.min(minDem.y, demRes - maxDem.x));
             if (distanceToBorder < 0) {
                 continue; // don't deal with neighbors and landmarks crossing tile borders, fix terrain only for buildings within the tile
             }
             // demAtt is a number of pixels we use to propagate attenuated change to surrounding pixels.
             // this is clamped further when sampling near tile border.
+            // The footprint covers a certain region of DEM pixels as indicated with 'minDem' and 'maxDem' (region A).
+            // This region is further padded by demAtt pixels to form the region B.
+            // First mark all the DEM pixels in region B as unchanged (using 'passLookup' array).
+            // +------------+
+            // |  +-----+   |
+            // |  |  A  |   |
+            // |  +-----+ B |
+            // +------------+
             const demAtt = clamp(distanceToBorder, 2, 5);
-            let min = Number.POSITIVE_INFINITY;
-            let max = Number.NEGATIVE_INFINITY;
             let minx = Math.max(0, minDem.x - demAtt);
             let miny = Math.max(0, minDem.y - demAtt);
-            let maxx = Math.min(maxDem.x + demAtt, dem._dem.dim - 1);
-            let maxy = Math.min(maxDem.y + demAtt, dem._dem.dim - 1);
+            let maxx = Math.min(maxDem.x + demAtt, demRes - 1);
+            let maxy = Math.min(maxDem.y + demAtt, demRes - 1);
             for (let y = miny; y <= maxy; ++y) {
                 for (let x = minx; x <= maxx; ++x) {
-                    passLookup[y * dem._dem.dim + x] = 255;
+                    passLookup[y * demRes + x] = 255;
                 }
             }
 
+            // Next go through all eligible DEM pixels in region A, mark them as changed and calculate the average height(elevation).
+            // Some pixels may be skipped (and therefore aren't eligible) because no footprint geometry overlaps them.
+            // This is indicated by the existence of a 'Cell' at a given pixel's position.
+            let min = Number.POSITIVE_INFINITY;
+            let max = Number.NEGATIVE_INFINITY;
             let heightAcc = 0;
             let count = 0;
             for (let celly = 0; celly < grid.cellsY; ++celly) {
@@ -311,10 +325,10 @@ class Tiled3dModelBucket implements Bucket {
                     }
                     const demP = dem.tileCoordToPixel(grid.min.x + cellx / grid.xScale, grid.min.y + celly / grid.yScale);
                     const demPMax = dem.tileCoordToPixel(grid.min.x + (cellx + 1) / grid.xScale, grid.min.y + (celly + 1) / grid.yScale);
-                    for (let y = demP.y; y <= Math.min(demPMax.y + 1, dem._dem.dim - 1); ++y) {
-                        for (let x = demP.x; x <= Math.min(demPMax.x + 1, dem._dem.dim - 1); ++x) {
-                            if (passLookup[y * dem._dem.dim + x] === 255) {
-                                passLookup[y * dem._dem.dim + x] = 0;
+                    for (let y = demP.y; y <= Math.min(demPMax.y + 1, demRes - 1); ++y) {
+                        for (let x = demP.x; x <= Math.min(demPMax.x + 1, demRes - 1); ++x) {
+                            if (passLookup[y * demRes + x] === 255) {
+                                passLookup[y * demRes + x] = 0;
                                 const height = dem.getElevationAtPixel(x, y);
                                 min = Math.min(height, min);
                                 max = Math.max(height, max);
@@ -328,28 +342,36 @@ class Tiled3dModelBucket implements Bucket {
 
             assert(count);
             const avgHeight = heightAcc / count;
+            // See https://github.com/mapbox/mapbox-gl-js-internal/pull/804#issuecomment-1738720351
+            // for explanation why bounds should be clamped to 1 and demRes - 2 respectively.
             minx = Math.max(1, minDem.x - demAtt);
             miny = Math.max(1, minDem.y - demAtt);
-            maxx = Math.min(maxDem.x + demAtt, dem._dem.dim - 1);
-            maxy = Math.min(maxDem.y + demAtt, dem._dem.dim - 1);
+            maxx = Math.min(maxDem.x + demAtt, demRes - 2);
+            maxy = Math.min(maxDem.y + demAtt, demRes - 2);
 
+            // Next, update the DEM pixels in region A (which the footprint overlaps with) by the average height.
+            // This effectively flattens the terrain for the given footprint/building.
+            // Store the difference of the original height with the average height in 'lookup' array.
             changed = true;
             for (let y = miny; y <= maxy; ++y) {
                 for (let x = minx; x <= maxx; ++x) {
-                    if (passLookup[y * dem._dem.dim + x] === 0) {
-                        lookup[y * dem._dem.dim + x] = dem._dem.set(x, y, avgHeight);
+                    if (passLookup[y * demRes + x] === 0) {
+                        lookup[y * demRes + x] = dem._dem.set(x, y, avgHeight);
                     }
                 }
             }
 
+            // Finally propagate the flattened out values to the remaining surrounding pixels (as goverened by demAtt padding) in region B.
+            // This ensures a smooth transition between the flattened and the non-flattened regions.
             for (let p = 1; p < demAtt; ++p) {
                 minx = Math.max(1, minDem.x - p);
                 miny = Math.max(1, minDem.y - p);
-                maxx = Math.min(maxDem.x + p, dem._dem.dim - 1);
-                maxy = Math.min(maxDem.y + p, dem._dem.dim - 1);
+                maxx = Math.min(maxDem.x + p, demRes - 2);
+                maxy = Math.min(maxDem.y + p, demRes - 2);
                 for (let y = miny; y <= maxy; ++y) {
                     for (let x = minx; x <= maxx; ++x) {
-                        const indexThis = y * dem._dem.dim + x;
+                        const indexThis = y * demRes + x;
+                        // If DEM pixel is not modified.
                         if (passLookup[indexThis] === 255) {
                             let maxDiff = 0;
                             let maxDiffAbs = 0;
@@ -357,7 +379,7 @@ class Tiled3dModelBucket implements Bucket {
                             let yoffset = -1;
                             for (let j = -1; j <= 1; ++j) {
                                 for (let i = -1; i <= 1; ++i) {
-                                    const index = (y + j) * dem._dem.dim + x + i;
+                                    const index = (y + j) * demRes + x + i;
                                     if (passLookup[index] >= p) {
                                         continue;
                                     }
