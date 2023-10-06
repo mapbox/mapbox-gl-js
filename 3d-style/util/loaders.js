@@ -276,11 +276,15 @@ export async function loadGLTF(url: string): Promise<any> {
 }
 
 export async function load3DTile(data: ArrayBuffer): Promise<any> {
-    const header = new Uint32Array(data, 0, 7);
-    const [/*magic*/, /*version*/, byteLen, featureTableJsonLen, featureTableBinLen, batchTableJsonLen/*, batchTableBinLen*/] = header;
-    const gltfOffset = header.byteLength + featureTableJsonLen + featureTableBinLen + batchTableJsonLen + featureTableBinLen;
-    if (byteLen !== data.byteLength || gltfOffset >= data.byteLength) {
-        warnOnce('Invalid b3dm header information.');
+    const magic = new Uint32Array(data, 0, 1)[0];
+    let gltfOffset = 0;
+    if (magic !== MAGIC_GLTF) {
+        const header = new Uint32Array(data, 0, 7);
+        const [/*magic*/, /*version*/, byteLen, featureTableJsonLen, featureTableBinLen, batchTableJsonLen/*, batchTableBinLen*/] = header;
+        gltfOffset = header.byteLength + featureTableJsonLen + featureTableBinLen + batchTableJsonLen + featureTableBinLen;
+        if (byteLen !== data.byteLength || gltfOffset >= data.byteLength) {
+            warnOnce('Invalid b3dm header information.');
+        }
     }
     return decodeGLTF(data, gltfOffset);
 }

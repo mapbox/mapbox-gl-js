@@ -489,7 +489,7 @@ export default function convertModel(gltf: Object): Array<Node> {
     return resultNodes;
 }
 
-export function convertB3dm(gltf: Object, zScale: number): Array<Node> {
+export function process3DTile(gltf: Object, zScale: number): Array<Node> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
         for (const mesh of node.meshes) {
