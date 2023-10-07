@@ -12,6 +12,7 @@ import {
 } from '../uniform_binding.js';
 import EXTENT from '../../style-spec/data/extent.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
+import {cartesianPositionToSpherical, degToRad} from '../../../src/util/util.js';
 
 import type Context from '../../gl/context.js';
 import type {UniformValues} from '../uniform_binding.js';
@@ -70,10 +71,17 @@ const hillshadeUniformValues = (
     const accent = layer.paint.get("hillshade-accent-color");
     const emissiveStrength = layer.paint.get("hillshade-emissive-strength");
 
-    let azimuthal = layer.paint.get('hillshade-illumination-direction') * (Math.PI / 180);
+    let azimuthal = degToRad(layer.paint.get('hillshade-illumination-direction'));
     // modify azimuthal angle by map rotation if light is anchored at the viewport
     if (layer.paint.get('hillshade-illumination-anchor') === 'viewport') {
         azimuthal -= painter.transform.angle;
+    } else if (painter.style && painter.style.enable3dLights()) {
+        // hillshade-illumination-anchor = map & 3d lights enabled
+        if (painter.style.directionalLight) {
+            const direction = painter.style.directionalLight.properties.get('direction');
+            const spherical = cartesianPositionToSpherical(direction.x, direction.y, direction.z);
+            azimuthal = degToRad(spherical[1]);
+        }
     }
     const align = !painter.options.moving;
     return {
