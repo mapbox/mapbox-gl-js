@@ -3442,6 +3442,7 @@ class Map extends Camera {
      */
     _render(paintStartTimeStamp: number) {
         const m = PerformanceUtils.beginMeasure('render');
+        this.fire(new Event('renderstart'));
 
         let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;

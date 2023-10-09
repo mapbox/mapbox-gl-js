@@ -1222,6 +1222,26 @@ export type MapEvent =
     | 'load'
 
     /**
+     * Fired whenever the rendering process of the map is started.
+     * This event can be used in pair with the "render" event,
+     * to measure the time spent on the CPU during the rendering
+     * of a single frame.
+     *
+     * @event renderstart
+     * @memberof Map
+     * @instance
+     * @example
+     * // Initialize the map
+     * const map = new mapboxgl.Map({});
+     * // Set an event listener that fires
+     * // when the map begins rendering.
+     * map.on('renderstart', () => {
+     *     console.log('A renderstart event occurred.');
+     * });
+     */
+    | 'renderstart'
+
+    /**
      * Fired whenever the map is drawn to the screen, as the result of:
      *
      * - a change to the map's position, zoom, pitch, or bearing
