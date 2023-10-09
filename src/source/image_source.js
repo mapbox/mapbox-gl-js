@@ -227,7 +227,7 @@ class ImageSource extends Evented implements Source {
      * });
      */
     updateImage(options: {url: string, coordinates?: Coordinates}): this {
-        if (!this.image || !options.url) {
+        if (!options.url) {
             return this;
         }
         if (this._imageRequest && options.url !== this.options.url) {
