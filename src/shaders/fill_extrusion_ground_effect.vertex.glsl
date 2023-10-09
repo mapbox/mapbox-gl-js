@@ -33,8 +33,11 @@ void main() {
     vec2 q = floor(a_pos_end.zw * 0.5);
     vec2 start_bottom = a_pos_end.zw - q * 2.0;
 
-    float flood_light_ground_radius_abs = abs(flood_light_ground_radius);
-    float flood_radius_tile = flood_light_ground_radius_abs * u_meter_to_tile;
+    float fl_ground_radius = flood_light_ground_radius;
+#ifdef FORCE_ABS_FL_GROUND_RADIUS
+    fl_ground_radius = abs(flood_light_ground_radius);
+#endif
+    float flood_radius_tile = fl_ground_radius * u_meter_to_tile;
     vec2 v = normalize(q - p);
     float ao_radius = u_ao.y / 3.5; // adjust AO radius slightly
     float effect_radius = mix(flood_radius_tile, ao_radius, u_ao_pass) + u_edge_radius;
@@ -72,7 +75,7 @@ void main() {
     hidden_by_landmark = a_hidden_by_landmark;
 #endif
 
-    float isFloodlit = float(flood_light_ground_radius_abs > 0.0 && u_flood_light_intensity > 0.0);
+    float isFloodlit = float(fl_ground_radius > 0.0 && u_flood_light_intensity > 0.0);
     float hidden = mix(1.0 - isFloodlit, isFloodlit, u_ao_pass);
     hidden += hidden_by_landmark;
 
