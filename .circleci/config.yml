@@ -171,6 +171,13 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - trigger-performance-tests:
+          context:
+            - "sdk-cicd/circleci-api"
+          filters:
+            branches:
+              only:
+                  - internal
 
 linux-defaults: &linux-defaults
   docker:
@@ -584,3 +591,13 @@ jobs:
           path: test/integration/render-tests
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
+
+  trigger-performance-tests:
+    <<: *linux-defaults
+    steps:
+      - checkout
+      - run:
+          name: Trigger SLA performance tests
+          command: |
+            sha=$(git rev-parse HEAD)
+            curl --location --request POST 'https://circleci.com/api/v2/project/github/mapbox/mapbox-gl-js-performance-internal/pipeline' --header 'Content-Type: application/json' -u $CIRCLECI_API_TOKEN: -d "{ \"parameters\": { \"setup_sha\": \"$sha\", \"setup_source_branch\": \"internal\" } }"
