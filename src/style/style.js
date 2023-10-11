@@ -533,7 +533,7 @@ class Style extends Evented {
 
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
-        if (this.importDepth === 0 && (json.fragment || schema)) {
+        if (this.importDepth === 0 && (json.fragment || (schema && json.fragment !== false))) {
             const basemap = {id: 'basemap', data: json, url: ''};
             const style = extend({}, empty, {imports: [basemap]});
             this._load(style, validate);
