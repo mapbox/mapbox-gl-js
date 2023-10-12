@@ -91,7 +91,7 @@
     "selenium-webdriver": "^4.13.0",
     "serve-static": "^1.15.0",
     "shuffle-seed": "^1.1.6",
-    "sinon": "^16.0.0",
+    "sinon": "^16.1.0",
     "st": "^3.0.0",
     "stylelint": "^15.10.3",
     "stylelint-config-standard": "^34.0.0",
