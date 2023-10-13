@@ -147,4 +147,4 @@ const atmosphereUniformValues = (
 
 export {globeRasterUniforms, globeRasterUniformValues, atmosphereUniforms, atmosphereUniformValues};
 
-export type GlobeDefinesType = 'PROJECTION_GLOBE_VIEW' | 'GLOBE_POLES' | 'CUSTOM_ANTIALIASING';
+export type GlobeDefinesType = 'PROJECTION_GLOBE_VIEW' | 'GLOBE_POLES' | 'CUSTOM_ANTIALIASING' | 'ALPHA_PASS';

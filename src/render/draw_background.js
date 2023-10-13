@@ -36,8 +36,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const stencilMode = StencilMode.disabled;
     const depthMode = painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly);
     const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
-
-    const program = painter.useProgram(image ? 'backgroundPattern' : 'background');
+    const programName = image ? 'backgroundPattern' : 'background';
 
     let tileIDs = coords;
     let backgroundTiles;
@@ -52,6 +51,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     }
 
     for (const tileID of tileIDs) {
+        const affectedByFog = painter.isTileAffectedByFog(tileID);
+        const program = painter.useProgram(programName, {overrideFog: affectedByFog});
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile();

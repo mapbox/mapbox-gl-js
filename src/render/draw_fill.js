@@ -84,7 +84,8 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
         painter.prepareDrawTile();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(programName, programConfiguration);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+        const program = painter.useProgram(programName, {config: programConfiguration, overrideFog: affectedByFog});
 
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);

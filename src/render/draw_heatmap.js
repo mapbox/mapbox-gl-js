@@ -46,7 +46,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         const isGlobeProjection = tr.projection.name === 'globe';
 
-        const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
+        const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
         const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
 
         const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
@@ -63,8 +63,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
+            const affectedByFog = painter.isTileAffectedByFog(coord);
             const programConfiguration = bucket.programConfigurations.get(layer.id);
-            const program = painter.useProgram('heatmap', programConfiguration, definesValues);
+            const program = painter.useProgram('heatmap', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 

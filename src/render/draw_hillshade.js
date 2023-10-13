@@ -57,7 +57,8 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
     if (!fbo) return;
     painter.prepareDrawTile();
 
-    const program = painter.useProgram('hillshade');
+    const affectedByFog = painter.isTileAffectedByFog(coord);
+    const program = painter.useProgram('hillshade', {overrideFog: affectedByFog});
 
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());

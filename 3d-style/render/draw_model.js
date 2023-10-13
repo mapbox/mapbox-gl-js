@@ -1,6 +1,7 @@
 // @flow
 
 import type Painter from '../../src/render/painter.js';
+import type {UseProgramParams} from '../../src/render/painter.js';
 import type SourceCache from '../../src/source/source_cache.js';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
@@ -29,6 +30,7 @@ import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
 import {Aabb} from '../../src/util/primitives.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
+import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers.js';
 
 export default drawModels;
 
@@ -126,10 +128,12 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     assert(opacity > 0);
     const context = painter.context;
     const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const tr = painter.transform;
 
     const mesh = sortedMesh.mesh;
     const material = mesh.material;
     const pbr = material.pbrMetallicRoughness;
+    const fog = painter.style.fog;
 
     let lightingMatrix;
     if (painter.transform.projection.zAxisUnit === "pixels") {
@@ -154,26 +158,36 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         material,
         layer);
 
-    const definesValues = [];
+    const programOptions: UseProgramParams = {
+        defines: []
+    };
+
     // Extra buffers (colors, normals, texCoords)
     const dynamicBuffers = [];
 
-    setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter);
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
     let fogMatrixArray = null;
-    if (painter.style.fog) {
+    if (fog) {
         const fogMatrix = fogMatrixForModel(sortedMesh.nodeModelMatrix, painter.transform);
-        definesValues.push('FOG', 'FOG_DITHERING');
         fogMatrixArray = new Float32Array(fogMatrix);
+
+        if (tr.projection.name !== 'globe') {
+            const min = mesh.aabb.min;
+            const max = mesh.aabb.max;
+            const [minOpacity, maxOpacity] = fog.getOpacityForBounds(fogMatrix, min[0], min[1], max[0], max[1]);
+            programOptions.overrideFog = minOpacity >= FOG_OPACITY_THRESHOLD || maxOpacity >= FOG_OPACITY_THRESHOLD;
+        }
     }
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
     if (cutoffParams.shouldRenderCutoff) {
-        definesValues.push('RENDER_CUTOFF');
+        (programOptions.defines: any).push('RENDER_CUTOFF');
     }
-    const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+
+    const program = painter.useProgram('model', programOptions);
 
     painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
 
@@ -252,7 +266,7 @@ function drawShadowCaster(mesh: Mesh, matrix: Mat4, painter: Painter, layer: Mod
     const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
     const definesValues = ['DEPTH_TEXTURE'];
-    const program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
+    const program = painter.useProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
     const context = painter.context;
     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -534,6 +548,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
     const depthMode = isShadowPass && shadowRenderer ? shadowRenderer.getShadowPassDepthMode() : new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const affectedByFog = painter.isTileAffectedByFog(coord);
 
     if (node.meshes) {
         for (const mesh of node.meshes) {
@@ -552,12 +567,12 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 definesValues.push('RENDER_CUTOFF');
             }
             if (isShadowPass && shadowRenderer) {
-                program = painter.useProgram('modelDepth', null, ((definesValues: any): DynamicDefinesType[]));
+                program = painter.useProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
                 setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
-                program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+                program = painter.useProgram('model', {defines: ((definesValues: any): DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
                 const layerOpacity = layer.paint.get('model-opacity');
@@ -642,6 +657,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
 function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
     const context = painter.context;
     const tr = painter.transform;
+    const fog = painter.style.fog;
     if (tr.projection.name !== 'mercator') {
         warnOnce(`Drawing 3D landmark models for ${tr.projection.name} projection is not yet implemented`);
         return;
@@ -717,12 +733,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         continue;
                     }
 
-                    const definesValues = [];
+                    const programOptions: UseProgramParams = {
+                        defines: []
+                    };
                     const dynamicBuffers = [];
-                    setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+                    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter);
 
                     if (!(modelTraits & ModelTraits.HasMapboxMeshFeatures)) {
-                        definesValues.push('DIFFUSE_SHADED');
+                        (programOptions.defines: any).push('DIFFUSE_SHADED');
                     }
 
                     const isShadowPass = painter.renderPass === 'shadow';
@@ -732,12 +750,19 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
 
                     let fogMatrixArray = null;
-                    if (painter.style.fog) {
+                    if (fog) {
                         const fogMatrix = fogMatrixForModel(modelMatrix, painter.transform);
-                        definesValues.push('FOG', 'FOG_DITHERING');
                         fogMatrixArray = new Float32Array(fogMatrix);
+
+                        if (tr.projection.name !== 'globe') {
+                            const min = mesh.aabb.min;
+                            const max = mesh.aabb.max;
+                            const [minOpacity, maxOpacity] = fog.getOpacityForBounds(fogMatrix, min[0], min[1], max[0], max[1]);
+                            programOptions.overrideFog = minOpacity >= FOG_OPACITY_THRESHOLD || maxOpacity >= FOG_OPACITY_THRESHOLD;
+                        }
                     }
-                    const program = painter.useProgram('model', null, ((definesValues: any): DynamicDefinesType[]));
+
+                    const program = painter.useProgram('model', programOptions);
 
                     const shadowRenderer = painter.shadowRenderer;
 

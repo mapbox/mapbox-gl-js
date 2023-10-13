@@ -74,11 +74,12 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const definesValues = circleDefinesValues(layer);
+        const definesValues = ((circleDefinesValues(layer): any): DynamicDefinesType[]);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
         if (isGlobeProjection) {
             definesValues.push('PROJECTION_GLOBE_VIEW');
         }
-        const program = painter.useProgram('circle', programConfiguration, ((definesValues: any): DynamicDefinesType[]));
+        const program = painter.useProgram('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;

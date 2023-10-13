@@ -414,7 +414,7 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
                 uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), transitionProgress);
         }
 
-        const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), programConfiguration, baseDefines);
+        const program = painter.useProgram(getSymbolProgramName(isSDF, isText, bucket), {config: programConfiguration, defines: baseDefines});
 
         const state = {
             program,

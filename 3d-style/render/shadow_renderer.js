@@ -259,7 +259,6 @@ export class ShadowRenderer {
         if (cutoffParams.shouldRenderCutoff) {
             baseDefines.push('RENDER_CUTOFF');
         }
-        const program = painter.useProgram('groundShadow', null, baseDefines);
 
         // Render shadows on the ground plane as an extra layer of blended "tiles"
         const tileCoverOptions = {
@@ -274,6 +273,8 @@ export class ShadowRenderer {
 
         for (const id of tiles) {
             const unwrapped = id.toUnwrapped();
+            const affectedByFog = painter.isTileAffectedByFog(id);
+            const program = painter.useProgram('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
 
             this.setupShadows(unwrapped, program);
 

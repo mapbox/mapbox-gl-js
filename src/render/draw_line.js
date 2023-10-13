@@ -47,7 +47,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const context = painter.context;
     const gl = context.gl;
 
-    const definesValues = lineDefinesValues(layer);
+    const definesValues = ((lineDefinesValues(layer): any): DynamicDefinesType[]);
     let useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
     if (painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;
@@ -62,7 +62,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         painter.prepareDrawTile();
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(programId, programConfiguration, ((definesValues: any): DynamicDefinesType[]));
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+        const program = painter.useProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {

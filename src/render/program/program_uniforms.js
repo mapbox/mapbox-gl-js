@@ -28,7 +28,8 @@ import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/progra
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program.js';
 import {starsUniforms} from '../../terrain/stars_program.js';
 
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType;
+export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType | FogDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

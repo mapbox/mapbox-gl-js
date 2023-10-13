@@ -32,7 +32,7 @@ export type CircleUniformsType = {|
     'u_emissive_strength': Uniform1f,
 |};
 
-export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP' | 'PROJECTION_GLOBE_VIEW';
+export type CircleDefinesType = 'PITCH_WITH_MAP' | 'SCALE_WITH_MAP';
 
 const circleUniforms = (context: Context): CircleUniformsType => ({
     'u_camera_to_center_distance': new Uniform1f(context),

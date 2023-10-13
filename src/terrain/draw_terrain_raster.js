@@ -149,13 +149,14 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
-    const setShaderMode = (mode: number) => {
+    const setShaderMode = (coord: OverscaledTileID, mode: number) => {
         if (programMode === mode) return;
         const defines = [shaderDefines[mode], 'PROJECTION_GLOBE_VIEW'];
 
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        program = painter.useProgram('globeRaster', null, defines);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+        program = painter.useProgram('globeRaster', {defines, overrideFog: affectedByFog});
         programMode = mode;
     };
 
@@ -208,7 +209,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, gridMatrix);
 
-            setShaderMode(shaderMode);
+            setShaderMode(coord, shaderMode);
             if (!program) {
                 continue;
             }
@@ -231,7 +232,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        program = painter.useProgram('globeRaster', null, defines);
+        program = painter.useProgram('globeRaster', {defines});
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
             const {x, y, z} = coord.canonical;
@@ -292,7 +293,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
             }
-            program = painter.useProgram('terrainRaster', null, modes);
+            program = painter.useProgram('terrainRaster', {defines: modes});
             programMode = mode;
         };
 

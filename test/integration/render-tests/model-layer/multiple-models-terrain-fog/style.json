@@ -3,7 +3,13 @@
   "metadata": {
     "test": {
       "width": 1024,
-      "height": 1024
+      "height": 1024,
+      "operations": [
+        [
+            "wait",
+            600
+        ]
+      ]
     }
   },
   "center": [

@@ -1024,10 +1024,14 @@ class Style extends Evented {
                 const programIds = layer.getProgramIds();
                 if (!programIds) continue;
 
-                const programConfiguration = layer.getProgramConfiguration(parameters.zoom);
+                const options = {};
+                const config = layer.getProgramConfiguration(parameters.zoom);
+                if (config) {
+                    options.config = config;
+                }
 
                 for (const programId of programIds) {
-                    painter.useProgram(programId, programConfiguration);
+                    painter.useProgram(programId, options);
                 }
             }
         }

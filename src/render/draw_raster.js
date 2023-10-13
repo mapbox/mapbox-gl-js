@@ -51,8 +51,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
     }
 
-    const program = painter.useProgram('raster', null, rasterColor.defines);
-
     const colorMode = painter.colorModeForDrapableLayerRenderPass();
 
     // When rendering to texture, coordinates are already sorted: primary by
@@ -106,6 +104,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
         const perspectiveTransform = source.perspectiveTransform;
         const uniformValues = rasterUniformValues(projMatrix, normalizeMatrix, globeMatrix, [0, 0], 1, fade, layer, perspectiveTransform || [0, 0], RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0]);
+        const program = painter.useProgram('raster', {defines: rasterColor.defines});
 
         painter.uploadCommonUniforms(context, program, null);
         program.draw(
@@ -172,6 +171,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
         const emptyMatrix = new Float32Array(16);
         const uniformValues = rasterUniformValues(projMatrix, emptyMatrix, emptyMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0]);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+
+        const program = painter.useProgram('raster', {defines: rasterColor.defines, overrideFog: affectedByFog});
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

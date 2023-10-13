@@ -54,7 +54,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const gl = context.gl;
 
     const isGlobeProjection = tr.projection.name === 'globe';
-    const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : null;
+    const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
 
     let posMatrix = coord.projMatrix;
 
@@ -68,7 +68,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
     }
 
-    const program = painter.useProgram('debug', null, definesValues);
+    const program = painter.useProgram('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 

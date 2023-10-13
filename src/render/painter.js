@@ -88,11 +88,18 @@ import type IndexBuffer from '../gl/index_buffer.js';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
+import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[],
     timeStamps: number[]
+}
+
+export type UseProgramParams = {
+    config?: ProgramConfiguration,
+    defines?: DynamicDefinesType[],
+    overrideFog?: boolean
 }
 
 type WireframeOptions = {
@@ -191,6 +198,8 @@ class Painter {
     minCutoffZoom: number;
     renderDefaultNorthPole: boolean;
     renderDefaultSouthPole: boolean;
+    _fogVisible: boolean;
+    _cachedTileFogOpacities: {[number]: [number, number]};
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -219,6 +228,8 @@ class Painter {
         this.replacementSource = new ReplacementSource();
         this.longestCutoffRange = 0.0;
         this.minCutoffZoom = 0.0;
+        this._fogVisible = false;
+        this._cachedTileFogOpacities = {};
         this._shadowRenderer = new ShadowRenderer(this);
 
         this._wireframeDebugCache = new WireframeDebugCache();
@@ -659,6 +670,21 @@ class Painter {
                 break;
             }
         }
+
+        // Disable fog for the frame if it doesn't contribute to the final output at all
+        const fog = this.style && this.style.fog;
+
+        if (fog) {
+            this._fogVisible = fog.getOpacity(this.transform.pitch) !== 0.0;
+
+            if (this._fogVisible && this.transform.projection.name !== 'globe') {
+                this._fogVisible = fog.isVisibleOnFrustum(this.transform.cameraFrustum);
+            }
+        } else {
+            this._fogVisible = false;
+        }
+
+        this._cachedTileFogOpacities = {};
 
         if (this.terrain) {
             this.terrain.updateTileBinding(coordsDescendingSymbol);
@@ -1114,10 +1140,9 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(name: string): string[] {
+    currentGlobalDefines(name: string, overrideFog: ?boolean): string[] {
         const rtt = this.terrain && this.terrain.renderingToTexture;
         const zeroExaggeration = this.terrain && this.terrain.exaggeration() === 0.0;
-        const fog = this.style && this.style.fog;
         const defines = [];
 
         if (this.style && this.style.enable3dLights()) {
@@ -1147,7 +1172,7 @@ class Painter {
         if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
-        if (fog && !rtt && fog.getOpacity(this.transform.pitch) !== 0.0) {
+        if (this._fogVisible && !rtt && (overrideFog === undefined || overrideFog)) {
             defines.push('FOG', 'FOG_DITHERING');
         }
         if (rtt) defines.push('RENDER_TO_TEXTURE');
@@ -1155,16 +1180,18 @@ class Painter {
         return defines;
     }
 
-    useProgram(name: string, programConfiguration: ?ProgramConfiguration, fixedDefines: ?DynamicDefinesType[]): Program<any> {
+    useProgram(name: string, options?: UseProgramParams): Program<any> {
         this.cache = this.cache || {};
-        const defines = (((fixedDefines || []): any): string[]);
+        const defines = ((((options && options.defines) || []): any): string[]);
+        const config = options && options.config;
+        const overrideFog = options && options.overrideFog;
 
-        const globalDefines = this.currentGlobalDefines(name);
+        const globalDefines = this.currentGlobalDefines(name, overrideFog);
         const allDefines = globalDefines.concat(defines);
-        const key = Program.cacheKey(shaders[name], name, allDefines, programConfiguration);
+        const key = Program.cacheKey(shaders[name], name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], programConfiguration, programUniforms[name], allDefines);
+            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines);
         }
         return this.cache[key];
     }
@@ -1355,6 +1382,18 @@ class Painter {
         }
 
         return !!source && source.type === "batched-model";
+    }
+
+    isTileAffectedByFog(id: OverscaledTileID): boolean {
+        if (!this.style || !this.style.fog) return false;
+        if (this.transform.projection.name === 'globe') return true;
+
+        let cachedRange = this._cachedTileFogOpacities[id.key];
+        if (!cachedRange) {
+            this._cachedTileFogOpacities[id.key] = cachedRange = this.style.fog.getOpacityForTile(id);
+        }
+
+        return cachedRange[0] >= FOG_OPACITY_THRESHOLD || cachedRange[1] >= FOG_OPACITY_THRESHOLD;
     }
 }
 

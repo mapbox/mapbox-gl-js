@@ -151,6 +151,7 @@ class Transform {
     worldMinY: number;
     worldMaxY: number;
 
+    cameraFrustum: Frustum;
     frustumCorners: FrustumCorners;
 
     freezeTileCoverage: boolean;
@@ -392,7 +393,7 @@ class Transform {
     }
 
     get cameraPixelsPerMeter(): number {
-        return mercatorZfromAltitude(this.center.lat, this.cameraWorldSizeForFog);
+        return mercatorZfromAltitude(1, this.center.lat) * this.cameraWorldSizeForFog;
     }
 
     get centerOffset(): Point {
@@ -2042,6 +2043,7 @@ class Transform {
         if (!this.height) return;
 
         const offset = this.centerOffset;
+        const isGlobe = this.projection.name === 'globe';
 
         // Z-axis uses pixel coordinates when globe mode is enabled
         const pixelsPerMeter = this.pixelsPerMeter;
@@ -2082,7 +2084,7 @@ class Transform {
         cameraToClipPerspective[8] = -offset.x * 2 / this.width;
         cameraToClipPerspective[9] = offset.y * 2 / this.height;
 
-        if (this.projection.name !== 'globe' && this._orthographicProjectionAtLowPitch && this.pitch < OrthographicPitchTranstionValue) {
+        if (!isGlobe && this._orthographicProjectionAtLowPitch && this.pitch < OrthographicPitchTranstionValue) {
             const cameraToCenterDistance =  0.5 * this.height / Math.tan(this._fov / 2.0) * 1.0;
 
             // Calculate bounds for orthographic view
@@ -2135,6 +2137,9 @@ class Transform {
 
         const clipToCamera = mat4.invert([], cameraToClip);
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
+
+        // Create a camera frustum in mercator units
+        this.cameraFrustum = Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, 0.0, !isGlobe);
 
         const view = new Float32Array(16);
         mat4.identity(view);

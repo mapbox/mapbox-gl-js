@@ -11,7 +11,6 @@ import {
 } from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
 import type Painter from './painter.js';
-import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer.js';
 import {degToRad, mapValue, clamp} from '../util/util.js';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';
@@ -24,6 +23,7 @@ import {TriangleIndexArray, StarsVertexArray} from '../data/array_types.js';
 import {starsLayout} from './stars_attributes.js';
 import {starsUniformValues} from '../terrain/stars_program.js';
 import {mulberry32} from '../style-spec/util/random.js';
+import type {DynamicDefinesType} from './program/program_uniforms.js';
 
 function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Vec3> {
     const sRand = mulberry32(30);
@@ -140,7 +140,7 @@ class Atmosphere {
             if (alphaPass) {
                 defines.push("ALPHA_PASS");
             }
-            const program = painter.useProgram('globeAtmosphere', null, ((defines: any): DynamicDefinesType[]));
+            const program = painter.useProgram('globeAtmosphere', {defines: ((defines: any): DynamicDefinesType[])});
 
             const uniforms = atmosphereUniformValues(
                 tr.frustumCorners.TL,

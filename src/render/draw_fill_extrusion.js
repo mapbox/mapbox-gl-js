@@ -288,14 +288,15 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
     }
 
+    const programName = drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion');
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
-        // debugger;
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion'), programConfiguration, baseDefines);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+        const program = painter.useProgram(programName, {config: programConfiguration, defines: baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
             const terrain = painter.terrain;
@@ -409,7 +410,8 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: Float32Array, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
-        const program = painter.useProgram('fillExtrusionGroundEffect', programConfiguration, defines);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+        const program = painter.useProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
 
         const ao = [aoIntensity, aoRadius * meterToTile];
         const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;
