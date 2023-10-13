@@ -1957,6 +1957,60 @@ test('Visible coords with shadows', (t) => {
     t.end();
 });
 
+test('sortCoordinatesByDistance', (t) => {
+    const transform = new Transform();
+    transform.resize(512, 512);
+    transform.center = new LngLat(0, 0);
+    transform.zoom = 2;
+    transform.pitch = 75;
+    transform.bearing = 45.1;
+
+    const {sourceCache, eventedParent} = createSourceCache({
+        reparseOverscaled: true,
+        loadTile(tile, callback) {
+            tile.state = 'loaded';
+            callback(null);
+        }
+    });
+
+    eventedParent.on('data', (e) => {
+        if (e.sourceDataType === 'metadata') {
+            sourceCache.update(transform, 512, false);
+            const coords = sourceCache.getVisibleCoordinates();
+
+            const defaultOrder = [
+                {wrap: 1, canonical: {z: 2, x: 0, y: 1}},
+                {wrap: 1, canonical: {z: 2, x: 0, y: 0}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 2}},
+                {wrap: 0, canonical: {z: 2, x: 1, y: 2}},
+                {wrap: 0, canonical: {z: 2, x: 3, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 1, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 3, y: 0}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 0}}
+            ];
+
+            t.hasStrict(coords, defaultOrder);
+
+            const sortedOrder = [
+                {wrap: 0, canonical: {z: 2, x: 1, y: 2}},
+                {wrap: 0, canonical: {z: 2, x: 1, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 2}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 2, y: 0}},
+                {wrap: 0, canonical: {z: 2, x: 3, y: 1}},
+                {wrap: 0, canonical: {z: 2, x: 3, y: 0}},
+                {wrap: 1, canonical: {z: 2, x: 0, y: 1}},
+                {wrap: 1, canonical: {z: 2, x: 0, y: 0}}
+            ];
+
+            t.hasStrict(sourceCache.sortCoordinatesByDistance(coords), sortedOrder);
+            t.end();
+        }
+    });
+    sourceCache.getSource().onAdd();
+});
+
 test('shadow caster tiles', (t) => {
     const transform = new Transform();
     transform.resize(512, 512);

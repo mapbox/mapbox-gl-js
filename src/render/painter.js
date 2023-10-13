@@ -575,6 +575,7 @@ class Painter {
         const coordsDescending: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsDescendingSymbol: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsShadowCasters: {[_: string]: Array<OverscaledTileID>} = {};
+        const coordsSortedByDistance: {[_: string]: Array<OverscaledTileID>} = {};
 
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
@@ -582,6 +583,7 @@ class Painter {
             coordsDescending[id] = coordsAscending[id].slice().reverse();
             coordsDescendingSymbol[id] = sourceCache.getVisibleCoordinates(true).reverse();
             coordsShadowCasters[id] = sourceCache.getShadowCasterCoordinates();
+            coordsSortedByDistance[id] = sourceCache.sortCoordinatesByDistance(coordsAscending[id]);
         }
 
         const getLayerSource = (layer: StyleLayer) => {
@@ -774,7 +776,7 @@ class Painter {
                 const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style._getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
-                const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+                const coords = sourceCache ? (layer.is3D() ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
 
                 this._renderTileClippingMasks(layer, sourceCache, coords);
                 this.renderLayer(this, sourceCache, layer, coords);
@@ -843,9 +845,14 @@ class Painter {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
-            const coords = sourceCache ?
-                (layer.type === 'symbol' ? coordsDescendingSymbol : coordsDescending)[sourceCache.id] :
-                undefined;
+            let coords: ?Array<OverscaledTileID>;
+
+            if (sourceCache) {
+                const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
+                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
+
+                coords = coordsSet[sourceCache.id];
+            }
 
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             this.renderLayer(this, sourceCache, layer, coords);
