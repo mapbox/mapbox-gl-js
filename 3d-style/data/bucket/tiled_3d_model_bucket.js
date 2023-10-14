@@ -313,8 +313,6 @@ class Tiled3dModelBucket implements Bucket {
             // Next go through all eligible DEM pixels in region A, mark them as changed and calculate the average height(elevation).
             // Some pixels may be skipped (and therefore aren't eligible) because no footprint geometry overlaps them.
             // This is indicated by the existence of a 'Cell' at a given pixel's position.
-            let min = Number.POSITIVE_INFINITY;
-            let max = Number.NEGATIVE_INFINITY;
             let heightAcc = 0;
             let count = 0;
             for (let celly = 0; celly < grid.cellsY; ++celly) {
@@ -330,8 +328,6 @@ class Tiled3dModelBucket implements Bucket {
                             if (passLookup[y * demRes + x] === 255) {
                                 passLookup[y * demRes + x] = 0;
                                 const height = dem.getElevationAtPixel(x, y);
-                                min = Math.min(height, min);
-                                max = Math.max(height, max);
                                 heightAcc += height;
                                 count++;
                             }
