@@ -2218,6 +2218,7 @@ class Style extends Evented {
         if (!this.terrain || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
             if (!options) return;
             this._createTerrain(options, drapeRenderMode);
+            this.fire(new Event('data', {dataType: 'style'}));
         } else { // Updating
             const terrain = this.terrain;
             const currSpec = terrain.get();
@@ -2235,6 +2236,7 @@ class Style extends Evented {
                     this.stylesheet.terrain = terrainOptions;
                     const parameters = this._getTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
+                    this.fire(new Event('data', {dataType: 'style'}));
                     break;
                 }
             }

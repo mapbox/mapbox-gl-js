@@ -4,7 +4,11 @@
     "test": {
       "allowed": 0.000852,
       "width": 512,
-      "height": 700
+      "height": 700,
+      "operations" :[
+        ["wait"],
+        ["wait"]
+      ]
     }
   },
   "lights": [

@@ -51,6 +51,7 @@ class ScrollZoomHandler {
     _startZoom: ?number;
     _targetZoom: ?number;
     _delta: number;
+    _lastDelta: number;
     _easing: ?((number) => number);
     _prevEase: ?{start: number, duration: number, easing: (_: number) => number};
 
@@ -72,6 +73,7 @@ class ScrollZoomHandler {
         this._handler = handler;
 
         this._delta = 0;
+        this._lastDelta = 0;
 
         this._defaultZoomRate = defaultZoomRate;
         this._wheelZoomRate = wheelZoomRate;
@@ -309,7 +311,7 @@ class ScrollZoomHandler {
                 this._startZoom = startZoom;
                 this._easing = this._smoothOutEasing(200);
             }
-
+            this._lastDelta = this._delta;
             this._delta = 0;
         }
         const targetZoom = typeof this._targetZoom === 'number' ?
@@ -349,10 +351,15 @@ class ScrollZoomHandler {
             }, 200);
         }
 
+        let zoomDelta = zoom - startingZoom();
+        if (zoomDelta * this._lastDelta < 0) {
+            // prevent recenter zoom in opposite direction from zoom
+            zoomDelta = 0;
+        }
         return {
             noInertia: true,
             needsRenderFrame: !finished,
-            zoomDelta: zoom - startingZoom(),
+            zoomDelta,
             around: this._aroundPoint,
             aroundCoord: this._aroundCoord,
             originalEvent: this._lastWheelEvent

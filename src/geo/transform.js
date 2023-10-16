@@ -491,7 +491,10 @@ class Transform {
     }
 
     _updateCameraOnTerrain() {
-        if (!this._elevation || !this._elevation.isDataAvailableAtPoint(this.locationCoordinate(this.center))) {
+        const elevationAtCenter = this.elevation ? this.elevation.getAtPoint(this.locationCoordinate(this.center), Number.NEGATIVE_INFINITY) : Number.NEGATIVE_INFINITY;
+        const usePreviousCenter = this.elevation && elevationAtCenter === Number.NEGATIVE_INFINITY && this.elevation.visibleDemTiles.length > 0 && this.elevation.exaggeration() > 0 &&
+            this._centerAltitudeValidForExaggeration;
+        if (!this._elevation || (elevationAtCenter === Number.NEGATIVE_INFINITY && !(usePreviousCenter && this._centerAltitude))) {
             // Elevation data not loaded yet, reset
             this._centerAltitude = 0;
             this._seaLevelZoom = null;
@@ -499,8 +502,17 @@ class Transform {
             return;
         }
         const elevation: Elevation = this._elevation;
-        this._centerAltitude = elevation.getAtPointOrZero(this.locationCoordinate(this.center));
-        this._centerAltitudeValidForExaggeration = elevation.exaggeration();
+        if (usePreviousCenter || (this._centerAltitude && this._centerAltitudeValidForExaggeration &&
+                                  elevation.exaggeration() && this._centerAltitudeValidForExaggeration !== elevation.exaggeration())) {
+            assert(this._centerAltitudeValidForExaggeration);
+            const previousExaggeration = (this._centerAltitudeValidForExaggeration: any);
+            // scale down the centerAltitude
+            this._centerAltitude = this._centerAltitude / previousExaggeration * elevation.exaggeration();
+            this._centerAltitudeValidForExaggeration = elevation.exaggeration();
+        } else {
+            this._centerAltitude = elevationAtCenter || 0;
+            this._centerAltitudeValidForExaggeration = elevation.exaggeration();
+        }
         this._updateSeaLevelZoom();
     }
 

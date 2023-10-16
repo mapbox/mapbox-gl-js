@@ -66,6 +66,9 @@ test('Globe', (t) => {
                 getAtPointOrZero(_) {
                     return elevation;
                 },
+                getAtPoint(_) {
+                    return elevation;
+                },
                 getForTilePoints(tileID, points) {
                     for (const p of points) {
                         p[2] = elevation;

@@ -44,6 +44,7 @@ import {create as createSource} from '../source/source.js';
 import {RGBAImage, Float32Image} from '../util/image.js';
 import {globeMetersToEcef} from '../geo/projection/globe_util.js';
 import {ZoomDependentExpression} from '../style-spec/expression/index.js';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
 
 import type Map from '../ui/map.js';
 import type Painter from '../render/painter.js';
@@ -217,6 +218,9 @@ export class Terrain extends Elevation {
     _stencilRef: number;
 
     _exaggeration: number;
+    _evaluationZoom: ?number;
+    _previousCameraAltitude: ?number;
+    _previousUpdateTimestamp: ?number;
     _depthFBO: ?Framebuffer;
     _depthTexture: ?Texture;
     _previousZoom: number;
@@ -298,13 +302,24 @@ export class Terrain extends Elevation {
         if (style && style.terrain) {
             if (this._style !== style) {
                 this.style = style;
+                this._evaluationZoom = undefined;
             }
-            this.enabled = true;
             const terrainProps = style.terrain.properties;
             const isDrapeModeDeferred = style.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+            const zoomDependentExaggeration = style.terrain.isZoomDependent();
+
+            this._previousUpdateTimestamp = this.enabled ? this._updateTimestamp : undefined;
+            this._updateTimestamp = browser.now();
             this.sourceCache = isDrapeModeDeferred ? this._mockSourceCache :
                 ((style._getSourceCache(terrainProps.get('source')): any): SourceCache);
-            this._exaggeration = terrainProps.get('exaggeration');
+
+            this._exaggeration = zoomDependentExaggeration ? this.calculateExaggeration(transform) : terrainProps.get('exaggeration');
+            if (!transform.projection.requiresDraping && zoomDependentExaggeration && this._exaggeration === 0) {
+                this._disable();
+                return;
+            }
+
+            this.enabled = true;
 
             const updateSourceCache = () => {
                 if (this.sourceCache.used) {
@@ -340,9 +355,72 @@ export class Terrain extends Elevation {
             this.proxySourceCache.update(transform);
 
             this._emptyDEMTextureDirty = true;
+            this._previousZoom = transform.zoom;
         } else {
             this._disable();
         }
+    }
+
+    calculateExaggeration(transform: Transform): number {
+        const previousAltitude = this._previousCameraAltitude;
+        const altitude = (transform.getFreeCameraOptions().position: any).z / transform.pixelsPerMeter * transform.worldSize;
+        this._previousCameraAltitude = altitude;
+        // 2 meters as threshold for constant sea elevation movement.
+        const altitudeDelta = previousAltitude != null ? (altitude - previousAltitude) : Number.MAX_VALUE;
+        if (Math.abs(altitudeDelta) < 2) {
+            // Returns current value and avoids any unpleasant terrain change.
+            return this._exaggeration;
+        }
+
+        const cameraZoom = transform.zoom;
+
+        assert(this._style.terrain);
+        const terrainStyle = (this._style.terrain: any);
+
+        if (!this._previousUpdateTimestamp) {
+            // covers also 0 (timestamp in render tests is 0).
+            return terrainStyle.getExaggeration(cameraZoom);
+        }
+        let zoomDelta = cameraZoom - this._previousZoom;
+        const previousUpdateTimestamp = this._previousUpdateTimestamp;
+
+        let z = cameraZoom;
+        if (this._evaluationZoom != null) {
+            z = this._evaluationZoom;
+            assert(previousAltitude != null);
+            // incorporate any difference of _evaluationZoom and real zoom here.
+            // Smoothening below resolves flicker.
+            if (Math.abs(cameraZoom - z) > 0.5) {
+                zoomDelta = 0.5 * (cameraZoom - z + zoomDelta);
+            }
+            if (zoomDelta * altitudeDelta < 0) {
+                // if they have different sign, e.g. zooming in and recenter calculates lower zoom, do not advance.
+                z += zoomDelta;
+            }
+        }
+        this._evaluationZoom = z;
+
+        const evaluatedExaggeration = terrainStyle.getExaggeration(z);
+        assert(this._previousUpdateTimestamp != null);
+
+        // evaluate if we are in area with fixed exaggeration. 0.1 is random - idea is to
+        // interpolate faster to desired value.
+        const evaluatedExaggerationLowerZ = terrainStyle.getExaggeration(Math.max(0, z - 0.1));
+        const fixedExaggeration = evaluatedExaggeration === evaluatedExaggerationLowerZ;
+
+        const lowExaggerationTreshold = 0.1;
+        const exaggerationSmoothTarget = 0.01;
+        if (fixedExaggeration && Math.abs(evaluatedExaggeration - this._exaggeration) < exaggerationSmoothTarget) {
+            return evaluatedExaggeration;
+        }
+
+        // smoothen the changes further to reduce flickering
+        let interpolateStrength = Math.min(0.1, (this._updateTimestamp - previousUpdateTimestamp) * 0.00375); // Empiric value, e.g. ~0.06 at 60 FPS
+        if (fixedExaggeration || evaluatedExaggeration < lowExaggerationTreshold || Math.abs(zoomDelta) < 0.0001) {
+            // interpolate faster, when out of dynamic exaggeration range, near zero or when zooming out/in stops.
+            interpolateStrength = Math.min(0.2, interpolateStrength * 4);
+        }
+        return interpolate(this._exaggeration, evaluatedExaggeration, interpolateStrength);
     }
 
     resetTileLookupCache(sourceCacheID: string) {
@@ -360,6 +438,9 @@ export class Terrain extends Elevation {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
         } else if (event.dataType === 'style') {
             this.invalidateRenderCache = true;
+            this._evaluationZoom = undefined;
+            this._previousUpdateTimestamp = undefined;
+            this._previousCameraAltitude = undefined;
         }
     }
 
@@ -368,6 +449,8 @@ export class Terrain extends Elevation {
         if (!this.enabled) return;
         this.enabled = false;
         this._sharedDepthStencil = undefined;
+        this._evaluationZoom = undefined;
+        this._previousUpdateTimestamp = undefined;
         this.proxySourceCache.deallocRenderCache();
         if (this._style) {
             for (const id in this._style._sourceCaches) {
@@ -446,7 +529,6 @@ export class Terrain extends Elevation {
             return tileID;
         });
         sortByDistanceToCamera(coords, this.painter);
-        this._previousZoom = tr.zoom;
 
         const previousProxyToSource = this.proxyToSource || {};
         this.proxyToSource = {};
@@ -479,7 +561,6 @@ export class Terrain extends Elevation {
         this._setupRenderCache(previousProxyToSource);
 
         this.renderingToTexture = false;
-        this._updateTimestamp = browser.now();
 
         // Gather all dem tiles that are assigned to proxy tiles
         const visibleKeys = {};

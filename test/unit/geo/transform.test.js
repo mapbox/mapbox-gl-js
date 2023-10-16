@@ -690,14 +690,15 @@ test('transform', (t) => {
             getAtPointOrZero() {
                 return 0.0;
             },
-            getAtPoint(p) {
-                return this.getAtPointOrZero(p);
+            getAtPoint(p, x) {
+                return x;
             },
             getForTilePoints() {
                 return true;
             },
             getMinElevationBelowMSL: () => 0,
-            exaggeration: () => 1
+            exaggeration: () => 1,
+            visibleDemTiles: () => []
         };
     };
 

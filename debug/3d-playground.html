@@ -97,7 +97,7 @@ const Demo3D = function() {
     this.floodLightGroundAttenuation = 0.69;
     this.buildingColor = {r:255, g:255, b:255};
     this.buildingOpacity = 1;
-    this.cutoffFadeRange = 0.5;
+    this.cutoffFadeRange = 0.0;
     this.ambientLightColor = {r:255, g:255, b:255};
     this.ambientLightIntensity = 0.5;
     this.directionalLightColor = {r:255, g:255, b:255};
@@ -453,8 +453,8 @@ map.on('style.load', function() {
             "maxzoom": 11
         });
     }
-    map.style.setPaintProperty("trees", "model-cutoff-fade-range", 1.0);
-    map.style.setPaintProperty("3d-building", "fill-extrusion-cutoff-fade-range", 0.5);
+    map.style.setPaintProperty("trees", "model-cutoff-fade-range", demo3d.cutoffFadeRange);
+    map.style.setPaintProperty("3d-building", "fill-extrusion-cutoff-fade-range", demo3d.cutoffFadeRange);
     if (demo3d.enableTerrain && map.getTerrain() === null) {
         map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.});
     }

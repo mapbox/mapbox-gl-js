@@ -3691,14 +3691,14 @@ class Map extends Camera {
             return false;
         }
 
+        const exaggerationChanged = this.transform.elevation && this.transform.elevation.exaggeration() !== this._averageElevationExaggeration;
         const timeoutElapsed = ignoreTimeout || timeStamp - this._averageElevationLastSampledAt > AVERAGE_ELEVATION_SAMPLING_INTERVAL;
 
-        if (timeoutElapsed && !this._averageElevation.isEasing(timeStamp)) {
+        if (exaggerationChanged || (timeoutElapsed && !this._averageElevation.isEasing(timeStamp))) {
             const currentElevation = this.transform.averageElevation;
             let newElevation = this.transform.sampleAverageElevation();
-            let exaggerationChanged = false;
+
             if (this.transform.elevation) {
-                exaggerationChanged = this.transform.elevation.exaggeration() !== this._averageElevationExaggeration;
                 // $FlowIgnore[incompatible-use]
                 this._averageElevationExaggeration = this.transform.elevation.exaggeration();
             }

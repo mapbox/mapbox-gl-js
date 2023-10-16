@@ -7,13 +7,14 @@
       "operations": [
         ["setCenter", [-113.231881, 35.99282]],
         ["wait"],
-        ["setZoom", 15.28]
+        ["setZoom", 15.28],
+        ["wait"]
       ]
     }
   },
   "center": [-122.45814, 37.76159],
   "zoom": 16.02,
-  "pitch": 56,
+  "pitch": 0,
   "bearing": 98.1,
   "terrain": {
     "source": "rgbterrain",

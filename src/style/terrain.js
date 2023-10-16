@@ -4,9 +4,10 @@ import styleSpec from '../style-spec/reference/latest.js';
 import {Evented} from '../util/evented.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 
-import type EvaluationParameters from './evaluation_parameters.js';
+import EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
 import type {TerrainSpecification} from '../style-spec/types.js';
+import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 
 type Props = {|
     "source": DataConstantProperty<string>,
@@ -55,6 +56,17 @@ class Terrain extends Evented {
 
     recalculate(parameters: EvaluationParameters) {
         this.properties = this._transitioning.possiblyEvaluate(parameters);
+    }
+
+    getExaggeration(atZoom: number): number {
+        return this._transitioning.possiblyEvaluate(new EvaluationParameters(atZoom)).get('exaggeration');
+    }
+
+    isZoomDependent(): boolean {
+        const exaggeration = this._transitionable._values['exaggeration'];
+        return exaggeration != null && exaggeration.value != null &&
+            exaggeration.value.expression != null &&
+            exaggeration.value.expression instanceof ZoomDependentExpression;
     }
 }
 
