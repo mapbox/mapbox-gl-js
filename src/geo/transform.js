@@ -2524,6 +2524,11 @@ class Transform {
 
         return worldToCamera;
     }
+
+    getFrustum(zoom: number): Frustum {
+        const zInMeters = this.projection.zAxisUnit === 'meters';
+        return Frustum.fromInvProjectionMatrix(this.invProjMatrix, this.worldSize, zoom, zInMeters);
+    }
 }
 
 export default Transform;

@@ -2,6 +2,7 @@
 
 import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
+import {UnwrappedTileID} from '../source/tile_id.js';
 
 import type {Vec3, Vec4, Mat4} from 'gl-matrix';
 import {register} from './web_worker_transfer.js';
@@ -341,6 +342,14 @@ class Aabb {
         return new Aabb(min, max);
     }
 
+    static fromTileIdAndHeight(id: UnwrappedTileID, minHeight: number, maxHeight: number): Aabb {
+        const tiles = 1 << id.canonical.z;
+        const x = id.canonical.x;
+        const y = id.canonical.y;
+
+        return new Aabb([x / tiles, y / tiles, minHeight], [(x + 1) / tiles, (y + 1) / tiles, maxHeight]);
+    }
+
     static applyTransform(aabb: Aabb, transform: Mat4): Aabb {
         const corners = aabb.getCorners();
 
@@ -507,6 +516,12 @@ class Aabb {
             this.min[i] = Math.min(this.min[i], point[i]);
             this.max[i] = Math.max(this.max[i], point[i]);
         }
+    }
+
+    closestPoint(point: Vec3): Vec3 {
+        return [Math.max(Math.min(this.max[0], point[0]), this.min[0]),
+            Math.max(Math.min(this.max[1], point[1]), this.min[1]),
+            Math.max(Math.min(this.max[2], point[2]), this.min[2])];
     }
 }
 

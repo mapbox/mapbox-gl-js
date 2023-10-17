@@ -56,11 +56,91 @@ type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
 const cascadeCount = 2;
 const shadowMapResolution = 2048;
 
+class ShadowReceiver {
+    constructor(aabb: Aabb, lastCascade: ?number) {
+        this.aabb = aabb;
+        this.lastCascade = lastCascade;
+    }
+
+    aabb: Aabb;
+    lastCascade: ?number;
+}
+
+class ShadowReceivers {
+    add(tileId: UnwrappedTileID, aabb: Aabb) {
+        const receiver = this.receivers[tileId.key];
+
+        if (receiver !== undefined) {
+            receiver.aabb.min[0] = Math.min(receiver.aabb.min[0], aabb.min[0]);
+            receiver.aabb.min[1] = Math.min(receiver.aabb.min[1], aabb.min[1]);
+            receiver.aabb.min[2] = Math.min(receiver.aabb.min[2], aabb.min[2]);
+            receiver.aabb.max[0] = Math.max(receiver.aabb.max[0], aabb.max[0]);
+            receiver.aabb.max[1] = Math.max(receiver.aabb.max[1], aabb.max[1]);
+            receiver.aabb.max[2] = Math.max(receiver.aabb.max[2], aabb.max[2]);
+        } else {
+            this.receivers[tileId.key] = new ShadowReceiver(aabb, null);
+        }
+    }
+    clear() {
+        this.receivers = {};
+    }
+
+    get(tileId: UnwrappedTileID): ?ShadowReceiver {
+        return this.receivers[tileId.key];
+    }
+
+    // Returns the number of cascades that need to be rendered based on visibility on screen.
+    // Cascades that need to be rendered always include the first cascade.
+    computeRequiredCascades(frustum: Frustum, worldSize: number, cascades: Array<ShadowCascade>): number {
+        const frustumAabb = Aabb.fromPoints((frustum.points: any));
+        let lastCascade = 0;
+
+        for (const receiverKey in this.receivers) {
+            const receiver = (this.receivers[receiverKey]: ?ShadowReceiver);
+            if (!receiver) continue;
+
+            if (!frustumAabb.intersectsAabb(receiver.aabb)) continue;
+
+            receiver.aabb.min = frustumAabb.closestPoint(receiver.aabb.min);
+            receiver.aabb.max = frustumAabb.closestPoint(receiver.aabb.max);
+            const clampedTileAabbPoints = receiver.aabb.getCorners();
+
+            for (let i = 0; i < cascades.length; i++) {
+                let aabbInsideCascade = true;
+
+                for (const point of clampedTileAabbPoints) {
+                    const p = [point[0] * worldSize, point[1] * worldSize, point[2]];
+                    vec3.transformMat4(p, p, cascades[i].matrix);
+
+                    if (p[0] < -1.0 || p[0] > 1.0 || p[1] < -1.0 || p[1] > 1.0) {
+                        aabbInsideCascade = false;
+                        break;
+                    }
+                }
+
+                receiver.lastCascade = i;
+                lastCascade = Math.max(lastCascade, i);
+
+                if (aabbInsideCascade) {
+                    break;
+                }
+            }
+        }
+
+        return lastCascade + 1;
+    }
+
+    receivers: {number: ShadowReceiver};
+}
+
 export class ShadowRenderer {
     painter: Painter;
     _enabled: boolean;
     _shadowLayerCount: number;
+    _numCascadesToRender: number;
     _cascades: Array<ShadowCascade>;
+    _groundShadowTiles: Array<OverscaledTileID>;
+    _receivers: ShadowReceivers;
     _depthMode: DepthMode;
     _uniformValues: UniformValues<ShadowUniformsType>;
     shadowDirection: Vec3;
@@ -70,7 +150,10 @@ export class ShadowRenderer {
         this.painter = painter;
         this._enabled = false;
         this._shadowLayerCount = 0;
+        this._numCascadesToRender = 0;
         this._cascades = [];
+        this._groundShadowTiles = [];
+        this._receivers = new ShadowReceivers();
         this._depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]);
         this._uniformValues = defaultShadowUniformValues();
 
@@ -91,6 +174,7 @@ export class ShadowRenderer {
 
         this._enabled = false;
         this._shadowLayerCount = 0;
+        this._receivers.clear();
 
         if (!directionalLight || !directionalLight.properties) {
             return;
@@ -195,6 +279,24 @@ export class ShadowRenderer {
         this._uniformValues['u_shadow_map_resolution'] = shadowMapResolution;
         this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
         this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
+
+        // Render shadows on the ground plane as an extra layer of blended "tiles"
+        const tileCoverOptions = {
+            tileSize: 512,
+            renderWorldCopies: true
+        };
+
+        this._groundShadowTiles = painter.transform.coveringTiles(tileCoverOptions);
+
+        const elevation = painter.transform.elevation;
+        for (const tileId of this._groundShadowTiles) {
+            let tileHeight = {min: 0, max: 0};
+            if (elevation) {
+                const minMax = elevation.getMinMaxForTile(tileId);
+                if (minMax) tileHeight = minMax;
+            }
+            this.addShadowReceiver(tileId.toUnwrapped(), tileHeight.min, tileHeight.max);
+        }
     }
 
     get enabled(): boolean {
@@ -216,9 +318,14 @@ export class ShadowRenderer {
 
         assert(painter.renderPass === 'shadow');
 
+        // For each shadow receiver, compute how many cascades would need to be
+        // sampled for the VISIBLE part of the receiver to be fully covered by
+        // shadows.
+        this._numCascadesToRender = this._receivers.computeRequiredCascades(painter.transform.getFrustum(0), painter.transform.worldSize, this._cascades);
+
         context.viewport.set([0, 0, shadowMapResolution, shadowMapResolution]);
 
-        for (let cascade = 0; cascade < cascadeCount; ++cascade) {
+        for (let cascade = 0; cascade < this._numCascadesToRender; ++cascade) {
             painter.currentShadowCascade = cascade;
 
             context.bindFramebuffer.set(this._cascades[cascade].framebuffer.framebuffer);
@@ -260,18 +367,11 @@ export class ShadowRenderer {
             baseDefines.push('RENDER_CUTOFF');
         }
 
-        // Render shadows on the ground plane as an extra layer of blended "tiles"
-        const tileCoverOptions = {
-            tileSize: 512,
-            renderWorldCopies: true
-        };
-        const tiles = painter.transform.coveringTiles(tileCoverOptions);
-
         const shadowColor = calculateGroundShadowFactor(directionalLight, ambientLight);
 
         const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
-        for (const id of tiles) {
+        for (const id of this._groundShadowTiles) {
             const unwrapped = id.toUnwrapped();
             const affectedByFog = painter.isTileAffectedByFog(id);
             const program = painter.useProgram('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
@@ -426,6 +526,15 @@ export class ShadowRenderer {
             computePlane(corners[3], corners[2], corners[6]), // bottom
             computePlane(corners[0], corners[3], corners[7]) ];
         return tileShadowVolume;
+    }
+
+    addShadowReceiver(tileId: UnwrappedTileID, minHeight: number, maxHeight: number) {
+        this._receivers.add(tileId, Aabb.fromTileIdAndHeight(tileId, minHeight, maxHeight));
+    }
+
+    getMaxCascadeForTile(tileId: UnwrappedTileID): number {
+        const receiver = this._receivers.get(tileId);
+        return !!receiver && !!receiver.lastCascade ? receiver.lastCascade : 0;
     }
 }
 

@@ -274,6 +274,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         baseDefines.push('RENDER_CUTOFF');
     }
 
+    let singleCascadeDefines;
+
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
     const drawDepth = isShadowPass && !!shadowRenderer;
@@ -286,6 +288,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (directionalLight && ambientLight) {
             groundShadowFactor = calculateGroundShadowFactor(directionalLight, ambientLight);
         }
+
+        singleCascadeDefines = baseDefines.concat(['SHADOWS_SINGLE_CASCADE']);
     }
 
     const programName = drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion');
@@ -294,9 +298,15 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
-        const programConfiguration = bucket.programConfigurations.get(layer.id);
+        let singleCascade = false;
+        if (shadowRenderer) {
+            singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
+        }
+
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.useProgram(programName, {config: programConfiguration, defines: baseDefines, overrideFog: affectedByFog});
+        const programConfiguration = bucket.programConfigurations.get(layer.id);
+        const program = painter.useProgram(programName,
+            {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
             const terrain = painter.terrain;

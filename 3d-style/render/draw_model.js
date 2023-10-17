@@ -49,6 +49,7 @@ type SortedMesh = {
 
 type RenderData = {
     shadowUniformsInitialized: boolean;
+    useSingleShadowCascade: boolean;
     tileMatrix: Float64Array;
     shadowTileMatrix: Float32Array;
     aabb: Aabb;
@@ -444,6 +445,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
 // preallocate structure used to reduce re-allocation during rendering and flow checks
 const renderData: RenderData = {
     shadowUniformsInitialized: false,
+    useSingleShadowCascade: false,
     tileMatrix: new Float64Array(16),
     shadowTileMatrix: new Float32Array(16),
     aabb: new Aabb([0, 0, 0], [EXTENT, EXTENT, 0])
@@ -490,6 +492,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     const mercCameraPos = (tr.getFreeCameraOptions().position: any);
     if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
+    const shadowRenderer = painter.shadowRenderer;
     if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) return;
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
     const evaluationParameters = {...layer.layout.get("model-id").parameters};
@@ -505,8 +508,8 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         updateModelBucketsElevation(painter, bucket, coord);
 
         renderData.shadowUniformsInitialized = false;
-        if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
-            const shadowRenderer = painter.shadowRenderer;
+        renderData.useSingleShadowCascade = !!shadowRenderer && shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
+        if (painter.renderPass === 'shadow' && shadowRenderer) {
             if (painter.currentShadowCascade === 1 && bucket.isInsideFirstShadowMapFrustum) continue;
 
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
@@ -658,6 +661,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const context = painter.context;
     const tr = painter.transform;
     const fog = painter.style.fog;
+    const shadowRenderer = painter.shadowRenderer;
     if (tr.projection.name !== 'mercator') {
         warnOnce(`Drawing 3D landmark models for ${tr.projection.name} projection is not yet implemented`);
         return;
@@ -682,6 +686,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             const tile = source.getTile(coord);
             const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
             if (!bucket || !bucket.uploaded) continue;
+
+            let singleCascade = false;
+            if (shadowRenderer) {
+                singleCascade = shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
+            }
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
             const modelTraits = bucket.modelTraits;
 
@@ -743,6 +752,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         (programOptions.defines: any).push('DIFFUSE_SHADED');
                     }
 
+                    if (singleCascade) {
+                        (programOptions.defines: any).push('SHADOWS_SINGLE_CASCADE');
+                    }
+
                     const isShadowPass = painter.renderPass === 'shadow';
                     if (isShadowPass) {
                         drawShadowCaster(mesh, modelMatrix, painter, layer);
@@ -763,8 +776,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
 
                     const program = painter.useProgram('model', programOptions);
-
-                    const shadowRenderer = painter.shadowRenderer;
 
                     if (!isShadowPass && shadowRenderer) {
                         shadowRenderer.useNormalOffset = !!mesh.normalBuffer;

@@ -693,8 +693,26 @@ class Painter {
             this.opaquePassCutoff = 0;
         }
 
-        if (this._shadowRenderer) {
-            this._shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight);
+        const shadowRenderer = this._shadowRenderer;
+        if (shadowRenderer) {
+            shadowRenderer.updateShadowParameters(this.transform, this.style.directionalLight);
+
+            for (const id in sourceCaches) {
+                for (const coord of coordsAscending[id]) {
+                    let tileHeight = {min: 0, max: 0};
+                    if (this.terrain) {
+                        tileHeight = this.terrain.getMinMaxForTile(coord) || tileHeight;
+                    }
+
+                    // This doesn't consider any 3D layers to have height above the ground.
+                    // It was decided to not compute the real tile height, because all the tiles would need to be
+                    // seperately iterated before any rendering starts. The current code that calculates ShadowReceiver.lastCascade
+                    // doesn't check the Z axis in shadow cascade space. That in combination with missing tile height could in theory
+                    // lead to a situation where a tile is thought to fit in cascade 0, but actually extends into cascade 1.
+                    // The proper fix would be to update ShadowReceiver.lastCascade calculation to consider shadow cascade bounds accurately.
+                    shadowRenderer.addShadowReceiver(coord.toUnwrapped(), tileHeight.min, tileHeight.max);
+                }
+            }
         }
 
         if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
@@ -838,7 +856,6 @@ class Painter {
         this.firstLightBeamLayer = Number.MAX_SAFE_INTEGER;
 
         let shadowLayers = 0;
-        const shadowRenderer = this.shadowRenderer;
         if (shadowRenderer) {
             shadowLayers = shadowRenderer.getShadowCastingLayerCount();
         }
