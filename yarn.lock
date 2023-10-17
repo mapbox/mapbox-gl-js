@@ -489,10 +489,12 @@
   dependencies:
     "@ljharb/through" "^2.3.9"
 
-"@ljharb/through@^2.3.9":
-  version "2.3.9"
-  resolved "https://registry.yarnpkg.com/@ljharb/through/-/through-2.3.9.tgz#85f221eb82f9d555e180e87d6e50fb154af85408"
-  integrity sha512-yN599ZBuMPPK4tdoToLlvgJB4CLK8fGl7ntfy0Wn7U6ttNvHYurd81bfUiK/6sMkiIwm65R6ck4L6+Y3DfVbNQ==
+"@ljharb/through@^2.3.11", "@ljharb/through@^2.3.9":
+  version "2.3.11"
+  resolved "https://registry.yarnpkg.com/@ljharb/through/-/through-2.3.11.tgz#783600ff12c06f21a76cc26e33abd0b1595092f9"
+  integrity sha512-ccfcIDlogiXNq5KcbAwbaO7lMh3Tm1i3khMPYpxlK8hH/W53zN81KM9coerRLOnTGu3nfXIniAmQbRI9OxbC0w==
+  dependencies:
+    call-bind "^1.0.2"
 
 "@mapbox/flow-remove-types@^2.0.0":
   version "2.0.0"
@@ -4752,7 +4754,7 @@ is-ci@^2.0.0:
   dependencies:
     ci-info "^2.0.0"
 
-is-core-module@^2.11.0, is-core-module@^2.13.0, is-core-module@^2.5.0, is-core-module@^2.9.0:
+is-core-module@^2.11.0, is-core-module@^2.13.0, is-core-module@^2.5.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.13.0.tgz#bb52aa6e2cbd49a30c2ba68c42bf3435ba6072db"
   integrity sha512-Z7dk6Qo8pOCp3l4tsX2C5ZVas4V+UxwQodwZhLopL91TX8UyyHEXafPcyoeeWuLrwzHcr3igO78wNLwHJHsMCQ==
@@ -7337,12 +7339,12 @@ resolve@^1.1.4, resolve@^1.10.0, resolve@^1.17.0, resolve@^1.22.1, resolve@^1.4.
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
-resolve@^2.0.0-next.4:
-  version "2.0.0-next.4"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-2.0.0-next.4.tgz#3d37a113d6429f496ec4752d2a2e58efb1fd4660"
-  integrity sha512-iMDbmAWtfU+MHpxt/I5iWI7cY6YVEZUQ3MBgPQ++XD1PELuJHIl82xBmObyP2KyQmkNB2dsqF7seoQQiAn5yDQ==
+resolve@^2.0.0-next.5:
+  version "2.0.0-next.5"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-2.0.0-next.5.tgz#6b0ec3107e671e52b68cd068ef327173b90dc03c"
+  integrity sha512-U7WjGVG9sH8tvjW5SmGbQuui75FiyjAX72HX15DwBBwF9dNiQZRQAg9nnPhYy+TUnE0+VcrttuvNI8oSxZcocA==
   dependencies:
-    is-core-module "^2.9.0"
+    is-core-module "^2.13.0"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
@@ -8349,13 +8351,13 @@ tape-filter@^1.0.4:
   dependencies:
     minimist "^1.2.0"
 
-tape@^5.7.0:
-  version "5.7.0"
-  resolved "https://registry.yarnpkg.com/tape/-/tape-5.7.0.tgz#7f31bf116159d3cdbc6f65baa11aaa025d34ccfc"
-  integrity sha512-6EZoHjMDUUhet8+k32w/9onULL1U8idXKvBCnZxuZF2iFe+tMYOsKo4bpCtXbTSngZmYBnkU08TMhJwsKaHhaw==
+tape@^5.7.1:
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/tape/-/tape-5.7.1.tgz#f5b837e4982561dd4d9354a1f77ede20391e3f5b"
+  integrity sha512-5U2nU0PbvWXXtJxE0hFv78VSyhJiyEPq1wNtMCWUxt17SZbeBqs9V5zcyDqkyguYN39d8qAjZxfFkjJ1+kB4yA==
   dependencies:
     "@ljharb/resumer" "^0.0.1"
-    "@ljharb/through" "^2.3.9"
+    "@ljharb/through" "^2.3.11"
     array.prototype.every "^1.1.5"
     call-bind "^1.0.2"
     deep-equal "^2.2.2"
@@ -8374,7 +8376,7 @@ tape@^5.7.0:
     object-is "^1.1.5"
     object-keys "^1.1.1"
     object.assign "^4.1.4"
-    resolve "^2.0.0-next.4"
+    resolve "^2.0.0-next.5"
     string.prototype.trim "^1.2.8"
 
 tar-fs@3.0.4:
