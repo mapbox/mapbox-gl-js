@@ -68,6 +68,7 @@ class Actor {
             targetMapId,
             mustQueue,
             sourceMapId: this.mapId,
+            origin: window.location.origin,
             data: serialize(data, buffers)
         }, buffers);
         return {
@@ -80,6 +81,7 @@ class Actor {
                     id,
                     type: '<cancel>',
                     targetMapId,
+                    origin: window.location.origin,
                     sourceMapId: this.mapId
                 });
             }
@@ -91,6 +93,11 @@ class Actor {
             id = data.id;
 
         if (!id) {
+            return;
+        }
+
+        if (data.origin !== window.location.origin) {
+            // Validate the source of the message to prevent DOM XSS attacks.
             return;
         }
 
@@ -148,6 +155,7 @@ class Actor {
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
+                    origin: window.location.origin,
                     data: serialize(data, buffers)
                 }, buffers);
             } : (_) => {
