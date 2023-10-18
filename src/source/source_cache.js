@@ -773,9 +773,9 @@ class SourceCache extends Evented {
      */
     _addTile(tileID: OverscaledTileID): Tile {
         let tile: ?Tile = this._tiles[tileID.key];
-        const isExtraShadowCaster = this._shadowCasterTiles[tileID.key];
+        const isExtraShadowCaster = !!this._shadowCasterTiles[tileID.key];
         if (tile) {
-            if (tile.isExtraShadowCaster !== isExtraShadowCaster) {
+            if (tile.isExtraShadowCaster === true && !isExtraShadowCaster) {
                 // If the tile changed shadow visibility we need to relayout
                 this._reloadTile(tileID.key, 'reloading');
             }
