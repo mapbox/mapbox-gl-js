@@ -1,3 +1,4 @@
+
 window.dynamic = {
     "version": 8,
     "name": "Mapbox Standard",
@@ -181,7 +182,7 @@ window.dynamic = {
             1,
             13.7,
             0
-        ]   
+        ]
     },
     "layers": [
         {
@@ -456,7 +457,7 @@ window.dynamic = {
                         0.2
                     ],
                     12,
-                    [ "match", 
+                    [ "match",
                     [ "get", "class" ],
                     ["residential"],
                     0,
@@ -470,7 +471,7 @@ window.dynamic = {
                         0.5,
                         0.4,
                         1
-                    ] 
+                    ]
                     ]
                 ]
             }
@@ -497,7 +498,7 @@ window.dynamic = {
             "layout": { },
             "paint": {
                 "fill-emissive-strength": 0.6,
-                "fill-color": 
+                "fill-color":
                 [
                     "interpolate",
                     [ "linear" ],
@@ -1153,7 +1154,7 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -1186,7 +1187,7 @@ window.dynamic = {
                 [ "!=", [ "get", "type" ], "steps" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -1255,7 +1256,7 @@ window.dynamic = {
                 [ "==", [ "get", "class" ], "pedestrian" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
             "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -1927,7 +1928,7 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
                 "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
@@ -2000,7 +2001,7 @@ window.dynamic = {
                 [ "case", [ "has", "layer" ], [ ">=", [ "get", "layer" ], 0 ], true ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
                 "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
@@ -2050,7 +2051,7 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ],
                 "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
@@ -2107,7 +2108,7 @@ window.dynamic = {
                 [ "match", [ "get", "structure" ], [ "none", "ford" ], true, false ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ],
                 "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
@@ -2196,7 +2197,7 @@ window.dynamic = {
                 [ "case", [ "has", "layer" ], [ ">=", [ "get", "layer" ], 0 ], true ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round"],
                 "line-join": [ "step", [ "zoom" ], "miter", 16, "round" ]
             },
@@ -3689,7 +3690,7 @@ window.dynamic = {
                 ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -3733,7 +3734,7 @@ window.dynamic = {
                 [ "!=", [ "get", "type" ], "steps" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
                 "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -3824,7 +3825,7 @@ window.dynamic = {
                 [ "==", [ "get", "class" ], "pedestrian" ],
                 [ "==", [ "geometry-type" ], "LineString" ]
             ],
-            "layout": { 
+            "layout": {
             "line-cap":  [ "step", [ "zoom" ], "butt", 16, "round" ]
             },
             "paint": {
@@ -6729,7 +6730,7 @@ window.dynamic = {
                 "text-field": [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ]
             },
             "paint": {
-                "text-color": 
+                "text-color":
                 [
                     "interpolate",
                     [
@@ -6987,7 +6988,7 @@ window.dynamic = {
                 "text-field": [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ]
             },
             "paint": {
-                "text-color": 
+                "text-color":
                 [
                     "interpolate",
                     [
@@ -7086,7 +7087,7 @@ window.dynamic = {
                 ]
             },
             "paint": {
-                "text-color": 
+                "text-color":
                 [
                     "interpolate",
                     [

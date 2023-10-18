@@ -50,7 +50,7 @@ export default class WorkerTransfer extends Benchmark {
             }).then((tileResults) => {
                 const payload = tileResults
                     .concat(values(this.parser.icons))
-                    .concat(values(this.parser.glyphs)).map((obj) => serialize(obj, []));
+                    .concat(values(this.parser.glyphs)).map((obj) => serialize(obj, new Set()));
                 this.payloadJSON = payload.map(barePayload);
                 this.payloadTiles = payload.slice(0, tileResults.length);
             });

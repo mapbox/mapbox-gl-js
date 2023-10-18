@@ -29,7 +29,7 @@ test('round trip', (t) => {
     register(Foo, 'Foo', {omit: ['_cached']});
 
     const foo = new Foo(10);
-    const transferables = [];
+    const transferables = new Set();
     const deserialized = deserialize(serialize(foo, transferables));
     t.assert(deserialized instanceof Foo);
     const bar: Foo = (deserialized: any);
@@ -38,9 +38,18 @@ test('round trip', (t) => {
     t.assert(bar.constructor === Foo);
     t.assert(bar.n === 10);
     t.assert(bar.buffer === foo.buffer);
-    t.assert(transferables[0] === foo.buffer);
+    t.assert(transferables.has(foo.buffer));
     t.assert(bar._cached === undefined);
     t.assert(bar.squared() === 100);
+    t.end();
+});
+
+test('duplicate buffers', (t) => {
+    const foo = new ArrayBuffer(1);
+    const transferables = new Set();
+    const deserialized = deserialize(serialize([foo, foo], transferables));
+    t.deepEqual(deserialized, [foo, foo]);
+    t.assert(transferables.size === 1);
     t.end();
 });
 

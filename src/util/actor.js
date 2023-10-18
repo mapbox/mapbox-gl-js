@@ -1,7 +1,6 @@
 // @flow
 
-import {bindAll, isWorker, isSafari} from './util.js';
-import window from './window.js';
+import {bindAll, isWorker} from './util.js';
 import {serialize, deserialize} from './web_worker_transfer.js';
 import Scheduler from './scheduler.js';
 
@@ -26,7 +25,6 @@ class Actor {
     callbacks: { number: any };
     name: string;
     cancelCallbacks: { number: Cancelable };
-    globalScope: any;
     scheduler: Scheduler;
 
     constructor(target: any, parent: any, mapId: ?number) {
@@ -38,7 +36,6 @@ class Actor {
         bindAll(['receive'], this);
         // $FlowFixMe[method-unbinding]
         this.target.addEventListener('message', this.receive, false);
-        this.globalScope = isWorker() ? target : window;
         this.scheduler = new Scheduler();
     }
 
@@ -60,7 +57,7 @@ class Actor {
             callback.metadata = callbackMetadata;
             this.callbacks[id] = callback;
         }
-        const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
+        const buffers: Set<Transferable> = new Set();
         this.target.postMessage({
             id,
             type,
@@ -140,7 +137,7 @@ class Actor {
                 }
             }
         } else {
-            const buffers: ?Array<Transferable> = isSafari(this.globalScope) ? undefined : [];
+            const buffers: Set<Transferable> = new Set();
             const done = task.hasCallback ? (err: ?Error, data: mixed) => {
                 delete this.cancelCallbacks[id];
                 this.target.postMessage({

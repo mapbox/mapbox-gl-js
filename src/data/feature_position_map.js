@@ -54,14 +54,15 @@ export default class FeaturePositionMap {
         }
     }
 
-    static serialize(map: FeaturePositionMap, transferables: Array<ArrayBuffer>): SerializedFeaturePositionMap {
+    static serialize(map: FeaturePositionMap, transferables: Set<ArrayBuffer>): SerializedFeaturePositionMap {
         const ids = new Float64Array(map.ids);
         const positions = new Uint32Array(map.positions);
 
         sort(ids, positions, 0, ids.length - 1);
 
         if (transferables) {
-            transferables.push(ids.buffer, positions.buffer);
+            transferables.add(ids.buffer);
+            transferables.add(positions.buffer);
         }
 
         return {ids, positions};

@@ -117,14 +117,14 @@ class StructArray {
      * deserialization.
      * @private
      */
-    static serialize(array: StructArray, transferables?: Array<Transferable>): SerializedStructArray {
+    static serialize(array: StructArray, transferables?: Set<Transferable>): SerializedStructArray {
         assert(!array.isTransferred);
 
         array._trim();
 
         if (transferables) {
             array.isTransferred = true;
-            transferables.push(array.arrayBuffer);
+            transferables.add(array.arrayBuffer);
         }
 
         return {

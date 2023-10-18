@@ -23,7 +23,7 @@ test('FeaturePositionMap', (t) => {
         featureMap.add(2, 5, 4, 5);
         featureMap.add(7, 6, 5, 7);
 
-        const featureMap2 = deserialize(serialize(featureMap, []));
+        const featureMap2 = deserialize(serialize(featureMap, new Set()));
 
         t.same(getPositions(featureMap2, 7), [
             {index: 1, start: 0, end: 1},
@@ -54,7 +54,7 @@ test('FeaturePositionMap', (t) => {
         featureMap.add('9223372036854775806', 2, 2, 2);
         featureMap.add('9223372036854775807', 3, 3, 3);
 
-        const featureMap2 = deserialize(serialize(featureMap, []));
+        const featureMap2 = deserialize(serialize(featureMap, new Set()));
 
         t.same(getPositions(featureMap2, '-9223372036854775808'), [
             {index: 0, start: 0, end: 0},

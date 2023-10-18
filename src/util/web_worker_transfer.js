@@ -69,10 +69,10 @@ register(Object, 'Object');
 
 type SerializedGrid = { buffer: ArrayBuffer };
 
-(Grid: any).serialize = function serialize(grid: Grid, transferables?: Array<Transferable>): SerializedGrid {
+(Grid: any).serialize = function serialize(grid: Grid, transferables?: Set<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
     if (transferables) {
-        transferables.push(buffer);
+        transferables.add(buffer);
     }
     return {buffer};
 };
@@ -117,13 +117,13 @@ function isImageBitmap(val: any): boolean {
  * with the constructor's `name` so that the appropriate constructor can be
  * looked up in `deserialize()`.
  *
- * If a `transferables` array is provided, add any transferable objects (i.e.,
+ * If a `transferables` set is provided, add any transferable objects (i.e.,
  * any ArrayBuffers or ArrayBuffer views) to the list. (If a copy is needed,
  * this should happen in the client code, before using serialize().)
  *
  * @private
  */
-export function serialize(input: mixed, transferables: ?Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables: ?Set<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -139,7 +139,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
 
     if (isArrayBuffer(input) || isImageBitmap(input)) {
         if (transferables) {
-            transferables.push(((input: any): ArrayBuffer));
+            transferables.add(((input: any): ArrayBuffer));
         }
         return (input: any);
     }
@@ -147,14 +147,14 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
     if (ArrayBuffer.isView(input)) {
         const view: $ArrayBufferView = (input: any);
         if (transferables) {
-            transferables.push(view.buffer);
+            transferables.add(view.buffer);
         }
         return view;
     }
 
     if (input instanceof window.ImageData) {
         if (transferables) {
-            transferables.push(input.data.buffer);
+            transferables.add(input.data.buffer);
         }
         return input;
     }
@@ -206,7 +206,7 @@ export function serialize(input: mixed, transferables: ?Array<Transferable>): Se
             }
         } else {
             // make sure statically serialized object survives transfer of $name property
-            assert(!transferables || properties !== transferables[transferables.length - 1]);
+            assert(!transferables || !transferables.has((properties: any)));
         }
 
         if (properties['$name']) {
