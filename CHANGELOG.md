@@ -13,6 +13,7 @@ Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting s
 
 ### Bug fixes 🐞
 
+- Update the `top` slot description in the docs.
 - Fix collisions when rendering 3D models on top of terrain.
 - Correct half-texel misalignment in `raster-color` lookup texture sampling.
 - Fix level of detail selection for models in the distance.
