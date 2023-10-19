@@ -2297,6 +2297,7 @@ class Map extends Camera {
      */
     updateImage(id: string,
         image: HTMLImageElement | ImageBitmap | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray} | StyleImageInterface) {
+        this._lazyInitEmptyStyle();
 
         const existingImage = this.style.getImage(id);
         if (!existingImage) {
@@ -2348,6 +2349,8 @@ class Map extends Camera {
             this.fire(new ErrorEvent(new Error('Missing required image id')));
             return false;
         }
+
+        if (!this.style) return false;
 
         return !!this.style.getImage(id);
     }

@@ -2515,6 +2515,25 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#hasImage doesn\'t throw after map is removed', (t) => {
+        const map = createMap(t);
+        map.remove();
+        t.notOk(map.hasImage('image'));
+        t.end();
+    });
+
+    t.test('#updateImage doesn\'t throw after map is removed', (t) => {
+        const map = createMap(t);
+        map.remove();
+
+        const stub = t.stub(console, 'error');
+        map.updateImage('image', {});
+        t.ok(stub.calledOnce);
+        t.match(stub.getCall(0).args[0].message, 'The map has no image with that id');
+
+        t.end();
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
