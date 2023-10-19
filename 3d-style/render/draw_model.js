@@ -31,6 +31,7 @@ import {OverscaledTileID} from '../../src/source/tile_id.js';
 import {Aabb} from '../../src/util/primitives.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers.js';
+import {ZoomDependentExpression} from '../../src/style-spec/expression/index.js';
 
 export default drawModels;
 
@@ -284,8 +285,20 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
     const castShadows = layer.paint.get('model-cast-shadows');
-    if (painter.renderPass === 'shadow' && !castShadows) {
-        return;
+    if (painter.renderPass === 'shadow') {
+        if (!castShadows) {
+            return;
+        }
+        if (painter.terrain) {
+            const noShadowCutoff = 0.65;
+            if (opacity < noShadowCutoff) {
+                const expression = layer._transitionablePaint._values['model-opacity'].value.expression;
+                if (expression instanceof ZoomDependentExpression) {
+                    // avoid rendering shadows during fade in / fade out on terrain
+                    return;
+                }
+            }
+        }
     }
     const shadowRenderer = painter.shadowRenderer;
     const receiveShadows = layer.paint.get('model-receive-shadows');

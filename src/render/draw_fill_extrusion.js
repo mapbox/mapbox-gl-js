@@ -38,6 +38,7 @@ import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_st
 import {Frustum} from '../util/primitives.js';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff.js';
+import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 
 export default draw;
 
@@ -75,8 +76,19 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
     if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
         const shadowRenderer = painter.shadowRenderer;
+        if (terrain) {
+            const noShadowCutoff = 0.65;
+            if (opacity < noShadowCutoff) {
+                const expression = layer._transitionablePaint._values['fill-extrusion-opacity'].value.expression;
+                if (expression instanceof ZoomDependentExpression) {
+                    // avoid rendering shadows during fade in / fade out on terrain
+                    return;
+                }
+            }
+        }
         const depthMode = shadowRenderer.getShadowPassDepthMode();
         const colorMode = shadowRenderer.getShadowPassColorMode();
+
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
