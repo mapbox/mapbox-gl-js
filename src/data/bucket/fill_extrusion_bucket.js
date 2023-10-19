@@ -103,7 +103,7 @@ class FootprintSegment {
     vertexCount: number;
     indexOffset: number;
     indexCount: number;
-
+    ringIndices: Array<number>;
     constructor() {
         this.vertexOffset = 0;
         this.vertexCount = 0;
@@ -821,6 +821,7 @@ class FillExtrusionBucket implements Bucket {
             const fpSegment = new FootprintSegment();
             fpSegment.vertexOffset = this.footprintVertices.length;
             fpSegment.indexOffset = this.footprintIndices.length * 3;
+            fpSegment.ringIndices = [];
 
             if (isPolygon) {
                 const flattened = [];
@@ -844,6 +845,11 @@ class FillExtrusionBucket implements Bucket {
                         const p1 = ring[1];
                         na = p1.sub(p0)._perp()._unit();
                     }
+
+                    // Store index to the end of this ring, we substract one because we don't add the last point to the
+                    // footprint as it's the same as the first one
+                    fpSegment.ringIndices.push(ring.length - 1);
+
                     for (let i = 1; i < ring.length; i++) {
                         const p1 = ring[i];
                         const p2 = ring[i === ring.length - 1 ? 1 : i + 1];
@@ -1244,22 +1250,29 @@ class FillExtrusionBucket implements Bucket {
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
     }
 
-    footprintContainsPoint(x: number, y: number, seg: FootprintSegment): boolean {
+    footprintContainsPoint(x: number, y: number, centroid: PartData): boolean {
         let c = false;
-        for (let i = 0, j = seg.vertexCount - 1; i < seg.vertexCount; j = i++) {
-            const x1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 0];
-            const y1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 1];
-            const x2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 0];
-            const y2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 1];
-            if (((y1 > y) !== (y2 > y)) && (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1)) {
-                c = !c;
+        for (let s = 0; s < centroid.footprintSegLen; s++) {
+            const seg = this.footprintSegments[centroid.footprintSegIdx + s];
+            let startRing = 0;
+            for (const endRing of seg.ringIndices) {
+                for (let i = startRing, j = endRing + startRing - 1; i < endRing + startRing; j = i++) {
+                    const x1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 0];
+                    const y1 = this.footprintVertices.int16[(i + seg.vertexOffset) * 2 + 1];
+                    const x2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 0];
+                    const y2 = this.footprintVertices.int16[(j + seg.vertexOffset) * 2 + 1];
+                    if (((y1 > y) !== (y2 > y)) && (x < ((x2 - x1) * (y - y1) / (y2 - y1) + x1))) {
+                        c = !c;
+                    }
+                }
+                startRing = endRing;
             }
         }
         return c;
     }
 
     getHeightAtTileCoord(x: number, y: number): ?{height: number, hidden: boolean} {
-        let height = 0;
+        let height = Number.NEGATIVE_INFINITY;
         let hidden = true;
         assert(x > -EXTENT && y > -EXTENT && x < 2 * EXTENT && y < 2 * EXTENT);
         const lookupKey = (x + EXTENT) * 4 * EXTENT + (y + EXTENT);
@@ -1274,18 +1287,15 @@ class FillExtrusionBucket implements Bucket {
                 continue;
             }
 
-            for (let i = 0; i < centroid.footprintSegLen; i++) {
-                const seg = this.footprintSegments[centroid.footprintSegIdx + i];
-                if (this.footprintContainsPoint(x, y, seg)) {
-                    if (centroid && centroid.height > height) {
-                        height = centroid.height;
-                        this.partLookup[lookupKey] = centroid;
-                        hidden = !!(centroid.flags & HIDDEN_BY_REPLACEMENT);
-                    }
+            if (this.footprintContainsPoint(x, y, centroid)) {
+                if (centroid && centroid.height > height) {
+                    height = centroid.height;
+                    this.partLookup[lookupKey] = centroid;
+                    hidden = !!(centroid.flags & HIDDEN_BY_REPLACEMENT);
                 }
             }
         }
-        if (height === undefined) {
+        if (height === Number.NEGATIVE_INFINITY) {
             // nothing found, cache that info too.
             this.partLookup[lookupKey] = undefined;
             return;

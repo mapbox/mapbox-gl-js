@@ -59,7 +59,10 @@ class BuildingIndex {
         for (let s = 0; s < symbolBucket.symbolInstances.length; s++) {
             const symbolInstance = symbolBucket.symbolInstances.get(s);
             const currentZOffset = symbolInstance.zOffset;
-            symbolInstance.zOffset = this._getHeightAtTileOffset(tileID, symbolInstance.tileAnchorX, symbolInstance.tileAnchorY);
+            const newZOffset = this._getHeightAtTileOffset(tileID, symbolInstance.tileAnchorX, symbolInstance.tileAnchorY);
+
+            symbolInstance.zOffset = newZOffset !== -1 ? newZOffset : currentZOffset;
+
             if (!dataChanged && currentZOffset !== symbolInstance.zOffset) {
                 dataChanged = true;
             }
@@ -123,7 +126,8 @@ class BuildingIndex {
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
             return (heightData.height || 0) * heightData.verticalScale;
         }
-        return 0;
+        // We couldn't find a bucket
+        return -1;
     }
 }
 
