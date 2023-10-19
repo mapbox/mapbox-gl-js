@@ -148,8 +148,12 @@ class StyleLayer extends Evented {
             return;
         }
 
-        this._unevaluatedLayout.setValue(name, value);
-        this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
+        const layout = this._unevaluatedLayout;
+        const specProps = layout._properties.properties;
+        if (!specProps[name]) return; // skip unrecognized properties
+
+        layout.setValue(name, value);
+        this.isConfigDependent = this.isConfigDependent || layout.isConfigDependent;
 
         if (name === 'visibility') {
             this.possiblyEvaluateVisibility();
@@ -176,27 +180,36 @@ class StyleLayer extends Evented {
             }
         }
 
+        const paint = this._transitionablePaint;
+        const specProps = paint._properties.properties;
+
         if (endsWith(name, TRANSITION_SUFFIX)) {
-            this._transitionablePaint.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), (value: any) || undefined);
+            const propName = name.slice(0, -TRANSITION_SUFFIX.length);
+            if (specProps[propName]) { // skip unrecognized properties
+                paint.setTransition(propName, (value: any) || undefined);
+            }
             return false;
-        } else {
-            const transitionable = this._transitionablePaint._values[name];
-            const wasDataDriven = transitionable.value.isDataDriven();
-            const oldValue = transitionable.value;
 
-            this._transitionablePaint.setValue(name, value);
-            this.isConfigDependent = this.isConfigDependent || this._transitionablePaint.isConfigDependent;
-            this._handleSpecialPaintPropertyUpdate(name);
-
-            const newValue = this._transitionablePaint._values[name].value;
-            const isDataDriven = newValue.isDataDriven();
-            const isPattern = endsWith(name, 'pattern') || name === 'line-dasharray';
-
-            // if a pattern value is changed, we need to make sure the new icons get added to each tile's iconAtlas
-            // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
-            // Style#setPaintProperty
-            return isDataDriven || wasDataDriven || isPattern || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
         }
+
+        if (!specProps[name]) return false; // skip unrecognized properties
+
+        const transitionable = paint._values[name];
+        const wasDataDriven = transitionable.value.isDataDriven();
+        const oldValue = transitionable.value;
+
+        paint.setValue(name, value);
+        this.isConfigDependent = this.isConfigDependent || paint.isConfigDependent;
+        this._handleSpecialPaintPropertyUpdate(name);
+
+        const newValue = paint._values[name].value;
+        const isDataDriven = newValue.isDataDriven();
+        const isPattern = endsWith(name, 'pattern') || name === 'line-dasharray';
+
+        // if a pattern value is changed, we need to make sure the new icons get added to each tile's iconAtlas
+        // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
+        // Style#setPaintProperty
+        return isDataDriven || wasDataDriven || isPattern || this._handleOverridablePaintPropertyUpdate(name, oldValue, newValue);
     }
 
     _handleSpecialPaintPropertyUpdate(_: string) {

@@ -1,6 +1,6 @@
 // @flow
 
-import ValidationError from '../error/validation_error.js';
+import {default as ValidationError, ValidationWarning} from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validate from './validate.js';
 
@@ -75,7 +75,7 @@ export default function validateLights(options: ValidationOptions): Array<Valida
                     styleSpec
                 }));
             } else {
-                errors = errors.concat([new ValidationError(key, light[key], `unknown property "${key}"`)]);
+                errors = errors.concat([new ValidationWarning(key, light[key], `unknown property "${key}"`)]);
             }
         }
     }

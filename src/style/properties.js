@@ -192,12 +192,16 @@ export class Transitionable<Props: Object> {
     setTransitionOrValue<P: Object>(properties: ?P, options?: ?Map<string, Expression>) {
         if (options) this._options = options;
 
+        const specProperties = this._properties.properties;
         if (properties) {
             for (const name in properties) {
                 const value = properties[name];
                 if (endsWith(name, '-transition')) {
-                    this.setTransition(name.slice(0, -'-transition'.length), value);
-                } else {
+                    const propName = name.slice(0, -'-transition'.length);
+                    if (specProperties[propName]) {
+                        this.setTransition(propName, value);
+                    }
+                } else if (specProperties[name]) { // skip unrecognized properties
                     this.setValue(name, value);
                 }
             }

@@ -1,7 +1,7 @@
 // @flow
 
 import validate from './validate.js';
-import ValidationError from '../error/validation_error.js';
+import {default as ValidationError, ValidationWarning} from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import {isFunction} from '../function/index.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
@@ -41,7 +41,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
 
     const valueSpec = options.valueSpec || layerSpec[propertyKey];
     if (!valueSpec) {
-        return [new ValidationError(key, value, `unknown property "${propertyKey}"`)];
+        return [new ValidationWarning(key, value, `unknown property "${propertyKey}"`)];
     }
 
     let tokenMatch: ?RegExp$matchResult;

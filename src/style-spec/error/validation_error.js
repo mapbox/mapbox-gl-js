@@ -16,3 +16,5 @@ export default class ValidationError {
         }
     }
 }
+
+export class ValidationWarning extends ValidationError {}

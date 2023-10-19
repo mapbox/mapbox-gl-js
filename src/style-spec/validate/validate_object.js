@@ -1,6 +1,6 @@
 // @flow
 
-import ValidationError from '../error/validation_error.js';
+import {default as ValidationError, ValidationWarning} from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validateSpec from './validate.js';
 
@@ -40,7 +40,7 @@ export default function validateObject(options: Options): Array<ValidationError>
         }
 
         if (!validateElement) {
-            errors.push(new ValidationError(key, object[objectKey], `unknown property "${objectKey}"`));
+            errors.push(new ValidationWarning(key, object[objectKey], `unknown property "${objectKey}"`));
             continue;
         }
 
