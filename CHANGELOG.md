@@ -1,6 +1,27 @@
-## 3.0.0-beta.4
+## 3.0.0-beta.5
 
 Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.3`:
+
+### ✨ Features and improvements
+
+- Improve shadow and fog rendering performance.
+- Slightly improve performance of 3D layers on highly pitched views by rendering front to back.
+- Make zooming over dynamic terrain (that pops in as you zoom) smoother.
+- Add `renderstart` event, which combined with `render` event can be used to measure rendering frame duration.
+
+### Bug fixes 🐞
+
+- Fix shadows sometimes flickering when zooming in on the Standard style.
+- Fix flickering when using GeoJSON `setData` to animate 3D models.
+- Fix symbols elevated over 3D layers jumping to ground level and back during zoom.
+- Fix an error when loading a 3D tile where multiple materials reference the same texture.
+- Fix several edge cases when smoothing terrain under 3D landmarks.
+- Fix `hillshade-illumination-direction` to align with light direction if `hillshade-illumination-anchor` is not set to `viewport`.
+- Fix precision issues when rendering ground flood light.
+- Fix styles with `fragment: false` not to be loaded as basemap imports.
+- Fix an error on `map` `hasImage` and `updateImage` after the map was removed.
+
+## 3.0.0-beta.4
 
 ### ✨ Features and improvements
 
