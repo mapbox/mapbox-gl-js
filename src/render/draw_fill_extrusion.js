@@ -340,7 +340,9 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         if (image) {
             painter.context.activeTexture.set(gl.TEXTURE0);
-            tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            if (tile.imageAtlasTexture) {
+                tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            }
             programConfiguration.updatePaintBuffers();
         }
         const constantPattern = patternProperty.constantOr(null);

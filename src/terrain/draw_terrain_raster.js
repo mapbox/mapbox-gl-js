@@ -191,7 +191,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
             // Bind the main draped texture
             context.activeTexture.set(gl.TEXTURE0);
-            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            if (tile.texture) {
+                tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            }
 
             const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
@@ -246,7 +248,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
-                tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                if (tile.texture) {
+                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                }
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
@@ -331,7 +335,11 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
 
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
-                tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+                if (tile.texture) {
+                    // This call seemed invalid with 3 args?
+                    // tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+                    tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                }
 
                 const morph = vertexMorphing.getMorphValuesForProxy(coord.key);
                 const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;

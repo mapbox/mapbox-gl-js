@@ -33,7 +33,7 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
 import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
-import type Texture from '../render/texture.js';
+import Texture from '../render/texture.js';
 import type ColorMode from '../gl/color_mode.js';
 import {OverscaledTileID} from '../source/tile_id.js';
 import type {UniformValues} from './uniform_binding.js';
@@ -49,7 +49,7 @@ type SymbolTileRenderState = {
         program: any,
         buffers: SymbolBuffers,
         uniformValues: any,
-        atlasTexture: Texture,
+        atlasTexture: Texture | null,
         atlasTextureIcon: Texture | null,
         atlasInterpolation: any,
         atlasInterpolationIcon: any,
@@ -327,27 +327,27 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 
         let texSize: [number, number];
         let texSizeIcon: [number, number] = [0, 0];
-        let atlasTexture;
+        let atlasTexture: Texture | null;
         let atlasInterpolation;
-        let atlasTextureIcon = null;
+        let atlasTextureIcon: Texture | null = null;
         let atlasInterpolationIcon;
         if (isText) {
-            atlasTexture = tile.glyphAtlasTexture;
+            atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             atlasInterpolation = gl.LINEAR;
-            texSize = tile.glyphAtlasTexture.size;
+            texSize = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
             if (bucket.iconsInText) {
-                texSizeIcon = tile.imageAtlasTexture.size;
-                atlasTextureIcon = tile.imageAtlasTexture;
+                texSizeIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+                atlasTextureIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
                 const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
                 atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
             }
         } else {
             const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
-            atlasTexture = tile.imageAtlasTexture;
+            atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
             atlasInterpolation = isSDF || painter.options.rotating || painter.options.zooming || iconScaled || transformed ?
                 gl.LINEAR :
                 gl.NEAREST;
-            texSize = tile.imageAtlasTexture.size;
+            texSize = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
         }
 
         const bucketIsGlobeProjection = bucket.projection.name === 'globe';
@@ -463,7 +463,9 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
         }
         context.activeTexture.set(gl.TEXTURE0);
-        state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
+        if (state.atlasTexture) {
+            state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
+        }
         if (state.atlasTextureIcon) {
             context.activeTexture.set(gl.TEXTURE1);
             if (state.atlasTextureIcon) {

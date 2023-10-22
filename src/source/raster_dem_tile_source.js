@@ -124,20 +124,6 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
         return neighboringTiles;
     }
-
-    // $FlowFixMe[method-unbinding]
-    unloadTile(tile: Tile) {
-        if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
-        if (tile.hillshadeFBO) {
-            tile.hillshadeFBO.destroy();
-            delete tile.hillshadeFBO;
-        }
-        if (tile.dem) delete tile.dem;
-        delete tile.neighboringTiles;
-
-        tile.state = 'unloaded';
-    }
-
 }
 
 export default RasterDEMTileSource;

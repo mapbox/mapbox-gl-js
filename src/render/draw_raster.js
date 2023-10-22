@@ -149,22 +149,26 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         let parentScaleBy, parentTL;
 
         context.activeTexture.set(gl.TEXTURE0);
-        tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+        if (tile.texture) {
+            tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+        }
 
         context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
-            parentTile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            if (parentTile.texture) {
+                parentTile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            }
             parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
             parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
-        } else {
+        } else if (tile.texture) {
             tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
         }
 
         // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
         // to prevent it from compromising image crispness on flat or low tilted maps.
-        if (tile.texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
+        if (tile.texture && tile.texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
             gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
         }
 

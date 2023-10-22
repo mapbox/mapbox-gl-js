@@ -93,7 +93,7 @@ const lineUniformValues = (
         'u_dash_image': 0,
         'u_gradient_image': 1,
         'u_image_height': imageHeight,
-        'u_texsize': hasDash(layer) ? tile.lineAtlasTexture.size : [0, 0],
+        'u_texsize': hasDash(layer) ? (tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0]) : [0, 0],
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
@@ -111,7 +111,7 @@ const linePatternUniformValues = (
     const transform = painter.transform;
     return {
         'u_matrix': calculateMatrix(painter, tile, layer, matrix),
-        'u_texsize': tile.imageAtlasTexture.size,
+        'u_texsize': tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0],
         // camera zoom ratio
         'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
         'u_device_pixel_ratio': pixelRatio,
