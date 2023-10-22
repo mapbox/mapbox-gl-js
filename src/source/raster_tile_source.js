@@ -240,13 +240,14 @@ class RasterTileSource extends Evented implements Source {
     unloadTile(tile: Tile, callback: Callback<void>) {
         // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
         if (tile.texture && tile.texture instanceof Texture) {
+            // Clean everything else up owned by the tile, but preserve the texture.
+            // Destroy first to prevent racing with the texture cache being popped.
+            tile.destroy(true);
 
-            // Try and save the texture to the cache. If the cache is full,
-            // then the texture should also be destroyed
-            const wasTextureCached = this.map.painter.saveTileTexture(tile.texture);
-
-            // Single call to destroy, to prevent other allocations not being cleaned up (fbo).
-            tile.destroy(wasTextureCached);
+            // Save the texture to the cache
+            if (tile.texture && tile.texture instanceof Texture) {
+                this.map.painter.saveTileTexture(tile.texture);
+            }
         } else {
             tile.destroy();
         }

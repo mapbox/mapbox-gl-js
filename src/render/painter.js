@@ -1120,19 +1120,14 @@ class Painter {
      * @returns true if the tile was cached, false if the tile was not cached and should be destroyed.
      * @private
      */
-    saveTileTexture(texture: Texture): boolean {
+    saveTileTexture(texture: Texture) {
         const tileSize = texture.size[0];
         const textures = this._tileTextures[tileSize];
         if (!textures) {
             this._tileTextures[tileSize] = [texture];
         } else {
-            if (textures.length >= 64) {
-                return false;
-            }
             textures.push(texture);
         }
-
-        return true;
     }
 
     getTileTexture(size: number): null | Texture {
