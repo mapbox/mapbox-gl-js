@@ -231,11 +231,12 @@ class Tiled3dModelBucket implements Bucket {
     }
 
     elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID, source: string) {
-
+        assert(terrain);
         const demTile = terrain.findDEMTileFor(coord);
-        if (demTile === this.terrainTile && exaggeration === this.terrainExaggeration) return;
+        if (!demTile) return;
+        if (demTile.tileID.canonical === this.terrainTile && exaggeration === this.terrainExaggeration) return;
 
-        if (terrain && demTile && demTile.dem && demTile.tileID.overscaledZ !== this.elevationReadFromZ) {
+        if (demTile.dem && demTile.tileID.overscaledZ !== this.elevationReadFromZ) {
             this.elevationReadFromZ = demTile.tileID.overscaledZ;
             const dem = DEMSampler.create(terrain, coord, demTile);
             if (!dem) return;
@@ -255,6 +256,8 @@ class Tiled3dModelBucket implements Bucket {
                 node.elevation = elevation;
             }
         }
+        this.terrainTile = demTile.tileID.canonical;
+        this.terrainExaggeration = exaggeration;
     }
 
     updateDEM(terrain: Terrain, dem: DEMSampler, coord: OverscaledTileID, source: string) {
