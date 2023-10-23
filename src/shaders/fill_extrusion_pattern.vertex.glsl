@@ -1,3 +1,7 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform mat4 u_matrix;
 uniform vec2 u_pixel_coord_upper;
 uniform vec2 u_pixel_coord_lower;

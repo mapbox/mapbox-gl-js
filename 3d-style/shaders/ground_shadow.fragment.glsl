@@ -1,3 +1,5 @@
+#include "_prelude_shadow.fragment.glsl"
+
 #ifdef GL_ES
 precision highp float;
 #endif

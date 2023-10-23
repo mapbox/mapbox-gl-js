@@ -1,3 +1,6 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
+
 uniform mat4 u_matrix;
 uniform float u_skirt_height;
 

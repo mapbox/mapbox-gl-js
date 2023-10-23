@@ -1,3 +1,5 @@
+#include "_prelude_fog.vertex.glsl"
+
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
 // stored in a byte (-128..127). we scale regular normals up to length 63, but

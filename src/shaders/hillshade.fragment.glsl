@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform sampler2D u_image;
 varying vec2 v_pos;
 

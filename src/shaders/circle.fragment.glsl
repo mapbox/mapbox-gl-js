@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 varying vec3 v_data;
 varying float v_visibility;
 

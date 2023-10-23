@@ -1,3 +1,5 @@
+#include "_prelude_fog.fragment.glsl"
+
 uniform highp float u_intensity;
 
 varying vec2 v_extrude;

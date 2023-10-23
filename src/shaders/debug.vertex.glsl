@@ -1,3 +1,5 @@
+#include "_prelude_terrain.vertex.glsl"
+
 attribute vec2 a_pos;
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_pos_3;

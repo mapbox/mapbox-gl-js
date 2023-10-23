@@ -1,3 +1,5 @@
+#include "_prelude_fog.vertex.glsl"
+
 uniform mat4 u_matrix;
 uniform mat4 u_normalize_matrix;
 uniform mat4 u_globe_matrix;

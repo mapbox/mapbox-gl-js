@@ -1,3 +1,5 @@
+#include "_prelude_terrain.vertex.glsl"
+
 attribute vec3 a_pos;
 attribute vec2 a_anchor_pos;
 attribute vec2 a_extrude;

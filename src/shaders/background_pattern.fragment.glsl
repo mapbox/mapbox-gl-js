@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform vec2 u_pattern_tl;
 uniform vec2 u_pattern_br;
 uniform vec2 u_texsize;

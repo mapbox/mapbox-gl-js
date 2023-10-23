@@ -1,3 +1,5 @@
+#include "_prelude_lighting.glsl"
+
 #define SDF_PX 8.0
 
 uniform sampler2D u_texture;

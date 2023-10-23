@@ -1,3 +1,5 @@
+#include "_prelude_fog.fragment.glsl"
+
 // [1] Banding in games http://loopit.dk/banding_in_games.pdf
 
 varying lowp vec3 v_uv;

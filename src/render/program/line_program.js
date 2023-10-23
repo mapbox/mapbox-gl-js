@@ -155,8 +155,12 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     }
 
     const hasBorder = layer.paint.get('line-border-width').constantOr(0.0) > 0.0;
-    if (hasBorder) values.push('RENDER_LINE_BORDER');
-    if (layer.paint.get('line-border-color').constantOr(Color.transparent).a === 0.0) values.push('RENDER_LINE_BORDER_AUTO');
+    if (hasBorder) {
+        values.push('RENDER_LINE_BORDER');
+        if (layer.paint.get('line-border-color').constantOr(Color.transparent).a === 0.0) {
+            values.push('RENDER_LINE_BORDER_AUTO');
+        }
+    }
     return values;
 };
 

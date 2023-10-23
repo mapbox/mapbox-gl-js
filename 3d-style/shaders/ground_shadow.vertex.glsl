@@ -1,3 +1,5 @@
+#include "_prelude_fog.vertex.glsl"
+
 uniform mat4 u_matrix;
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;

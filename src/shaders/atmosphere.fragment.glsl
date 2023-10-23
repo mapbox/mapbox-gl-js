@@ -1,3 +1,5 @@
+#include "_prelude_fog.fragment.glsl"
+
 uniform float u_transition;
 uniform highp float u_fadeout_range;
 uniform highp float u_temporal_offset;

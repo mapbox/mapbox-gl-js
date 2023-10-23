@@ -1,3 +1,5 @@
+#include "_prelude_fog.vertex.glsl"
+
 attribute highp vec4 a_pos_end;
 attribute highp float a_angular_offset_factor;
 attribute highp float a_hidden_by_landmark;

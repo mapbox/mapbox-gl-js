@@ -1,3 +1,5 @@
+#include "_prelude_lighting.glsl"
+
 uniform sampler2D u_texture;
 #ifdef ICON_TRANSITION
 uniform float u_icon_transition;

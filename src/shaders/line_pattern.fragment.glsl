@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform lowp float u_device_pixel_ratio;
 uniform vec2 u_texsize;
 uniform float u_tile_units_to_pixels;

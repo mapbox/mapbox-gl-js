@@ -1,3 +1,5 @@
+#include "_prelude_terrain.vertex.glsl"
+
 uniform mat4 u_matrix;
 uniform float u_edge_radius;
 uniform float u_vertical_scale;

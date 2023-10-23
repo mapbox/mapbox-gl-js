@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float opacity
 

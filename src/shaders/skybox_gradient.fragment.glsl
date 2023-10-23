@@ -1,3 +1,5 @@
+#include "_prelude_fog.fragment.glsl"
+
 varying highp vec3 v_uv;
 
 uniform lowp sampler2D u_color_ramp;

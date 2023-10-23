@@ -4,12 +4,9 @@ import {
     prelude,
     preludeFragPrecisionQualifiers,
     preludeVertPrecisionQualifiers,
-    preludeTerrain,
-    preludeFog,
-    preludeShadow,
     preludeCommonSource,
-    preludeLightingSource,
-    standardDerivativesExt
+    standardDerivativesExt,
+    includeMap
 } from '../shaders/shaders.js';
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
@@ -48,7 +45,9 @@ type ShaderSource = {
     fragmentSource: string,
     vertexSource: string,
     staticAttributes: Array<string>,
-    usedDefines: Array<string>
+    usedDefines: Array<string>,
+    vertexIncludes: Array<string>,
+    fragmentIncludes: Array<string>
 };
 
 function getTokenizedAttributes(array: Array<string>): Array<string> {
@@ -124,24 +123,24 @@ class Program<Us: UniformBindings> {
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
         const version = '#version 300 es\n';
 
-        const fragmentSource = version + defines.concat(
+        let fragmentSource = version + defines.concat(
             version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
-            preludeLightingSource,
-            prelude.fragmentSource,
-            preludeFog.fragmentSource,
-            preludeShadow.fragmentSource,
-            source.fragmentSource).join('\n');
-        const vertexSource = version + defines.concat(
+            prelude.fragmentSource).join('\n');
+        for (const include of source.fragmentIncludes) {
+            fragmentSource += `\n${includeMap[include]}`;
+        }
+        fragmentSource += `\n${source.fragmentSource}`;
+
+        let vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
             preludeCommonSource,
-            preludeLightingSource,
-            prelude.vertexSource,
-            preludeFog.vertexSource,
-            preludeShadow.vertexSource,
-            preludeTerrain.vertexSource,
-            source.vertexSource).join('\n');
+            prelude.vertexSource).join('\n');
+        for (const include of source.vertexIncludes) {
+            vertexSource += `\n${includeMap[include]}`;
+        }
+        vertexSource += `\n${source.vertexSource}`;
 
         const fragmentShader = ((gl.createShader(gl.FRAGMENT_SHADER): any): WebGLShader);
         if (gl.isContextLost()) {

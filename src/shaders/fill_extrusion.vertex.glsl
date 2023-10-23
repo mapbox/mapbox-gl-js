@@ -1,3 +1,8 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
+#include "_prelude_shadow.vertex.glsl"
+#include "_prelude_lighting.glsl"
+
 #if __VERSION__ >= 300
 #ifdef RENDER_CUTOFF
 invariant gl_Position;

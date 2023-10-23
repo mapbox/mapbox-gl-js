@@ -1,3 +1,6 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
+
 uniform mat4 u_proj_matrix;
 uniform mat4 u_normalize_matrix;
 uniform mat4 u_globe_matrix;

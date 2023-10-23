@@ -1,3 +1,5 @@
+#include "_prelude_fog.vertex.glsl"
+
 uniform mat4 u_matrix;
 uniform vec2 u_pattern_size;
 uniform vec2 u_pixel_coord_upper;

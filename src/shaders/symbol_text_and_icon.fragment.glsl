@@ -1,3 +1,5 @@
+#include "_prelude_lighting.glsl"
+
 #define SDF_PX 8.0
 
 #define SDF 1.0

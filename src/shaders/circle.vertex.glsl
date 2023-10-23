@@ -1,3 +1,6 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
+
 #define NUM_VISIBILITY_RINGS 2
 #define INV_SQRT2 0.70710678
 #define ELEVATION_BIAS 0.0001

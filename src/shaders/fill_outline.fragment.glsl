@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 varying vec2 v_pos;
 
 uniform float u_emissive_strength;

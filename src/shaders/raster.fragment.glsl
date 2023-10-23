@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform float u_fade_t;
 uniform float u_opacity;
 uniform sampler2D u_image0;

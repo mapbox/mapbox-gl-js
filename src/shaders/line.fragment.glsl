@@ -1,3 +1,6 @@
+#include "_prelude_fog.fragment.glsl"
+#include "_prelude_lighting.glsl"
+
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;

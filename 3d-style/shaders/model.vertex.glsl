@@ -1,3 +1,6 @@
+#include "_prelude_fog.vertex.glsl"
+#include "_prelude_shadow.vertex.glsl"
+
 attribute vec3 a_pos_3f;
 
 #pragma mapbox: define-attribute highp vec3 normal_3f
