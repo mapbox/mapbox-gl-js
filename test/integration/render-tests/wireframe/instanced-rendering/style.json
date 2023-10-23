@@ -1,0 +1,128 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.003,
+      "height": 1024,
+      "width": 1024,
+      "showLayers3DWireframe": true,
+      "standardDerivatives": true,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "fog": {
+    "range": [-0.5, 3.0],
+    "color": "white"
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.04
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 1.0,
+        "cast-shadows": true,
+        "shadow-intensity": 1,
+        "direction": [
+          160,
+          60
+        ]
+      }
+    }
+  ],
+  "models": {
+    "maple1": "local://models/maple1.glb"
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 1.0
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://models/dem/{z}-{x}-{y}-terrain-512.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 512
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+  "pitch": 38,
+  "zoom": 19.04,
+  "bearing": -54.8,
+  "center": [
+    -104.988248,
+    39.7391087
+  ],
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10,
+          "line-opacity": 0.3,
+          "line-emissive-strength": 1
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "tree",
+      "layout" : {
+        "model-id": "maple1"
+      }
+    }
+  ]
+}
