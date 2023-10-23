@@ -99,10 +99,6 @@ Once those commands finish, you will have a standalone build at `dist/mapbox-gl.
 
 See [`test/README.md`](./test/README.md).
 
-## Writing & Running Benchmarks
-
-See [`bench/README.md`](./bench/README.md).
-
 ## Code Conventions
 
 * We use [`error` events](https://www.mapbox.com/mapbox-gl-js/api/#Map.event:error) to report user errors.

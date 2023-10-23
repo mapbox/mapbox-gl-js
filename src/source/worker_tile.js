@@ -48,7 +48,6 @@ class WorkerTile {
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
-    returnDependencies: boolean;
     enableTerrain: boolean;
     isSymbolTile: ?boolean;
     extraShadowCaster: ?boolean;
@@ -77,7 +76,6 @@ class WorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
-        this.returnDependencies = !!params.returnDependencies;
         this.promoteId = params.promoteId;
         this.enableTerrain = !!params.enableTerrain;
         this.isSymbolTile = params.isSymbolTile;
@@ -265,11 +263,7 @@ class WorkerTile {
                     glyphAtlasImage: glyphAtlas.image,
                     lineAtlas,
                     imageAtlas,
-                    brightness: options.brightness,
-                    // Only used for benchmarking:
-                    glyphMap: this.returnDependencies ? glyphMap : null,
-                    iconMap: this.returnDependencies ? iconMap : null,
-                    glyphPositions: this.returnDependencies ? glyphAtlas.positions : null
+                    brightness: options.brightness
                 });
                 PerformanceUtils.endMeasure(m);
             }

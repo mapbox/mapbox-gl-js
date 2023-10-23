@@ -101,17 +101,6 @@ workflows:
               ignore: /.*/
             branches:
               only: main
-      - deploy-benchmarks:
-          requires:
-            - install-mbx-ci
-            - build
-          filters:
-            tags:
-              only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
-            branches:
-              only:
-                - main
-                - /release-.*/
       - deploy-release:
           requires:
             - install-mbx-ci
@@ -388,22 +377,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: yarn run test-expressions
-
-  deploy-benchmarks:
-    <<: *linux-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Build
-          command: BENCHMARK_VERSION="${CIRCLE_TAG:-$CIRCLE_BRANCH} $(git rev-parse --short=7 HEAD)" yarn run build-benchmarks
-      - aws-cli/install
-      - run:
-          name: Upload benchmark
-          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js
-      - run:
-          name: Upload source maps
-          command: aws s3 cp --acl public-read --content-type application/javascript bench/versions/benchmarks_generated.js.map s3://mapbox-gl-js/${CIRCLE_TAG:-$CIRCLE_BRANCH}/benchmarks.js.map
 
   deploy-release:
     <<: *linux-defaults

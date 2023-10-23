@@ -37,7 +37,6 @@ export type WorkerTileParameters = RequestedTileParameters & {
     pixelRatio: number,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
-    returnDependencies?: boolean,
     enableTerrain?: boolean,
     projection: Projection,
     brightness: number,
