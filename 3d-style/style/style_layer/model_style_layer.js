@@ -8,6 +8,7 @@ import type {PaintProps, LayoutProps} from './model_style_layer_properties.js';
 import type {BucketParameters} from '../../../src/data/bucket.js';
 import {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue} from '../../../src/style/properties.js';
 import type {Expression} from '../../../src/style-spec/expression/expression.js';
+import {ZoomDependentExpression} from '../../../src/style-spec/expression/index.js';
 
 class ModelStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -59,6 +60,19 @@ class ModelStyleLayer extends StyleLayer {
         // relayout on programatically setPaintProperty for all non-data-driven properties that get baked into vertex data.
         // Buckets could be updated without relayout later, if needed to optimize.
         return name === "model-color" || name === "model-color-mix-intensity" || name === "model-rotation" || name === "model-scale" || name === "model-translation" || name === "model-emissive-strength";
+    }
+
+    _isPropertyZoomDependent(name: string): boolean {
+        const prop = this._transitionablePaint._values[name];
+        return prop != null && prop.value != null &&
+            prop.value.expression != null &&
+            prop.value.expression instanceof ZoomDependentExpression;
+    }
+
+    isZoomDependent(): boolean {
+        return this._isPropertyZoomDependent('model-scale') ||
+            this._isPropertyZoomDependent('model-rotation') ||
+            this._isPropertyZoomDependent('model-translation');
     }
 }
 

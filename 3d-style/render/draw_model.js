@@ -407,7 +407,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
 }
 
 // If terrain changes, update elevations (baked in translation).
-function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, bucketTileID: OverscaledTileID) {
+function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, bucketTileID: OverscaledTileID): boolean {
     let exaggeration = painter.terrain ? painter.terrain.exaggeration() : 0;
     let dem: ?DEMSampler;
     if (painter.terrain && exaggeration > 0) {
@@ -427,7 +427,7 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
 
     if (exaggeration === bucket.validForExaggeration &&
         (exaggeration === 0 || (dem && dem._demTile && dem._demTile.tileID === bucket.validForDEMTile.id && dem._dem._timestamp === bucket.validForDEMTile.timestamp))) {
-        return;
+        return false;
     }
 
     let elevationMin: ?number;
@@ -451,8 +451,18 @@ function updateModelBucketsElevation(painter: Painter, bucket: ModelBucket, buck
 
     bucket.validForExaggeration = exaggeration;
     bucket.validForDEMTile = dem && dem._demTile ? {id: dem._demTile.tileID, timestamp: dem._dem._timestamp} : {id: undefined, timestamp: 0};
-    bucket.uploaded = false;
-    bucket.upload(painter.context);
+
+    return true;
+}
+
+function updateModelBucketData(painter: Painter, bucket: ModelBucket, bucketTileID: OverscaledTileID) {
+    const bucketContentsUpdatedByZoom = bucket.updateZoomBasedPaintProperties();
+    const bucketContentsUpdatedByElevation = updateModelBucketsElevation(painter, bucket, bucketTileID);
+
+    if (bucketContentsUpdatedByZoom || bucketContentsUpdatedByElevation) {
+        bucket.uploaded = false;
+        bucket.upload(painter.context);
+    }
 }
 
 // preallocate structure used to reduce re-allocation during rendering and flow checks
@@ -517,8 +527,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         const tileZoom = calculateTileZoom(coord, tr);
         evaluationParameters.zoom = tileZoom;
         const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
-
-        updateModelBucketsElevation(painter, bucket, coord);
+        updateModelBucketData(painter, bucket, coord);
 
         renderData.shadowUniformsInitialized = false;
         renderData.useSingleShadowCascade = !!shadowRenderer && shadowRenderer.getMaxCascadeForTile(coord.toUnwrapped()) === 0;
@@ -560,6 +569,8 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
 const minimumInstanceCount = 20;
 
 function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
+
+    // console.log(`LAYER: ${JSON.stringify(layer.paint.get('model-scale'))}`);
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;

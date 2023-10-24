@@ -10,8 +10,8 @@
         ["setPaintProperty", "tree-layer", "model-scale", [3, 1, 1]],
         ["setPaintProperty", "tree-layer", "model-rotation", [0, 45, 90]],
         ["setPaintProperty", "tree-layer", "model-color", "red"],
-        ["sleep", 500],
-        ["wait"]
+        ["wait", 500],
+        ["wait", 500]
       ]
     }
   },

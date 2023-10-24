@@ -67,8 +67,8 @@ export default function validateProperty(options: PropertyValidationOptions, pro
             // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
             const expression = createPropertyExpression(deepUnbundle(value), valueSpec);
             const expressionObj = (expression.value: any).expression || (expression.value: any)._styleExpression.expression;
-            if (expressionObj && (!isGlobalPropertyConstant(expressionObj, ['zoom']) || !isGlobalPropertyConstant(expressionObj, ['measure-light']))) {
-                errors.push(new ValidationError(key, value, `${propertyKey} does not support zoom or measure-light expressions when the model layer source is vector tile or GeoJSON.`));
+            if (expressionObj && !isGlobalPropertyConstant(expressionObj, ['measure-light'])) {
+                errors.push(new ValidationError(key, value, `${propertyKey} does not support measure-light expressions when the model layer source is vector tile or GeoJSON.`));
             }
         }
     }

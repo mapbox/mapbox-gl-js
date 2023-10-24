@@ -8254,7 +8254,7 @@
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
-        "parameters": ["feature", "feature-state"]
+        "parameters": ["feature", "feature-state", "zoom"]
       },
       "sdk-support": {
          "basic functionality": {
@@ -8304,7 +8304,7 @@
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
-        "parameters": ["feature", "feature-state"]
+        "parameters": ["feature", "feature-state", "zoom"]
       },
       "sdk-support": {
           "basic functionality": {
@@ -8328,7 +8328,7 @@
       "property-type": "data-driven",
       "expression": {
         "interpolated": true,
-        "parameters": ["feature", "feature-state", "measure-light"]
+        "parameters": ["feature", "feature-state", "measure-light", "zoom"]
       },
       "sdk-support": {
           "basic functionality": {

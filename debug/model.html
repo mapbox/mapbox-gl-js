@@ -115,12 +115,15 @@ const style = {
                 "model-id": "tree-diffuse"
             },
             "paint": {
-                "model-rotation": ["match", ["%", ["get", "id"], 4],
-                    0, ["literal", [0.0, 0.0, 0.0]],
-                    1, ["literal", [0.0, 0.0, 60.0]],
-                    2, ["literal", [10.0, 0.0, 180.0]],
-                    ["literal", [0.0, -3.0, -90]]],
-                "model-scale": [ 70.0, 50.0, 50.0],
+                "model-scale": [
+                    "interpolate",
+                    ["exponential", 1.8],
+                    ["zoom"],
+                    15,
+                    [1, 1, 1],
+                    20,
+                    [100, 100, 100],
+                ],
                 "model-translation": [0, 0, 100]
             }
         },

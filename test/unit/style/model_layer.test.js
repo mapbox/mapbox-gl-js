@@ -38,19 +38,16 @@ test('ModelLayer#loadStyleExpressionConstraint', (t) => {
             t.ok(error);
             switch (errorCount) {
             case 0:
-                t.match(error.message, /model\-scale does not support zoom or measure\-light/);
+                t.match(error.message, /model\-emissive\-strength does not support measure\-light/);
                 break;
             case 1:
-                t.match(error.message, /model\-emissive\-strength does not support zoom or measure\-light/);
-                break;
-            case 2:
-                t.match(error.message, /model\-color does not support zoom or measure\-light/);
+                t.match(error.message, /model\-color does not support measure\-light/);
                 break;
             default:
-                t.match(error.message, /model\-color\-mix\-intensity does not support zoom or measure\-light/);
+                t.match(error.message, /model\-color\-mix\-intensity does not support measure\-light/);
             }
             errorCount++;
-            if (errorCount === 4) {
+            if (errorCount === 3) {
                 t.end();
             }
         });

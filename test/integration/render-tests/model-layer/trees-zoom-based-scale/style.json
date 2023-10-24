@@ -1,0 +1,116 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00085,
+      "height": 1024,
+      "width": 1024,
+      "standardDerivatives": true
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "intensity": 0.5,
+        "direction": [
+          120,
+          70
+        ]
+      }
+    }
+  ],
+  "models": {
+    "maple1": "local://models/maple1-lod2.glb",
+    "maple2": "local://models/maple2-lod2.glb",
+    "oak1": "local://models/oak1-lod2.glb",
+    "oak2": "local://models/oak2-lod2.glb"
+  },
+  "sources": {
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+  "pitch": 45,
+  "zoom": 17.5,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "trees",
+      "layout" : {
+        "model-id": 
+          ["match", ["%", ["id"], 4],
+            0, "maple1",
+            1, "maple2",
+            3, "oak1",
+            "oak2"]
+      },
+      "filter": ["<", ["%", ["id"], 6], 3],
+      "paint": {
+        "model-rotation": ["match", ["%", ["id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 50.0]],
+          2, ["literal", [10.0, 0.0, 120.0]],
+          ["literal", [0.0, -3.0, -60]]],
+          "model-scale": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            17,
+            [1, 1, 1],
+            18,
+            [10, 10, 10]
+        ],
+        "model-color": [
+          "match", ["%", ["id"], 6],
+            0, "orange",
+            1, "gray",
+            2, "white",
+            3, "pink",
+            4, "yellow",
+            "green"],
+        "model-cast-shadows": false,
+        "model-receive-shadows": false,
+        "model-color-mix-intensity": 0.7
+      }
+    }
+  ]
+}
