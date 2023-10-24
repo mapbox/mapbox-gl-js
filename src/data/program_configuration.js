@@ -387,8 +387,8 @@ export default class ProgramConfiguration {
         const keys = [];
 
         for (const property in layer.paint._values) {
-            if (!filterProperties(property)) continue;
             const value = layer.paint.get(property);
+            if (!filterProperties(property)) continue;
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }

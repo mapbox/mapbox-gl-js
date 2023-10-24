@@ -47,6 +47,18 @@ import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
 
+export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
+    'fill-extrusion-base',
+    'fill-extrusion-height',
+    'fill-extrusion-color',
+    'fill-extrusion-pattern',
+    'fill-extrusion-flood-light-wall-radius'
+];
+
+export const fillExtrusionGroundDataDrivenProperties: Array<string> = [
+    'fill-extrusion-flood-light-ground-radius'
+];
+
 const FACTOR = Math.pow(2, 13);
 const TANGENT_CUTOFF = 4;
 const NORM = Math.pow(2, 15) - 1;
@@ -324,15 +336,15 @@ export class GroundEffect {
 
     hiddenByLandmarkVertexArray: FillExtrusionHiddenByLandmarkArray;
     hiddenByLandmarkVertexBuffer: VertexBuffer;
-    needsHiddenByLandmarkUpdate: boolean;
+    _needsHiddenByLandmarkUpdate: boolean;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
     _segments: SegmentVector;
 
-    segmentToGroundQuads: {[number]: Array<GroundQuad>};
-    segmentToRegionTriCounts: {[number]: Array<number>};
+    _segmentToGroundQuads: {[number]: Array<GroundQuad>};
+    _segmentToRegionTriCounts: {[number]: Array<number>};
     regionSegments: {[number]: ?SegmentVector};
 
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
@@ -340,13 +352,16 @@ export class GroundEffect {
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.vertexArray = new FillExtrusionGroundLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
+        const filtered = (property: string) => {
+            return fillExtrusionGroundDataDrivenProperties.includes(property);
+        };
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom, filtered);
         this._segments = new SegmentVector();
         this.hiddenByLandmarkVertexArray = new FillExtrusionHiddenByLandmarkArray();
-        this.segmentToGroundQuads = {};
-        this.segmentToGroundQuads[0] = [];
-        this.segmentToRegionTriCounts = {};
-        this.segmentToRegionTriCounts[0] = [0, 0, 0, 0, 0];
+        this._segmentToGroundQuads = {};
+        this._segmentToGroundQuads[0] = [];
+        this._segmentToRegionTriCounts = {};
+        this._segmentToRegionTriCounts[0] = [0, 0, 0, 0, 0];
         this.regionSegments = {};
         this.regionSegments[4] = new SegmentVector();
     }
@@ -363,13 +378,13 @@ export class GroundEffect {
             let sid = Math.max(0, this._segments.get().length - 1);
             const numNewVerts = n * 4;
             const numExistingVerts = this.vertexArray.length;
-            const numExistingTris = this.segmentToGroundQuads[sid].length * QUAD_TRIS;
+            const numExistingTris = this._segmentToGroundQuads[sid].length * QUAD_TRIS;
             const segment = this._segments._prepareSegment(numNewVerts, numExistingVerts, numExistingTris);
             const newSegmentAdded = sid !== this._segments.get().length - 1;
             if (newSegmentAdded) {
                 sid++;
-                this.segmentToGroundQuads[sid] = [];
-                this.segmentToRegionTriCounts[sid] = [0, 0, 0, 0, 0];
+                this._segmentToGroundQuads[sid] = [];
+                this._segmentToRegionTriCounts[sid] = [0, 0, 0, 0, 0];
             }
             let prevFactor;
             {
@@ -411,11 +426,11 @@ export class GroundEffect {
                 // When a tile belongs to more than one region it needs to be duplicated for that region.
                 const regions = getTileRegions(pa, pb, na, maxRadius); // Note: mutates na
                 for (const rid of regions) {
-                    this.segmentToGroundQuads[sid].push({
+                    this._segmentToGroundQuads[sid].push({
                         id: idx,
                         region: rid
                     });
-                    this.segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
+                    this._segmentToRegionTriCounts[sid][rid] += QUAD_TRIS;
                     segment.primitiveLength += QUAD_TRIS;
                 }
                 prevFactor = factor;
@@ -426,14 +441,14 @@ export class GroundEffect {
     prepareBorderSegments() {
         if (!this.hasData()) return;
 
-        assert(this._segments && this.segmentToGroundQuads && this.segmentToRegionTriCounts);
+        assert(this._segments && this._segmentToGroundQuads && this._segmentToRegionTriCounts);
         assert(!this.indexArray.length);
 
         const segments = this._segments.get();
         // Sort the geometry in this order: left, right, top, bottom and default regions.
         const numSegments = segments.length;
         for (let i = 0; i < numSegments; i++) {
-            const groundQuads = this.segmentToGroundQuads[i];
+            const groundQuads = this._segmentToGroundQuads[i];
             groundQuads.sort((a: GroundQuad, b: GroundQuad) => {
                 return a.region - b.region;
             });
@@ -441,9 +456,9 @@ export class GroundEffect {
 
         // Populate the index array.
         for (let i = 0; i < numSegments; i++) {
-            const groundQuads = this.segmentToGroundQuads[i];
+            const groundQuads = this._segmentToGroundQuads[i];
             const segment = segments[i];
-            const regionTriCounts = this.segmentToRegionTriCounts[i];
+            const regionTriCounts = this._segmentToRegionTriCounts[i];
 
             const totalTriCount = regionTriCounts.reduce((acc: number, a: number) => { return acc + a; }, 0);
             assert(segment.primitiveLength === totalTriCount);
@@ -483,8 +498,8 @@ export class GroundEffect {
         }
 
         // Free up memory as we no longer need these.
-        this.segmentToGroundQuads = (null: any);
-        this.segmentToRegionTriCounts = (null: any);
+        this._segmentToGroundQuads = (null: any);
+        this._segmentToRegionTriCounts = (null: any);
         this._segments.destroy();
         this._segments = (null: any);
     }
@@ -521,11 +536,11 @@ export class GroundEffect {
         for (let i = offset; i < vertexArrayBounds; ++i) {
             this.hiddenByLandmarkVertexArray.emplace(i, hide);
         }
-        this.needsHiddenByLandmarkUpdate = true;
+        this._needsHiddenByLandmarkUpdate = true;
     }
 
     uploadHiddenByLandmark(context: Context) {
-        if (!this.hasData() || !this.needsHiddenByLandmarkUpdate) {
+        if (!this.hasData() || !this._needsHiddenByLandmarkUpdate) {
             return;
         }
         if (!this.hiddenByLandmarkVertexBuffer && this.hiddenByLandmarkVertexArray.length > 0) {
@@ -534,7 +549,7 @@ export class GroundEffect {
         } else if (this.hiddenByLandmarkVertexBuffer) {
             this.hiddenByLandmarkVertexBuffer.updateData(this.hiddenByLandmarkVertexArray);
         }
-        this.needsHiddenByLandmarkUpdate = false;
+        this._needsHiddenByLandmarkUpdate = false;
     }
 
     destroy() {
@@ -624,7 +639,10 @@ class FillExtrusionBucket implements Bucket {
         this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.centroidVertexArray = new FillExtrusionCentroidArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
+        const filtered = (property: string) => {
+            return fillExtrusionDefaultDataDrivenProperties.includes(property);
+        };
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom, filtered);
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.groundEffect = new GroundEffect(options);
