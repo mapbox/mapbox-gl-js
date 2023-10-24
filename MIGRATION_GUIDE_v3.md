@@ -117,11 +117,9 @@ Slot | Description
 --- | ---
 `bottom` | Above polygons (land, landuse, water, etc.)
 `middle` | Above lines (roads, etc.) and behind 3D buildings
-`top` | Above POI labels and behind Place and Transit labels
-not specified | Above all existing layers in the style
+`top` | Above all existing layers in the style
 
 Set the preferred `slot` on the `Layer` object before adding it to your map and your layer will be appropriately placed in the Standard style's layer stack.
-If no slot is specified for a custom layer they are placed at the very top of the layer list, providing a location that has highest collision priority compared to all other layers.
 
 ```js
 map.addLayer({
