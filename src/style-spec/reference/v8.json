@@ -5559,6 +5559,12 @@
       },
       "transition": true,
       "doc": "Controls the intensity of shading near ground and concave angles between walls. Default value 0.0 disables ambient occlusion and values around 0.3 provide the most plausible results for buildings.",
+      "requires": [
+        "lights",
+        {
+          "!": "fill-extrusion-flood-light-intensity"
+        }
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -5582,7 +5588,10 @@
       "transition": true,
       "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with legacy light. When 3D light is enabled `fill-extrusion-ambient-occlusion-wall-radius` and `fill-extrusion-ambient-occlusion-ground-radius` are used instead.",
       "requires": [
-        "fill-extrusion-edge-radius"
+        "fill-extrusion-edge-radius",
+        {
+          "!": "fill-extrusion-flood-light-intensity"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -5607,7 +5616,10 @@
       "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings.",
       "requires": [
         "lights",
-        "fill-extrusion-edge-radius"
+        "fill-extrusion-edge-radius",
+        {
+          "!": "fill-extrusion-flood-light-intensity"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -5631,7 +5643,10 @@
       "transition": true,
       "doc": "The extent of the ambient occlusion effect on the ground beneath the extruded buildings in meters.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-flood-light-intensity"
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -5649,7 +5664,10 @@
       "maximum": 1.0,
       "doc": "Provides a control to futher fine-tune the look of the ambient occlusion on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-flood-light-intensity"
+        }
       ],
       "transition": true,
       "expression": {
@@ -5672,7 +5690,10 @@
       "default": "#ffffff",
       "doc": "The color of the flood light effect on the walls of the extruded buildings.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-ambient-occlusion-intensity"
+        }
       ],
       "transition": true,
       "expression": {
@@ -5698,7 +5719,10 @@
       "maximum": 1.0,
       "doc": "The intensity of the flood light color.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-ambient-occlusion-intensity"
+        }
       ],
       "transition": true,
       "expression": {
@@ -5724,7 +5748,10 @@
       "minimum": 0,
       "doc": "The extent of the flood light effect on the walls of the extruded buildings in meters.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-ambient-occlusion-intensity"
+        }
       ],
       "transition": true,
       "expression": {
@@ -5755,7 +5782,10 @@
       "minimum": 0,
       "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-ambient-occlusion-intensity"
+        }
       ],
       "transition": true,
       "expression": {
@@ -5786,7 +5816,10 @@
       "maximum": 1.0,
       "doc": "Provides a control to futher fine-tune the look of the flood light on the ground beneath the extruded buildings. Lower values give the effect a more solid look while higher values make it smoother.",
       "requires": [
-        "lights"
+        "lights",
+        {
+          "!": "fill-extrusion-ambient-occlusion-intensity"
+        }
       ],
       "transition": true,
       "expression": {
