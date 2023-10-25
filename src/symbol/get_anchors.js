@@ -142,7 +142,6 @@ function resample(line: Array<Point>, offset: number, spacing: number, angleWind
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
                 const anchor = new Anchor(x, y, 0, angle, i);
-                anchor._round();
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                     anchors.push(anchor);
