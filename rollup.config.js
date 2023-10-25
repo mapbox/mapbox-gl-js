@@ -39,7 +39,8 @@ export default [{
         format: 'amd',
         sourcemap: 'inline',
         indent: false,
-        chunkFileNames: 'shared.js'
+        chunkFileNames: 'shared.js',
+        minifyInternalExports: production
     },
     treeshake: production,
     plugins: plugins({minified, production, bench})
