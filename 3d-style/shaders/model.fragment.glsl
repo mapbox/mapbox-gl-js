@@ -12,6 +12,8 @@ uniform vec4 u_baseColorFactor;
 uniform vec4 u_emissiveFactor;
 uniform float u_metallicFactor;
 uniform float u_roughnessFactor;
+uniform float u_emissive_strength;
+
 
 varying highp vec4 v_position_height;
 varying lowp vec4 v_color_mix;
@@ -464,7 +466,9 @@ vec4 finalColor;
     opacity *= v_roughness_metallic_emissive_alpha.w * saturate(1.0 - distance * distance);
 #endif
 #endif
-
+    // Use emissive strength as interpolation between lit and unlit color
+    // for coherence with other layer types.
+    color = mix(color, mat.baseColor.rgb, u_emissive_strength);
     color = linearTosRGB(color);
     color *= opacity;
     finalColor = vec4(color, opacity);
