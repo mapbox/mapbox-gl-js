@@ -1,6 +1,13 @@
 
+const removedKeys = new Set(['doc', 'example', 'sdk-support', 'requires', 'units']);
+
 function replacer(k, v) {
-    return (k === 'doc' || k === 'example' || k === 'sdk-support') ? undefined : v;
+    if (typeof v === 'object') {
+        const keys = Object.keys(v);
+        if (keys.length === 1 && keys[0] === 'doc') return 1; // smaller enums
+    }
+    if ((k === 'interpolated' || k === 'transition') && v === false) return undefined; // skip these keys with falsy values
+    return removedKeys.has(k) ? undefined : v;
 }
 
 export default function minifyStyleSpec() {
