@@ -1147,7 +1147,7 @@ class Painter {
 
     terrainUseFloatDEM(): boolean {
         const context = this.context;
-        return context.extTextureFloatLinear !== undefined && context.extTextureFloatLinear !== null;
+        return context.extTextureFloatLinear != null;
     }
 
     /**

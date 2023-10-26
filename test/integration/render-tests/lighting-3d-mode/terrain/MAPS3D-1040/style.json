@@ -1,0 +1,80 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        [
+          "setStyle",
+          "local://styles/sanfrancisco.json"
+        ],
+        [
+          "setZoom",
+          15.0
+        ],
+        [
+          "setCenter",
+          [
+            -122.45362,
+            37.77049
+          ]
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addSource",
+          "rgbterrain",
+          {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.noterrain.png"
+            ],
+            "maxzoom": 11,
+            "tileSize": 256
+          }
+        ],
+        [
+          "setTerrain",
+          {
+            "source": "rgbterrain"
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "test_ambient",
+              "properties": {
+                "color": "rgba(5, 5, 0, 1)",
+                "intensity": 1
+              }
+            },
+            {
+              "type": "directional",
+              "id": "test_directional",
+              "properties": {
+                "intensity": 1.0,
+                "direction": [
+                  230.0,
+                  85.0
+                ],
+                "color": "rgba(190, 190, 190, 1)"
+              }
+            }
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}
