@@ -177,7 +177,10 @@ const skip = [
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-0",
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-1",
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-2",
-    "render-tests/fill-extrusion-partial-rendering/partial-rendering-3"
+    "render-tests/fill-extrusion-partial-rendering/partial-rendering-3",
+
+    // Flaky in CI, covered by unit tests
+    "render-tests/terrain/camera-placement/elevation-not-yet-available"
 ];
 
 export default {todo, skip};
