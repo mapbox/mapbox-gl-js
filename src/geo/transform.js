@@ -2507,7 +2507,7 @@ class Transform {
 
         // In case we have orthographic transition we need to interpolate the distance value in the range [1, distance]
         // to calculate correct perspective ratio values for symbols
-        if (this._orthographicProjectionAtLowPitch && this.projection.name !== 'globe' && true && this.pitch < OrthographicPitchTranstionValue) {
+        if (this._orthographicProjectionAtLowPitch && this.projection.name !== 'globe' && this.pitch < OrthographicPitchTranstionValue) {
             const mixValue = this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
             distance = lerp(1.0, distance, easeIn(mixValue));
         }

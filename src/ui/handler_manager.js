@@ -158,6 +158,7 @@ class HandlerManager {
     _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: ?Vec3;
+    _originalZoom: ?number;
 
     constructor(map: Map, options: { interactive: boolean, pitchWithRotate: boolean, clickTolerance: number, bearingSnap: number}) {
         this._map = map;
@@ -318,6 +319,7 @@ class HandlerManager {
         this._inertia.clear();
         this._fireEvents({}, {}, allowEndAnimation);
         this._changes = [];
+        this._originalZoom = undefined;
     }
 
     isActive(): boolean {
@@ -506,8 +508,14 @@ class HandlerManager {
         if (eventEnded("drag") && !hasChange(combinedResult)) {
             const preZoom = tr.zoom;
             tr.cameraElevationReference = "sea";
-            tr.recenterOnTerrain();
-            tr.cameraElevationReference = "ground";
+            if (this._originalZoom != null && tr._orthographicProjectionAtLowPitch && tr.projection.name !== 'globe' && tr.pitch  === 0) {
+                // keep constant zoom from drag gesture start.
+                tr.cameraElevationReference = "ground";
+                tr.zoom = this._originalZoom;
+            } else {
+                tr.recenterOnTerrain();
+                tr.cameraElevationReference = "ground";
+            }
             // Map zoom might change during the pan operation due to terrain elevation.
             if (preZoom !== tr.zoom) this._map._update(true);
         }
@@ -534,6 +542,7 @@ class HandlerManager {
 
         if ((zoomDelta || eventStarted("drag")) && around) {
             this._dragOrigin = toVec3(tr.pointCoordinate3D(around));
+            this._originalZoom = tr.zoom;
             // Construct the tracking ellipsoid every time user changes the zoom or drag origin.
             // Direction of the ray will define size of the shape and hence defining the available range of movement
             this._trackingEllipsoid.setup(tr._camera.position, this._dragOrigin);

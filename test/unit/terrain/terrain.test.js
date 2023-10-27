@@ -17,7 +17,8 @@ import Marker from '../../../src/ui/marker.js';
 import Popup from '../../../src/ui/popup.js';
 import simulate from '../../util/simulate_interaction.js';
 import browser from '../../../src/util/browser.js';
-import {AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
+import * as DOM from '../../../src/util/dom.js';
+import Map, {AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
 
 function createStyle() {
@@ -793,6 +794,129 @@ test('Raycast projection 2D/3D', t => {
                 t.end();
             });
         });
+    });
+});
+
+function createInteractiveMap(t, clickTolerance, dragPan) {
+    t.stub(Map.prototype, '_detectMissingCSS');
+    return new Map({
+        container: DOM.create('div', '', window.document.body),
+        clickTolerance: clickTolerance || 0,
+        dragPan: dragPan || true,
+        testMode: true,
+        style: {
+            version: 8,
+            center: [0, 0],
+            zoom: 15.7,
+            sources: {},
+            layers: [{
+                "id": "background",
+                "type": "background",
+                "paint": {
+                    "background-color": "black"
+                }
+            }],
+            pitch: 0
+        }
+    });
+}
+
+test('Drag pan ortho', (t) => {
+    t.beforeEach(() => {
+        window.useFakeXMLHttpRequest();
+    });
+
+    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+        t.ok(Math.abs(actual - expected) < epsilon);
+    };
+
+    const map = createInteractiveMap(t);
+
+    map.on('style.load', () => {
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+            "tileSize": TILE_SIZE,
+            "maxzoom": 14
+        });
+        const cache = map.style._getSourceCache('mapbox-dem');
+        cache.used = cache._sourceLoaded = true;
+        const mockDem = (dem, cache) => {
+            cache._loadTile = (tile, callback) => {
+                tile.dem = dem;
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+        };
+
+        t.test('ortho camera & drag over zero pitch elevation', t => {
+            mockDem(createNegativeGradientDEM(), cache);
+            map.setTerrain({"source": "mapbox-dem"});
+            map.setPitch(0);
+            map.setZoom(15.7);
+            map.setCamera({"camera-projection": "orthographic"});
+            map.once('render', () => {
+
+                // MouseEvent.buttons = 1 // left button
+                const buttons = 1;
+                map._updateTerrain();
+                t.equal(map.getZoom(), 15.7);
+
+                const dragstart = t.spy();
+                const drag      = t.spy();
+                const dragend   = t.spy();
+
+                map.on('dragstart', dragstart);
+                map.on('drag',      drag);
+                map.on('dragend',   dragend);
+
+                simulate.mousedown(map.getCanvas());
+                map._renderTaskQueue.run();
+                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+                map._renderTaskQueue.run();
+                t.equal(dragstart.callCount, 1);
+                t.equal(drag.callCount, 1);
+                t.equal(dragend.callCount, 0);
+
+                simulate.mouseup(map.getCanvas());
+                map._renderTaskQueue.run();
+                t.equal(dragstart.callCount, 1);
+                t.equal(drag.callCount, 1);
+                t.equal(dragend.callCount, 1);
+
+                t.equal(map.getZoom(), 15.7); // recenter on pitch.
+
+                // Still in ortho
+                map.setPitch(5);
+                simulate.mousedown(map.getCanvas());
+                map._renderTaskQueue.run();
+                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+                map._renderTaskQueue.run();
+
+                simulate.mouseup(map.getCanvas());
+                map._renderTaskQueue.run();
+                t.equal(dragend.callCount, 2);
+                assertAlmostEqual(t, map.getZoom(), 14.06, 0.01);
+
+                map.setPitch(0);
+                simulate.mousedown(map.getCanvas());
+                map._renderTaskQueue.run();
+                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+                map._renderTaskQueue.run();
+
+                simulate.mouseup(map.getCanvas());
+                map._renderTaskQueue.run();
+                t.equal(dragend.callCount, 3);
+                assertAlmostEqual(t, map.getZoom(), 14.06, 0.01); // no pitch, keep old zoom.
+
+                map.remove();
+                t.end();
+            });
+        });
+
+        t.end();
     });
 });
 

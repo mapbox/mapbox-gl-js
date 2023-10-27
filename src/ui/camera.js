@@ -1371,7 +1371,7 @@ class Camera extends Evented {
         this._prepareEase(eventData, options.noMoveStart, currently);
 
         this._ease(frame(tr), (interruptingEaseId?: string) => {
-            tr.recenterOnTerrain();
+            if (tr.cameraElevationReference === "sea") tr.recenterOnTerrain();
             this._afterEase(eventData, interruptingEaseId);
         }, options);
 
@@ -1381,6 +1381,11 @@ class Camera extends Evented {
     _prepareEase(eventData?: Object, noMoveStart: boolean, currently: Object = {}) {
         this._moving = true;
         this.transform.cameraElevationReference = "sea";
+        if (this.transform._orthographicProjectionAtLowPitch && this.transform.pitch  === 0 && this.transform.projection.name !== 'globe') {
+            // Run easeTo on ground elevation reference. EaseTo is otherwise always on sea elevation reference,
+            // triggering changes in center to camera distance and bumpy camera movement for ortho mode.
+            this.transform.cameraElevationReference = "ground";
+        }
 
         if (!noMoveStart && !currently.moving) {
             this.fire(new Event('movestart', eventData));
