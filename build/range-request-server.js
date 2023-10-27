@@ -13,7 +13,14 @@ function formatLog (req, res) {
 const port = process.env.PORT || 9966;
 const host = process.env.HOST || '0.0.0.0';
 
+// This script implements a basic dev server roughly equivalent in behavior to
+// the st-based server already in usage. It implements support for basic HTTP
+// range requests. Any other differences in usage with mapbox-gl-js's dev server
+// should be consider a bug and should be fixed.
+
 http.createServer((req, res) => {
+    // Normalize the request URL and remove any trailing ../ which would allow
+    // it to read contents outside the GL JS directory
     const unsafeUrl = normalize(req.url).replace(/^(\.\.(\/|\\|$))+/, '');
     const safeUrl = join(__dirname, '..', unsafeUrl);
 
