@@ -118,6 +118,7 @@
     "watch-css": "postcss --watch -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-token": "node build/generate-access-token-script.js",
     "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",
+    "start-range-server": "node build/range-request-server.js",
     "start": "run-p build-token watch-css watch-dev start-server",
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "start-release": "run-s build-token build-prod-min build-css print-release-url start-server",
