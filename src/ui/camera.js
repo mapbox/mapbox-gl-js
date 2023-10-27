@@ -167,7 +167,7 @@ const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.get
  * @example
  * const bbox = [[-79, 43], [-73, 45]];
  * map.fitBounds(bbox, {
- *     padding: {top: 10, bottom:25, left: 15, right: 5}
+ *     padding: {top: 10, bottom: 25, left: 15, right: 5}
  * });
  *
  * @example
