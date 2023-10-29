@@ -7580,6 +7580,24 @@
       },
       "property-type": "data-constant"
     },
+    "raster-invert": {
+      "type": "boolean",
+      "doc": "Enable/Disable color inverting.",
+      "default": false,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "raster-brightness-min": {
       "type": "number",
       "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",

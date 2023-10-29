@@ -1,5 +1,6 @@
 uniform float u_fade_t;
 uniform float u_opacity;
+uniform int u_invert;
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 varying vec2 v_pos0;
@@ -58,6 +59,11 @@ void main() {
 
     color.a *= u_opacity;
     vec3 rgb = color.rgb;
+
+    // invert
+    if (u_invert != 0) {
+        rgb = vec3((1.0 - rgb.r), (1.0 - rgb.g), (1.0 - rgb.b));
+    }
 
     // spin
     rgb = vec3(
