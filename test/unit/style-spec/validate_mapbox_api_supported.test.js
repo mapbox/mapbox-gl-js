@@ -33,3 +33,21 @@ test('errors from validate do not contain line numbers', (t) => {
     t.equal(result[0].line, undefined);
     t.end();
 });
+
+test('duplicate imports ids', (t) => {
+    const style = JSON.parse(
+        fs.readFileSync(`${__dirname}/fixture/bad-color.input.json`)
+    );
+    const result = validateMapboxApiSupported(
+        {
+            ...style,
+            imports: [
+                {id: 'standard', url: 'mapbox://styles/mapbox/standard'},
+                {id: 'standard', url: 'mapbox://styles/mapbox/standard-2'},
+            ],
+        },
+        reference
+    );
+    t.equal(result[3].message, 'Duplicate ids of imports');
+    t.end();
+});

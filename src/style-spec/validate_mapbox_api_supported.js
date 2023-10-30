@@ -118,6 +118,9 @@ function getImportErrors(imports: Array<Object> = []): {errors: Array<Validation
     };
 
     validateImports(imports);
+    if (imports.length !== (new Set(imports.map(i => i.id))).size) {
+        errors.push(new ValidationError(null, null, 'Duplicate ids of imports'));
+    }
 
     return {errors, sourcesCount};
 }
