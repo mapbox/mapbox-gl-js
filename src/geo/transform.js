@@ -261,6 +261,9 @@ class Transform {
         return clone;
     }
 
+    get isOrthographic(): boolean {
+        return this.projection.name !== 'globe' && this._orthographicProjectionAtLowPitch && this.pitch < OrthographicPitchTranstionValue;
+    }
     get elevation(): ?Elevation { return this._elevation; }
     set elevation(elevation: ?Elevation) {
         if (this._elevation === elevation) return;
@@ -2096,7 +2099,7 @@ class Transform {
         cameraToClipPerspective[8] = -offset.x * 2 / this.width;
         cameraToClipPerspective[9] = offset.y * 2 / this.height;
 
-        if (!isGlobe && this._orthographicProjectionAtLowPitch && this.pitch < OrthographicPitchTranstionValue) {
+        if (this.isOrthographic) {
             const cameraToCenterDistance =  0.5 * this.height / Math.tan(this._fov / 2.0) * 1.0;
 
             // Calculate bounds for orthographic view
@@ -2507,7 +2510,7 @@ class Transform {
 
         // In case we have orthographic transition we need to interpolate the distance value in the range [1, distance]
         // to calculate correct perspective ratio values for symbols
-        if (this._orthographicProjectionAtLowPitch && this.projection.name !== 'globe' && this.pitch < OrthographicPitchTranstionValue) {
+        if (this.isOrthographic) {
             const mixValue = this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
             distance = lerp(1.0, distance, easeIn(mixValue));
         }

@@ -762,9 +762,11 @@ class Painter {
 
         // Terrain depth offscreen render pass ==========================
         // With terrain on, renders the depth buffer into a texture.
-        // This texture is used for occlusion testing (labels)
+        // This texture is used for occlusion testing (labels).
+        // When orthographic camera is in use we don't really need the depth occlusion testing (see https://mapbox.atlassian.net/browse/MAPS3D-1132)
+        // Therefore we can safely skip the rendering to the depth texture.
         const terrain = this.terrain;
-        if (terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers())) {
+        if (terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers()) && !this.transform.isOrthographic) {
             terrain.drawDepth();
         }
 
