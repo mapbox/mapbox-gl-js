@@ -1031,7 +1031,7 @@ class Style extends Evented {
                 }
 
                 for (const programId of programIds) {
-                    painter.useProgram(programId, options);
+                    painter.getOrCreateProgram(programId, options);
                 }
             }
         }

@@ -68,7 +68,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
     }
 
-    const program = painter.useProgram('debug', {defines: definesValues});
+    const program = painter.getOrCreateProgram('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
@@ -150,7 +150,7 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
     const gl = context.gl;
 
     const posMatrix = coord.projMatrix;
-    const program = painter.useProgram('debug');
+    const program = painter.getOrCreateProgram('debug');
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 

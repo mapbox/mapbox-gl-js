@@ -317,7 +317,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram(programName,
+        const program = painter.getOrCreateProgram(programName,
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
@@ -433,7 +433,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: Float32Array, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.useProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
 
         const ao = [aoIntensity, aoRadius * meterToTile];
         const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;

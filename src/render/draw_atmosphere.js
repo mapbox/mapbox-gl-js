@@ -140,7 +140,7 @@ class Atmosphere {
             if (alphaPass) {
                 defines.push("ALPHA_PASS");
             }
-            const program = painter.useProgram('globeAtmosphere', {defines: ((defines: any): DynamicDefinesType[])});
+            const program = painter.getOrCreateProgram('globeAtmosphere', {defines: ((defines: any): DynamicDefinesType[])});
 
             const uniforms = atmosphereUniformValues(
                 tr.frustumCorners.TL,
@@ -186,7 +186,7 @@ class Atmosphere {
         const gl = context.gl;
         const tr = painter.transform;
 
-        const program = painter.useProgram('stars');
+        const program = painter.getOrCreateProgram('stars');
 
         // Exposed in internal style spec for mobile
         const sizeMultiplier = 0.15;

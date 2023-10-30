@@ -63,7 +63,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.useProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
 
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {

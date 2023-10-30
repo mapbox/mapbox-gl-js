@@ -1,7 +1,7 @@
 // @flow
 
 import type Painter from '../../src/render/painter.js';
-import type {UseProgramParams} from '../../src/render/painter.js';
+import type {CreateProgramParams} from '../../src/render/painter.js';
 import type SourceCache from '../../src/source/source_cache.js';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
 
@@ -160,7 +160,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         material,
         layer);
 
-    const programOptions: UseProgramParams = {
+    const programOptions: CreateProgramParams = {
         defines: []
     };
 
@@ -189,7 +189,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         (programOptions.defines: any).push('RENDER_CUTOFF');
     }
 
-    const program = painter.useProgram('model', programOptions);
+    const program = painter.getOrCreateProgram('model', programOptions);
 
     painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
 
@@ -268,7 +268,7 @@ function drawShadowCaster(mesh: Mesh, matrix: Mat4, painter: Painter, layer: Mod
     const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
     const definesValues = ['DEPTH_TEXTURE'];
-    const program = painter.useProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
+    const program = painter.getOrCreateProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
     const context = painter.context;
     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -594,12 +594,12 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 definesValues.push('RENDER_CUTOFF');
             }
             if (isShadowPass && shadowRenderer) {
-                program = painter.useProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
+                program = painter.getOrCreateProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
                 setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
-                program = painter.useProgram('model', {defines: ((definesValues: any): DynamicDefinesType[]), overrideFog: affectedByFog});
+                program = painter.getOrCreateProgram('model', {defines: ((definesValues: any): DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
                 const layerOpacity = layer.paint.get('model-opacity');
@@ -766,7 +766,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         continue;
                     }
 
-                    const programOptions: UseProgramParams = {
+                    const programOptions: CreateProgramParams = {
                         defines: []
                     };
                     const dynamicBuffers = [];
@@ -799,7 +799,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         }
                     }
 
-                    const program = painter.useProgram('model', programOptions);
+                    const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
                         shadowRenderer.useNormalOffset = !!mesh.normalBuffer;

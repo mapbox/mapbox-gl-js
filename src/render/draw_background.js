@@ -52,7 +52,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     for (const tileID of tileIDs) {
         const affectedByFog = painter.isTileAffectedByFog(tileID);
-        const program = painter.useProgram(programName, {overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programName, {overrideFog: affectedByFog});
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile();

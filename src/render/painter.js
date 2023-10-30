@@ -96,7 +96,7 @@ export type CanvasCopyInstances = {
     timeStamps: number[]
 }
 
-export type UseProgramParams = {
+export type CreateProgramParams = {
     config?: ProgramConfiguration,
     defines?: DynamicDefinesType[],
     overrideFog?: boolean
@@ -392,7 +392,7 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        this.useProgram('clippingMask').draw(this, gl.TRIANGLES,
+        this.getOrCreateProgram('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
             '$clipping', this.viewportBuffer,
@@ -438,7 +438,7 @@ class Painter {
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
-        const program = this.useProgram('clippingMask');
+        const program = this.getOrCreateProgram('clippingMask');
 
         this._tileClippingMaskIDs = {};
 
@@ -1197,7 +1197,7 @@ class Painter {
         return defines;
     }
 
-    useProgram(name: string, options?: UseProgramParams): Program<any> {
+    getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
         this.cache = this.cache || {};
         const defines = ((((options && options.defines) || []): any): string[]);
         const config = options && options.config;

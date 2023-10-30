@@ -330,8 +330,8 @@ class Program<Us: UniformBindings> {
 
         const debugDefines = [...this.fixedDefines];
         debugDefines.push("DEBUG_WIREFRAME");
-        // $FlowIgnore[incompatible-call] defines are saved as string whereas useProgram has restrictions
-        const debugProgram = painter.useProgram(this.name, {config: this.configuration, defines: debugDefines});
+        // $FlowIgnore[incompatible-call] defines are saved as string whereas getOrCreateProgram has restrictions
+        const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 
         context.program.set(debugProgram.program);
 

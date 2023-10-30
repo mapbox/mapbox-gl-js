@@ -374,7 +374,7 @@ export class ShadowRenderer {
         for (const id of this._groundShadowTiles) {
             const unwrapped = id.toUnwrapped();
             const affectedByFog = painter.isTileAffectedByFog(id);
-            const program = painter.useProgram('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
+            const program = painter.getOrCreateProgram('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
 
             this.setupShadows(unwrapped, program);
 

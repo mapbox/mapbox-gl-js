@@ -156,7 +156,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        program = painter.useProgram('globeRaster', {defines, overrideFog: affectedByFog});
+        program = painter.getOrCreateProgram('globeRaster', {defines, overrideFog: affectedByFog});
         programMode = mode;
     };
 
@@ -232,7 +232,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        program = painter.useProgram('globeRaster', {defines});
+        program = painter.getOrCreateProgram('globeRaster', {defines});
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
             const {x, y, z} = coord.canonical;
@@ -293,7 +293,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
             }
-            program = painter.useProgram('terrainRaster', {defines: modes});
+            program = painter.getOrCreateProgram('terrainRaster', {defines: modes});
             programMode = mode;
         };
 
@@ -375,7 +375,7 @@ function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: Sourc
     const gl = context.gl;
 
     context.clear({depth: 1});
-    const program = painter.useProgram('terrainDepth');
+    const program = painter.getOrCreateProgram('terrainDepth');
     const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
     for (const coord of tileIDs) {

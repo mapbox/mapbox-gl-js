@@ -1337,7 +1337,7 @@ export class Terrain extends Elevation {
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
-        const program = painter.useProgram('clippingMask');
+        const program = painter.getOrCreateProgram('clippingMask');
 
         for (const tileID of proxiedCoords) {
             const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
