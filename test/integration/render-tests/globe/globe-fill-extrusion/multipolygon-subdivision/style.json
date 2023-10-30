@@ -1,0 +1,82 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "",
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0007,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "country-boundaries": {
+      "type": "vector",
+      "maxzoom": 2,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.country-boundaries.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "zoom": 0.5,
+  "pitch": 0,
+  "center": [
+    0,
+    0
+  ],
+  "light": {
+    "intensity": 0.2
+  },
+  "projection": {
+    "name": "mercator"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightblue"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          "hsl(0, 87%, 68%)",
+          6,
+          "hsl(43, 88%, 58%)"
+        ],
+        "fill-extrusion-height": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          3000000,
+          6,
+          300000
+        ],
+        "fill-extrusion-opacity": 0.9
+      },
+      "source": "country-boundaries",
+      "source-layer": "country_boundaries"
+    }
+  ]
+}
