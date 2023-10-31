@@ -4,6 +4,7 @@ import {RGBAImage} from './image.js';
 import {isPowerOfTwo} from './util.js';
 import assert from 'assert';
 
+import type Color from '../style-spec/util/color.js';
 import type {StylePropertyExpression} from '../style-spec/expression/index.js';
 
 export type ColorRampParams = {
@@ -30,7 +31,9 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
 
     const renderPixel = (stride: number, index: number, progress: number) => {
         evaluationGlobals[params.evaluationKey] = progress;
-        const pxColor = params.expression.evaluate((evaluationGlobals: any));
+        const pxColor: ?Color = params.expression.evaluate((evaluationGlobals: any));
+        if (!pxColor) return;
+
         // the colors are being unpremultiplied because Color uses
         // premultiplied values, and the Texture class expects unpremultiplied ones
         image.data[stride + index + 0] = Math.floor(pxColor.r * 255 / pxColor.a);
