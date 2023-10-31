@@ -903,9 +903,12 @@ test('Style#_mergeLayers', (t) => {
         });
 
         style.on('style.load', () => {
+            style.addLayer({id: 'custom', type: 'custom', slot: 'below-water', render: () => {}});
+
             t.deepEqual(style.order, [
                 makeFQID('land', 'streets'),
                 makeFQID('national-park'),
+                makeFQID('custom'),
                 makeFQID('water', 'streets'),
             ]);
 

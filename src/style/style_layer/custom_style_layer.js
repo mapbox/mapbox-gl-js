@@ -154,6 +154,7 @@ type CustomRenderMethod = (gl: WebGL2RenderingContext, matrix: Array<number>, pr
 export type CustomLayerInterface = {
     id: string,
     type: "custom",
+    slot: ?string;
     renderingMode: "2d" | "3d",
     render: CustomRenderMethod,
     prerender: ?CustomRenderMethod,
@@ -197,6 +198,7 @@ class CustomStyleLayer extends StyleLayer {
     constructor(implementation: CustomLayerInterface) {
         super(implementation, {});
         this.implementation = implementation;
+        if (implementation.slot) this.slot = implementation.slot;
     }
 
     is3D(): boolean {
