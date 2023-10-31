@@ -336,8 +336,6 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.texture) {
-                    // This call seemed invalid with 3 args?
-                    // tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
                     tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                 }
 

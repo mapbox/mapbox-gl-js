@@ -93,7 +93,7 @@ const lineUniformValues = (
         'u_dash_image': 0,
         'u_gradient_image': 1,
         'u_image_height': imageHeight,
-        'u_texsize': hasDash(layer) ? (tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0]) : [0, 0],
+        'u_texsize': hasDash(layer) && tile.lineAtlasTexture ? tile.lineAtlasTexture.size : [0, 0],
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
