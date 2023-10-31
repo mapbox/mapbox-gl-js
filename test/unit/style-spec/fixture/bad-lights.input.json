@@ -29,6 +29,11 @@
         },
         {
           "id": "light3"
+        },
+        {
+          "id": "light4",
+          "type": "ambient",
+          "properties": {}
         }
     ]
 }

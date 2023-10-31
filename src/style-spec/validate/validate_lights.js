@@ -3,10 +3,15 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error.js';
 import getType from '../util/get_type.js';
 import validate from './validate.js';
+import {unbundle} from '../util/unbundle_jsonlint.js';
 
 import type {ValidationOptions} from './validate.js';
 
-export default function validateLights(options: ValidationOptions): Array<ValidationError> {
+type Options = ValidationOptions & {
+    arrayIndex: number;
+}
+
+export default function validateLights(options: Options): Array<ValidationError> {
     const light = options.value;
     let errors = [];
 
@@ -22,12 +27,25 @@ export default function validateLights(options: ValidationOptions): Array<Valida
 
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec['light-3d'];
+    const key = options.key;
     const style = options.style;
+    const lights = options.style.lights;
 
     for (const key of ['type', 'id']) {
         if (!(key in light)) {
             errors = errors.concat([new ValidationError('light-3d', light, `missing property ${key} on light`)]);
             return errors;
+        }
+    }
+
+    if (light.type && lights) {
+        for (let i = 0; i < options.arrayIndex; i++) {
+            const lightType = unbundle(light.type);
+            const otherLight = lights[i];
+            if (unbundle(otherLight.type) === lightType) {
+                // $FlowFixMe[prop-missing] - id.__line__ is added dynamically during the readStyle step
+                errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${otherLight.id.__line__}`));
+            }
         }
     }
 
