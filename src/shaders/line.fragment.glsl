@@ -104,18 +104,18 @@ void main() {
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
-#ifdef RENDER_LINE_BORDER_AUTO
-        float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
-        float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
-        if (out_color.a > 0.25 && Y < 0.25) {
-            vec3 borderColor = (Y > 0.) ? out_color.rgb : vec3(1, 1, 1) * out_color.a;
-            out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - smoothAlpha));
+        if (border_color.a == 0.0) {    
+            float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
+            float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
+            if (out_color.a > 0.25 && Y < 0.25) {
+                vec3 borderColor = (Y > 0.) ? out_color.rgb : vec3(1, 1, 1) * out_color.a;
+                out_color.rgb = out_color.rgb + borderColor * (adjustment * (1.0 - smoothAlpha));
+            } else {
+                out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
+            }
         } else {
-            out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
+            out_color.rgb = mix(border_color.rgb * border_color.a * trimmed, out_color.rgb, smoothAlpha);
         }
-#else  // use user-provided border color
-        out_color.rgb = mix(border_color.rgb * border_color.a * trimmed, out_color.rgb, smoothAlpha);
-#endif // RENDER_LINE_BORDER_AUTO
     }
 #endif
 
