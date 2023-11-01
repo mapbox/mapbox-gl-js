@@ -22,6 +22,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import type {CreateProgramParams} from "../../render/painter.js";
 
 class Point3D extends Point {
     z: number;
@@ -73,8 +74,11 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return [image ? 'fillExtrusionPattern' : 'fillExtrusion'];
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        return {
+            config: new ProgramConfiguration(this, zoom),
+            overrideFog: false
+        };
     }
 
     // $FlowFixMe[method-unbinding]

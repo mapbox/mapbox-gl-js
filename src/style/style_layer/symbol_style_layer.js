@@ -8,6 +8,7 @@ import resolveTokens from '../../util/resolve_tokens.js';
 import properties from './symbol_style_layer_properties.js';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted.js';
 import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format.js';
+import type {CreateProgramParams} from "../../render/painter.js";
 
 import {
     Transitionable,
@@ -198,8 +199,24 @@ class SymbolStyleLayer extends StyleLayer {
         return hasOverrides;
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getProgramIds(): string[] {
+        const hasIcon = (this.paint.get('icon-opacity').constantOr(1) !== 0);
+        const hasText = (this.paint.get('text-opacity').constantOr(1) !== 0);
+        const ids = [];
+        if (hasIcon) {
+            ids.push('symbolIcon');
+        }
+        if (hasText) {
+            ids.push('symbolSDF');
+        }
+        return ids;
+    }
+
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        return {
+            config: new ProgramConfiguration(this, zoom),
+            overrideFog: false
+        };
     }
 }
 

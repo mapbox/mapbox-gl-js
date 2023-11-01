@@ -12,7 +12,6 @@ import {
 import {Evented} from '../util/evented.js';
 import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
-import ProgramConfiguration from '../data/program_configuration.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
 
 import type {FeatureState} from '../style-spec/expression/index.js';
@@ -35,6 +34,7 @@ import type {StyleSetterOptions} from './style.js';
 import type {TilespaceQueryGeometry} from './query_geometry.js';
 import type {DEMSampler} from '../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import type {CreateProgramParams} from "../render/painter.js";
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -221,7 +221,8 @@ class StyleLayer extends Evented {
         return null;
     }
 
-    getProgramConfiguration(_: number): ProgramConfiguration | null {
+    // eslint-disable-next-line no-unused-vars
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
         // No-op; can be overridden by derived classes.
         return null;
     }

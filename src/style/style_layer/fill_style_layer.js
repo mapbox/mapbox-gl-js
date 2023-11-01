@@ -19,6 +19,7 @@ import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import type {CreateProgramParams} from "../../render/painter.js";
 
 class FillStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -45,8 +46,11 @@ class FillStyleLayer extends StyleLayer {
         return ids;
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        return {
+            config: new ProgramConfiguration(this, zoom),
+            overrideFog: false
+        };
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {

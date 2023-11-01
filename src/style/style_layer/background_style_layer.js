@@ -8,6 +8,7 @@ import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js
 import type {PaintProps} from './background_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {Expression} from '../../style-spec/expression/expression.js';
+import type {CreateProgramParams} from "../../render/painter.js";
 
 class BackgroundStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -21,6 +22,13 @@ class BackgroundStyleLayer extends StyleLayer {
     getProgramIds(): Array<string> {
         const image = this.paint.get('background-pattern');
         return [image ? 'backgroundPattern' : 'background'];
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        return {
+            overrideFog: false
+        };
     }
 }
 

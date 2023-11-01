@@ -22,6 +22,9 @@ import type Transform from '../../geo/transform.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import {lineDefinesValues} from "../../render/program/line_program.js";
+import type {CreateProgramParams} from "../../render/painter.js";
+import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: ?boolean;
@@ -94,8 +97,13 @@ class LineStyleLayer extends StyleLayer {
         return [programId];
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        const definesValues = ((lineDefinesValues(this): any): DynamicDefinesType[]);
+        return {
+            config: new ProgramConfiguration(this, zoom),
+            defines: definesValues,
+            overrideFog: false
+        };
     }
 
     // $FlowFixMe[method-unbinding]

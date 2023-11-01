@@ -103,6 +103,7 @@ import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters} from './properties.js';
 import ModelManager from '../../3d-style/render/model_manager.js';
 import type {Expression} from '../style-spec/expression/expression.js';
+import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -214,6 +215,7 @@ class Style extends Evented {
     _otherSourceCaches: {[_: string]: SourceCache};
     _symbolSourceCaches: {[_: string]: SourceCache};
     _loaded: boolean;
+    _precompileDone: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
     _optionsChanged: boolean;
@@ -299,6 +301,7 @@ class Style extends Evented {
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
         this._loaded = false;
+        this._precompileDone = false;
         this._availableImages = [];
         this._order = [];
         this._drapedFirstOrder = [];
@@ -1019,21 +1022,38 @@ class Style extends Evented {
                 if (sourceCache) sourceCache.used = true;
             }
 
-            const painter = this.map.painter;
-            if (painter) {
-                const programIds = layer.getProgramIds();
-                if (!programIds) continue;
+            if (!this._precompileDone) {
+                for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
+                    const painter = this.map.painter;
+                    if (painter) {
+                        const programIds = layer.getProgramIds();
+                        if (!programIds) continue;
 
-                const options = {};
-                const config = layer.getProgramConfiguration(parameters.zoom);
-                if (config) {
-                    options.config = config;
-                }
+                        for (const programId of programIds) {
+                            const params = layer.getDefaultProgramParams(programId, parameters.zoom);
+                            if (params) {
+                                painter.style = this;
+                                if (this.fog) {
+                                    painter._fogVisible = true;
+                                    params.overrideFog = true;
+                                    painter.getOrCreateProgram(programId, params);
+                                }
+                                painter._fogVisible = false;
+                                params.overrideFog = false;
+                                painter.getOrCreateProgram(programId, params);
 
-                for (const programId of programIds) {
-                    painter.getOrCreateProgram(programId, options);
+                                if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
+                                    params.overrideRtt = true;
+                                    painter.getOrCreateProgram(programId, params);
+                                }
+                            }
+                        }
+                    }
                 }
             }
+        }
+        if (this._order.length > 0) {
+            this._precompileDone = true;
         }
 
         for (const sourceId in sourcesUsedBefore) {

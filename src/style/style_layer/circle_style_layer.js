@@ -24,6 +24,9 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import {circleDefinesValues} from '../../render/program/circle_program.js';
+import type {CreateProgramParams} from "../../render/painter.js";
+import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
 
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -76,8 +79,13 @@ class CircleStyleLayer extends StyleLayer {
         return ['circle'];
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getDefaultProgramParams(_: string, zoom: number): CreateProgramParams | null {
+        const definesValues = ((circleDefinesValues(this): any): DynamicDefinesType[]);
+        return {
+            config: new ProgramConfiguration(this, zoom),
+            defines: definesValues,
+            overrideFog: false
+        };
     }
 }
 

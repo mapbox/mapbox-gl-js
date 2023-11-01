@@ -17,6 +17,7 @@ import ColorMode from '../gl/color_mode.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import assert from 'assert';
 import DEMData from '../data/dem_data.js';
+import type {DynamicDefinesType} from './program/program_uniforms.js';
 
 export default drawHillshade;
 
@@ -125,7 +126,10 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
 
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getMercatorTileBoundsBuffers();
 
-    painter.getOrCreateProgram('hillshadePrepare').draw(painter, gl.TRIANGLES,
+    const definesValues: DynamicDefinesType[] = [];
+    if (painter.terrainUseFloatDEM()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
+
+    painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),
         layer.id, tileBoundsBuffer,

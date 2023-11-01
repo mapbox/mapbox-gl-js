@@ -24,6 +24,7 @@ import type {Expression} from '../../style-spec/expression/expression.js';
 import type Transform from '../../geo/transform.js';
 import type CircleBucket from '../../data/bucket/circle_bucket.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import type {CreateProgramParams} from "../../render/painter.js";
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -98,8 +99,14 @@ class HeatmapStyleLayer extends StyleLayer {
         return ['heatmap', 'heatmapTexture'];
     }
 
-    getProgramConfiguration(zoom: number): ProgramConfiguration {
-        return new ProgramConfiguration(this, zoom);
+    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+        if (name === 'heatmap') {
+            return {
+                config: new ProgramConfiguration(this, zoom),
+                overrideFog: false
+            };
+        }
+        return {};
     }
 }
 

@@ -99,7 +99,8 @@ export type CanvasCopyInstances = {
 export type CreateProgramParams = {
     config?: ProgramConfiguration,
     defines?: DynamicDefinesType[],
-    overrideFog?: boolean
+    overrideFog?: boolean,
+    overrideRtt?: boolean
 }
 
 type WireframeOptions = {
@@ -1159,8 +1160,8 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(name: string, overrideFog: ?boolean): string[] {
-        const rtt = this.terrain && this.terrain.renderingToTexture;
+    currentGlobalDefines(name: string, overrideFog: ?boolean, overrideRtt: ?boolean): string[] {
+        const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
         const zeroExaggeration = this.terrain && this.terrain.exaggeration() === 0.0;
         const defines = [];
 
@@ -1185,8 +1186,10 @@ class Painter {
                 defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
             }
         }
-        if (this.terrainRenderModeElevated()) defines.push('TERRAIN');
-        if (this.terrainUseFloatDEM()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
+        if (this.terrainRenderModeElevated()) {
+            defines.push('TERRAIN');
+            if (this.terrainUseFloatDEM()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
+        }
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
@@ -1204,8 +1207,9 @@ class Painter {
         const defines = ((((options && options.defines) || []): any): string[]);
         const config = options && options.config;
         const overrideFog = options && options.overrideFog;
+        const overrideRtt = options && options.overrideRtt;
 
-        const globalDefines = this.currentGlobalDefines(name, overrideFog);
+        const globalDefines = this.currentGlobalDefines(name, overrideFog, overrideRtt);
         const allDefines = globalDefines.concat(defines);
         const key = Program.cacheKey(shaders[name], name, allDefines, config);
 

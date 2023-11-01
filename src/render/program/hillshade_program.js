@@ -41,6 +41,8 @@ export type HillshadePrepareUniformsType = {|
     'u_unpack': Uniform4f
 |};
 
+export type HillshadeDefinesType = 'TERRAIN_DEM_FLOAT_FORMAT';
+
 const hillshadeUniforms = (context: Context): HillshadeUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_image': new Uniform1i(context),
