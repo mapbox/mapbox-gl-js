@@ -208,7 +208,7 @@ void main() {
     v_flood_radius = flood_light_wall_radius * u_vertical_scale;
 #endif // FLOOD_LIGHT
 
-    v_color = color;
+    v_color = vec4(color.rgb, 1.0);
 
 #else // LIGHTING_3D_MODE
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
