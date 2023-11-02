@@ -93,11 +93,11 @@ void main() {
     }
 #endif
 
-#ifdef RENDER_LINE_ALPHA_DISCARD
-    if (alpha < u_alpha_discard_threshold) {
-        discard;
+    if (u_alpha_discard_threshold != 0.0) {
+        if (alpha < u_alpha_discard_threshold) {
+            discard;
+        }
     }
-#endif
 
 #ifdef RENDER_LINE_BORDER
     float edgeBlur = (border_width + 1.0 / u_device_pixel_ratio);

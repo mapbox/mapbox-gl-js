@@ -42,7 +42,7 @@ export type LinePatternUniformsType = {|
     'u_alpha_discard_threshold': Uniform1f
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_ALPHA_DISCARD' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -145,12 +145,6 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
     const trimOffset = layer.paint.get('line-trim-offset');
     if (trimOffset[0] !== 0 || trimOffset[1] !== 0) {
         values.push('RENDER_LINE_TRIM_OFFSET');
-    }
-
-    const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
-    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
-    if (!hasPattern && hasOpacity) {
-        values.push('RENDER_LINE_ALPHA_DISCARD');
     }
 
     const hasBorder = layer.paint.get('line-border-width').constantOr(1.0) !== 0.0;

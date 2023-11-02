@@ -387,9 +387,9 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
         }
         if (bucketIsGlobeProjection) {
             baseDefines.push('PROJECTION_GLOBE_VIEW');
-        }
-        if (projectedPosOnLabelSpace) {
-            baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+            if (projectedPosOnLabelSpace) {
+                baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+            }
         }
         if (transitionProgress > 0.0) {
             baseDefines.push('ICON_TRANSITION');

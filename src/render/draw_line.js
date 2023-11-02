@@ -39,6 +39,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const capProperty = layer.layout.get('line-cap');
     const patternProperty = layer.paint.get('line-pattern');
     const image = patternProperty.constantOr((1: any));
+    const hasPattern = layer.paint.get('line-pattern').constantOr((1: any));
+    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
+    let useStencilMaskRenderPass = (!hasPattern && hasOpacity);
 
     const gradient = layer.paint.get('line-gradient');
 
@@ -48,7 +51,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const gl = context.gl;
 
     const definesValues = ((lineDefinesValues(layer): any): DynamicDefinesType[]);
-    let useStencilMaskRenderPass = definesValues.includes('RENDER_LINE_ALPHA_DISCARD');
     if (painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;
     }

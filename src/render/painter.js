@@ -1189,9 +1189,9 @@ class Painter {
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
             if (this.terrainUseFloatDEM()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
+            if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         }
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
-        if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         // When terrain is active, fog is rendered as part of draping, not as part of tile
         // rendering. Removing the fog flag during tile rendering avoids additional defines.
         if (this._fogVisible && !rtt && (overrideFog === undefined || overrideFog)) {
