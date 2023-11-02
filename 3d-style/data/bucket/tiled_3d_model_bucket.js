@@ -169,7 +169,6 @@ class Tiled3dModelBucket implements Bucket {
             expressionRequiresReevaluation(layer.paint.get('model-roughness').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-emissive-strength').value, brightnessChanged) ||
             expressionRequiresReevaluation(layer.paint.get('model-height-based-emissive-strength-multiplier').value, brightnessChanged)) {
-            this.dirty = false;
             this.projection = projection;
             this.brightness = calculatedBrightness;
             return true;
@@ -228,6 +227,7 @@ class Tiled3dModelBucket implements Bucket {
                 this.needsUpload = true;
             }
         }
+        this.dirty = false;
     }
 
     elevationUpdate(terrain: Terrain, exaggeration: number, coord: OverscaledTileID, source: string) {

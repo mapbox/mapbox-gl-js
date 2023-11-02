@@ -18,6 +18,7 @@ import type {Bucket} from '../../src/data/bucket.js';
 import {CanonicalTileID, OverscaledTileID} from '../../src/source/tile_id.js';
 import type Projection from '../../src/geo/projection/projection.js';
 import {load3DTile} from '../util/loaders.js';
+import EvaluationParameters from '../../src/style/evaluation_parameters.js';
 
 class Tiled3dWorkerTile {
     tileID: OverscaledTileID;
@@ -61,14 +62,19 @@ class Tiled3dWorkerTile {
         if (!gltf) return callback(new Error('Could not parse tile'));
         const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
         const hasMapboxMeshFeatures = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
+        const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
         for (const sourceLayerId in layerFamilies) {
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
                 const extensions = gltf.json.extensionsUsed;
+                layer.recalculate(parameters, []);
                 const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
                 // Upload to GPU without waiting for evaluation if we are in diffuse path
                 if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                 buckets[layer.id] = bucket;
+                // do the first evaluation in the worker to avoid stuttering
+                // $FlowIgnore[incompatible-call] layer here is always a ModelStyleLayer
+                bucket.evaluate(layer);
             }
         }
         this.status = 'done';
