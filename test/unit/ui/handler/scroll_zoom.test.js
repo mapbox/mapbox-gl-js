@@ -198,7 +198,7 @@ test('ScrollZoomHandler', (t) => {
                     map._renderTaskQueue.run();
 
                     // Simulate the switching of DEM tiles (due to LOD perhaps) to low elevation dems
-                    const tiles = map.style._getSourceCache('mapbox-dem')._tiles;
+                    const tiles = map.style.getOwnSourceCache('mapbox-dem')._tiles;
                     for (const tile in tiles)
                         tiles[tile].dem = zeroElevationDem;
 

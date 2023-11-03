@@ -447,5 +447,76 @@ test('diff', (t) => {
         }]
     }], 'changing fog');
 
+    t.deepEqual(diffStyles({
+        imports: [{id: 'a', url: ''}]
+    }, {
+        imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
+    }), [
+        {command: 'addImport', args: [{id: 'b', url: ''}, undefined]}
+    ], 'add an import');
+
+    t.deepEqual(diffStyles({
+        imports: [{id: 'b', url: ''}]
+    }, {
+        imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
+    }), [
+        {command: 'addImport', args: [{id: 'a', url: ''}, 'b']}
+    ], 'add an import before another');
+
+    t.deepEqual(diffStyles({
+        imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
+    }, {
+        imports: [{id: 'a', url: ''}]
+    }), [
+        {command: 'removeImport', args: ['b']}
+    ], 'remove an import');
+
+    t.deepEqual(diffStyles({
+        imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
+    }, {
+        imports: [{id: 'b', url: ''}, {id: 'a', url: ''}]
+    }), [
+        {command: 'removeImport', args: ['a']},
+        {command: 'addImport', args: [{id: 'a', url: ''}, undefined]}
+    ], 'move an import');
+
+    t.deepEqual(diffStyles({
+        'imports': [{
+            'id': 'basemap',
+            'url': 'before'
+        }]
+    }, {
+        'imports': [{
+            'id': 'basemap',
+            'url': 'after'
+        }]
+    }), [{
+        command: 'setImportUrl',
+        args: ['basemap', 'after']
+    }], 'updates import url');
+
+    t.deepEqual(diffStyles({
+        'imports': [{
+            'id': 'basemap',
+            'url': '',
+            'data': {
+                'version': 8
+            }
+        }]
+    }, {
+        'imports': [{
+            'id': 'basemap',
+            'url': '',
+            'data': {
+                'version': 9
+            }
+        }]
+    }), [{
+        command: 'setImportData',
+        args: ['basemap', {
+            'version': 9
+        }]
+    }], 'updates import data');
+
     t.end();
 });

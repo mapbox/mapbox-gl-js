@@ -10,6 +10,13 @@ const require = createRequire(import.meta.url);
 
 export default function localizeURLs(style, port) {
     localizeStyleURLs(style, port);
+
+    if (style.imports) {
+        for (const importSpec of style.imports) {
+            localizeURLs(importSpec.data, port);
+        }
+    }
+
     if (style.metadata && style.metadata.test && style.metadata.test.operations) {
         style.metadata.test.operations.forEach((op) => {
             if (op[0] === 'addSource') {

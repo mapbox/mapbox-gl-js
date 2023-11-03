@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        ["setStyle", {
+          "version": 8,
+          "center": [0, 0],
+          "zoom": 0,
+          "transition": {"duration": 0},
+          "sources": {},
+          "layers": [],
+          "imports": [
+            {
+              "id": "basemap",
+              "url": "",
+              "data": {
+                "version": 8,
+                "sources": {},
+                "layers": [{
+                  "id": "background",
+                  "type": "background",
+                  "paint": {
+                    "background-color": "pink"
+                  }
+                }]
+              }
+            }
+          ]
+        }]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "transition": {"duration": 0},
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sources": {},
+        "layers": [{
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "violet"
+          }
+        }]
+      }
+    }
+  ]
+}

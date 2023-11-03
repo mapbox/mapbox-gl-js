@@ -8,8 +8,8 @@ import loadTileJSON from './load_tilejson.js';
 import {postTurnstileEvent} from '../util/mapbox.js';
 import TileBounds from './tile_bounds.js';
 import browser from '../util/browser.js';
-
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
+import {makeFQID} from '../util/fqid.js';
 
 import type {Source} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
@@ -129,7 +129,8 @@ class RasterTileSource extends Evented implements Source {
     // $FlowFixMe[method-unbinding]
     reload() {
         this.cancelTileJSONRequest();
-        this.load(() => this.map.style._clearSource(this.id));
+        const fqid = makeFQID(this.id, this.scope);
+        this.load(() => this.map.style.clearSource(fqid));
     }
 
     /**

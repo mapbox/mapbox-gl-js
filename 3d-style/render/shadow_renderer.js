@@ -188,7 +188,7 @@ export class ShadowRenderer {
 
         this._shadowLayerCount = painter.style.order.reduce(
             (accumulator: number, layerId: string) => {
-                const layer = painter.style._layers[layerId];
+                const layer = painter.style._mergedLayers[layerId];
                 return accumulator + (layer.hasShadowPass() && !layer.isHidden(transform.zoom) ? 1 : 0);
             }, 0);
 
@@ -332,10 +332,10 @@ export class ShadowRenderer {
             context.clear({color: Color.white, depth: 1});
 
             for (const layerId of style.order) {
-                const layer = style._layers[layerId];
+                const layer = style._mergedLayers[layerId];
                 if (!layer.hasShadowPass() || layer.isHidden(painter.transform.zoom)) continue;
 
-                const sourceCache = style._getLayerSourceCache(layer);
+                const sourceCache = style.getLayerSourceCache(layer);
                 const coords = sourceCache ? sourceCoords[sourceCache.id] : undefined;
                 if (layer.type !== 'model' && !(coords && coords.length)) continue;
 

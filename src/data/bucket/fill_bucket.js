@@ -65,7 +65,7 @@ class FillBucket implements Bucket {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
-        this.layerIds = this.layers.map(layer => layer.id);
+        this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
         this.hasPattern = false;
         this.patternFeatures = [];

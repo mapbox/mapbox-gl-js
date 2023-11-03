@@ -10,7 +10,7 @@ function createSource(t, options = {}) {
     const transform = new Transform();
 
     const eventedParent = new Evented();
-    eventedParent.style = {_clearSource: t.stub()};
+    eventedParent.style = {clearSource: t.stub()};
     eventedParent.painter = {transform};
     eventedParent.transform = transform;
 
@@ -254,7 +254,7 @@ test('CustomSource', (t) => {
         source.onAdd(eventedParent);
         customSource.clearTiles();
 
-        t.ok(eventedParent.style._clearSource.calledOnce, 'clearSource must be called');
+        t.ok(eventedParent.style.clearSource.calledOnce, 'clearSource must be called');
         t.end();
     });
 

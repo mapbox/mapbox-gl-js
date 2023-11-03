@@ -1149,7 +1149,7 @@ class Map extends Camera {
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
 
-        this.style._reloadSources();
+        this.style.reloadSources();
 
         for (const control of this._controls) {
             if (control._setLanguage) {
@@ -1192,7 +1192,7 @@ class Map extends Camera {
         if (!this.style || worldview === this._worldview) return this;
 
         this._worldview = worldview;
-        this.style._reloadSources();
+        this.style.reloadSources();
 
         return this;
     }
@@ -1250,8 +1250,7 @@ class Map extends Camera {
         }
 
         this._useExplicitProjection = !!projection;
-        const stylesheetProjection = this.style.stylesheet ? this.style.stylesheet.projection : null;
-        return this._prioritizeAndUpdateProjection(projection, stylesheetProjection);
+        return this._prioritizeAndUpdateProjection(projection, this.style.projection);
     }
 
     _updateProjectionTransition() {
@@ -3037,8 +3036,12 @@ class Map extends Camera {
      * });
      */
     setCamera(camera: CameraSpecification): this {
-        this.style.stylesheet.camera = camera;
-        return this._update(this.transform.setOrthographicProjectionAtLowPitch(camera["camera-projection"] === "orthographic"));
+        this.style.setCamera(camera);
+        return this._triggerCameraUpdate(camera);
+    }
+
+    _triggerCameraUpdate(camera: CameraSpecification): this {
+        return this._update(this.transform.setOrthographicProjectionAtLowPitch(camera['camera-projection'] === 'orthographic'));
     }
 
     /**
@@ -3048,8 +3051,8 @@ class Map extends Camera {
      * @example
      * const camera = map.getCamera();
      */
-    getCamera(): ?CameraSpecification {
-        return this.style.stylesheet.camera;
+    getCamera(): CameraSpecification {
+        return this.style.camera;
     }
 
     /**
@@ -3488,7 +3491,7 @@ class Map extends Camera {
                 now,
                 fadeDuration,
                 pitch,
-                transition: this.style.getTransition()
+                transition: this.style.transition
             });
 
             this.style.update(parameters);
@@ -3508,7 +3511,7 @@ class Map extends Camera {
             this.painter._updateFog(this.style);
             this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
-            this.style._updateSources(this.transform);
+            this.style.updateSources(this.transform);
             // Update positions of markers and popups on enabling/disabling terrain
             this._forceMarkerAndPopupUpdate();
         } else {

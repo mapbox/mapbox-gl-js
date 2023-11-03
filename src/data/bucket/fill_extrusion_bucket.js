@@ -624,7 +624,7 @@ class FillExtrusionBucket implements Bucket {
         this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
-        this.layerIds = this.layers.map(layer => layer.id);
+        this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
         this.hasPattern = false;
         this.edgeRadius = 0;

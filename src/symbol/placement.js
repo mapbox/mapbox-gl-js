@@ -242,7 +242,7 @@ export class Placement {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
         const bucketFeatureIndex = tile.latestFeatureIndex;
 
-        if (!symbolBucket || !bucketFeatureIndex || styleLayer.id !== symbolBucket.layerIds[0])
+        if (!symbolBucket || !bucketFeatureIndex || styleLayer.fqid !== symbolBucket.layerIds[0])
             return;
 
         const layout = symbolBucket.layers[0].layout;
@@ -938,7 +938,7 @@ export class Placement {
         const seenCrossTileIDs = new Set();
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (symbolBucket && tile.latestFeatureIndex && styleLayer.id === symbolBucket.layerIds[0]) {
+            if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray);
                 const layout = symbolBucket.layers[0].layout;
                 if (layout.get('symbol-z-elevate') && this.buildingIndex) {

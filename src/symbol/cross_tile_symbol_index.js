@@ -147,6 +147,7 @@ class CrossTileSymbolLayerIndex {
     addBucket(tileID: OverscaledTileID, bucket: SymbolBucket, crossTileIDs: CrossTileIDs): boolean {
         if (this.indexes[tileID.overscaledZ] &&
             this.indexes[tileID.overscaledZ][tileID.key]) {
+
             if (this.indexes[tileID.overscaledZ][tileID.key].bucketInstanceId ===
                 bucket.bucketInstanceId) {
                 return false;
@@ -229,7 +230,7 @@ class CrossTileSymbolLayerIndex {
 }
 
 class CrossTileSymbolIndex {
-    layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
+    layerIndexes: {[fqid: string]: CrossTileSymbolLayerIndex};
     crossTileIDs: CrossTileIDs;
     maxBucketInstanceId: number;
     bucketsInCurrentPlacement: {[_: number]: boolean};
@@ -242,9 +243,9 @@ class CrossTileSymbolIndex {
     }
 
     addLayer(styleLayer: StyleLayer, tiles: Array<Tile>, lng: number, projection: Projection): boolean {
-        let layerIndex = this.layerIndexes[styleLayer.id];
+        let layerIndex = this.layerIndexes[styleLayer.fqid];
         if (layerIndex === undefined) {
-            layerIndex = this.layerIndexes[styleLayer.id] = new CrossTileSymbolLayerIndex();
+            layerIndex = this.layerIndexes[styleLayer.fqid] = new CrossTileSymbolLayerIndex();
         }
 
         let symbolBucketsChanged = false;
@@ -256,7 +257,7 @@ class CrossTileSymbolIndex {
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (!symbolBucket || styleLayer.id !== symbolBucket.layerIds[0])
+            if (!symbolBucket || styleLayer.fqid !== symbolBucket.layerIds[0])
                 continue;
 
             if (!symbolBucket.bucketInstanceId) {

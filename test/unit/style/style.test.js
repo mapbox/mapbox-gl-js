@@ -51,6 +51,7 @@ class StubMap extends Evented {
         this.transform = new Transform();
         this._requestManager = new RequestManager();
         this._markers = [];
+        this._triggerCameraUpdate = () => {};
         this._prioritizeAndUpdateProjection = () => {};
     }
 
@@ -289,7 +290,7 @@ test('Style#loadJSON', (t) => {
         const style = new Style(new StubMap());
 
         style.on('style.load', () => {
-            t.ok(style._getSourceCache('mapbox') instanceof SourceCache);
+            t.ok(style.getOwnSourceCache('mapbox') instanceof SourceCache);
             t.end();
         });
 
@@ -414,7 +415,7 @@ test('Style#_remove', (t) => {
         }));
 
         style.on('style.load', () => {
-            const sourceCache = style._getSourceCache('source-id');
+            const sourceCache = style.getOwnSourceCache('source-id');
             t.spy(sourceCache, 'clearTiles');
             style._remove();
             t.ok(sourceCache.clearTiles.calledOnce);
@@ -632,7 +633,7 @@ test('Style#addSource', (t) => {
             style.addSource('source-id', source);
             t.throws(() => {
                 style.addSource('source-id', source);
-            }, /There is already a source with this ID/);
+            }, /There is already a source with ID \"source-id\"./);
             t.end();
         });
     });
@@ -642,7 +643,7 @@ test('Style#addSource', (t) => {
         style.loadJSON(createStyleJSON());
         style.on('style.load', () => {
             style.on('error', () => {
-                t.notOk(style._getSourceCache('source-id'));
+                t.notOk(style.getOwnSourceCache('source-id'));
                 t.end();
             });
             style.addSource('source-id', {
@@ -714,7 +715,7 @@ test('Style#removeSource', (t) => {
         }));
 
         style.on('style.load', () => {
-            const sourceCache = style._getSourceCache('source-id');
+            const sourceCache = style.getOwnSourceCache('source-id');
             t.spy(sourceCache, 'clearTiles');
             style.removeSource('source-id');
             t.ok(sourceCache.clearTiles.calledOnce);
@@ -937,7 +938,7 @@ test('Style#addLayer', (t) => {
 
         style.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style._getSourceCache('mapbox').reload = t.end;
+                style.getOwnSourceCache('mapbox').reload = t.end;
                 style.addLayer(layer);
                 style.update({});
             }
@@ -971,8 +972,8 @@ test('Style#addLayer', (t) => {
 
         style.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style._getSourceCache('mapbox').reload = t.end;
-                style._getSourceCache('mapbox').clearTiles = t.fail;
+                style.getOwnSourceCache('mapbox').reload = t.end;
+                style.getOwnSourceCache('mapbox').clearTiles = t.fail;
                 style.removeLayer('my-layer');
                 style.addLayer(layer);
                 style.update({});
@@ -1007,8 +1008,8 @@ test('Style#addLayer', (t) => {
         };
         style.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style._getSourceCache('mapbox').reload = t.fail;
-                style._getSourceCache('mapbox').clearTiles = t.end;
+                style.getOwnSourceCache('mapbox').reload = t.fail;
+                style.getOwnSourceCache('mapbox').clearTiles = t.end;
                 style.removeLayer('my-layer');
                 style.addLayer(layer);
                 style.update({});
@@ -1335,7 +1336,7 @@ test('Style#setPaintProperty', (t) => {
 
         style.once('style.load', () => {
             style.update({zoom: tr.zoom, fadeDuration: 0});
-            const sourceCache = style._getSourceCache('geojson');
+            const sourceCache = style.getOwnSourceCache('geojson');
             const source = style.getSource('geojson');
 
             let begun = false;
@@ -1795,11 +1796,11 @@ test('Style#setLayerZoomRange', (t) => {
         });
 
         style.on('style.load', () => {
-            t.spy(style, '_reloadSource');
+            t.spy(style, 'reloadSource');
 
             style.setLayerZoomRange('raster', 5, 12);
             style.update({zoom: 0});
-            t.notOk(style._reloadSource.called, '_reloadSource should not be called for raster source');
+            t.notOk(style.reloadSource.called, 'reloadSource should not be called for raster source');
             t.end();
         });
     });
@@ -1961,7 +1962,7 @@ test('Style#queryRenderedFeatures', (t) => {
     });
 
     style.on('style.load', () => {
-        style._getSourceCache('mapbox').tilesIn = () => {
+        style.getOwnSourceCache('mapbox').tilesIn = () => {
             return [{
                 queryGeometry: {},
                 tilespaceGeometry: {},
@@ -1971,15 +1972,15 @@ test('Style#queryRenderedFeatures', (t) => {
                 tileID: new OverscaledTileID(0, 0, 0, 0, 0)
             }];
         };
-        style._getSourceCache('other').tilesIn = () => {
+        style.getOwnSourceCache('other').tilesIn = () => {
             return [];
         };
 
-        style._getSourceCache('mapbox').transform = transform;
-        style._getSourceCache('other').transform = transform;
+        style.getOwnSourceCache('mapbox').transform = transform;
+        style.getOwnSourceCache('other').transform = transform;
 
         style.update({zoom: 0});
-        style._updateSources(transform);
+        style.updateSources(transform);
 
         t.test('returns feature type', (t) => {
             const results = style.queryRenderedFeatures([0, 0], {}, transform);
@@ -2032,7 +2033,7 @@ test('Style#queryRenderedFeatures', (t) => {
         });
 
         t.test('does not query sources not implicated by `layers` parameter', (t) => {
-            style._getSourceCache('mapbox').queryRenderedFeatures = function() { t.fail(); };
+            style.getOwnSourceCache('mapbox').queryRenderedFeatures = function() { t.fail(); };
             style.queryRenderedFeatures([0, 0], {layers: ['land--other']}, transform);
             t.end();
         });
@@ -2066,7 +2067,7 @@ test('Style defers expensive methods', (t) => {
 
         // spies to track defered methods
         t.spy(style, 'fire');
-        t.spy(style, '_reloadSource');
+        t.spy(style, 'reloadSource');
         t.spy(style, '_updateWorkerLayers');
 
         style.addLayer({id: 'first', type: 'symbol', source: 'streets'});
@@ -2077,7 +2078,7 @@ test('Style defers expensive methods', (t) => {
         style.setPaintProperty('first', 'text-halo-color', 'white');
 
         t.notOk(style.fire.called, 'fire is deferred');
-        t.notOk(style._reloadSource.called, '_reloadSource is deferred');
+        t.notOk(style.reloadSource.called, 'reloadSource is deferred');
         t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
 
         style.update({});
@@ -2085,9 +2086,9 @@ test('Style defers expensive methods', (t) => {
         t.equal(style.fire.args[0][0].type, 'data', 'a data event was fired');
 
         // called per source
-        t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
-        t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
-        t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
+        t.ok(style.reloadSource.calledTwice, 'reloadSource is called per source');
+        t.ok(style.reloadSource.calledWith('streets'), 'reloadSource is called for streets');
+        t.ok(style.reloadSource.calledWith('terrain'), 'reloadSource is called for terrain');
 
         // called once
         t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
@@ -2483,7 +2484,7 @@ test('Style#castShadows check', (t) => {
 
     const style = createStyle();
     style.on('style.load', () => {
-        const sourceCache = style._getSourceCache('geojson');
+        const sourceCache = style.getOwnSourceCache('geojson');
         t.notOk(sourceCache.castsShadows);
         style.addLayer({id: 'fillext', source: 'geojson', type: 'fill-extrusion'});
         t.ok(sourceCache.castsShadows);

@@ -20,6 +20,15 @@ export type RenderedFeatureLayers = Array<{
     queryResults: QueryResult
 }>;
 
+export type QueryRenderedFeaturesParams = {
+    scope?: string;
+    layers?: string[];
+    filter?: FilterSpecification;
+    validate?: boolean;
+    availableImages?: string[];
+    serializedLayers?: {[string]: StyleLayer}
+};
+
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */

@@ -119,7 +119,7 @@ export const operationHandlers = {
         doneCb();
     },
     pauseSource(map, params, doneCb) {
-        for (const sourceCache of map.style._getSourceCaches(params[0])) {
+        for (const sourceCache of map.style.getOwnSourceCaches(params[0])) {
             sourceCache.pause();
         }
         doneCb();

@@ -223,7 +223,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: ?WorkerTileResult, painter: any, justReloaded: ?boolean) {
+    loadVectorData(data: ?WorkerTileResult, painter: Painter, justReloaded: ?boolean) {
         this.unloadVectorData();
 
         this.state = 'loaded';
@@ -280,7 +280,10 @@ class Tile {
         this.queryPadding = 0;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
+            const layer = painter.style.getOwnLayer(id);
+            if (!layer) continue;
+            const queryRadius = layer.queryRadius(bucket);
+            this.queryPadding = Math.max(this.queryPadding, queryRadius);
         }
 
         if (data.imageAtlas) {
@@ -378,7 +381,7 @@ class Tile {
     }
 
     getBucket(layer: StyleLayer): Bucket {
-        return this.buckets[layer.id];
+        return this.buckets[layer.fqid];
     }
 
     upload(context: Context) {
@@ -607,12 +610,12 @@ class Tile {
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
             bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
-                const sourceCache = painter.style._getSourceCache(bucket.layers[0].source);
+                const sourceCache = painter.style.getOwnSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
             }
-            const layer = painter && painter.style && painter.style.getLayer(id);
+            const layer = painter && painter.style && painter.style.getOwnLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
             }

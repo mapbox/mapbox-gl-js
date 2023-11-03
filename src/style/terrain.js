@@ -25,6 +25,7 @@ const properties: Properties<Props> = new Properties({
 });
 
 class Terrain extends Evented {
+    scope: string;
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
@@ -36,6 +37,10 @@ class Terrain extends Evented {
         this.set(terrainOptions);
         this._transitioning = this._transitionable.untransitioned();
         this.drapeRenderMode = drapeRenderMode;
+    }
+
+    setScope(scope: string) {
+        this.scope = scope;
     }
 
     get(): TerrainSpecification {

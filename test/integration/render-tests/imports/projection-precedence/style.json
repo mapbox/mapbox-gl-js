@@ -1,0 +1,52 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 512,
+        "height": 512,
+        "allowed": 0.001
+      }
+    },
+    "center": [-122.414, 37.776],
+    "sources": {},
+    "layers": [],
+    "projection": {"name": "mercator"},
+    "imports": [
+      {
+        "id": "basemap",
+        "url": "",
+        "data": {
+          "version": 8,
+          "projection": {"name": "globe"},
+          "sources": {
+            "mapbox": {
+              "type": "vector",
+              "maxzoom": 14,
+              "tiles": [
+                "local://tiles/mapbox.mapbox-streets-v8/{z}-{x}-{y}.mvt"
+              ]
+            }
+          },
+          "layers": [
+              {
+                "id": "background",
+                "type": "background",
+                "paint": {
+                  "background-color": "black"
+                }
+              },
+              {
+                "id": "country-boundaries",
+                "type": "fill",
+                "source": "mapbox",
+                "source-layer": "country_boundaries",
+                "layout": {},
+                "paint": {
+                  "fill-color": "white"
+                }
+              }
+          ]
+        }
+      }
+    ]
+}

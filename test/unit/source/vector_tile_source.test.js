@@ -27,7 +27,7 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
         _getMapId: () => 1,
         _requestManager: new RequestManager(transformCallback, customAccessToken),
         style: {
-            _clearSource: () => {},
+            clearSource: () => {},
             getBrightness: () => { return 0.0; },
         }
     });
@@ -394,7 +394,7 @@ test('VectorTileSource', (t) => {
         const source = createSource({url: '/source.json'});
 
         const loadSpy = t.spy(source, 'load');
-        const clearSourceSpy = t.spy(source.map.style, '_clearSource');
+        const clearSourceSpy = t.spy(source.map.style, 'clearSource');
 
         const responseSpy = t.spy((xhr) =>
             xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));

@@ -1,0 +1,147 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "imports": [
+    {
+      "id": "standard",
+      "url": "mapbox://styles/mapbox/standard-beta",
+      "config": {
+        "showCircles": true
+      },
+      "data": {
+        "version": 8,
+        "name": "Mapbox Standard",
+        "schema": {
+          "showCircles": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "sources": {
+          "point": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+                "id": "below-circles", "type": "slot"
+          },
+          {
+            "id": "circles",
+            "type": "circle",
+            "source": "point",
+            "paint": {
+              "circle-radius": 10,
+              "circle-color": "red"
+            },
+            "layout": {
+              "visibility": [
+                "case",
+                [
+                  "config",
+                  "showCircles"
+                ],
+                "visible",
+                "none"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "navigation",
+      "url": "mapbox://styles/mapbox-dash/fragment-dash-navigation",
+      "config": {
+        "showEVStations": true
+      },
+      "data": {
+        "version": 8,
+        "name": "Mapbox Dash",
+        "schema": {
+          "showEVStations": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "sources": {
+          "point": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "circles",
+            "type": "circle",
+            "source": "point",
+            "paint": {
+              "circle-radius": 5,
+              "circle-color": "blue"
+            },
+            "layout": {
+              "visibility": [
+                "case",
+                [
+                  "config",
+                  "showEVStations"
+                ],
+                "visible",
+                "none"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "slot": "below-circles",
+      "paint": {
+        "background-color": "hsl(20, 20%, 95%)"
+      }
+    }
+  ]
+}

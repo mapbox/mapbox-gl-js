@@ -6,6 +6,7 @@ import TileBounds from './tile_bounds.js';
 import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import {makeFQID} from '../util/fqid.js';
 
 import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
@@ -356,7 +357,8 @@ class CustomSource<T> extends Evented implements Source {
     }
 
     _clearTiles() {
-        this._map.style._clearSource(this.id);
+        const fqid = makeFQID(this.id, this.scope);
+        this._map.style.clearSource(fqid);
     }
 
     _update() {

@@ -37,7 +37,6 @@ class Tiled3DModelSource extends Evented implements Source {
     /**
      * @private
      */
-    // eslint-disable-next-line no-unused-vars
     constructor(id: string, options: ModelSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.type = 'batched-model';
@@ -162,10 +161,8 @@ class Tiled3DModelSource extends Evented implements Source {
         }
     }
 
-    serialize(): Object {
-        return {
-            type: 'batched-model'
-        };
+    serialize(): ModelSourceSpecification {
+        return extend({}, this._options);
     }
 }
 

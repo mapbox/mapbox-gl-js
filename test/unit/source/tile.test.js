@@ -283,6 +283,9 @@ test('rtl text detection', (t) => {
             createPainter({
                 getLayer() {
                     return symbolBucket.layers[0];
+                },
+                getOwnLayer() {
+                    return symbolBucket.layers[0];
                 }
             })
         );

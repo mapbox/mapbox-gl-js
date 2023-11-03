@@ -209,6 +209,7 @@ class CustomStyleLayer extends StyleLayer {
         return this.implementation.prerender !== undefined;
     }
 
+    // $FlowFixMe[method-unbinding]
     isLayerDraped(_: ?SourceCache): boolean {
         return this.implementation.renderToTile !== undefined;
     }

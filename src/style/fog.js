@@ -83,15 +83,15 @@ class Fog extends Evented {
             return;
         }
 
+        const properties = extend({}, fog);
         for (const name of Object.keys(styleSpec.fog)) {
             // Fallback to use default style specification when the properties wasn't set
-            if (fog && fog[name] === undefined) {
-                // $FlowFixMe[prop-missing]
-                fog[name] = styleSpec.fog[name].default;
+            if (properties[name] === undefined) {
+                properties[name] = styleSpec.fog[name].default;
             }
         }
 
-        this._transitionable.setTransitionOrValue<FogSpecification>(fog);
+        this._transitionable.setTransitionOrValue<FogSpecification>(properties);
     }
 
     getOpacity(pitch: number): number {

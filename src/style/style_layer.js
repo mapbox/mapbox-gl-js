@@ -13,6 +13,7 @@ import {Evented} from '../util/evented.js';
 import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
 import featureFilter from '../style-spec/feature_filter/index.js';
+import {makeFQID} from '../util/fqid.js';
 
 import type {FeatureState} from '../style-spec/expression/index.js';
 import type {Expression} from '../style-spec/expression/expression.js';
@@ -35,11 +36,13 @@ import type {TilespaceQueryGeometry} from './query_geometry.js';
 import type {DEMSampler} from '../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../render/painter.js";
+import type SourceCache from '../source/source_cache.js';
 
 const TRANSITION_SUFFIX = '-transition';
 
 class StyleLayer extends Evented {
     id: string;
+    fqid: string;
     scope: string;
     metadata: mixed;
     type: string;
@@ -77,6 +80,7 @@ class StyleLayer extends Evented {
 
     +onAdd: ?(map: MapboxMap) => void;
     +onRemove: ?(map: MapboxMap) => void;
+    +isLayerDraped: ?(sourceCache: ?SourceCache) => boolean;
 
     constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, options?: ?Map<string, Expression>) {
         super();
@@ -125,6 +129,16 @@ class StyleLayer extends Evented {
             //$FlowFixMe
             this.paint = new PossiblyEvaluated(properties.paint);
         }
+    }
+
+    /**
+     * Sets the scope of the style layer to a particular Style.
+     *
+     * @private
+     */
+    setScope(scope: string) {
+        this.scope = scope;
+        this.fqid = makeFQID(this.id, scope);
     }
 
     getLayoutProperty(name: string): PropertyValueSpecification<mixed> {
@@ -256,7 +270,7 @@ class StyleLayer extends Evented {
     }
 
     serialize(): LayerSpecification {
-        const output: any = {
+        const output = {
             'id': this.id,
             'type': this.type,
             'source': this.source,

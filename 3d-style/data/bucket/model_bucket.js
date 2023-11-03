@@ -107,7 +107,7 @@ class ModelBucket implements Bucket {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
         this.layers = options.layers;
-        this.layerIds = this.layers.map(layer => layer.id);
+        this.layerIds = this.layers.map(layer => layer.fqid);
         this.projection = options.projection;
         this.index = options.index;
 

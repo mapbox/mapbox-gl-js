@@ -3,7 +3,8 @@ import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index.js
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 
 const styleLayer = {
-    id: 'test'
+    id: 'test',
+    fqid: 'test'
 };
 
 function makeSymbolInstance(x, y, key) {

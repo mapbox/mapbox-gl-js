@@ -90,7 +90,8 @@ import type {
     ProjectionSpecification,
     TransitionSpecification,
     PropertyValueSpecification,
-    ConfigSpecification
+    ConfigSpecification,
+    CameraSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator, ValidationErrors} from './validate_style.js';
@@ -104,6 +105,7 @@ import type {TransitionParameters} from './properties.js';
 import ModelManager from '../../3d-style/render/model_manager.js';
 import type {Expression} from '../style-spec/expression/expression.js';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
+import type {QueryRenderedFeaturesParams} from '../source/query_features.js';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -121,11 +123,13 @@ const supportedDiffOperations = pick(diffOperations, [
     'setTerrain',
     'setFog',
     'setProjection',
-    'setCamera'
+    'setCamera',
+    'addImport',
+    'removeImport',
+    'setImportUrl',
+    'setImportData',
     // 'setGlyphs',
     // 'setSprite',
-    // 'addImport',
-    // 'removeImport',
 ]);
 
 const ignoredDiffOperations = pick(diffOperations, [
@@ -152,14 +156,13 @@ export type StyleOptions = {
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
     config?: Map<string, Expression>,
-    camera?: StyleSpecification['camera'],
 };
 
 export type StyleSetterOptions = {
     validate?: boolean
 };
 
-export type StyleImport = {|
+export type Fragment = {|
     id: string,
     style: Style,
     config?: ?ConfigSpecification
@@ -169,7 +172,7 @@ const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
 
 // Symbols are draped only on native and for certain cases only
-const drapedLayers = new Set(['fill', 'line', 'background', "hillshade", "raster"]);
+const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster']);
 
 /**
  * @private
@@ -181,33 +184,35 @@ class Style extends Evented {
     imageManager: ImageManager;
     glyphManager: GlyphManager;
     modelManager: ModelManager;
+    ambientLight: ?Lights<Ambient>;
+    directionalLight: ?Lights<Directional>;
     light: Light;
     terrain: ?Terrain;
     fog: ?Fog;
+    camera: CameraSpecification;
+    transition: TransitionSpecification;
+    projection: ProjectionSpecification;
 
     scope: string;
-    imports: Array<StyleImport>;
+    fragments: Array<Fragment>;
     importDepth: number;
     // Shared cache of imported stylesheets
     importsCache: Map<string, StyleSpecification>;
     // Keeps track of ancestors' Style URLs.
     resolvedImports: Set<string>;
-    parentCamera: ?StyleSpecification['camera'];
 
     options: Map<string, Expression>;
 
-    _ownOrder: Array<string>;
-    _ownLayers: {[string]: StyleLayer};
-    _ownSources: {[string]: Source};
+    // Merged layers and sources
+    _mergedOrder: Array<string>;
+    _mergedLayers: {[_: string]: StyleLayer};
+    _mergedSourceCaches: {[_: string]: SourceCache};
+    _mergedOtherSourceCaches: {[_: string]: SourceCache};
+    _mergedSymbolSourceCaches: {[_: string]: SourceCache};
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
     _layers: {[_: string]: StyleLayer};
-    ambientLight: ?Lights<Ambient>;
-    directionalLight: ?Lights<Directional>;
-    _num3DLayers: number;
-    _numSymbolLayers: number;
-    _numCircleLayers: number;
     _serializedLayers: {[_: string]: Object};
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -219,11 +224,11 @@ class Style extends Evented {
     _rtlTextPluginCallback: Function;
     _changed: boolean;
     _optionsChanged: boolean;
-    _updatedSources: {[_: string]: 'clear' | 'reload'};
-    _updatedLayers: {[_: string]: true};
+    _updatedSourceCaches: {[_: string]: 'clear' | 'reload'};
+    _updatedLayers: Set<string>;
     _removedLayers: {[_: string]: StyleLayer};
-    _changedImages: {[_: string]: true};
-    _updatedPaintProps: {[layer: string]: true};
+    _changedImages: Set<string>;
+    _updatedPaintProps: Set<string>;
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
@@ -237,6 +242,10 @@ class Style extends Evented {
     placement: Placement;
     z: number;
 
+    _has3DLayers: boolean;
+    _hasCircleLayers: boolean;
+    _hasSymbolLayers: boolean;
+
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
@@ -247,17 +256,34 @@ class Style extends Evented {
 
         this.map = map;
 
-        this.imports = [];
         // Empty string indicates the root Style scope.
         this.scope = options.scope || '';
+
+        this.fragments = [];
         this.importDepth = options.importDepth || 0;
         this.importsCache = options.importsCache || new Map();
         this.resolvedImports = options.resolvedImports || new Set();
-        this.parentCamera = options.camera;
 
-        this._ownOrder = [];
-        this._ownLayers = {};
-        this._ownSources = {};
+        this.transition = extend({}, defaultTransition);
+
+        this._buildingIndex = new BuildingIndex(this);
+        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+
+        this._mergedOrder = [];
+        this._drapedFirstOrder = [];
+        this._mergedLayers = {};
+        this._mergedSourceCaches = {};
+        this._mergedOtherSourceCaches = {};
+        this._mergedSymbolSourceCaches = {};
+
+        this._has3DLayers = false;
+        this._hasCircleLayers = false;
+        this._hasSymbolLayers = false;
+
+        this._changed = false;
+        this._updatedLayers = new Set();
+        this._updatedPaintProps = new Set();
+        this._changedImages = new Set();
 
         if (options.dispatcher) {
             this.dispatcher = options.dispatcher;
@@ -290,12 +316,7 @@ class Style extends Evented {
             this.modelManager.setEventedParent(this);
         }
 
-        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
-
         this._layers = {};
-        this._num3DLayers = 0;
-        this._numSymbolLayers = 0;
-        this._numCircleLayers = 0;
         this._serializedLayers = {};
         this._sourceCaches = {};
         this._otherSourceCaches = {};
@@ -304,10 +325,7 @@ class Style extends Evented {
         this._precompileDone = false;
         this._availableImages = [];
         this._order = [];
-        this._drapedFirstOrder = [];
         this._markersNeedUpdate = false;
-        this._buildingIndex = new BuildingIndex(this);
-        this._transition = extend({}, defaultTransition);
 
         this.options = options.config || new Map();
         this._configDependentLayers = new Set();
@@ -336,7 +354,6 @@ class Style extends Evented {
                         }
                     }
                 }
-
             });
         });
 
@@ -345,7 +362,7 @@ class Style extends Evented {
                 return;
             }
 
-            const source = this.getSource(event.sourceId);
+            const source = this.getOwnSource(event.sourceId);
             if (!source || !source.vectorLayerIds) {
                 return;
             }
@@ -399,107 +416,16 @@ class Style extends Evented {
         this._load(empty, false);
     }
 
-    _updateLayerCount(layer: StyleLayer, add: boolean) {
-        // Typed layer bookkeeping
-        const count = add ? 1 : -1;
-        if (layer.is3D()) {
-            this._num3DLayers += count;
-        }
-        if (layer.type === 'circle') {
-            this._numCircleLayers += count;
-        }
-        if (layer.type === 'symbol') {
-            this._numSymbolLayers += count;
-        }
-    }
-
     _loadImports(imports: Array<ImportSpecification>, validate: boolean): void {
-        const done = () => {
-            this._mergeLayers();
-            this._mergeSources();
-
-            // Merge options and overridable properties from imports to root style
-            for (const {style, id} of this.imports) {
-                for (const [key, value] of style.options.entries()) {
-                    this.options.set(makeFQID(key, id), value);
-                }
-
-                if (style.stylesheet.camera != null)
-                    this.stylesheet.camera = style.stylesheet.camera;
-
-                if (style.stylesheet.projection != null)
-                    this.stylesheet.projection = style.stylesheet.projection;
-
-                if (style.stylesheet.light != null)
-                    this.light = style.light;
-
-                if (style.ambientLight != null)
-                    this.ambientLight = style.ambientLight;
-
-                if (style.directionalLight != null)
-                    this.directionalLight = style.directionalLight;
-
-                if (style.terrain != null)
-                    this.terrain = style.terrain;
-
-                if (style.fog != null)
-                    this.fog = style.fog;
-
-                if (style._transition != null)
-                    this.setTransition(style._transition);
-            }
-
-            this.dispatcher.broadcast('setLayers', {
-                layers: this._serializeLayers(this._ownOrder),
-                scope: this.scope,
-                options: this.options
-            });
-
-            this.fire(new Event('data', {dataType: 'style'}));
-            this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
-        };
-
         // We take the root style into account when calculating the import depth.
         if (this.importDepth >= MAX_IMPORT_DEPTH - 1) {
             warnOnce(`Style doesn't support nesting deeper than ${MAX_IMPORT_DEPTH}`);
-            return done();
+            return this._reloadImports();
         }
 
         const waitForStyles = [];
         for (const importSpec of imports) {
-            const scope = this.scope ?
-                makeFQID(importSpec.id, this.scope) :
-                importSpec.id;
-
-            const config = new Map();
-            const importConfig = importSpec.config;
-            if (importConfig) {
-                for (const key of Object.keys(importConfig)) {
-                    const expressionParsed = createExpression(importConfig[key]);
-                    if (expressionParsed.result === 'success') {
-                        config.set(key, expressionParsed.value.expression);
-                    }
-                }
-            }
-
-            const style = new Style(this.map, {
-                scope,
-                importDepth: this.importDepth + 1,
-                importsCache: this.importsCache,
-                // Clone resolvedImports so it's not being shared between siblings
-                resolvedImports: new Set(this.resolvedImports),
-                // Use shared Dispatcher and assets Managers between Styles
-                dispatcher: this.dispatcher,
-                imageManager: this.imageManager,
-                glyphManager: this.glyphManager,
-                modelManager: this.modelManager,
-                // Pass the parent camera to the child style so it can be used as a fallback
-                camera: this.stylesheet.camera,
-                config,
-            });
-
-            // Bubble all events fired by the style to the map.
-            style.setEventedParent(this.map, {style});
+            const style = this._createFragmentStyle(importSpec);
 
             const waitForStyle = new Promise(resolve => style.on('style.import.load', resolve));
             waitForStyles.push(waitForStyle);
@@ -521,14 +447,65 @@ class Style extends Evented {
                 style.loadEmpty();
             }
 
-            this.imports.push({
-                id: importSpec.id,
+            const fragment = {
                 style,
+                id: importSpec.id,
                 config: importSpec.config
-            });
+            };
+
+            this.fragments.push(fragment);
         }
 
-        Promise.all(waitForStyles).then(done);
+        // $FlowFixMe[method-unbinding]
+        Promise.all(waitForStyles).then(() => this._reloadImports());
+    }
+
+    _createFragmentStyle(importSpec: ImportSpecification): Style {
+        const scope = this.scope ? makeFQID(importSpec.id, this.scope) : importSpec.id;
+
+        const config = new Map();
+        const importConfig = importSpec.config;
+        if (importConfig) {
+            for (const key of Object.keys(importConfig)) {
+                const expressionParsed = createExpression(importConfig[key]);
+                if (expressionParsed.result === 'success') {
+                    config.set(key, expressionParsed.value.expression);
+                }
+            }
+        }
+
+        const style = new Style(this.map, {
+            scope,
+            config,
+            importDepth: this.importDepth + 1,
+            importsCache: this.importsCache,
+            // Clone resolvedImports so it's not being shared between siblings
+            resolvedImports: new Set(this.resolvedImports),
+            // Use shared Dispatcher and assets Managers between Styles
+            dispatcher: this.dispatcher,
+            imageManager: this.imageManager,
+            glyphManager: this.glyphManager,
+            modelManager: this.modelManager,
+        });
+
+        // Bubble all events fired by the style to the map.
+        style.setEventedParent(this.map, {style});
+
+        return style;
+    }
+
+    _reloadImports() {
+        this.mergeAll();
+        this._updateMapProjection();
+
+        this.dispatcher.broadcast('setLayers', {
+            layers: this._serializeLayers(this._order),
+            scope: this.scope,
+            options: this.options
+        });
+
+        this.fire(new Event('data', {dataType: 'style'}));
+        this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
     }
 
     _load(json: StyleSpecification, validate: boolean) {
@@ -563,13 +540,12 @@ class Style extends Evented {
 
         this._loaded = true;
         this.stylesheet = clone(json);
-        this._updateMapProjection();
 
         for (const id in json.sources) {
-            const fqid = makeFQID(id, this.scope);
-            this.addSource(fqid, json.sources[id], {validate: false});
+            this.addSource(id, json.sources[id], {validate: false});
         }
         this._changed = false; // avoid triggering redundant style update after adding initial sources
+
         if (json.sprite) {
             this._loadSprite(json.sprite);
         } else {
@@ -580,8 +556,7 @@ class Style extends Evented {
         this.glyphManager.setURL(json.glyphs, this.scope);
 
         const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
-
-        this._ownOrder = layers.map((layer) => makeFQID(layer.id, this.scope));
+        this._order = layers.map((layer) => layer.id);
 
         if (this.stylesheet.light) {
             warnOnce('The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.');
@@ -600,22 +575,18 @@ class Style extends Evented {
             this.light = new Light(this.stylesheet.light);
         }
 
-        this._ownLayers = {};
+        this._layers = {};
         this._serializedLayers = {};
         for (const layer of layers) {
             const styleLayer = createStyleLayer(layer, this.options);
-            styleLayer.id = makeFQID(styleLayer.id, this.scope);
-            styleLayer.scope = this.scope;
-            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.id);
-            if (styleLayer.source) styleLayer.source = makeFQID(styleLayer.source, this.scope);
-
+            styleLayer.setScope(this.scope);
+            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
             styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
             this._layers[styleLayer.id] = styleLayer;
-            this._ownLayers[styleLayer.id] = styleLayer;
+            this._layers[styleLayer.id] = styleLayer;
             this._serializedLayers[styleLayer.id] = styleLayer.serialize();
-            this._updateLayerCount(styleLayer, true);
 
-            const sourceCache = this._getLayerSourceCache(styleLayer);
+            const sourceCache = this.getOwnLayerSourceCache(styleLayer);
             const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
             if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
@@ -640,24 +611,19 @@ class Style extends Evented {
             this.setTransition(this.stylesheet.transition);
         }
 
-        // Given a stylesheet, in order of priority, we select:
-        //  1. the stylesheet camera
-        //  2. the parent's style camera
-        //  3. perspective camera (fallback)
-        const camera = this.stylesheet.camera = this.stylesheet.camera || this.parentCamera || {'camera-projection': 'perspective'};
+        this.mergeAll();
+        this._updateMapProjection();
 
-        // Trigger transform update
-        this.map.setCamera(camera);
+        // Trigger update
+        this.map._triggerCameraUpdate(this.camera);
 
-        this._mergeLayers();
-        this._mergeSources();
         this.fire(new Event('data', {dataType: 'style'}));
 
         if (json.imports) {
             this._loadImports(json.imports, validate);
         } else {
             this.dispatcher.broadcast('setLayers', {
-                layers: this._serializeLayers(this._ownOrder),
+                layers: this._serializeLayers(this._order),
                 scope: this.scope,
                 options: this.options
             });
@@ -666,48 +632,143 @@ class Style extends Evented {
         }
     }
 
-    _mergeSources() {
+    mergeAll() {
+        let light;
+        let ambientLight;
+        let directionalLight;
+        let terrain;
+        let fog;
+        let projection;
+        let transition;
+        let camera;
+
+        this.forEachFragmentStyle((style: Style) => {
+            if (style.light != null)
+                light = style.light;
+
+            if (style.ambientLight != null)
+                ambientLight = style.ambientLight;
+
+            if (style.directionalLight != null)
+                directionalLight = style.directionalLight;
+
+            if (style.terrain != null) {
+                const nextIsElevated = style.terrain.drapeRenderMode === DrapeRenderMode.elevated;
+                const prevIsDeffered = terrain && terrain.drapeRenderMode === DrapeRenderMode.deferred;
+                if (!terrain || prevIsDeffered || nextIsElevated) {
+                    terrain = style.terrain;
+                }
+            }
+
+            if (style.fog != null)
+                fog = style.fog;
+
+            if (!style.stylesheet) return;
+
+            if (style.stylesheet.camera != null)
+                camera = style.stylesheet.camera;
+
+            if (style.stylesheet.projection != null)
+                projection = style.stylesheet.projection;
+
+            if (style.stylesheet.transition != null)
+                transition = style.stylesheet.transition;
+        });
+
+        // $FlowFixMe[incompatible-type]
+        this.light = light;
+        this.ambientLight = ambientLight;
+        this.directionalLight = directionalLight;
+        this.terrain = terrain;
+        this.fog = fog;
+
+        // Use perspective camera as a fallback if no camera is specified
+        this.camera = camera || {'camera-projection': 'perspective'};
+        this.projection = projection || {name: 'mercator'};
+        this.transition = extend({}, defaultTransition, transition);
+
+        this.mergeSources();
+        this.mergeLayers();
+    }
+
+    forEachFragmentStyle(fn: (style: Style) => void) {
+        const traverse = (style: Style) => {
+            for (const fragment of style.fragments) {
+                traverse(fragment.style);
+            }
+
+            fn(style);
+        };
+
+        traverse(this);
+    }
+
+    mergeTerrain() {
+        let terrain;
+
+        this.forEachFragmentStyle((style: Style) => {
+            if (style.terrain != null) {
+                const nextIsElevated = style.terrain.drapeRenderMode === DrapeRenderMode.elevated;
+                const prevIsDeffered = terrain && terrain.drapeRenderMode === DrapeRenderMode.deferred;
+                if (!terrain || prevIsDeffered || nextIsElevated) {
+                    terrain = style.terrain;
+                }
+            }
+        });
+
+        this.terrain = terrain;
+    }
+
+    mergeProjection() {
+        let projection;
+
+        this.forEachFragmentStyle((style: Style) => {
+            if (style.stylesheet.projection != null)
+                projection = style.stylesheet.projection;
+        });
+
+        this.projection = projection || {name: 'mercator'};
+    }
+
+    mergeSources() {
         const mergedSourceCaches = {};
         const mergedOtherSourceCaches = {};
         const mergedSymbolSourceCaches = {};
 
-        function traverse(style: Style) {
-            for (const importSpec of style.imports) {
-                traverse(importSpec.style);
-            }
-
+        this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
-                mergedSourceCaches[id] = style._sourceCaches[id];
+                const fqid = makeFQID(id, style.scope);
+                mergedSourceCaches[fqid] = style._sourceCaches[id];
             }
 
             for (const id in style._otherSourceCaches) {
-                mergedOtherSourceCaches[id] = style._otherSourceCaches[id];
+                const fqid = makeFQID(id, style.scope);
+                mergedOtherSourceCaches[fqid] = style._otherSourceCaches[id];
             }
 
             for (const id in style._symbolSourceCaches) {
-                mergedSymbolSourceCaches[id] = style._symbolSourceCaches[id];
+                const fqid = makeFQID(id, style.scope);
+                mergedSymbolSourceCaches[fqid] = style._symbolSourceCaches[id];
             }
-        }
+        });
 
-        traverse(this);
-
-        this._sourceCaches = mergedSourceCaches;
-        this._otherSourceCaches = mergedOtherSourceCaches;
-        this._symbolSourceCaches = mergedSymbolSourceCaches;
+        this._mergedSourceCaches = mergedSourceCaches;
+        this._mergedOtherSourceCaches = mergedOtherSourceCaches;
+        this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
     }
 
-    _mergeLayers() {
+    mergeLayers() {
         const slots: {[string]: StyleLayer[]} = {};
         const mergedOrder: StyleLayer[] = [];
         const mergedLayers: {[string]: StyleLayer} = {};
 
-        function traverse(style: Style) {
-            for (const importSpec of style.imports) {
-                traverse(importSpec.style);
-            }
+        this._has3DLayers = false;
+        this._hasCircleLayers = false;
+        this._hasSymbolLayers = false;
 
-            for (const layerId of style._ownOrder) {
-                const layer = style._ownLayers[layerId];
+        this.forEachFragmentStyle((style: Style) => {
+            for (const layerId of style._order) {
+                const layer = style._layers[layerId];
                 if (layer.type === 'slot') {
                     const slotName = getNameFromFQID(layerId);
                     if (slots[slotName]) continue;
@@ -721,31 +782,45 @@ class Style extends Evented {
 
                 mergedOrder.push(layer);
             }
-        }
+        });
 
-        traverse(this);
-
-        this._order = [];
+        this._mergedOrder = [];
         const sort = (layers: StyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
                     const slotName = getNameFromFQID(layer.id);
                     if (slots[slotName]) sort(slots[slotName]);
                 } else {
-                    this._order.push(layer.id);
-                    mergedLayers[layer.id] = layer;
+                    const fqid = makeFQID(layer.id, layer.scope);
+                    this._mergedOrder.push(fqid);
+                    mergedLayers[fqid] = layer;
+
+                    // Typed layer bookkeeping
+                    if (layer.is3D()) this._has3DLayers = true;
+                    if (layer.type === 'circle') this._hasCircleLayers = true;
+                    if (layer.type === 'symbol') this._hasSymbolLayers = true;
                 }
             }
         };
 
         sort(mergedOrder);
-        this._layers = mergedLayers;
-        this._updateDrapeFirstLayers();
+        this._mergedLayers = mergedLayers;
+        this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
     }
 
     terrainSetForDrapingOnly(): boolean {
         return !!this.terrain && this.terrain.drapeRenderMode === DrapeRenderMode.deferred;
+    }
+
+    getCamera(): ?CameraSpecification {
+        return this.stylesheet.camera;
+    }
+
+    setCamera(camera: CameraSpecification): Style {
+        this.stylesheet.camera = extend({}, this.stylesheet.camera, camera);
+        this.camera = this.stylesheet.camera;
+        return this;
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
@@ -754,6 +829,7 @@ class Style extends Evented {
         } else {
             delete this.stylesheet.projection;
         }
+        this.mergeProjection();
         this._updateMapProjection();
     }
 
@@ -772,8 +848,11 @@ class Style extends Evented {
     }
 
     _updateMapProjection() {
+        // Skip projection updates from the children fragments
+        if (this.importDepth > 0) return;
+
         if (!this.map._useExplicitProjection) { // Update the visible projection if map's is null
-            this.map._prioritizeAndUpdateProjection(null, this.stylesheet.projection);
+            this.map._prioritizeAndUpdateProjection(null, this.projection);
         } else { // Ensure that style is consistent with current projection on style load
             this.applyProjectionUpdate();
         }
@@ -802,7 +881,7 @@ class Style extends Evented {
     }
 
     _validateLayer(layer: StyleLayer) {
-        const source = this.getSource(layer.source);
+        const source = this.getOwnSource(layer.source);
         if (!source) {
             return;
         }
@@ -825,7 +904,7 @@ class Style extends Evented {
         if (!this._loaded)
             return false;
 
-        if (Object.keys(this._updatedSources).length)
+        if (Object.keys(this._updatedSourceCaches).length)
             return false;
 
         for (const id in this._sourceCaches)
@@ -838,14 +917,39 @@ class Style extends Evented {
         if (!this.modelManager.isLoaded())
             return false;
 
-        for (const {style} of this.imports) {
+        for (const {style} of this.fragments) {
             if (!style.loaded()) return false;
         }
 
         return true;
     }
 
-    _serializeLayers(ids: Array<string>): Array<Object> {
+    _serializeImports(): Array<ImportSpecification> | void {
+        if (!this.stylesheet.imports) return undefined;
+
+        return this.stylesheet.imports.map((importSpec, index) => {
+            const fragment = this.fragments[index];
+            if (fragment && fragment.style) {
+                importSpec.data = fragment.style.serialize();
+            }
+
+            return importSpec;
+        });
+    }
+
+    _serializeSources(): {[sourceId: string]: SourceSpecification} {
+        const sources = {};
+        for (const cacheId in this._sourceCaches) {
+            const source = this._sourceCaches[cacheId].getSource();
+            if (!sources[source.id]) {
+                sources[source.id] = source.serialize();
+            }
+        }
+
+        return sources;
+    }
+
+    _serializeLayers(ids: Array<string>): Array<LayerSpecification> {
         const serializedLayers = [];
         for (const id of ids) {
             const layer = this._layers[id];
@@ -904,17 +1008,15 @@ class Style extends Evented {
 
     get order(): Array<string> {
         if (this.terrain) {
-            assert(this._drapedFirstOrder.length === this._order.length, 'drapedFirstOrder doesn\'t match order');
+            assert(this._drapedFirstOrder.length === this._mergedOrder.length, 'drapedFirstOrder doesn\'t match order');
             return this._drapedFirstOrder;
         }
-        return this._order;
+        return this._mergedOrder;
     }
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
-        // $FlowFixMe[prop-missing]
-        // $FlowFixMe[incompatible-use]
-        if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped(this._getLayerSourceCache(layer));
+        if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped(this.getLayerSourceCache(layer));
         return drapedLayers.has(layer.type);
     }
 
@@ -949,8 +1051,9 @@ class Style extends Evented {
         }
 
         const changed = this._changed;
+
         if (this._changed) {
-            const updatedIds = Object.keys(this._updatedLayers);
+            const updatedIds = Array.from(this._updatedLayers.keys());
             const removedIds = Object.keys(this._removedLayers);
 
             if (updatedIds.length || removedIds.length) {
@@ -968,24 +1071,14 @@ class Style extends Evented {
                 }
 
                 for (const [scope, {updatedIds, removedIds}] of (Object.entries(updatesByScope): any)) {
-                    this.getFragmentById(scope)._updateWorkerLayers(updatedIds, removedIds);
-                }
-            }
-            for (const id in this._updatedSources) {
-                const action = this._updatedSources[id];
-                assert(action === 'reload' || action === 'clear');
-                if (action === 'reload') {
-                    this._reloadSource(id);
-                } else if (action === 'clear') {
-                    this._clearSource(id);
+                    this.getFragmentStyle(scope)._updateWorkerLayers(updatedIds, removedIds);
                 }
             }
 
+            this.updateSourceCaches();
             this._updateTilesForChangedImages();
 
-            for (const id in this._updatedPaintProps) {
-                this._layers[id].updateTransitions(parameters);
-            }
+            this.updateLayers(parameters);
 
             if (this.light) {
                 this.light.updateTransitions(parameters);
@@ -1018,7 +1111,7 @@ class Style extends Evented {
             const layer = this._layers[layerId];
             layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
-                const sourceCache = this._getLayerSourceCache(layer);
+                const sourceCache = this.getOwnLayerSourceCache(layer);
                 if (sourceCache) sourceCache.used = true;
             }
 
@@ -1085,18 +1178,22 @@ class Style extends Evented {
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
         }
+
+        for (const {style} of this.fragments) {
+            style.update(parameters);
+        }
     }
 
     /*
      * Apply any queued image changes.
      */
     _updateTilesForChangedImages() {
-        const changedImages = Object.keys(this._changedImages);
+        const changedImages = Array.from(this._changedImages.keys());
         if (changedImages.length) {
             for (const name in this._sourceCaches) {
                 this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
             }
-            this._changedImages = {};
+            this._changedImages.clear();
         }
     }
 
@@ -1112,13 +1209,13 @@ class Style extends Evented {
     _resetUpdates() {
         this._changed = false;
 
-        this._updatedLayers = {};
+        this._updatedLayers.clear();
         this._removedLayers = {};
 
-        this._updatedSources = {};
-        this._updatedPaintProps = {};
+        this._updatedSourceCaches = {};
+        this._updatedPaintProps.clear();
 
-        this._changedImages = {};
+        this._changedImages.clear();
     }
 
     /**
@@ -1152,16 +1249,17 @@ class Style extends Evented {
         }
 
         changes.forEach((op) => {
-            if (op.command === 'setTransition' || op.command === 'setProjection') {
-                // `transition` and `projection` are always read directly from
-                // `this.stylesheet`, which we update below
-                return;
-            }
             (this: any)[op.command].apply(this, op.args);
         });
 
         this.stylesheet = nextState;
-        this._updateMapProjection();
+        this.mergeAll();
+
+        this.dispatcher.broadcast('setLayers', {
+            layers: this._serializeLayers(this._order),
+            scope: this.scope,
+            options: this.options
+        });
 
         return true;
     }
@@ -1194,7 +1292,7 @@ class Style extends Evented {
 
     _afterImageUpdated(id: string) {
         this._availableImages = this.imageManager.listImages(this.scope);
-        this._changedImages[id] = true;
+        this._changedImages.add(id);
         this._changed = true;
         this.dispatcher.broadcast('setImages', {
             scope: this.scope,
@@ -1238,7 +1336,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         if (this.getOwnSource(id) !== undefined) {
-            throw new Error('There is already a source with this ID');
+            throw new Error(`There is already a source with ID "${id}".`);
         }
 
         if (!source.type) {
@@ -1251,19 +1349,20 @@ class Style extends Evented {
 
         if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
 
-        const sourceInstance = this._ownSources[id] = createSource(id, source, this.dispatcher, this);
+        const sourceInstance = createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 
         sourceInstance.setEventedParent(this, () => ({
-            isSourceLoaded: this._isSourceCacheLoaded(id),
+            isSourceLoaded: this._isSourceCacheLoaded(sourceInstance.id),
             source: sourceInstance.serialize(),
-            sourceId: id
+            sourceId: sourceInstance.id
         }));
 
         const addSourceCache = (onlySymbols: boolean) => {
-            const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + id;
-            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheId, sourceInstance, onlySymbols);
-            (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[id] = sourceCache;
+            const sourceCacheId = (onlySymbols ? 'symbol:' : 'other:') + sourceInstance.id;
+            const sourceCacheFQID = makeFQID(sourceCacheId, this.scope);
+            const sourceCache = this._sourceCaches[sourceCacheId] = new SourceCache(sourceCacheFQID, sourceInstance, onlySymbols);
+            (onlySymbols ? this._symbolSourceCaches : this._otherSourceCaches)[sourceInstance.id] = sourceCache;
             sourceCache.onAdd(this.map);
         };
 
@@ -1273,7 +1372,7 @@ class Style extends Evented {
         }
 
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
-        this._mergeSources();
+        this.mergeSources();
 
         this._changed = true;
     }
@@ -1300,18 +1399,18 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while terrain is using it.`)));
         }
 
-        const sourceCaches = this._getSourceCaches(id);
+        const sourceCaches = this.getOwnSourceCaches(id);
         for (const sourceCache of sourceCaches) {
-            delete this._sourceCaches[sourceCache.id];
-            delete this._updatedSources[sourceCache.id];
+            const id = getNameFromFQID(sourceCache.id);
+            delete this._sourceCaches[id];
+            delete this._updatedSourceCaches[sourceCache.id];
             sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
             sourceCache.setEventedParent(null);
             sourceCache.clearTiles();
         }
-        delete this._ownSources[id];
         delete this._otherSourceCaches[id];
         delete this._symbolSourceCaches[id];
-        this._mergeSources();
+        this.mergeSources();
 
         source.setEventedParent(null);
         if (source.onRemove) {
@@ -1322,10 +1421,10 @@ class Style extends Evented {
     }
 
     /**
-    * Set the data of a GeoJSON source, given its ID.
-    * @param {string} id ID of the source.
-    * @param {GeoJSON|string} data GeoJSON source.
-    */
+     * Set the data of a GeoJSON source, given its ID.
+     * @param {string} id ID of the source.
+     * @param {GeoJSON|string} data GeoJSON source.
+     */
     setGeoJSONSourceData(id: string, data: GeoJSON | string) {
         this._checkLoaded();
 
@@ -1342,24 +1441,15 @@ class Style extends Evented {
      * @param {string} id ID of the desired source.
      * @returns {?Source} The source object.
      */
-    getSource(id: string): ?Source {
-        const sourceCache = this._getSourceCache(id);
+    getOwnSource(id: string): ?Source {
+        const sourceCache = this.getOwnSourceCache(id);
         return sourceCache && sourceCache.getSource();
     }
 
-    /**
-     * Get a source by ID.
-     * @param {string} id ID of the desired source.
-     * @returns {?Source} The source object.
-     */
-    getOwnSource(id: string): ?Source {
-        return this._ownSources[id];
-    }
-
-    _getSources(): Source[] {
+    getOwnSources(): Source[] {
         const sources = [];
         for (const id in this._otherSourceCaches) {
-            const sourceCache = this._getSourceCache(id);
+            const sourceCache = this.getOwnSourceCache(id);
             if (sourceCache) sources.push(sourceCache.getSource());
         }
 
@@ -1471,16 +1561,16 @@ class Style extends Evented {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
-    getFragmentById(importId?: string): Style {
-        if (!importId) return this;
+    getFragmentStyle(fragmentId?: string): Style {
+        if (!fragmentId) return this;
 
-        const importSpec = this.imports.find(({id}) => id === importId);
-        if (!importSpec) throw new Error(`Style import not found: ${importId}`);
+        const fragment = this.fragments.find(({id}) => id === fragmentId);
+        if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
 
-        return importSpec.style;
+        return fragment.style;
     }
 
-    setConfigProperty(importId: string, key: string, value: any) {
+    setConfigProperty(fragmentId: string, key: string, value: any) {
         const expressionParsed = createExpression(value);
         if (expressionParsed.result !== 'success') {
             emitValidationErrors(this, expressionParsed.value);
@@ -1489,10 +1579,10 @@ class Style extends Evented {
 
         const expression = expressionParsed.value.expression;
 
-        const fragment = this.getFragmentById(importId);
-        fragment.options.set(key, expression);
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        fragmentStyle.options.set(key, expression);
 
-        for (const id of fragment._configDependentLayers) {
+        for (const id of fragmentStyle._configDependentLayers) {
             const layer = this.getLayer(id);
             if (layer) {
                 layer.possiblyEvaluateVisibility();
@@ -1502,12 +1592,12 @@ class Style extends Evented {
 
         // If the root style uses the lights from the updated fragment,
         // update the configs in the corresponding light instances.
-        if (this.ambientLight && this.ambientLight.scope === importId) {
-            this.ambientLight.updateConfig(fragment.options);
+        if (this.ambientLight && this.ambientLight.scope === fragmentId) {
+            this.ambientLight.updateConfig(fragmentStyle.options);
         }
 
-        if (this.directionalLight && this.directionalLight.scope === importId) {
-            this.directionalLight.updateConfig(fragment.options);
+        if (this.directionalLight && this.directionalLight.scope === fragmentId) {
+            this.directionalLight.updateConfig(fragmentStyle.options);
         }
 
         this._changed = true;
@@ -1526,18 +1616,15 @@ class Style extends Evented {
 
         const id = layerObject.id;
 
-        if (this._ownLayers[id]) {
+        if (this._layers[id]) {
             this.fire(new ErrorEvent(new Error(`Layer with id "${id}" already exists on this map`)));
             return;
         }
 
         let layer;
         if (layerObject.type === 'custom') {
-
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
-
             layer = createStyleLayer(layerObject, this.options);
-
         } else {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
@@ -1554,30 +1641,30 @@ class Style extends Evented {
 
             layer.setEventedParent(this, {layer: {id}});
             this._serializedLayers[layer.id] = layer.serialize();
-            this._updateLayerCount(layer, true);
         }
 
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        layer.setScope(this.scope);
 
-        const index = before ? this._ownOrder.indexOf(before) : this._ownOrder.length;
+        const index = before ? this._order.indexOf(before) : this._order.length;
         if (before && index === -1) {
             this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
             return;
         }
 
-        this._ownOrder.splice(index, 0, id);
+        this._order.splice(index, 0, id);
         this._layerOrderChanged = true;
 
-        this._ownLayers[id] = layer;
+        this._layers[id] = layer;
 
-        const sourceCache = this._getLayerSourceCache(layer);
+        const sourceCache = this.getOwnLayerSourceCache(layer);
         const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
         if (sourceCache && layer.canCastShadows() && shadowsEnabled) {
             sourceCache.castsShadows = true;
         }
 
-        if (this._removedLayers[id] && layer.source && sourceCache && layer.type !== 'custom') {
+        if (this._removedLayers[layer.fqid] && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
             // need to clear (rather than just reload) the underyling source's
@@ -1585,12 +1672,13 @@ class Style extends Evented {
             // buffers that are set up for the _previous_ version of this
             // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
-            const removed = this._removedLayers[id];
-            delete this._removedLayers[id];
+            const removed = this._removedLayers[layer.fqid];
+            delete this._removedLayers[layer.fqid];
+            const fqid = makeFQID(layer.source, layer.scope);
             if (removed.type !== layer.type) {
-                this._updatedSources[layer.source] = 'clear';
+                this._updatedSourceCaches[fqid] = 'clear';
             } else {
-                this._updatedSources[layer.source] = 'reload';
+                this._updatedSourceCaches[fqid] = 'reload';
                 sourceCache.pause();
             }
         }
@@ -1603,7 +1691,7 @@ class Style extends Evented {
 
         layer.scope = this.scope;
 
-        this._mergeLayers();
+        this.mergeLayers();
     }
 
     /**
@@ -1616,7 +1704,7 @@ class Style extends Evented {
         this._checkLoaded();
         this._changed = true;
 
-        const layer = this._ownLayers[id];
+        const layer = this._layers[id];
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be moved.`)));
             return;
@@ -1626,19 +1714,19 @@ class Style extends Evented {
             return;
         }
 
-        const index = this._ownOrder.indexOf(id);
-        this._ownOrder.splice(index, 1);
+        const index = this._order.indexOf(id);
+        this._order.splice(index, 1);
 
-        const newIndex = before ? this._ownOrder.indexOf(before) : this._ownOrder.length;
+        const newIndex = before ? this._order.indexOf(before) : this._order.length;
         if (before && newIndex === -1) {
             this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
             return;
         }
-        this._ownOrder.splice(newIndex, 0, id);
+        this._order.splice(newIndex, 0, id);
 
         this._layerOrderChanged = true;
 
-        this._mergeLayers();
+        this.mergeLayers();
     }
 
     /**
@@ -1652,7 +1740,7 @@ class Style extends Evented {
     removeLayer(id: string) {
         this._checkLoaded();
 
-        const layer = this._ownLayers[id];
+        const layer = this._layers[id];
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be removed.`)));
             return;
@@ -1660,25 +1748,25 @@ class Style extends Evented {
 
         layer.setEventedParent(null);
 
-        this._updateLayerCount(layer, false);
+        const index = this._order.indexOf(id);
+        this._order.splice(index, 1);
 
-        const index = this._ownOrder.indexOf(id);
-        this._ownOrder.splice(index, 1);
-
-        this._layerOrderChanged = true;
-        this._changed = true;
-        this._removedLayers[id] = layer;
-        delete this._ownLayers[id];
+        delete this._layers[id];
         delete this._serializedLayers[id];
-        delete this._updatedLayers[id];
-        delete this._updatedPaintProps[id];
-        this._configDependentLayers.delete(id);
 
-        const sourceCache = this._getLayerSourceCache(layer);
+        this._changed = true;
+        this._layerOrderChanged = true;
+
+        this._configDependentLayers.delete(layer.fqid);
+        this._removedLayers[layer.fqid] = layer;
+        this._updatedLayers.delete(layer.fqid);
+        this._updatedPaintProps.delete(layer.fqid);
+
+        const sourceCache = this.getOwnLayerSourceCache(layer);
 
         if (sourceCache && sourceCache.castsShadows) {
             let shadowCastersLeft = false;
-            for (const key in this._ownLayers) {
+            for (const key in this._layers) {
                 if (this._layers[key].source === layer.source && this._layers[key].canCastShadows()) {
                     shadowCastersLeft = true;
                     break;
@@ -1692,7 +1780,7 @@ class Style extends Evented {
             layer.onRemove(this.map);
         }
 
-        this._mergeLayers();
+        this.mergeLayers();
     }
 
     /**
@@ -1701,18 +1789,8 @@ class Style extends Evented {
      * @param {string} id ID of the desired layer.
      * @returns {?StyleLayer} A layer, if one with the given `id` exists.
      */
-    getLayer(id: string): ?StyleLayer {
-        return this._layers[id];
-    }
-
-    /**
-     * Return the style own layer object with the given `id`.
-     *
-     * @param {string} id ID of the desired layer.
-     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
-     */
     getOwnLayer(id: string): ?StyleLayer {
-        return this._ownLayers[id];
+        return this._layers[id];
     }
 
     /**
@@ -1722,7 +1800,7 @@ class Style extends Evented {
      * @returns {boolean} A boolean specifying if the given layer is present.
      */
     hasLayer(id: string): boolean {
-        return id in this._layers;
+        return id in this._mergedLayers;
     }
 
     /**
@@ -1815,7 +1893,7 @@ class Style extends Evented {
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
         layer.setLayoutProperty(name, value, options);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
 
@@ -1847,13 +1925,13 @@ class Style extends Evented {
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
         const requiresRelayout = layer.setPaintProperty(name, value, options);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.id);
+        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }
 
         this._changed = true;
-        this._updatedPaintProps[layerId] = true;
+        this._updatedPaintProps.add(layer.fqid);
     }
 
     getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
@@ -1889,7 +1967,7 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        const sourceCaches = this._getSourceCaches(sourceId);
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
         for (const sourceCache of sourceCaches) {
             sourceCache.setFeatureState(sourceLayer, target.id, state);
         }
@@ -1918,7 +1996,7 @@ class Style extends Evented {
             return;
         }
 
-        const sourceCaches = this._getSourceCaches(sourceId);
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
         for (const sourceCache of sourceCaches) {
             sourceCache.removeFeatureState(sourceLayer, target.id, key);
         }
@@ -1943,32 +2021,30 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
         }
 
-        const sourceCaches = this._getSourceCaches(sourceId);
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
         return sourceCaches[0].getFeatureState(sourceLayer, target.id);
     }
 
-    setTransition(transition: TransitionSpecification | void) {
-        this._transition = extend({}, defaultTransition, this._transition, transition);
+    setTransition(transition: ?TransitionSpecification): Style {
+        this.stylesheet.transition = extend({}, this.stylesheet.transition, transition);
+        this.transition = this.stylesheet.transition;
+        return this;
     }
 
     getTransition(): TransitionSpecification {
-        return extend({}, this._transition);
+        return extend({}, this.stylesheet.transition);
     }
 
     serialize(): StyleSpecification {
         this._checkLoaded();
 
-        const sources = {};
-        for (const sourceId in this._ownSources) {
-            const source = this._ownSources[sourceId];
-            sources[source.id] = source.serialize();
-        }
-
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
-            imports: this.stylesheet.imports,
+            imports: this._serializeImports(),
+            schema: this.stylesheet.schema,
+            camera: this.stylesheet.camera,
             light: this.stylesheet.light,
             lights: this.stylesheet.lights,
             terrain: this.getTerrain() || undefined,
@@ -1981,19 +2057,20 @@ class Style extends Evented {
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
             projection: this.stylesheet.projection,
-            sources,
-            layers: this._serializeLayers(this._ownOrder)
+            sources: this._serializeSources(),
+            layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });
     }
 
     _updateLayer(layer: StyleLayer) {
-        this._updatedLayers[layer.id] = true;
-        const sourceCache = this._getLayerSourceCache(layer);
-        if (layer.source && !this._updatedSources[layer.source] &&
+        this._updatedLayers.add(layer.fqid);
+        const sourceCache = this.getLayerSourceCache(layer);
+        const fqid = makeFQID(layer.source, layer.scope);
+        if (layer.source && !this._updatedSourceCaches[fqid] &&
             //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
             sourceCache &&
             sourceCache.getSource().type !== 'raster') {
-            this._updatedSources[layer.source] = 'reload';
+            this._updatedSourceCaches[fqid] = 'reload';
             sourceCache.pause();
         }
         this._changed = true;
@@ -2020,7 +2097,7 @@ class Style extends Evented {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = (layerId: string) => this._layers[layerId].type === 'fill-extrusion';
+        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].type === 'fill-extrusion';
 
         const order = this.order;
 
@@ -2072,10 +2149,14 @@ class Style extends Evented {
         return features;
     }
 
-    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: any, transform: Transform): Array<QueryResult> {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams, transform: Transform): Array<QueryResult> {
         if (params && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
+
+        params.scope = this.scope;
+        params.availableImages = this._availableImages;
+        params.serializedLayers = this._serializedLayers;
 
         const includedSources = {};
         if (params && params.layers) {
@@ -2084,7 +2165,7 @@ class Style extends Evented {
                 return [];
             }
             for (const layerId of params.layers) {
-                const layer = this._layers[layerId];
+                const layer = this._mergedLayers[layerId];
                 if (!layer) {
                     // this layer is not in the style.layers array
                     this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
@@ -2095,31 +2176,33 @@ class Style extends Evented {
         }
 
         const sourceResults: Array<QueryResult> = [];
-
-        params.availableImages = this._availableImages;
+        const serializedLayers = params.serializedLayers || {};
 
         const has3DLayer = (params && params.layers) ?
             params.layers.some((layerId) => {
                 const layer = this.getLayer(layerId);
                 return layer && layer.is3D();
-            }) :
-            this.has3DLayers();
+            }) : this.has3DLayers();
+
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
-        for (const id in this._sourceCaches) {
-            const sourceId = this._sourceCaches[id].getSource().id;
-            if (!this._ownSources[sourceId]) continue;
+        for (const id in this._mergedSourceCaches) {
+            const source = this._mergedSourceCaches[id].getSource();
+            if (!source || source.scope !== params.scope) continue;
+
+            const sourceId = this._mergedSourceCaches[id].getSource().id;
             if (params.layers && !includedSources[sourceId]) continue;
+            const showQueryGeometry = !!this.map._showQueryGeometry;
             sourceResults.push(
                 queryRenderedFeatures(
-                    this._sourceCaches[id],
-                    this._ownLayers,
-                    this._serializedLayers,
+                    this._mergedSourceCaches[id],
+                    this._mergedLayers,
+                    serializedLayers,
                     queryGeometryStruct,
-                    params,
+                    (params: any),
                     transform,
                     has3DLayer,
-                    !!this.map._showQueryGeometry)
+                    showQueryGeometry)
             );
         }
 
@@ -2128,12 +2211,12 @@ class Style extends Evented {
             // for symbol results, and treat it as an extra source to merge
             sourceResults.push(
                 queryRenderedSymbols(
-                    this._ownLayers,
-                    this._serializedLayers,
+                    this._mergedLayers,
+                    serializedLayers,
                     // $FlowFixMe[method-unbinding]
-                    this._getLayerSourceCache.bind(this),
+                    this.getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
-                    params,
+                    (params: any),
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
             );
@@ -2146,7 +2229,7 @@ class Style extends Evented {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
-        const sourceCaches = this._getSourceCaches(sourceID);
+        const sourceCaches = this.getOwnSourceCaches(sourceID);
         let results = [];
         for (const sourceCache of sourceCaches) {
             results = results.concat(querySourceFeatures(sourceCache, params));
@@ -2262,13 +2345,14 @@ class Style extends Evented {
             }
         }
 
-        this._updateDrapeFirstLayers();
+        this.mergeTerrain();
+        this.updateDrapeFirstLayers();
         this._markersNeedUpdate = true;
     }
 
     _createFog(fogOptions: FogSpecification) {
         const fog = this.fog = new Fog(fogOptions, this.map.transform);
-        this.stylesheet.fog = fogOptions;
+        this.stylesheet.fog = fog.get();
         const parameters = this._getTransitionParameters({duration: 0});
         fog.updateTransitions(parameters);
     }
@@ -2305,19 +2389,11 @@ class Style extends Evented {
         } else {
             // Updating fog
             const fog = this.fog;
-            const currSpec = fog.get();
-
-            // empty object should pass through to set default values
-            if (Object.keys(fogOptions).length === 0) fog.set(fogOptions);
-
-            for (const key in fogOptions) {
-                if (!deepEqual(fogOptions[key], currSpec[key])) {
-                    fog.set(fogOptions);
-                    this.stylesheet.fog = fogOptions;
-                    const parameters = this._getTransitionParameters({duration: 0});
-                    fog.updateTransitions(parameters);
-                    break;
-                }
+            if (!deepEqual(fog.get(), fogOptions)) {
+                fog.set(fogOptions);
+                this.stylesheet.fog = fog.get();
+                const parameters = this._getTransitionParameters({duration: 0});
+                fog.updateTransitions(parameters);
             }
         }
 
@@ -2327,23 +2403,23 @@ class Style extends Evented {
     _getTransitionParameters(transition: ?TransitionSpecification): TransitionParameters {
         return {
             now: browser.now(),
-            transition: extend(this.getTransition(), transition)
+            transition: extend(this.transition, transition)
         };
     }
 
-    _updateDrapeFirstLayers() {
+    updateDrapeFirstLayers() {
         if (!this.terrain) {
             return;
         }
 
         const draped = [];
         const nonDraped = [];
-        for (const layerId in this._layers) {
-            const layer = this._layers[layerId];
+        for (const layerId in this._mergedLayers) {
+            const layer = this._mergedLayers[layerId];
             if (this.isLayerDraped(layer)) {
-                draped.push(layer.id);
+                draped.push(layerId);
             } else {
-                nonDraped.push(layer.id);
+                nonDraped.push(layerId);
             }
         }
 
@@ -2354,9 +2430,12 @@ class Style extends Evented {
 
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
         const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode);
+        terrain.setScope(this.scope);
+
         this.stylesheet.terrain = terrainOptions;
         this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
-        this._updateDrapeFirstLayers();
+        this.mergeTerrain();
+        this.updateDrapeFirstLayers();
         this._force3DLayerUpdate();
         const parameters = this._getTransitionParameters({duration: 0});
         terrain.updateTransitions(parameters);
@@ -2396,7 +2475,7 @@ class Style extends Evented {
     }
 
     _remove() {
-        for (const {style} of this.imports) {
+        for (const {style} of this.fragments) {
             style._remove();
         }
 
@@ -2410,8 +2489,8 @@ class Style extends Evented {
         }
         rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
 
-        this._mergeLayers();
-        this._mergeSources();
+        this.mergeLayers();
+        this.mergeSources();
 
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
@@ -2421,46 +2500,48 @@ class Style extends Evented {
             this._sourceCaches[id].clearTiles();
             this._sourceCaches[id].setEventedParent(null);
         }
-        if (this.modelManager) {
-            this.modelManager.setEventedParent(null);
-        }
-        this.imageManager.setEventedParent(null);
         this.setEventedParent(null);
-        this.dispatcher.remove();
         delete this.ambientLight;
         delete this.directionalLight;
+
+        // Shared managers should be removed only on removing the root style
+        if (this.importDepth === 0) {
+            this.imageManager.setEventedParent(null);
+            this.modelManager.setEventedParent(null);
+            this.dispatcher.remove();
+        }
     }
 
-    _clearSource(id: string) {
-        const sourceCaches = this._getSourceCaches(id);
+    clearSource(id: string) {
+        const sourceCaches = this.getSourceCaches(id);
         for (const sourceCache of sourceCaches) {
             sourceCache.clearTiles();
         }
     }
 
-    _reloadSource(id: string) {
-        const sourceCaches = this._getSourceCaches(id);
+    reloadSource(id: string) {
+        const sourceCaches = this.getSourceCaches(id);
         for (const sourceCache of sourceCaches) {
             sourceCache.resume();
             sourceCache.reload();
         }
     }
 
-    _reloadSources() {
-        for (const source of this._getSources()) {
+    reloadSources() {
+        for (const source of this.getSources()) {
             if (source.reload) {
                 source.reload();
             }
         }
     }
 
-    _updateSources(transform: Transform) {
+    updateSources(transform: Transform) {
         let lightDirection: ?Vec3;
         if (this.directionalLight) {
             lightDirection = shadowDirectionFromProperties(this.directionalLight);
         }
-        for (const id in this._sourceCaches) {
-            this._sourceCaches[id].update(transform, undefined, undefined, lightDirection);
+        for (const id in this._mergedSourceCaches) {
+            this._mergedSourceCaches[id].update(transform, undefined, undefined, lightDirection);
         }
     }
 
@@ -2479,12 +2560,12 @@ class Style extends Evented {
         const layerTiles = {};
         const layerTilesInYOrder = {};
 
-        for (const layerId of this._order) {
-            const styleLayer = this._layers[layerId];
+        for (const layerId of this._mergedOrder) {
+            const styleLayer = this._mergedLayers[layerId];
             if (styleLayer.type !== 'symbol') continue;
 
             if (!layerTiles[styleLayer.source]) {
-                const sourceCache = this._getLayerSourceCache(styleLayer);
+                const sourceCache = this.getLayerSourceCache(styleLayer);
                 if (!sourceCache) continue;
                 const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
                 layerTilesInYOrder[styleLayer.source] = tiles.slice();
@@ -2495,7 +2576,7 @@ class Style extends Evented {
             const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng, transform.projection);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
-        this.crossTileSymbolIndex.pruneUnusedLayers(this._order);
+        this.crossTileSymbolIndex.pruneUnusedLayers(this._mergedOrder);
 
         // Anything that changes our "in progress" layer and tile indices requires us
         // to start over. When we start over, we do a full placement instead of incremental
@@ -2511,7 +2592,7 @@ class Style extends Evented {
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now(), transform.zoom))) {
             const fogState = this.fog && transform.projection.supportsFog ? this.fog.state : null;
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._mergedOrder, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions, this.placement, fogState, this._buildingIndex);
             this._layerOrderChanged = false;
         }
 
@@ -2522,7 +2603,7 @@ class Style extends Evented {
             // render frame
             this.placement.setStale();
         } else {
-            this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles, layerTilesInYOrder);
+            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
@@ -2538,8 +2619,8 @@ class Style extends Evented {
         }
 
         if (placementCommitted || symbolBucketsChanged) {
-            for (const layerId of this._order) {
-                const styleLayer = this._layers[layerId];
+            for (const layerId of this._mergedOrder) {
+                const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
                 this.placement.updateLayerOpacities(styleLayer, layerTiles[styleLayer.source]);
             }
@@ -2553,6 +2634,185 @@ class Style extends Evented {
     _releaseSymbolFadeTiles() {
         for (const id in this._sourceCaches) {
             this._sourceCaches[id].releaseSymbolFadeTiles();
+        }
+    }
+
+    // Fragments and merging
+
+    addImport(importSpec: ImportSpecification): Style {
+        this._checkLoaded();
+
+        const imports = this.stylesheet.imports;
+        if (!imports) return this;
+
+        const index = imports.findIndex(({id}) => id === importSpec.id);
+        if (index !== -1) {
+            this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
+            return this;
+        }
+
+        if (this.stylesheet.imports) {
+            this.stylesheet.imports.push(importSpec);
+        } else {
+            this.stylesheet.imports = [importSpec];
+        }
+
+        this._loadImports([importSpec], true);
+        return this;
+    }
+
+    setImportUrl(importId: string, url: string): Style {
+        this._checkLoaded();
+
+        const imports = this.stylesheet.imports;
+        if (!imports) return this;
+
+        const index = this.getImportIndex(importId);
+        if (index === -1) return this;
+
+        imports[index].url = url;
+
+        // Update related fragment
+        const fragment = this.fragments[index];
+        fragment.style = this._createFragmentStyle({id: importId, url});
+
+        const waitForStyle = new Promise(resolve => fragment.style.on('style.import.load', resolve));
+        fragment.style.loadURL(url);
+
+        waitForStyle.then(() => this._reloadImports());
+
+        return this;
+    }
+
+    setImportData(importId: string, stylesheet: ?StyleSpecification): Style {
+        this._checkLoaded();
+
+        const imports = this.stylesheet.imports;
+        if (!imports) return this;
+
+        const index = this.getImportIndex(importId);
+        if (index === -1) return this;
+
+        // Reload import from the URL if import data is unset
+        if (!stylesheet) {
+            delete imports[index].data;
+            return this.setImportUrl(importId, imports[index].url);
+        }
+
+        // Update related fragment
+        const fragment = this.fragments[index];
+        fragment.style.setState(stylesheet);
+
+        this._reloadImports();
+        return this;
+    }
+
+    removeImport(importId: string): Style {
+        this._checkLoaded();
+
+        const imports = this.stylesheet.imports;
+        if (!imports) return this;
+
+        const index = this.getImportIndex(importId);
+        if (index === -1) return this;
+
+        imports.splice(index, 1);
+
+        // Update related fragment
+        const fragment = this.fragments[index];
+        fragment.style._remove();
+        this.fragments.splice(index, 1);
+
+        this._reloadImports();
+        return this;
+    }
+
+    getImportIndex(importId: string): number {
+        const imports = this.stylesheet.imports;
+        if (!imports) return -1;
+
+        const index = imports.findIndex((importSpec) => importSpec.id === importId);
+        if (index === -1) {
+            this.fire(new ErrorEvent(new Error(`Import '${importId}' does not exist in the map's style and cannot be updated.`)));
+        }
+
+        return index;
+    }
+
+    /**
+     * Return the style layer object with the given `id`.
+     *
+     * @param {string} id ID of the desired layer.
+     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
+     */
+    getLayer(id: string): ?StyleLayer {
+        return this._mergedLayers[id];
+    }
+
+    getSources(): Source[] {
+        const sources = [];
+        for (const id in this._mergedOtherSourceCaches) {
+            const sourceCache = this._mergedOtherSourceCaches[id];
+            if (sourceCache) sources.push(sourceCache.getSource());
+        }
+
+        return sources;
+    }
+
+    /**
+     * Get a source by ID.
+     * @param {string} id ID of the desired source.
+     * @returns {?Source} The source object.
+     */
+    getSource(id: string, scope: string): ?Source {
+        const sourceCache = this.getSourceCache(id, scope);
+        return sourceCache && sourceCache.getSource();
+    }
+
+    getLayerSource(layer: StyleLayer): ?Source {
+        const sourceCache = this.getLayerSourceCache(layer);
+        return sourceCache && sourceCache.getSource();
+    }
+
+    getSourceCache(id: string, scope: ?string): SourceCache | void {
+        const fqid = makeFQID(id, scope);
+        return this._mergedOtherSourceCaches[fqid];
+    }
+
+    getLayerSourceCache(layer: StyleLayer): SourceCache | void {
+        const fqid = makeFQID(layer.source, layer.scope);
+        return layer.type === 'symbol' ?
+            this._mergedSymbolSourceCaches[fqid] :
+            this._mergedOtherSourceCaches[fqid];
+    }
+
+    getSourceCaches(fqid: string): Array<SourceCache> {
+        const sourceCaches = [];
+        if (this._mergedOtherSourceCaches[fqid]) {
+            sourceCaches.push(this._mergedOtherSourceCaches[fqid]);
+        }
+        if (this._mergedSymbolSourceCaches[fqid]) {
+            sourceCaches.push(this._mergedSymbolSourceCaches[fqid]);
+        }
+        return sourceCaches;
+    }
+
+    updateSourceCaches() {
+        for (const fqid in this._updatedSourceCaches) {
+            const action = this._updatedSourceCaches[fqid];
+            assert(action === 'reload' || action === 'clear');
+            if (action === 'reload') {
+                this.reloadSource(fqid);
+            } else if (action === 'clear') {
+                this.clearSource(fqid);
+            }
+        }
+    }
+
+    updateLayers(parameters: EvaluationParameters) {
+        for (const id of this._updatedPaintProps) {
+            const layer = this.getLayer(id);
+            if (layer) layer.updateTransitions(parameters);
         }
     }
 
@@ -2588,17 +2848,17 @@ class Style extends Evented {
         return makeRequest(params, callback);
     }
 
-    _getSourceCache(source: string): SourceCache | void {
+    getOwnSourceCache(source: string): SourceCache | void {
         return this._otherSourceCaches[source];
     }
 
-    _getLayerSourceCache(layer: StyleLayer): SourceCache | void {
+    getOwnLayerSourceCache(layer: StyleLayer): SourceCache | void {
         return layer.type === 'symbol' ?
             this._symbolSourceCaches[layer.source] :
             this._otherSourceCaches[layer.source];
     }
 
-    _getSourceCaches(source: string): Array<SourceCache> {
+    getOwnSourceCaches(source: string): Array<SourceCache> {
         const sourceCaches = [];
         if (this._otherSourceCaches[source]) {
             sourceCaches.push(this._otherSourceCaches[source]);
@@ -2610,7 +2870,7 @@ class Style extends Evented {
     }
 
     _isSourceCacheLoaded(source: string): boolean {
-        const sourceCaches = this._getSourceCaches(source);
+        const sourceCaches = this.getOwnSourceCaches(source);
         if (sourceCaches.length === 0) {
             this.fire(new ErrorEvent(new Error(`There is no source with ID '${source}'`)));
             return false;
@@ -2619,15 +2879,15 @@ class Style extends Evented {
     }
 
     has3DLayers(): boolean {
-        return this._num3DLayers > 0;
+        return this._has3DLayers;
     }
 
     hasSymbolLayers(): boolean {
-        return this._numSymbolLayers > 0;
+        return this._hasSymbolLayers;
     }
 
     hasCircleLayers(): boolean {
-        return this._numCircleLayers > 0;
+        return this._hasCircleLayers;
     }
 
     _clearWorkerCaches() {

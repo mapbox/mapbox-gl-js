@@ -202,7 +202,7 @@ test('Elevation', (t) => {
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache.used = cache._sourceLoaded = true;
             cache._loadTile = (tile, callback) => {
                 tile.dem = dem;
@@ -213,7 +213,7 @@ test('Elevation', (t) => {
             };
             map.setTerrain({"source": "mapbox-dem"});
             map.once('render', () => {
-                const cache = map.style._getSourceCache('mapbox-dem');
+                const cache = map.style.getOwnSourceCache('mapbox-dem');
 
                 t.test('terrain tiles loaded wrap', t => {
                     const tile = cache.getTile(new OverscaledTileID(14, 1, 14, 0, 8192));
@@ -297,7 +297,7 @@ test('Elevation', (t) => {
                     t.false(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5}));
                     t.end();
                 });
-                const cache = map.style._getSourceCache('mapbox-dem');
+                const cache = map.style.getOwnSourceCache('mapbox-dem');
                 cache.used = cache._sourceLoaded = true;
                 cache._loadTile = (tile, callback) => {
                     tile.dem = zeroDem;
@@ -344,7 +344,7 @@ test('Elevation', (t) => {
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache.used = cache._sourceLoaded = true;
             cache._loadTile = (tile, callback) => {
                 // Elevate tiles above center.
@@ -550,7 +550,7 @@ test('Elevation', (t) => {
                     'line-width': 5
                 }
             });
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
@@ -573,7 +573,7 @@ test('Elevation', (t) => {
                         t.end();
                     }
                 });
-                const cache = map.style._getSourceCache('trace');
+                const cache = map.style.getOwnSourceCache('trace');
                 cache.transform = map.painter.transform;
                 cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
                 cache.onAdd();
@@ -652,7 +652,7 @@ test('Elevation', (t) => {
         });
 
         map.on('style.load', () => {
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
@@ -839,7 +839,7 @@ test('Drag pan ortho', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style._getSourceCache('mapbox-dem');
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         const mockDem = (dem, cache) => {
             cache._loadTile = (tile, callback) => {
@@ -944,7 +944,7 @@ test('Negative Elevation', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style._getSourceCache('mapbox-dem');
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         const mockDem = (dem, cache) => {
             cache._loadTile = (tile, callback) => {
@@ -1187,7 +1187,7 @@ test('Render cache efficiency', (t) => {
         });
 
         map.on('style.load', () => {
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
@@ -1336,7 +1336,7 @@ test('Render cache efficiency', (t) => {
         });
 
         map.on('style.load', () => {
-            const cache = map.style._getSourceCache('mapbox-dem');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
@@ -1492,7 +1492,7 @@ test('Marker interaction and raycast', (t) => {
             "maxzoom": 14
         });
         map.transform._horizonShift = 0;
-        const cache = map.style._getSourceCache('mapbox-dem');
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.
@@ -1609,7 +1609,7 @@ test('terrain getBounds', (t) => {
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style._getSourceCache('mapbox-dem');
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.
@@ -1758,7 +1758,7 @@ test('terrain recursively loads parent tiles on 404', (t) => {
             'maxzoom': 14
         });
 
-        const cache = map.style._getSourceCache('mapbox-dem');
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
         cache._loadTile = (tile, callback) => {
             if (tile.tileID.canonical.z > 10) {

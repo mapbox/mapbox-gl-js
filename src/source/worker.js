@@ -277,6 +277,7 @@ export default class Worker {
 
         if (!layerIndex) {
             layerIndex = this.layerIndexes[mapId][scope] = new StyleLayerIndex();
+            layerIndex.scope = scope;
         }
 
         return layerIndex;

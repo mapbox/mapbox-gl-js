@@ -2,31 +2,31 @@
 
 import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
-import Style from '../style/style.js';
 import StyleLayer from '../style/style_layer.js';
 import EXTENT from '../style-spec/data/extent.js';
 import type {Bucket} from '../data/bucket.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
 import {OverscaledTileID} from './tile_id.js';
 import FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
+import type Style from '../style/style.js';
 
 class BuildingIndex {
     style: Style;
     layers: Array<StyleLayer>;
     currentBuildingBuckets: Array<{bucket: ?Bucket, tileID: OverscaledTileID}>;
 
-    constructor(style_: Style) {
-        this.style = style_;
+    constructor(style: Style) {
+        this.style = style;
     }
 
     processLayersChanged() {
         this.layers = [];
-        for (const layerId in this.style._layers) {
-            const layer = this.style._layers[layerId];
+        for (const layerId in this.style._mergedLayers) {
+            const layer = this.style._mergedLayers[layerId];
             if (layer.type === 'fill-extrusion') {
                 this.layers.push(layer);
             } else if (layer.type === 'model') {
-                const source = this.style.getSource(layer.source);
+                const source = this.style.getLayerSource(layer);
                 if (source && source.type === 'batched-model') {
                     this.layers.push(layer);
                 }
@@ -39,14 +39,14 @@ class BuildingIndex {
         this.currentBuildingBuckets = [];
         for (let i = 0; i < this.layers.length; ++i) {
             const layer = this.layers[i];
-            const source = this.style._getSourceCache(layer.source);
+            const sourceCache = this.style.getLayerSourceCache(layer);
 
-            let tile = source ? source.getTile(tileID) : null;
+            let tile = sourceCache ? sourceCache.getTile(tileID) : null;
 
-            if (!tile && source && tileID.canonical.z > source.getSource().minzoom) {
-                let id = tileID.scaledTo(Math.min(source.getSource().maxzoom, tileID.overscaledZ - 1));
-                while (id.overscaledZ >= source.getSource().minzoom) {
-                    tile = source.getTile(id);
+            if (!tile && sourceCache && tileID.canonical.z > sourceCache.getSource().minzoom) {
+                let id = tileID.scaledTo(Math.min(sourceCache.getSource().maxzoom, tileID.overscaledZ - 1));
+                while (id.overscaledZ >= sourceCache.getSource().minzoom) {
+                    tile = sourceCache.getTile(id);
                     if (tile || id.overscaledZ === 0) break;
                     id = id.scaledTo(id.overscaledZ - 1);
                 }

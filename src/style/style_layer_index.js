@@ -13,6 +13,7 @@ export type LayerConfigs = {[_: string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
+    scope: string;
     familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<TypedStyleLayer>> } };
     keyCache: { [source: string]: string };
 
@@ -40,6 +41,7 @@ class StyleLayerIndex {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
             const layer = this._layers[layerConfig.id] = ((createStyleLayer(layerConfig, this._options): any): TypedStyleLayer);
+            layer.setScope(this.scope);
             layer.compileFilter();
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];

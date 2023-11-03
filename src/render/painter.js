@@ -298,7 +298,7 @@ class Painter {
 
         if (this.style) {
             for (const layerId of this.style.order) {
-                this.style._layers[layerId].resize();
+                this.style._mergedLayers[layerId].resize();
             }
         }
     }
@@ -557,10 +557,10 @@ class Painter {
         this.style = style;
         this.options = options;
 
-        const layers = this.style._layers;
+        const layers = this.style._mergedLayers;
         const layerIds = this.style.order;
         const orderedLayers = layerIds.map(id => layers[id]);
-        const sourceCaches = this.style._sourceCaches;
+        const sourceCaches = this.style._mergedSourceCaches;
 
         this.imageManager = style.imageManager;
         this.modelManager = style.modelManager;
@@ -599,7 +599,7 @@ class Painter {
         }
 
         const getLayerSource = (layer: StyleLayer) => {
-            const cache = this.style._getLayerSourceCache(layer);
+            const cache = this.style.getLayerSourceCache(layer);
             if (!cache || !cache.used) {
                 return null;
             }
@@ -623,7 +623,7 @@ class Painter {
                 const conflationSources = [];
 
                 for (const layer of conflationLayersInStyle) {
-                    const sourceCache = this.style._getLayerSourceCache(layer);
+                    const sourceCache = this.style.getLayerSourceCache(layer);
 
                     if (!sourceCache || !sourceCache.used || !sourceCache.getSource().usedInConflation) {
                         continue;
@@ -723,7 +723,7 @@ class Painter {
         // upload pass
         for (const layer of orderedLayers) {
             if (layer.isHidden(this.transform.zoom)) continue;
-            const sourceCache = style._getLayerSourceCache(layer);
+            const sourceCache = style.getLayerSourceCache(layer);
             this.uploadLayer(this, layer, sourceCache);
         }
 
@@ -750,7 +750,7 @@ class Painter {
         this.renderPass = 'offscreen';
 
         for (const layer of orderedLayers) {
-            const sourceCache = style._getLayerSourceCache(layer);
+            const sourceCache = style.getLayerSourceCache(layer);
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
             const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
@@ -821,10 +821,9 @@ class Painter {
         if (!this.terrain) {
             for (this.currentLayer = layerIds.length - 1; this.currentLayer >= 0; this.currentLayer--) {
                 const layer = orderedLayers[this.currentLayer];
-                const sourceCache = style._getLayerSourceCache(layer);
+                const sourceCache = style.getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
                 const coords = sourceCache ? (layer.is3D() ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
-
                 this._renderTileClippingMasks(layer, sourceCache, coords);
                 this.renderLayer(this, sourceCache, layer, coords);
             }
@@ -843,7 +842,7 @@ class Painter {
         if (drawSkyOnGlobe && (this.transform.projection.name === 'globe' || this.transform.isHorizonVisible())) {
             for (this.currentLayer = 0; this.currentLayer < layerIds.length; this.currentLayer++) {
                 const layer = orderedLayers[this.currentLayer];
-                const sourceCache = style._getLayerSourceCache(layer);
+                const sourceCache = style.getLayerSourceCache(layer);
                 if (!layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
@@ -865,7 +864,7 @@ class Painter {
 
         while (this.currentLayer < layerIds.length) {
             const layer = orderedLayers[this.currentLayer];
-            const sourceCache = style._getLayerSourceCache(layer);
+            const sourceCache = style.getLayerSourceCache(layer);
 
             // Nothing to draw in translucent pass for sky layers, advance
             if (layer.isSky()) {
@@ -914,7 +913,7 @@ class Painter {
                         const layer = orderedLayers[this.currentLayer];
                         if (!layer.hasLightBeamPass()) continue;
 
-                        const sourceCache = style._getLayerSourceCache(layer);
+                        const sourceCache = style.getLayerSourceCache(layer);
                         const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
                         this.renderLayer(this, sourceCache, layer, coords);
                     }
@@ -934,7 +933,7 @@ class Painter {
             //Use source with highest maxzoom
             let selectedSource = null;
             orderedLayers.forEach((layer) => {
-                const sourceCache = style._getLayerSourceCache(layer);
+                const sourceCache = style.getLayerSourceCache(layer);
                 if (sourceCache && !layer.isHidden(this.transform.zoom) && sourceCache.getVisibleCoordinates().length) {
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
                         selectedSource = sourceCache;
