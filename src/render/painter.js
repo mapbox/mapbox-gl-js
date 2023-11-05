@@ -247,6 +247,10 @@ class Painter {
         const terrain: Terrain = this._terrain;
         this.transform.elevation = enabled ? terrain : null;
         terrain.update(style, this.transform, adaptCameraAltitude);
+        if (this.transform.elevation && !terrain.enabled) {
+            // for zoom based exaggeration change, terrain.update can disable terrain.
+            this.transform.elevation = null;
+        }
     }
 
     _updateFog(style: Style) {
