@@ -91,7 +91,7 @@ test('Map', (t) => {
         new Map({container: window.document.createElement('div'), testMode: false});
 
         t.ok(stub.calledOnce);
-        t.equal(stub.getCall(0).args[0], 'mapbox://styles/mapbox/standard-beta');
+        t.equal(stub.getCall(0).args[0], 'mapbox://styles/mapbox/standard');
 
         t.end();
     });

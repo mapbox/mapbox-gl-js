@@ -218,7 +218,7 @@ const defaultOptions = {
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85).
  * @param {number} [options.maxPitch=85] The maximum pitch of the map (0-85).
- * @param {Object | string} [options.style='mapbox://styles/mapbox/standard-beta'] The map's Mapbox style. This must be an a JSON object conforming to
+ * @param {Object | string} [options.style='mapbox://styles/mapbox/standard'] The map's Mapbox style. This must be an a JSON object conforming to
  *     the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL
  *     to such JSON. Can accept a null value to allow adding a style manually.
  *
@@ -226,7 +226,7 @@ const defaultOptions = {
  *     where `:owner` is your Mapbox account name and `:style` is the style ID. You can also use a
  *     [Mapbox-owned style](https://docs.mapbox.com/api/maps/styles/#mapbox-styles):
  *
- *     * `mapbox://styles/mapbox/standard-beta`
+ *     * `mapbox://styles/mapbox/standard`
  *     * `mapbox://styles/mapbox/streets-v12`
  *     * `mapbox://styles/mapbox/outdoors-v12`
  *     * `mapbox://styles/mapbox/light-v11`

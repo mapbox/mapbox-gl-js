@@ -77,7 +77,7 @@ const config: Config = {
     RASTER_URL_PREFIX: 'raster/v1',
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null,
-    DEFAULT_STYLE: 'mapbox://styles/mapbox/standard-beta',
+    DEFAULT_STYLE: 'mapbox://styles/mapbox/standard',
     MAX_PARALLEL_IMAGE_REQUESTS: 16,
     DRACO_URL: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder_gltf.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
