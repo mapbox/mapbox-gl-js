@@ -4,6 +4,7 @@ import assert from 'assert';
 
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import StyleLayer from './style_layer.js';
+import StyleChanges from './style_changes.js';
 import createStyleLayer from './create_style_layer.js';
 import loadSprite from './load_sprite.js';
 import ImageManager from '../render/image_manager.js';
@@ -57,7 +58,7 @@ import {
 import PauseablePlacement from './pauseable_placement.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
-import {makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.js';
+import {makeFQID, getNameFromFQID} from '../util/fqid.js';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -150,6 +151,7 @@ export type StyleOptions = {
     imageManager?: ImageManager,
     glyphManager?: GlyphManager,
     modelManager?: ModelManager,
+    styleChanges?: StyleChanges,
 
     scope?: string,
     importDepth?: number,
@@ -222,13 +224,8 @@ class Style extends Evented {
     _loaded: boolean;
     _precompileDone: boolean;
     _rtlTextPluginCallback: Function;
-    _changed: boolean;
+    _changes: StyleChanges;
     _optionsChanged: boolean;
-    _updatedSourceCaches: {[_: string]: 'clear' | 'reload'};
-    _updatedLayers: Set<string>;
-    _removedLayers: {[_: string]: StyleLayer};
-    _changedImages: Set<string>;
-    _updatedPaintProps: Set<string>;
     _layerOrderChanged: boolean;
     _availableImages: Array<string>;
     _markersNeedUpdate: boolean;
@@ -280,10 +277,7 @@ class Style extends Evented {
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
 
-        this._changed = false;
-        this._updatedLayers = new Set();
-        this._updatedPaintProps = new Set();
-        this._changedImages = new Set();
+        this._changes = options.styleChanges || new StyleChanges();
 
         if (options.dispatcher) {
             this.dispatcher = options.dispatcher;
@@ -330,7 +324,7 @@ class Style extends Evented {
         this.options = options.config || new Map();
         this._configDependentLayers = new Set();
 
-        this._resetUpdates();
+        this._changes.reset();
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
@@ -477,6 +471,7 @@ class Style extends Evented {
         const style = new Style(this.map, {
             scope,
             config,
+            styleChanges: this._changes,
             importDepth: this.importDepth + 1,
             importsCache: this.importsCache,
             // Clone resolvedImports so it's not being shared between siblings
@@ -544,7 +539,7 @@ class Style extends Evented {
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
-        this._changed = false; // avoid triggering redundant style update after adding initial sources
+        this._changes.changed = false; // avoid triggering redundant style update after adding initial sources
 
         if (json.sprite) {
             this._loadSprite(json.sprite);
@@ -904,7 +899,7 @@ class Style extends Evented {
         if (!this._loaded)
             return false;
 
-        if (Object.keys(this._updatedSourceCaches).length)
+        if (Object.keys(this._changes.updatedSourceCaches).length)
             return false;
 
         for (const id in this._sourceCaches)
@@ -1050,28 +1045,14 @@ class Style extends Evented {
             this.dispatcher.broadcast('setBrightness', brightness);
         }
 
-        const changed = this._changed;
+        const changed = this._changes.changed;
 
-        if (this._changed) {
-            const updatedIds = Array.from(this._updatedLayers.keys());
-            const removedIds = Object.keys(this._removedLayers);
-
-            if (updatedIds.length || removedIds.length) {
-                const updatesByScope = {};
-
-                for (const id of updatedIds) {
-                    const scope = getScopeFromFQID(id);
-                    const updates = updatesByScope[scope] = updatesByScope[scope] || {updatedIds: [], removedIds: []};
-                    updates.updatedIds.push(id);
-                }
-                for (const id of removedIds) {
-                    const scope = getScopeFromFQID(id);
-                    const updates = updatesByScope[scope] = updatesByScope[scope] || {updatedIds: [], removedIds: []};
-                    updates.removedIds.push(id);
-                }
-
-                for (const [scope, {updatedIds, removedIds}] of (Object.entries(updatesByScope): any)) {
-                    this.getFragmentStyle(scope)._updateWorkerLayers(updatedIds, removedIds);
+        if (this._changes.changed) {
+            const updatesByScope = this._changes.getLayerUpdatesByScope();
+            for (const scope in updatesByScope) {
+                const {updatedIds, removedIds} = updatesByScope[scope];
+                if (updatedIds || removedIds) {
+                    this._updateWorkerLayers(scope, updatedIds, removedIds);
                 }
             }
 
@@ -1096,19 +1077,19 @@ class Style extends Evented {
                 this.fog.updateTransitions(parameters);
             }
 
-            this._resetUpdates();
+            this._changes.reset();
         }
 
         const sourcesUsedBefore = {};
 
-        for (const sourceId in this._sourceCaches) {
-            const sourceCache = this._sourceCaches[sourceId];
+        for (const sourceId in this._mergedSourceCaches) {
+            const sourceCache = this._mergedSourceCaches[sourceId];
             sourcesUsedBefore[sourceId] = sourceCache.used;
             sourceCache.used = false;
         }
 
-        for (const layerId of this._order) {
-            const layer = this._layers[layerId];
+        for (const layerId of this._mergedOrder) {
+            const layer = this._mergedLayers[layerId];
             layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
                 const sourceCache = this.getOwnLayerSourceCache(layer);
@@ -1145,12 +1126,13 @@ class Style extends Evented {
                 }
             }
         }
+
         if (this._order.length > 0) {
             this._precompileDone = true;
         }
 
         for (const sourceId in sourcesUsedBefore) {
-            const sourceCache = this._sourceCaches[sourceId];
+            const sourceCache = this._mergedSourceCaches[sourceId];
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
                 sourceCache.getSource().fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
             }
@@ -1188,34 +1170,22 @@ class Style extends Evented {
      * Apply any queued image changes.
      */
     _updateTilesForChangedImages() {
-        const changedImages = Array.from(this._changedImages.keys());
+        const changedImages = Array.from(this._changes.changedImages.keys());
         if (changedImages.length) {
             for (const name in this._sourceCaches) {
                 this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
             }
-            this._changedImages.clear();
+            this._changes.changedImages.clear();
         }
     }
 
-    _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
+    _updateWorkerLayers(scope: string, updatedIds?: Array<string>, removedIds?: Array<string>) {
         this.dispatcher.broadcast('updateLayers', {
-            layers: this._serializeLayers(updatedIds),
-            scope: this.scope,
-            removedIds,
+            layers: updatedIds ? this._serializeLayers(updatedIds) : [],
+            scope,
+            removedIds: removedIds || [],
             options: this.options
         });
-    }
-
-    _resetUpdates() {
-        this._changed = false;
-
-        this._updatedLayers.clear();
-        this._removedLayers = {};
-
-        this._updatedSourceCaches = {};
-        this._updatedPaintProps.clear();
-
-        this._changedImages.clear();
     }
 
     /**
@@ -1292,8 +1262,8 @@ class Style extends Evented {
 
     _afterImageUpdated(id: string) {
         this._availableImages = this.imageManager.listImages(this.scope);
-        this._changedImages.add(id);
-        this._changed = true;
+        this._changes.changedImages.add(id);
+        this._changes.changed = true;
         this.dispatcher.broadcast('setImages', {
             scope: this.scope,
             images: this._availableImages
@@ -1311,7 +1281,7 @@ class Style extends Evented {
         if (this._validate(validateModel, `models.${id}`, url, null, options)) return this;
 
         this.modelManager.addModel(id, url, this.scope);
-        this._changed = true;
+        this._changes.changed = true;
         return this;
     }
 
@@ -1374,7 +1344,7 @@ class Style extends Evented {
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
         this.mergeSources();
 
-        this._changed = true;
+        this._changes.changed = true;
     }
 
     /**
@@ -1403,7 +1373,7 @@ class Style extends Evented {
         for (const sourceCache of sourceCaches) {
             const id = getNameFromFQID(sourceCache.id);
             delete this._sourceCaches[id];
-            delete this._updatedSourceCaches[sourceCache.id];
+            delete this._changes.updatedSourceCaches[sourceCache.id];
             sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
             sourceCache.setEventedParent(null);
             sourceCache.clearTiles();
@@ -1416,7 +1386,7 @@ class Style extends Evented {
         if (source.onRemove) {
             source.onRemove(this.map);
         }
-        this._changed = true;
+        this._changes.changed = true;
         return this;
     }
 
@@ -1433,7 +1403,7 @@ class Style extends Evented {
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
-        this._changed = true;
+        this._changes.changed = true;
     }
 
     /**
@@ -1600,7 +1570,7 @@ class Style extends Evented {
             this.directionalLight.updateConfig(fragmentStyle.options);
         }
 
-        this._changed = true;
+        this._changes.changed = true;
     }
 
     /**
@@ -1664,7 +1634,8 @@ class Style extends Evented {
             sourceCache.castsShadows = true;
         }
 
-        if (this._removedLayers[layer.fqid] && layer.source && sourceCache && layer.type !== 'custom') {
+        const removedLayer = this._changes.getRemovedLayer(layer);
+        if (removedLayer && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
             // need to clear (rather than just reload) the underyling source's
@@ -1672,16 +1643,16 @@ class Style extends Evented {
             // buffers that are set up for the _previous_ version of this
             // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
-            const removed = this._removedLayers[layer.fqid];
-            delete this._removedLayers[layer.fqid];
+            this._changes.discardLayerRemoval(layer);
             const fqid = makeFQID(layer.source, layer.scope);
-            if (removed.type !== layer.type) {
-                this._updatedSourceCaches[fqid] = 'clear';
+            if (removedLayer.type !== layer.type) {
+                this._changes.updatedSourceCaches[fqid] = 'clear';
             } else {
-                this._updatedSourceCaches[fqid] = 'reload';
+                this._changes.updatedSourceCaches[fqid] = 'reload';
                 sourceCache.pause();
             }
         }
+
         this._updateLayer(layer);
 
         // $FlowFixMe[method-unbinding]
@@ -1702,7 +1673,7 @@ class Style extends Evented {
      */
     moveLayer(id: string, before?: string) {
         this._checkLoaded();
-        this._changed = true;
+        this._changes.changed = true;
 
         const layer = this._layers[id];
         if (!layer) {
@@ -1754,13 +1725,11 @@ class Style extends Evented {
         delete this._layers[id];
         delete this._serializedLayers[id];
 
-        this._changed = true;
+        this._changes.changed = true;
         this._layerOrderChanged = true;
 
         this._configDependentLayers.delete(layer.fqid);
-        this._removedLayers[layer.fqid] = layer;
-        this._updatedLayers.delete(layer.fqid);
-        this._updatedPaintProps.delete(layer.fqid);
+        this._changes.removeLayer(layer);
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
 
@@ -1930,8 +1899,8 @@ class Style extends Evented {
             this._updateLayer(layer);
         }
 
-        this._changed = true;
-        this._updatedPaintProps.add(layer.fqid);
+        this._changes.changed = true;
+        this._changes.updatedPaintProps.add(layer.fqid);
     }
 
     getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
@@ -2038,6 +2007,9 @@ class Style extends Evented {
     serialize(): StyleSpecification {
         this._checkLoaded();
 
+        const terrain = this.getTerrain();
+        const scopedTerrain = terrain && this.terrain && this.terrain.scope === this.scope ? terrain : undefined;
+
         return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
@@ -2047,7 +2019,7 @@ class Style extends Evented {
             camera: this.stylesheet.camera,
             light: this.stylesheet.light,
             lights: this.stylesheet.lights,
-            terrain: this.getTerrain() || undefined,
+            terrain: scopedTerrain,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
@@ -2063,17 +2035,17 @@ class Style extends Evented {
     }
 
     _updateLayer(layer: StyleLayer) {
-        this._updatedLayers.add(layer.fqid);
+        this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
         const fqid = makeFQID(layer.source, layer.scope);
-        if (layer.source && !this._updatedSourceCaches[fqid] &&
+        if (layer.source && !this._changes.updatedSourceCaches[fqid] &&
             //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
             sourceCache &&
             sourceCache.getSource().type !== 'raster') {
-            this._updatedSourceCaches[fqid] = 'reload';
+            this._changes.updatedSourceCaches[fqid] = 'reload';
             sourceCache.pause();
         }
-        this._changed = true;
+        this._changes.changed = true;
         layer.invalidateCompiledFilter();
     }
 
@@ -2798,8 +2770,8 @@ class Style extends Evented {
     }
 
     updateSourceCaches() {
-        for (const fqid in this._updatedSourceCaches) {
-            const action = this._updatedSourceCaches[fqid];
+        for (const fqid in this._changes.updatedSourceCaches) {
+            const action = this._changes.updatedSourceCaches[fqid];
             assert(action === 'reload' || action === 'clear');
             if (action === 'reload') {
                 this.reloadSource(fqid);
@@ -2810,7 +2782,7 @@ class Style extends Evented {
     }
 
     updateLayers(parameters: EvaluationParameters) {
-        for (const id of this._updatedPaintProps) {
+        for (const id of this._changes.updatedPaintProps) {
             const layer = this.getLayer(id);
             if (layer) layer.updateTransitions(parameters);
         }
@@ -2827,7 +2799,7 @@ class Style extends Evented {
         // - icons contains "my-image"
         // - imageManager.getImages(...) triggers `onstyleimagemissing`
         // - the user adds "my-image" within the callback
-        // - addImage adds "my-image" to this._changedImages
+        // - addImage adds "my-image" to this._changes.changedImages
         // - the next frame triggers a reload of this tile even though it already has the latest version
         this._updateTilesForChangedImages();
 

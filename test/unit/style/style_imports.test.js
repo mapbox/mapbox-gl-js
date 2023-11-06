@@ -1904,3 +1904,40 @@ test('Style#setState', (t) => {
 
     t.end();
 });
+
+test('Style#serialize', (t) => {
+    const style = new Style(new StubMap());
+
+    const fragmentStyle = createStyleJSON({
+        fog: {range: [1, 2], color: 'white', 'horizon-blend': 0},
+        lights: [
+            {id: 'sun', type: 'directional', properties: {intensity: 0.4}},
+            {id: 'environment', type: 'ambient', properties: {intensity: 0.4}}
+        ],
+        camera: {'camera-projection': 'orthographic'},
+        sources: {'mapbox-dem': {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}},
+        terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+        projection: {name: 'globe'},
+        transition: {duration: 900, delay: 200}
+    });
+
+    const initialStyle = createStyleJSON({
+        imports: [{id: 'basemap', url: '', data: fragmentStyle}]
+    });
+
+    style.on('style.load', () => {
+        const serialized = style.serialize();
+
+        t.notOk(serialized.fog);
+        t.notOk(serialized.lights);
+        t.notOk(serialized.camera);
+        t.notOk(serialized.terrain);
+        t.notOk(serialized.projection);
+        t.notOk(serialized.transition);
+        t.deepEqual(serialized.sources, {});
+
+        t.end();
+    });
+
+    style.loadJSON(initialStyle);
+});
