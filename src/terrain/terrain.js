@@ -1044,7 +1044,7 @@ export class Terrain extends Elevation {
 
     _shouldDisableRenderCache(): boolean {
         // Disable render caches on dynamic events due to fading or transitioning.
-        if (this._style.light && this._style.light.hasTransition()) {
+        if (this._style.hasLightTransitions()) {
             return true;
         }
 
