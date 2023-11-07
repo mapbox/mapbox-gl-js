@@ -1,8 +1,33 @@
+## 3.0.0-rc.1
+
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.5`:
+
+### Features and improvements ✨
+
+- Enable zoom-based expressions for model rotation, scale and translation.
+- Optimize shader compilation to reduce stuttering on complex 3D styles.
+- Reduce stuttering when loading 3D tiles with models.
+- Improve memory footprint when rendering ground lighting effects.
+- Reduce flickering of symbols along lines due to rounding errors.
+- Improve panning over bumpy terrain so that it feels smooth.
+- Optimize switching between styles that have imports.
+- Add support for `slot` in custom layers.
+
+### Bug fixes 🐞
+
+- Fix rendering of line layers with data-driven `line-border`.
+- Fix an issue with lighting inconsistency between rendering with and without terrain.
+- Fix an issue with symbols sometimes not rendering correctly over terrain on top-down view.
+- Fix an issue with `raster-color` sometimes causing memory issues.
+- Fix an issue with non-1 alpha in `fill-extrusion-color` causing rendering issues in 3D lighting mode.
+- Disallow duplicate style import IDs.
+- Disallow duplicate directional and ambient lights.
+- Fix wireframe debug mode for model rendering.
+- Root style top-level properties take precedence over children import top-level  properties
+
 ## 3.0.0-beta.5
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.3`:
-
-### ✨ Features and improvements
+### Features and improvements ✨
 
 - Improve shadow and fog rendering performance.
 - Slightly improve performance of 3D layers on highly pitched views by rendering front to back.
