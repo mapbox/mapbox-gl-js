@@ -222,6 +222,7 @@ class Style extends Evented {
     _otherSourceCaches: {[_: string]: SourceCache};
     _symbolSourceCaches: {[_: string]: SourceCache};
     _loaded: boolean;
+    _shouldPrecompile: boolean;
     _precompileDone: boolean;
     _rtlTextPluginCallback: Function;
     _changes: StyleChanges;
@@ -317,6 +318,7 @@ class Style extends Evented {
         this._symbolSourceCaches = {};
         this._loaded = false;
         this._precompileDone = false;
+        this._shouldPrecompile = false;
         this._availableImages = [];
         this._order = [];
         this._markersNeedUpdate = false;
@@ -499,6 +501,7 @@ class Style extends Evented {
             options: this.options
         });
 
+        this._shouldPrecompile = this.importDepth === 0;
         this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
     }
@@ -623,6 +626,7 @@ class Style extends Evented {
                 options: this.options
             });
 
+            this._shouldPrecompile = this.importDepth === 0;
             this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
         }
     }
@@ -1096,7 +1100,7 @@ class Style extends Evented {
                 if (sourceCache) sourceCache.used = true;
             }
 
-            if (!this._precompileDone) {
+            if (!this._precompileDone && this._shouldPrecompile) {
                 for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
                     const painter = this.map.painter;
                     if (painter) {
@@ -1126,8 +1130,7 @@ class Style extends Evented {
                 }
             }
         }
-
-        if (this._order.length > 0) {
+        if (this._shouldPrecompile) {
             this._precompileDone = true;
         }
 
