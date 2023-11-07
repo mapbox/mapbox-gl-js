@@ -633,7 +633,7 @@ class Painter {
                         continue;
                     }
 
-                    conflationSources.push({layer: layer.id, cache: sourceCache});
+                    conflationSources.push({layer: layer.fqid, cache: sourceCache});
                 }
 
                 this.replacementSource.setSources(conflationSources);

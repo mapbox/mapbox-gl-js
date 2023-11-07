@@ -71,7 +71,7 @@ class Tiled3dWorkerTile {
                 const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
                 // Upload to GPU without waiting for evaluation if we are in diffuse path
                 if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
-                buckets[layer.id] = bucket;
+                buckets[layer.fqid] = bucket;
                 // do the first evaluation in the worker to avoid stuttering
                 // $FlowIgnore[incompatible-call] layer here is always a ModelStyleLayer
                 bucket.evaluate(layer);
