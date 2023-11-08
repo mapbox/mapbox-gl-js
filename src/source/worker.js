@@ -40,7 +40,7 @@ export default class Worker {
     layerIndexes: {[mapId: string]: {[scope: string]: StyleLayerIndex }};
     availableImages: {[mapId: string]: {[scope: string]: Array<string>}};
     workerSourceTypes: {[_: string]: Class<WorkerSource> };
-    workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
+    workerSources: {[mapId: string]: {[scope: string]: {[sourceType: string]: {[sourceId: string]: WorkerSource}}}};
     demWorkerSources: {[mapId: string]: {[scope: string]: {[sourceId: string]: RasterDEMTileWorkerSource }}};
     projections: {[_: string]: Projection };
     defaultProjection: Projection;
@@ -68,7 +68,7 @@ export default class Worker {
             'batched-model': Tiled3dModelWorkerSource
         };
 
-        // [mapId][sourceType][sourceName] => worker source instance
+        // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
         this.demWorkerSources = {};
 
@@ -107,36 +107,46 @@ export default class Worker {
         this.referrer = referrer;
     }
 
-    spriteLoaded(mapId: string, params: {scope: string, isLoaded: boolean}) {
+    spriteLoaded(mapId: string, {scope, isLoaded}: {scope: string, isLoaded: boolean}) {
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
-        this.isSpriteLoaded[mapId][params.scope] = params.isLoaded;
-        for (const workerSource in this.workerSources[mapId]) {
-            const ws = this.workerSources[mapId][workerSource];
+        this.isSpriteLoaded[mapId][scope] = isLoaded;
+
+        if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
+            return;
+        }
+
+        for (const workerSource in this.workerSources[mapId][scope]) {
+            const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
                 if (ws[source] instanceof VectorTileWorkerSource) {
-                    ws[source].isSpriteLoaded = params.isLoaded;
+                    ws[source].isSpriteLoaded = isLoaded;
                     ws[source].fire(new Event('isSpriteLoaded'));
                 }
             }
         }
     }
 
-    setImages(mapId: string, params: {scope: string, images: Array<string>}, callback: WorkerTileCallback) {
-        const {scope, images} = params;
-
+    setImages(mapId: string, {scope, images}: {scope: string, images: Array<string>}, callback: WorkerTileCallback) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
 
         this.availableImages[mapId][scope] = images;
-        for (const workerSource in this.workerSources[mapId]) {
-            const ws = this.workerSources[mapId][workerSource];
+
+        if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
+            callback();
+            return;
+        }
+
+        for (const workerSource in this.workerSources[mapId][scope]) {
+            const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
                 ws[source].availableImages = images;
             }
         }
+
         callback();
     }
 
@@ -196,18 +206,20 @@ export default class Worker {
         this.getWorkerSource(mapId, params.type, params.source, params.scope).removeTile(params, callback);
     }
 
-    removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
+    removeSource(mapId: string, params: {source: string, scope: string, type: string}, callback: WorkerTileCallback) {
         assert(params.type);
+        assert(params.scope);
         assert(params.source);
 
         if (!this.workerSources[mapId] ||
-            !this.workerSources[mapId][params.type] ||
-            !this.workerSources[mapId][params.type][params.source]) {
+            !this.workerSources[mapId][params.scope] ||
+            !this.workerSources[mapId][params.scope][params.type] ||
+            !this.workerSources[mapId][params.scope][params.type][params.source]) {
             return;
         }
 
-        const worker = this.workerSources[mapId][params.type][params.source];
-        delete this.workerSources[mapId][params.type][params.source];
+        const worker = this.workerSources[mapId][params.scope][params.type][params.source];
+        delete this.workerSources[mapId][params.scope][params.type][params.source];
 
         if (worker.removeSource !== undefined) {
             worker.removeSource(params, callback);
@@ -286,12 +298,14 @@ export default class Worker {
     getWorkerSource(mapId: string, type: string, source: string, scope: string): WorkerSource {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
-        if (!this.workerSources[mapId][type])
-            this.workerSources[mapId][type] = {};
+        if (!this.workerSources[mapId][scope])
+            this.workerSources[mapId][scope] = {};
+        if (!this.workerSources[mapId][scope][type])
+            this.workerSources[mapId][scope][type] = {};
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
-        if (!this.workerSources[mapId][type][source]) {
+        if (!this.workerSources[mapId][scope][type][source]) {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
@@ -300,7 +314,7 @@ export default class Worker {
                 },
                 scheduler: this.actor.scheduler
             };
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)(
+            this.workerSources[mapId][scope][type][source] = new (this.workerSourceTypes[type]: any)(
                 (actor: any),
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
@@ -309,7 +323,7 @@ export default class Worker {
                 this.brightness);
         }
 
-        return this.workerSources[mapId][type][source];
+        return this.workerSources[mapId][scope][type][source];
     }
 
     getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {

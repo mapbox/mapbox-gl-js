@@ -15,6 +15,7 @@ test('load tile', (t) => {
         worker.loadTile(0, {
             type: 'vector',
             source: 'source',
+            scope: 'scope',
             uid: 0,
             tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
             request: {url: '/error'}// Sinon fake server gives 404 responses by default
@@ -62,5 +63,19 @@ test('worker source messages dispatched to the correct map instance', (t) => {
         };
     });
 
-    worker.loadTile(999, {type: 'test'});
+    worker.loadTile(999, {type: 'test', source: 'source', scope: 'scope'});
+});
+
+test('worker sources should be scoped', (t) => {
+    const worker = new Worker(_self);
+
+    // eslint-disable-next-line prefer-arrow-callback
+    _self.registerWorkerSource('sourceType', function() {});
+
+    const a = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope1');
+    const b = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope2');
+
+    t.notEqual(a, b);
+
+    t.end();
 });
