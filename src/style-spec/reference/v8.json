@@ -354,7 +354,14 @@
         ]
       },
       "doc": "Direction of the light source specified as [a azimuthal angle, p polar angle] where a indicates the azimuthal angle of the light relative to north (in degrees and proceeding clockwise), and p indicates polar angle of the light (from 0°, directly above, to 180°, directly below).",
-      "example": [90, 40]
+      "example": [90, 40],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "color": {
       "type": "color",
@@ -367,7 +374,14 @@
         ]
       },
       "transition": true,
-      "doc": "Color of the directional light."
+      "doc": "Color of the directional light.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "intensity": {
       "type": "number",
@@ -382,7 +396,14 @@
         ]
       },
       "transition": true,
-      "doc": "A multiplier for the color of the directional light."
+      "doc": "A multiplier for the color of the directional light.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "cast-shadows": {
       "type": "boolean",
@@ -392,7 +413,14 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant"
+      "property-type": "data-constant",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "shadow-intensity": {
       "type": "number",
@@ -407,7 +435,14 @@
         ]
       },
       "doc": "Determines the shadow strength, affecting the shadow receiver surfaces final color. Values near 0.0 reduce the shadow contribution to the final color. Values near to 1.0 make occluded surfaces receive almost no directional light. Designed to be used mostly for transitioning between values 0 and 1.",
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     }
   },
   "properties_light_ambient": {
@@ -422,7 +457,14 @@
         ]
       },
       "transition": true,
-      "doc": "Color of the ambient light."
+      "doc": "Color of the ambient light.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     },
     "intensity": {
       "type": "number",
@@ -437,7 +479,14 @@
         ]
       },
       "transition": true,
-      "doc": "A multiplier for the color of the ambient light."
+      "doc": "A multiplier for the color of the ambient light.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      }
     }
   },
   "properties_light_flat": {
@@ -464,10 +513,9 @@
       "example": "map",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "android": "5.1.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -496,10 +544,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "android": "5.1.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -517,10 +564,9 @@
       "doc": "Color tint for lighting extruded geometries.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "android": "5.1.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     },
@@ -540,10 +586,9 @@
       "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "android": "5.1.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
         }
       }
     }
