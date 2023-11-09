@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.min.css'>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+
+        #config {
+            position: absolute;
+            top:15px;
+            left:15px;
+            max-height: 95%;
+            overflow-y:auto;
+            z-index: 100;
+        }
+        #config::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #config::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb {
+            background: rgba(110, 110, 110);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(90, 90, 90);
+        }
+
+        #editor {
+            display: none;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            z-index: 200;
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <div id='config'></div>
+    <div id='editor'>Loading...</div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script type='module'>
+        import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.0/dist/tweakpane.min.js';
+        import monacoLoader from 'https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/+esm';
+
+        const pane = new Pane({
+            title: 'Parameters',
+            expanded: true,
+            container: document.querySelector('#config'),
+        });
+
+        const styles = [
+            'mapbox://styles/mapbox/standard',
+            'mapbox://styles/mapbox-map-design/standard-rc',
+            'mapbox://styles/mapbox-map-design/standard-experimental'
+        ];
+
+        const params = window.params = {style: styles[0]};
+        const arrayToOptions = (arr) => arr.reduce((acc, item) => ({...acc, [item]: item}), {});
+
+        const map = window.map = new mapboxgl.Map({
+            container: 'map',
+            center: [0, 0],
+            zoom: 0,
+            style: styles[0],
+            hash: true
+        });
+
+        const dynamicFolders = [];
+        const styleBinding = pane.addBinding(params, 'style', {label: 'Style', options: arrayToOptions(styles)});
+        styleBinding.on('change', (e) => map.setStyle(e.value));
+
+        map.on('style.load', (e) => {
+            const style = map.getStyle();
+            dynamicFolders.forEach((folder) => folder.dispose());
+
+            // Render imports configuration
+            const imports = style.imports || [];
+            for (const {id, data: fragment} of imports) {
+                const fragmentName = fragment.name || id;
+                const folder = pane.addFolder({title: fragmentName, expanded: true});
+                dynamicFolders.push(folder);
+
+                // Render configuration binding
+                const schema = fragment.schema || {};
+                for (const config in schema) {
+                    const meta = schema[config];
+                    const label = meta.metadata['mapbox:title'];
+                    const options = meta.values && Array.isArray(meta.values) ? arrayToOptions(meta.values) : undefined;
+                    params[config] = meta.default;
+                    const configBinding = folder.addBinding(params, config, {label, options});
+                    configBinding.on('change', (e) => map.setConfigProperty(id, config, e.value));
+                }
+            }
+        });
+
+        const toggleEditorButton = pane.addButton({title: 'Edit Style as JSON'});
+
+        let editor;
+        toggleEditorButton.on('click', async () => {
+            const container = document.getElementById('editor');
+            container.style.display = 'block';
+
+            if (!editor) {
+                const monaco = await monacoLoader.init();
+                container.innerHTML = '';
+                editor = monaco.editor.create(container, {theme: 'vs-dark', language: 'json'});
+            }
+
+            editor.focus();
+            const style = map.getStyle();
+            const styleJSON = JSON.stringify(style, null, 4);
+            editor.getModel().setValue(styleJSON);
+
+            editor.getDomNode().addEventListener('keydown', function (e) {
+                if (e.keyCode === 27) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                if ((e.metaKey || e.ctrlKey) && e.keyCode === 83) {
+                    e.preventDefault();
+
+                    try {
+                        const nextStyle = JSON.parse(editor.getModel().getValue());
+                        map.setStyle(nextStyle);
+                        container.style.display = 'none';
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }, false);
+        });
+    </script>
+</body>
+
+</html>
