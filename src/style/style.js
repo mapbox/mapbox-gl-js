@@ -1183,11 +1183,12 @@ class Style extends Evented {
     }
 
     _updateWorkerLayers(scope: string, updatedIds?: Array<string>, removedIds?: Array<string>) {
+        const fragmentStyle = this.getFragmentStyle(scope);
         this.dispatcher.broadcast('updateLayers', {
-            layers: updatedIds ? this._serializeLayers(updatedIds) : [],
+            layers: updatedIds ? fragmentStyle._serializeLayers(updatedIds) : [],
             scope,
             removedIds: removedIds || [],
-            options: this.options
+            options: fragmentStyle.options
         });
     }
 

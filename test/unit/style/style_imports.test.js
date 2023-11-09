@@ -1724,6 +1724,40 @@ test('Style#setGeoJSONSourceData', (t) => {
 });
 
 test('Style#setConfigProperty', (t) => {
+    t.test('Updates layers in scope', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                config: {showBackground: false},
+                data: createStyleJSON({
+                    layers: [{
+                        id: 'background',
+                        type: 'background',
+                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}}]
+                })
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.equal(value.scope, 'standard');
+                t.deepEqual(value.removedIds, []);
+                t.deepEqual(value.options.get('showBackground').value, true);
+                t.deepEqual(value.layers.map(layer => layer.id), ['background']);
+                t.end();
+            };
+
+            style.setConfigProperty('standard', 'showBackground', true);
+            style.update({});
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
     t.test('Reevaluates layer visibility', (t) => {
         const style = new Style(new StubMap());
 
