@@ -13,7 +13,7 @@ import type Style from '../style/style.js';
 class BuildingIndex {
     style: Style;
     layers: Array<StyleLayer>;
-    currentBuildingBuckets: Array<{bucket: ?Bucket, tileID: OverscaledTileID}>;
+    currentBuildingBuckets: Array<{bucket: ?Bucket, tileID: OverscaledTileID, verticalScale: number}>;
 
     constructor(style: Style) {
         this.style = style;
@@ -41,6 +41,13 @@ class BuildingIndex {
             const layer = this.layers[i];
             const sourceCache = this.style.getLayerSourceCache(layer);
 
+            let verticalScale = 1;
+            if (layer.type === 'fill-extrusion') {
+                // See https://mapbox.atlassian.net/browse/MAPS3D-1159 for more details on why we should take opacity into account.
+                const opacity = ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-opacity');
+                verticalScale = opacity > 0.0 ? ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-vertical-scale') : 0;
+            }
+
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;
 
             if (!tile && sourceCache && tileID.canonical.z > sourceCache.getSource().minzoom) {
@@ -51,7 +58,7 @@ class BuildingIndex {
                     id = id.scaledTo(id.overscaledZ - 1);
                 }
             }
-            this.currentBuildingBuckets.push({bucket: tile ? tile.getBucket(layer) : null, tileID: tile ? tile.tileID : tileID});
+            this.currentBuildingBuckets.push({bucket: tile ? tile.getBucket(layer) : null, tileID: tile ? tile.tileID : tileID, verticalScale});
         }
 
         symbolBucket.hasAnyZOffset = false;
@@ -96,7 +103,7 @@ class BuildingIndex {
         for (let i = 0; i < this.layers.length; ++i) {
             const layer = this.layers[i];
             if (layer.type !== 'fill-extrusion') continue;
-            const {bucket, tileID} = this.currentBuildingBuckets[i];
+            const {bucket, tileID, verticalScale} = this.currentBuildingBuckets[i];
             if (!bucket) continue;
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);
@@ -108,7 +115,6 @@ class BuildingIndex {
                 availableHeight = heightData.height;
                 continue;
             }
-            const verticalScale = ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-vertical-scale');
             return heightData.height * verticalScale;
         }
 
