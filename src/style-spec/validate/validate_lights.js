@@ -66,13 +66,17 @@ export default function validateLights(options: Options): Array<ValidationError>
                 return errors;
             }
             for (const propertyKey in properties) {
-                errors = errors.concat(validate({
-                    key: propertyKey,
-                    value: properties[propertyKey],
-                    valueSpec: lightPropertySpec[propertyKey],
-                    style,
-                    styleSpec
-                }));
+                if (!lightPropertySpec[propertyKey]) {
+                    errors = errors.concat([new ValidationWarning(options.key, properties[propertyKey], `unknown property "${propertyKey}"`)]);
+                } else {
+                    errors = errors.concat(validate({
+                        key: propertyKey,
+                        value: properties[propertyKey],
+                        valueSpec: lightPropertySpec[propertyKey],
+                        style,
+                        styleSpec
+                    }));
+                }
             }
         } else {
             const transitionMatch = key.match(/^(.*)-transition$/);

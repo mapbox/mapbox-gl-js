@@ -8,7 +8,8 @@
           "type": "ambient",
           "properties": {
             "color": "rgba(255.0, 0.0, 0.0, 1.0)",
-            "intensity": 0.4
+            "intensity": 0.4,
+            "star-intensity": 0
           }
         },
         {

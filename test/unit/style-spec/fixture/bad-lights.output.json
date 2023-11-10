@@ -1,18 +1,22 @@
 [
   {
-    "message": "lights[2]: duplicate light type \"directional\", previously defined at line 15",
-    "line": 26
+    "message": "lights[0]: unknown property \"star-intensity\"",
+    "line": 12
+  },
+  {
+    "message": "lights[2]: duplicate light type \"directional\", previously defined at line 16",
+    "line": 27
   },
   {
     "message": "properties: object expected, array found",
-    "line": 28
+    "line": 29
   },
   {
     "message": "light-3d: missing property type on light",
-    "line": 30
+    "line": 31
   },
   {
     "message": "lights[4]: duplicate light type \"ambient\", previously defined at line 7",
-    "line": 34
+    "line": 35
   }
 ]
