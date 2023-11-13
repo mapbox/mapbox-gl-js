@@ -60,7 +60,7 @@
     <div id='map'></div>
     <div id='config'></div>
     <div id='editor'>Loading...</div>
-
+    <script src='/debug/dynamic.js'></script>
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script type='module'>
@@ -74,6 +74,7 @@
         });
 
         const styles = [
+            'dynamic',
             'mapbox://styles/mapbox/standard',
             'mapbox://styles/mapbox-map-design/standard-rc',
             'mapbox://styles/mapbox-map-design/standard-experimental'
@@ -86,13 +87,13 @@
             container: 'map',
             center: [0, 0],
             zoom: 0,
-            style: styles[0],
+            style: window.dynamic,
             hash: true
         });
 
         const dynamicFolders = [];
         const styleBinding = pane.addBinding(params, 'style', {label: 'Style', options: arrayToOptions(styles)});
-        styleBinding.on('change', (e) => map.setStyle(e.value));
+        styleBinding.on('change', (e) => map.setStyle(e.value === 'dynamic' ? window.dynamic : e.value, {diff: false}));
 
         map.on('style.load', (e) => {
             const style = map.getStyle();
