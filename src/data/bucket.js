@@ -24,7 +24,6 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     collisionBoxArray: CollisionBoxArray,
     sourceLayerIndex: number,
     sourceID: string,
-    enableTerrain: boolean,
     projection: ProjectionSpecification
 }
 

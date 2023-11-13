@@ -58,7 +58,7 @@ export default class DEMData {
     // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
     // and dim is calculated as stride - 2.
     constructor(uid: number, data: ImageData, sourceEncoding: DEMSourceEncoding,
-        convertToFloat: boolean, borderReady: boolean = false, buildQuadTree: boolean = false): void {
+        convertToFloat: boolean, borderReady: boolean = false): void {
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (sourceEncoding && sourceEncoding !== "mapbox" && sourceEncoding !== "terrarium") return warnOnce(
@@ -91,10 +91,6 @@ export default class DEMData {
             values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
             values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
             values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
-        }
-
-        if (buildQuadTree) {
-            this._buildQuadTree();
         }
 
         if (convertToFloat) {

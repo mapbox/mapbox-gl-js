@@ -48,7 +48,6 @@ class WorkerTile {
     overscaling: number;
     showCollisionBoxes: boolean;
     collectResourceTiming: boolean;
-    enableTerrain: boolean;
     isSymbolTile: ?boolean;
     extraShadowCaster: ?boolean;
     projection: Projection;
@@ -77,7 +76,6 @@ class WorkerTile {
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
         this.promoteId = params.promoteId;
-        this.enableTerrain = !!params.enableTerrain;
         this.isSymbolTile = params.isSymbolTile;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
@@ -182,7 +180,6 @@ class WorkerTile {
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
                     sourceID: this.source,
-                    enableTerrain: this.enableTerrain,
                     projection: this.projection.spec
                 });
 

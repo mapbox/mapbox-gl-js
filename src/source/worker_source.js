@@ -37,7 +37,6 @@ export type WorkerTileParameters = RequestedTileParameters & {
     pixelRatio: number,
     showCollisionBoxes: boolean,
     collectResourceTiming?: boolean,
-    enableTerrain?: boolean,
     projection: Projection,
     brightness: number,
     extraShadowCaster?: boolean
@@ -50,8 +49,7 @@ export type WorkerDEMTileParameters = TileParameters & {
     rawImageData: ImageData | ImageBitmap,
     encoding: DEMSourceEncoding,
     padding: number,
-    convertToFloat: boolean,
-    buildQuadTree?: boolean
+    convertToFloat: boolean
 };
 
 export type WorkerTileResult = {

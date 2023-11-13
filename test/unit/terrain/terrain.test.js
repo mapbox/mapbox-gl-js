@@ -56,7 +56,7 @@ const createGradientDEM = () => {
             }
         }
     }
-    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false, true);
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false);
 };
 
 const createNegativeGradientDEM = () => {
@@ -81,7 +81,7 @@ const createNegativeGradientDEM = () => {
             }
         }
     }
-    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false, true);
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false);
 };
 
 test('Elevation', (t) => {

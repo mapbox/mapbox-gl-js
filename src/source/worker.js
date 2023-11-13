@@ -10,7 +10,6 @@ import Tiled3dModelWorkerSource from '../../3d-style/source/tiled_3d_model_worke
 import assert from 'assert';
 import {plugin as globalRTLTextPlugin} from './rtl_text_plugin.js';
 import {enforceCacheSizeLimit} from '../util/tile_request_cache.js';
-import {extend} from '../util/util.js';
 import {PerformanceUtils} from '../util/performance.js';
 import {Event} from '../util/evented.js';
 import {getProjection} from '../geo/projection/index.js';
@@ -47,7 +46,6 @@ export default class Worker {
     isSpriteLoaded: {[mapId: string]: {[scope: string]: boolean}};
     referrer: ?string;
     dracoUrl: ?string
-    terrain: ?boolean;
     brightness: ?number;
 
     constructor(self: WorkerGlobalScopeInterface) {
@@ -150,11 +148,6 @@ export default class Worker {
         callback();
     }
 
-    enableTerrain(mapId: string, enable: boolean, callback: WorkerTileCallback) {
-        this.terrain = enable;
-        callback();
-    }
-
     setProjection(mapId: string, config: ProjectionSpecification) {
         this.projections[mapId] = getProjection(config);
     }
@@ -176,24 +169,18 @@ export default class Worker {
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        // $FlowFixMe[method-unbinding]
-        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
-        p.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(p, callback);
+        params.projection = this.projections[mapId] || this.defaultProjection;
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(params, callback);
     }
 
     loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        // $FlowFixMe[method-unbinding]
-        const p = this.enableTerrain ? extend({buildQuadTree: this.terrain}, params) : params;
-        this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(p, callback);
+        this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(params, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        // $FlowFixMe[method-unbinding]
-        const p = this.enableTerrain ? extend({enableTerrain: this.terrain}, params) : params;
-        p.projection = this.projections[mapId] || this.defaultProjection;
-        this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(p, callback);
+        params.projection = this.projections[mapId] || this.defaultProjection;
+        this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(params, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {

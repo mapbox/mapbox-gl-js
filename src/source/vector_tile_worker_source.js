@@ -254,7 +254,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
-            workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);

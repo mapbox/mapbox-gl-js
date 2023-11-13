@@ -2272,7 +2272,6 @@ class Style extends Evented {
         if (!terrainOptions) {
             delete this.terrain;
             delete this.stylesheet.terrain;
-            this.dispatcher.broadcast('enableTerrain', false);
             this._force3DLayerUpdate();
             this._markersNeedUpdate = true;
             return;
@@ -2409,7 +2408,6 @@ class Style extends Evented {
         terrain.setScope(this.scope);
 
         this.stylesheet.terrain = terrainOptions;
-        this.dispatcher.broadcast('enableTerrain', !this.terrainSetForDrapingOnly());
         this.mergeTerrain();
         this.updateDrapeFirstLayers();
         this._force3DLayerUpdate();

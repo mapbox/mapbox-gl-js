@@ -30,7 +30,6 @@ class Tiled3dWorkerTile {
     tileSize: number;
     source: string;
     overscaling: number;
-    enableTerrain: boolean;
     projection: Projection;
     status: 'parsing' | 'done';
     reloadCallback: ?WorkerTileCallback;
@@ -46,7 +45,6 @@ class Tiled3dWorkerTile {
         this.tileSize = params.tileSize;
         this.source = params.source;
         this.overscaling = this.tileID.overscaleFactor();
-        this.enableTerrain = !!params.enableTerrain;
         this.projection = params.projection;
         this.brightness = brightness;
     }
@@ -141,7 +139,6 @@ class Tiled3dModelWorkerSource implements WorkerSource {
         const uid = params.uid;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.enableTerrain = !!params.enableTerrain;
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;
 
