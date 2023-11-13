@@ -310,7 +310,7 @@
           }
         },
         "directional": {
-          "doc": "A light that has a direction and is located at infinite, so its rays are parallel. Simulates the sun light and it can cast shadows",
+          "doc": "A light that has a direction and is located at infinite distance, so its rays are parallel. It simulates the sun light and can cast shadows.",
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -320,7 +320,7 @@
           }
         },
         "flat": {
-          "doc": "A global directional light source which is only applied on 3D layers and hillshade layers. Using this type disables other light sources.",
+          "doc": "A global directional light source which is only applied on 3D and hillshade layers. Using this type disables other light sources.",
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -1882,7 +1882,7 @@
     "symbol-z-elevate": {
       "type": "boolean",
       "default": false,
-      "doc": "Position symbol on buildings (both fill extrusions and models) roof tops. In order to have minimal impact on performance, this is supported only when `fill-extrusion-height` is not zoom-dependent and not edited after initial bucket creation. For fading in buildings when zooming in, fill-extrusion-vertical-scale should be used and symbols would raise with building roofs. Symbols are sorted by elevation, except in case when `viewport-y` sorting or `symbol-sort-key` are applied.",
+      "doc": "Position symbol on buildings (both fill extrusions and models) rooftops. In order to have minimal impact on performance, this is supported only when `fill-extrusion-height` is not zoom-dependent and remains unchanged. For fading in buildings when zooming in, fill-extrusion-vertical-scale should be used and symbols would raise with building rooftops. Symbols are sorted by elevation, except in cases when `viewport-y` sorting or `symbol-sort-key` are applied.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
@@ -5632,7 +5632,7 @@
         ]
       },
       "transition": true,
-      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with legacy light. When 3D light is enabled `fill-extrusion-ambient-occlusion-wall-radius` and `fill-extrusion-ambient-occlusion-ground-radius` are used instead.",
+      "doc": "Shades area near ground and concave angles between walls where the radius defines only vertical impact. Default value 3.0 corresponds to height of one floor and brings the most plausible results for buildings. This property works only with legacy light. When 3D lights are enabled `fill-extrusion-ambient-occlusion-wall-radius` and `fill-extrusion-ambient-occlusion-ground-radius` are used instead.",
       "requires": [
         "fill-extrusion-edge-radius",
         {
@@ -7917,7 +7917,10 @@
       "minimum": 0,
       "transition": true,
       "units": "intensity",
-      "doc": "Controls the intensity of light emitted on the source features. This property works only with 3D light, i.e. when `lights` root property is defined.",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.0.0",
