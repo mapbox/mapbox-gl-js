@@ -175,7 +175,7 @@ class VideoSource extends ImageSource {
      * // Add a video source to the map to map
      * map.addSource('video_source_id', {
      *     type: 'video',
-     *     url: [
+     *     urls: [
      *         'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
      *         'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
      *     ],
