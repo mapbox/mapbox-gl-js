@@ -1,6 +1,20 @@
-## 3.0.0-rc.1
+## 3.0.0-rc.2
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-beta.5`:
+Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-rc.1`:
+
+### Features and improvements ✨
+
+- Improve performance for styles that use both hillshade layers and terrain.
+
+### Bug fixes 🐞
+
+- Fix an issue with `setConfigProperty` not taking effect for certain properties.
+- Fix rendering issues when a style and its imports share the same source IDs.
+- Fix `symbol-z-elevate` elevating symbols over invisible fill extrusions (with zero opacity).
+- Fix an issue with style validation accepting a style import with an empty ID.
+- Fix an issue with validation of unknown properties in `lights` objects.
+
+## 3.0.0-rc.1
 
 ### Features and improvements ✨
 
