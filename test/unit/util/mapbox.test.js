@@ -124,7 +124,7 @@ test("mapbox", (t) => {
 
         t.test('takes map-specific tokens correctly', (t) => {
             const m = new mapbox.RequestManager(undefined, 'customAccessToken');
-            t.equal(m.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=customAccessToken');
+            t.equal(m.normalizeStyleURL('mapbox://styles/user/style'), `https://api.mapbox.com/styles/v1/user/style?sdk=js-${version}&access_token=customAccessToken`);
             t.end();
         });
 
@@ -132,15 +132,15 @@ test("mapbox", (t) => {
 
         t.test('.normalizeStyleURL', (t) => {
             t.test('returns an API URL with access_token parameter when no query string', (t) => {
-                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=key');
-                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style/draft'), 'https://api.mapbox.com/styles/v1/user/style/draft?access_token=key');
+                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style'), `https://api.mapbox.com/styles/v1/user/style?sdk=js-${version}&access_token=key`);
+                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style/draft'), `https://api.mapbox.com/styles/v1/user/style/draft?sdk=js-${version}&access_token=key`);
                 t.end();
             });
 
             t.test('returns an API URL with access_token parameter when query string exists', (t) => {
-                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style?fresh=true&access_token=key');
-                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style/draft?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style/draft?fresh=true&access_token=key');
-                t.equal(manager.normalizeStyleURL('mapbox://styles/foo/bar'), 'https://api.mapbox.com/styles/v1/foo/bar?access_token=key');
+                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style?fresh=true'), `https://api.mapbox.com/styles/v1/user/style?fresh=true&sdk=js-${version}&access_token=key`);
+                t.equal(manager.normalizeStyleURL('mapbox://styles/user/style/draft?fresh=true'), `https://api.mapbox.com/styles/v1/user/style/draft?fresh=true&sdk=js-${version}&access_token=key`);
+                t.equal(manager.normalizeStyleURL('mapbox://styles/foo/bar'), `https://api.mapbox.com/styles/v1/foo/bar?sdk=js-${version}&access_token=key`);
                 t.end();
             });
 
@@ -153,7 +153,7 @@ test("mapbox", (t) => {
                 config.API_URL = 'https://test.example.com/api.mapbox.com';
                 t.equal(
                     manager.normalizeStyleURL('mapbox://styles/foo/bar'),
-                    'https://test.example.com/api.mapbox.com/styles/v1/foo/bar?access_token=key'
+                    `https://test.example.com/api.mapbox.com/styles/v1/foo/bar?sdk=js-${version}&access_token=key`
                 );
                 t.end();
             });
