@@ -79,7 +79,7 @@ const config: Config = {
     ACCESS_TOKEN: null,
     DEFAULT_STYLE: 'mapbox://styles/mapbox/standard',
     MAX_PARALLEL_IMAGE_REQUESTS: 16,
-    DRACO_URL: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder_gltf.wasm',
+    DRACO_URL: 'https://api.mapbox.com/mapbox-gl-js/draco_decoder_gltf_v1.5.6.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
 };
 
