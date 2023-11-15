@@ -335,7 +335,7 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
         for (prop in beforeLayer) {
             if (!beforeLayer.hasOwnProperty(prop)) continue;
             if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
-                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
+                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom' || prop === 'slot') continue;
             if (prop.indexOf('paint.') === 0) {
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {
@@ -345,7 +345,7 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
         for (prop in afterLayer) {
             if (!afterLayer.hasOwnProperty(prop) || beforeLayer.hasOwnProperty(prop)) continue;
             if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
-                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
+                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom' || prop === 'slot') continue;
             if (prop.indexOf('paint.') === 0) {
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {

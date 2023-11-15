@@ -518,5 +518,58 @@ test('diff', (t) => {
         }]
     }], 'updates import data');
 
+    t.deepEqual(diffStyles({
+        'layers': [{
+            'id': 'national-park',
+            'type': 'fill',
+            'slot': 'below-water',
+            'paint': {'fill-color': 'green'}
+        }],
+        'imports': [{
+            'id': 'basemap',
+            'url': '',
+            'data': {
+                'version': 8,
+                'layers': [
+                    {'id': 'below-water', 'type': 'slot'},
+                    {'id': 'water', 'type': 'fill', 'layout': {}, 'paint': {'fill-color': 'blue'}},
+                    {'id': 'above-water', 'type': 'slot'}
+                ]
+            }
+        }]
+    }, {
+        'layers': [{
+            'id': 'national-park',
+            'type': 'fill',
+            'slot': 'above-water',
+            'paint': {'fill-color': 'violet'}
+        }],
+        'imports': [{
+            'id': 'basemap',
+            'url': '',
+            'data': {
+                'version': 8,
+                'layers': [
+                    {'id': 'below-water', 'type': 'slot'},
+                    {'id': 'water', 'type': 'background', 'layout': {}, 'paint': {'background-color': 'pink'}},
+                    {'id': 'above-water', 'type': 'slot'}
+                ]
+            },
+        }]
+    }), [{
+        command: 'setPaintProperty',
+        args: ['national-park', 'fill-color', 'violet', null]
+    }, {
+        command: 'setImportData',
+        args: ['basemap', {
+            'version': 8,
+            'layers': [
+                {'id': 'below-water', 'type': 'slot'},
+                {'id': 'water', 'type': 'background', 'layout': {}, 'paint': {'background-color': 'pink'}},
+                {'id': 'above-water', 'type': 'slot'}
+            ]
+        }]
+    }], 'updates import data and ignores slots');
+
     t.end();
 });
