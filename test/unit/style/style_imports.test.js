@@ -1891,7 +1891,8 @@ test('Style#setState', (t) => {
         const style = new Style(new StubMap());
 
         const initialStyle = createStyleJSON({
-            imports: [{id: 'a', url: '/style.json'}]
+            imports: [{id: 'a', url: '/style.json'}],
+            layers: [{id: 'b', type: 'background', paint: {'background-color': 'red'}}]
         });
 
         window.server.respondWith('/style.json', JSON.stringify(createStyleJSON()));
@@ -1900,17 +1901,21 @@ test('Style#setState', (t) => {
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
-            imports: [{id: 'a', url: '/styles/streets-v12.json'}]
+            imports: [{id: 'a', url: '/styles/streets-v12.json'}],
+            layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
         });
 
         const data = createStyleJSON({layers: [{id: 'a', type: 'background'}]});
         window.server.respondWith('/styles/streets-v12.json', JSON.stringify(data));
 
         style.setState(nextStyle);
+        t.equal(style._changes.updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
+
         await new Promise((resolve) => style.on('style.load', resolve));
 
         t.deepEqual(style.serialize(), createStyleJSON({
-            imports: [{id: 'a', url: '/styles/streets-v12.json', data}]
+            imports: [{id: 'a', url: '/styles/streets-v12.json', data}],
+            layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
         }));
 
         t.end();

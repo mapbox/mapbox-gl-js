@@ -326,8 +326,6 @@ class Style extends Evented {
         this.options = options.config || new Map();
         this._configDependentLayers = new Set();
 
-        this._changes.reset();
-
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
         const self = this;
@@ -501,9 +499,10 @@ class Style extends Evented {
             options: this.options
         });
 
-        this._shouldPrecompile = this.importDepth === 0;
+        const isRootStyle = this.isRootStyle();
+        this._shouldPrecompile = isRootStyle;
         this.fire(new Event('data', {dataType: 'style'}));
-        this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
+        this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
     }
 
     _load(json: StyleSpecification, validate: boolean) {
@@ -511,7 +510,7 @@ class Style extends Evented {
 
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
-        if (this.importDepth === 0 && (json.fragment || (schema && json.fragment !== false))) {
+        if (this.isRootStyle() && (json.fragment || (schema && json.fragment !== false))) {
             const basemap = {id: 'basemap', data: json, url: ''};
             const style = extend({}, empty, {imports: [basemap]});
             this._load(style, validate);
@@ -626,9 +625,14 @@ class Style extends Evented {
                 options: this.options
             });
 
-            this._shouldPrecompile = this.importDepth === 0;
-            this.fire(new Event(this.importDepth === 0 ? 'style.load' : 'style.import.load'));
+            const isRootStyle = this.isRootStyle();
+            this._shouldPrecompile = isRootStyle;
+            this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
         }
+    }
+
+    isRootStyle(): boolean {
+        return this.importDepth === 0;
     }
 
     mergeAll() {
@@ -848,7 +852,7 @@ class Style extends Evented {
 
     _updateMapProjection() {
         // Skip projection updates from the children fragments
-        if (this.importDepth > 0) return;
+        if (!this.isRootStyle()) return;
 
         if (!this.map._useExplicitProjection) { // Update the visible projection if map's is null
             this.map._prioritizeAndUpdateProjection(null, this.projection);
@@ -2479,7 +2483,7 @@ class Style extends Evented {
         delete this.directionalLight;
 
         // Shared managers should be removed only on removing the root style
-        if (this.importDepth === 0) {
+        if (this.isRootStyle()) {
             this.imageManager.setEventedParent(null);
             this.modelManager.setEventedParent(null);
             this.dispatcher.remove();
