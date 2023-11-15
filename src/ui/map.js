@@ -1149,7 +1149,7 @@ class Map extends Camera {
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
 
-        this.style.reloadSources();
+        this.style.clearSources();
 
         for (const control of this._controls) {
             if (control._setLanguage) {
@@ -1192,7 +1192,7 @@ class Map extends Camera {
         if (!this.style || worldview === this._worldview) return this;
 
         this._worldview = worldview;
-        this.style.reloadSources();
+        this.style.clearSources();
 
         return this;
     }
@@ -1300,9 +1300,8 @@ class Map extends Camera {
 
         if (projectionHasChanged) {
             this.painter.clearBackgroundTiles();
-            for (const id in this.style._sourceCaches) {
-                this.style._sourceCaches[id].clearTiles();
-            }
+            this.style.clearSources();
+
             this._update(true);
             this._forceMarkerAndPopupUpdate(true);
         }

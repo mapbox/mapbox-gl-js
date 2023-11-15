@@ -23,7 +23,7 @@ export default function localizeURLs(style, port) {
                 localizeSourceURLs(op[2], port);
             } else if (op[0] === 'setStyle') {
                 if (typeof op[1] === 'object') {
-                    localizeStyleURLs(op[1], port);
+                    localizeURLs(op[1], port);
                     return;
                 }
                 if (op[1].startsWith('mapbox://')) return;

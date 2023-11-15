@@ -2493,19 +2493,17 @@ class Style extends Evented {
         }
     }
 
+    clearSources() {
+        for (const id in this._mergedSourceCaches) {
+            this._mergedSourceCaches[id].clearTiles();
+        }
+    }
+
     reloadSource(id: string) {
         const sourceCaches = this.getSourceCaches(id);
         for (const sourceCache of sourceCaches) {
             sourceCache.resume();
             sourceCache.reload();
-        }
-    }
-
-    reloadSources() {
-        for (const source of this.getSources()) {
-            if (source.reload) {
-                source.reload();
-            }
         }
     }
 
