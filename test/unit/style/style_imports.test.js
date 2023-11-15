@@ -1804,6 +1804,26 @@ test('Style#setState', (t) => {
     t.test('Adds fragment', async (t) => {
         const style = new Style(new StubMap());
 
+        const initialStyle = createStyleJSON();
+        style.loadJSON(initialStyle);
+
+        await new Promise((resolve) => style.on('style.load', resolve));
+
+        const nextStyle = createStyleJSON({
+            imports: [{id: 'a', url: '', data: createStyleJSON()}]
+        });
+
+        style.setState(nextStyle);
+        await new Promise((resolve) => style.on('style.load', resolve));
+
+        t.deepEqual(style.serialize(), nextStyle);
+
+        t.end();
+    });
+
+    t.test('Adds fragment to the existing fragments', async (t) => {
+        const style = new Style(new StubMap());
+
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}]
         });

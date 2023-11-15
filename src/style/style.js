@@ -2618,21 +2618,14 @@ class Style extends Evented {
     addImport(importSpec: ImportSpecification): Style {
         this._checkLoaded();
 
-        const imports = this.stylesheet.imports;
-        if (!imports) return this;
+        const imports = this.stylesheet.imports = this.stylesheet.imports || [];
 
         const index = imports.findIndex(({id}) => id === importSpec.id);
         if (index !== -1) {
-            this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
-            return this;
+            return this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
         }
 
-        if (this.stylesheet.imports) {
-            this.stylesheet.imports.push(importSpec);
-        } else {
-            this.stylesheet.imports = [importSpec];
-        }
-
+        imports.push(importSpec);
         this._loadImports([importSpec], true);
         return this;
     }
@@ -2640,9 +2633,7 @@ class Style extends Evented {
     setImportUrl(importId: string, url: string): Style {
         this._checkLoaded();
 
-        const imports = this.stylesheet.imports;
-        if (!imports) return this;
-
+        const imports = this.stylesheet.imports || [];
         const index = this.getImportIndex(importId);
         if (index === -1) return this;
 
@@ -2663,10 +2654,8 @@ class Style extends Evented {
     setImportData(importId: string, stylesheet: ?StyleSpecification): Style {
         this._checkLoaded();
 
-        const imports = this.stylesheet.imports;
-        if (!imports) return this;
-
         const index = this.getImportIndex(importId);
+        const imports = this.stylesheet.imports || [];
         if (index === -1) return this;
 
         // Reload import from the URL if import data is unset
@@ -2686,9 +2675,7 @@ class Style extends Evented {
     removeImport(importId: string): Style {
         this._checkLoaded();
 
-        const imports = this.stylesheet.imports;
-        if (!imports) return this;
-
+        const imports = this.stylesheet.imports || [];
         const index = this.getImportIndex(importId);
         if (index === -1) return this;
 
@@ -2704,14 +2691,11 @@ class Style extends Evented {
     }
 
     getImportIndex(importId: string): number {
-        const imports = this.stylesheet.imports;
-        if (!imports) return -1;
-
+        const imports = this.stylesheet.imports || [];
         const index = imports.findIndex((importSpec) => importSpec.id === importId);
         if (index === -1) {
             this.fire(new ErrorEvent(new Error(`Import '${importId}' does not exist in the map's style and cannot be updated.`)));
         }
-
         return index;
     }
 
