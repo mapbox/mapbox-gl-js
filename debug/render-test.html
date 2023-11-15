@@ -15,15 +15,22 @@
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script>
-const test = 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+<script type="module">
+    import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
 
-fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).then(req => req.json()).then(style => {
+    const test = 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+
+    const style = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`)
+        .then(response => response.json());
+
+    console.log(style);
+
     const {
         width, height,
         fadeDuration = 0,
         localIdeographFontFamily = false,
-        projection, debug
+        debug,
+        operations,
     } = style.metadata.test;
 
     const container = document.getElementById('map');
@@ -38,15 +45,19 @@ fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`).
         transformRequest,
         fadeDuration,
         localIdeographFontFamily,
-        projection,
         interactive: false,
-        attributionControl: false
+        attributionControl: false,
+        performanceMetricsCollection: false
     });
+
     map.removeControl(map._logoControl);
 
     if (debug) map.showTileBoundaries = true;
-});
 
+    map.repaint = true;
+    await map.once('load');
+
+    await applyOperations(map, style.metadata.test);
 </script>
 </body>
 </html>
