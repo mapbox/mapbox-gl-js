@@ -372,7 +372,7 @@ export class GroundEffect {
 
     hasData(): boolean { return this.vertexArray.length !== 0; }
 
-    addData(polyline: Array<Point>, bounds: [Point, Point], maxRadius: number) {
+    addData(polyline: Array<Point>, bounds: [Point, Point], maxRadius: number, roundedEdges: boolean = false) {
         const n = polyline.length;
         if (n > 2) {
             let sid = Math.max(0, this._segments.get().length - 1);
@@ -410,7 +410,7 @@ export class GroundEffect {
                 const a1 = factor;
 
                 if (isEdgeOutsideBounds(pa, pb, bounds) ||
-                    (pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) {
+                    (roundedEdges && pointOutsideBounds(pa, bounds) && pointOutsideBounds(pb, bounds))) {
                     prevFactor = factor;
                     continue;
                 }
@@ -1091,7 +1091,7 @@ class FillExtrusionBucket implements Bucket {
                     if (groundPolyline.length !== 0 && isDuplicate(groundPolyline, groundPolyline[0])) {
                         groundPolyline.pop();
                     }
-                    this.groundEffect.addData(groundPolyline, bounds, maxRadius);
+                    this.groundEffect.addData(groundPolyline, bounds, maxRadius, edgeRadius > 0);
                 }
             }
             this.footprintSegments.push(fpSegment);

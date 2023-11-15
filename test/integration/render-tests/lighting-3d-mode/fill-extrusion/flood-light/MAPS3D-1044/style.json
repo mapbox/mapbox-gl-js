@@ -1,0 +1,108 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 320,
+      "width": 320,
+      "allowed": 0.0004
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(200.0, 200.0, 255.0, 1.0)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(230.0, 230.0, 230.0, 1.0)",
+        "intensity": 0.9,
+        "direction": [
+          200.0,
+          40.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 30
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    11.553466465311857,
+                    48.15556107094133
+                  ],
+                  [
+                    11.535024135664287,
+                    48.124664589881775
+                  ],
+                  [
+                    11.542401067523343,
+                    48.11695376450538
+                  ],
+                  [
+                    11.60374607982547,
+                    48.11812018213419
+                  ],
+                  [
+                    11.610831817006783,
+                    48.13969413182113
+                  ],
+                  [
+                    11.59161296821523,
+                    48.15808637602012
+                  ],
+                  [
+                    11.553466465311857,
+                    48.15556107094133
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 50,
+  "zoom": 13.03,
+  "center": [11.58163, 48.11674],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-ambient-occlusion-ground-attenuation": 0.1,
+        "fill-extrusion-ambient-occlusion-ground-radius": 2000.0,
+        "fill-extrusion-ambient-occlusion-intensity": 0.8,
+        "fill-extrusion-height": 200.0,
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-color": "gray"
+      }
+    }
+  ]
+}
