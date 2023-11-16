@@ -271,6 +271,9 @@ class Transform {
         this._updateCameraOnTerrain();
         this._calcMatrices();
     }
+    get depthOcclusionForSymbolsAndCircles(): boolean {
+        return this.projection.name !== 'globe' && !this.isOrthographic;
+    }
 
     updateElevation(constrainCameraOverTerrain: boolean, adaptCameraAltitude: boolean = false) {
         const centerAltitudeChanged = this._elevation && this._elevation.exaggeration() !== this._centerAltitudeValidForExaggeration;
