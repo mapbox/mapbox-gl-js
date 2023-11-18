@@ -140,9 +140,9 @@ class BoxZoomHandler {
             this._fireEvent('boxzoomcancel', e);
         } else {
             this._map.fire(new Event('boxzoomend', {originalEvent: e}));
-            return {
-                cameraAnimation: (map: Map) => map.fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: false})
-            };
+            //return {
+            //    cameraAnimation: (map: Map) => map.fitScreenCoordinates(p0, p1, this._map.getBearing(), {linear: false})
+            //};
         }
     }
 
