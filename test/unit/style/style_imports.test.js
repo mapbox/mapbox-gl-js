@@ -1885,6 +1885,44 @@ test('Style#setState', (t) => {
         t.end();
     });
 
+    t.test('Removes all fragments', async (t) => {
+        const style = new Style(new StubMap());
+
+        const fragmentStyle = createStyleJSON({
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.5}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.5}}
+            ],
+            fog: {range: [1, 2], color: 'white'},
+            terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+            layers: [{id: 'land', type: 'background'}],
+            sources: {'mapbox-dem': {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}},
+        });
+
+        const initialStyle = createStyleJSON({imports: [{id: 'a', url: '', data: fragmentStyle}]});
+
+        style.loadJSON(initialStyle);
+        await new Promise((resolve) => style.on('style.load', resolve));
+
+        const nextStyle = createStyleJSON({
+            sources: {mapbox: {type: 'vector', tiles: []}},
+            layers: [{id: 'land', type: 'background'}]
+        });
+
+        style.setState(nextStyle);
+        t.deepEqual(style.serialize(), nextStyle);
+
+        t.deepEqual(style.order, ['land']);
+        t.deepEqual(style.getSources().map((s) => s.id), ['mapbox']);
+
+        t.notOk(style.ambientLight);
+        t.notOk(style.directionalLight);
+        t.notOk(style.fog);
+        t.notOk(style.terrain);
+
+        t.end();
+    });
+
     t.test('Moves fragment', async (t) => {
         const style = new Style(new StubMap());
 

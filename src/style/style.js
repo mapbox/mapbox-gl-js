@@ -625,16 +625,21 @@ class Style extends Evented {
         let camera;
 
         this.forEachFragmentStyle((style: Style) => {
+            if (!style.stylesheet) return;
+
             if (style.light != null)
                 light = style.light;
 
-            if (style.ambientLight != null)
-                ambientLight = style.ambientLight;
+            if (style.stylesheet.lights) {
+                if (style.ambientLight != null)
+                    ambientLight = style.ambientLight;
 
-            if (style.directionalLight != null)
-                directionalLight = style.directionalLight;
+                if (style.directionalLight != null)
+                    directionalLight = style.directionalLight;
+            }
 
-            if (style.terrain != null) {
+            const isGlobe = style.stylesheet.projection && style.stylesheet.projection.name === 'globe';
+            if ((style.stylesheet.terrain || isGlobe) && style.terrain != null) {
                 const nextIsElevated = style.terrain.drapeRenderMode === DrapeRenderMode.elevated;
                 const prevIsDeffered = terrain && terrain.drapeRenderMode === DrapeRenderMode.deferred;
                 if (!terrain || prevIsDeffered || nextIsElevated) {
@@ -642,10 +647,8 @@ class Style extends Evented {
                 }
             }
 
-            if (style.fog != null)
+            if (style.stylesheet.fog && style.fog != null)
                 fog = style.fog;
-
-            if (!style.stylesheet) return;
 
             if (style.stylesheet.camera != null)
                 camera = style.stylesheet.camera;
@@ -2464,10 +2467,6 @@ class Style extends Evented {
     }
 
     _remove() {
-        for (const {style} of this.fragments) {
-            style._remove();
-        }
-
         if (this._request) {
             this._request.cancel();
             this._request = null;
@@ -2476,20 +2475,23 @@ class Style extends Evented {
             this._spriteRequest.cancel();
             this._spriteRequest = null;
         }
+
         rtlTextPluginEvented.off('pluginStateChange', this._rtlTextPluginCallback);
 
-        this.mergeLayers();
-        this.mergeSources();
-
-        for (const layerId in this._layers) {
-            const layer = this._layers[layerId];
+        for (const layerId in this._mergedLayers) {
+            const layer = this._mergedLayers[layerId];
             layer.setEventedParent(null);
         }
-        for (const id in this._sourceCaches) {
-            this._sourceCaches[id].clearTiles();
-            this._sourceCaches[id].setEventedParent(null);
+
+        for (const id in this._mergedSourceCaches) {
+            this._mergedSourceCaches[id].clearTiles();
+            this._mergedSourceCaches[id].setEventedParent(null);
         }
+
         this.setEventedParent(null);
+
+        delete this.fog;
+        delete this.terrain;
         delete this.ambientLight;
         delete this.directionalLight;
 
