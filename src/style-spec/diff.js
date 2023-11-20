@@ -151,7 +151,12 @@ export const operations: {[_: string]: string} = {
     /*
      *  { command: 'setImportData', args: [importId, stylesheet] }
      */
-    setImportData: 'setImportData'
+    setImportData: 'setImportData',
+
+    /*
+     *  { command: 'setImportConfig', args: [importId, config] }
+     */
+    setImportConfig: 'setImportConfig'
 };
 
 function addSource(sourceId: string, after: Sources, commands: Array<Command>) {
@@ -410,6 +415,10 @@ export function diffImports(before: Array<ImportSpecification> = [], after: Arra
     for (const afterImport of after) {
         const beforeImport = beforeIndex[afterImport.id];
         if (!beforeImport || isEqual(beforeImport, afterImport)) continue;
+
+        if (!isEqual(beforeImport.config, afterImport.config)) {
+            commands.push({command: operations.setImportConfig, args: [afterImport.id, afterImport.config]});
+        }
 
         if (!isEqual(beforeImport.url, afterImport.url)) {
             commands.push({command: operations.setImportUrl, args: [afterImport.id, afterImport.url]});

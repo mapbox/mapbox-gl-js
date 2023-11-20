@@ -92,6 +92,7 @@ import type {
     TransitionSpecification,
     PropertyValueSpecification,
     ConfigSpecification,
+    SchemaSpecification,
     CameraSpecification
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
@@ -129,6 +130,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'removeImport',
     'setImportUrl',
     'setImportData',
+    'setImportConfig',
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -157,7 +159,6 @@ export type StyleOptions = {
     importDepth?: number,
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
-    config?: Map<string, Expression>,
 };
 
 export type StyleSetterOptions = {
@@ -323,7 +324,7 @@ class Style extends Evented {
         this._order = [];
         this._markersNeedUpdate = false;
 
-        this.options = options.config || new Map();
+        this.options = new Map();
         this._configDependentLayers = new Set();
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
@@ -457,20 +458,8 @@ class Style extends Evented {
     _createFragmentStyle(importSpec: ImportSpecification): Style {
         const scope = this.scope ? makeFQID(importSpec.id, this.scope) : importSpec.id;
 
-        const config = new Map();
-        const importConfig = importSpec.config;
-        if (importConfig) {
-            for (const key of Object.keys(importConfig)) {
-                const expressionParsed = createExpression(importConfig[key]);
-                if (expressionParsed.result === 'success') {
-                    config.set(key, expressionParsed.value.expression);
-                }
-            }
-        }
-
         const style = new Style(this.map, {
             scope,
-            config,
             styleChanges: this._changes,
             importDepth: this.importDepth + 1,
             importsCache: this.importsCache,
@@ -485,6 +474,8 @@ class Style extends Evented {
 
         // Bubble all events fired by the style to the map.
         style.setEventedParent(this.map, {style});
+
+        style.setConfig(importSpec.config);
 
         return style;
     }
@@ -517,19 +508,7 @@ class Style extends Evented {
             return;
         }
 
-        if (schema) {
-            for (const id of Object.keys(schema)) {
-                // already set by config
-                if (this.options.has(id)) continue;
-
-                const expression = schema[id].default;
-
-                const expressionParsed = createExpression(expression);
-                if (expressionParsed.result === 'success') {
-                    this.options.set(id, expressionParsed.value.expression);
-                }
-            }
-        }
+        this.updateSchema(schema);
 
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -1559,8 +1538,40 @@ class Style extends Evented {
 
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         fragmentStyle.options.set(key, expression);
+        fragmentStyle.updateConfigDependencies();
+    }
 
-        for (const id of fragmentStyle._configDependentLayers) {
+    setConfig(config: ?ConfigSpecification, schema: ?SchemaSpecification) {
+        this.options.clear();
+        if (!config) return;
+
+        for (const key in config) {
+            const expressionParsed = createExpression(config[key]);
+            if (expressionParsed.result === 'success') {
+                this.options.set(key, expressionParsed.value.expression);
+            }
+        }
+
+        this.updateSchema(schema);
+    }
+
+    updateSchema(schema: ?SchemaSpecification) {
+        if (!schema) return;
+
+        for (const id in schema) {
+            // already set by config
+            if (this.options.has(id)) continue;
+
+            const expression = schema[id].default;
+            const expressionParsed = createExpression(expression);
+            if (expressionParsed.result === 'success') {
+                this.options.set(id, expressionParsed.value.expression);
+            }
+        }
+    }
+
+    updateConfigDependencies() {
+        for (const id of this._configDependentLayers) {
             const layer = this.getLayer(id);
             if (layer) {
                 layer.possiblyEvaluateVisibility();
@@ -1570,12 +1581,12 @@ class Style extends Evented {
 
         // If the root style uses the lights from the updated fragment,
         // update the configs in the corresponding light instances.
-        if (this.ambientLight && this.ambientLight.scope === fragmentId) {
-            this.ambientLight.updateConfig(fragmentStyle.options);
+        if (this.ambientLight && this.ambientLight.scope === this.scope) {
+            this.ambientLight.updateConfig(this.options);
         }
 
-        if (this.directionalLight && this.directionalLight.scope === fragmentId) {
-            this.directionalLight.updateConfig(fragmentStyle.options);
+        if (this.directionalLight && this.directionalLight.scope === this.scope) {
+            this.directionalLight.updateConfig(this.options);
         }
 
         this._changes.changed = true;
@@ -2669,6 +2680,30 @@ class Style extends Evented {
         fragment.style.setState(stylesheet);
 
         this._reloadImports();
+        return this;
+    }
+
+    setImportConfig(importId: string, config: ?ConfigSpecification): Style {
+        this._checkLoaded();
+
+        const index = this.getImportIndex(importId);
+        const imports = this.stylesheet.imports || [];
+        if (index === -1) return this;
+
+        if (config) {
+            imports[index].config = config;
+        } else {
+            delete imports[index].config;
+        }
+
+        // Update related fragment
+        const fragment = this.fragments[index];
+        const schema = fragment.style.stylesheet && fragment.style.stylesheet.schema;
+
+        fragment.config = config;
+        fragment.style.setConfig(config, schema);
+        fragment.style.updateConfigDependencies();
+
         return this;
     }
 
