@@ -273,6 +273,7 @@ class StyleLayer extends Evented {
         const output = {
             'id': this.id,
             'type': this.type,
+            'slot': this.slot,
             'source': this.source,
             'source-layer': this.sourceLayer,
             'metadata': this.metadata,

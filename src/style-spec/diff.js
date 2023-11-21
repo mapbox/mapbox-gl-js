@@ -39,6 +39,11 @@ export const operations: {[_: string]: string} = {
     setLayoutProperty: 'setLayoutProperty',
 
     /*
+     * { command: 'setSlot', args: ['layerId', slot] }
+     */
+    setSlot: 'setSlot',
+
+    /*
      * { command: 'setFilter', args: ['layerId', filter] }
      */
     setFilter: 'setFilter',
@@ -329,6 +334,9 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
         // layout, paint, filter, minzoom, maxzoom
         diffLayerPropertyChanges(beforeLayer.layout, afterLayer.layout, commands, layerId, null, operations.setLayoutProperty);
         diffLayerPropertyChanges(beforeLayer.paint, afterLayer.paint, commands, layerId, null, operations.setPaintProperty);
+        if (!isEqual(beforeLayer.slot, afterLayer.slot)) {
+            commands.push({command: operations.setSlot, args: [layerId, afterLayer.slot]});
+        }
         if (!isEqual(beforeLayer.filter, afterLayer.filter)) {
             commands.push({command: operations.setFilter, args: [layerId, afterLayer.filter]});
         }

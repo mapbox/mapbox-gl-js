@@ -560,6 +560,9 @@ test('diff', (t) => {
         command: 'setPaintProperty',
         args: ['national-park', 'fill-color', 'violet', null]
     }, {
+        command: 'setSlot',
+        args: ['national-park', 'above-water']
+    }, {
         command: 'setImportData',
         args: ['basemap', {
             'version': 8,

@@ -798,7 +798,7 @@ test('Style#removeLayer', (t) => {
         });
 
         map.on('error', (error) => {
-            t.match(error.error, /does not exist in the map\'s style and cannot be removed/);
+            t.match(error.error, /does not exist in the map\'s style/);
             t.end();
         });
 
@@ -866,7 +866,7 @@ test('Style#moveLayer', (t) => {
 
         style.on('style.load', () => {
             style.on('error', ({error}) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+                t.match(error.message, /does not exist in the map\'s style/);
                 t.end();
             });
 
@@ -1995,6 +1995,69 @@ test('Style#setState', (t) => {
 
         style.setState(nextStyle);
         t.deepEqual(style.serialize(), nextStyle);
+
+        t.end();
+    });
+
+    t.test('Updates layer slot', async (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    sources: {mapbox: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}},
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'middle', type: 'slot'},
+                        {id: 'water', type: 'background'},
+                        {id: 'top', type: 'slot'},
+                        {id: 'labels', type: 'symbol', source: 'mapbox'}
+                    ]
+                })
+            }],
+            layers: [{id: 'layer', type: 'background', slot: 'middle'}]
+        });
+
+        style.loadJSON(initialStyle);
+
+        await new Promise((resolve) => style.on('style.load', resolve));
+
+        t.deepEqual(style.order, [
+            makeFQID('land', 'streets'),
+            makeFQID('layer'),
+            makeFQID('water', 'streets'),
+            makeFQID('labels', 'streets'),
+        ]);
+
+        const nextStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    sources: {mapbox: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}},
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'middle', type: 'slot'},
+                        {id: 'water', type: 'background'},
+                        {id: 'top', type: 'slot'},
+                        {id: 'labels', type: 'symbol', source: 'mapbox'}
+                    ]
+                })
+            }],
+            layers: [{id: 'layer', type: 'background', slot: 'top'}]
+        });
+
+        style.setState(nextStyle);
+        t.deepEqual(style.serialize(), nextStyle);
+
+        t.deepEqual(style.order, [
+            makeFQID('land', 'streets'),
+            makeFQID('water', 'streets'),
+            makeFQID('layer'),
+            makeFQID('labels', 'streets'),
+        ]);
 
         t.end();
     });

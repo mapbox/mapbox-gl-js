@@ -3041,7 +3041,7 @@ test('Map', (t) => {
 
             map.on('style.load', () => {
                 map.on('error', ({error}) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.match(error.message, /does not exist in the map\'s style/);
                     t.end();
                 });
                 map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
@@ -3301,7 +3301,7 @@ test('Map', (t) => {
 
             map.on('style.load', () => {
                 map.on('error', ({error}) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.match(error.message, /does not exist in the map\'s style/);
                     t.end();
                 });
                 map.setPaintProperty('non-existant', 'background-color', 'red');

@@ -115,6 +115,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLights',
     'setPaintProperty',
     'setLayoutProperty',
+    'setSlot',
     'setFilter',
     'addSource',
     'removeSource',
@@ -1011,6 +1012,24 @@ class Style extends Evented {
         }
     }
 
+    _checkLayer(layerId: string): ?StyleLayer {
+        const layer = this.getOwnLayer(layerId);
+        if (!layer) {
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
+            return;
+        }
+        return layer;
+    }
+
+    _checkSource(sourceId: string): ?Source {
+        const source = this.getOwnSource(sourceId);
+        if (!source) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        return source;
+    }
+
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      * @private
@@ -1697,11 +1716,8 @@ class Style extends Evented {
         this._checkLoaded();
         this._changes.changed = true;
 
-        const layer = this._layers[id];
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be moved.`)));
-            return;
-        }
+        const layer = this._checkLayer(id);
+        if (!layer) return;
 
         if (id === before) {
             return;
@@ -1733,11 +1749,8 @@ class Style extends Evented {
     removeLayer(id: string) {
         this._checkLoaded();
 
-        const layer = this._layers[id];
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be removed.`)));
-            return;
-        }
+        const layer = this._checkLayer(id);
+        if (!layer) return;
 
         layer.setEventedParent(null);
 
@@ -1813,11 +1826,8 @@ class Style extends Evented {
     setLayerZoomRange(layerId: string, minzoom: ?number, maxzoom: ?number) {
         this._checkLoaded();
 
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot have zoom extent.`)));
-            return;
-        }
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return;
 
@@ -1830,14 +1840,25 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
+    setSlot(layerId: string, slot: ?string) {
+        this._checkLoaded();
+
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
+
+        if (layer.slot === slot) {
+            return;
+        }
+
+        layer.slot = slot;
+        this._updateLayer(layer);
+    }
+
     setFilter(layerId: string, filter: ?FilterSpecification,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be filtered.`)));
-            return;
-        }
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
 
         if (deepEqual(layer.filter, filter)) {
             return;
@@ -1863,23 +1884,16 @@ class Style extends Evented {
      * @returns {*} The layer's filter, if any.
      */
     getFilter(layerId: string): ?FilterSpecification {
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be filtered.`)));
-            return;
-        }
-
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
         return clone(layer.filter);
     }
 
     setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
-            return;
-        }
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
 
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
@@ -1895,23 +1909,16 @@ class Style extends Evented {
      * @returns {*} The property value.
      */
     getLayoutProperty(layerId: string, name: string): ?PropertyValueSpecification<mixed> {
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
-            return;
-        }
-
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
         return layer.getLayoutProperty(name);
     }
 
     setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
-            return;
-        }
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
@@ -1926,12 +1933,8 @@ class Style extends Evented {
     }
 
     getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
-        const layer = this.getOwnLayer(layerId);
-        if (!layer) {
-            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
-            return;
-        }
-
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
         return layer.getPaintProperty(name);
     }
 
@@ -1939,12 +1942,10 @@ class Style extends Evented {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const source = this.getOwnSource(sourceId);
 
-        if (!source) {
-            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
-            return;
-        }
+        const source = this._checkSource(sourceId);
+        if (!source) return;
+
         const sourceType = source.type;
         if (sourceType === 'geojson' && sourceLayer) {
             this.fire(new ErrorEvent(new Error(`GeoJSON sources cannot have a sourceLayer parameter.`)));
@@ -1967,12 +1968,9 @@ class Style extends Evented {
     removeFeatureState(target: { source: string; sourceLayer?: string; id?: string | number; }, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
-        const source = this.getOwnSource(sourceId);
 
-        if (!source) {
-            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
-            return;
-        }
+        const source = this._checkSource(sourceId);
+        if (!source) return;
 
         const sourceType = source.type;
         const sourceLayer = sourceType === 'vector' ? target.sourceLayer : undefined;
@@ -1997,12 +1995,10 @@ class Style extends Evented {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
-        const source = this.getOwnSource(sourceId);
 
-        if (!source) {
-            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
-            return;
-        }
+        const source = this._checkSource(sourceId);
+        if (!source) return;
+
         const sourceType = source.type;
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
