@@ -409,6 +409,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         position: relative;
         background-color: #fff;
         border-radius: 12px;
+        box-sizing: content-box;
     }
 
     .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
