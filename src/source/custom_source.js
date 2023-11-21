@@ -23,6 +23,7 @@ function isRaster(data: any): boolean {
         data instanceof window.HTMLImageElement;
 }
 
+/* eslint-disable jsdoc/check-examples */
 /**
  * Interface for custom sources. This is a specification for
  * implementers to model: it is not an exported method or class.
@@ -73,6 +74,7 @@ function isRaster(data: any): boolean {
  *     });
  * });
  */
+/* eslint-enable jsdoc/check-examples */
 
 /**
  * Optional method called when the source has been added to the Map with {@link Map#addSource}.

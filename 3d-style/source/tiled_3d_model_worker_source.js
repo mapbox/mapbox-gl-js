@@ -49,35 +49,39 @@ class Tiled3dWorkerTile {
         this.brightness = brightness;
     }
 
-    async parse(data: ArrayBuffer, layerIndex: StyleLayerIndex, params: WorkerTileParameters, callback: WorkerTileCallback): Promise<void> {
+    parse(data: ArrayBuffer, layerIndex: StyleLayerIndex, params: WorkerTileParameters, callback: WorkerTileCallback): Promise<void> {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         const buckets: {[_: string]: Bucket} = {};
         const layerFamilies = layerIndex.familiesBySource[params.source];
         const featureIndex = new FeatureIndex(tileID, params.promoteId);
         featureIndex.bucketLayerIDs = [];
-        const gltf = await load3DTile(data).catch((err) => callback(new Error(err.message)));
-        if (!gltf) return callback(new Error('Could not parse tile'));
-        const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
-        const hasMapboxMeshFeatures = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
-        const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
-        for (const sourceLayerId in layerFamilies) {
-            for (const family of layerFamilies[sourceLayerId]) {
-                const layer = family[0];
-                const extensions = gltf.json.extensionsUsed;
-                layer.recalculate(parameters, []);
-                const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
-                // Upload to GPU without waiting for evaluation if we are in diffuse path
-                if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
-                buckets[layer.fqid] = bucket;
-                // do the first evaluation in the worker to avoid stuttering
-                // $FlowIgnore[incompatible-call] layer here is always a ModelStyleLayer
-                bucket.evaluate(layer);
-            }
-        }
-        this.status = 'done';
-        // $FlowFixMe flow is complaining about missing properties and buckets not being of type Array
-        callback(null, {buckets, featureIndex});
+
+        return load3DTile(data)
+            .then(gltf => {
+                if (!gltf) return callback(new Error('Could not parse tile'));
+                const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
+                const hasMapboxMeshFeatures = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
+                const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
+                for (const sourceLayerId in layerFamilies) {
+                    for (const family of layerFamilies[sourceLayerId]) {
+                        const layer = family[0];
+                        const extensions = gltf.json.extensionsUsed;
+                        layer.recalculate(parameters, []);
+                        const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
+                        // Upload to GPU without waiting for evaluation if we are in diffuse path
+                        if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
+                        buckets[layer.fqid] = bucket;
+                        // do the first evaluation in the worker to avoid stuttering
+                        // $FlowIgnore[incompatible-call] layer here is always a ModelStyleLayer
+                        bucket.evaluate(layer);
+                    }
+                }
+                this.status = 'done';
+                // $FlowFixMe flow is complaining about missing properties and buckets not being of type Array
+                callback(null, {buckets, featureIndex});
+            })
+            .catch((err) => callback(new Error(err.message)));
     }
 }
 

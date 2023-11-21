@@ -44,23 +44,32 @@ class ModelSource extends Evented implements Source {
         this._options = options;
     }
 
-    async load() {
-        /* $FlowIgnore[prop-missing] we don't need the full spec of model_source as it's only used for testing*/
+    load(): Promise<void> {
+        const modelPromises = [];
+
+        /* $FlowIgnore[prop-missing] we don't need the full spec of model_source as it's only used for testing */
         for (const modelId in this._options.models) {
             const modelSpec = this._options.models[modelId];
-            const gltf = await loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).catch((err) => {
+
+            const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
+                if (!gltf) return;
+                const nodes = convertModel(gltf);
+                const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
+                model.computeBoundsAndApplyParent();
+                this.models.push(model);
+            }).catch((err) => {
                 this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${err.message}`)));
             });
 
-            if (!gltf) continue;
-
-            const nodes = convertModel(gltf);
-            const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
-            model.computeBoundsAndApplyParent();
-            this.models.push(model);
+            modelPromises.push(modelPromise);
         }
-        this._loaded = true;
-        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+
+        return Promise.allSettled(modelPromises).then(() => {
+            this._loaded = true;
+            this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+        }).catch((err) => {
+            this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
+        });
     }
 
     // $FlowFixMe[method-unbinding]
