@@ -2406,7 +2406,10 @@ class Map extends Camera {
         return this.style.listImages();
     }
 
-    /** @section {Models} */
+    /**
+     * @section {Models}
+     * @private
+     */
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
@@ -2430,6 +2433,8 @@ class Map extends Camera {
      *         "model-id": "tree"
      *     }
      *});
+     *
+     * @private
      */
     addModel(id: string, url: string) {
         this._lazyInitEmptyStyle();
@@ -2447,6 +2452,8 @@ class Map extends Camera {
      * // Check if a model with the ID 'tree' exists in
      * // the style.
      * const treeModelExists = map.hasModel('tree');
+     *
+     * @private
      */
     hasModel(id: string): boolean {
         if (!id) {
@@ -2466,6 +2473,8 @@ class Map extends Camera {
      * // If an model with the ID 'tree' exists in
      * // the style, remove it.
      * if (map.hasModel('tree')) map.removeModel('tree');
+     *
+     * @private
      */
     removeModel(id: string) {
         this.style.removeModel(id);
@@ -2479,6 +2488,8 @@ class Map extends Camera {
     *
     * @example
     * const allModels = map.listModels();
+    *
+    * @private
     */
     listModels(): Array<string> {
         return this.style.listModels();
@@ -2647,65 +2658,6 @@ class Map extends Camera {
 
         this.style.removeLayer(id);
         return this._update(true);
-    }
-
-    /**
-     * Adds a set of Mapbox style light to the map's style.
-     *
-     * _Note: This light is not to confuse with our legacy light API used through {@link Map#setLight} and {@link Map#getLight}_.
-     *
-     * @param {Array<LightsSpecification>} lights An array of lights to add, conforming to the Mapbox Style Specification's light definition.
-     * @returns {Map} Returns itself to allow for method chaining.
-     *
-     * @example
-     * // Add a directional light
-     * map.setLights([{
-     *     "id": "sun_light",
-     *     "type": "directional",
-     *     "properties": {
-     *         "color": "rgba(255.0, 0.0, 0.0, 1.0)",
-     *         "intensity": 0.4,
-     *         "direction": [200.0, 40.0],
-     *         "cast-shadows": true,
-     *         "shadow-intensity": 0.2
-     *     }
-     * }]);
-     */
-    setLights(lights: ?Array<LightsSpecification>): this {
-        this._lazyInitEmptyStyle();
-        if (lights && lights.length === 1 && lights[0].type === "flat") {
-            const flatLight: FlatLightSpecification = lights[0];
-            if (!flatLight.properties) {
-                this.style.setFlatLight({}, "flat");
-            } else {
-                this.style.setFlatLight(flatLight.properties, flatLight.id, {});
-            }
-        } else {
-            this.style.setLights(lights);
-            if (this.painter.terrain) {
-                this.painter.terrain.invalidateRenderCache = true;
-            }
-        }
-        return this._update(true);
-    }
-
-    /**
-     * Returns the lights added to the map.
-     *
-     * @returns {Array<LightSpecification>} Lights added to the map.
-     * @example
-     * const lights = map.getLights();
-     */
-    getLights(): ?Array<LightsSpecification> {
-        const lights = this.style.getLights() || [];
-        if (lights.length === 0) {
-            lights.push({
-                "id": this.style.light.id,
-                "type": "flat",
-                "properties": this.style.getFlatLight()
-            });
-        }
-        return lights;
     }
 
     /**
@@ -2896,6 +2848,8 @@ class Map extends Camera {
         return this.style.getLayoutProperty(layerId, name);
     }
 
+    /** @section {Style properties} */
+
     /**
      * Sets the value of a configuration property in the currently set style.
      *
@@ -2904,14 +2858,71 @@ class Map extends Camera {
      * @param {*} value The value of the configuration property. Must be of a type appropriate for the property, as defined by the style configuration schema.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
-     * map.setConfigProperty('showLabels', false);
+     * map.setConfigProperty('basemap', 'showLabels', false);
      */
     setConfigProperty(importId: string, configName: string, value: any): this {
         this.style.setConfigProperty(importId, configName, value);
         return this._update(true);
     }
 
-    /** @section {Style properties} */
+    /**
+     * Adds a set of Mapbox style light to the map's style.
+     *
+     * _Note: This light is not to confuse with our legacy light API used through {@link Map#setLight} and {@link Map#getLight}_.
+     *
+     * @param {Array<LightsSpecification>} lights An array of lights to add, conforming to the Mapbox Style Specification's light definition.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Add a directional light
+     * map.setLights([{
+     *     "id": "sun_light",
+     *     "type": "directional",
+     *     "properties": {
+     *         "color": "rgba(255.0, 0.0, 0.0, 1.0)",
+     *         "intensity": 0.4,
+     *         "direction": [200.0, 40.0],
+     *         "cast-shadows": true,
+     *         "shadow-intensity": 0.2
+     *     }
+     * }]);
+     */
+    setLights(lights: ?Array<LightsSpecification>): this {
+        this._lazyInitEmptyStyle();
+        if (lights && lights.length === 1 && lights[0].type === "flat") {
+            const flatLight: FlatLightSpecification = lights[0];
+            if (!flatLight.properties) {
+                this.style.setFlatLight({}, "flat");
+            } else {
+                this.style.setFlatLight(flatLight.properties, flatLight.id, {});
+            }
+        } else {
+            this.style.setLights(lights);
+            if (this.painter.terrain) {
+                this.painter.terrain.invalidateRenderCache = true;
+            }
+        }
+        return this._update(true);
+    }
+
+    /**
+     * Returns the lights added to the map.
+     *
+     * @returns {Array<LightSpecification>} Lights added to the map.
+     * @example
+     * const lights = map.getLights();
+     */
+    getLights(): ?Array<LightsSpecification> {
+        const lights = this.style.getLights() || [];
+        if (lights.length === 0) {
+            lights.push({
+                "id": this.style.light.id,
+                "type": "flat",
+                "properties": this.style.getFlatLight()
+            });
+        }
+        return lights;
+    }
 
     /**
      * Sets the any combination of light values.
