@@ -53,6 +53,11 @@ class ModelStyleLayer extends StyleLayer {
         return 0;
     }
 
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsFeature(): boolean {
+        return false;
+    }
+
     _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;
