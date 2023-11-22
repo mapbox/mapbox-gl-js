@@ -87,7 +87,15 @@
             "shadow-intensity": 0.2
           }
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0",
+          "macos": "11.0.0"
+        }
+      }
     },
     "terrain": {
       "type": "terrain",
