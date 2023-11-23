@@ -632,11 +632,13 @@ class Style extends Evented {
                 light = style.light;
 
             if (style.stylesheet.lights) {
-                if (style.ambientLight != null)
-                    ambientLight = style.ambientLight;
+                for (const light of style.stylesheet.lights) {
+                    if (light.type === 'ambient' && style.ambientLight != null)
+                        ambientLight = style.ambientLight;
 
-                if (style.directionalLight != null)
-                    directionalLight = style.directionalLight;
+                    if (light.type === 'directional' && style.directionalLight != null)
+                        directionalLight = style.directionalLight;
+                }
             }
 
             const isGlobe = style.stylesheet.projection && style.stylesheet.projection.name === 'globe';

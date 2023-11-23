@@ -1885,6 +1885,37 @@ test('Style#setState', (t) => {
         t.end();
     });
 
+    t.test('Removes 3D light independently', async (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({imports: [{id: 'basemap', url: '', data: createStyleJSON({
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.5}},
+                {id: 'environment', type: 'ambient', properties: {intensity: 0.5}}
+            ]
+        })}]});
+
+        style.loadJSON(initialStyle);
+        await new Promise((resolve) => style.on('style.load', resolve));
+
+        t.ok(style.ambientLight);
+        t.ok(style.directionalLight);
+
+        const nextStyle = createStyleJSON({imports: [{id: 'basemap', url: '', data: createStyleJSON({
+            lights: [
+                {id: 'sun', type: 'directional', properties: {intensity: 0.5}},
+            ]
+        })}]});
+
+        style.setState(nextStyle);
+        t.deepEqual(style.serialize(), nextStyle);
+
+        t.notOk(style.ambientLight);
+        t.ok(style.directionalLight);
+
+        t.end();
+    });
+
     t.test('Removes all fragments', async (t) => {
         const style = new Style(new StubMap());
 
