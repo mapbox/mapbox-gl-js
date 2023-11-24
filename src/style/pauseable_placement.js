@@ -4,6 +4,7 @@ import browser from '../util/browser.js';
 
 import {Placement} from '../symbol/placement.js';
 import {PerformanceUtils} from '../util/performance.js';
+import {makeFQID} from '../util/fqid.js';
 
 import type Transform from '../geo/transform.js';
 import type StyleLayer from './style_layer.js';
@@ -106,11 +107,10 @@ class PauseablePlacement {
 
                 const symbolLayer = ((layer: any): SymbolStyleLayer);
                 const zOffset = symbolLayer.layout.get('symbol-z-elevate');
-                if (!this._inProgressLayer) {
-                    this._inProgressLayer = new LayerPlacement(symbolLayer);
-                }
+                const inProgressLayer = this._inProgressLayer = this._inProgressLayer || new LayerPlacement(symbolLayer);
 
-                const pausePlacement = this._inProgressLayer.continuePlacement(zOffset ? layerTilesInYOrder[layer.source] : layerTiles[layer.source], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
+                const sourceId = makeFQID(layer.source, layer.scope);
+                const pausePlacement = inProgressLayer.continuePlacement(zOffset ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
 
                 if (pausePlacement) {
                     PerformanceUtils.recordPlacementTime(browser.now() - startTime);

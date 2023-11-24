@@ -2551,16 +2551,20 @@ class Style extends Evented {
             const styleLayer = this._mergedLayers[layerId];
             if (styleLayer.type !== 'symbol') continue;
 
-            if (!layerTiles[styleLayer.source]) {
+            const sourceId = makeFQID(styleLayer.source, styleLayer.scope);
+
+            let sourceTiles = layerTiles[sourceId];
+
+            if (!sourceTiles) {
                 const sourceCache = this.getLayerSourceCache(styleLayer);
                 if (!sourceCache) continue;
                 const tiles = sourceCache.getRenderableIds(true).map((id) => sourceCache.getTileByID(id));
-                layerTilesInYOrder[styleLayer.source] = tiles.slice();
-                layerTiles[styleLayer.source] =
+                layerTilesInYOrder[sourceId] = tiles.slice();
+                sourceTiles = layerTiles[sourceId] =
                     tiles.sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
             }
 
-            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source], transform.center.lng, transform.projection);
+            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, sourceTiles, transform.center.lng, transform.projection);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
         this.crossTileSymbolIndex.pruneUnusedLayers(this._mergedOrder);
@@ -2609,7 +2613,7 @@ class Style extends Evented {
             for (const layerId of this._mergedOrder) {
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
-                this.placement.updateLayerOpacities(styleLayer, layerTiles[styleLayer.source]);
+                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)]);
             }
         }
 

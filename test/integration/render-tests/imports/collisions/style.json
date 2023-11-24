@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "composite": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, -10]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "composite",
+      "layout": {
+        "icon-image": "star-12"
+      }
+    }
+  ],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sprite": "local://sprites/sprite",
+        "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+        "sources": {
+          "composite": {
+            "type": "geojson",
+            "data": {"type": "Point", "coordinates": [0, 10]}
+          }
+        },
+        "layers": [
+          {
+            "id": "icon",
+            "type": "symbol",
+            "source": "composite",
+            "layout": {
+              "icon-image": "star-stroked-12"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
