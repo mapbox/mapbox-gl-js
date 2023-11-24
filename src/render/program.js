@@ -5,7 +5,6 @@ import {
     preludeFragPrecisionQualifiers,
     preludeVertPrecisionQualifiers,
     preludeCommonSource,
-    standardDerivativesExt,
     includeMap
 } from '../shaders/shaders.js';
 import assert from 'assert';
@@ -124,7 +123,6 @@ class Program<Us: UniformBindings> {
         const version = '#version 300 es\n';
 
         let fragmentSource = version + defines.concat(
-            version.length === 0 ? standardDerivativesExt.concat(preludeFragPrecisionQualifiers) : preludeFragPrecisionQualifiers,
             preludeFragPrecisionQualifiers,
             preludeCommonSource,
             prelude.fragmentSource).join('\n');

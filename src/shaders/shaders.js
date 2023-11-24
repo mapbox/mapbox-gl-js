@@ -147,8 +147,6 @@ precision mediump float;
 
 #endif`;
 
-export const standardDerivativesExt = '#extension GL_OES_standard_derivatives : enable\n';
-
 export default {
     background: compile(backgroundFrag, backgroundVert),
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
