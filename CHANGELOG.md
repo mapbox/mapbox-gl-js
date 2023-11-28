@@ -1,155 +1,56 @@
-## 3.0.0-rc.2
+## 3.0.0
 
-Mapbox GL JS v3 enables the Mapbox Standard Style, a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md). Changes since `v3.0.0-rc.1`:
+Mapbox GL JS v3 enables the [Mapbox Standard Style](https://www.mapbox.com/blog/standard-core-style), a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md).
 
-### Features and improvements ✨
+### Breaking changes ⚠️
 
-- Improve performance for styles that use both hillshade layers and terrain.
-
-### Bug fixes 🐞
-
-- Fix an issue with `setConfigProperty` not taking effect for certain properties.
-- Fix rendering issues when a style and its imports share the same source IDs.
-- Fix `symbol-z-elevate` elevating symbols over invisible fill extrusions (with zero opacity).
-- Fix an issue with style validation accepting a style import with an empty ID.
-- Fix an issue with validation of unknown properties in `lights` objects.
-
-## 3.0.0-rc.1
-
-### Features and improvements ✨
-
-- Enable zoom-based expressions for model rotation, scale and translation.
-- Optimize shader compilation to reduce stuttering on complex 3D styles.
-- Reduce stuttering when loading 3D tiles with models.
-- Improve memory footprint when rendering ground lighting effects.
-- Reduce flickering of symbols along lines due to rounding errors.
-- Improve panning over bumpy terrain so that it feels smooth.
-- Optimize switching between styles that have imports.
-- Add support for `slot` in custom layers.
-
-### Bug fixes 🐞
-
-- Fix rendering of line layers with data-driven `line-border`.
-- Fix an issue with lighting inconsistency between rendering with and without terrain.
-- Fix an issue with symbols sometimes not rendering correctly over terrain on top-down view.
-- Fix an issue with `raster-color` sometimes causing memory issues.
-- Fix an issue with non-1 alpha in `fill-extrusion-color` causing rendering issues in 3D lighting mode.
-- Disallow duplicate style import IDs.
-- Disallow duplicate directional and ambient lights.
-- Fix wireframe debug mode for model rendering.
-- Root style top-level properties take precedence over children import top-level  properties
-
-## 3.0.0-beta.5
-
-### Features and improvements ✨
-
-- Improve shadow and fog rendering performance.
-- Slightly improve performance of 3D layers on highly pitched views by rendering front to back.
-- Make zooming over dynamic terrain (that pops in as you zoom) smoother.
-- Add `renderstart` event, which combined with `render` event can be used to measure rendering frame duration.
-
-### Bug fixes 🐞
-
-- Fix shadows sometimes flickering when zooming in on the Standard style.
-- Fix flickering when using GeoJSON `setData` to animate 3D models.
-- Fix symbols elevated over 3D layers jumping to ground level and back during zoom.
-- Fix an error when loading a 3D tile where multiple materials reference the same texture.
-- Fix several edge cases when smoothing terrain under 3D landmarks.
-- Fix `hillshade-illumination-direction` to align with light direction if `hillshade-illumination-anchor` is not set to `viewport`.
-- Fix precision issues when rendering ground flood light.
-- Fix styles with `fragment: false` not to be loaded as basemap imports.
-- Fix an error on `map` `hasImage` and `updateImage` after the map was removed.
-
-## 3.0.0-beta.4
-
-### ✨ Features and improvements
-
-- Significantly improve map loading performance on views with 3D models.
-- Significantly reduce the loaded bundle size on 3D styles by implementing a custom 3D model parsing pipeline.
-- Improve shadow rendering performance.
-- Improve flood light and ground ambient occlusion performance and rendering quality.
-- Improve rendering of stars on globe view.
-- Add `hillshade-emissive-strength` property for styling the hillshade layer with the new lighting API.
-
-### Bug fixes 🐞
-
-- Fix collisions when rendering 3D models on top of terrain.
-- Correct half-texel misalignment in `raster-color` lookup texture sampling.
-- Fix level of detail selection for models in the distance.
-- Fix the order of layers in `queryRenderedFeatures` results on maps with globe and terrain.
-- Fix an error when zooming out on certain globe views when using GL JS development bundle.
-
-## 3.0.0-beta.3
-
-### ✨ Features and improvements
-
-- ⚠️ Breaking: drop support for WebGL 1. WebGL 2 support is now required to use GL JS v3 (thankfully it is now [universally supported](https://caniuse.com/webgl2) across browsers).
-- Add support for fading out 3D layers in the distance with `fill-extrusion-cutoff-fade-range` and `model-cutoff-fade-range` style properties.
-- Add support for controlling the vertical fog range with `vertical-range` style property.
-- Add support for elevating symbols over buildings & other 3D layers with `symbol-z-elevate` style property.
-- Improve rendering performance of the new 3D features (shadows, models and the new lighting model).
-
-### Bug fixes 🐞
-
-- Fix issues with light transitions when using `map` `setLights` or `setConfigProperty`.
-- Fix issues with shadows popping in abruptly when moving the map.
-- Fix a bug with horizon rendering on Windows/NVidia.
-- Fix `map` `transformRequest` option not being applied to model URLs.
-- Fix an edge case when rendering ground flood effect on very large buildings.
-- Fix an issue that could cause `GL_INVALID_OPERATION: Vertex buffer is not big enough for the draw call` warnings in certain map views.
-- Fix an issue with rendering of mipmapped non-square textures on models.
-- Fix an issue with light-dependent expressions not being re-evaluated on features without IDs.
-- Fix `visibility` not being re-evaluated when using `setConfigProperty`.
-- Fix various issues when calling `setStyle` on a map with style imports.
-- Accessibility fixes: remove `tabindex` when the map is not interactive; remove `role="list"` from the attribution control; add `role="img"` to markers (h/t [@kumiko-haraguchi](https://github.com/kumiko-haraguchi) and [@aviroopjana](https://github.com/aviroopjana)).
-- Fix an issue with styles not inheriting `transition` options from imports.
-- Fix an issue where an error loading Draco decompression library from CDN wasn't handled gracefully.
-
-## 3.0.0-beta.2
-
-### ✨ Features and improvements
-
-- Improve performance of fill extrusion ground flood light & ambient occlusion effect.
-- Improve terrain sampling accuracy.
-- Add `style.import.load` event to track loading of imported style fragments and ensure `style.load` is only called once per style.
-- Allow adding symbol layers to styles with imports if they don't have a `glyphs` endpoint specified (falling back to a default Mapbox endpoint).
-- Make sure API methods that return features or layers don't leak internals of imported styles.
-- Remove `optimizeForTerrain` map option (layer rendering on terrain is always optimized now).
-
-### Bug fixes 🐞
-
-- Fix accuracy of atmosphere gradient when rendering globe.
-- Fix a bug where circle & heatmap layers rendered incorrectly in some situations.
-- Fix a bug where model colors weren't always re-evaluated when light properties changed.
-- Fix a bug where calling `setStyle` when using the Standard style failed.
-- Fix a bug where `map.removeSource` didn't work properly with the Standard style.
-- Fix a bug with `map.setLayoutProperty` not working on a `custom` layer.
-- Fix a bug with hillshade rendering on terrain when combined with new light API.
-- Fix a bug where fill extrusion flood light effect sometimes caused visible seams between tiles.
-- Fix a bug with horizon placement when map `padding` is used.
-
-## 3.0.0-beta.1
+- Discontinue WebGL 1 support. WebGL 2 is now mandatory for GL JS v3 usage, aligned with universal [browser support](https://caniuse.com/webgl2).
+- Remove the `optimizeForTerrain` map option (layer rendering on globe and terrain is always optimized now).
 
 ### ✨ Features and improvements
 
 - Introduced a new 3D Lights API that supports directional and ambient light sources to give you control of lighting and shadows in your map when using 3D objects.
-- Added new APIs for `fill-extrusion` and other layers to support 3D lighting styling.
-- Added support for shadows, casted from fill extrusions.
-- Introduced flood lighting for both the walls of the extruded buildings and the ground beneath them.
+- Add new `*-emissive-strength` properties for styling layers with the new lighting API.
+- Introduced flood lighting for the extruded buildings' walls and the ground beneath them.
 - Introduced ambient occlusion to affect the ground beneath the extruded buildings.
-- Introduced rounding fill extrusion edges for a smoother appearance.
-- Introduced the `icon-image-cross-fade` property, which controls the transitioning between the two variants of an icon image.
-- Introduced raster colorization via `raster-color` paint properties.
-- Introduced `hsl` and `hsla` color expressions: These expressions allow you to define colors using hue, saturation, and lightness format.
-- Introduced `random` expression: Generate random values using this expression. Use this expression to generate random values, which can be particularly helpful for introducing randomness into your map data.
 - Introduced `measureLight` expression lights configuration property: Create dynamic styles based on lighting conditions.
-- Introduced `config` expression: Retrieves the configuration value for the given option.
-- Introduced `raster-value` expression: Returns the raster value of a pixel computed via `raster-color-mix`.
-- Introduced `distance` expression: Returns the shortest distance in meters between the evaluated feature and the input geometry.
+- Added support for shadows cast from fill extrusions.
+- Introduced `hsl` and `hsla` color expressions: These expressions allow you to define colors using hue, saturation, and lightness format.
+- Add support for fading out 3D layers in the distance with `fill-extrusion-cutoff-fade-range` and `model-cutoff-fade-range` style properties.
 - Introducing support for nested and configurable styles. You can now import other styles into your main style, with updates to imported styles automatically reflected in your main style. Configuration properties can be set for imported styles, making them customizable.
 - Introduced concept of `slot`s, pre-specified locations in the style, where your layer can be added (e.g., on top of existing land layers but below all labels).
+- Introduced `config` expression: Retrieves the configuration value for the given option.
 - When no `style` option is provided to the Map constructor, the Mapbox Standard Style is now enabled as a default.
-- WebGL2 is now enabled by default.
+- Add a `style.import.load` event to track the loading of imported style fragments.
+- Improve terrain sampling accuracy.
+- Improve zooming and panning over dynamic terrain so that it feels smooth.
+- Improve performance for styles that use both hillshade layers and terrain.
+- Introduced raster colorization via `raster-color` paint properties.
+- Introduced `raster-value` expression: Returns the raster value of a pixel computed via `raster-color-mix`.
+- Add support for controlling the vertical fog range with `vertical-range` style property.
+- Introduced rounding fill extrusion edges for a smoother appearance.
+- Introduced the `icon-image-cross-fade` property, which controls the transitioning between the two variants of an icon image.
+- Introduced `random` expression: Generate random values using this expression. Use this expression to generate random values, which can be particularly helpful for introducing randomness into your map data.
+- Introduced `distance` expression: Returns the shortest distance in meters between the evaluated feature and the input geometry.
+- Add support for elevating symbols over buildings & other 3D layers with `symbol-z-elevate` style property.
+- Improve rendering of stars on globe view.
+- Add the `renderstart` event, which, combined with the `render` event, can be used to measure rendering frame duration.
+- Enable zoom-based expressions for model rotation, scale, and translation.
+- Optimize shader compilation to reduce stuttering on complex 3D styles.
+- Reduce flickering of symbols along lines due to rounding errors.
+
+### Bug fixes 🐞
+
+- Fix the accuracy of the atmosphere gradient when rendering the globe.
+- Fix a bug with horizon placement when map `padding` is used.
+- Fix a bug with horizon rendering on Windows/NVidia.
+- Accessibility fixes: remove `tabindex` when the map is not interactive; remove `role="list"` from the attribution control; add `role="img"` to markers (h/t [@kumiko-haraguchi](https://github.com/kumiko-haraguchi) and [@aviroopjana](https://github.com/aviroopjana)).
+- Fix the order of layers in `queryRenderedFeatures` results on maps with globe and terrain.
+- Fix an error when zooming out on certain globe views using the GL JS development bundle.
+- Fix an error on `map` `hasImage` and `updateImage` after the map was removed.
+- Fix rendering of line layers with data-driven `line-border`.
+- Fix an issue with symbols sometimes not rendering correctly over the terrain on a top-down view.
+- Remove duplicate frag precision qualifiers
 
 ## 2.15.0
 
