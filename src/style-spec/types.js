@@ -501,7 +501,8 @@ export type FillExtrusionLayerSpecification = {|
         "fill-extrusion-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>,
         "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
-        "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification
+        "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification,
+        "fill-extrusion-emissive-strength"?: PropertyValueSpecification<number>
     |}
 |}
 

@@ -266,6 +266,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
+    const emissiveStrength = layer.paint.get('fill-extrusion-emissive-strength');
     const baseDefines = ([]: any);
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
@@ -373,9 +374,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
-
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);
+                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, emissiveStrength);
             }
         }
 

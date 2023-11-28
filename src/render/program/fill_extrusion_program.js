@@ -36,7 +36,8 @@ export type FillExtrusionUniformsType = {|
     'u_flood_light_color': Uniform3f,
     'u_vertical_scale': Uniform1f,
     'u_flood_light_intensity': Uniform1f,
-    'u_ground_shadow_factor': Uniform3f
+    'u_ground_shadow_factor': Uniform3f,
+    'u_emissive_strength': Uniform1f
 |};
 
 export type FillExtrusionDepthUniformsType = {|
@@ -102,7 +103,8 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_flood_light_color': new Uniform3f(context),
     'u_vertical_scale': new Uniform1f(context),
     'u_flood_light_intensity': new Uniform1f(context),
-    'u_ground_shadow_factor': new Uniform3f(context)
+    'u_ground_shadow_factor': new Uniform3f(context),
+    'u_emissive_strength': new Uniform1f(context)
 });
 
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
@@ -167,7 +169,8 @@ const fillExtrusionUniformValues = (
     floodLightColor: [number, number, number],
     verticalScale: number,
     floodLightIntensity: number,
-    groundShadowFactor: [number, number, number]
+    groundShadowFactor: [number, number, number],
+    emissiveStrength: number
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -200,7 +203,8 @@ const fillExtrusionUniformValues = (
         'u_flood_light_color': floodLightColor,
         'u_vertical_scale': verticalScale,
         'u_flood_light_intensity': floodLightIntensity,
-        'u_ground_shadow_factor': groundShadowFactor
+        'u_ground_shadow_factor': groundShadowFactor,
+        'u_emissive_strength': emissiveStrength
     };
 
     if (tr.projection.name === 'globe') {
@@ -245,7 +249,7 @@ const fillExtrusionPatternUniformValues = (
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, coord,
-        heightLift, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0]);
+        heightLift, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0], 0);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };

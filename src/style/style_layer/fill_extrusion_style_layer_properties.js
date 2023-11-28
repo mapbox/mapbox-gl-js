@@ -49,6 +49,7 @@ export type PaintProps = {|
     "fill-extrusion-vertical-scale": DataConstantProperty<number>,
     "fill-extrusion-rounded-roof": DataConstantProperty<boolean>,
     "fill-extrusion-cutoff-fade-range": DataConstantProperty<number>,
+    "fill-extrusion-emissive-strength": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -73,6 +74,7 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-vertical-scale": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-scale"]),
     "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
     "fill-extrusion-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cutoff-fade-range"]),
+    "fill-extrusion-emissive-strength": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

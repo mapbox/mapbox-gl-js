@@ -3,6 +3,7 @@
 #include "_prelude_lighting.glsl"
 
 varying vec4 v_color;
+varying vec4 v_flat;
 
 #ifdef RENDER_SHADOWS
 varying highp vec4 v_pos_light_view_0;
@@ -34,6 +35,8 @@ uniform vec3 u_ground_shadow_factor;
 varying float v_flood_radius;
 varying float v_has_floodlight;
 #endif
+
+uniform float u_emissive_strength;
 
 varying float v_height;
 
@@ -110,6 +113,7 @@ float flood_radiance = 0.0;
 #endif // FLOOD_LIGHT
 #endif // !RENDER_SHADOWS
 
+    color.rgb = mix(color.rgb, v_flat.rgb, u_emissive_strength);
     color *= u_opacity;
 #endif // LIGHTING_3D_MODE
 

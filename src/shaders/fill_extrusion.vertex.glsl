@@ -35,6 +35,7 @@ uniform float u_height_lift;
 uniform highp float u_vertical_scale;
 
 varying vec4 v_color;
+varying vec4 v_flat;
 
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
@@ -209,7 +210,7 @@ void main() {
 #endif // FLOOD_LIGHT
 
     v_color = vec4(color.rgb, 1.0);
-
+    v_flat = vec4(linearProduct(color.rgb, vec3(calculate_NdotL(normal))), 1.0);
 #else // LIGHTING_3D_MODE
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light
