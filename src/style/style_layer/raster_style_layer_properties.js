@@ -37,6 +37,7 @@ export type PaintProps = {|
     "raster-contrast": DataConstantProperty<number>,
     "raster-resampling": DataConstantProperty<"linear" | "nearest">,
     "raster-fade-duration": DataConstantProperty<number>,
+    "raster-emissive-strength": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -51,6 +52,7 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
     "raster-resampling": new DataConstantProperty(styleSpec["paint_raster"]["raster-resampling"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
+    "raster-emissive-strength": new DataConstantProperty(styleSpec["paint_raster"]["raster-emissive-strength"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

@@ -15,6 +15,8 @@ uniform float u_saturation_factor;
 uniform float u_contrast_factor;
 uniform vec3 u_spin_weights;
 
+uniform float u_emissive_strength;
+
 #ifdef RASTER_COLOR
 uniform sampler2D u_color_ramp;
 uniform highp vec2 u_colorization_scale;
@@ -82,7 +84,7 @@ void main() {
     vec3 out_color = mix(u_high_vec, u_low_vec, rgb);
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_ground(out_color);
+    out_color = apply_lighting_with_emission_ground(vec4(out_color, 1.0), u_emissive_strength).rgb;
 #endif
 #ifdef FOG
     out_color = fog_dither(fog_apply(out_color, v_fog_pos));

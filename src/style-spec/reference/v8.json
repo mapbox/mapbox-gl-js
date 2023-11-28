@@ -7776,7 +7776,33 @@
         ]
       },
       "property-type": "data-constant"
-    }
+    },
+    "raster-emissive-strength": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "requires": [
+        "lights"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
+   }
   },
   "paint_hillshade": {
     "hillshade-illumination-direction": {

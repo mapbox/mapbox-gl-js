@@ -34,6 +34,7 @@ export type RasterUniformsType = {|
     'u_colorization_mix': Uniform4f,
     'u_colorization_scale': Uniform2f,
     'u_color_ramp': Uniform1i,
+    'u_emissive_strength': Uniform1f
 |};
 
 export type RasterDefinesType = 'RASTER_COLOR';
@@ -57,6 +58,7 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_colorization_mix': new Uniform4f(context),
     'u_colorization_scale': new Uniform2f(context),
     'u_color_ramp': new Uniform1i(context),
+    'u_emissive_strength': new Uniform1f(context)
 });
 
 const rasterUniformValues = (
@@ -70,7 +72,8 @@ const rasterUniformValues = (
     perspectiveTransform: [number, number],
     colorRampUnit: number,
     colorMapInputMix: [number, number, number, number],
-    colorRange: [number, number]
+    colorRange: [number, number],
+    emissiveStrength: number
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
     'u_normalize_matrix': normalizeMatrix,
@@ -90,6 +93,7 @@ const rasterUniformValues = (
     'u_colorization_mix': colorMapInputMix,
     'u_colorization_scale': colorScaleFactors(colorRange),
     'u_color_ramp': colorRampUnit,
+    'u_emissive_strength': emissiveStrength
 });
 
 function spinWeights(angle: number) {

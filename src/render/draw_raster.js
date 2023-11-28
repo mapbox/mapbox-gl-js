@@ -51,7 +51,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
     }
 
-    const colorMode = painter.colorModeForDrapableLayerRenderPass();
+    const emissiveStrength = layer.paint.get('raster-emissive-strength');
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
 
     // When rendering to texture, coordinates are already sorted: primary by
     // proxy id and secondary sort is by Z.
@@ -103,7 +104,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             painter.renderDefaultSouthPole = false;
         }
         const perspectiveTransform = source.perspectiveTransform;
-        const uniformValues = rasterUniformValues(projMatrix, normalizeMatrix, globeMatrix, [0, 0], 1, fade, layer, perspectiveTransform || [0, 0], RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0]);
+        const uniformValues = rasterUniformValues(projMatrix, normalizeMatrix, globeMatrix, [0, 0], 1, fade, layer, perspectiveTransform || [0, 0], RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0], emissiveStrength);
         const program = painter.getOrCreateProgram('raster', {defines: rasterColor.defines});
 
         painter.uploadCommonUniforms(context, program, null);
@@ -174,7 +175,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
         const emptyMatrix = new Float32Array(16);
-        const uniformValues = rasterUniformValues(projMatrix, emptyMatrix, emptyMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0]);
+        const uniformValues = rasterUniformValues(projMatrix, emptyMatrix, emptyMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0], emissiveStrength);
         const affectedByFog = painter.isTileAffectedByFog(coord);
 
         const program = painter.getOrCreateProgram('raster', {defines: rasterColor.defines, overrideFog: affectedByFog});
