@@ -438,8 +438,9 @@ vec4 finalColor;
     vec3 color = computeLightContribution(mat, lightDir, lightColor);
 
     // Ambient Occlusion
+    float ao = 1.0;
 #if defined (HAS_TEXTURE_u_occlusionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
-    float ao = (texture2D(u_occlusionTexture, uv_2f).x - 1.0) * u_aoIntensity + 1.0;
+    ao = (texture2D(u_occlusionTexture, uv_2f).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
     // Emission
@@ -468,7 +469,8 @@ vec4 finalColor;
 #endif
     // Use emissive strength as interpolation between lit and unlit color
     // for coherence with other layer types.
-    color = mix(color, mat.baseColor.rgb, u_emissive_strength);
+    vec3 unlitColor = mat.baseColor.rgb * ao + emissive.rgb;
+    color = mix(color, unlitColor, u_emissive_strength);
     color = linearTosRGB(color);
     color *= opacity;
     finalColor = vec4(color, opacity);
