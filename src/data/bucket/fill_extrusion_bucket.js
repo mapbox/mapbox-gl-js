@@ -28,6 +28,7 @@ import {clamp} from '../../util/util.js';
 import type {ClippedPolygon} from '../../util/polygon_clipping.js';
 import type {Vec3} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
+import type {Segment} from '../segment.js';
 import type {
     Bucket,
     BucketParameters,
@@ -46,6 +47,8 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import {Aabb, Frustum} from '../../util/primitives.js';
+import {Elevation} from '../../terrain/elevation.js';
 
 export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-base',
@@ -137,6 +140,8 @@ export class PartData {
     flags: number;
     footprintSegIdx: number;
     footprintSegLen: number;
+    polygonSegIdx: number;
+    polygonSegLen: number;
     min: Point;
     max: Point;
     height: number;
@@ -150,6 +155,8 @@ export class PartData {
         this.flags = 0;
         this.footprintSegIdx = -1;
         this.footprintSegLen = 0;
+        this.polygonSegIdx = -1;
+        this.polygonSegLen = 0;
         this.min = new Point(Number.MAX_VALUE, Number.MAX_VALUE);
         this.max = new Point(-Number.MAX_VALUE, -Number.MAX_VALUE);
         this.height = 0;
@@ -570,6 +577,25 @@ export class GroundEffect {
     }
 }
 
+type PolygonSegment = {
+    triangleArrayOffset: number;
+    triangleCount: number;
+    triangleSegIdx: number;
+};
+
+type SegmentedFeature = {
+    centroidIdx: number;
+    subtile: number;
+    polygonSegmentIdx: number;
+    triangleSegmentIdx: number;
+};
+
+type TriangleSubSegment = {
+    segment: Segment;
+    min: Point;
+    max: Point;
+};
+
 class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
@@ -619,6 +645,9 @@ class FillExtrusionBucket implements Bucket {
 
     maxHeight: number;
 
+    triangleSubSegments: Array<TriangleSubSegment>;
+    polygonSegments: Array<PolygonSegment>;
+
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
@@ -648,6 +677,8 @@ class FillExtrusionBucket implements Bucket {
         this.groundEffect = new GroundEffect(options);
         this.maxHeight = 0;
         this.partLookup = {};
+        this.triangleSubSegments = [];
+        this.polygonSegments = [];
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -658,14 +689,12 @@ class FillExtrusionBucket implements Bucket {
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
         this.tileToMeter = tileToMeter(canonical);
         this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
-
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
             // $FlowFixMe[method-unbinding]
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
-
             const bucketFeature: BucketFeature = {
                 id,
                 sourceLayerIndex,
@@ -686,7 +715,12 @@ class FillExtrusionBucket implements Bucket {
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
         this.sortBorders();
+        if (this.projection.name !== "globe") {
+            this.splitToSubtiles();
+        }
         this.groundEffect.prepareBorderSegments();
+        // Clear polygon segment array
+        this.polygonSegments.length = 0;
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness: ?number) {
@@ -695,6 +729,9 @@ class FillExtrusionBucket implements Bucket {
             this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
         }
         this.sortBorders();
+        if (this.projection.name !== "globe") {
+            this.splitToSubtiles();
+        }
     }
 
     update(states: FeatureStates, vtLayer: IVectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness: ?number) {
@@ -770,6 +807,7 @@ class FillExtrusionBucket implements Bucket {
         const borderCentroidData = new BorderCentroidData();
         borderCentroidData.centroidDataIndex = this.centroidData.length;
         const centroid = new PartData();
+
         const base = this.layers[0].paint.get('fill-extrusion-base').evaluate(feature, {}, canonical);
         const onGround = base <= 0;
         const height = this.layers[0].paint.get('fill-extrusion-height').evaluate(feature, {}, canonical);
@@ -780,7 +818,6 @@ class FillExtrusionBucket implements Bucket {
         if (isGlobe && !this.layoutVertexExtArray) {
             this.layoutVertexExtArray = new FillExtrusionExtArray();
         }
-
         const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         for (let i = polygons.length - 1; i >= 0; i--) {
@@ -835,6 +872,13 @@ class FillExtrusionBucket implements Bucket {
             if (centroid.footprintSegIdx < 0) {
                 centroid.footprintSegIdx = this.footprintSegments.length;
             }
+
+            if (centroid.polygonSegIdx < 0) {
+                centroid.polygonSegIdx = this.polygonSegments.length;
+            }
+
+            // Store location of generated triangles for the future use
+            const polygonSeg = {triangleArrayOffset: this.indexArray.length, triangleCount: 0, triangleSegIdx: this.segments.segments.length - 1};
 
             const fpSegment = new FootprintSegment();
             fpSegment.vertexOffset = this.footprintVertices.length;
@@ -1095,7 +1139,10 @@ class FillExtrusionBucket implements Bucket {
                 }
             }
             this.footprintSegments.push(fpSegment);
+            polygonSeg.triangleCount = this.indexArray.length - polygonSeg.triangleArrayOffset;
+            this.polygonSegments.push(polygonSeg);
             ++centroid.footprintSegLen;
+            ++centroid.polygonSegLen;
         }
 
         assert(!isGlobe || (this.layoutVertexExtArray && this.layoutVertexExtArray.length === this.layoutVertexArray.length));
@@ -1134,6 +1181,182 @@ class FillExtrusionBucket implements Bucket {
             const borders = this.borderFeatureIndices[i];
             borders.sort((a, b) => (this.featuresOnBorder[a].borders: any)[i][0] - (this.featuresOnBorder[b].borders: any)[i][0]);
         }
+    }
+
+    splitToSubtiles() {
+        // Split fill extrusion features into 4 "sub-tiles" each of which can
+        // be rendered separately. This allows more effective rendering as primitives
+        // sent to GPU can be reduced by a large margin if most of the tile is outside
+        // of the screen.
+        //
+        // Triangles of each feature are sorted into correct sub-tile based on their centroid
+        // positions. These tiles are in memory in clockwise order so it's possible to
+        // render almost every possible combination with just a single draw call.
+        const segmentedFeatures: Array<SegmentedFeature> = [];
+
+        for (let centroidIdx = 0; centroidIdx < this.centroidData.length; centroidIdx++) {
+            const part = this.centroidData[centroidIdx];
+            const right = +((part.min.x + part.max.x) > EXTENT);
+            const bottom = +((part.min.y + part.max.y) > EXTENT);
+            const subtile = bottom * 2 + (right ^ bottom);
+            for (let i = 0; i < part.polygonSegLen; i++) {
+                const polySegIdx = part.polygonSegIdx + i;
+                segmentedFeatures.push({centroidIdx, subtile, polygonSegmentIdx: polySegIdx, triangleSegmentIdx: this.polygonSegments[polySegIdx].triangleSegIdx});
+            }
+        }
+        // Sort features based on their subtile index. Triangles can't be moved across
+        // orignal segment boundaries due to different baseVertex values.
+        const sortedTriangles = new TriangleIndexArray();
+        segmentedFeatures.sort((a, b) => a.triangleSegmentIdx === b.triangleSegmentIdx ? a.subtile - b.subtile : a.triangleSegmentIdx - b.triangleSegmentIdx);
+        let segmentIdx = 0;
+        let segmentBeginIndex = 0;
+        let segmentEndIndex = 0;
+        for (const segmentedFeature of segmentedFeatures) {
+            if (segmentedFeature.triangleSegmentIdx !== segmentIdx) {
+                break;
+            }
+            segmentEndIndex++;
+        }
+
+        const segmentedFeaturesEndIndex = segmentedFeatures.length;
+
+        while (segmentBeginIndex !== segmentedFeatures.length) {
+            segmentIdx = segmentedFeatures[segmentBeginIndex].triangleSegmentIdx;
+            // For each feature of this triangle segment (as in all triangles in `Segments[triSegIdx]`),
+            // find the number of triangles in each subtile and construct new segments for rendering
+            let subTileIdx = 0;
+            let featuresBeginIndex = segmentBeginIndex;
+            let featuresEndIndex = segmentBeginIndex;
+
+            for (let seg = featuresBeginIndex; seg < segmentEndIndex; seg++) {
+                if (segmentedFeatures[seg].subtile !== subTileIdx) {
+                    break;
+                }
+                featuresEndIndex++;
+            }
+            while (featuresBeginIndex !== segmentEndIndex) {
+                const featuresBegin = segmentedFeatures[featuresBeginIndex];
+                subTileIdx = featuresBegin.subtile;
+                const subtileMin = this.centroidData[featuresBegin.centroidIdx].min.clone();
+                const subtileMax = this.centroidData[featuresBegin.centroidIdx].max.clone();
+
+                // Add triangles of this subtile and construct a segment for rendering
+                const segment: Segment = {vertexOffset: this.segments.segments[segmentIdx].vertexOffset,
+                    primitiveOffset: sortedTriangles.length,
+                    vertexLength: this.segments.segments[segmentIdx].vertexLength,
+                    primitiveLength: 0,
+                    sortKey: undefined,
+                    vaos: {}};
+
+                for (let featureIdx = featuresBeginIndex; featureIdx < featuresEndIndex; featureIdx++) {
+
+                    const feature = segmentedFeatures[featureIdx];
+                    const data = this.polygonSegments[feature.polygonSegmentIdx];
+                    const centroidMin = this.centroidData[feature.centroidIdx].min;
+                    const centroidMax = this.centroidData[feature.centroidIdx].max;
+                    const iArray = this.indexArray.uint16;
+                    for (let i = data.triangleArrayOffset; i < data.triangleArrayOffset + data.triangleCount; i++) {
+                        sortedTriangles.emplaceBack(iArray[i * 3], iArray[i * 3 + 1], iArray[i * 3 + 2]);
+                    }
+                    segment.primitiveLength += data.triangleCount;
+                    subtileMin.x = Math.min(subtileMin.x, centroidMin.x);
+                    subtileMin.y = Math.min(subtileMin.y, centroidMin.y);
+                    subtileMax.x = Math.max(subtileMax.x, centroidMax.x);
+                    subtileMax.y = Math.max(subtileMax.y, centroidMax.y);
+                }
+                if (segment.primitiveLength > 0) {
+                    this.triangleSubSegments.push({segment, min: subtileMin, max: subtileMax});
+                }
+                featuresBeginIndex = featuresEndIndex;
+                for (let seg = featuresBeginIndex; seg < segmentEndIndex; seg++) {
+                    if (segmentedFeatures[seg].subtile !== segmentedFeatures[featuresBeginIndex].subtile) {
+                        break;
+                    }
+                    featuresEndIndex++;
+                }
+            }
+
+            segmentBeginIndex = segmentEndIndex;
+            for (let seg = segmentBeginIndex; seg < segmentedFeaturesEndIndex; seg++) {
+                if (segmentedFeatures[seg].triangleSegmentIdx !== segmentedFeatures[segmentBeginIndex].triangleSegmentIdx) {
+                    break;
+                }
+                segmentEndIndex++;
+            }
+        }
+        sortedTriangles._trim();
+        this.indexArray = sortedTriangles;
+    }
+
+    getVisibleSegments(renderId: OverscaledTileID, elevation: ?Elevation, frustum: Frustum): SegmentVector {
+        let minZ = 0;
+        let maxZ = 0;
+        const tiles =  1 << renderId.canonical.z;
+
+        if (elevation) {
+            const minmax = elevation.getMinMaxForTile(renderId);
+            if (minmax) {
+                minZ = minmax.min;
+                maxZ = minmax.max;
+            }
+        }
+        maxZ += this.maxHeight;
+
+        const id = renderId.toUnwrapped();
+
+        // Go through sub-tiles and merge visible ones that are also adjacent in memory
+        // into single segments.
+        let activeSegment: ?Segment;
+        const tileMin = [(id.canonical.x / tiles) + id.wrap, (id.canonical.y / tiles)];
+        const tileMax = [((id.canonical.x + 1) / tiles) + id.wrap, ((id.canonical.y + 1) / tiles)];
+
+        const outSegments = new SegmentVector();
+
+        const mix = (a: Array<number>, b: Array<number>, c: Array<number>): Array<number> => {
+            return [(a[0] * (1 - c[0])) + (b[0] * c[0]), (a[1] * (1 - c[1])) + (b[1] * c[1])];
+        };
+        const fracMin = [];
+        const fracMax = [];
+
+        for (const subSegment of this.triangleSubSegments) {
+            // Compute aabb of the subtile
+            fracMin[0] = subSegment.min.x / EXTENT;
+            fracMin[1] = subSegment.min.y / EXTENT;
+            fracMax[0] = subSegment.max.x / EXTENT;
+            fracMax[1] = subSegment.max.y / EXTENT;
+            const aabbMin = mix(tileMin, tileMax, fracMin);
+            const aabbMax = mix(tileMin, tileMax, fracMax);
+            const aabb = new Aabb([aabbMin[0], aabbMin[1], minZ], [aabbMax[0], aabbMax[1], maxZ]);
+            if (aabb.intersectsPrecise(frustum) === 0) {
+                if (activeSegment) {
+                    outSegments.segments.push(activeSegment);
+                    activeSegment = undefined;
+                }
+                continue;
+            }
+            const renderSegment = subSegment.segment;
+            if (activeSegment && activeSegment.vertexOffset !== renderSegment.vertexOffset) {
+                // vertex offset is different between adjacent segments => split to separate segments
+                outSegments.segments.push(activeSegment);
+                activeSegment = undefined;
+            }
+            if (!activeSegment) {
+                activeSegment = {vertexOffset: renderSegment.vertexOffset,
+                    primitiveLength: renderSegment.primitiveLength,
+                    vertexLength: renderSegment.vertexLength,
+                    primitiveOffset: renderSegment.primitiveOffset,
+                    sortKey: undefined,
+                    vaos: {}
+                };
+            } else {
+                activeSegment.vertexLength += renderSegment.vertexLength;
+                activeSegment.primitiveLength += renderSegment.primitiveLength;
+            }
+        }
+        if (activeSegment) {
+            outSegments.segments.push(activeSegment);
+        }
+        return outSegments;
     }
 
     // Encoded centroid x and y:

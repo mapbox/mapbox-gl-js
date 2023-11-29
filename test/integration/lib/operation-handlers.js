@@ -183,6 +183,18 @@ export const operationHandlers = {
             doneCb();
         });
 
+    },
+    check(map, params, doneCb) {
+
+        if (params[0] === "renderedVerticesCount") {
+            const layer = map.getLayer(params[1]);
+            const layerStats = layer.getLayerRenderingStats();
+            const renderedVertices = layerStats.numRenderedVerticesInShadowPass + layerStats.numRenderedVerticesInTransparentPass;
+            if (renderedVertices !== params[2]) {
+                throw new Error(params[3]);
+            }
+        }
+        doneCb();
     }
 };
 

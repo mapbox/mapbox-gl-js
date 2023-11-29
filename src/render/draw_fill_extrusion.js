@@ -246,6 +246,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 }
 
 function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {
+    layer.resetLayerRenderingStats();
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -306,6 +307,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     }
 
     const programName = drawDepth ? 'fillExtrusionDepth' : (image ? 'fillExtrusionPattern' : 'fillExtrusion');
+    const stats = layer.getLayerRenderingStats();
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
@@ -383,15 +385,34 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
+        let segments = bucket.segments;
+        if (!isGlobeProjection && !isShadowPass) {
+            segments = bucket.getVisibleSegments(tile.tileID, painter.terrain, painter.transform.getFrustum(0));
+            if (!segments.get().length) {
+                continue;
+            }
+        }
+        if (stats) {
+            if (!isShadowPass) {
+                for (const segment of segments.get()) {
+                    stats.numRenderedVerticesInTransparentPass += segment.primitiveLength;
+                }
+            } else {
+                for (const segment of segments.get()) {
+                    stats.numRenderedVerticesInShadowPass += segment.primitiveLength;
+                }
+            }
+        }
         const dynamicBuffers = [];
         if (painter.terrain || replacementActive) dynamicBuffers.push(bucket.centroidVertexBuffer);
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
-            bucket.segments, layer.paint, painter.transform.zoom,
+            segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
     }
+
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = false;
 }
 
