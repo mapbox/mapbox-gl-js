@@ -53,6 +53,14 @@
   },
   "layers": [
     {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white",
+        "background-emissive-strength": 1
+      }
+    },
+    {
       "id": "raster",
       "type": "raster",
       "source": "satellite",
