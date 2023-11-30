@@ -261,6 +261,35 @@ export class Elevation {
     get visibleDemTiles(): Array<Tile> {
         throw new Error('Getter must be implemented in subclass.');
     }
+
+    /**
+     * Get elevation minimum and maximum for tiles which are visible on the current frame.
+     */
+    getMinMaxForVisibleTiles(): ?{min: number, max: number} {
+        const visibleTiles = this.visibleDemTiles;
+        if (visibleTiles.length === 0) {
+            return null;
+        }
+
+        let found = false;
+        let min = Number.MAX_VALUE;
+        let max = Number.MIN_VALUE;
+        for (const tile of visibleTiles) {
+            const minmax = this.getMinMaxForTile(tile.tileID);
+            if (!minmax) {
+                continue;
+            }
+            min = Math.min(min, minmax.min);
+            max = Math.max(max, minmax.max);
+            found = true;
+        }
+
+        if (!found) {
+            return null;
+        }
+
+        return {min, max};
+    }
 }
 
 /**

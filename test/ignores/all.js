@@ -180,7 +180,11 @@ const skip = [
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-3",
 
     // Flaky in CI, covered by unit tests
-    "render-tests/terrain/camera-placement/elevation-not-yet-available"
+    "render-tests/terrain/camera-placement/elevation-not-yet-available",
+
+    // Flaky, https://mapbox.atlassian.net/browse/GLJS-608
+    "render-tests/model-layer/terrain-2-wheels-stunt",
+    "render-tests/model-layer/multiple-models-terrain"
 ];
 
 export default {todo, skip};

@@ -968,7 +968,15 @@ class Transform {
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
-        const maxRange = options.isTerrainDEM && this._elevation ? this._elevation.exaggeration() * 10000 : this._centerAltitude;
+        let maxRange;
+        if (this._elevation && options.isTerrainDEM) {
+            maxRange = this._elevation.exaggeration() * 10000;
+        } else if (this._elevation) {
+            const minMaxOpt = this._elevation.getMinMaxForVisibleTiles();
+            maxRange = minMaxOpt ? minMaxOpt.max : this._centerAltitude;
+        } else {
+            maxRange = this._centerAltitude;
+        }
         const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
         const scaleAdjustment = this.projection.isReprojectedInTileSpace ? getScaleAdjustment(this) : 1.0;

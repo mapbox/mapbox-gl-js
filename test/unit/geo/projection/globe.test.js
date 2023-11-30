@@ -76,7 +76,8 @@ test('Globe', (t) => {
                     return true;
                 },
                 getMinElevationBelowMSL: () => 0,
-                exaggeration: () => 1
+                exaggeration: () => 1,
+                getMinMaxForVisibleTiles: () => null
             };
         };
 
