@@ -2,8 +2,8 @@
 
 import Tile from './tile.js';
 import window from '../util/window.js';
+import Texture from '../render/texture.js';
 import TileBounds from './tile_bounds.js';
-import RasterTileSource from './raster_tile_source.js';
 import {extend, pick} from '../util/util.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {makeFQID} from '../util/fqid.js';
@@ -314,23 +314,30 @@ class CustomSource<T> extends Evented implements Source {
 
     loadTileData(tile: Tile, data: T): void {
         // Only raster data supported at the moment
-        RasterTileSource.loadTileData(tile, (data: any), this._map.painter);
-    }
-
-    unloadTileData(tile: Tile): void {
-        // Only raster data supported at the moment
-        RasterTileSource.unloadTileData(tile, this._map.painter);
+        tile.setTexture((data: any), this._map.painter);
     }
 
     // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile, callback: Callback<void>): void {
-        this.unloadTileData(tile);
+        // Only raster data supported at the moment
+        // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
+        if (tile.texture && tile.texture instanceof Texture) {
+            // Clean everything else up owned by the tile, but preserve the texture.
+            // Destroy first to prevent racing with the texture cache being popped.
+            tile.destroy(true);
+
+            // Save the texture to the cache
+            if (tile.texture && tile.texture instanceof Texture) {
+                this._map.painter.saveTileTexture(tile.texture);
+            }
+        } else {
+            tile.destroy();
+        }
+
         if (this._implementation.unloadTile) {
             const {x, y, z} = tile.tileID.canonical;
             this._implementation.unloadTile({x, y, z});
         }
-
-        tile.destroy();
 
         callback();
     }
