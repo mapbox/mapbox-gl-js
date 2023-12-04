@@ -14,12 +14,10 @@ import {makeFQID} from '../util/fqid.js';
 import type {Source} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type Map from '../ui/map.js';
-import type Painter from '../render/painter.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
-import type {TextureImage} from "../render/texture.js";
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
@@ -217,15 +215,6 @@ class RasterTileSource extends Evented implements Source {
             cacheEntryPossiblyAdded(this.dispatcher);
             callback(null);
         });
-    }
-
-    static loadTileData(tile: Tile, data: TextureImage, painter: Painter) {
-        tile.setTexture(data, painter);
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    static unloadTileData(tile: Tile, painter: Painter) {
-        // Texture caching on unload occurs in unloadTile
     }
 
     // $FlowFixMe[method-unbinding]
