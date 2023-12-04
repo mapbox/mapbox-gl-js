@@ -19,11 +19,12 @@ import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
-import type {TextureImage} from '../render/texture.js';
+import type {TextureImage} from "../render/texture.js";
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
 } from '../style-spec/types.js';
+import Texture from '../render/texture.js';
 
 /**
  * A source containing raster tiles.
@@ -222,10 +223,9 @@ class RasterTileSource extends Evented implements Source {
         tile.setTexture(data, painter);
     }
 
+    // eslint-disable-next-line no-unused-vars
     static unloadTileData(tile: Tile, painter: Painter) {
-        if (tile.texture) {
-            painter.saveTileTexture(tile.texture);
-        }
+        // Texture caching on unload occurs in unloadTile
     }
 
     // $FlowFixMe[method-unbinding]
@@ -239,7 +239,20 @@ class RasterTileSource extends Evented implements Source {
 
     // $FlowFixMe[method-unbinding]
     unloadTile(tile: Tile, callback: Callback<void>) {
-        if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
+        // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
+        if (tile.texture && tile.texture instanceof Texture) {
+            // Clean everything else up owned by the tile, but preserve the texture.
+            // Destroy first to prevent racing with the texture cache being popped.
+            tile.destroy(true);
+
+            // Save the texture to the cache
+            if (tile.texture && tile.texture instanceof Texture) {
+                this.map.painter.saveTileTexture(tile.texture);
+            }
+        } else {
+            tile.destroy();
+        }
+
         callback();
     }
 

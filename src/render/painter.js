@@ -1120,10 +1120,17 @@ class Painter {
         return translatedMatrix;
     }
 
+    /**
+     * Saves the tile texture for re-use when another tile is loaded.
+     *
+     * @returns true if the tile was cached, false if the tile was not cached and should be destroyed.
+     * @private
+     */
     saveTileTexture(texture: Texture) {
-        const textures = this._tileTextures[texture.size[0]];
+        const tileSize = texture.size[0];
+        const textures = this._tileTextures[tileSize];
         if (!textures) {
-            this._tileTextures[texture.size[0]] = [texture];
+            this._tileTextures[tileSize] = [texture];
         } else {
             textures.push(texture);
         }

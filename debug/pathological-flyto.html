@@ -1,0 +1,201 @@
+<!--
+    This is useful for debugging memory usage.
+-->
+<!DOCTYPE html>
+<script
+    src="https://greggman.github.io/webgl-memory/webgl-memory.js"
+    crossorigin
+></script>
+<html>
+
+<head>
+    <title>Mapbox GL JS Pathological FlyTo</title>
+    <meta charset='utf-8'>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no"
+    >
+    <link
+        rel='stylesheet'
+        href='../dist/mapbox-gl.css'
+    />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #overlay {
+            position: absolute;
+            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            text-shadow: 0px 2px 2px black;
+            z-index: 100;
+            font-size: 150%;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="padding: 5px;">
+        <button id="start">Start Flying Around</button>
+        <button id="cancel">Stop Flying Around</button>
+        <button id="loadSatellite">Load Satellite Streets</button>
+        <button id="loadTerrain">Load Terrain</button>
+        <button id="loadGeo">Load Geojson</button>
+    </div>
+    <div id='map'>
+        <div id="overlay"></div>
+    </div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script>
+        let goat = 0;
+        let pleaseStop = null;
+        let totals = [];
+
+        document.getElementById("start").addEventListener("click", () => {
+            totals = [];
+            pleaseStop = setInterval(() => {
+                if ((goat % 2) === 0) {
+                    map.flyTo({
+                        center: [-122.41381885225483 + Math.random() * 20, 37.73787623085941],
+                        zoom: 16,
+                        duration: 7000,
+                        preloadOnly: false
+                    });
+                } else {
+                    map.flyTo({
+                        center: [148.44217489435937 - Math.random() * 10, -35.721640804238895],
+                        zoom: 16,
+                        duration: 7000,
+                        preloadOnly: false
+                    });
+                }
+
+                goat++;
+
+            }, 5000);
+        });
+
+        document.getElementById("cancel").addEventListener("click", () => {
+            window.pleaseStop = clearInterval(pleaseStop);
+        });
+
+        document.getElementById("loadGeo").addEventListener("click", () => {
+            totals = [];
+            map.addSource('earthquakes', {
+                type: 'geojson',
+                // Use a URL for the value for the `data` property.
+                data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
+            });
+
+            map.addLayer({
+                'id': 'earthquakes-layer',
+                'type': 'circle',
+                'source': 'earthquakes',
+                'paint': {
+                    'circle-radius': 4,
+                    'circle-stroke-width': 2,
+                    'circle-color': 'red',
+                    'circle-stroke-color': 'white'
+                }
+            });
+
+        });
+
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 12.5,
+            center: [-122.4194, 37.7749],
+            hash: false,
+            style: "mapbox://styles/mapbox/streets-v11?optimize=true"
+
+        });
+
+        document.getElementById("loadTerrain").addEventListener("click", () => {
+            totals = [];
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+            });
+
+            map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+        });
+
+        document.getElementById("loadSatellite").addEventListener("click", () => {
+            totals = [];
+            map.setStyle("mapbox://styles/mapbox/satellite-streets-v11?optimize=true");
+        });
+
+        const gl = map.getCanvas().getContext("webgl2");
+        const ext = gl.getExtension('GMAN_webgl_memory');
+        const gpu = ext.getMemoryInfo();
+        let prev = gpu;
+        let prevMax = 0;
+        let prevAvg = 0;
+        console.log("memory info", gpu);
+
+        // Limit moving average to 1000 items
+        const limit = (arr) => {
+            if (arr.length > 1000) {
+                arr.shift();
+            }
+        };
+
+        // Calculate a moving average for a number
+        const movingAverage = (arr) => {
+            const count = arr.length;
+            const sum = arr.reduce((a, b) => a + b, 0);
+            return Math.round(sum / count);
+        };
+
+        // Calculate the maximum value in an array
+        const max = (arr) => {
+            return arr.reduce((a, b) => Math.max(a, b));
+        };
+
+        const highlightDiff = (current, previous, count = 0) => {
+            if (current > previous) {
+                return `<span style="color: red">${count === 0 ? "" : count + " / "}${Math.round(current / 1024 / 1024)}<small>MB</small></span>`;
+            } else {
+                return `<span style="color: green">${count === 0 ? "" : count + " / "}${Math.round(current / 1024 / 1024)}<small>MB</small></span>`;
+            }
+        };
+
+        setInterval(() => {
+            const gpu = ext.getMemoryInfo();
+            const overlay = document.getElementById("overlay");
+
+            totals.push(gpu.memory.total);
+            const currAvg = movingAverage(totals);
+            const currMax = max(totals);
+            limit(totals);
+
+            let html = `GPU Memory <br />`;
+            html += `total: ${highlightDiff(gpu.memory.total, prev.memory.total)} (avg: ${highlightDiff(currAvg, prevAvg)}; max: ${highlightDiff(currMax, prevMax)}) <br />`;
+            html += `drawingbuffer: ${highlightDiff(gpu.memory.drawingbuffer, prev.memory.drawingbuffer)} <br />`;
+            html += `buffer: ${highlightDiff(gpu.memory.buffer, prev.memory.buffer, gpu.resources.buffer)} <br />`;
+            html += `texture: ${highlightDiff(gpu.memory.texture, prev.memory.texture, gpu.resources.texture)} <br />`;
+            overlay.innerHTML = html;
+            totals.push(gpu.memory.total);
+
+            prev = gpu;
+            prevMax = currMax;
+            prevAvg = currAvg;
+        }, 50);
+    </script>
+</body>
+
+</html>

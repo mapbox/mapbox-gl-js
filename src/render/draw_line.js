@@ -141,12 +141,16 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
         if (dasharray) {
             context.activeTexture.set(gl.TEXTURE0);
-            tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
+            if (tile.lineAtlasTexture) {
+                tile.lineAtlasTexture.bind(gl.LINEAR, gl.REPEAT);
+            }
             programConfiguration.updatePaintBuffers();
         }
         if (image) {
             context.activeTexture.set(gl.TEXTURE0);
-            tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            if (tile.imageAtlasTexture) {
+                tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            }
             programConfiguration.updatePaintBuffers();
         }
 

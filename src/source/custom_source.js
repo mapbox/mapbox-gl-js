@@ -330,6 +330,8 @@ class CustomSource<T> extends Evented implements Source {
             this._implementation.unloadTile({x, y, z});
         }
 
+        tile.destroy();
+
         callback();
     }
 
