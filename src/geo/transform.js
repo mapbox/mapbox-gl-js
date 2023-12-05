@@ -252,6 +252,7 @@ class Transform {
         clone._nearZ = this._nearZ;
         clone._farZ = this._farZ;
         clone._averageElevation = this._averageElevation;
+        clone._orthographicProjectionAtLowPitch = this._orthographicProjectionAtLowPitch;
         clone._unmodified = this._unmodified;
         clone._edgeInsets = this._edgeInsets.clone();
         clone._camera = this._camera.clone();

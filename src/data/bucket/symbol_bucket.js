@@ -907,10 +907,7 @@ class SymbolBucket implements Bucket {
             arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0);
         }
 
-        arrays.collisionVertexArrayExt.emplaceBack(scale, -box.padding, -box.padding);
-        arrays.collisionVertexArrayExt.emplaceBack(scale,  box.padding, -box.padding);
-        arrays.collisionVertexArrayExt.emplaceBack(scale,  box.padding,  box.padding);
-        arrays.collisionVertexArrayExt.emplaceBack(scale, -box.padding,  box.padding);
+        this._commitDebugCollisionVertexUpdate(arrays.collisionVertexArrayExt, scale, box.padding, symbolInstance.zOffset);
 
         this._commitLayoutVertex(arrays.layoutVertexArray, boxTileAnchorX, boxTileAnchorY, boxTileAnchorZ, symbolTileAnchorX, symbolTileAnchorY, new Point(box.x1, box.y1));
         this._commitLayoutVertex(arrays.layoutVertexArray, boxTileAnchorX, boxTileAnchorY, boxTileAnchorZ, symbolTileAnchorX, symbolTileAnchorY, new Point(box.x2, box.y1));
@@ -986,11 +983,11 @@ class SymbolBucket implements Bucket {
         return this.tilePixelRatio * featureSize;
     }
 
-    _commitDebugCollisionVertexUpdate(array: StructArray, scale: number, padding: number) {
-        array.emplaceBack(scale, -padding, -padding);
-        array.emplaceBack(scale,  padding, -padding);
-        array.emplaceBack(scale,  padding,  padding);
-        array.emplaceBack(scale, -padding,  padding);
+    _commitDebugCollisionVertexUpdate(array: StructArray, scale: number, padding: number, zOffset: number) {
+        array.emplaceBack(scale, -padding, -padding, zOffset);
+        array.emplaceBack(scale,  padding, -padding, zOffset);
+        array.emplaceBack(scale,  padding,  padding, zOffset);
+        array.emplaceBack(scale, -padding,  padding, zOffset);
     }
 
     _updateTextDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
@@ -998,16 +995,16 @@ class SymbolBucket implements Bucket {
             const box: CollisionBox = (collisionBoxArray.get(b): any);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
             const array = this.textCollisionBox.collisionVertexArrayExt;
-            this._commitDebugCollisionVertexUpdate(array, scale, box.padding);
+            this._commitDebugCollisionVertexUpdate(array, scale, box.padding, instance.zOffset);
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, symbolIndex: number) {
+    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
             const box = (collisionBoxArray.get(b));
-            const scale = this.getSymbolInstanceIconSize(size, zoom, symbolIndex);
+            const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
             const array = this.iconCollisionBox.collisionVertexArrayExt;
-            this._commitDebugCollisionVertexUpdate(array, scale, box.padding);
+            this._commitDebugCollisionVertexUpdate(array, scale, box.padding, instance.zOffset);
         }
     }
 
@@ -1026,8 +1023,8 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances.get(i);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
             this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance.placedIconSymbolIndex);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance);
         }
 
         if (this.hasTextCollisionBoxData() && this.textCollisionBox.collisionVertexBufferExt) {
