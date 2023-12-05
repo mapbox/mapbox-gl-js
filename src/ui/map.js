@@ -473,6 +473,8 @@ class Map extends Camera {
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(PerformanceMarkers.create);
 
+        const initialOptions = options;
+
         options = (extend({}, defaultOptions, options): typeof defaultOptions & MapOptions);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
@@ -614,6 +616,11 @@ class Map extends Camera {
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
+            // if we set `center`/`zoom` explicitly, mark as modified even if the values match defaults
+            if (initialOptions.center != null || initialOptions.zoom != null) {
+                this.transform._unmodified = false;
+            }
+
             this.jumpTo({
                 center: options.center,
                 zoom: options.zoom,

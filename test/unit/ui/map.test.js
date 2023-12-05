@@ -164,6 +164,57 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('uses zero values for zoom and coordinates', (t) => {
+        function getInitialMap(t) {
+            return createMap(t, {
+                zoom: 0,
+                center: [0, 0],
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: [],
+                    center: [
+                        -73.9749,
+                        40.7736
+                    ],
+                    zoom: 4
+                }
+            });
+        }
+
+        t.test('should use these values instead of defaults from style', (t) => {
+            const map = getInitialMap(t);
+
+            map.on('load', () => {
+                t.equal(map.getZoom(), 0);
+                t.deepEqual(map.getCenter(), {lat: 0, lng: 0});
+                t.end();
+            });
+        });
+
+        t.test('after setStyle should still use these values', (t) => {
+            const map = getInitialMap(t);
+
+            map.on('load', () => {
+                map.setStyle({
+                    version: 8,
+                    sources: {},
+                    layers: [],
+                    center: [
+                        24.9384,
+                        60.169
+                    ],
+                    zoom: 3
+                });
+                t.equal(map.getZoom(), 0);
+                t.deepEqual(map.getCenter(), {lat: 0, lng: 0});
+                t.end();
+            });
+        });
+
+        t.end();
+    });
+
     t.test('bad map-specific token breaks map', (t) => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
