@@ -265,6 +265,45 @@ test('AttributionControl hides attributions for sources that are not currently v
     });
 });
 
+test('AttributionControl shows attribution from both root style and its imports', (t) => {
+
+    const map =  globalCreateMap(t, {
+        attributionControl: false,
+        accessToken: 'pk.123',
+        style: {
+            version: 8,
+            imports: [{
+                id: 'streets',
+                url: '',
+                data: {
+                    version: 8,
+                    sources: {
+                        '2': {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'Hello'}
+                    },
+                    layers: [
+                        {id: '2', type: 'fill', source: '2'}
+                    ]
+                }
+            }],
+            sources: {
+                '1': {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: 'World'}
+            },
+            layers: [
+                {id: '1', type: 'fill', source: '1'}
+            ],
+            owner: 'mapbox',
+            id: 'test'
+        }
+    });
+    const attribution = new AttributionControl();
+    map.addControl(attribution);
+
+    map.on('load', () => {
+        t.equal(attribution._innerContainer.innerHTML, 'Hello | World');
+        t.end();
+    });
+});
+
 test('AttributionControl toggles attributions for sources whose visibility changes when zooming', (t) => {
     const map = createMap(t);
     const attribution = new AttributionControl();
