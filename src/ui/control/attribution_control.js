@@ -162,7 +162,7 @@ class AttributionControl {
             this.styleId = stylesheet.id;
         }
 
-        const sourceCaches = this._map.style._sourceCaches;
+        const sourceCaches = this._map.style._mergedSourceCaches;
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
