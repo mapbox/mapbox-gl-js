@@ -1,3 +1,9 @@
+## 3.0.1
+
+### Bug fixes 🐞
+
+- Fix attribution not being displayed for imported fragments.
+
 ## 3.0.0
 
 Mapbox GL JS v3 enables the [Mapbox Standard Style](https://www.mapbox.com/blog/standard-core-style), a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](./MIGRATION_GUIDE_v3.md).
