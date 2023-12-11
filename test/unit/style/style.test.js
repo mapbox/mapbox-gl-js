@@ -1385,14 +1385,14 @@ test('Style#setPaintProperty', (t) => {
             const value = {stops: [[0, 'red'], [10, 'blue']]};
             style.setPaintProperty('background', 'background-color', value);
             t.notEqual(style.getPaintProperty('background', 'background-color'), value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             style.update({});
-            t.notOk(style._changes.changed);
+            t.notOk(style._changes.isDirty());
 
             value.stops[0][0] = 1;
             style.setPaintProperty('background', 'background-color', value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             t.end();
         });
@@ -1420,7 +1420,7 @@ test('Style#setPaintProperty', (t) => {
             t.deepEqual(validate.args[0][4], {validate: false});
             t.ok(console.error.notCalled);
 
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
             style.update({});
 
             style.setPaintProperty('background', 'background-color', 'alsonotacolor');
@@ -1451,12 +1451,12 @@ test('Style#getPaintProperty', (t) => {
         style.on('style.load', () => {
             style.setPaintProperty('background', 'background-color', {stops: [[0, 'red'], [10, 'blue']]});
             style.update({});
-            t.notOk(style._changes.changed);
+            t.notOk(style._changes.isDirty());
 
             const value = style.getPaintProperty('background', 'background-color');
             value.stops[0][0] = 1;
             style.setPaintProperty('background', 'background-color', value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             t.end();
         });
@@ -1492,14 +1492,14 @@ test('Style#setLayoutProperty', (t) => {
             const value = {stops: [[0, 'butt'], [10, 'round']]};
             style.setLayoutProperty('line', 'line-cap', value);
             t.notEqual(style.getLayoutProperty('line', 'line-cap'), value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             style.update({});
-            t.notOk(style._changes.changed);
+            t.notOk(style._changes.isDirty());
 
             value.stops[0][0] = 1;
             style.setLayoutProperty('line', 'line-cap', value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             t.end();
         });
@@ -1535,7 +1535,7 @@ test('Style#setLayoutProperty', (t) => {
             style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
             t.deepEqual(validate.args[0][4], {validate: false});
             t.ok(console.error.notCalled);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
             style.update({});
 
             style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
@@ -1575,12 +1575,12 @@ test('Style#getLayoutProperty', (t) => {
         style.on('style.load', () => {
             style.setLayoutProperty('line', 'line-cap', {stops: [[0, 'butt'], [10, 'round']]});
             style.update({});
-            t.notOk(style._changes.changed);
+            t.notOk(style._changes.isDirty());
 
             const value = style.getLayoutProperty('line', 'line-cap');
             value.stops[0][0] = 1;
             style.setLayoutProperty('line', 'line-cap', value);
-            t.ok(style._changes.changed);
+            t.ok(style._changes.isDirty());
 
             t.end();
         });

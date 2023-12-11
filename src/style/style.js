@@ -521,7 +521,10 @@ class Style extends Evented {
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
-        this._changes.changed = false; // avoid triggering redundant style update after adding initial sources
+
+        // Recalculate style's changed state to avoid triggering redundant style update
+        // after adding initial sources if there are no actual changes.
+        this._changes.recalculate();
 
         if (json.sprite) {
             this._loadSprite(json.sprite);
@@ -559,7 +562,6 @@ class Style extends Evented {
             styleLayer.setScope(this.scope);
             if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
             styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
-            this._layers[styleLayer.id] = styleLayer;
             this._layers[styleLayer.id] = styleLayer;
             this._serializedLayers[styleLayer.id] = styleLayer.serialize();
 
@@ -892,7 +894,7 @@ class Style extends Evented {
         if (!this._loaded)
             return false;
 
-        if (Object.keys(this._changes.updatedSourceCaches).length)
+        if (Object.keys(this._changes.getUpdatedSourceCaches()).length)
             return false;
 
         for (const id in this._sourceCaches)
@@ -1056,9 +1058,8 @@ class Style extends Evented {
             this.dispatcher.broadcast('setBrightness', brightness);
         }
 
-        const changed = this._changes.changed;
-
-        if (this._changes.changed) {
+        const changed = this._changes.isDirty();
+        if (this._changes.isDirty()) {
             const updatesByScope = this._changes.getLayerUpdatesByScope();
             for (const scope in updatesByScope) {
                 const {updatedIds, removedIds} = updatesByScope[scope];
@@ -1180,12 +1181,12 @@ class Style extends Evented {
      * Apply any queued image changes.
      */
     _updateTilesForChangedImages() {
-        const changedImages = Array.from(this._changes.changedImages.keys());
-        if (changedImages.length) {
+        const updatedImages = this._changes.getUpdatedImages();
+        if (updatedImages.length) {
             for (const name in this._sourceCaches) {
-                this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], changedImages);
+                this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], updatedImages);
             }
-            this._changes.changedImages.clear();
+            this._changes.resetUpdatedImages();
         }
     }
 
@@ -1273,8 +1274,7 @@ class Style extends Evented {
 
     _afterImageUpdated(id: string) {
         this._availableImages = this.imageManager.listImages(this.scope);
-        this._changes.changedImages.add(id);
-        this._changes.changed = true;
+        this._changes.updateImage(id);
         this.dispatcher.broadcast('setImages', {
             scope: this.scope,
             images: this._availableImages
@@ -1292,7 +1292,7 @@ class Style extends Evented {
         if (this._validate(validateModel, `models.${id}`, url, null, options)) return this;
 
         this.modelManager.addModel(id, url, this.scope);
-        this._changes.changed = true;
+        this._changes.setDirty();
         return this;
     }
 
@@ -1355,7 +1355,7 @@ class Style extends Evented {
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
         this.mergeSources();
 
-        this._changes.changed = true;
+        this._changes.setDirty();
     }
 
     /**
@@ -1384,7 +1384,7 @@ class Style extends Evented {
         for (const sourceCache of sourceCaches) {
             const id = getNameFromFQID(sourceCache.id);
             delete this._sourceCaches[id];
-            delete this._changes.updatedSourceCaches[sourceCache.id];
+            this._changes.discardSourceCacheUpdate(sourceCache.id);
             sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
             sourceCache.setEventedParent(null);
             sourceCache.clearTiles();
@@ -1397,7 +1397,7 @@ class Style extends Evented {
         if (source.onRemove) {
             source.onRemove(this.map);
         }
-        this._changes.changed = true;
+        this._changes.setDirty();
         return this;
     }
 
@@ -1414,7 +1414,7 @@ class Style extends Evented {
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
-        this._changes.changed = true;
+        this._changes.setDirty();
     }
 
     /**
@@ -1613,7 +1613,7 @@ class Style extends Evented {
             this.directionalLight.updateConfig(this.options);
         }
 
-        this._changes.changed = true;
+        this._changes.setDirty();
     }
 
     /**
@@ -1689,9 +1689,9 @@ class Style extends Evented {
             this._changes.discardLayerRemoval(layer);
             const fqid = makeFQID(layer.source, layer.scope);
             if (removedLayer.type !== layer.type) {
-                this._changes.updatedSourceCaches[fqid] = 'clear';
+                this._changes.updateSourceCache(fqid, 'clear');
             } else {
-                this._changes.updatedSourceCaches[fqid] = 'reload';
+                this._changes.updateSourceCache(fqid, 'reload');
                 sourceCache.pause();
             }
         }
@@ -1716,7 +1716,6 @@ class Style extends Evented {
      */
     moveLayer(id: string, before?: string) {
         this._checkLoaded();
-        this._changes.changed = true;
 
         const layer = this._checkLayer(id);
         if (!layer) return;
@@ -1735,6 +1734,7 @@ class Style extends Evented {
         }
         this._order.splice(newIndex, 0, id);
 
+        this._changes.setDirty();
         this._layerOrderChanged = true;
 
         this.mergeLayers();
@@ -1762,7 +1762,7 @@ class Style extends Evented {
         delete this._layers[id];
         delete this._serializedLayers[id];
 
-        this._changes.changed = true;
+        this._changes.setDirty();
         this._layerOrderChanged = true;
 
         this._configDependentLayers.delete(layer.fqid);
@@ -1930,8 +1930,7 @@ class Style extends Evented {
             this._updateLayer(layer);
         }
 
-        this._changes.changed = true;
-        this._changes.updatedPaintProps.add(layer.fqid);
+        this._changes.updatePaintProperties(layer);
     }
 
     getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<mixed> {
@@ -2058,14 +2057,13 @@ class Style extends Evented {
         this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
         const fqid = makeFQID(layer.source, layer.scope);
-        if (layer.source && !this._changes.updatedSourceCaches[fqid] &&
-            //Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
-            sourceCache &&
-            sourceCache.getSource().type !== 'raster') {
-            this._changes.updatedSourceCaches[fqid] = 'reload';
+        const sourceCacheUpdates = this._changes.getUpdatedSourceCaches();
+        if (layer.source && !sourceCacheUpdates[fqid] &&
+            // Skip for raster layers (https://github.com/mapbox/mapbox-gl-js/issues/7865)
+            sourceCache && sourceCache.getSource().type !== 'raster') {
+            this._changes.updateSourceCache(fqid, 'reload');
             sourceCache.pause();
         }
-        this._changes.changed = true;
         layer.invalidateCompiledFilter();
     }
 
@@ -2797,8 +2795,9 @@ class Style extends Evented {
     }
 
     updateSourceCaches() {
-        for (const fqid in this._changes.updatedSourceCaches) {
-            const action = this._changes.updatedSourceCaches[fqid];
+        const updatedSourceCaches = this._changes.getUpdatedSourceCaches();
+        for (const fqid in updatedSourceCaches) {
+            const action = updatedSourceCaches[fqid];
             assert(action === 'reload' || action === 'clear');
             if (action === 'reload') {
                 this.reloadSource(fqid);
@@ -2809,7 +2808,8 @@ class Style extends Evented {
     }
 
     updateLayers(parameters: EvaluationParameters) {
-        for (const id of this._changes.updatedPaintProps) {
+        const updatedPaintProps = this._changes.getUpdatedPaintProperties();
+        for (const id of updatedPaintProps) {
             const layer = this.getLayer(id);
             if (layer) layer.updateTransitions(parameters);
         }

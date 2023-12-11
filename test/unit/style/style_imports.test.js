@@ -1066,7 +1066,16 @@ test('Style#getLights', (t) => {
     t.end();
 });
 
-test('Style#getTerrain', (t) => {
+test('Terrain', (t) => {
+    t.beforeEach(() => {
+        window.useFakeXMLHttpRequest();
+        window.server.configure({respondImmediately: true});
+    });
+
+    t.afterEach(() => {
+        window.restore();
+    });
+
     t.test('root style resolves terrain from import', (t) => {
         const style = new Style(new StubMap());
 
@@ -1160,6 +1169,55 @@ test('Style#getTerrain', (t) => {
             t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 1.5});
             t.end();
         });
+    });
+
+    t.test('multiple imports should not reset the style changed state when terrain and 3d layers are present', (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+
+        const initialStyle = createStyleJSON({
+            imports: [
+                {id: 'basemap', url: '/standard.json'},
+                {id: 'navigation', url: '/navigation.json'}
+            ],
+        });
+
+        const standardFragment = createStyleJSON({
+            terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+            sources: {
+                composite: {type: 'vector', tiles: []},
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: 256,
+                    maxzoom: 14
+                }
+            },
+            layers: [
+                {id: 'land', type: 'background'},
+                {id: '3d-building', type: 'fill-extrusion', source: 'composite', 'source-layer': 'building'}
+            ]
+        });
+
+        const navigationFragment = createStyleJSON({
+            sources: {composite: {type: 'vector', tiles: []}},
+            layers: [{id: 'traffic', type: 'line', source: 'composite', 'source-layer': 'traffic'}]
+        });
+
+        map.on('style.import.load', () => {
+            t.equals(style._changes.isDirty(), true, 'style must be dirty during import');
+        });
+
+        style.on('style.load', () => {
+            t.equals(window.server.requests.length, 3);
+            t.equals(style._changes.isDirty(), true, 'style must be dirty after load');
+            t.end();
+        });
+
+        window.server.respondWith('/style.json', JSON.stringify(initialStyle));
+        window.server.respondWith('/standard.json', JSON.stringify(standardFragment));
+        window.server.respondWith('/navigation.json', JSON.stringify(navigationFragment));
+        style.loadURL('/style.json');
     });
 
     t.end();
@@ -1998,7 +2056,7 @@ test('Style#setState', (t) => {
         window.server.respondWith('/styles/streets-v12.json', JSON.stringify(data));
 
         style.setState(nextStyle);
-        t.equal(style._changes.updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
+        t.equal(style._changes._updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
 
         await new Promise((resolve) => style.on('style.load', resolve));
 
