@@ -38,7 +38,7 @@ export const collisionVertexAttributes: StructArrayLayout = createLayout([
 export const collisionVertexAttributesExt: StructArrayLayout = createLayout([
     {name: 'a_size_scale', components: 1, type: 'Float32'},
     {name: 'a_padding', components: 2, type: 'Float32'},
-    {name: 'a_zoffset', components: 1, type: 'Float32'}
+    {name: 'a_z_offset', components: 1, type: 'Float32'}
 ]);
 
 export const collisionBox: StructArrayLayout = createLayout([

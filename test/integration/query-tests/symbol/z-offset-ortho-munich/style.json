@@ -1,0 +1,524 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait", 300],
+        ["wait"]
+      ],
+      "queryGeometry": [
+        216,
+        173
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "pitch": 3,
+  "zoom": 15,
+  "bearing": 0,
+  "center": [
+    11.582243,
+    48.130199
+  ],
+  "camera": {
+    "camera-projection": "orthographic"
+  },
+  "layers": [
+    {
+      "minzoom": 15.0,
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "fill-extrusion-ambient-occlusion-intensity": 0.3499999940395355,
+        "fill-extrusion-ambient-occlusion-ground-radius": 5,
+        "fill-extrusion-ambient-occlusion-wall-radius": 5,
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-vertical-scale": 3.0,
+        "fill-extrusion-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ],
+        "fill-extrusion-color": [
+          "rgba",
+          255.0,
+          255.0,
+          255.0,
+          1.0
+        ],
+        "fill-extrusion-vertical-gradient": false
+      },
+      "source-layer": "building",
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source": "composite",
+      "id": "3d-buildings"
+    },
+    {
+      "minzoom": 10.0,
+      "type": "symbol",
+      "paint": {
+        "text-halo-width": 1.0,
+        "text-halo-blur": 1.0,
+        "text-halo-color": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "ferry",
+          [
+            "rgba",
+            117.00000762939453,
+            207.00001525878907,
+            240.00001525878907,
+            1.0
+          ],
+          [
+            "motorway",
+            "trunk"
+          ],
+          [
+            "rgba",
+            255.0,
+            255.0,
+            255.0,
+            0.75
+          ],
+          [
+            "rgba",
+            255.0,
+            255.0,
+            255.0,
+            1.0
+          ]
+        ],
+        "text-color": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "ferry",
+          [
+            "rgba",
+            58.000003814697269,
+            76.0,
+            166.0,
+            1.0
+          ],
+          [
+            "rgba",
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "source-layer": "road",
+      "filter": [
+        "step",
+        [
+          "zoom"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "motorway",
+            "primary",
+            "secondary",
+            "tertiary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        12.0,
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "motorway",
+            "pedestrian",
+            "primary",
+            "secondary",
+            "street",
+            "street_limited",
+            "tertiary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        15.0,
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "golf",
+          false,
+          true
+        ]
+      ],
+      "layout": {
+        "text-font": [ "NotoCJK" ],
+        "text-max-angle": 30.0,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10.0,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "primary",
+              "secondary",
+              "tertiary",
+              "trunk"
+            ],
+            10.0,
+            [
+              "motorway_link",
+              "pedestrian",
+              "primary_link",
+              "secondary_link",
+              "street",
+              "street_limited",
+              "tertiary_link",
+              "trunk_link"
+            ],
+            9.0,
+            6.5
+          ],
+          18.0,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "primary",
+              "secondary",
+              "tertiary",
+              "trunk"
+            ],
+            16.0,
+            [
+              "motorway_link",
+              "pedestrian",
+              "primary_link",
+              "secondary_link",
+              "street",
+              "street_limited",
+              "tertiary_link",
+              "trunk_link"
+            ],
+            14.0,
+            13.0
+          ]
+        ],
+        "text-field": [
+          "format",
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          {}
+        ],
+        "symbol-placement": "line",
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "viewport"
+      },
+      "source": "composite",
+      "id": "road-label"
+    },
+    {
+      "id": "poi-label",
+      "type": "symbol",
+      "metadata": {
+          "mapbox:group": "Point of interest labels, poi-labels"
+      },
+      "source": "composite",
+      "source-layer": "poi_label",
+      "minzoom": 6,
+      "filter": [
+          "all",
+          [
+              "<=",
+              [ "number", [ "get", "filterrank" ] ],
+              ["+", ["step", ["zoom"], 1, 16, 2, 17, 3],
+              [
+                  "match",
+                  ["get", "class"],
+                  "park_like",
+                  4,
+                  "visitor_amenities",
+                  4,
+                  "store_like",
+                  3,
+                  "lodging",
+                  1,
+                  2
+              ]
+          ]
+          ],
+          [
+              "case",
+              [
+                  "<=",
+                  [
+                      "pitch"
+                  ],
+                  40.0
+              ],
+              true,
+              [
+                  "step",
+                  [ "pitch" ],
+                  true,
+                  40,
+                  [ "<", [ "distance-from-center" ], 1.2 ],
+                  50,
+                  [ "<", [ "distance-from-center" ], 1 ],
+                  55,
+                  [ "<", [ "distance-from-center" ], 0.8 ],
+                  60,
+                  [ "<=", [ "distance-from-center" ], 0.6 ]
+              ]
+          ]
+      ],
+      "layout": {
+          "symbol-z-elevate": true,
+          "text-size": [
+              "step",
+              [ "zoom" ],
+              [ "step", [ "number", [ "get", "sizerank" ] ], 18, 5, 12 ],
+              17,
+              [ "step", [ "number", [ "get", "sizerank" ] ], 18, 13, 12 ]
+          ],
+          "text-field": [
+              "format",
+              [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
+              { }
+          ],
+          "text-font": [ "NotoCJK" ],
+          "text-padding": 4,
+          "icon-image": "building-12",
+          "text-offset": [
+              "step",
+              [ "zoom" ],
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  [ "literal", [ 0, 0 ] ],
+                  5,
+                  [ "literal", [ 0, 1 ] ]
+              ],
+              17,
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  [ "literal", [ 0, 0 ] ],
+                  13,
+                  [ "literal", [ 0, 1 ] ]
+              ]
+          ],
+          "text-anchor": [
+              "step",
+              [ "zoom" ],
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  "center",
+                  5,
+                  "top"
+              ],
+              17,
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  "center",
+                  13,
+                  "top"
+              ]
+          ]
+      },
+      "paint": {
+          "icon-image-cross-fade": [
+              "interpolate",
+              [ "linear" ],
+              [ "measure-light", "brightness" ],
+              0.25,
+              0.0,
+              0.3,
+              1.0
+          ],
+          "icon-opacity": [
+              "step",
+              [ "zoom" ],
+              [ "step", [ "number", [ "get", "sizerank" ] ], 0, 5, 1 ],
+              17,
+              [ "step", [ "number", [ "get", "sizerank" ] ], 0, 13, 1 ]
+          ],
+          "text-halo-width": 1,
+          "text-halo-blur": 0,
+          "text-halo-color": [
+              "interpolate",
+              [ "linear" ],
+              [ "measure-light", "brightness" ],
+              0.25,
+              "hsl(0, 0%, 10%)",
+              0.3,
+              "hsl(0, 0%, 100%)"
+          ],
+          "text-color": [
+              "match",
+              [ "get", "class" ],
+              "food_and_drink",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(40, 95%, 70%)",
+                  0.3,
+                  "hsl(30, 100%, 48%)"
+              ],
+              "park_like",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(110, 55%, 65%)",
+                  0.3,
+                  "hsl(110, 70%, 28%)"
+              ],
+              "education",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(30, 50%, 70%)",
+                  0.3,
+                  "hsl(30, 50%, 38%)"
+              ],
+              "medical",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(0, 70%, 70%)",
+                  0.3,
+                  "hsl(0, 90%, 60%)"
+              ],
+              "sport_and_leisure",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(190, 60%, 70%)",
+                  0.3,
+                  "hsl(190, 75%, 38%)"
+              ],
+              [ "store_like", "food_and_drink_stores" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(210, 70%, 75%)",
+                  0.3,
+                  "hsl(210, 75%, 53%)"
+              ],
+              [ "commercial_services", "motorist", "lodging" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(260, 70%, 75%)",
+                  0.3,
+                  "hsl(250, 75%, 60%)"
+              ],
+              [ "arts_and_entertainment", "historic", "landmark" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(320, 70%, 75%)",
+                  0.3,
+                  "hsl(320, 85%, 60%)"
+              ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(210, 20%, 70%)",
+                  0.3,
+                  "hsl(210, 20%, 43%)"
+              ]
+          ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        11.581341326236725,
+        48.131729414696196
+        ],
+      "type": "Point"
+    },
+    "id": 6515009890,
+    "properties": {
+      "category_en": "Hotel",
+      "category_zh-Hans": "宾馆",
+      "class": "lodging",
+      "filterrank": 2,
+      "iso_3166_1": "DE",
+      "iso_3166_2": "DE-BY",
+      "maki": "lodging",
+      "name": "Hotel Admiral München",
+      "name_local": "Hotel Admiral München",
+      "name_script": "Latin",
+      "sizerank": 16,
+      "type": "Hotel"
+    },
+    "source": "composite",
+    "sourceLayer": "poi_label",
+      "state": {},
+    "type": "Feature"
+  }
+]

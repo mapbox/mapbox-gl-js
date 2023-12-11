@@ -1,0 +1,84 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        11.580426692962646,
+        48.132189483923526
+      ],
+      "type": "Point"
+    },
+    "id": 66515384250,
+    "properties": {
+      "category_en": "Shoe Store",
+      "category_zh-Hans": "鞋店",
+      "class": "store_like",
+      "filterrank": 5,
+      "iso_3166_1": "DE",
+      "iso_3166_2": "DE-BY",
+      "maki": "shoe",
+      "name": "Schuh-Bertl",
+      "name_local": "Schuh-Bertl",
+      "name_script": "Latin",
+      "sizerank": 16,
+      "type": "Shoes"
+    },
+    "source": "composite",
+    "sourceLayer": "poi_label",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+          [
+          [
+            11.58033013343811,
+            48.13264596877161
+          ],
+          [
+            11.580448150634766,
+            48.13259047475185
+          ],
+          [
+            11.580273807048798,
+            48.13242578246914
+          ],
+          [
+            11.580059230327606,
+            48.132547511598574
+          ],
+          [
+            11.580018997192383,
+            48.132568993179746
+          ],
+          [
+            11.580139696598053,
+            48.132642388514085
+          ],
+          [
+            11.580252349376678,
+            48.13257257344239
+          ],
+          [
+            11.58033013343811,
+            48.13264596877161
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {
+      "extrude": "true",
+      "height": 15,
+      "iso_3166_1": "DE",
+      "iso_3166_2": "DE-BY",
+      "min_height": 0,
+      "type": "apartments",
+      "underground": "false"
+    },
+    "source": "composite",
+    "sourceLayer": "building",
+    "state": {},
+    "type": "Feature"
+  }
+]
