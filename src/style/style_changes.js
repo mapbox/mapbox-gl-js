@@ -36,18 +36,6 @@ class StyleChanges {
         this._changed = true;
     }
 
-    /**
-     * Recalculate changed state if there are actual changes.
-     */
-    recalculate() {
-        this._changed =
-            Object.keys(this._updatedLayers).length > 0 ||
-            Object.keys(this._removedLayers).length > 0 ||
-            Object.keys(this._updatedSourceCaches).length > 0 ||
-            this._updatedPaintProps.size > 0 ||
-            this._updatedImages.size > 0;
-    }
-
     getUpdatedSourceCaches(): {[_: string]: 'clear' | 'reload'} {
         return this._updatedSourceCaches;
     }

@@ -30,6 +30,7 @@ type CreateTest = (typeof sinon) & {
     tearDown(() => void): void,
 };
 
+export const skip = (tap.skip: CreateTest);
 export const test = (tap.test: CreateTest);
 export const only = (tap.only: CreateTest);
 

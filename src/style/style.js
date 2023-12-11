@@ -163,7 +163,8 @@ export type StyleOptions = {
 };
 
 export type StyleSetterOptions = {
-    validate?: boolean
+    validate?: boolean;
+    isInitialLoad?: boolean;
 };
 
 export type Fragment = {|
@@ -412,18 +413,20 @@ class Style extends Evented {
         this._load(empty, false);
     }
 
-    _loadImports(imports: Array<ImportSpecification>, validate: boolean): void {
+    _loadImports(imports: Array<ImportSpecification>, validate: boolean): Promise<any> {
         // We take the root style into account when calculating the import depth.
         if (this.importDepth >= MAX_IMPORT_DEPTH - 1) {
             warnOnce(`Style doesn't support nesting deeper than ${MAX_IMPORT_DEPTH}`);
-            return this._reloadImports();
+            return Promise.resolve();
         }
 
         const waitForStyles = [];
         for (const importSpec of imports) {
             const style = this._createFragmentStyle(importSpec);
 
-            const waitForStyle = new Promise(resolve => style.on('style.import.load', resolve));
+            // Merge everything and update layers after the import style is loaded.
+            const waitForStyle = new Promise(resolve => style.once('style.import.load', resolve))
+                .then(() => this.mergeAll());
             waitForStyles.push(waitForStyle);
 
             // Load empty style if one of the ancestors was already
@@ -453,7 +456,7 @@ class Style extends Evented {
         }
 
         // $FlowFixMe[method-unbinding]
-        Promise.all(waitForStyles).then(() => this._reloadImports());
+        return Promise.allSettled(waitForStyles);
     }
 
     _createFragmentStyle(importSpec: ImportSpecification): Style {
@@ -484,6 +487,7 @@ class Style extends Evented {
     _reloadImports() {
         this.mergeAll();
         this._updateMapProjection();
+        this.map._triggerCameraUpdate(this.camera);
 
         this.dispatcher.broadcast('setLayers', {
             layers: this._serializeLayers(this._order),
@@ -493,7 +497,6 @@ class Style extends Evented {
 
         const isRootStyle = this.isRootStyle();
         this._shouldPrecompile = isRootStyle;
-        this.fire(new Event('data', {dataType: 'style'}));
         this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
     }
 
@@ -519,12 +522,8 @@ class Style extends Evented {
         this.stylesheet = clone(json);
 
         for (const id in json.sources) {
-            this.addSource(id, json.sources[id], {validate: false});
+            this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
         }
-
-        // Recalculate style's changed state to avoid triggering redundant style update
-        // after adding initial sources if there are no actual changes.
-        this._changes.recalculate();
 
         if (json.sprite) {
             this._loadSprite(json.sprite);
@@ -590,26 +589,12 @@ class Style extends Evented {
             this.setTransition(this.stylesheet.transition);
         }
 
-        this.mergeAll();
-        this._updateMapProjection();
-
-        // Trigger update
-        this.map._triggerCameraUpdate(this.camera);
-
         this.fire(new Event('data', {dataType: 'style'}));
 
         if (json.imports) {
-            this._loadImports(json.imports, validate);
+            this._loadImports(json.imports, validate).then(() => this._reloadImports());
         } else {
-            this.dispatcher.broadcast('setLayers', {
-                layers: this._serializeLayers(this._order),
-                scope: this.scope,
-                options: this.options
-            });
-
-            const isRootStyle = this.isRootStyle();
-            this._shouldPrecompile = isRootStyle;
-            this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+            this._reloadImports();
         }
     }
 
@@ -1104,7 +1089,7 @@ class Style extends Evented {
             const layer = this._mergedLayers[layerId];
             layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
-                const sourceCache = this.getOwnLayerSourceCache(layer);
+                const sourceCache = this.getLayerSourceCache(layer);
                 if (sourceCache) sourceCache.used = true;
             }
 
@@ -1170,10 +1155,6 @@ class Style extends Evented {
 
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
-        }
-
-        for (const {style} of this.fragments) {
-            style.update(parameters);
         }
     }
 
@@ -1353,9 +1334,12 @@ class Style extends Evented {
         }
 
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
-        this.mergeSources();
 
-        this._changes.setDirty();
+        // Avoid triggering redundant style update after adding initial sources.
+        if (!options.isInitialLoad) {
+            this.mergeSources();
+            this._changes.setDirty();
+        }
     }
 
     /**
@@ -2656,10 +2640,8 @@ class Style extends Evented {
         const fragment = this.fragments[index];
         fragment.style = this._createFragmentStyle({id: importId, url});
 
-        const waitForStyle = new Promise(resolve => fragment.style.on('style.import.load', resolve));
+        fragment.style.on('style.import.load', () => this.mergeAll());
         fragment.style.loadURL(url);
-
-        waitForStyle.then(() => this._reloadImports());
 
         return this;
     }

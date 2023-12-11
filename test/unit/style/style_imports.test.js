@@ -256,7 +256,7 @@ test('Style#loadURL', (t) => {
         map.on('data', spy);
 
         style.on('style.load', () => {
-            t.equal(spy.callCount, 3);
+            t.ok(spy.calledTwice);
 
             // initial root style 'data' event
             t.equal(spy.getCall(0).args[0].target, map);
@@ -267,11 +267,6 @@ test('Style#loadURL', (t) => {
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
             t.equal(spy.getCall(1).args[0].style.scope, 'streets');
-
-            // final root style 'data' event
-            t.equal(spy.getCall(2).args[0].target, map);
-            t.equal(spy.getCall(2).args[0].dataType, 'style');
-            t.equal(spy.getCall(2).args[0].style.scope, '');
 
             t.end();
         });
@@ -462,7 +457,7 @@ test('Style#loadJSON', (t) => {
         map.on('data', spy);
 
         style.on('style.load', () => {
-            t.equal(spy.callCount, 3);
+            t.ok(spy.calledTwice);
 
             // initial root style 'data' event
             t.equal(spy.getCall(0).args[0].target, map);
@@ -473,11 +468,6 @@ test('Style#loadJSON', (t) => {
             t.equal(spy.getCall(1).args[0].target, map);
             t.equal(spy.getCall(1).args[0].dataType, 'style');
             t.equal(spy.getCall(1).args[0].style.scope, 'streets');
-
-            // final root style 'data' event
-            t.equal(spy.getCall(2).args[0].target, map);
-            t.equal(spy.getCall(2).args[0].dataType, 'style');
-            t.equal(spy.getCall(2).args[0].style.scope, '');
 
             t.end();
         });
@@ -1317,6 +1307,34 @@ test('Camera', (t) => {
         });
     });
 
+    t.test('sequential imports dont override orthographic camera with perspective', (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+
+        style.loadJSON(createStyleJSON({
+            imports: [
+                {
+                    id: 'basemap',
+                    url: '/standard.json',
+                    data: createStyleJSON({camera: {'camera-projection': 'orthographic'}})
+                },
+                {
+                    id: 'navigation',
+                    url: '/navigation.json',
+                    data: createStyleJSON()
+                }
+            ],
+        }));
+
+        const spy = t.spy(map, '_triggerCameraUpdate');
+
+        style.on('style.load', () => {
+            t.deepEqual(style.camera, {'camera-projection': 'orthographic'});
+            t.deepEqual(spy.lastCall.firstArg, {'camera-projection': 'orthographic'});
+            t.end();
+        });
+    });
+
     t.test('root style overrides camera in imports', (t) => {
         const style = new Style(new StubMap());
 
@@ -1860,19 +1878,21 @@ test('Style#setState', (t) => {
     });
 
     t.test('Adds fragment', async (t) => {
-        const style = new Style(new StubMap());
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
 
         const initialStyle = createStyleJSON();
         style.loadJSON(initialStyle);
 
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}]
         });
 
         style.setState(nextStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.import.load', resolve));
 
         t.deepEqual(style.serialize(), nextStyle);
 
@@ -1880,21 +1900,23 @@ test('Style#setState', (t) => {
     });
 
     t.test('Adds fragment to the existing fragments', async (t) => {
-        const style = new Style(new StubMap());
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}]
         });
 
         style.loadJSON(initialStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}, {id: 'b', url: '', data: createStyleJSON()}]
         });
 
         style.setState(nextStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.import.load', resolve));
 
         t.deepEqual(style.serialize(), nextStyle);
 
@@ -1902,21 +1924,23 @@ test('Style#setState', (t) => {
     });
 
     t.test('Adds fragment before another', async (t) => {
-        const style = new Style(new StubMap());
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'b', url: '', data: createStyleJSON()}]
         });
 
         style.loadJSON(initialStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}, {id: 'b', url: '', data: createStyleJSON()}]
         });
 
         style.setState(nextStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.import.load', resolve));
 
         t.deepEqual(style.serialize(), nextStyle);
 
@@ -2013,21 +2037,23 @@ test('Style#setState', (t) => {
     });
 
     t.test('Moves fragment', async (t) => {
-        const style = new Style(new StubMap());
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '', data: createStyleJSON()}, {id: 'b', url: '', data: createStyleJSON()}]
         });
 
         style.loadJSON(initialStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
             imports: [{id: 'b', url: '', data: createStyleJSON()}, {id: 'a', url: '', data: createStyleJSON()}]
         });
 
         style.setState(nextStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
+        await new Promise((resolve) => map.on('style.import.load', resolve));
 
         t.deepEqual(style.serialize(), nextStyle);
 
@@ -2035,7 +2061,9 @@ test('Style#setState', (t) => {
     });
 
     t.test('Updates fragment URL', async (t) => {
-        const style = new Style(new StubMap());
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '/style.json'}],
@@ -2043,9 +2071,6 @@ test('Style#setState', (t) => {
         });
 
         window.server.respondWith('/style.json', JSON.stringify(createStyleJSON()));
-
-        style.loadJSON(initialStyle);
-        await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
             imports: [{id: 'a', url: '/styles/streets-v12.json'}],
@@ -2055,17 +2080,22 @@ test('Style#setState', (t) => {
         const data = createStyleJSON({layers: [{id: 'a', type: 'background'}]});
         window.server.respondWith('/styles/streets-v12.json', JSON.stringify(data));
 
+        style.loadJSON(initialStyle);
+        await new Promise((resolve) => map.on('style.load', resolve));
+
         style.setState(nextStyle);
-        t.equal(style._changes._updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
 
-        await new Promise((resolve) => style.on('style.load', resolve));
+        // await for `style.import.load` never resolves for some reason here
+        map.on('style.import.load', () => {
+            t.equal(style._changes._updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
 
-        t.deepEqual(style.serialize(), createStyleJSON({
-            imports: [{id: 'a', url: '/styles/streets-v12.json', data}],
-            layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
-        }));
+            t.deepEqual(style.serialize(), createStyleJSON({
+                imports: [{id: 'a', url: '/styles/streets-v12.json', data}],
+                layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
+            }));
 
-        t.end();
+            t.end();
+        });
     });
 
     t.test('Updates fragment data', async (t) => {
