@@ -7,8 +7,7 @@ import {
     Uniform1f,
     Uniform2f,
     UniformColor,
-    UniformMatrix4f,
-    Uniform4f
+    UniformMatrix4f
 } from '../uniform_binding.js';
 import EXTENT from '../../style-spec/data/extent.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
@@ -37,8 +36,7 @@ export type HillshadePrepareUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_image': Uniform1i,
     'u_dimension': Uniform2f,
-    'u_zoom': Uniform1f,
-    'u_unpack': Uniform4f
+    'u_zoom': Uniform1f
 |};
 
 export type HillshadeDefinesType = 'TERRAIN_DEM_FLOAT_FORMAT';
@@ -58,8 +56,7 @@ const hillshadePrepareUniforms = (context: Context): HillshadePrepareUniformsTyp
     'u_matrix': new UniformMatrix4f(context),
     'u_image': new Uniform1i(context),
     'u_dimension': new Uniform2f(context),
-    'u_zoom': new Uniform1f(context),
-    'u_unpack': new Uniform4f(context)
+    'u_zoom': new Uniform1f(context)
 });
 
 const hillshadeUniformValues = (
@@ -112,8 +109,7 @@ const hillshadeUniformPrepareValues = (
         'u_matrix': matrix,
         'u_image': 1,
         'u_dimension': [stride, stride],
-        'u_zoom': tileID.overscaledZ,
-        'u_unpack': dem.unpackVector
+        'u_zoom': tileID.overscaledZ
     };
 };
 

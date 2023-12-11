@@ -142,13 +142,14 @@ test('DEMData#backfillBorder', (t) => {
             dim: 4,
             stride: 6,
             pixels: dem0.pixels,
-            encoding: 'mapbox',
+            floatView: dem0.floatView,
             borderReady: false
         }, 'serializes DEM');
 
         const transferrables = new Set();
         serialize(dem0, transferrables);
         t.assert(transferrables.has(dem0.pixels.buffer), 'populates transferrables with correct data');
+        t.assert(transferrables.has(dem0.floatView.buffer), 'populates transferrables with correct data');
 
         t.end();
     });

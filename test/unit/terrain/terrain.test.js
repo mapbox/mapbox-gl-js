@@ -56,7 +56,7 @@ const createGradientDEM = () => {
             }
         }
     }
-    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false);
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox");
 };
 
 const createNegativeGradientDEM = () => {
@@ -81,7 +81,7 @@ const createNegativeGradientDEM = () => {
             }
         }
     }
-    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox", false);
+    return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox");
 };
 
 test('Elevation', (t) => {
@@ -236,14 +236,14 @@ test('Elevation', (t) => {
 
                 t.test('dx', t => {
                     const elevationDx = map.painter.terrain.getAtPoint({x: coord.x + dx, y: coord.y}, 0);
-                    t.assert(Math.abs(elevationDx - 0.1) < 1e-12);
+                    t.assert(Math.abs(elevationDx - 0.1) < 1e-8);
                     t.end();
                 });
 
                 t.test('dy', t => {
                     const elevationDy = map.painter.terrain.getAtPoint({x: coord.x, y: coord.y + dx}, 0);
                     const expectation = TILE_SIZE * 0.1;
-                    t.assert(Math.abs(elevationDy - expectation) < 1e-12);
+                    t.assert(Math.abs(elevationDy - expectation) < 1e-6);
                     t.end();
                 });
 
@@ -257,14 +257,14 @@ test('Elevation', (t) => {
                 t.test('-dx -wrap', t => {
                     const elevation = map.painter.terrain.getAtPoint({x: coord.x - dx, y: coord.y}, 0);
                     const expectation = (TILE_SIZE - 1) * 0.1;
-                    t.assert(Math.abs(elevation - expectation) < 1e-12);
+                    t.assert(Math.abs(elevation - expectation) < 1e-6);
                     t.end();
                 });
 
                 t.test('-1.5dx -wrap', t => {
                     const elevation = map.painter.terrain.getAtPoint({x: coord.x - 1.5 * dx, y: coord.y}, 0);
                     const expectation = (TILE_SIZE - 1.5) * 0.1;
-                    t.assert(Math.abs(elevation - expectation) < 1e-12);
+                    t.assert(Math.abs(elevation - expectation) < 1e-7);
                     t.end();
                 });
 
@@ -390,7 +390,7 @@ test('Elevation', (t) => {
                 t.true(map._averageElevation.isEasing(timestamp));
                 t.equal(map.transform.averageElevation, 0);
 
-                const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+                const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
                     t.ok(Math.abs(actual - expected) < epsilon);
                 };
 
@@ -826,7 +826,7 @@ test('Drag pan ortho', (t) => {
         window.useFakeXMLHttpRequest();
     });
 
-    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
         t.ok(Math.abs(actual - expected) < epsilon);
     };
 
@@ -933,7 +933,7 @@ test('Negative Elevation', (t) => {
         style: createStyle()
     });
 
-    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-6) => {
+    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
         t.ok(Math.abs(actual - expected) < epsilon);
     };
 

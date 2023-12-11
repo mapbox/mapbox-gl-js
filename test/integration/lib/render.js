@@ -197,6 +197,14 @@ async function renderMap(style, options) {
         projection: options.projection,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
+        contextCreateOptions: {
+            // Anisotropic filtering is disabled
+            extTextureFilterAnisotropicForceOff: true,
+            // By default standard derivatives are disabled for testing
+            extStandardDerivativesForceOff: !options.standardDerivatives,
+            // OES_texture_float_linear is enabled by default
+            extTextureFloatLinearForceOff: options.textureFloatLinear === undefined ? false : !options.textureFloatLinear,
+        }
     });
 
     map.on('error', (e) => {
@@ -220,11 +228,6 @@ async function renderMap(style, options) {
     if (options.showPadding) map.showPadding = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
     if (options.fadeDuration) map._isInitialLoad = false;
-
-    // Disable anisotropic filtering on render tests
-    map.painter.context.extTextureFilterAnisotropicForceOff = true;
-    // Disable globe antialiasing on render tests expect for antialiasing test
-    map.painter.context.extStandardDerivativesForceOff = !options.standardDerivatives;
 
     map.repaint = true;
     await map.once('load');

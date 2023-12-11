@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "allowed": 0.008,
+      "description": "Visualize terrain wireframe for the purpose of catching interpolation errors. NB: texture float linear is disabled here.",
+      "showTerrainWireframe": true,
+      "showLayers3DWireframe": false,
+      "textureFloatLinear": false,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "center": [-122.4426, 37.7620],
+  "zoom": 15.99,
+  "pitch": 60,
+  "bearing": 30,
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 2
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "building",
+              "height": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [-122.4430, 37.7623],
+                  [-122.4422, 37.7623],
+                  [-122.4422, 37.7617],
+                  [-122.4430, 37.7617],
+                  [-122.4430, 37.7623]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "green"
+      }
+    },
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "rgbterrain"
+    },
+    {
+        "id": "fill",
+        "type": "fill",
+        "source": "geojson"
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-height": 75,
+        "fill-extrusion-color": "red"
+      }
+    }
+  ]
+}

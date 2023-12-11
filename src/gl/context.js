@@ -25,6 +25,12 @@ type ClearArgs = {
     colorMask?: ColorMaskType
 };
 
+export type ContextOptions = {
+    extTextureFilterAnisotropicForceOff?: boolean;
+    extTextureFloatLinearForceOff?: boolean;
+    extStandardDerivativesForceOff?: boolean;
+};
+
 class Context {
     gl: WebGL2RenderingContext;
     currentNumAttributes: ?number;
@@ -71,11 +77,9 @@ class Context {
     extDebugRendererInfo: any;
     extTimerQuery: any;
     extTextureFloatLinear: any;
+    options: ContextOptions;
 
-    extTextureFilterAnisotropicForceOff: boolean;
-    extStandardDerivativesForceOff: boolean;
-
-    constructor(gl: WebGL2RenderingContext) {
+    constructor(gl: WebGL2RenderingContext, options?: ContextOptions) {
         this.gl = gl;
 
         this.clearColor = new ClearColor(this);
@@ -109,17 +113,18 @@ class Context {
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
+        this.options = options ? {...options} : {};
 
-        this.extTextureFilterAnisotropic = (
-            gl.getExtension('EXT_texture_filter_anisotropic') ||
+        if (!this.options.extTextureFilterAnisotropicForceOff) {
+            this.extTextureFilterAnisotropic = (
+                gl.getExtension('EXT_texture_filter_anisotropic') ||
             gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
             gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
-        );
-        if (this.extTextureFilterAnisotropic) {
-            this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            );
+            if (this.extTextureFilterAnisotropic) {
+                this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            }
         }
-        this.extTextureFilterAnisotropicForceOff = false;
-        this.extStandardDerivativesForceOff = false;
 
         this.extDebugRendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
         if (this.extDebugRendererInfo) {
@@ -127,7 +132,9 @@ class Context {
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
-        this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
+        if (!this.options.extTextureFloatLinearForceOff) {
+            this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
+        }
         this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');

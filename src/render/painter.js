@@ -89,6 +89,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js'
 import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers.js';
+import type {ContextOptions} from '../gl/context.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type CanvasCopyInstances = {
@@ -206,8 +207,8 @@ class Painter {
 
     _wireframeDebugCache: WireframeDebugCache;
 
-    constructor(gl: WebGL2RenderingContext, transform: Transform) {
-        this.context = new Context(gl);
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform) {
+        this.context = new Context(gl, contextCreateOptions);
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
@@ -1158,7 +1159,7 @@ class Painter {
         return this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture;
     }
 
-    terrainUseFloatDEM(): boolean {
+    linearFloatFilteringSupported(): boolean {
         const context = this.context;
         return context.extTextureFloatLinear != null;
     }
@@ -1198,7 +1199,7 @@ class Painter {
         }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
-            if (this.terrainUseFloatDEM()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
+            if (this.linearFloatFilteringSupported()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
             if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         }
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');

@@ -87,11 +87,10 @@ export function prepareDEMTexture(painter: Painter, tile: Tile, dem: DEMData) {
     const demImage = dem.getPixels();
 
     // Dem encoding should match painters expectations about floating point DEM usage
-    assert((dem.encoding === 'float') === painter.terrainUseFloatDEM());
     if (tile.demTexture) {
         tile.demTexture.update(demImage, {premultiply: false});
     } else {
-        tile.demTexture = new Texture(context, demImage, painter.terrainUseFloatDEM() ? gl.R32F : gl.RGBA, {premultiply: false});
+        tile.demTexture = new Texture(context, demImage, gl.R32F, {premultiply: false});
     }
     tile.needsDEMTextureUpload = false;
 }
@@ -127,7 +126,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getMercatorTileBoundsBuffers();
 
     const definesValues: DynamicDefinesType[] = [];
-    if (painter.terrainUseFloatDEM()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
+    if (painter.linearFloatFilteringSupported()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
 
     painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,

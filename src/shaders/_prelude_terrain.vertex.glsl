@@ -37,14 +37,9 @@ vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
 
 #ifdef TERRAIN
 
-#ifdef TERRAIN_DEM_FLOAT_FORMAT
 uniform highp sampler2D u_dem;
 uniform highp sampler2D u_dem_prev;
-#else
-uniform highp sampler2D u_dem;
-uniform highp sampler2D u_dem_prev;
-#endif
-uniform vec4 u_dem_unpack;
+
 uniform vec2 u_dem_tl;
 uniform vec2 u_dem_tl_prev;
 uniform float u_dem_scale;
@@ -64,10 +59,6 @@ vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     return vec4((pos - f + 0.5) / (dem_size + 2.0), f);
 }
 
-float decodeElevation(vec4 v) {
-    return dot(vec4(v.xyz * 255.0, -1.0), u_dem_unpack);
-}
-
 float currentElevation(vec2 apos) {
 #ifdef TERRAIN_DEM_FLOAT_FORMAT
     vec2 pos = (u_dem_size * (apos / 8192.0 * u_dem_scale + u_dem_tl) + 1.5) / (u_dem_size + 2.0);
@@ -78,10 +69,10 @@ float currentElevation(vec2 apos) {
     vec2 pos = r.xy;
     vec2 f = r.zw;
 
-    float tl = decodeElevation(texture2D(u_dem, pos));
-    float tr = decodeElevation(texture2D(u_dem, pos + vec2(dd, 0.0)));
-    float bl = decodeElevation(texture2D(u_dem, pos + vec2(0.0, dd)));
-    float br = decodeElevation(texture2D(u_dem, pos + vec2(dd, dd)));
+    float tl = texture(u_dem, pos).r;
+    float tr = texture(u_dem, pos + vec2(dd, 0)).r;
+    float bl = texture(u_dem, pos + vec2(0, dd)).r;
+    float br = texture(u_dem, pos + vec2(dd, dd)).r;
 
     return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 #endif
@@ -97,10 +88,10 @@ float prevElevation(vec2 apos) {
     vec2 pos = r.xy;
     vec2 f = r.zw;
 
-    float tl = decodeElevation(texture2D(u_dem_prev, pos));
-    float tr = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, 0.0)));
-    float bl = decodeElevation(texture2D(u_dem_prev, pos + vec2(0.0, dd)));
-    float br = decodeElevation(texture2D(u_dem_prev, pos + vec2(dd, dd)));
+    float tl = texture(u_dem_prev, pos).r;
+    float tr = texture(u_dem_prev, pos + vec2(dd, 0)).r;
+    float bl = texture(u_dem_prev, pos + vec2(0, dd)).r;
+    float br = texture(u_dem_prev, pos + vec2(dd, dd)).r;
 
     return u_exaggeration * mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 #endif
@@ -164,14 +155,10 @@ vec4 fourSample(vec2 pos, vec2 off) {
     float bl = texture(u_dem, pos + vec2(0.0, off.y)).r;
     float br = texture(u_dem, pos + off).r;
 #else
-    vec4 demtl = vec4(texture2D(u_dem, pos).xyz * 255.0, -1.0);
-    float tl = dot(demtl, u_dem_unpack);
-    vec4 demtr = vec4(texture2D(u_dem, pos + vec2(off.x, 0.0)).xyz * 255.0, -1.0);
-    float tr = dot(demtr, u_dem_unpack);
-    vec4 dembl = vec4(texture2D(u_dem, pos + vec2(0.0, off.y)).xyz * 255.0, -1.0);
-    float bl = dot(dembl, u_dem_unpack);
-    vec4 dembr = vec4(texture2D(u_dem, pos + off).xyz * 255.0, -1.0);
-    float br = dot(dembr, u_dem_unpack);
+    float tl = texture(u_dem, pos).r;
+    float tr = texture(u_dem, pos + vec2(off.x, 0.0)).r;
+    float bl = texture(u_dem, pos + vec2(0.0, off.y)).r;
+    float br = texture(u_dem, pos + off).r;
 #endif
     return vec4(tl, tr, bl, br);
 }

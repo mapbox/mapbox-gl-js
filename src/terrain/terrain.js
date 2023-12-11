@@ -8,7 +8,7 @@ import {TriangleIndexArray, PosArray} from '../data/array_types.js';
 import SegmentVector from '../data/segment.js';
 import Texture from '../render/texture.js';
 import Program from '../render/program.js';
-import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../render/uniform_binding.js';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../render/uniform_binding.js';
 import {prepareDEMTexture} from '../render/draw_hillshade.js';
 import EXTENT from '../style-spec/data/extent.js';
 import {clamp, warnOnce} from '../util/util.js';
@@ -18,7 +18,6 @@ import getWorkerPool from '../util/global_worker_pool.js';
 import Dispatcher from '../util/dispatcher.js';
 import GeoJSONSource from '../source/geojson_source.js';
 import ImageSource from '../source/image_source.js';
-import RasterDEMTileSource from '../source/raster_dem_tile_source.js';
 import RasterTileSource from '../source/raster_tile_source.js';
 import VectorTileSource from '../source/vector_tile_source.js';
 import Color from '../style-spec/util/color.js';
@@ -37,7 +36,6 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import {clippingMaskUniformValues} from '../render/program/clipping_mask_program.js';
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
-import DEMData from '../data/dem_data.js';
 import {DrapeRenderMode} from '../style/terrain.js';
 import rasterFade from '../render/raster_fade.js';
 import {create as createSource} from '../source/source.js';
@@ -55,7 +53,6 @@ import type IndexBuffer from '../gl/index_buffer.js';
 import type Context from '../gl/context.js';
 import type {UniformValues} from '../render/uniform_binding.js';
 import type Transform from '../geo/transform.js';
-import type {DEMEncoding} from '../data/dem_data.js';
 import type {Vec3, Vec4} from 'gl-matrix';
 import type {CanonicalTileID} from '../source/tile_id.js';
 
@@ -663,18 +660,10 @@ export class Terrain extends Elevation {
         const min = this._getLoadedAreaMinimum();
 
         const getTextureParameters = () => {
-            if (this.painter.terrainUseFloatDEM()) {
-                const image = new Float32Image(
-                    {width: 1, height: 1},
-                    new Float32Array([min]));
-                return [gl.R32F, image];
-            } else {
-                const image = new RGBAImage(
-                    {width: 1, height: 1},
-                    new Uint8Array(DEMData.pack(min, ((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding))
-                );
-                return [gl.RGBA, image];
-            }
+            const image = new Float32Image(
+                {width: 1, height: 1},
+                new Float32Array([min]));
+            return [gl.R32F, image];
         };
 
         const [internalFormat, image] = getTextureParameters();
@@ -703,7 +692,7 @@ export class Terrain extends Elevation {
         }) {
         const context = this.painter.context;
         const gl = context.gl;
-        const uniforms = defaultTerrainUniforms(((this.sourceCache.getSource(): any): RasterDEMTileSource).encoding);
+        const uniforms = defaultTerrainUniforms();
 
         uniforms['u_exaggeration'] = this.exaggeration();
 
@@ -729,7 +718,7 @@ export class Terrain extends Elevation {
                 return gl.NEAREST;
             }
 
-            return this.painter.terrainUseFloatDEM() ? gl.LINEAR : gl.NEAREST;
+            return this.painter.linearFloatFilteringSupported() ? gl.LINEAR : gl.NEAREST;
         };
 
         const setDemSizeUniform = (demTexture: Texture) => {
@@ -1027,7 +1016,7 @@ export class Terrain extends Elevation {
             fb.depthAttachment.set(this._sharedDepthStencil);
         }
 
-        if (context.extTextureFilterAnisotropic && !context.extTextureFilterAnisotropicForceOff) {
+        if (context.extTextureFilterAnisotropic) {
             gl.texParameterf(gl.TEXTURE_2D,
                 context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT,
                 context.extTextureFilterAnisotropicMax);
@@ -1706,7 +1695,6 @@ function createGrid(count: number): [PosArray, TriangleIndexArray, number] {
 export type TerrainUniformsType = {|
     'u_dem': Uniform1i,
     'u_dem_prev': Uniform1i,
-    'u_dem_unpack': Uniform4f,
     'u_dem_tl': Uniform2f,
     'u_dem_scale': Uniform1f,
     'u_dem_tl_prev': Uniform2f,
@@ -1723,7 +1711,6 @@ export type TerrainUniformsType = {|
 export const terrainUniforms = (context: Context): TerrainUniformsType => ({
     'u_dem': new Uniform1i(context),
     'u_dem_prev': new Uniform1i(context),
-    'u_dem_unpack': new Uniform4f(context),
     'u_dem_tl': new Uniform2f(context),
     'u_dem_scale': new Uniform1f(context),
     'u_dem_tl_prev': new Uniform2f(context),
@@ -1737,11 +1724,10 @@ export const terrainUniforms = (context: Context): TerrainUniformsType => ({
     'u_label_plane_matrix_inv': new UniformMatrix4f(context),
 });
 
-function defaultTerrainUniforms(encoding: DEMEncoding): UniformValues<TerrainUniformsType> {
+function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
     return {
         'u_dem': 2,
         'u_dem_prev': 4,
-        'u_dem_unpack': DEMData.getUnpackVector(encoding),
         'u_dem_tl': [0, 0],
         'u_dem_tl_prev': [0, 0],
         'u_dem_scale': 0,

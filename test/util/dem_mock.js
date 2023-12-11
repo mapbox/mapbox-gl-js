@@ -12,7 +12,7 @@ export function createConstElevationDEM(elevation, tileSize) {
         pixelData[i + 2] = encoded[2];
         pixelData[i + 3] = encoded[3];
     }
-    return new DEMData(0, new RGBAImage({height: tileSize + 2, width: tileSize + 2}, pixelData, "mapbox", false));
+    return new DEMData(0, new RGBAImage({height: tileSize + 2, width: tileSize + 2}, pixelData), "mapbox");
 }
 
 export function setMockElevationTerrain(map, demData, tileSize, maxzoom) {

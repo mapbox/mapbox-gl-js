@@ -77,6 +77,7 @@ import type {Source} from '../source/source.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type {EasingOptions} from './camera.js';
+import type {ContextOptions} from '../gl/context.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -143,6 +144,7 @@ type MapOptions = {
     crossSourceCollisions?: boolean,
     collectResourceTiming?: boolean,
     respectPrefersReducedMotion?: boolean,
+    contextCreateOptions?: ContextOptions,
 };
 
 const defaultMinZoom = -2;
@@ -470,6 +472,8 @@ class Map extends Camera {
      */
     touchPitch: TouchPitchHandler;
 
+    _contextCreateOptions: ContextOptions;
+
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(PerformanceMarkers.create);
 
@@ -541,6 +545,11 @@ class Map extends Camera {
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
+        if (options.contextCreateOptions) {
+            this._contextCreateOptions = {...options.contextCreateOptions};
+        } else {
+            this._contextCreateOptions = {};
+        }
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -3349,7 +3358,7 @@ class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this.transform);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
