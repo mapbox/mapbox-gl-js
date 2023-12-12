@@ -1552,6 +1552,8 @@ test('Marker interaction and raycast', (t) => {
 
             t.test('Occluded', (t) => {
                 marker._fadeTimer = null;
+                // Occlusion is happening with Timers API. Advance them
+                t.stub(global, 'setTimeout').callsFake((cb) => cb());
                 marker.setLngLat(terrainTopLngLat);
                 const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
                 // Raycast returns distance to closer point evaluates to occluded marker.
