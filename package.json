@@ -79,7 +79,7 @@
     "nyc": "^15.1.0",
     "pixelmatch": "^5.3.0",
     "postcss": "^8.4.32",
-    "postcss-cli": "^10.1.0",
+    "postcss-cli": "^11.0.0",
     "postcss-inline-svg": "^6.0.0",
     "pretty-bytes": "^6.0.0",
     "puppeteer-core": "^21.6.0",
