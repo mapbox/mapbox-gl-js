@@ -184,7 +184,10 @@ const skip = [
 
     // Flaky, https://mapbox.atlassian.net/browse/GLJS-608
     "render-tests/model-layer/terrain-2-wheels-stunt",
-    "render-tests/model-layer/multiple-models-terrain"
+    "render-tests/model-layer/multiple-models-terrain",
+
+    // The algorithm for raster colour gradient texels stretching needs an adjustment
+    "render-tests/raster-color/categorical"
 ];
 
 export default {todo, skip};

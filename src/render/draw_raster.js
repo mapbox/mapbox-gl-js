@@ -32,8 +32,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const rasterColor = configureRasterColor(layer, context, gl);
-    const defines = rasterColor.defines;
+    const rasterConfig = configureRaster(layer, context, gl);
+    const defines = rasterConfig.defines;
     let drawAsGlobePole = false;
     if (source instanceof ImageSource && !tileIDs.length) {
         if (painter.transform.projection.name !== 'globe') {
@@ -104,8 +104,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             painter.renderDefaultSouthPole = false;
         }
         const perspectiveTransform = source.perspectiveTransform;
-        const uniformValues = rasterUniformValues(projMatrix, normalizeMatrix, globeMatrix, [0, 0], 1, fade, layer, perspectiveTransform || [0, 0], RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0], emissiveStrength);
-        const program = painter.getOrCreateProgram('raster', {defines: rasterColor.defines});
+        const uniformValues = rasterUniformValues(projMatrix, normalizeMatrix, globeMatrix, [0, 0], 1, fade, layer, perspectiveTransform || [0, 0], RASTER_COLOR_TEXTURE_UNIT, rasterConfig.mix, rasterConfig.offset, rasterConfig.range, 1, 0, emissiveStrength);
+        const program = painter.getOrCreateProgram('raster', {defines: rasterConfig.defines});
 
         painter.uploadCommonUniforms(context, program, null);
         program.draw(
@@ -175,10 +175,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
         const emptyMatrix = new Float32Array(16);
-        const uniformValues = rasterUniformValues(projMatrix, emptyMatrix, emptyMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterColor.mix || [0, 0, 0, 0], rasterColor.range || [0, 0], emissiveStrength);
+        const uniformValues = rasterUniformValues(projMatrix, emptyMatrix, emptyMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer, perspectiveTransform, RASTER_COLOR_TEXTURE_UNIT, rasterConfig.mix, rasterConfig.offset, rasterConfig.range, 1, 0, emissiveStrength);
         const affectedByFog = painter.isTileAffectedByFog(coord);
 
-        const program = painter.getOrCreateProgram('raster', {defines: rasterColor.defines, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram('raster', {defines: rasterConfig.defines, overrideFog: affectedByFog});
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
@@ -199,21 +199,28 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-function configureRasterColor (layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext) {
+function configureRaster(layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext) {
+    const isRasterColor = layer.paint.get('raster-color');
+
     const defines = [];
-    let mix;
-    let range;
+    const inputResampling = layer.paint.get('raster-resampling');
+    const inputMix = layer.paint.get('raster-color-mix');
+    const range = layer.paint.get('raster-color-range');
 
-    if (layer.paint.get('raster-color')) {
-        defines.push('RASTER_COLOR');
-        mix = layer.paint.get('raster-color-mix');
-        range = layer.paint.get('raster-color-range');
+    // Unpack the offset for use in a separate uniform
+    const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
+    const offset = inputMix[3];
 
+    const resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
+
+    if (isRasterColor) defines.push('RASTER_COLOR');
+
+    if (isRasterColor) {
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE2);
         let tex = layer.colorRampTexture;
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
-    return {mix, range, defines};
+    return {mix, range, offset, defines, resampling};
 }

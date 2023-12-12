@@ -856,7 +856,7 @@
       "type": "*",
       "doc": "Other keys to configure the data source."
     }
-  },
+  },   
   "source_geojson": {
     "type": {
       "required": true,
@@ -7828,7 +7828,22 @@
         ]
       },
       "property-type": "data-constant"
-   }
+   },
+    "raster-array-band": {
+      "type": "string",
+      "required": false,
+      "property-type": "data-constant",
+      "transition": false,
+      "doc": "Displayed band of raster array source layer",
+      "example": "band-name",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.1.0",
+          "android": "11.1.0",
+          "ios": "11.1.0"
+        }
+      }
+    }
   },
   "paint_hillshade": {
     "hillshade-illumination-direction": {

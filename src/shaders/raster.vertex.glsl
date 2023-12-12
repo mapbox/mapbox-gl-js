@@ -6,6 +6,7 @@ uniform mat4 u_globe_matrix;
 uniform vec2 u_tl_parent;
 uniform float u_scale_parent;
 uniform vec2 u_perspective_transform;
+uniform vec2 u_texture_offset;
 
 #ifdef PROJECTION_GLOBE_VIEW
 attribute vec3 a_globe_pos;
@@ -42,4 +43,9 @@ void main() {
 
     v_pos0 = uv;
     v_pos1 = (v_pos0 * u_scale_parent) + u_tl_parent;
+
+    // Correct the texture coord for a buffer, for example if tiles have a 1px buffer and
+    // are therefore 258 x 258 or 514 x 514.
+    v_pos0 = u_texture_offset.x + u_texture_offset.y * v_pos0;
+    v_pos1 = u_texture_offset.x + u_texture_offset.y * v_pos1;
 }

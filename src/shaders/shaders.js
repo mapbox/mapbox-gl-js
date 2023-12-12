@@ -64,6 +64,7 @@ import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
 import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
+import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
@@ -88,6 +89,7 @@ import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.g
 export let preludeTerrain = {};
 export let preludeFog = {};
 export let preludeShadow = {};
+export let preludeRasterArray = {};
 
 const commonDefines = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
@@ -97,7 +99,8 @@ export const includeMap = {
     "_prelude_shadow.vertex.glsl": preludeShadowVert,
     "_prelude_fog.fragment.glsl": preludeFogFrag,
     "_prelude_shadow.fragment.glsl": preludeShadowFrag,
-    "_prelude_lighting.glsl": preludeLighting
+    "_prelude_lighting.glsl": preludeLighting,
+    "_prelude_raster_array.glsl": preludeRasterArrayFrag
 };
 // Populated during precompilation
 const defineMap = {};
@@ -105,6 +108,7 @@ const defineMap = {};
 preludeTerrain = compile('', preludeTerrainVert);
 preludeFog = compile(preludeFogFrag, preludeFogVert);
 preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
+preludeRasterArray = compile(preludeRasterArrayFrag, '');
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;

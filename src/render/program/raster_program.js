@@ -32,8 +32,10 @@ export type RasterUniformsType = {|
     'u_spin_weights': Uniform3f,
     'u_perspective_transform': Uniform2f,
     'u_colorization_mix': Uniform4f,
-    'u_colorization_scale': Uniform2f,
+    'u_colorization_offset': Uniform1f,
     'u_color_ramp': Uniform1i,
+    'u_texture_offset': Uniform2f,
+    'u_texture_res': Uniform2f,
     'u_emissive_strength': Uniform1f
 |};
 
@@ -56,8 +58,10 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_spin_weights': new Uniform3f(context),
     'u_perspective_transform': new Uniform2f(context),
     'u_colorization_mix': new Uniform4f(context),
-    'u_colorization_scale': new Uniform2f(context),
+    'u_colorization_offset': new Uniform1f(context),
     'u_color_ramp': new Uniform1i(context),
+    'u_texture_offset': new Uniform2f(context),
+    'u_texture_res': new Uniform2f(context),
     'u_emissive_strength': new Uniform1f(context)
 });
 
@@ -71,8 +75,11 @@ const rasterUniformValues = (
     layer: RasterStyleLayer,
     perspectiveTransform: [number, number],
     colorRampUnit: number,
-    colorMapInputMix: [number, number, number, number],
+    colorMix: [number, number, number, number],
+    colorOffset: number,
     colorRange: [number, number],
+    tileSize: number,
+    buffer: number,
     emissiveStrength: number
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
@@ -90,9 +97,14 @@ const rasterUniformValues = (
     'u_contrast_factor': contrastFactor(layer.paint.get('raster-contrast')),
     'u_spin_weights': spinWeights(layer.paint.get('raster-hue-rotate')),
     'u_perspective_transform': perspectiveTransform,
-    'u_colorization_mix': colorMapInputMix,
-    'u_colorization_scale': colorScaleFactors(colorRange),
+    'u_colorization_mix': computeRasterColorMix(colorMix, colorRange),
+    'u_colorization_offset': computeRasterColorOffset(colorOffset, colorRange),
     'u_color_ramp': colorRampUnit,
+    'u_texture_offset': [
+        buffer / (tileSize + 2 * buffer),
+        tileSize / (tileSize + 2 * buffer)
+    ],
+    'u_texture_res': [tileSize + 2 * buffer, tileSize + 2 * buffer],
     'u_emissive_strength': emissiveStrength
 });
 
@@ -119,20 +131,41 @@ function saturationFactor(saturation: number) {
         -saturation;
 }
 
-function colorScaleFactors ([min, max]: [number, number]) {
-    if (min === max) return [min, max];
+function computeRasterColorMix([mr, mg, mb, ma]: [number, number, number, number], [min, max]: [number, number]): [number, number, number, number] {
+    if (min === max) return [0, 0, 0, 0];
 
-    // Account for tabulated color scale values which are defined at texel *centers*. Without this,
-    // there is up to a half-texel misalignment between the intended value and the evaluated color.
-    // This makes it much more straightforward to use precisely tabulated, categorical colors.
-    const center = (max + min) / 2;
-    const delta = (max - min) / 2 * COLOR_RAMP_RES / (COLOR_RAMP_RES - 1);
-    min = center - delta;
-    max = center + delta;
+    // The following computes a mix which, together with the offset, transforms a
+    // normalized pixel value in the range (0, 1) to a texture lookup position. It
+    // combines the following mappings:
+    //
+    //   1. value = offset + scale * (256 * 256 * 256 * R + 256 * 256 * G + 256 * B + A)
+    //   2. normalized = (value - min) / (max - min)
+    //   3. stretched = -1/(N+1) + (N+3)/(N+1) * normalized
+    //
+    // The first mapping reconstructs the numerical value. The second normalizes
+    // the value to the range [0, 1] by way of the selected raster-color-range.
+    //
+    // The third requires some explanation. Since tabulated color map values are
+    // defined at the *center* of each texel, we actually stretch the range [0, 1]
+    // just slightly so that the *center* of the texels are at 0 and 1, respectively.
 
-    // Precompute the offset and delta so that operations are moved out of the shader and
-    // the raster value may be computed in-shader as `colorScale[0] + colorScale[1] * inputValue`
-    return [-min / (max - min), 1 / (max - min)];
+    const factor = (COLOR_RAMP_RES + 3) / (COLOR_RAMP_RES + 1) / (max - min);
+
+    return [
+        mr * factor,
+        mg * factor,
+        mb * factor,
+        ma * factor
+    ];
+}
+
+function computeRasterColorOffset(offset: number, [min, max]: [number, number]): number {
+    if (min === max) return 0;
+
+    // See above for an explanation. This separately captures the constant-offset
+    // component of the mapping.
+    return ((offset - min) / (max - min) * (COLOR_RAMP_RES + 3) - 1) / (COLOR_RAMP_RES + 1);
+
 }
 
 export {rasterUniforms, rasterUniformValues};
