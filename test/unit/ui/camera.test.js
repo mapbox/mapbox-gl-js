@@ -38,11 +38,11 @@ test('camera', (t) => {
     function assertTransitionTime(test, camera, min, max) {
         let startTime;
         camera
-            .on('movestart', () => { startTime = new Date(); })
+            .on('movestart', () => { startTime = browser.now(); })
             .on('moveend', () => {
-                const endTime = new Date();
+                const endTime = browser.now();
                 const timeDiff = endTime - startTime;
-                test.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
+                test.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range(${min}, ${max}): ${timeDiff}`);
                 test.end();
             });
     }
@@ -961,7 +961,7 @@ test('camera', (t) => {
                 .on('moveend', () => {
                     const endTime = browser.now();
                     const timeDiff = endTime - startTime;
-                    t.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
+                    t.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range(${min}, ${max}): ${timeDiff}`);
                     t.end();
                 });
 
@@ -997,7 +997,7 @@ test('camera', (t) => {
                 .on('moveend', () => {
                     const endTime = browser.now();
                     const timeDiff = endTime - startTime;
-                    t.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range( [${min},${max}) ) :${timeDiff}`);
+                    t.ok(timeDiff >= min && timeDiff < max, `Camera transition time exceeded expected range(${min}, ${max}): ${timeDiff}`);
                     t.end();
                 });
 
@@ -1877,9 +1877,9 @@ test('camera', (t) => {
             const camera = createCamera({center: [37.63454, 55.75868], zoom: 18});
 
             camera
-                .on('movestart', () => { startTime = new Date(); })
+                .on('movestart', () => { startTime = browser.now(); })
                 .on('moveend', () => {
-                    endTime = new Date();
+                    endTime = browser.now();
                     timeDiff = endTime - startTime;
                     equalWithPrecision(t, timeDiff, 0, 1e+1);
                     t.end();
