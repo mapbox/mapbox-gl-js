@@ -58,7 +58,7 @@ import {
 import PauseablePlacement from './pauseable_placement.js';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
-import {makeFQID, getNameFromFQID} from '../util/fqid.js';
+import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.js';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -1173,6 +1173,8 @@ class Style extends Evented {
 
     _updateWorkerLayers(scope: string, updatedIds?: Array<string>, removedIds?: Array<string>) {
         const fragmentStyle = this.getFragmentStyle(scope);
+        if (!fragmentStyle) return;
+
         this.dispatcher.broadcast('updateLayers', {
             layers: updatedIds ? fragmentStyle._serializeLayers(updatedIds) : [],
             scope,
@@ -1526,13 +1528,20 @@ class Style extends Evented {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
-    getFragmentStyle(fragmentId?: string): Style {
+    getFragmentStyle(fragmentId?: string): ?Style {
         if (!fragmentId) return this;
 
-        const fragment = this.fragments.find(({id}) => id === fragmentId);
-        if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
-
-        return fragment.style;
+        if (isFQID(fragmentId)) {
+            const scope = getScopeFromFQID(fragmentId);
+            const fragment = this.fragments.find(({id}) => id === scope);
+            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            const name = getNameFromFQID(fragmentId);
+            return fragment.style.getFragmentStyle(name);
+        } else {
+            const fragment = this.fragments.find(({id}) => id === fragmentId);
+            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            return fragment.style;
+        }
     }
 
     setConfigProperty(fragmentId: string, key: string, value: any) {
@@ -1545,6 +1554,7 @@ class Style extends Evented {
         const expression = expressionParsed.value.expression;
 
         const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return;
         fragmentStyle.options.set(key, expression);
         fragmentStyle.updateConfigDependencies();
     }

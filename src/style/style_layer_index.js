@@ -23,6 +23,8 @@ class StyleLayerIndex {
 
     constructor(layerConfigs: ?Array<LayerSpecification>) {
         this.keyCache = {};
+        this._layers = {};
+        this._layerConfigs = {};
         if (layerConfigs) {
             this.replace(layerConfigs);
         }

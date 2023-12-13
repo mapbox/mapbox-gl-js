@@ -1,0 +1,127 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0015
+    }
+  },
+  "center": [
+    -122.40784,
+    37.78432
+  ],
+  "zoom": 15,
+  "bearing": 0,
+  "pitch": 60,
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "terrain": {
+          "source": "mapbox-dem"
+        },
+        "sources": {
+          "mapbox": {
+            "type": "vector",
+            "maxzoom": 15,
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.vector.pbf"
+            ]
+          },
+          "mapbox-dem": {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.terrain.png"
+            ],
+            "maxzoom": 15,
+            "tileSize": 512
+          },
+          "mapbox-hillshade": {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.terrain.png"
+            ],
+            "maxzoom": 15,
+            "tileSize": 1024
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "#313131"
+            }
+          },
+          {
+            "id": "land",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+              "fill-color": "#a0cfdf"
+            }
+          },
+          {
+            "id": "road",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "line-color": "#545454",
+              "line-width": 10
+            }
+          },
+          {
+            "id": "3d-buildings",
+            "type": "fill-extrusion",
+            "source": "mapbox",
+            "source-layer": "building",
+            "filter": [
+              "==",
+              [
+                "get",
+                "extrude"
+              ],
+              "true"
+            ],
+            "paint": {
+              "fill-extrusion-opacity": 0.7,
+              "fill-extrusion-color": "#d6d6d6",
+              "fill-extrusion-height": [
+                "number",
+                [
+                  "get",
+                  "height"
+                ]
+              ],
+              "fill-extrusion-base": [
+                "number",
+                [
+                  "get",
+                  "min_height"
+                ]
+              ]
+            }
+          }
+        ],
+        "imports": [
+          {
+            "id": "basemap",
+            "url": "",
+            "data": {
+              "version": 8,
+              "sources": {},
+              "layers": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
