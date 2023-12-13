@@ -557,12 +557,6 @@ test('diff', (t) => {
             },
         }]
     }), [{
-        command: 'setPaintProperty',
-        args: ['national-park', 'fill-color', 'violet', null]
-    }, {
-        command: 'setSlot',
-        args: ['national-park', 'above-water']
-    }, {
         command: 'setImportData',
         args: ['basemap', {
             'version': 8,
@@ -572,6 +566,12 @@ test('diff', (t) => {
                 {'id': 'above-water', 'type': 'slot'}
             ]
         }]
+    }, {
+        command: 'setPaintProperty',
+        args: ['national-park', 'fill-color', 'violet', null]
+    }, {
+        command: 'setSlot',
+        args: ['national-park', 'above-water']
     }], 'updates import data and ignores slots');
 
     t.end();

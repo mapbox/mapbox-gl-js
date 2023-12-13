@@ -462,7 +462,7 @@ export function diffImports(before: Array<ImportSpecification> = [], after: Arra
 export default function diffStyles(before: StyleSpecification, after: StyleSpecification): Array<Command> {
     if (!before) return [{command: operations.setStyle, args: [after]}];
 
-    let commands = [];
+    let commands: Array<Command> = [];
 
     try {
         // Handle changes to top-level properties
@@ -486,6 +486,10 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         }
         if (!isEqual(before.glyphs, after.glyphs)) {
             commands.push({command: operations.setGlyphs, args: [after.glyphs]});
+        }
+        // Handle changes to `imports` before other mergable top-level properties
+        if (!isEqual(before.imports, after.imports)) {
+            diffImports(before.imports, after.imports, commands);
         }
         if (!isEqual(before.transition, after.transition)) {
             commands.push({command: operations.setTransition, args: [after.transition]});
@@ -550,9 +554,6 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
 
         // Handle changes to `layers`
         diffLayers(beforeLayers, after.layers, commands);
-
-        // Handle changes to `imports`
-        diffImports(before.imports, after.imports, commands);
     } catch (e) {
         // fall back to setStyle
         console.warn('Unable to compute style diff:', e);

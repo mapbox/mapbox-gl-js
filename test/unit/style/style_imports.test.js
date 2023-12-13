@@ -1135,6 +1135,100 @@ test('Terrain', (t) => {
         });
     });
 
+    t.test('empty root style terrain overrides terrain in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            terrain: {source: 'mapbox-dem', exaggeration: 2},
+            sources: {
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: 256,
+                    maxzoom: 14
+                }
+            },
+            imports: [{
+                id: 'basemap',
+                url: '/standard.json',
+                data: createStyleJSON({
+                    terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            maxzoom: 14
+                        }
+                    },
+                })
+            }],
+        }));
+
+        style.on('style.load', () => {
+            style.setTerrain(null);
+            t.deepEqual(style.getTerrain(), null);
+            t.end();
+        });
+    });
+
+    t.test('setState correctly overrides terrain in the root style', async (t) => {
+        const map = new StubMap();
+        const style = new Style(map);
+        style.setEventedParent(map, {style});
+
+        const importWithTerrain = {
+            id: 'basemap',
+            url: '/standard.json',
+            data: createStyleJSON({
+                terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+                sources: {
+                    'mapbox-dem': {
+                        type: 'raster-dem',
+                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        maxzoom: 14
+                    }
+                },
+            })
+        };
+
+        const rootWithTerrain = createStyleJSON({
+            terrain: {source: 'mapbox-dem', exaggeration: 2},
+            sources: {
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: 256,
+                    maxzoom: 14
+                }
+            },
+            imports: [importWithTerrain],
+        });
+
+        const rootWithoutTerrain = createStyleJSON({
+            imports: [importWithTerrain],
+        });
+
+        // Using terrain from the root style
+        style.loadJSON(rootWithTerrain);
+        await new Promise((resolve) => map.on('style.load', resolve));
+        t.equal(style.terrain.scope, style.scope);
+        t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 2});
+
+        // Using terrain from the imported style
+        style.setState(rootWithoutTerrain);
+        t.equal(style.terrain.scope, style.getFragmentStyle('basemap').scope);
+        t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 1.5});
+
+        // Using terrain from the root style again
+        style.setState(rootWithTerrain);
+        t.equal(style.terrain.scope, style.scope);
+        t.deepEqual(style.getTerrain(), {source: 'mapbox-dem', exaggeration: 2});
+
+        t.end();
+    });
+
     t.test('empty terrain in import does not override terrain in root style', (t) => {
         const style = new Style(new StubMap());
 

@@ -1360,7 +1360,7 @@ class Style extends Evented {
                 return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)));
             }
         }
-        if (this.terrain && this.terrain.get().source === id) {
+        if (this.terrain && this.terrain.scope === this.scope && this.terrain.get().source === id) {
             return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while terrain is using it.`)));
         }
 
@@ -2291,7 +2291,7 @@ class Style extends Evented {
         }
 
         // Enabling
-        if (!this.terrain || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
+        if (!this.terrain || this.terrain.scope !== this.scope || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
             if (!options) return;
             this._createTerrain(options, drapeRenderMode);
             this.fire(new Event('data', {dataType: 'style'}));
