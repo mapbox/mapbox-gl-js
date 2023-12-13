@@ -4,7 +4,7 @@ import mapboxgl from '../../src/index.js';
 test('mapboxgl', (t) => {
     t.test('version', (t) => {
         t.ok(mapboxgl.version);
-        t.match(mapboxgl.version, /^3\.[0-9]+\.[0-9]+(-(dev|beta|rc)\.[1-9])?$/);
+        t.match(mapboxgl.version, /^3\.[0-9]+\.[0-9]+(-(dev|alpha|beta|rc)\.[1-9])?$/);
         t.end();
     });
 
