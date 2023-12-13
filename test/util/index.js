@@ -8,6 +8,7 @@ export function createMap(t, options, callback) {
         container,
         interactive: false,
         attributionControl: false,
+        performanceMetricsCollection: false,
         trackResize: true,
         testMode: true,
         style: {
@@ -27,6 +28,8 @@ export function createMap(t, options, callback) {
     if (callback) map.on('load', () => {
         callback(null, map);
     });
+
+    map._authenticate = () => {};
 
     return map;
 }

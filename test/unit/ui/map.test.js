@@ -110,7 +110,7 @@ test('Map', (t) => {
     });
 
     t.test('default performance metrics collection', (t) => {
-        const map = createMap(t);
+        const map = createMap(t, {performanceMetricsCollection: true});
         map._requestManager._customAccessToken = 'access-token';
         map.once('idle', () => {
             map.triggerRepaint();
@@ -127,7 +127,7 @@ test('Map', (t) => {
     });
 
     t.test('performance metrics event stores explicit projection', (t) => {
-        const map = createMap(t, {projection: 'globe', zoom: 20});
+        const map = createMap(t, {performanceMetricsCollection: true, projection: 'globe', zoom: 20});
         map._requestManager._customAccessToken = 'access-token';
         map.once('idle', () => {
             map.triggerRepaint();
