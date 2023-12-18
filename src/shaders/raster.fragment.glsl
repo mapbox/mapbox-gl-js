@@ -4,9 +4,11 @@
 
 uniform float u_fade_t;
 uniform float u_opacity;
+uniform highp float u_raster_elevation;
 
 varying vec2 v_pos0;
 varying vec2 v_pos1;
+varying float v_depth;
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -104,10 +106,17 @@ void main() {
     out_color = apply_lighting_with_emission_ground(vec4(out_color, 1.0), u_emissive_strength).rgb;
 #endif
 #ifdef FOG
-    out_color = fog_dither(fog_apply(out_color, v_fog_pos));
+    float fog_limit_high_meters = 1000000.0;
+    float fog_limit_low_meters = 600000.0;
+    float fog_limit = 1.0 - smoothstep(fog_limit_low_meters, fog_limit_high_meters, u_raster_elevation);
+    out_color = fog_dither(fog_apply(out_color, v_fog_pos, fog_limit));
 #endif
 
     gl_FragColor = vec4(out_color * color.a, color.a);
+
+#ifdef RENDER_CUTOFF
+    gl_FragColor = gl_FragColor * cutoff_opacity(u_cutoff_params, v_depth);
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

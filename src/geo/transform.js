@@ -113,6 +113,9 @@ class Transform {
     projMatrix: Array<number> | Float32Array | Float64Array;
     invProjMatrix: Float64Array;
 
+    // Projection matrix with expanded farZ on globe projection
+    expandedFarZProjMatrix: Array<number> | Float32Array | Float64Array;
+
     // Same as projMatrix, pixel-aligned to avoid fractional pixels for raster tiles
     alignedProjMatrix: Float64Array;
 
@@ -177,6 +180,7 @@ class Transform {
     _projMatrixCache: {[_: number]: Float32Array};
     _alignedProjMatrixCache: {[_: number]: Float32Array};
     _pixelsToTileUnitsCache: {[_: number]: Float32Array};
+    _expandedProjMatrixCache: {[_: number]: Float32Array};
     _fogTileMatrixCache: {[_: number]: Float32Array};
     _distanceTileDataCache: {[_: number]: FeatureDistanceData};
     _camera: FreeCamera;
@@ -218,6 +222,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._fogTileMatrixCache = {};
+        this._expandedProjMatrixCache = {};
         this._distanceTileDataCache = {};
         this._camera = new FreeCamera();
         this._centerAltitude = 0;
@@ -1860,16 +1865,30 @@ class Transform {
      * @param {UnwrappedTileID} unwrappedTileID;
      * @private
      */
-    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
+    calculateProjMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false, expanded: boolean = false): Float32Array {
         const projMatrixKey = unwrappedTileID.key;
-        const cache = aligned ? this._alignedProjMatrixCache : this._projMatrixCache;
+        let cache;
+        if (expanded) {
+            cache = this._expandedProjMatrixCache;
+        } else if (aligned) {
+            cache = this._alignedProjMatrixCache;
+        } else {
+            cache = this._projMatrixCache;
+        }
         if (cache[projMatrixKey]) {
             return cache[projMatrixKey];
         }
 
         const posMatrix = this.calculatePosMatrix(unwrappedTileID, this.worldSize);
-        const projMatrix = this.projection.isReprojectedInTileSpace ?
-            this.mercatorMatrix : (aligned ? this.alignedProjMatrix : this.projMatrix);
+        let projMatrix;
+        if (this.projection.isReprojectedInTileSpace) {
+            projMatrix = this.mercatorMatrix;
+        } else if (expanded) {
+            assert(!aligned);
+            projMatrix = this.expandedFarZProjMatrix;
+        } else {
+            projMatrix = aligned ? this.alignedProjMatrix : this.projMatrix;
+        }
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -2162,6 +2181,15 @@ class Transform {
         // as tile elevations are in tile coordinates and relative to center elevation.
         this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
+        if (isGlobe) {
+            const expandedCameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, Infinity);
+            expandedCameraToClipPerspective[8] = -offset.x * 2 / this.width;
+            expandedCameraToClipPerspective[9] = offset.y * 2 / this.height;
+            this.expandedFarZProjMatrix = mat4.mul([], expandedCameraToClipPerspective, worldToCamera);
+        } else {
+            this.expandedFarZProjMatrix = this.projMatrix;
+        }
+
         const clipToCamera = mat4.invert([], cameraToClip);
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
 
@@ -2237,6 +2265,7 @@ class Transform {
         this._projMatrixCache = {};
         this._alignedProjMatrixCache = {};
         this._pixelsToTileUnitsCache = {};
+        this._expandedProjMatrixCache = {};
     }
 
     _calcFogMatrices() {

@@ -61,6 +61,7 @@ export class OverscaledTileID {
     canonical: CanonicalTileID;
     key: number;
     projMatrix: Float32Array;
+    expandedProjMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
         assert(overscaledZ >= z);
@@ -219,4 +220,4 @@ export const neighborCoord = [
 ];
 
 register(CanonicalTileID, 'CanonicalTileID');
-register(OverscaledTileID, 'OverscaledTileID', {omit: ['projMatrix']});
+register(OverscaledTileID, 'OverscaledTileID', {omit: ['projMatrix', 'expandedProjMatrix']});

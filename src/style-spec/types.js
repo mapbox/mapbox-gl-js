@@ -531,7 +531,9 @@ export type RasterLayerSpecification = {|
         "raster-contrast"?: PropertyValueSpecification<number>,
         "raster-resampling"?: PropertyValueSpecification<"linear" | "nearest">,
         "raster-fade-duration"?: PropertyValueSpecification<number>,
-        "raster-emissive-strength"?: PropertyValueSpecification<number>
+        "raster-emissive-strength"?: PropertyValueSpecification<number>,
+        "raster-array-band"?: string,
+        "raster-elevation"?: PropertyValueSpecification<number>
     |}
 |}
 

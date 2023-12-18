@@ -99,9 +99,42 @@ vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
     return (tile_units_to_pixels * pos + offset) / pattern_size;
 }
 
+float mercatorXfromLng(float lng) {
+    return (180.0 + lng) / 360.0;
+}
+
+float mercatorYfromLat(float lat) {
+    return (180.0 - (RAD_TO_DEG* log(tan(QUARTER_PI + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
+}
+
+vec3 latLngToECEF(vec2 latLng) {
+    latLng = DEG_TO_RAD * latLng;
+    
+    float cosLat = cos(latLng[0]);
+    float sinLat = sin(latLng[0]);
+    float cosLng = cos(latLng[1]);
+    float sinLng = sin(latLng[1]);
+
+    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
+    float sx = cosLat * sinLng * GLOBE_RADIUS;
+    float sy = -sinLat * GLOBE_RADIUS;
+    float sz = cosLat * cosLng * GLOBE_RADIUS;
+
+    return vec3(sx, sy, sz);
+}
+
 #ifdef RENDER_CUTOFF
 uniform vec4 u_cutoff_params;
 varying float v_cutoff_opacity;
 #endif
 
 const vec4 AWAY = vec4(-1000.0, -1000.0, -1000.0, 1); // Normalized device coordinate that is not rendered.
+
+// Handle skirt flag for terrain & globe shaders
+const float skirtOffset = 24575.0;
+vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
+{
+    float skirt = float(posWithComposedSkirt.x >= skirtOffset);
+    vec2 pos = posWithComposedSkirt - vec2(skirt * skirtOffset, 0.0);
+    return vec3(pos, skirt);
+}

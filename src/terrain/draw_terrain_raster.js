@@ -207,7 +207,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
-                tr.projMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
+                tr.expandedFarZProjMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, gridMatrix);
 
@@ -257,7 +257,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    globeRasterUniformValues(tr.projMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
+                    globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                     tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);

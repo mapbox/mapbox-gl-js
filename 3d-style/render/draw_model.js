@@ -361,7 +361,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
         for (const node of model.nodes) {
-            prepareMeshes(painter.transform, node, model.matrix, painter.transform.projMatrix, modelIndex, transparentMeshes, opaqueMeshes);
+            prepareMeshes(painter.transform, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes);
         }
         modelIndex++;
     }
@@ -605,7 +605,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 const layerOpacity = layer.paint.get('model-opacity');
 
                 uniformValues = modelUniformValues(
-                    coord.projMatrix,
+                    coord.expandedProjMatrix,
                     Float32Array.from(node.matrix),
                     new Float32Array(16),
                     painter,
@@ -750,7 +750,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 mat4.transpose(normalMatrix, normalMatrix);
                 mat4.scale(normalMatrix, normalMatrix, normalScale);
 
-                const worldViewProjection = mat4.multiply([], tr.projMatrix, modelMatrix);
+                const worldViewProjection = mat4.multiply([], tr.expandedFarZProjMatrix, modelMatrix);
 
                 for (let i = 0; i < node.meshes.length; ++i) {
                     const mesh = node.meshes[i];

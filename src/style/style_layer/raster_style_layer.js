@@ -41,9 +41,12 @@ class RasterStyleLayer extends StyleLayer {
     // $FlowFixMe[method-unbinding]
     isLayerDraped(sourceCache: ?SourceCache): boolean {
         // Special handling for raster, where the drapeability depends on the source
-        // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)
-        if (sourceCache && sourceCache._source instanceof ImageSource && (sourceCache._source.onNorthPole || sourceCache._source.onSouthPole)) {
-            return false;
+        if (sourceCache && sourceCache._source instanceof ImageSource) {
+            // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)
+            if (sourceCache._source.onNorthPole || sourceCache._source.onSouthPole) {
+                return false;
+            }
+            return this.paint.get('raster-elevation') === 0.0;
         }
         return true;
     }

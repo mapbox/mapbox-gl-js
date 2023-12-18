@@ -5,7 +5,7 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.00059,
+      "allowed": 0.00065,
       "operations": [
         ["wait"],
         ["setZoom", 3.0],

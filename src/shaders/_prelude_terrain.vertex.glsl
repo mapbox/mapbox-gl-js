@@ -24,17 +24,6 @@ vec3 elevationVector(vec2 pos) { return vec3(0, 0, 1); }
 
 #endif
 
-// Handle skirt flag for terrain & globe shaders
-
-const float skirtOffset = 24575.0;
-vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
-{
-    float skirt = float(posWithComposedSkirt.x >= skirtOffset);
-    vec2 pos = posWithComposedSkirt - vec2(skirt * skirtOffset, 0.0);
-
-    return vec3(pos, skirt);
-}
-
 #ifdef TERRAIN
 
 uniform highp sampler2D u_dem;

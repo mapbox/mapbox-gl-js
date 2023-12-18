@@ -365,7 +365,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(
-                coord.projMatrix,
+                coord.expandedProjMatrix,
                 tile,
                 layer.paint.get('fill-extrusion-translate'),
                 layer.paint.get('fill-extrusion-translate-anchor'));

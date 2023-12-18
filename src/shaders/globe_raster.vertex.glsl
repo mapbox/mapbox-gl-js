@@ -19,30 +19,6 @@ attribute vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 
 varying vec2 v_pos0;
 
-float mercatorXfromLng(float lng) {
-    return (180.0 + lng) / 360.0;
-}
-
-float mercatorYfromLat(float lat) {
-    return (180.0 - (RAD_TO_DEG* log(tan(QUARTER_PI + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
-}
-
-vec3 latLngToECEF(vec2 latLng) {
-    latLng = DEG_TO_RAD * latLng;
-    
-    float cosLat = cos(latLng[0]);
-    float sinLat = sin(latLng[0]);
-    float cosLng = cos(latLng[1]);
-    float sinLng = sin(latLng[1]);
-
-    // Convert lat & lng to spherical representation. Use zoom=0 as a reference
-    float sx = cosLat * sinLng * GLOBE_RADIUS;
-    float sy = -sinLat * GLOBE_RADIUS;
-    float sz = cosLat * cosLng * GLOBE_RADIUS;
-
-    return vec3(sx, sy, sz);
-}
-
 void main() {
 #ifdef GLOBE_POLES
     vec3 globe_pos = a_globe_pos;

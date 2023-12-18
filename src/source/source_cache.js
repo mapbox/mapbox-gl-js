@@ -953,8 +953,14 @@ class SourceCache extends Evented {
 
     _getRenderableCoordinates(symbolLayer?: boolean, includeShadowCasters?: boolean): Array<OverscaledTileID> {
         const coords = this.getRenderableIds(symbolLayer, includeShadowCasters).map((id) => this._tiles[id].tileID);
+        const isGlobe = this.transform.projection.name === 'globe';
         for (const coord of coords) {
             coord.projMatrix = this.transform.calculateProjMatrix(coord.toUnwrapped());
+            if (isGlobe) {
+                coord.expandedProjMatrix = this.transform.calculateProjMatrix(coord.toUnwrapped(), false, true);
+            } else {
+                coord.expandedProjMatrix = coord.projMatrix;
+            }
         }
         return coords;
     }
