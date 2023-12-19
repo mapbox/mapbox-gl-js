@@ -2910,6 +2910,19 @@ class Map extends Camera {
     /** @section {Style properties} */
 
     /**
+     * Returns the value of a configuration property in the imported style.
+     *
+     * @param {string} importId The name of the imported style to set the config for (e.g. `basemap`).
+     * @param {string} configName The name of the configuration property from the style.
+     * @returns {*} Returns the value of the configuration property.
+     * @example
+     * map.getConfigProperty('basemap', 'showLabels');
+     */
+    getConfigProperty(importId: string, configName: string): ?any {
+        return this.style.getConfigProperty(importId, configName);
+    }
+
+    /**
      * Sets the value of a configuration property in the currently set style.
      *
      * @param {string} importId The name of the imported style to set the config for (e.g. `basemap`).

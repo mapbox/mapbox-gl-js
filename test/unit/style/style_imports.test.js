@@ -2158,6 +2158,8 @@ test('Style#setConfigProperty', (t) => {
         });
 
         style.on('style.load', () => {
+            t.equal(style.getConfigProperty('standard', 'showBackground'), false);
+
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'updateLayers');
                 t.equal(value.scope, 'standard');
@@ -2168,6 +2170,7 @@ test('Style#setConfigProperty', (t) => {
             };
 
             style.setConfigProperty('standard', 'showBackground', true);
+            t.equal(style.getConfigProperty('standard', 'showBackground'), true);
             style.update({});
         });
 
@@ -2400,42 +2403,42 @@ test('Style#setState', (t) => {
         t.end();
     });
 
-    t.test('Updates fragment URL', async (t) => {
+    t.test('Updates fragment URL', (t) => {
         const map = new StubMap();
         const style = new Style(map);
         style.setEventedParent(map, {style});
 
+        const data = createStyleJSON({layers: [{id: 'a', type: 'background'}]});
+        window.server.respondWith('/style1.json', JSON.stringify(createStyleJSON()));
+        window.server.respondWith('/style2.json', JSON.stringify(data));
+
         const initialStyle = createStyleJSON({
-            imports: [{id: 'a', url: '/style.json'}],
+            imports: [{id: 'a', url: '/style1.json', config: {lightPreset: 'night'}}],
             layers: [{id: 'b', type: 'background', paint: {'background-color': 'red'}}]
         });
 
-        window.server.respondWith('/style.json', JSON.stringify(createStyleJSON()));
-
         const nextStyle = createStyleJSON({
-            imports: [{id: 'a', url: '/styles/streets-v12.json'}],
+            imports: [{id: 'a', url: '/style2.json', config: {lightPreset: 'night'}}],
             layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
         });
 
-        const data = createStyleJSON({layers: [{id: 'a', type: 'background'}]});
-        window.server.respondWith('/styles/streets-v12.json', JSON.stringify(data));
-
-        style.loadJSON(initialStyle);
-        await new Promise((resolve) => map.on('style.load', resolve));
-
-        style.setState(nextStyle);
-
-        // await for `style.import.load` never resolves for some reason here
-        map.on('style.import.load', () => {
-            t.equal(style._changes._updatedPaintProps.has('b'), true, 'Keeps previous changes intact');
+        map.on('style.load', () => {
+            style.setState(nextStyle);
 
             t.deepEqual(style.serialize(), createStyleJSON({
-                imports: [{id: 'a', url: '/styles/streets-v12.json', data}],
+                imports: [{id: 'a', url: '/style2.json', config: {lightPreset: 'night'}, data}],
                 layers: [{id: 'b', type: 'background', paint: {'background-color': 'pink'}}]
             }));
 
+            t.equal(style.getConfigProperty('a', 'lightPreset'), 'night');
+
+            const updatedPaintProperties = style._changes.getUpdatedPaintProperties();
+            t.equal(updatedPaintProperties.has('b'), true, 'Keeps previous changes intact');
+
             t.end();
         });
+
+        style.loadJSON(initialStyle);
     });
 
     t.test('Updates fragment data', async (t) => {

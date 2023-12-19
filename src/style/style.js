@@ -1544,6 +1544,13 @@ class Style extends Evented {
         }
     }
 
+    getConfigProperty(fragmentId: string, key: string): ?any {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return null;
+        const expression = fragmentStyle.options.get(key);
+        return expression ? expression.serialize() : null;
+    }
+
     setConfigProperty(fragmentId: string, key: string, value: any) {
         const expressionParsed = createExpression(value);
         if (expressionParsed.result !== 'success') {
@@ -2675,7 +2682,7 @@ class Style extends Evented {
 
         // Update related fragment
         const fragment = this.fragments[index];
-        fragment.style = this._createFragmentStyle({id: importId, url});
+        fragment.style = this._createFragmentStyle(imports[index]);
 
         fragment.style.on('style.import.load', () => this.mergeAll());
         fragment.style.loadURL(url);
