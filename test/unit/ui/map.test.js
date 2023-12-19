@@ -2962,11 +2962,38 @@ test('Map', (t) => {
         });
 
         t.test('sets and gets language property', (t) => {
-            const map = createMap(t);
+            const map = createMap(t, {
+                style: extend(createStyle(), {
+                    sources: {
+                        mapbox: {
+                            type: 'vector',
+                            minzoom: 1,
+                            maxzoom: 10,
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        }
+                    }
+                })
+            });
+
             map.on('style.load', () => {
+                const source = map.getSource('mapbox');
+                const loadSpy = t.spy(source, 'load');
+                const clearSourceSpy = t.spy(map.style, 'clearSource');
+
+                source.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        setImmediate(() => {
+                            t.ok(clearSourceSpy.calledOnce, 'Style.clearSource should be called after source load');
+                            t.equal(clearSourceSpy.lastCall.firstArg, 'mapbox');
+                            t.end();
+                        });
+                    }
+                });
+
                 map.setLanguage('es');
+
                 t.equal(map.getLanguage(), 'es');
-                t.end();
+                t.ok(loadSpy.calledOnce, 'Changing language must trigger source reload');
             });
         });
 
@@ -3005,11 +3032,38 @@ test('Map', (t) => {
         });
 
         t.test('sets and gets worldview property', (t) => {
-            const map = createMap(t);
+            const map = createMap(t, {
+                style: extend(createStyle(), {
+                    sources: {
+                        mapbox: {
+                            type: 'vector',
+                            minzoom: 1,
+                            maxzoom: 10,
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        }
+                    }
+                })
+            });
+
             map.on('style.load', () => {
+                const source = map.getSource('mapbox');
+                const loadSpy = t.spy(source, 'load');
+                const clearSourceSpy = t.spy(map.style, 'clearSource');
+
+                source.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        setImmediate(() => {
+                            t.ok(clearSourceSpy.calledOnce, 'Style.clearSource should be called after source load');
+                            t.equal(clearSourceSpy.lastCall.firstArg, 'mapbox');
+                            t.end();
+                        });
+                    }
+                });
+
                 map.setWorldview('JP');
+
                 t.equal(map.getWorldview(), 'JP');
-                t.end();
+                t.ok(loadSpy.calledOnce, 'Changing worldview must trigger source reload');
             });
         });
 

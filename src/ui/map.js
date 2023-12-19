@@ -1165,7 +1165,7 @@ class Map extends Camera {
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
 
-        this.style.clearSources();
+        this.style.reloadSources();
 
         for (const control of this._controls) {
             if (control._setLanguage) {
@@ -1208,7 +1208,7 @@ class Map extends Camera {
         if (!this.style || worldview === this._worldview) return this;
 
         this._worldview = worldview;
-        this.style.clearSources();
+        this.style.reloadSources();
 
         return this;
     }

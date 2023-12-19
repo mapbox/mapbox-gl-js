@@ -2535,6 +2535,12 @@ class Style extends Evented {
         }
     }
 
+    reloadSources() {
+        for (const source of this.getSources()) {
+            if (source.reload) source.reload();
+        }
+    }
+
     updateSources(transform: Transform) {
         let lightDirection: ?Vec3;
         if (this.directionalLight) {
