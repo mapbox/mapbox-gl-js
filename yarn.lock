@@ -6775,17 +6775,17 @@ punycode@^2.0.0, punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^21.6.0:
-  version "21.6.0"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.6.0.tgz#506d1b7f982a1adca6f98ba88eb6a8be26869978"
-  integrity sha512-1vrzbp2E1JpBwtIIrriWkN+A0afUxkqRuFTC3uASc5ql6iuK9ppOdIU/CPGKwOyB4YFIQ16mRbK0PK19mbXnaQ==
+puppeteer-core@^21.6.1:
+  version "21.6.1"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.6.1.tgz#10eccb4dc3167c8c26bc21122fabb45a9fda9ca7"
+  integrity sha512-0chaaK/RL9S1U3bsyR4fUeUfoj51vNnjWvXgG6DcsyMjwYNpLcAThv187i1rZCo7QhJP0wZN8plQkjNyrq2h+A==
   dependencies:
     "@puppeteer/browsers" "1.9.0"
     chromium-bidi "0.5.1"
     cross-fetch "4.0.0"
     debug "4.3.4"
     devtools-protocol "0.0.1203626"
-    ws "8.14.2"
+    ws "8.15.1"
 
 qrcode-terminal@^0.12.0:
   version "0.12.0"
@@ -8962,10 +8962,10 @@ write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-ws@8.14.2, ws@>=8.14.2:
-  version "8.14.2"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.14.2.tgz#6c249a806eb2db7a20d26d51e7709eab7b2e6c7f"
-  integrity sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==
+ws@8.15.1, ws@>=8.14.2:
+  version "8.15.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.15.1.tgz#271ba33a45ca0cc477940f7f200cd7fba7ee1997"
+  integrity sha512-W5OZiCjXEmk0yZ66ZN82beM5Sz7l7coYxpRkzS+p9PP+ToQry8szKh+61eNktr7EA9DOwvFGhfC605jDHbP6QQ==
 
 ws@^7, ws@^7.0.0, ws@^7.5.5:
   version "7.5.9"
