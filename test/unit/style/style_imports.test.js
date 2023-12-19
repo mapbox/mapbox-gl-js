@@ -881,11 +881,16 @@ test('Style#_mergeLayers', (t) => {
                     layers: [
                         {id: 'land', type: 'background'},
                         {id: 'below-water', type: 'slot'},
-                        {id: 'water', type: 'background'}
+                        {id: 'water', type: 'background'},
+                        {id: 'below-pois', type: 'slot'},
+                        {id: 'pois', type: 'background'}
                     ]
                 })
             }],
-            layers: [{id: 'national-park', type: 'background', slot: 'below-water'}]
+            layers: [
+                {id: 'roads', type: 'background', slot: 'below-pois'},
+                {id: 'national-park', type: 'background', slot: 'below-water'}
+            ]
         });
 
         style.on('style.load', () => {
@@ -896,8 +901,249 @@ test('Style#_mergeLayers', (t) => {
                 makeFQID('national-park'),
                 makeFQID('custom'),
                 makeFQID('water', 'streets'),
+                makeFQID('roads'),
+                makeFQID('pois', 'streets'),
             ]);
 
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports nested slots', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'below-road', type: 'slot'},
+                        {id: 'road', type: 'background'}
+                    ]
+                })
+            }],
+            layers: [
+                {id: 'park', type: 'background', slot: 'below-road'},
+                {id: 'below-water', type: 'slot', slot: 'below-road'},
+                {id: 'water', type: 'background', slot: 'below-road'}
+            ]
+        });
+
+        style.on('style.load', () => {
+            style.addLayer({id: 'waterway', type: 'background', slot: 'below-water'});
+
+            t.deepEqual(style.order, [
+                makeFQID('land', 'streets'),
+                makeFQID('park'),
+                makeFQID('waterway'),
+                makeFQID('water'),
+                makeFQID('road', 'streets'),
+            ]);
+
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports dynamic adding slots', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            layers: [
+                {id: 'park', type: 'background'},
+                {id: 'water', type: 'background'}
+            ]
+        });
+
+        style.on('style.load', () => {
+            style.addLayer({id: 'below-water', type: 'slot'}, 'water');
+            style.addLayer({id: 'waterway', type: 'background', slot: 'below-water'});
+
+            t.deepEqual(style.order, [
+                makeFQID('park'),
+                makeFQID('waterway'),
+                makeFQID('water'),
+            ]);
+
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports adding layer into a slot with before', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'below-water', type: 'slot'},
+                        {id: 'water', type: 'background'}
+                    ]
+                })
+            }],
+            layers: [{id: 'national-park', type: 'background', slot: 'below-water'}]
+        });
+
+        style.on('style.load', () => {
+            style.addLayer({id: 'before-national-park', type: 'background', slot: 'below-water'}, 'national-park');
+
+            t.deepEqual(style.order, [
+                makeFQID('land', 'streets'),
+                makeFQID('before-national-park'),
+                makeFQID('national-park'),
+                makeFQID('water', 'streets'),
+            ]);
+
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports adding layers into multiple slots with before', (t) => {
+        const style = new Style(new StubMap());
+        const stub = t.stub(console, 'warn');
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'below-road', type: 'slot'},
+                        {id: 'road', type: 'background'},
+                        {id: 'below-pois', type: 'slot'},
+                        {id: 'pois', type: 'background'},
+                    ]
+                })
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.addLayer({id: 'park', type: 'background', slot: 'below-road'});
+            style.addLayer({id: 'landuse', type: 'background', slot: 'below-pois'}, 'park');
+            style.addLayer({id: 'waterway', type: 'background', slot: 'below-road'}, 'landuse');
+            style.addLayer({id: 'water', type: 'background', slot: 'below-road'}, 'waterway');
+            style.addLayer({id: 'bridge', type: 'background', slot: 'below-pois'}, 'park');
+            style.addLayer({id: 'tunnel', type: 'background', slot: 'below-pois'}, 'bridge');
+
+            t.deepEqual(style.order, [
+                makeFQID('land', 'streets'),
+                makeFQID('park'),
+                makeFQID('water'),
+                makeFQID('waterway'),
+                makeFQID('road', 'streets'),
+                makeFQID('landuse'),
+                makeFQID('tunnel'),
+                makeFQID('bridge'),
+                makeFQID('pois', 'streets'),
+            ]);
+
+            t.equal(stub.callCount, 2);
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports moving layer inside a slot', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'below-road', type: 'slot'},
+                        {id: 'road', type: 'background'}
+                    ]
+                })
+            }],
+            layers: [
+                {id: 'park', type: 'background', slot: 'below-road'},
+                {id: 'waterway', type: 'background', slot: 'below-road'},
+                {id: 'water', type: 'background', slot: 'below-road'}
+            ]
+        });
+
+        style.on('style.load', () => {
+            style.moveLayer('water', 'waterway');
+
+            t.deepEqual(style.order, [
+                makeFQID('land', 'streets'),
+                makeFQID('park'),
+                makeFQID('water'),
+                makeFQID('waterway'),
+                makeFQID('road', 'streets'),
+            ]);
+
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
+    t.test('supports moving layers inside multiple slots', (t) => {
+        const style = new Style(new StubMap());
+        const stub = t.stub(console, 'warn');
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'streets',
+                url: '/style.json',
+                data: createStyleJSON({
+                    layers: [
+                        {id: 'land', type: 'background'},
+                        {id: 'below-road', type: 'slot'},
+                        {id: 'road', type: 'background'},
+                        {id: 'below-pois', type: 'slot'},
+                        {id: 'pois', type: 'background'},
+                    ]
+                })
+            }],
+            layers: [
+                {id: 'park', type: 'background', slot: 'below-road'},
+                {id: 'waterway', type: 'background', slot: 'below-road'},
+                {id: 'water', type: 'background', slot: 'below-road'},
+                {id: 'landuse', type: 'background', slot: 'below-pois'},
+                {id: 'tunnel', type: 'background', slot: 'below-pois'},
+                {id: 'bridge', type: 'background', slot: 'below-pois'}
+            ]
+        });
+
+        style.on('style.load', () => {
+            // Moving a layer before the layer in the same slot
+            style.moveLayer('water', 'waterway');
+
+            // Moving a layer before the layer in a different slot
+            style.moveLayer('bridge', 'water');
+
+            t.deepEqual(style.order, [
+                makeFQID('land', 'streets'),
+                makeFQID('park'),
+                makeFQID('water'),
+                makeFQID('waterway'),
+                makeFQID('road', 'streets'),
+                makeFQID('landuse'),
+                makeFQID('tunnel'),
+                makeFQID('bridge'),
+                makeFQID('pois', 'streets'),
+            ]);
+
+            t.equal(stub.callCount, 1);
             t.end();
         });
 

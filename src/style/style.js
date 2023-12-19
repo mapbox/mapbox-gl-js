@@ -1653,10 +1653,20 @@ class Style extends Evented {
         if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
         layer.setScope(this.scope);
 
-        const index = before ? this._order.indexOf(before) : this._order.length;
-        if (before && index === -1) {
-            this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
-            return;
+        let index = this._order.length;
+        if (before) {
+            const beforeIndex = this._order.indexOf(before);
+            if (beforeIndex === -1) {
+                this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
+                return;
+            }
+
+            // If the layer we're inserting doesn't have a slot,
+            // or it has the same slot as the 'before' layer,
+            // then we can insert the new layer before the existing one.
+            const beforeLayer = this._layers[before];
+            if (layer.slot === beforeLayer.slot) index = beforeIndex;
+            else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
 
         this._order.splice(index, 0, id);
@@ -1721,11 +1731,22 @@ class Style extends Evented {
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
 
-        const newIndex = before ? this._order.indexOf(before) : this._order.length;
-        if (before && newIndex === -1) {
-            this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
-            return;
+        let newIndex = this._order.length;
+        if (before) {
+            const beforeIndex = this._order.indexOf(before);
+            if (beforeIndex === -1) {
+                this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
+                return;
+            }
+
+            // If the layer we're moving doesn't have a slot,
+            // or it has the same slot as the 'before' layer,
+            // then we can insert the new layer before the existing one.
+            const beforeLayer = this._layers[before];
+            if (layer.slot === beforeLayer.slot) newIndex = beforeIndex;
+            else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
+
         this._order.splice(newIndex, 0, id);
 
         this._changes.setDirty();

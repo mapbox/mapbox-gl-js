@@ -2526,7 +2526,6 @@ class Map extends Camera {
      * @param {string} layer.id A unique identifier that you define.
      * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
      *     A list of layer types is available in the [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#type).
-     *
      *     This can also be `custom`. For more information, see {@link CustomLayerInterface}.
      * @param {string | Object} [layer.source] The data source for the layer.
      *     Reference a source that has _already been defined_ using the source's unique id.
@@ -2534,6 +2533,13 @@ class Map extends Camera {
      *     This is **required** for all `layer.type` options _except_ for `custom` and `background`.
      * @param {string} [layer.sourceLayer] (optional) The name of the [source layer](https://docs.mapbox.com/help/glossary/source-layer/) within the specified `layer.source` to use for this style layer.
      *     This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+     * @param {string} [layer.slot] (optional) The identifier of a [`slot`](https://docs.mapbox.com/style-spec/reference/slots/) layer that will be used to position this style layer.
+     *     A `slot` layer serves as a predefined position in the layer order for inserting associated layers.
+     *     *Note*: During 3D globe and terrain rendering, GL JS aims to batch multiple layers together for optimal performance.
+     *     This process might lead to a rearrangement of layers. Layers draped over globe and terrain,
+     *     such as `fill`, `line`, `background`, `hillshade`, and `raster`, are rendered first.
+     *     These layers are rendered underneath symbols, regardless of whether they are placed
+     *     in the middle or top slots or without a designated slot.
      * @param {Array} [layer.filter] (optional) An expression specifying conditions on source features.
      *     Only features that match the filter are displayed.
      *     The Mapbox Style Specification includes more information on the limitations of the [`filter`](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter) parameter
@@ -2562,6 +2568,15 @@ class Map extends Camera {
      *     resulting in the new layer appearing visually beneath the existing layer.
      *     If this argument is not specified, the layer will be appended to the end of the layers array
      *     and appear visually above all other layers.
+     *     *Note*: Layers can only be rearranged within the same `slot`. The new layer must share the
+     *     same `slot` as the existing layer to be positioned underneath it. If the
+     *     layers are in different slots, the `beforeId` parameter will be ignored and
+     *     the new layer will be appended to the end of the layers array.
+     *     During 3D globe and terrain rendering, GL JS aims to batch multiple layers together for optimal performance.
+     *     This process might lead to a rearrangement of layers. Layers draped over globe and terrain,
+     *     such as `fill`, `line`, `background`, `hillshade`, and `raster`, are rendered first.
+     *     These layers are rendered underneath symbols, regardless of whether they are placed
+     *     in the middle or top slots or without a designated slot.
      *
      * @returns {Map} Returns itself to allow for method chaining.
      *
@@ -2604,6 +2619,22 @@ class Map extends Camera {
      * });
      *
      * @example
+     * // Add a new symbol layer to a slot
+     * map.addLayer({
+     *     id: 'states',
+     *     // References a source that's already been defined
+     *     source: 'state-data',
+     *     type: 'symbol',
+     *     // Add the layer to the existing `top` slot
+     *     slot: 'top',
+     *     layout: {
+     *         // Set the label content to the
+     *         // feature's `name` property
+     *         'text-field': ['get', 'name']
+     *     }
+     * });
+     *
+     * @example
      * // Add a new symbol layer before an existing layer
      * map.addLayer({
      *     id: 'states',
@@ -2638,7 +2669,19 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before. When viewing the map, the `id` layer will appear beneath the `beforeId` layer. If `beforeId` is omitted, the layer will be appended to the end of the layers array and appear above all other layers on the map.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
+     *     When viewing the map, the `id` layer will appear beneath the `beforeId` layer.
+     *     If `beforeId` is omitted, the layer will be appended to the end of the layers array
+     *     and appear above all other layers on the map.
+     *     *Note*: Layers can only be rearranged within the same `slot`. The new layer must share the
+     *     same `slot` as the existing layer to be positioned underneath it. If the
+     *     layers are in different slots, the `beforeId` parameter will be ignored and
+     *     the new layer will be appended to the end of the layers array.
+     *     During 3D globe and terrain rendering, GL JS aims to batch multiple layers together for optimal performance.
+     *     This process might lead to a rearrangement of layers. Layers draped over globe and terrain,
+     *     such as `fill`, `line`, `background`, `hillshade`, and `raster`, are rendered first.
+     *     These layers are rendered underneath symbols, regardless of whether they are placed
+     *     in the middle or top slots or without a designated slot.
      * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
