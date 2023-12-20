@@ -1757,7 +1757,9 @@ class Camera extends Evented {
     // interpolating between the two endpoints will cross it.
     _normalizeCenter(center: LngLat) {
         const tr = this.transform;
-        if (!tr.renderWorldCopies || tr.maxBounds) return;
+        if (tr.maxBounds) return;
+        const isGlobe = tr.projection.name === 'globe';
+        if (!isGlobe && !tr.renderWorldCopies) return;
 
         const delta = center.lng - tr.center.lng;
         center.lng +=

@@ -1042,22 +1042,24 @@ test('camera', (t) => {
                 camera.transform.zoom = 4;
                 camera.transform.setProjection({name: 'globe'});
 
-                camera.easeTo({center: [360, 0], duration: 100, easing: e => e});
+                camera.easeTo({center: [-180.0, 0], duration: 50, easing: e => e});
 
                 camera.simulateFrame();
                 t.deepEqual(camera.getCenter(), {lng: 0, lat: 0});
 
                 stub.callsFake(() => 25);
                 camera.simulateFrame();
-                t.deepEqual(camera.getCenter(), {lng: 90, lat: 0});
+                t.deepEqual(camera.getCenter(), {lng: -90, lat: 0});
 
                 stub.callsFake(() => 50);
                 camera.simulateFrame();
                 t.deepEqual(camera.getCenter(), {lng: 180, lat: 0});
 
+                camera.easeTo({center: [0, 0], duration: 50, easing: e => e});
+
                 stub.callsFake(() => 75);
                 camera.simulateFrame();
-                t.deepEqual(camera.getCenter(), {lng: -90, lat: 0});
+                t.deepEqual(camera.getCenter(), {lng: 90, lat: 0});
 
                 stub.callsFake(() => 100);
                 camera.simulateFrame();
