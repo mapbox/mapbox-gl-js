@@ -290,7 +290,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
      * ]);
      */
     setFilter(filter: Array): this {
-        this.workerOptions = extend({filter: filter}, this.workerOptions);
+        this.workerOptions = extend({filter}, this.workerOptions);
         this._updateWorkerData();
         return this;
     }
