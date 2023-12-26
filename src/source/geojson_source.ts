@@ -11,7 +11,7 @@ import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
 import type {GeoJSONWorkerOptions} from './geojson_worker_source';
-import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {GeoJSONSourceSpecification, PromoteIdSpecification, FilterSpecification} from '../style-spec/types';
 import type {Cancelable} from '../types/cancelable';
 
 /**
@@ -256,7 +256,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     /**
      * Sets filter for the GeoJSON data source and re-renders the map.
      *
-     * @param {Array} filter An array for the filter expression.
+     * @param {FilterSpecification} filter A FilterSpecification type for the filter expression.
      * @returns {GeoJSONSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('source_id', {
@@ -289,7 +289,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
      *     "Another Island"
      * ]);
      */
-    setFilter(filter: Array): this {
+    setFilter(filter: ?FilterSpecification): this {
         this.workerOptions = extend({filter}, this.workerOptions);
         this._updateWorkerData();
         return this;
