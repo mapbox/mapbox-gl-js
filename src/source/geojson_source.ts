@@ -254,6 +254,48 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     }
 
     /**
+     * Sets filter for the GeoJSON data source and re-renders the map.
+     *
+     * @param {Array | string} filter An array for the filter expression.
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source_id', {
+     *     type: 'geojson',
+     *     data: {
+     *         "type": "FeatureCollection",
+     *         "features": [{
+     *             "type": "Feature",
+     *             "properties": {"name": "Null Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 0, 0 ]
+     *             }
+     *         },
+     *         {
+     *             "type": "Feature",
+     *             "properties": {"name": "Another Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 1, 1 ]
+     *             }
+     *         }]
+     *     }
+     * });
+     * const geojsonSource = map.getSource('source_id');
+     * // Update the filter after the GeoJSON source was created
+     * geojsonSource.setFilter([
+     *     "==",
+     *     ["get", "name"],
+     *     "Another Island"
+     * ]);
+     */
+    setFilter(filter: Array | string): this {
+        this.workerOptions = extend$1({ filter: filter }, this.workerOptions);
+        this._updateWorkerData();
+        return this;
+    }
+
+    /**
      * For clustered sources, fetches the zoom at which the given cluster expands.
      *
      * @param {number} clusterId The value of the cluster's `cluster_id` property.
