@@ -74,7 +74,7 @@
         });
 
         const styles = [
-            'dynamic',
+            'http://localhost:9966/debug/standard-style.json',
             'mapbox://styles/mapbox/standard',
             'mapbox://styles/mapbox-map-design/standard-rc',
             'mapbox://styles/mapbox-map-design/standard-experimental'
@@ -87,7 +87,7 @@
             container: 'map',
             center: [0, 0],
             zoom: 0,
-            style: window.dynamic,
+            style: styles[0],
             hash: true
         });
 
