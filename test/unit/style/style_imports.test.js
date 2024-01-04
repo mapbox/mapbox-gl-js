@@ -1550,6 +1550,39 @@ test('Terrain', (t) => {
         style.loadURL('/style.json');
     });
 
+    t.test('supports config', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{
+                id: 'standard',
+                url: '/standard.json',
+                config: {showTerrain: true},
+                data: createStyleJSON({
+                    terrain: {source: 'mapbox-dem', exaggeration: ['case', ['config', 'showTerrain'], 2, 0]},
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        }
+                    },
+                })
+            }]
+        });
+
+        style.on('style.load', () => {
+            t.equal(style.terrain.getExaggeration(0), 2);
+
+            style.setConfigProperty('standard', 'showTerrain', false);
+            style.update({});
+
+            t.equal(style.terrain.getExaggeration(0), 0);
+            t.end();
+        });
+
+        style.loadJSON(initialStyle);
+    });
+
     t.end();
 });
 

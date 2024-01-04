@@ -2346,7 +2346,7 @@ class Style extends Evented {
             }
             for (const key in terrainOptions) {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
-                    terrain.set(terrainOptions);
+                    terrain.set(terrainOptions, this.options);
                     this.stylesheet.terrain = terrainOptions;
                     const parameters = this._getTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
@@ -2440,8 +2440,7 @@ class Style extends Evented {
     }
 
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
-        const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode);
-        terrain.setScope(this.scope);
+        const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode, this.scope, this.options);
 
         this.stylesheet.terrain = terrainOptions;
         this.mergeTerrain();
