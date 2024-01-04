@@ -1,3 +1,36 @@
+## 3.1.0-beta.1
+
+### Features and improvements ✨
+
+- Improve performance for maps with many textures (such as styles with satellite imagery), fixing excessive memory usage. (h/t [@tristan-morris](https://github.com/tristan-morris)) [#12924](https://github.com/mapbox/mapbox-gl-js/pull/12924)
+- Add `raster-elevation` property for elevating raster layers to a constant height (e.g. clouds over globe).
+- Add `raster-emissive-strength` and `fill-extrusion-emissive-strength` properties for controlling 3D lighting on buildings and raster layers.
+- Add `Map` `getConfigProperty` method for getting current style config values.
+- Add `config` support in terrain options.
+- Improve performance for pitched views with many fill extrusions on higher zoom levels.
+
+### Bug fixes 🐞
+
+- Fix an issue where `center: [0, 0]` and `zoom: 0` map options were ignored in favor of style settings.
+- Fix an issue with the camera not taking the short route when animating between locations across the anti-meridian.
+- Fix an issue where a style with imports sometimes loaded in incomplete state.
+- Fix an issue with rendering styles with nested imports.
+- Fix an issue with sources not reloading when changing language and worldview.
+- Fix an issue where updating a style fragment URL didn't work correctly.
+- Fix an issue when adding a layer with explicit `slot` not taking precedence over the `before` parameter for layer order.
+- Fix an issue where updating an image before initial image is loaded produced an error. (h/t [@maciejmatu](https://github.com/maciejmatu)) [#12928](https://github.com/mapbox/mapbox-gl-js/pull/12928)
+- Fix an issue with incorrect collisions for elevated symbols.
+- Fix an issue with `"camera-projection": "orthographic"` not working in styles with imports.
+- Fix an issue with tiles sometimes missing in terrain mode on views from a hill down on a valley.
+- Fix compact attribution style when using global CSS that sets `box-sizing: border-box`. (h/t [@simondriesen](https://github.com/simondriesen)) [#12982](https://github.com/mapbox/mapbox-gl-js/pull/12982)
+- Remove redundant `aria-label` attribute in attribution control that fails accessibility conformance. (h/t [@maggiewachs](https://github.com/maggiewachs)) [#12981](https://github.com/mapbox/mapbox-gl-js/pull/12981)
+
+## 3.0.1
+
+### Bug fixes 🐞
+
+- Fix attribution not being displayed for imported fragments.
+
 ## 3.0.0
 
 Mapbox GL JS v3 enables the [Mapbox Standard Style](https://www.mapbox.com/blog/standard-core-style), a new realistic 3D lighting system, building shadows and many other visual enhancements, and an ergonomic API for using a new kind of rich, evolving, configurable map styles and seamless integration with custom data. You can get more information about the new features in the [Mapbox GL JS v3 migration guide](https://docs.mapbox.com/mapbox-gl-js/guides/migrate-to-v3/).
