@@ -49,17 +49,6 @@ type ShaderSource = {
     fragmentIncludes: Array<string>
 };
 
-function getTokenizedAttributes(array: Array<string>): Array<string> {
-    const result = [];
-
-    for (let i = 0; i < array.length; i++) {
-        if (array[i] === null) continue;
-        const token = array[i].split(' ');
-        result.push(token.pop());
-    }
-    return result;
-}
-
 const debugWireframe2DLayerProgramNames = [
     'fill', 'fillOutline', 'fillPattern',
     'line', 'linePattern',
@@ -114,9 +103,8 @@ class Program<Us: UniformBindings> {
         this.name = name;
         this.fixedDefines = [...fixedDefines];
 
-        const staticAttrInfo = getTokenizedAttributes(source.staticAttributes);
         const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
-        const allAttrInfo = staticAttrInfo.concat(dynamicAttrInfo);
+        const allAttrInfo = (source.staticAttributes || []).concat(dynamicAttrInfo);
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));

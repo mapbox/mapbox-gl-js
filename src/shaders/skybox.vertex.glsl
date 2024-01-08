@@ -1,8 +1,8 @@
-attribute highp vec3 a_pos_3f;
+in highp vec3 a_pos_3f;
 
 uniform lowp mat4 u_matrix;
 
-varying highp vec3 v_uv;
+out highp vec3 v_uv;
 
 void main() {
     const mat3 half_neg_pi_around_x = mat3(1.0, 0.0,  0.0,

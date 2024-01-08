@@ -1,5 +1,5 @@
-attribute vec3 a_pos;
-attribute vec2 a_uv;
+in vec3 a_pos;
+in vec2 a_uv;
 
 // View frustum direction vectors pointing from the camera position to of each the corner points
 uniform vec3 u_frustum_tl;
@@ -8,8 +8,8 @@ uniform vec3 u_frustum_br;
 uniform vec3 u_frustum_bl;
 uniform float u_horizon;
 
-varying highp vec3 v_ray_dir;
-varying highp vec3 v_horizon_dir;
+out highp vec3 v_ray_dir;
+out highp vec3 v_horizon_dir;
 
 void main() {
     v_ray_dir = mix(

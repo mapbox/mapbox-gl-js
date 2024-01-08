@@ -14,31 +14,27 @@ uniform vec4 u_tl_br;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 
+#define GLOBE_UPSCALE GLOBE_RADIUS / 6371008.8;
+
 #ifdef GLOBE_POLES
-attribute vec3 a_globe_pos;
-attribute vec2 a_uv;
+in vec3 a_globe_pos;
+in vec2 a_uv;
 #elif defined(PROJECTION_GLOBE_VIEW)
-attribute vec2 a_pos;
+in vec2 a_pos;
 #else
-attribute vec2 a_pos;
-attribute vec2 a_texture_pos;
+in vec2 a_pos;
+in vec2 a_texture_pos;
 #endif
 
-varying vec2 v_pos0;
-varying vec2 v_pos1;
-varying float v_depth;
-
-float getGlobeUpScale() {
-    float earth_radius = 6371008.8;
-    float globe_radius = EXTENT / HALF_PI;
-    return globe_radius / earth_radius;
-}
+out vec2 v_pos0;
+out vec2 v_pos1;
+out float v_depth;
 
 void main() {
     vec2 uv;
 #ifdef GLOBE_POLES
     vec3 globe_pos = a_globe_pos;
-    globe_pos += normalize(globe_pos) * u_raster_elevation * getGlobeUpScale();
+    globe_pos += normalize(globe_pos) * u_raster_elevation * GLOBE_UPSCALE;
     gl_Position = u_matrix * u_globe_matrix * vec4(globe_pos    , 1.0);
     uv = a_uv;
 #ifdef FOG
@@ -61,7 +57,7 @@ void main() {
     vec2 merc_pos = vec2(mercatorX, mercatorY);
     uv = vec2(uvX, uvY);
 
-    globe_pos += normalize(globe_pos) * u_raster_elevation * getGlobeUpScale();
+    globe_pos += normalize(globe_pos) * u_raster_elevation * GLOBE_UPSCALE;
 
     vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);
     vec4 merc_world_pos = vec4(0.0);

@@ -1,5 +1,5 @@
-varying highp vec2 v_uv;
-varying mediump float v_intensity;
+in highp vec2 v_uv;
+in mediump float v_intensity;
 
 // TODO:
 // - check other shapes compared to circle, e.g. astroid
@@ -30,7 +30,7 @@ void main() {
     float alpha = shapeCircle(v_uv);
     vec3 color = vec3(1.0, 1.0, 1.0);
     alpha *= v_intensity;
-    gl_FragColor = vec4(color * alpha, alpha);
+    glFragColor = vec4(color * alpha, alpha);
 
     HANDLE_WIREFRAME_DEBUG;
 }

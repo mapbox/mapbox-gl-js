@@ -2,7 +2,7 @@
 #include "_prelude_lighting.glsl"
 
 uniform sampler2D u_image0;
-varying vec2 v_pos0;
+in vec2 v_pos0;
 
 #ifndef FOG
 uniform highp vec3 u_frustum_tl;
@@ -33,7 +33,7 @@ void main() {
     float antialias_factor = antialias_pixel * fwidth(norm_dist_from_center);
     float antialias = smoothstep(0.0, antialias_factor, norm_dist_from_center);
 
-    vec4 raster = texture2D(u_image0, v_pos0);
+    vec4 raster = texture(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
     raster = apply_lighting_with_emission_ground(raster, raster.a);
@@ -46,7 +46,7 @@ void main() {
     color = vec4(raster.rgb * antialias, raster.a * antialias);
 #endif // !LIGHTING_3D_MODE
 #else // CUSTOM_ANTIALIASING
-    color = texture2D(u_image0, v_pos0);
+    color = texture(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
     color = apply_lighting_with_emission_ground(color, color.a);
@@ -59,9 +59,9 @@ void main() {
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
 #endif
-    gl_FragColor = color;
+    glFragColor = color;
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
     HANDLE_WIREFRAME_DEBUG;
 }

@@ -28,31 +28,31 @@ vec2 raTexture2D_image0_linear(vec2 texCoord, vec2 texResolution, vec4 colorMix,
     vec2 fxy;
     vec4 c = _raTexLinearCoord(texCoord, texResolution, fxy);
     return _raTexLinearMix(fxy, colorMix, colorOffset,
-         texture2D(u_image0, c.yz),
-         texture2D(u_image0, c.xz),
-         texture2D(u_image0, c.yw),
-         texture2D(u_image0, c.xw)
+         texture(u_image0, c.yz),
+         texture(u_image0, c.xz),
+         texture(u_image0, c.yw),
+         texture(u_image0, c.xw)
     );
 }
 vec2 raTexture2D_image1_linear(vec2 texCoord, vec2 texResolution, vec4 colorMix, float colorOffset) {
     vec2 fxy;
     vec4 c = _raTexLinearCoord(texCoord, texResolution, fxy);
     return _raTexLinearMix(fxy, colorMix, colorOffset,
-         texture2D(u_image1, c.yz),
-         texture2D(u_image1, c.xz),
-         texture2D(u_image1, c.yw),
-         texture2D(u_image1, c.xw)
+         texture(u_image1, c.yz),
+         texture(u_image1, c.xz),
+         texture(u_image1, c.yw),
+         texture(u_image1, c.xw)
     );
 }
 
 // Decode raster array data and return nearest neighbor sample
 // Returns: vec2(value, nodata_alpha)
 vec2 raTexture2D_image0_nearest(vec2 texCoord, vec2 texResolution, vec4 colorMix, float colorOffset) {
-    vec4 t = texture2D(u_image0, texCoord);
+    vec4 t = texture(u_image0, texCoord);
     return t == NODATA ? vec2(0) : vec2(colorOffset + dot(t, colorMix), 1);
 }
 vec2 raTexture2D_image1_nearest(vec2 texCoord, vec2 texResolution, vec4 colorMix, float colorOffset) {
-    vec4 t = texture2D(u_image1, texCoord);
+    vec4 t = texture(u_image1, texCoord);
     return t == NODATA ? vec2(0) : vec2(colorOffset + dot(t, colorMix), 1);
 }
 

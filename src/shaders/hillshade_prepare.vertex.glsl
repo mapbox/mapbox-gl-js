@@ -1,10 +1,10 @@
 uniform mat4 u_matrix;
 uniform vec2 u_dimension;
 
-attribute vec2 a_pos;
-attribute vec2 a_texture_pos;
+in vec2 a_pos;
+in vec2 a_texture_pos;
 
-varying vec2 v_pos;
+out vec2 v_pos;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);

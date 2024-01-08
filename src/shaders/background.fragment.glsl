@@ -5,7 +5,7 @@ uniform vec4 u_color;
 uniform float u_opacity;
 
 #ifdef LIGHTING_3D_MODE
-varying vec4 v_color;
+in vec4 v_color;
 #endif
 
 void main() {
@@ -19,10 +19,10 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    gl_FragColor = out_color * u_opacity;
+    glFragColor = out_color * u_opacity;
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

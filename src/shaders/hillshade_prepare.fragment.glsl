@@ -1,9 +1,7 @@
-#ifdef GL_ES
 precision highp float;
-#endif
 
 uniform sampler2D u_image;
-varying vec2 v_pos;
+in vec2 v_pos;
 uniform vec2 u_dimension;
 uniform float u_zoom;
 
@@ -58,7 +56,7 @@ void main() {
         (f + g + g + h) - (a + b + b + c)
     ) / pow(2.0, exaggeration + (19.2562 - u_zoom));
 
-    gl_FragColor = clamp(vec4(
+    glFragColor = clamp(vec4(
         deriv.x / 2.0 + 0.5,
         deriv.y / 2.0 + 0.5,
         1.0,

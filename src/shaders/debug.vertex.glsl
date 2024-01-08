@@ -1,10 +1,10 @@
 #include "_prelude_terrain.vertex.glsl"
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_pos_3;
+in vec3 a_pos_3;
 #endif
-varying vec2 v_uv;
+out vec2 v_uv;
 
 uniform mat4 u_matrix;
 uniform float u_overlay_scale;

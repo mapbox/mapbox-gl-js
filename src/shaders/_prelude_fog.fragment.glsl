@@ -1,3 +1,14 @@
+highp vec3 hash(highp vec2 p) {
+    highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
+    p3 += dot(p3, p3.yxz + 19.19);
+    return fract((p3.xxy + p3.yzz) * p3.zyx);
+}
+
+vec3 dither(vec3 color, highp vec2 seed) {
+    vec3 rnd = hash(seed) + hash(seed + 0.59374) - 0.5;
+    return color + rnd / 255.0;
+}
+
 #ifdef FOG
 
 uniform mediump vec4 u_fog_color;
@@ -5,7 +16,7 @@ uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 uniform mediump vec2 u_fog_vertical_limit;
 uniform mediump float u_fog_temporal_offset;
-varying vec3 v_fog_pos;
+in vec3 v_fog_pos;
 
 uniform highp vec3 u_frustum_tl;
 uniform highp vec3 u_frustum_tr;

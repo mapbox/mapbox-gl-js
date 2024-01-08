@@ -1,11 +1,11 @@
 // Position
-attribute vec3 a_pos_3f;
+in vec3 a_pos_3f;
 // Offset from center ([-1, -1], ...)
-attribute vec2 a_uv;
+in vec2 a_uv;
 // Per-star size multiplier
-attribute float a_size_scale;
+in float a_size_scale;
 // Per-star transparency multiplier
-attribute float a_fade_opacity;
+in float a_fade_opacity;
 
 // mvp
 uniform mat4 u_matrix;
@@ -17,8 +17,8 @@ uniform vec3 u_right;
 // Global stars transparency multiplier
 uniform float u_intensity_multiplier;
 
-varying highp vec2 v_uv;
-varying mediump float v_intensity;
+out highp vec2 v_uv;
+out mediump float v_intensity;
 
 void main() {
     v_uv = a_uv;

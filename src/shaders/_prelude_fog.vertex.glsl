@@ -4,7 +4,7 @@ uniform mediump vec4 u_fog_color;
 uniform mediump vec2 u_fog_range;
 uniform mediump float u_fog_horizon_blend;
 uniform mediump mat4 u_fog_matrix;
-varying vec3 v_fog_pos;
+out vec3 v_fog_pos;
 
 float fog_range(float depth) {
     // Map [near, far] to [0, 1] without clamping

@@ -2,7 +2,7 @@
 
 // [1] Banding in games http://loopit.dk/banding_in_games.pdf
 
-varying lowp vec3 v_uv;
+in lowp vec3 v_uv;
 
 uniform lowp samplerCube u_cubemap;
 uniform lowp float u_opacity;
@@ -42,7 +42,7 @@ void main() {
     // (0.0,1.0) to (-1.0,1.0) on y. The inverse operation is applied when generating.
     uv.y = map(uv.y, 0.0, 1.0, -1.0, 1.0);
 
-    vec3 sky_color = textureCube(u_cubemap, uv).rgb;
+    vec3 sky_color = texture(u_cubemap, uv).rgb;
 
 #ifdef FOG
     // Apply fog contribution if enabled
@@ -55,9 +55,9 @@ void main() {
     // Add sun disk
     sky_color += 0.1 * sun_disk(v_uv, u_sun_direction);
 
-    gl_FragColor = vec4(sky_color * u_opacity, u_opacity);
+    glFragColor = vec4(sky_color * u_opacity, u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 }

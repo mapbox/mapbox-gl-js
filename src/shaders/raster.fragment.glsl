@@ -6,9 +6,9 @@ uniform float u_fade_t;
 uniform float u_opacity;
 uniform highp float u_raster_elevation;
 
-varying vec2 v_pos0;
-varying vec2 v_pos1;
-varying float v_depth;
+in vec2 v_pos0;
+in vec2 v_pos1;
+in float v_depth;
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -59,11 +59,11 @@ void main() {
     // Divide the scalar value by "alpha" to smoothly fade to no data
     if (value.y > 0.0) value.x /= value.y;
 #else
-    color = mix(texture2D(u_image0, v_pos0), texture2D(u_image1, v_pos1), u_fade_t);
+    color = mix(texture(u_image0, v_pos0), texture(u_image1, v_pos1), u_fade_t);
     value = vec2(u_colorization_offset + dot(color.rgb, u_colorization_mix.rgb), color.a);
 #endif
 
-    color = texture2D(u_color_ramp, vec2(value.x, 0.5));
+    color = texture(u_color_ramp, vec2(value.x, 0.5));
 
     // Apply input alpha on top of color ramp alpha
     if (color.a > 0.0) color.rgb /= color.a;
@@ -72,8 +72,8 @@ void main() {
 
 #else
     // read and cross-fade colors from the main and parent tiles
-    color0 = texture2D(u_image0, v_pos0);
-    color1 = texture2D(u_image1, v_pos1);
+    color0 = texture(u_image0, v_pos0);
+    color1 = texture(u_image1, v_pos1);
 
     if (color0.a > 0.0) color0.rgb /= color0.a;
     if (color1.a > 0.0) color1.rgb /= color1.a;
@@ -112,14 +112,14 @@ void main() {
     out_color = fog_dither(fog_apply(out_color, v_fog_pos, fog_limit));
 #endif
 
-    gl_FragColor = vec4(out_color * color.a, color.a);
+    glFragColor = vec4(out_color * color.a, color.a);
 
 #ifdef RENDER_CUTOFF
-    gl_FragColor = gl_FragColor * cutoff_opacity(u_cutoff_params, v_depth);
+    glFragColor = glFragColor * cutoff_opacity(u_cutoff_params, v_depth);
 #endif
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

@@ -1,9 +1,5 @@
 #ifdef RENDER_SHADOWS
 
-#if defined(NATIVE) && __VERSION__ >= 300
-#define TEXTURE_GATHER
-#endif
-
 #ifdef DEPTH_TEXTURE
 uniform highp sampler2D u_shadowmap_0;
 uniform highp sampler2D u_shadowmap_1;
@@ -23,9 +19,9 @@ uniform highp vec3 u_shadow_bias;
 highp float shadow_sample_1(highp vec2 uv, highp float compare) {
     highp float shadow_depth;
 #ifdef DEPTH_TEXTURE
-    shadow_depth = texture2D(u_shadowmap_1, uv).r;
+    shadow_depth = texture(u_shadowmap_1, uv).r;
 #else
-    shadow_depth = unpack_depth(texture2D(u_shadowmap_1, uv)) * 0.5 + 0.5;
+    shadow_depth = unpack_depth(texture(u_shadowmap_1, uv)) * 0.5 + 0.5;
 #endif
     return step(shadow_depth, compare);
 }
@@ -33,9 +29,9 @@ highp float shadow_sample_1(highp vec2 uv, highp float compare) {
 highp float shadow_sample_0(highp vec2 uv, highp float compare) {
     highp float shadow_depth;
 #ifdef DEPTH_TEXTURE
-    shadow_depth = texture2D(u_shadowmap_0, uv).r;
+    shadow_depth = texture(u_shadowmap_0, uv).r;
 #else
-    shadow_depth = unpack_depth(texture2D(u_shadowmap_0, uv)) * 0.5 + 0.5;
+    shadow_depth = unpack_depth(texture(u_shadowmap_0, uv)) * 0.5 + 0.5;
 #endif
     return step(shadow_depth, compare);
 }
@@ -50,7 +46,7 @@ float shadow_occlusion_0(highp vec4 pos, highp float bias) {
 
     // Perform percentage-closer filtering with a 2x2 sample grid.
     // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
-#ifdef TEXTURE_GATHER
+#ifdef NATIVE
     highp vec2 uv = pos.xy;
     highp vec4 samples = textureGather(u_shadowmap_0, uv, 0);
     lowp vec4 stepSamples = step(samples, vec4(compare0));

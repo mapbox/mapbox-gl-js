@@ -1,7 +1,7 @@
-varying float v_radius;
-varying vec2 v_extrude;
-varying float v_perspective_ratio;
-varying float v_collision;
+in float v_radius;
+in vec2 v_extrude;
+in float v_perspective_ratio;
+in float v_collision;
 
 void main() {
     float alpha = 0.5 * min(v_perspective_ratio, 1.0);
@@ -13,5 +13,5 @@ void main() {
 
     vec4 color = mix(vec4(0.0, 0.0, 1.0, 0.5), vec4(1.0, 0.0, 0.0, 1.0), v_collision);
 
-    gl_FragColor = color * alpha * opacity_t;
+    glFragColor = color * alpha * opacity_t;
 }

@@ -4,20 +4,20 @@
 uniform mat4 u_matrix;
 uniform float u_skirt_height;
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
-varying vec2 v_pos0;
+out vec2 v_pos0;
 
 #ifdef FOG
-varying float v_fog_opacity;
+out float v_fog_opacity;
 #endif
 
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
-varying float v_depth;
+out vec4 v_pos_light_view_0;
+out vec4 v_pos_light_view_1;
+out float v_depth;
 #endif
 
 void main() {

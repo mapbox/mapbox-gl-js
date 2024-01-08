@@ -33,6 +33,11 @@ float calculate_ambient_directional_factor(vec3 normal) {
     return vertical_factor * ambient_directional_factor;
 }
 
+// equivalent to linearTosRGB(sRGBToLinear(srgbIn) * k)
+vec3 linearProduct(vec3 srgbIn, vec3 k) {
+    return srgbIn * pow(k, vec3(1./2.2));
+}
+
 // BEGIN Used for anisotropic ambient light
 
 // BEGIN Use with shadows, pass shadow light factor as dir_factor

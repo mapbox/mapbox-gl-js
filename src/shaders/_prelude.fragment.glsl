@@ -1,23 +1,6 @@
 // NOTE: This prelude is injected in the fragment shader only
 
-#if __VERSION__ >= 300
-#define varying in
-#define gl_FragColor glFragColor
-#define texture2D texture
-#define textureCube texture
 out vec4 glFragColor;
-#endif
-
-highp vec3 hash(highp vec2 p) {
-    highp vec3 p3 = fract(p.xyx * vec3(443.8975, 397.2973, 491.1871));
-    p3 += dot(p3, p3.yxz + 19.19);
-    return fract((p3.xxy + p3.yzz) * p3.zyx);
-}
-
-vec3 dither(vec3 color, highp vec2 seed) {
-    vec3 rnd = hash(seed) + hash(seed + 0.59374) - 0.5;
-    return color + rnd / 255.0;
-}
 
 highp float unpack_depth(highp vec4 rgba_depth)
 {
@@ -56,7 +39,16 @@ vec4 applyCutout(vec4 color) {
 #endif
 }
 
+#ifdef DEBUG_WIREFRAME
+    // Debug wireframe uses premultiplied alpha blending (alpha channel is left unchanged)
+    #define HANDLE_WIREFRAME_DEBUG \
+        glFragColor = vec4(0.7, 0.0, 0.0, 0.7); \
+        gl_FragDepth = gl_FragCoord.z - 0.0001; // Apply depth for wireframe overlay to reduce z-fighting
+#else
+    #define HANDLE_WIREFRAME_DEBUG
+#endif
+
 #ifdef RENDER_CUTOFF
 uniform highp vec4 u_cutoff_params;
-varying float v_cutoff_opacity;
+in float v_cutoff_opacity;
 #endif

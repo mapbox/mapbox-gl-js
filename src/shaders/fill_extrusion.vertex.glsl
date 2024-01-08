@@ -3,10 +3,8 @@
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_lighting.glsl"
 
-#if __VERSION__ >= 300
 #ifdef RENDER_CUTOFF
 invariant gl_Position;
-#endif
 #endif
 
 uniform mat4 u_matrix;
@@ -17,12 +15,12 @@ uniform float u_vertical_gradient;
 uniform lowp float u_opacity;
 uniform float u_edge_radius;
 
-attribute vec4 a_pos_normal_ed;
-attribute vec2 a_centroid_pos;
+in vec4 a_pos_normal_ed;
+in vec2 a_centroid_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_pos_3;         // Projected position on the globe
-attribute vec3 a_pos_normal_3;  // Surface normal at the position
+in vec3 a_pos_3;         // Projected position on the globe
+in vec3 a_pos_normal_3;  // Surface normal at the position
 
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
@@ -34,37 +32,37 @@ uniform float u_height_lift;
 
 uniform highp float u_vertical_scale;
 
-varying vec4 v_color;
-varying vec4 v_flat;
+out vec4 v_color;
+out vec4 v_flat;
 
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 
-varying highp vec4 v_pos_light_view_0;
-varying highp vec4 v_pos_light_view_1;
-varying float v_depth;
+out highp vec4 v_pos_light_view_0;
+out highp vec4 v_pos_light_view_1;
+out float v_depth;
 #endif
 
 #if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
-varying vec4 v_roof_color;
+out vec4 v_roof_color;
 #endif
 
 #if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
-varying highp vec3 v_normal;
+out highp vec3 v_normal;
 #endif
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
-varying vec2 v_ao;
+out vec2 v_ao;
 #endif
 
 #if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
-varying float v_flood_radius;
-varying float v_has_floodlight;
+out float v_flood_radius;
+out float v_has_floodlight;
 #endif
 
-varying float v_height;
+out float v_height;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height

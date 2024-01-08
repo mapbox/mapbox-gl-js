@@ -1,16 +1,16 @@
 #include "_prelude_fog.vertex.glsl"
 
-attribute highp vec4 a_pos_end;
-attribute highp float a_angular_offset_factor;
-attribute highp float a_hidden_by_landmark;
+in highp vec4 a_pos_end;
+in highp float a_angular_offset_factor;
+in highp float a_hidden_by_landmark;
 
 #ifdef SDF_SUBPASS
-varying highp vec2 v_pos;
-varying highp vec4 v_line_segment;
-varying highp float v_flood_light_radius_tile;
-varying highp vec2 v_ao;
+out highp vec2 v_pos;
+out highp vec4 v_line_segment;
+out highp float v_flood_light_radius_tile;
+out highp vec2 v_ao;
 #ifdef FOG
-varying highp float v_fog;
+out highp float v_fog;
 #endif
 #endif
 

@@ -1,7 +1,7 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 
-attribute vec3 a_pos_3f;
+in vec3 a_pos_3f;
 
 #pragma mapbox: define-attribute highp vec3 normal_3f
 #pragma mapbox: define-attribute highp vec2 uv_2f
@@ -27,10 +27,10 @@ uniform vec3 u_camera_pos;
 uniform vec4 u_color_mix;
 
 #ifdef INSTANCED_ARRAYS
-attribute vec4 a_normal_matrix0;
-attribute vec4 a_normal_matrix1;
-attribute vec4 a_normal_matrix2;
-attribute vec4 a_normal_matrix3;
+in vec4 a_normal_matrix0;
+in vec4 a_normal_matrix1;
+in vec4 a_normal_matrix2;
+in vec4 a_normal_matrix3;
 #else
 uniform highp mat4 u_normal_matrix;
 #endif
@@ -38,26 +38,31 @@ uniform highp mat4 u_normal_matrix;
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
-varying float v_depth_shadows;
+out vec4 v_pos_light_view_0;
+out vec4 v_pos_light_view_1;
+out float v_depth_shadows;
 #endif
 
-varying vec4 v_position_height;
-varying lowp vec4 v_color_mix;
+out vec4 v_position_height;
+out lowp vec4 v_color_mix;
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
-varying highp float v_depth;
+out highp float v_depth;
 #endif
 
 #ifdef HAS_ATTRIBUTE_a_pbr
-varying lowp vec4 v_roughness_metallic_emissive_alpha;
-varying mediump vec4 v_height_based_emission_params;
+out lowp vec4 v_roughness_metallic_emissive_alpha;
+out mediump vec4 v_height_based_emission_params;
 // .x - height-based interpolation factor
 // .y - interpolation power
 // .z - min value
 // .w - max - min
 #endif
+
+// sRGB to linear approximation
+vec3 sRGBToLinear(vec3 srgbIn) {
+    return pow(srgbIn, vec3(2.2));
+}
 
 void main() {
     #pragma mapbox: initialize-attribute highp vec3 normal_3f

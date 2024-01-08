@@ -1,14 +1,14 @@
-attribute vec3 a_pos_3f;
+in vec3 a_pos_3f;
 
 uniform mat4 u_matrix;
-varying highp float v_depth;
+out highp float v_depth;
 
 #ifdef MODEL_POSITION_ON_GPU
 #ifdef INSTANCED_ARRAYS
-attribute vec4 a_normal_matrix0;
-attribute vec4 a_normal_matrix1;
-attribute vec4 a_normal_matrix2;
-attribute vec4 a_normal_matrix3;
+in vec4 a_normal_matrix0;
+in vec4 a_normal_matrix1;
+in vec4 a_normal_matrix2;
+in vec4 a_normal_matrix3;
 #else
 uniform highp mat4 u_instance;
 #endif

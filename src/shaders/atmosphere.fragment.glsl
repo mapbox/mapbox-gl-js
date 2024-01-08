@@ -10,8 +10,8 @@ uniform vec4 u_space_color;
 
 uniform float u_horizon_angle;
 
-varying highp vec3 v_ray_dir;
-varying highp vec3 v_horizon_dir;
+in highp vec3 v_ray_dir;
+in highp vec3 v_horizon_dir;
 
 void main() {
     highp vec3 dir = normalize(v_ray_dir);
@@ -26,14 +26,14 @@ void main() {
     // antialiasing that might be applied from globe_raster.fragment.glsl
     if (norm_dist_from_center < 0.98) {
     #ifdef ALPHA_PASS
-            gl_FragColor = vec4(0, 0, 0, 0);
+            glFragColor = vec4(0, 0, 0, 0);
             return;
     #else
         #ifdef NATIVE
                 // Needed for render test parity since white canvas is assumed
-                gl_FragColor = vec4(1, 1, 1, 1);
+                glFragColor = vec4(1, 1, 1, 1);
         #else
-                gl_FragColor = vec4(0, 0, 0, 1);
+                glFragColor = vec4(0, 0, 0, 1);
         #endif
             return;
     #endif
@@ -87,7 +87,7 @@ void main() {
     float a2 = mix(a0, a1, t);
     float a  = mix(alpha_2, a2, t);
 
-    gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+    glFragColor = vec4(1.0, 1.0, 1.0, a);
 #else
     vec3 c0 = mix(color_stop_2, color_stop_1, alpha_1);
     vec3 c1 = mix(c0, color_stop_0, alpha_0);
@@ -103,6 +103,6 @@ void main() {
 #endif
 
     // Blending with background space color
-    gl_FragColor = vec4(c * t, t);
+    glFragColor = vec4(c * t, t);
 #endif
 }

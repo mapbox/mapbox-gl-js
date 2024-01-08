@@ -10,10 +10,10 @@ uniform sampler2D u_fb;
 uniform float u_fb_size;
 
 #ifdef SDF_SUBPASS
-varying highp vec2 v_pos;
-varying highp vec4 v_line_segment;
-varying highp float v_flood_light_radius_tile;
-varying highp vec2 v_ao;
+in highp vec2 v_pos;
+in highp vec4 v_line_segment;
+in highp float v_flood_light_radius_tile;
+in highp vec2 v_ao;
 
 float line_df(highp vec2 a, highp vec2 b, highp vec2 p) {
     highp vec2 ba = b - a;
@@ -23,7 +23,7 @@ float line_df(highp vec2 a, highp vec2 b, highp vec2 p) {
 }
 
 #ifdef FOG
-varying highp float v_fog;
+in highp float v_fog;
 #endif // FOG
 #endif // SDF_SUBPASS
 
@@ -36,9 +36,9 @@ void main() {
 #ifdef CLEAR_SUBPASS
     vec4 color = vec4(1.0);
 #ifdef CLEAR_FROM_TEXTURE
-    color = texture2D(u_fb, gl_FragCoord.xy / vec2(u_fb_size));
+    color = texture(u_fb, gl_FragCoord.xy / vec2(u_fb_size));
 #endif // CLEAR_FROM_TEXTURE
-    gl_FragColor = color;
+    glFragColor = color;
 #else // CLEAR_SUBPASS
 #ifdef SDF_SUBPASS
     highp float d = line_df(v_line_segment.xy, v_line_segment.zw, v_pos);
@@ -54,13 +54,13 @@ void main() {
 #ifdef RENDER_CUTOFF
     fog *= v_cutoff_opacity;
 #endif // RENDER_CUTOFF
-    gl_FragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
+    glFragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
 vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
 #ifdef OVERDRAW_INSPECTOR
     color = vec4(1.0);
 #endif
-    gl_FragColor = color;
+    glFragColor = color;
     HANDLE_WIREFRAME_DEBUG;
 #endif // !SDF_SUBPASS
 #endif // !CLEAR_SUBPASS

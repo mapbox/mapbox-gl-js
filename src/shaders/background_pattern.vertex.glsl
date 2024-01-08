@@ -6,9 +6,9 @@ uniform vec2 u_pixel_coord_upper;
 uniform vec2 u_pixel_coord_lower;
 uniform float u_tile_units_to_pixels;
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
-varying vec2 v_pos;
+out vec2 v_pos;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);

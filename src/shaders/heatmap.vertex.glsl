@@ -6,11 +6,11 @@ uniform float u_extrude_scale;
 uniform float u_opacity;
 uniform float u_intensity;
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_pos_3;         // Projected position on the globe
-attribute vec3 a_pos_normal_3;  // Surface normal at the position
+in vec3 a_pos_3;         // Projected position on the globe
+in vec3 a_pos_normal_3;  // Surface normal at the position
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;
@@ -20,7 +20,7 @@ uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
 #endif
 
-varying vec2 v_extrude;
+out vec2 v_extrude;
 
 #pragma mapbox: define highp float weight
 #pragma mapbox: define mediump float radius
@@ -43,7 +43,7 @@ void main(void) {
     // This 'extrude' comes in ranging from [-1, -1], to [1, 1].  We'll use
     // it to produce the vertices of a square mesh framing the point feature
     // we're adding to the kernel density texture.  We'll also pass it as
-    // a varying, so that the fragment shader can determine the distance of
+    // a out, so that the fragment shader can determine the distance of
     // each fragment from the point feature.
     // Before we do so, we need to scale it up sufficiently so that the
     // kernel falls effectively to zero at the edge of the mesh.
@@ -53,7 +53,7 @@ void main(void) {
     // S = sqrt(-2.0 * log(ZERO / (weight * u_intensity * GAUSS_COEF))) / 3.0
     float S = sqrt(-2.0 * log(ZERO / weight / u_intensity / GAUSS_COEF)) / 3.0;
 
-    // Pass the varying in units of radius
+    // Pass the out in units of radius
     v_extrude = S * unscaled_extrude;
 
     // Scale by radius and the zoom-based scale factor to produce actual

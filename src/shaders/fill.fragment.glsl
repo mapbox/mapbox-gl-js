@@ -19,10 +19,10 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    gl_FragColor = out_color * opacity;
+    glFragColor = out_color * opacity;
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

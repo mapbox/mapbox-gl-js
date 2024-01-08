@@ -1,8 +1,8 @@
-attribute highp vec3 a_pos_3f;
+in highp vec3 a_pos_3f;
 
 uniform mat3 u_matrix_3f;
 
-varying highp vec3 v_position;
+out highp vec3 v_position;
 
 float map(float value, float start, float end, float new_start, float new_end) {
     return ((value - start) * (new_end - new_start)) / (end - start) + new_start;

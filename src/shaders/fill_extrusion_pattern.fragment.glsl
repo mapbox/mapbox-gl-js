@@ -7,15 +7,15 @@ uniform sampler2D u_image;
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
-varying vec3 v_ao;
+in vec3 v_ao;
 #endif
 
 #ifdef LIGHTING_3D_MODE
-varying vec3 v_normal;
+in vec3 v_normal;
 #endif
 
-varying vec2 v_pos;
-varying vec4 v_lighting;
+in vec2 v_pos;
+in vec4 v_lighting;
 
 uniform lowp float u_opacity;
 
@@ -35,7 +35,7 @@ void main() {
 
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
-    vec4 out_color = texture2D(u_image, pos);
+    vec4 out_color = texture(u_image, pos);
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting(out_color, normalize(v_normal)) * u_opacity;
@@ -63,10 +63,10 @@ void main() {
     out_color = applyCutout(out_color);
 #endif
 
-    gl_FragColor = out_color;
+    glFragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

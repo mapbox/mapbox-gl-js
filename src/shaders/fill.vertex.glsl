@@ -1,6 +1,6 @@
 #include "_prelude_fog.vertex.glsl"
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
 uniform mat4 u_matrix;
 

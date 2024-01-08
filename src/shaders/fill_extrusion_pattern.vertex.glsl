@@ -14,12 +14,12 @@ uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
-attribute vec4 a_pos_normal_ed;
-attribute vec2 a_centroid_pos;
+in vec4 a_pos_normal_ed;
+in vec2 a_centroid_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_pos_3;         // Projected position on the globe
-attribute vec3 a_pos_normal_3;  // Surface normal at the position
+in vec3 a_pos_3;         // Projected position on the globe
+in vec3 a_pos_normal_3;  // Surface normal at the position
 
 uniform mat4 u_inv_rot_matrix;
 uniform vec2 u_merc_center;
@@ -29,16 +29,16 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
-varying vec2 v_pos;
-varying vec4 v_lighting;
+out vec2 v_pos;
+out vec4 v_lighting;
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
-varying vec3 v_ao;
+out vec3 v_ao;
 #endif
 
 #ifdef LIGHTING_3D_MODE
-varying vec3 v_normal;
+out vec3 v_normal;
 #endif
 
 #pragma mapbox: define highp float base

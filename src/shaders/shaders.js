@@ -114,42 +114,8 @@ export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
 export const preludeLightingSource = preludeLighting;
 
-export const preludeVertPrecisionQualifiers = `
-#ifdef GL_ES
-precision highp float;
-#else
-
-#if !defined(lowp)
-#define lowp
-#endif
-
-#if !defined(mediump)
-#define mediump
-#endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif`;
-export const preludeFragPrecisionQualifiers = `
-#ifdef GL_ES
-precision mediump float;
-#else
-
-#if !defined(lowp)
-#define lowp
-#endif
-
-#if !defined(mediump)
-#define mediump
-#endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif`;
+export const preludeVertPrecisionQualifiers = `precision highp float;`;
+export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
 export default {
     background: compile(backgroundFrag, backgroundVert),
@@ -216,15 +182,18 @@ export function parseUsedPreprocessorDefines(source, defines) {
 export function compile(fragmentSource, vertexSource) {
     const includeRegex = /#include\s+"([^"]+)"/g;
     const pragmaRegex = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
-    const attributeRegex = /attribute(\S*) (highp |mediump |lowp )?([\w]+) ([\w]+)/g;
+    const attributeRegex = /(attribute(\S*)|(^\s*|;)in) (highp |mediump |lowp )?([\w]+) ([\w]+)/gm;
 
     let staticAttributes = vertexSource.match(attributeRegex);
-    // remove duplicates as Safari does not support lookbehind in regex
-    // so we need to get rid of initialize-* expressions
+
     if (staticAttributes) {
-        staticAttributes = staticAttributes.filter((element, index) => {
-            return staticAttributes.indexOf(element) === index;
+        staticAttributes = staticAttributes.map((str) => {
+            const tokens = str.split(' ');
+            return tokens[tokens.length - 1];
         });
+        // remove duplicates as Safari does not support lookbehind in regex
+        // so we need to get rid of initialize-* expressions
+        staticAttributes = [...new Set(staticAttributes)];
     }
     const fragmentPragmas = {};
 
@@ -258,7 +227,7 @@ export function compile(fragmentSource, vertexSource) {
         if (operation === 'define') {
             return `
 #ifndef HAS_UNIFORM_u_${name}
-varying ${precision} ${type} ${name};
+in ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -272,7 +241,7 @@ uniform ${precision} ${type} u_${name};
         } else if (operation === 'define-attribute') {
             return `
 #ifdef HAS_ATTRIBUTE_a_${name}
-    varying ${precision} ${type} ${name};
+    in ${precision} ${type} ${name};
 #endif
 `;
         } else if (operation === 'initialize-attribute') {
@@ -288,7 +257,7 @@ uniform ${precision} ${type} u_${name};
         if (operation === 'define-attribute-vertex-shader-only') {
             return `
 #ifdef HAS_ATTRIBUTE_a_${name}
-attribute ${precision} ${type} a_${name};
+in ${precision} ${type} a_${name};
 #endif
 `;
         } else if (fragmentPragmas[name]) {
@@ -296,8 +265,8 @@ attribute ${precision} ${type} a_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-attribute ${precision} ${attrType} a_${name};
-varying ${precision} ${type} ${name};
+in ${precision} ${attrType} a_${name};
+out ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -324,8 +293,8 @@ uniform ${precision} ${type} u_${name};
             } else if (operation === 'define-attribute') {
                 return `
 #ifdef HAS_ATTRIBUTE_a_${name}
-    attribute ${precision} ${type} a_${name};
-    varying ${precision} ${type} ${name};
+    in ${precision} ${type} a_${name};
+    out ${precision} ${type} ${name};
 #endif
 `;
             } else if (operation === 'initialize-attribute') {
@@ -340,7 +309,7 @@ uniform ${precision} ${type} u_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-attribute ${precision} ${attrType} a_${name};
+in ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -349,10 +318,10 @@ uniform ${precision} ${type} u_${name};
                 if (unpackType === 'mat4') {
                     return `
 #ifdef INSTANCED_ARRAYS
-attribute vec4 a_${name}0;
-attribute vec4 a_${name}1;
-attribute vec4 a_${name}2;
-attribute vec4 a_${name}3;
+in vec4 a_${name}0;
+in vec4 a_${name}1;
+in vec4 a_${name}2;
+in vec4 a_${name}3;
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -360,7 +329,7 @@ uniform ${precision} ${type} u_${name};
                 } else {
                     return `
 #ifdef INSTANCED_ARRAYS
-attribute ${precision} ${attrType} a_${name};
+in ${precision} ${attrType} a_${name};
 #else
 uniform ${precision} ${type} u_${name};
 #endif

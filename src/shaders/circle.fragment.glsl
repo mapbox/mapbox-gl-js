@@ -1,8 +1,8 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 
-varying vec3 v_data;
-varying float v_visibility;
+in vec3 v_data;
+in float v_visibility;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
@@ -45,9 +45,9 @@ void main() {
     out_color = fog_apply_premultiplied(out_color, v_fog_pos);
 #endif
 
-    gl_FragColor = out_color * (v_visibility * opacity_t);
+    glFragColor = out_color * (v_visibility * opacity_t);
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 }

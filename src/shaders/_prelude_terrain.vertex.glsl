@@ -115,7 +115,7 @@ highp float unpack_depth(highp vec4 rgba_depth)
 
 bool isOccluded(vec4 frag) {
     vec3 coord = frag.xyz / frag.w;
-    float depth = unpack_depth(texture2D(u_depth, (coord.xy + 1.0) * 0.5));
+    float depth = unpack_depth(texture(u_depth, (coord.xy + 1.0) * 0.5));
     return coord.z > depth + 0.0005;
 }
 
@@ -125,10 +125,10 @@ float occlusionFade(vec4 frag) {
     vec3 df = vec3(5.0 * u_depth_size_inv, 0.0);
     vec2 uv = 0.5 * coord.xy + 0.5;
     vec4 depth = vec4(
-        unpack_depth(texture2D(u_depth, uv - df.xz)),
-        unpack_depth(texture2D(u_depth, uv + df.xz)),
-        unpack_depth(texture2D(u_depth, uv - df.zy)),
-        unpack_depth(texture2D(u_depth, uv + df.zy))
+        unpack_depth(texture(u_depth, uv - df.xz)),
+        unpack_depth(texture(u_depth, uv + df.xz)),
+        unpack_depth(texture(u_depth, uv - df.zy)),
+        unpack_depth(texture(u_depth, uv + df.zy))
     );
     return dot(vec4(0.25), vec4(1.0) - clamp(300.0 * (vec4(coord.z - 0.001) - depth), 0.0, 1.0));
 }
@@ -138,17 +138,10 @@ float occlusionFade(vec4 frag) {
  // This is so that rendering changes are reflected on CPU side for feature querying.
 
 vec4 fourSample(vec2 pos, vec2 off) {
-#ifdef TERRAIN_DEM_FLOAT_FORMAT
     float tl = texture(u_dem, pos).r;
     float tr = texture(u_dem, pos + vec2(off.x, 0.0)).r;
     float bl = texture(u_dem, pos + vec2(0.0, off.y)).r;
     float br = texture(u_dem, pos + off).r;
-#else
-    float tl = texture(u_dem, pos).r;
-    float tr = texture(u_dem, pos + vec2(off.x, 0.0)).r;
-    float bl = texture(u_dem, pos + vec2(0.0, off.y)).r;
-    float br = texture(u_dem, pos + off).r;
-#endif
     return vec4(tl, tr, bl, br);
 }
 

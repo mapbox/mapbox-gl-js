@@ -1,19 +1,19 @@
 #include "_prelude_terrain.vertex.glsl"
 
-attribute vec4 a_pos_offset;
-attribute vec4 a_tex_size;
-attribute vec4 a_pixeloffset;
-attribute vec4 a_projected_pos;
-attribute float a_fade_opacity;
+in vec4 a_pos_offset;
+in vec4 a_tex_size;
+in vec4 a_pixeloffset;
+in vec4 a_projected_pos;
+in float a_fade_opacity;
 #ifdef Z_OFFSET
-attribute float a_z_offset;
+in float a_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_globe_anchor;
-attribute vec3 a_globe_normal;
+in vec3 a_globe_anchor;
+in vec3 a_globe_normal;
 #endif
 #ifdef ICON_TRANSITION
-attribute vec2 a_texb;
+in vec2 a_texb;
 #endif
 
 uniform bool u_is_size_zoom_constant;
@@ -45,11 +45,11 @@ uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
-varying vec2 v_tex_a;
+out vec2 v_tex_a;
 #ifdef ICON_TRANSITION
-varying vec2 v_tex_b;
+out vec2 v_tex_b;
 #endif
-varying float v_fade_opacity;
+out float v_fade_opacity;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float emissive_strength

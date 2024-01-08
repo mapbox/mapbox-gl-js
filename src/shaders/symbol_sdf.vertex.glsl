@@ -1,16 +1,16 @@
 #include "_prelude_terrain.vertex.glsl"
 
-attribute vec4 a_pos_offset;
-attribute vec4 a_tex_size;
-attribute vec4 a_pixeloffset;
-attribute vec4 a_projected_pos;
-attribute float a_fade_opacity;
+in vec4 a_pos_offset;
+in vec4 a_tex_size;
+in vec4 a_pixeloffset;
+in vec4 a_projected_pos;
+in float a_fade_opacity;
 #ifdef Z_OFFSET
-attribute float a_z_offset;
+in float a_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_globe_anchor;
-attribute vec3 a_globe_normal;
+in vec3 a_globe_anchor;
+in vec3 a_globe_normal;
 #endif
 
 // contents of a_size vary based on the type of property value
@@ -47,11 +47,9 @@ uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
-#if __VERSION__ >= 300
-flat varying float v_draw_halo;
-#endif
-varying vec2 v_data0;
-varying vec3 v_data1;
+flat out float v_draw_halo;
+out vec2 v_data0;
+out vec3 v_data1;
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -196,10 +194,8 @@ void main() {
 #endif
     float gamma_scale = gl_Position.w;
 
-#if __VERSION__ >= 300
     // Cast to float is required to fix a rendering error in Swiftshader
     v_draw_halo = (u_is_halo && float(gl_InstanceID) == 0.0) ? 1.0 : 0.0;
-#endif
     
     v_data0 = a_tex / u_texsize;
     v_data1 = vec3(gamma_scale, size, out_fade_opacity);

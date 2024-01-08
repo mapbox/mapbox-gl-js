@@ -12,11 +12,11 @@ uniform mat2 u_extrude_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_camera_to_center_distance;
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
 #ifdef PROJECTION_GLOBE_VIEW
-attribute vec3 a_pos_3;         // Projected position on the globe
-attribute vec3 a_pos_normal_3;  // Surface normal at the position
+in vec3 a_pos_3;         // Projected position on the globe
+in vec3 a_pos_normal_3;  // Surface normal at the position
 
 // Uniforms required for transition between globe and mercator
 uniform mat4 u_inv_rot_matrix;
@@ -26,8 +26,8 @@ uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
 #endif
 
-varying vec3 v_data;
-varying float v_visibility;
+out vec3 v_data;
+out float v_visibility;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius

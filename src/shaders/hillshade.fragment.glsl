@@ -2,7 +2,7 @@
 #include "_prelude_lighting.glsl"
 
 uniform sampler2D u_image;
-varying vec2 v_pos;
+in vec2 v_pos;
 
 uniform vec2 u_latrange;
 uniform vec2 u_light;
@@ -12,7 +12,7 @@ uniform vec4 u_accent;
 uniform float u_emissive_strength;
 
 void main() {
-    vec4 pixel = texture2D(u_image, v_pos);
+    vec4 pixel = texture(u_image, v_pos);
 
     vec2 deriv = ((pixel.rg * 2.0) - 1.0);
 
@@ -46,17 +46,17 @@ void main() {
     vec4 accent_color = (1.0 - accent) * u_accent * clamp(intensity * 2.0, 0.0, 1.0);
     float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
-    gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
+    glFragColor = accent_color * (1.0 - shade_color.a) + shade_color;
 
 #ifdef LIGHTING_3D_MODE
-    gl_FragColor = apply_lighting_with_emission_ground(gl_FragColor, u_emissive_strength);
+    glFragColor = apply_lighting_with_emission_ground(glFragColor, u_emissive_strength);
 #endif
 #ifdef FOG
-    gl_FragColor = fog_dither(fog_apply_premultiplied(gl_FragColor, v_fog_pos));
+    glFragColor = fog_dither(fog_apply_premultiplied(glFragColor, v_fog_pos));
 #endif
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

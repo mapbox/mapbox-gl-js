@@ -11,13 +11,13 @@ uniform mat3 u_grid_matrix;
 uniform float u_skirt_height;
 
 #ifdef GLOBE_POLES
-attribute vec3 a_globe_pos;
-attribute vec2 a_uv;
+in vec3 a_globe_pos;
+in vec2 a_uv;
 #else
-attribute vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
+in vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 #endif
 
-varying vec2 v_pos0;
+out vec2 v_pos0;
 
 void main() {
 #ifdef GLOBE_POLES

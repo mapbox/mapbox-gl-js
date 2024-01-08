@@ -1,10 +1,9 @@
 // NOTE: This prelude is injected in the vertex shader only
 
-#if __VERSION__ >= 300
-#define attribute in
-#define varying out
-#define texture2D texture
-#endif
+#define EXTENT 8192.0
+#define RAD_TO_DEG 180.0 / PI
+#define DEG_TO_RAD PI / 180.0
+#define GLOBE_RADIUS EXTENT / PI / 2.0
 
 float wrap(float n, float min, float max) {
     float d = max - min;
@@ -104,7 +103,7 @@ float mercatorXfromLng(float lng) {
 }
 
 float mercatorYfromLat(float lat) {
-    return (180.0 - (RAD_TO_DEG* log(tan(QUARTER_PI + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
+    return (180.0 - (RAD_TO_DEG * log(tan(PI / 4.0 + lat / 2.0 * DEG_TO_RAD)))) / 360.0;
 }
 
 vec3 latLngToECEF(vec2 latLng) {
@@ -125,7 +124,7 @@ vec3 latLngToECEF(vec2 latLng) {
 
 #ifdef RENDER_CUTOFF
 uniform vec4 u_cutoff_params;
-varying float v_cutoff_opacity;
+out float v_cutoff_opacity;
 #endif
 
 const vec4 AWAY = vec4(-1000.0, -1000.0, -1000.0, 1); // Normalized device coordinate that is not rendered.

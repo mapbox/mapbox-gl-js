@@ -1,7 +1,7 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 
-varying vec2 v_pos;
+in vec2 v_pos;
 
 uniform float u_emissive_strength;
 
@@ -23,10 +23,10 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    gl_FragColor = out_color * (alpha * opacity);
+    glFragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
     HANDLE_WIREFRAME_DEBUG;
 }

@@ -1,16 +1,16 @@
-attribute vec2 a_pos_2f;
-attribute float a_radius;
-attribute vec2 a_flags;
+in vec2 a_pos_2f;
+in float a_radius;
+in vec2 a_flags;
 
 uniform mat4 u_matrix;
 uniform mat4 u_inv_matrix;
 uniform vec2 u_viewport_size;
 uniform float u_camera_to_center_distance;
 
-varying float v_radius;
-varying vec2 v_extrude;
-varying float v_perspective_ratio;
-varying float v_collision;
+out float v_radius;
+out vec2 v_extrude;
+out float v_perspective_ratio;
+out float v_collision;
 
 vec3 toTilePosition(vec2 screenPos) {
     // Shoot a ray towards the ground to reconstruct the depth-value

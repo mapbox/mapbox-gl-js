@@ -2,7 +2,7 @@
 // [2] Earth Fact Sheet https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
 // [3] Tonemapping Operators http://filmicworlds.com/blog/filmic-tonemapping-operators
 
-varying highp vec3 v_position;
+in highp vec3 v_position;
 
 uniform highp float u_sun_intensity;
 uniform highp float u_luminance;
@@ -10,9 +10,7 @@ uniform lowp vec3 u_sun_direction;
 uniform highp vec4 u_color_tint_r;
 uniform highp vec4 u_color_tint_m;
 
-#ifdef GL_ES
 precision highp float;
-#endif
 
 // [1] equation (1) section 2.1. for λ = (680, 550, 440) nm,
 // which corresponds to scattering coefficients at sea level
@@ -137,5 +135,5 @@ void main() {
     float white_scale = 1.0748724675633854; // 1.0 / uncharted2_tonemap(1000.0)
     color = uncharted2_tonemap((log2(2.0 / pow(u_luminance, 4.0))) * color) * white_scale;
 
-    gl_FragColor = vec4(color, 1.0);
+    glFragColor = vec4(color, 1.0);
 }

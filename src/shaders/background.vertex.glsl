@@ -1,13 +1,13 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_lighting.glsl"
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
 uniform mat4 u_matrix;
 
 #ifdef LIGHTING_3D_MODE
 uniform mediump vec4 u_color;
-varying vec4 v_color;
+out vec4 v_color;
 uniform float u_emissive_strength;
 #endif
 

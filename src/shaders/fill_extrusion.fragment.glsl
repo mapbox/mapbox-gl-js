@@ -2,28 +2,28 @@
 #include "_prelude_shadow.fragment.glsl"
 #include "_prelude_lighting.glsl"
 
-varying vec4 v_color;
-varying vec4 v_flat;
+in vec4 v_color;
+in vec4 v_flat;
 
 #ifdef RENDER_SHADOWS
-varying highp vec4 v_pos_light_view_0;
-varying highp vec4 v_pos_light_view_1;
-varying float v_depth;
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in float v_depth;
 #endif
 
 uniform lowp float u_opacity;
 
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
-varying vec2 v_ao;
+in vec2 v_ao;
 #endif
 
 #if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)
-varying vec4 v_roof_color;
+in vec4 v_roof_color;
 #endif
 
 #if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
-varying highp vec3 v_normal;
+in highp vec3 v_normal;
 #endif
 
 uniform vec3 u_flood_light_color;
@@ -32,13 +32,13 @@ uniform float u_flood_light_intensity;
 uniform vec3 u_ground_shadow_factor;
 
 #if defined(LIGHTING_3D_MODE) && defined(FLOOD_LIGHT)
-varying float v_flood_radius;
-varying float v_has_floodlight;
+in float v_flood_radius;
+in float v_has_floodlight;
 #endif
 
 uniform float u_emissive_strength;
 
-varying float v_height;
+in float v_height;
 
 void main() {
 
@@ -129,10 +129,10 @@ float flood_radiance = 0.0;
     color = applyCutout(color);
 #endif
 
-    gl_FragColor = color;
+    glFragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(1.0);
+    glFragColor = vec4(1.0);
 #endif
 
     HANDLE_WIREFRAME_DEBUG;

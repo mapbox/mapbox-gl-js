@@ -4,14 +4,14 @@ uniform mat4 u_matrix;
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
 
-attribute vec2 a_pos;
+in vec2 a_pos;
 
-varying vec4 v_pos_light_view_0;
-varying vec4 v_pos_light_view_1;
-varying float v_depth;
+out vec4 v_pos_light_view_0;
+out vec4 v_pos_light_view_1;
+out float v_depth;
 
 #ifdef FOG
-varying float v_fog_opacity;
+out float v_fog_opacity;
 #endif
 
 void main() {

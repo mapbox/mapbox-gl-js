@@ -4,13 +4,13 @@ uniform mat4 u_matrix;
 uniform float u_edge_radius;
 uniform float u_vertical_scale;
 
-attribute vec4 a_pos_normal_ed;
-attribute vec2 a_centroid_pos;
+in vec4 a_pos_normal_ed;
+in vec2 a_centroid_pos;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
-varying highp float v_depth;
+out highp float v_depth;
 
 void main() {
     #pragma mapbox: initialize highp float base
