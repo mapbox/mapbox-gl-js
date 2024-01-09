@@ -778,6 +778,7 @@ class Camera extends Evented {
      * the highest zoom level up to and including `Map#getMaxZoom()` that fits
      * the points in the viewport at the specified bearing.
      * @memberof Map#
+     * @param {Transform} transform The current map transform.
      * @param {LngLatLike} p0 First point
      * @param {LngLatLike} p1 Second point
      * @param {number} bearing Desired map bearing at end of animation, in degrees
