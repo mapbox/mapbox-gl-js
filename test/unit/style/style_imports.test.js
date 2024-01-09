@@ -74,6 +74,24 @@ test('Style#loadURL', (t) => {
         style.loadURL('/style.json');
     });
 
+    t.test('non existing imports don\'t block root style', (t) => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'foo', url: '/styles/not-found.json'}],
+        });
+
+        t.stub(console, 'error');
+
+        style.on('style.load', () => {
+            t.pass();
+            t.end();
+        });
+
+        window.server.respondWith('/style.json', JSON.stringify(initialStyle));
+        style.loadURL('/style.json');
+    });
+
     t.test('imports style from JSON', (t) => {
         const style = new Style(new StubMap());
 
