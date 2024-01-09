@@ -720,10 +720,10 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@puppeteer/browsers@1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-1.9.0.tgz#dfd0aad0bdc039572f1b57648f189525d627b7ff"
-  integrity sha512-QwguOLy44YBGC8vuPP2nmpX4MUN2FzWbsnvZJtiCzecU3lHmVZkaC1tq6rToi9a200m8RzlVtDyxCS0UIDrxUg==
+"@puppeteer/browsers@1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-1.9.1.tgz#384ee8b09786f0e8f62b1925e4c492424cb549ee"
+  integrity sha512-PuvK6xZzGhKPvlx3fpfdM2kYY3P/hB1URtK8wA7XUJ6prn6pp22zvJHu48th0SGcHL9SutbPHrFuQgfXTFobWA==
   dependencies:
     debug "4.3.4"
     extract-zip "2.0.1"
@@ -1950,10 +1950,10 @@ chownr@^2.0.0:
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-2.0.0.tgz#15bfbe53d2eab4cf70f18a8cd68ebe5b3cb1dece"
   integrity sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==
 
-chromium-bidi@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.5.1.tgz#390c1af350c4887824a33d82190de1cc5c5680fc"
-  integrity sha512-dcCqOgq9fHKExc2R4JZs/oKbOghWpUNFAJODS8WKRtLhp3avtIH5UDCBrutdqZdh3pARogH8y1ObXm87emwb3g==
+chromium-bidi@0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.5.2.tgz#358b03bb7c53e0f8d0fd77d596ea67ee30f7ff06"
+  integrity sha512-PbVOSddxgKyj+JByqavWMNqWPCoCaT6XK5Z1EFe168sxnB/BM51LnZEPXSbFcFAJv/+u2B4XNTs9uXxy4GW3cQ==
   dependencies:
     mitt "3.0.1"
     urlpattern-polyfill "9.0.0"
@@ -6770,17 +6770,17 @@ punycode@^2.0.0, punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^21.6.1:
-  version "21.6.1"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.6.1.tgz#10eccb4dc3167c8c26bc21122fabb45a9fda9ca7"
-  integrity sha512-0chaaK/RL9S1U3bsyR4fUeUfoj51vNnjWvXgG6DcsyMjwYNpLcAThv187i1rZCo7QhJP0wZN8plQkjNyrq2h+A==
+puppeteer-core@^21.7.0:
+  version "21.7.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.7.0.tgz#c0abb98cbd17dbd7ee317b4257958337fa25d2c7"
+  integrity sha512-elPYPozrgiM3phSy7VDUJCVWQ07SPnOm78fpSaaSNFoQx5sur/MqhTSro9Wz8lOEjqCykGC6WRkwxDgmqcy1dQ==
   dependencies:
-    "@puppeteer/browsers" "1.9.0"
-    chromium-bidi "0.5.1"
+    "@puppeteer/browsers" "1.9.1"
+    chromium-bidi "0.5.2"
     cross-fetch "4.0.0"
     debug "4.3.4"
     devtools-protocol "0.0.1203626"
-    ws "8.15.1"
+    ws "8.16.0"
 
 qrcode-terminal@^0.12.0:
   version "0.12.0"
@@ -8966,10 +8966,10 @@ write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-ws@8.15.1, ws@>=8.14.2:
-  version "8.15.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.15.1.tgz#271ba33a45ca0cc477940f7f200cd7fba7ee1997"
-  integrity sha512-W5OZiCjXEmk0yZ66ZN82beM5Sz7l7coYxpRkzS+p9PP+ToQry8szKh+61eNktr7EA9DOwvFGhfC605jDHbP6QQ==
+ws@8.16.0, ws@>=8.14.2:
+  version "8.16.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.16.0.tgz#d1cd774f36fbc07165066a60e40323eab6446fd4"
+  integrity sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==
 
 ws@^7, ws@^7.0.0, ws@^7.5.5:
   version "7.5.9"
