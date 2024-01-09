@@ -1,6 +1,7 @@
 // @flow strict
-
+import assert from 'assert';
 import window from './window.js';
+import offscreenCanvasSupported from './offscreen_canvas_supported.js';
 import type {Cancelable} from '../types/cancelable.js';
 
 let linkEl;
@@ -75,6 +76,32 @@ const exported = {
         }
         return reducedMotionQuery.matches;
     },
+
+    /**
+     * Returns true if the browser has OffscreenCanvas support and
+     * adds noise to Canvas2D operations used for image decoding to prevent fingerprinting.
+     */
+    hasCanvasFingerprintNoise(): boolean {
+        if (!offscreenCanvasSupported()) return false;
+        assert(window.OffscreenCanvas, 'OffscreenCanvas is not supported');
+
+        const offscreenCanvas = new window.OffscreenCanvas(255 / 3, 1);
+        const offscreenCanvasContext = offscreenCanvas.getContext('2d', {willReadFrequently: true});
+        let inc = 0;
+        // getImageData is lossy with premultiplied alpha.
+        for (let i = 0; i < offscreenCanvas.width; ++i) {
+            offscreenCanvasContext.fillStyle = `rgba(${inc++},${inc++},${inc++}, 255)`;
+            offscreenCanvasContext.fillRect(i, 0, 1, 1);
+        }
+        const readData = offscreenCanvasContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+        inc = 0;
+        for (let i = 0; i < readData.data.length; ++i) {
+            if (i % 4 !== 3 && inc++ !== readData.data[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 export default exported;

@@ -3,6 +3,7 @@
 import tap from 'tap';
 /*eslint-disable import/no-named-as-default-member */
 import sinon from 'sinon';
+import browser from '../../src/util/browser.js';
 
 // Disable MessageChannel in unit tests since
 // it prevents a Node.js process from exiting.
@@ -36,6 +37,8 @@ export const only = (tap.only: CreateTest);
 
 const consoleError = console.error;
 const consoleWarn = console.warn;
+
+sinon.stub(browser, 'hasCanvasFingerprintNoise').returns(false);
 
 // $FlowFixMe[missing-this-annot]
 tap.beforeEach(function () {

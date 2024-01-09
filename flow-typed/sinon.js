@@ -9,6 +9,7 @@ declare module "sinon" {
         getCall(i: number): SpyCall
     };
     declare type Stub = {
+        returns(fn: mixed): Spy,
         callsFake(fn: mixed): Spy
     };
     declare class FakeServer {

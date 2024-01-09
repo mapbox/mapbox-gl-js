@@ -45,6 +45,7 @@ import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
 import {ReplacementSource} from '../../3d-style/source/replacement_source.js';
+import {warnOnce} from '../util/util.js';
 import type {Source} from '../source/source.js';
 import type {CutoffParams} from '../render/cutoff.js';
 
@@ -202,6 +203,7 @@ class Painter {
     renderDefaultSouthPole: boolean;
     _fogVisible: boolean;
     _cachedTileFogOpacities: {[number]: [number, number]};
+    disableDEMTilesWorkaround: boolean;
 
     _shadowRenderer: ?ShadowRenderer;
 
@@ -240,8 +242,19 @@ class Painter {
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
-        const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain;
+        const enabled = !!style && !!style.terrain && this.transform.projection.supportsTerrain && !this.disableDEMTilesWorkaround;
         if (!enabled && (!this._terrain || !this._terrain.enabled)) return;
+
+        // This workaround disables terrain and hillshade
+        // if there is noise in the Canvas2D operations used for image decoding.
+        if (this.disableDEMTilesWorkaround === undefined) {
+            this.disableDEMTilesWorkaround = browser.hasCanvasFingerprintNoise();
+        }
+        if (this.disableDEMTilesWorkaround) {
+            warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
+            return;
+        }
+
         if (!this._terrain) {
             this._terrain = new Terrain(this, style);
         }
