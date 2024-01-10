@@ -106,8 +106,8 @@ void main() {
     out_color = apply_lighting_with_emission_ground(vec4(out_color, 1.0), u_emissive_strength).rgb;
 #endif
 #ifdef FOG
-    float fog_limit_high_meters = 1000000.0;
-    float fog_limit_low_meters = 600000.0;
+    highp float fog_limit_high_meters = 1000000.0;
+    highp float fog_limit_low_meters = 600000.0;
     float fog_limit = 1.0 - smoothstep(fog_limit_low_meters, fog_limit_high_meters, u_raster_elevation);
     out_color = fog_dither(fog_apply(out_color, v_fog_pos, fog_limit));
 #endif
