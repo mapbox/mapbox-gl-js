@@ -7914,7 +7914,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "3.1.0"
+          "js": "3.1.0",
+          "android": "11.2.0",
+          "ios": "11.2.0"
         }
       },
       "expression": {
