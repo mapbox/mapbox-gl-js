@@ -39,7 +39,7 @@
           "metrics": {
             "width": 14,
             "height": 14,
-            "left": 1,
+            "left": 0,
             "top": -3,
             "advance": 14,
             "localGlyph": false
@@ -64,7 +64,7 @@
           "metrics": {
             "width": 30,
             "height": 14,
-            "left": 1,
+            "left": 0,
             "top": -3,
             "advance": 14,
             "localGlyph": false
@@ -94,7 +94,7 @@
           "metrics": {
             "width": 14,
             "height": 30,
-            "left": 1,
+            "left": 0,
             "top": -3,
             "advance": 30,
             "localGlyph": false
@@ -119,7 +119,7 @@
           "metrics": {
             "width": 14,
             "height": 14,
-            "left": 1,
+            "left": 0,
             "top": -3,
             "advance": 14,
             "localGlyph": false
