@@ -6,7 +6,7 @@ import getType from '../util/get_type.js';
 import {isFunction} from '../function/index.js';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint.js';
 import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties.js';
-import {isGlobalPropertyConstant} from '../expression/is_constant.js';
+import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant.js';
 
 import type {ValidationOptions} from './validate.js';
 import {createPropertyExpression} from '../expression/index.js';
@@ -67,8 +67,11 @@ export default function validateProperty(options: PropertyValidationOptions, pro
             // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
             const expression = createPropertyExpression(deepUnbundle(value), valueSpec);
             const expressionObj = (expression.value: any).expression || (expression.value: any)._styleExpression.expression;
+
             if (expressionObj && !isGlobalPropertyConstant(expressionObj, ['measure-light'])) {
-                errors.push(new ValidationError(key, value, `${propertyKey} does not support measure-light expressions when the model layer source is vector tile or GeoJSON.`));
+                if (propertyKey !== 'model-emissive-strength' || (!isFeatureConstant(expressionObj) || !isStateConstant(expressionObj))) {
+                    errors.push(new ValidationError(key, value, `${propertyKey} does not support measure-light expressions when the model layer source is vector tile or GeoJSON.`));
+                }
             }
         }
     }

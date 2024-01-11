@@ -39,7 +39,8 @@ export type ModelUniformsType = {
     'u_occlusionTexture': Uniform1i,
     'u_emissionTexture': Uniform1i,
     'u_color_mix': Uniform4f,
-    'u_aoIntensity': Uniform1f
+    'u_aoIntensity': Uniform1f,
+    'u_emissive_strength': Uniform1f
 };
 
 const modelUniforms = (context: Context): ModelUniformsType => ({
@@ -64,7 +65,8 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_occlusionTexture': new Uniform1i(context),
     'u_emissionTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
-    'u_aoIntensity': new Uniform1f(context)
+    'u_aoIntensity': new Uniform1f(context),
+    'u_emissive_strength' : new Uniform1f(context)
 
 });
 
@@ -79,8 +81,10 @@ const modelUniformValues = (
     metallicFactor: number,
     roughnessFactor: number,
     material: Material,
+    emissiveStrength: number,
     layer: ModelStyleLayer,
-    cameraPos: [number, number, number] = [0, 0, 0]): UniformValues<ModelUniformsType> => {
+    cameraPos: [number, number, number] = [0, 0, 0]
+): UniformValues<ModelUniformsType> => {
 
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -96,7 +100,7 @@ const modelUniformValues = (
 
     const lightColor = light.properties.get('color');
 
-    const aoIntensity =  layer.paint.get('model-ambient-occlusion-intensity');
+    const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
     const colorMix = layer.paint.get('model-color').constantOr(Color.white);
     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
 
@@ -122,7 +126,8 @@ const modelUniformValues = (
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
         'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity],
-        'u_aoIntensity': aoIntensity
+        'u_aoIntensity': aoIntensity,
+        'u_emissive_strength': emissiveStrength
     };
 
     return uniformValues;

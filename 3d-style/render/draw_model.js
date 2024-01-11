@@ -147,6 +147,8 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const normalMatrix = mat4.invert([], lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
+    const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
+
     const uniformValues = modelUniformValues(
         new Float32Array(sortedMesh.worldViewProjection),
         new Float32Array(lightingMatrix),
@@ -158,6 +160,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         pbr.metallicFactor,
         pbr.roughnessFactor,
         material,
+        emissiveStrength,
         layer);
 
     const programOptions: CreateProgramParams = {
@@ -604,6 +607,8 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 const pbr = material.pbrMetallicRoughness;
                 const layerOpacity = layer.paint.get('model-opacity');
 
+                const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
+
                 uniformValues = modelUniformValues(
                     coord.expandedProjMatrix,
                     Float32Array.from(node.matrix),
@@ -615,8 +620,10 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                     pbr.metallicFactor,
                     pbr.roughnessFactor,
                     material,
+                    emissiveStrength,
                     layer,
-                    cameraPos);
+                    cameraPos
+                );
                 if (shadowRenderer) {
                     if (!renderData.shadowUniformsInitialized) {
                         shadowRenderer.setupShadows(coord.toUnwrapped(), program, 'model-tile', coord.overscaledZ);
@@ -814,6 +821,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     pbr.metallicFactor = 0.9;
                     pbr.roughnessFactor = 0.5;
 
+                    // Set emissive strength to zero for landmarks, as it is already used embedded in the PBR buffer.
+                    const emissiveStrength = 0.0;
                     const uniformValues = modelUniformValues(
                             new Float32Array(worldViewProjection),
                             new Float32Array(lightingMatrix),
@@ -825,6 +834,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             pbr.metallicFactor,
                             pbr.roughnessFactor,
                             material,
+                            emissiveStrength,
                             layer
                     );
 

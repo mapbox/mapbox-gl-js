@@ -8347,7 +8347,7 @@
       "minimum": 0,
       "maximum": 5,
       "units": "intensity",
-      "doc": "Strength of the emission. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors). Expressions that depend on measure-light are not supported when using GeoJSON or vector tile as the model layer source.",
+      "doc": "Strength of the emission. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors). Expressions that depend on measure-light are only supported as a global layer value (and not for each feature) when using GeoJSON or vector tile as the model layer source.",
       "expression": {
         "interpolated": true,
         "parameters": ["feature", "feature-state", "measure-light"]

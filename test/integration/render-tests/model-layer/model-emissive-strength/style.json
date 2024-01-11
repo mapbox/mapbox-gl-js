@@ -1,0 +1,128 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.00025
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+    "lights": [
+    {
+     "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.1
+      }
+    }
+  ],
+  "pitch": 62,
+  "zoom": 17.2,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "trees",
+      "layout": {
+        "model-id": ["match", ["get", "tree_type"],
+          "broadleaved",
+          ["match", ["%", ["id"], 6],
+            0, "maple",
+            1, "maple1",
+            2, "spur1",
+            3, "oak1",
+            4, "oak2",
+            "oak3"],
+          ["match", ["%", ["id"], 2],
+            0, "oak1", "oak2"]
+        ]
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 50.0]],
+          2, ["literal", [10.0, 0.0, 120.0]],
+          ["literal", [0.0, -3.0, -60]]],
+        "model-scale": ["match", ["%", ["id"], 3],
+          0, ["literal", [1.0, 1.25, 1.0]],
+          1, ["literal", [0.8, 0.9, 0.8]],
+          ["literal", [1.2, 1.1, 1.1]]],
+        "model-emissive-strength": ["interpolate",
+              [ "linear" ],
+              [ "measure-light", "brightness" ],
+              0.5,
+              0.3,
+              0.9,
+              1.0
+             ]
+      }
+    }
+  ],
+  "models": {
+    "maple": "local://models/maple.glb",
+    "maple1": "local://models/maple1.glb",
+    "maple2": "local://models/maple2.glb",
+    "oak1": "local://models/oak1.glb",
+    "oak2": "local://models/oak2.glb",
+    "oak3": "local://models/oak3.glb",
+    "spur1": "local://models/spur1.glb",
+    "spur2": "local://models/spur2.glb"
+  }
+}
