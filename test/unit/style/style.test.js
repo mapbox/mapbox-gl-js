@@ -2295,6 +2295,49 @@ test('Style#setTerrain', (t) => {
         });
     });
 
+    t.test('raises error during creation terrain without source', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON());
+
+        style.on('style.load', () => {
+            style.on('error', ({error}) => {
+                t.ok(error);
+                t.match(error.message, `terrain: terrain is missing required property "source"`);
+                t.end();
+            });
+            style.setTerrain({
+                exaggeration: 2
+            });
+        });
+    });
+
+    t.test('updates terrain properties', (t) => {
+        const style = new Style(new StubMap());
+
+        style.on('style.load', () => {
+            style.setTerrain({
+                "source": {
+                    "type": "raster-dem",
+                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                    "tileSize": 256,
+                    "maxzoom": 14
+                },
+                "exaggeration": 1
+            });
+
+            t.equals(style.getTerrain().exaggeration, 1);
+
+            style.setTerrain({
+                exaggeration: 2
+            });
+
+            t.equals(style.getTerrain().exaggeration, 2);
+            t.end();
+        });
+
+        style.loadJSON(createStyleJSON());
+    });
+
     t.test('setTerrain(undefined) removes terrain', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON({

@@ -1601,6 +1601,42 @@ test('Terrain', (t) => {
         style.loadJSON(initialStyle);
     });
 
+    t.test('setTerrain updates imported terrain properties', (t) => {
+        const style = new Style(new StubMap());
+
+        style.on('style.load', () => {
+            style.setTerrain({
+                exaggeration: 2
+            });
+
+            t.equals(style.getTerrain().exaggeration, 2);
+            t.end();
+        });
+
+        style.loadJSON(createStyleJSON({
+            imports: [
+                {
+                    id: "basemap",
+                    url: "",
+                    data: createStyleJSON({
+                        sources: {
+                            "mapbox-dem": {
+                                "type": "raster-dem",
+                                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                                "tileSize": 256,
+                                "maxzoom": 14
+                            }
+                        },
+                        terrain: {
+                            source: "mapbox-dem",
+                            exaggeration: 1
+                        }
+                    })
+                }
+            ]
+        }));
+    });
+
     t.end();
 });
 

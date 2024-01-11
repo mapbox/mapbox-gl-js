@@ -2317,6 +2317,7 @@ class Style extends Evented {
         }
 
         let options: TerrainSpecification = terrainOptions;
+        const isUpdating = terrainOptions.source == null;
         if (drapeRenderMode === DrapeRenderMode.elevated) {
             // Input validation and source object unrolling
             if (typeof options.source === 'object') {
@@ -2326,13 +2327,25 @@ class Style extends Evented {
                 options = extend(options, {source: id});
             }
 
-            if (this._validate(validateTerrain, 'terrain', options)) {
+            const validationOptions = extend({}, options);
+            const validationProps = {};
+
+            if (this.terrain && isUpdating) {
+                validationOptions.source = this.terrain.get().source;
+
+                const fragmentStyle = this.terrain ? this.getFragmentStyle(this.terrain.scope) : null;
+                if (fragmentStyle) {
+                    validationProps.style = fragmentStyle.serialize();
+                }
+            }
+
+            if (this._validate(validateTerrain, 'terrain', validationOptions, validationProps)) {
                 return;
             }
         }
 
         // Enabling
-        if (!this.terrain || this.terrain.scope !== this.scope || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
+        if (!this.terrain || (this.terrain.scope !== this.scope && !isUpdating) || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
             if (!options) return;
             this._createTerrain(options, drapeRenderMode);
             this.fire(new Event('data', {dataType: 'style'}));

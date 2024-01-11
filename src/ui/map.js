@@ -3040,6 +3040,7 @@ class Map extends Camera {
      *
      * @param {TerrainSpecification} terrain Terrain properties to set. Must conform to the [Terrain Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/terrain/).
      *     If `null` or `undefined` is provided, function removes terrain.
+     *     Exaggeration could be updated for the existing terrain without explicitly specifying the `source`.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * map.addSource('mapbox-dem', {
@@ -3050,6 +3051,8 @@ class Map extends Camera {
      * });
      * // add the DEM source as a terrain layer with exaggerated height
      * map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+     * // update the exaggeration for the existing terrain
+     * map.setTerrain({'exaggeration': 2});
      */
     setTerrain(terrain: TerrainSpecification): this {
         this._lazyInitEmptyStyle();
