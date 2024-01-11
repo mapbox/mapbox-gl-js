@@ -87,6 +87,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('icon-rotation-alignment'),
             layer.layout.get('icon-pitch-alignment'),
             layer.layout.get('icon-keep-upright'),
+            layer.paint.get('icon-color-saturation'),
             stencilMode, colorMode
         );
     }
@@ -98,6 +99,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
             layer.layout.get('text-keep-upright'),
+            layer.paint.get('icon-color-saturation'),
             stencilMode, colorMode
         );
     }
@@ -268,7 +270,7 @@ function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBuc
     }
 }
 
-function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, isText: boolean, translate: [number, number], translateAnchor: 'map' | 'viewport', rotationAlignment: Alignment, pitchAlignment: Alignment, keepUpright: boolean, stencilMode: StencilMode, colorMode: ColorMode) {
+function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, isText: boolean, translate: [number, number], translateAnchor: 'map' | 'viewport', rotationAlignment: Alignment, pitchAlignment: Alignment, keepUpright: boolean, iconSaturation: number, stencilMode: StencilMode, colorMode: ColorMode) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -410,8 +412,11 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
                     matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
             }
         } else {
+            if (iconSaturation < 1) {
+                baseDefines.push('SATURATION');
+            }
             uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), transitionProgress);
+                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconSaturation, transitionProgress);
         }
 
         const program = painter.getOrCreateProgram(getSymbolProgramName(isSDF, isText, bucket), {config: programConfiguration, defines: baseDefines});

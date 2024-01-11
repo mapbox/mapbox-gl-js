@@ -7291,6 +7291,26 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "icon-color-saturation": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "units": "intensity",
+      "doc": "Controls saturation level of the symbol icon. With the default value of 1 the icon color is preserved while with a value of 0 it is fully desaturated and looks black and white.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.1.0",
+          "android": "11.1.0",
+          "ios": "11.1.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_raster": {
