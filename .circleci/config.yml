@@ -550,4 +550,11 @@ jobs:
           name: Trigger SLA performance tests
           command: |
             sha=$(git rev-parse HEAD)
-            curl --location --request POST 'https://circleci.com/api/v2/project/github/mapbox/mapbox-gl-js-performance-internal/pipeline' --header 'Content-Type: application/json' -u $CIRCLECI_API_TOKEN: -d "{ \"parameters\": { \"setup_sha\": \"$sha\", \"setup_source_branch\": \"internal\" } }"
+            response_code=$(curl --location --write-out "%{http_code}" --output /dev/stderr --request POST 'https://circleci.com/api/v2/project/github/mapbox/mapbox-gl-js-performance-internal/pipeline' --header 'Content-Type: application/json' -u $CIRCLECI_API_TOKEN: -d "{ \"parameters\": { \"setup_sha\": \"$sha\", \"setup_source_branch\": \"internal\" } }")
+
+            if [[ "$response_code" =~ ^2 ]]; then
+                echo "Success: HTTP 2xx response"
+            else
+                echo "Error: Non-2xx response code - $response_code"
+                exit 1
+            fi
