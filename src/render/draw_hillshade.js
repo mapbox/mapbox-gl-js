@@ -23,7 +23,7 @@ export default drawHillshade;
 
 function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, tileIDs: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'offscreen' && painter.renderPass !== 'translucent') return;
-    if (painter.disableDEMTilesWorkaround) return;
+    if (painter.style.disableElevatedTerrain) return;
 
     const context = painter.context;
 

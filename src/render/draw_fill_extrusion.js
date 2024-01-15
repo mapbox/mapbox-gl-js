@@ -325,11 +325,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         if (painter.terrain) {
             const terrain = painter.terrain;
-            if (painter.style.terrainSetForDrapingOnly()) {
-                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-            } else {
-                terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
-            }
+            terrain.setupElevationDraw(tile, program, {useMeterToDem: true});
         }
 
         if (!bucket.centroidVertexBuffer) {

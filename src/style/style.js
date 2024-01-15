@@ -193,6 +193,7 @@ class Style extends Evented {
     directionalLight: ?Lights<Directional>;
     light: Light;
     terrain: ?Terrain;
+    disableElevatedTerrain: ?boolean;
     fog: ?Fog;
     camera: CameraSpecification;
     transition: TransitionSpecification;
@@ -580,8 +581,17 @@ class Style extends Evented {
         }
 
         const terrain = this.stylesheet.terrain;
-        if (terrain && !this.terrainSetForDrapingOnly()) {
-            this._createTerrain(terrain, DrapeRenderMode.elevated);
+        if (terrain) {
+            // This workaround disables terrain and hillshade
+            // if there is noise in the Canvas2D operations used for image decoding.
+            if (this.disableElevatedTerrain === undefined)
+                this.disableElevatedTerrain = browser.hasCanvasFingerprintNoise();
+
+            if (this.disableElevatedTerrain) {
+                warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
+            } else if (!this.terrainSetForDrapingOnly()) {
+                this._createTerrain(terrain, DrapeRenderMode.elevated);
+            }
         }
 
         if (this.stylesheet.fog) {
