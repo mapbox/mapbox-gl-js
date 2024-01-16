@@ -4409,6 +4409,9 @@ test('Disallow usage of FQID separator in the public APIs', (t) => {
     map.on('error', spy);
 
     map.on('style.load', () => {
+        map.getLayer(null);
+        map.getSource(undefined);
+
         map.getLayer(makeFQID('id', 'scope'));
         map.addLayer({id: makeFQID('id', 'scope')});
         map.moveLayer(makeFQID('id', 'scope'));
@@ -4441,10 +4444,18 @@ test('Disallow usage of FQID separator in the public APIs', (t) => {
         map.once('click', makeFQID('id', 'scope'), () => {});
         map.off('click', makeFQID('id', 'scope'));
 
-        const callCount = 22;
+        const callCount = 24;
         t.equal(spy.callCount, callCount);
 
-        for (let i = 0; i <= callCount - 1; i++) {
+        const event0 = spy.getCall(0).firstArg;
+        t.ok(event0);
+        t.match(event0.error, /can't be empty/);
+
+        const event1 = spy.getCall(1).firstArg;
+        t.ok(event1);
+        t.match(event1.error, /can't be empty/);
+
+        for (let i = 2; i <= callCount - 1; i++) {
             const event = spy.getCall(i).firstArg;
             t.ok(event);
             t.match(event.error, /can't contain special symbols/);

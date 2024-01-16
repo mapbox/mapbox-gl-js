@@ -2053,7 +2053,12 @@ class Map extends Camera {
         return this.style.loaded();
     }
 
-    _isValidId(id: string): boolean {
+    _isValidId(id: ?string): boolean {
+        if (id == null) {
+            this.fire(new ErrorEvent(new Error(`IDs can't be empty.`)));
+            return false;
+        }
+
         // Disallow using fully qualified IDs in the public APIs
         if (isFQID(id)) {
             this.fire(new ErrorEvent(new Error(`IDs can't contain special symbols: "${id}".`)));
