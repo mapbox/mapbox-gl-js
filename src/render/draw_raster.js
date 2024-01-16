@@ -19,9 +19,8 @@ import {
     globePoleMatrixForTile,
     globeTileBounds,
     globeToMercatorTransition,
-    getGridMatrix} from "../geo/projection/globe_util.js";
+    GLOBE_ZOOM_THRESHOLD_MIN} from "../geo/projection/globe_util.js";
 import {mat4} from "gl-matrix";
-import LngLatBounds from '../geo/lng_lat_bounds.js';
 import {mercatorXfromLng, mercatorYfromLat} from "../geo/mercator_coordinate.js";
 import Transform from '../geo/transform.js';
 
@@ -111,8 +110,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             vertexBuffer = southPoleBuffer;
             painter.renderDefaultSouthPole = false;
         }
-        const perspectiveTransform = source.perspectiveTransform;
-        const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix, fade, layer, perspectiveTransform || [0, 0], layer.paint.get('raster-elevation'), RASTER_COLOR_TEXTURE_UNIT, rasterConfig.mix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
+        const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix, fade, layer, [0, 0], layer.paint.get('raster-elevation'), RASTER_COLOR_TEXTURE_UNIT, rasterConfig.mix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
         const program = painter.getOrCreateProgram('raster', {defines: rasterConfig.defines});
 
         painter.uploadCommonUniforms(context, program, null);
@@ -198,33 +196,28 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         const tr = painter.transform;
-        const perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
+        let perspectiveTransform: [number, number];
         const cutoffParams = renderingWithElevation ? cutoffParamsForElevation(tr) : [0, 0, 0, 0];
         let normalizeMatrix: Float32Array;
         let globeMatrix: Float32Array;
         let globeMercatorMatrix: Float32Array;
         let mercatorCenter: [number, number];
         let gridMatrix: Float32Array;
-        let globeTlBr: [number, number, number, number];
 
         if (renderingElevatedOnGlobe && source instanceof ImageSource && source.coordinates.length > 3) {
             normalizeMatrix = Float32Array.from(globeNormalizeECEF(globeTileBounds(new CanonicalTileID(0, 0, 0))));
             globeMatrix = Float32Array.from(tr.globeMatrix);
             globeMercatorMatrix = Float32Array.from(calculateGlobeMercatorMatrix(tr));
             mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
-            globeTlBr = [
-                mercatorXfromLng(source.coordinates[1][0]), mercatorYfromLat(source.coordinates[1][1]),
-                mercatorXfromLng(source.coordinates[3][0]), mercatorYfromLat(source.coordinates[3][1])
-            ];
-            const tileBounds = new LngLatBounds(source.coordinates[1], source.coordinates[3]);
-            gridMatrix = Float32Array.from(getGridMatrix(new CanonicalTileID(0, 0, 0), tileBounds, 0, tr.worldSize / painter.transform._pixelsPerMercatorPixel));
+            perspectiveTransform = source.elevatedGlobePerspectiveTransform;
+            gridMatrix = source.elevatedGlobeGridMatrix || new Float32Array(9);
         } else {
+            perspectiveTransform = source instanceof ImageSource ? source.perspectiveTransform : [0, 0];
             normalizeMatrix = new Float32Array(16);
             globeMatrix = new Float32Array(9);
             globeMercatorMatrix = new Float32Array(16);
             mercatorCenter = [0, 0];
-            gridMatrix = new Float32Array(16);
-            globeTlBr = [0, 0, 0, 0];
+            gridMatrix = new Float32Array(9);
         }
 
         const uniformValues = rasterUniformValues(
@@ -234,7 +227,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             globeMercatorMatrix,
             gridMatrix,
             parentTL || [0, 0],
-            globeTlBr,
             globeToMercatorTransition(painter.transform.zoom),
             mercatorCenter,
             cutoffParams,
@@ -258,23 +250,32 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
         if (source instanceof ImageSource) {
+            const elevatedGlobeVertexBuffer = source.elevatedGlobeVertexBuffer;
+            const elevatedGlobeIndexBuffer = source.elevatedGlobeIndexBuffer;
+            const elevatedGlobeSegments = source.elevatedGlobeSegments;
             if (renderingToTexture || !isGlobeProjection) {
                 if (source.boundsBuffer && source.boundsSegments) program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id, source.boundsBuffer,
                     painter.quadTriangleIndexBuffer, source.boundsSegments);
-            } else if (painter.globeSharedBuffers) {
-                const [buffer, indexBuffer, segments] = painter.globeSharedBuffers.getGridBuffers(0, false);
-                // Render both the front and back faces of the elevated raster layer
-                // On globe, we need two separate draws to avoid z-fighting with itself when the geometry is curved
+            } else if (elevatedGlobeVertexBuffer && elevatedGlobeIndexBuffer && elevatedGlobeSegments) {
+                // During transition from the Globe projection to the Mercator projection some triangles becomes stretched.
+                // Close to the GLOBE_ZOOM_THRESHOLD_MAX these stretched triangles from the other side of the Globe
+                // rise above the Globe surface and we don't want to see them too.
+                // But we probably also don't want to see these stretched triangles over the horizon too, so we disable them
+                // starting from the GLOBE_ZOOM_THRESHOLD_MIN zoom level.
+                // Alternative idea: sort triangles inside index buffer by x coordinate and drop only the problematic ones,
+                // which are crossing the split line, so there will be two draw calls - for triangles before and after the split.
+                if (tr.zoom <= GLOBE_ZOOM_THRESHOLD_MIN) {
+                    program.draw(
+                        painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCW,
+                        uniformValues, layer.id, elevatedGlobeVertexBuffer,
+                        elevatedGlobeIndexBuffer, elevatedGlobeSegments);
+                }
                 program.draw(
-                    painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.frontCCW,
-                    uniformValues, layer.id, buffer,
-                    indexBuffer, segments);
-                program.draw(
-                    painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
-                    uniformValues, layer.id, buffer,
-                    indexBuffer, segments);
+                    painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.frontCW,
+                    uniformValues, layer.id, elevatedGlobeVertexBuffer,
+                    elevatedGlobeIndexBuffer, elevatedGlobeSegments);
             }
         } else {
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);

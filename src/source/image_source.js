@@ -4,15 +4,17 @@ import {CanonicalTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {getImage, ResourceType} from '../util/ajax.js';
 import EXTENT from '../style-spec/data/extent.js';
-import {RasterBoundsArray} from '../data/array_types.js';
+import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
 import boundsAttributes from '../data/bounds_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture, {UserManagedTexture} from '../render/texture.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
+import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_util.js';
 import {mat3, vec3} from 'gl-matrix';
 import window from '../util/window.js';
+import LngLat from '../geo/lng_lat.js';
 
 import type {Source} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
@@ -22,6 +24,8 @@ import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type {ProjectedPoint} from '../geo/projection/projection.js';
 import type {
     ImageSourceSpecification,
     VideoSourceSpecification
@@ -38,22 +42,95 @@ type ImageSourceTexture = {|
 // perspective correction for texture mapping, see https://github.com/mapbox/mapbox-gl-js/issues/9158
 // adapted from https://math.stackexchange.com/a/339033/48653
 
+// Creates a matrix that maps
+// (1, 0, 0) -> (a * x1, a * y1, a)
+// (0, 1, 0) -> (b * x2, b * y2, b)
+// (0, 0, 1) -> (c * x3, c * y3, c)
+// (1, 1, 1) -> (x4, y4, 1)
 function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
-    const m = [x1, x2, x3, y1, y2, y3, 1, 1, 1];
+    const m = [x1, y1, 1, x2, y2, 1, x3, y3, 1];
     const s = [x4, y4, 1];
     const ma = mat3.adjoint([], m);
-    const [sx, sy, sz] = vec3.transformMat3(s, s, mat3.transpose(ma, ma));
-    return mat3.multiply(m, [sx, 0, 0, 0, sy, 0, 0, 0, sz], m);
+    const [sx, sy, sz] = vec3.transformMat3(s, s, ma);
+    return mat3.multiply(m, m, [sx, 0, 0, 0, sy, 0, 0, 0, sz]);
 }
 
-function getPerspectiveTransform(w: number, h: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
-    const s = basisToPoints(0, 0, w, 0, 0, h, w, h);
-    const m = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
-    mat3.multiply(m, mat3.adjoint(s, s), m);
+function getTileToTextureTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+    const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
+    const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
+    const adjB = mat3.adjoint([], b);
+    return mat3.multiply(a, a, adjB);
+}
+
+function getTextureToTileTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+    const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
+    const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
+    const adjA = mat3.adjoint([], a);
+    return mat3.multiply(b, b, adjA);
+}
+
+function getPerspectiveTransform(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+    const m = getTextureToTileTransformMatrix(x1, y1, x2, y2, x3, y3, x4, y4);
     return [
-        m[6] / m[8] * w / EXTENT,
-        m[7] / m[8] * h / EXTENT
+        m[2] / m[8] / EXTENT,
+        m[5] / m[8] / EXTENT
     ];
+}
+
+function isConvex(coords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, ProjectedPoint]) {
+    const dx1 = coords[1].x - coords[0].x;
+    const dy1 = coords[1].y - coords[0].y;
+    const dx2 = coords[2].x - coords[1].x;
+    const dy2 = coords[2].y - coords[1].y;
+    const dx3 = coords[3].x - coords[2].x;
+    const dy3 = coords[3].y - coords[2].y;
+
+    const crossProduct1 = dx1 * dy2 - dx2 * dy1;
+    const crossProduct2 = dx2 * dy3 - dx3 * dy2;
+
+    return (crossProduct1 > 0 && crossProduct2 > 0) || (crossProduct1 < 0 && crossProduct2 < 0);
+}
+
+function calculateMinAndSize(coords: Coordinates) {
+    let minX = coords[0][0];
+    let maxX = minX;
+    let minY = coords[0][1];
+    let maxY = minY;
+
+    for (let i = 1; i < coords.length; i++) {
+        if (coords[i][0] < minX) {
+            minX = coords[i][0];
+        } else if (coords[i][0] > maxX) {
+            maxX = coords[i][0];
+        }
+        if (coords[i][1] < minY) {
+            minY = coords[i][1];
+        } else if (coords[i][1] > maxY) {
+            maxY = coords[i][1];
+        }
+    }
+    return [minX, minY, maxX - minX, maxY - minY];
+}
+
+function calculateMinAndSizeForPoints(coords: ProjectedPoint[]) {
+    let minX = coords[0].x;
+    let maxX = minX;
+    let minY = coords[0].y;
+    let maxY = minY;
+
+    for (let i = 1; i < coords.length; i++) {
+        if (coords[i].x < minX) {
+            minX = coords[i].x;
+        } else if (coords[i].x > maxX) {
+            maxX = coords[i].x;
+        }
+        if (coords[i].y < minY) {
+            minY = coords[i].y;
+        } else if (coords[i].y > maxY) {
+            maxY = coords[i].y;
+        }
+    }
+    return [minX, minY, maxX - minX, maxY - minY];
 }
 
 /**
@@ -119,13 +196,19 @@ class ImageSource extends Evented implements Source {
     tileID: ?CanonicalTileID;
     onNorthPole: boolean;
     onSouthPole: boolean;
+    _unsupportedCoords: boolean;
     _boundsArray: ?RasterBoundsArray;
     boundsBuffer: ?VertexBuffer;
     boundsSegments: ?SegmentVector;
+    elevatedGlobeVertexBuffer: ?VertexBuffer;
+    elevatedGlobeIndexBuffer: ?IndexBuffer;
+    elevatedGlobeSegments: ?SegmentVector;
+    elevatedGlobeGridMatrix: ?Float32Array;
     _loaded: boolean;
     _dirty: boolean;
     _imageRequest: ?Cancelable;
     perspectiveTransform: [number, number];
+    elevatedGlobePerspectiveTransform: [number, number];
 
     /**
      * @private
@@ -273,6 +356,15 @@ class ImageSource extends Evented implements Source {
             this._imageRequest = null;
         }
         if (this.texture && !(this.texture instanceof UserManagedTexture)) this.texture.destroy();
+        if (this.boundsBuffer) {
+            this.boundsBuffer.destroy();
+            if (this.elevatedGlobeVertexBuffer) {
+                this.elevatedGlobeVertexBuffer.destroy();
+            }
+            if (this.elevatedGlobeIndexBuffer) {
+                this.elevatedGlobeIndexBuffer.destroy();
+            }
+        }
     }
 
     /**
@@ -306,6 +398,7 @@ class ImageSource extends Evented implements Source {
     setCoordinates(coordinates: Coordinates): this {
         this.coordinates = coordinates;
         this._boundsArray = undefined;
+        this._unsupportedCoords = false;
 
         if (!coordinates.length) {
             assert(false);
@@ -356,6 +449,7 @@ class ImageSource extends Evented implements Source {
     // $FlowFixMe[method-unbinding]
     _clear() {
         this._boundsArray = undefined;
+        this._unsupportedCoords = false;
     }
 
     _prepareData(context: Context) {
@@ -367,7 +461,22 @@ class ImageSource extends Evented implements Source {
             }
         }
 
-        if (this._boundsArray) return;
+        if (this._boundsArray || this.onNorthPole || this.onSouthPole || this._unsupportedCoords) return;
+
+        const globalTileTr = tileTransform(new CanonicalTileID(0, 0, 0), this.map.transform.projection);
+
+        const globalTileCoords = [
+            globalTileTr.projection.project(this.coordinates[0][0], this.coordinates[0][1]),
+            globalTileTr.projection.project(this.coordinates[1][0], this.coordinates[1][1]),
+            globalTileTr.projection.project(this.coordinates[2][0], this.coordinates[2][1]),
+            globalTileTr.projection.project(this.coordinates[3][0], this.coordinates[3][1])
+        ];
+
+        if (!isConvex(globalTileCoords)) {
+            console.warn('Image source coordinates are defining non-convex area in the Mercator projection');
+            this._unsupportedCoords = true;
+            return;
+        }
 
         const tileTr = tileTransform(this.tileID, this.map.transform.projection);
 
@@ -377,8 +486,7 @@ class ImageSource extends Evented implements Source {
             return getTilePoint(tileTr, projectedCoord)._round();
         });
 
-        this.perspectiveTransform = getPerspectiveTransform(
-            this.width, this.height, tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y);
+        this.perspectiveTransform = getPerspectiveTransform(tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y);
 
         const boundsArray = this._boundsArray = new RasterBoundsArray();
         boundsArray.emplaceBack(tl.x, tl.y, 0, 0);
@@ -388,9 +496,100 @@ class ImageSource extends Evented implements Source {
 
         if (this.boundsBuffer) {
             this.boundsBuffer.destroy();
+            if (this.elevatedGlobeVertexBuffer) {
+                this.elevatedGlobeVertexBuffer.destroy();
+            }
+            if (this.elevatedGlobeIndexBuffer) {
+                this.elevatedGlobeIndexBuffer.destroy();
+            }
         }
         this.boundsBuffer = context.createVertexBuffer(boundsArray, boundsAttributes.members);
         this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
+
+        // Creating a mesh for elevated rasters in the globe projection.
+        // We want to follow the curve of the globe, but on the same time we can't use and transform
+        // grid buffers from globeSharedBuffers for several reasons:
+        //   * our mesh in the Mercator projection is non-rectangular (for example, can be rotated),
+        //     and the latitude has non-linear dependency from tile y coordinate, so we can't restore
+        //     lat/lon just by multiplying a grid matrix and a vertex;
+        //   * it has limited precision (neighbour points differ only by 1);
+        //   * we also want to store UV coordinates as attributes.
+        // Grid coordinates go from 0 to EXTENT and contain transformed longitude/latitude,
+        // but the grid itself is linear in tile cooridinates, cause we want to get just the same result as with
+        // draped rasters.
+        // We calculate UV using matrix for perspective projection for all vertices and also correct UV interpolation
+        // inside a triangle in shader.
+
+        const cellCount = GLOBE_VERTEX_GRID_SIZE;
+        const lineSize = cellCount + 1;
+        const linesCount = cellCount + 1;
+        const elevatedGlobeVerticesCount = lineSize * linesCount;
+        const elevatedGlobeVertexArray = new RasterBoundsArray();
+
+        const [minX, minY, dx, dy] = calculateMinAndSizeForPoints(globalTileCoords);
+
+        const transformToImagePoint = (coord: ProjectedPoint) => {
+            return [(coord.x - minX) / dx, (coord.y - minY) / dy];
+        };
+        const [p0, p1, p2, p3] = globalTileCoords.map(transformToImagePoint);
+        const toUV = getTileToTextureTransformMatrix(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+        this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+
+        const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(this.coordinates);
+        const addVertex = (point: LngLat, tilePoint: ProjectedPoint) => {
+            const x = Math.round((point.lng - minLng) / lngDiff * EXTENT);
+            const y = Math.round((point.lat - minLat) / latDiff * EXTENT);
+            const imagePoint = transformToImagePoint(tilePoint);
+            const uv = vec3.transformMat3([], [imagePoint[0], imagePoint[1], 1], toUV);
+            const u = Math.round(uv[0] / uv[2] * EXTENT);
+            const v = Math.round(uv[1] / uv[2] * EXTENT);
+            elevatedGlobeVertexArray.emplaceBack(x, y, u, v);
+        };
+
+        const leftDx = globalTileCoords[3].x - globalTileCoords[0].x;
+        const leftDy = globalTileCoords[3].y - globalTileCoords[0].y;
+        const rightDx = globalTileCoords[2].x - globalTileCoords[1].x;
+        const rightDy = globalTileCoords[2].y - globalTileCoords[1].y;
+
+        for (let i = 0; i < linesCount; i++) {
+            const linesPart = i / cellCount;
+            const startLinePoint = [globalTileCoords[0].x + linesPart * leftDx, globalTileCoords[0].y + linesPart * leftDy];
+            const endLinePoint = [globalTileCoords[1].x + linesPart * rightDx, globalTileCoords[1].y + linesPart * rightDy];
+            const lineDx = endLinePoint[0] - startLinePoint[0];
+            const lineDy = endLinePoint[1] - startLinePoint[1];
+
+            for (let j = 0; j < lineSize; j++) {
+                const linePart = j / cellCount;
+                const point = {x: startLinePoint[0] + lineDx * linePart, y: startLinePoint[1] + lineDy * linePart, z: 0};
+                addVertex(globalTileTr.projection.unproject(point.x, point.y), point);
+            }
+        }
+
+        this.elevatedGlobeVertexBuffer = context.createVertexBuffer(elevatedGlobeVertexArray, boundsAttributes.members);
+
+        const indices = new TriangleIndexArray();
+        const trianglesCount = cellCount * cellCount * 2;
+        for (let i = 0; i < cellCount; i++) {
+            for (let j = 0; j < cellCount; j++) {
+                // Making indexes the way that after transforming to the Globe projection triangles
+                // on our side will be rotated clockwise.
+                // lon
+                //  ^
+                //  | 2  3
+                //  | 0  1
+                //  +------> lat
+                const i0 = i * lineSize + j;
+                const i1 = i0 + 1;
+                const i2 = i0 + lineSize;
+                const i3 = i2 + 1;
+                indices.emplaceBack(i0, i2, i1);
+                indices.emplaceBack(i1, i2, i3);
+            }
+        }
+        this.elevatedGlobeIndexBuffer = context.createIndexBuffer(indices);
+
+        this.elevatedGlobeSegments = SegmentVector.simpleSegment(0, 0, elevatedGlobeVerticesCount, trianglesCount);
+        this.elevatedGlobeGridMatrix = new Float32Array([0, lngDiff / EXTENT, 0, latDiff / EXTENT, 0, 0, minLat, minLng, 0]);
     }
 
     // $FlowFixMe[method-unbinding]
@@ -470,9 +669,14 @@ export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>): C
     const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
     const tilesAtZoom = Math.pow(2, zoom);
 
+    let x = Math.floor((minX + maxX) / 2 * tilesAtZoom);
+    if (x > 1) {
+        x -= 1;
+    }
+
     return new CanonicalTileID(
             zoom,
-            Math.floor((minX + maxX) / 2 * tilesAtZoom),
+            x,
             Math.floor((minY + maxY) / 2 * tilesAtZoom));
 }
 

@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.001
+    }
+  },
+  "zoom": 1,
+  "center": [-180, 0],
+  "projection": {
+    "name": "globe"
+  },
+  "fog": {
+    "star-intensity": 0
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [-200, 20],
+        [-160, 20],
+        [-160, -20],
+        [-200, -20]
+      ],
+      "url": "local://image/0.png"
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-opacity": 1.0,
+        "raster-elevation": 1000000.0
+      }
+    }
+  ]
+}
