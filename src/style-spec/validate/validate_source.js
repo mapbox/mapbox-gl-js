@@ -26,20 +26,26 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     }
 
     const type = unbundle(value.type);
-    let errors;
+    let errors = [];
+
+    if (['vector', 'raster', 'raster-dem'].includes(type)) {
+        if (!value.url && !value.tiles) {
+            errors.push(new ValidationError(key, value, 'Either "url" or "tiles" is required.'));
+        }
+    }
 
     switch (type) {
     case 'vector':
     case 'raster':
     case 'raster-dem':
-        errors = validateObject({
+        errors = errors.concat(validateObject({
             key,
             value,
             valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
             styleSpec,
             objectElementValidators
-        });
+        }));
         return errors;
 
     case 'geojson':

@@ -38,5 +38,9 @@
   {
     "message": "sources.cluster-properties.state.map: \"zoom\" and \"feature-state\" expressions are not supported with cluster properties.",
     "line": 50
+  },
+  {
+    "message": "sources.missing-url: Either \"url\" or \"tiles\" is required.",
+    "line": 53
   }
 ]

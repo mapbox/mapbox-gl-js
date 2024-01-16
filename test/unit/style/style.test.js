@@ -316,7 +316,8 @@ test('Style#loadJSON', (t) => {
             "version": 8,
             "sources": {
                 "foo": {
-                    "type": "vector"
+                    "type": "vector",
+                    "tiles": []
                 }
             },
             "layers": [{
@@ -446,7 +447,8 @@ test('Style#update', (t) => {
         'version': 8,
         'sources': {
             'source': {
-                'type': 'vector'
+                'type': 'vector',
+                'tiles': []
             }
         },
         'layers': [{

@@ -40,6 +40,10 @@
     "line": 50
   },
   {
+    "message": "sources.missing-url: Either \"url\" or \"tiles\" is required.",
+    "line": 53
+  },
+  {
     "message": "sources[0].type: Expected one of [vector, raster, raster-dem, model, batched-model]"
   },
   {
