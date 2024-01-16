@@ -1,9 +1,7 @@
-
 import fs from 'fs';
-import path from 'path';
-import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties.js';
-import spec from '../src/style-spec/reference/v8.json';
 import assert from 'assert';
+import spec from '../src/style-spec/reference/v8.json';
+import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties.js';
 
 function flowEnum(values) {
     if (Array.isArray(values)) {
@@ -61,7 +59,7 @@ function flowProperty(key, property) {
     if (key === '*') {
         return `[_: string]: ${flowType(property)}`;
     } else {
-        return `"${key}"${property.required ? '' : '?'}: ${flowType(property)}`;
+        return `"${key}"${property.required ? '' : '?'}: ${property['optional'] ? '?' : ''}${flowType(property)}`;
     }
 }
 
@@ -75,7 +73,7 @@ function flowObject(properties, indent, sealing = '') {
 ${Object.keys(properties)
         .map(k => `    ${indent}${flowProperty(k, properties[k])}`)
         .join(',\n')}
-${indent}${sealing}}`
+${indent}${sealing}}`;
 }
 
 function flowSourceTypeName(key) {
@@ -143,7 +141,7 @@ function flowLight(key) {
         type: 'enum',
         values: [key],
         required: true
-    }
+    };
 
     light.properties.type = () => {
         return flowObject(spec[`properties_light_${key}`], '    ', '|');

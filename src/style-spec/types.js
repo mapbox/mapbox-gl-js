@@ -68,7 +68,7 @@ export type StyleSpecification = {|
     "pitch"?: number,
     "light"?: LightSpecification,
     "lights"?: Array<LightsSpecification>,
-    "terrain"?: TerrainSpecification,
+    "terrain"?: ?TerrainSpecification,
     "fog"?: FogSpecification,
     "camera"?: CameraSpecification,
     "imports"?: Array<ImportSpecification>,

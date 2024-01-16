@@ -626,6 +626,46 @@ test('Map', (t) => {
             });
         });
 
+        t.test('Setting terrain to null disables the terrain but does not affect draping', (t) => {
+            const style = extend(createStyle(), {
+                terrain: null,
+                imports: [{
+                    id: 'basemap',
+                    url: '',
+                    data: extend(createStyle(), {
+                        projection: {name: 'globe'},
+                        terrain: {source: 'dem', exaggeration: 1},
+                        sources: {dem: {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}}
+                    })
+                },
+                {
+                    id: 'navigation',
+                    url: '',
+                    data: extend(createStyle(), {
+                        terrain: {source: 'dem', exaggeration: 2},
+                        sources: {dem: {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}}
+                    })
+                }]
+            });
+
+            const map = createMap(t, {style});
+
+            map.on('style.load', () => {
+                map.setZoom(3);
+                t.ok(map.style.terrain);
+                t.equal(map.getTerrain(), null);
+                t.equal(map.getStyle().terrain, null);
+
+                map.setZoom(12);
+                map.once('render', () => {
+                    t.notOk(map.style.terrain);
+                    t.equal(map.getTerrain(), null);
+                    t.equal(map.getStyle().terrain, null);
+                    t.end();
+                });
+            });
+        });
+
         t.test('https://github.com/mapbox/mapbox-gl-js/issues/11352', (t) => {
             const styleSheet = new window.CSSStyleSheet();
             styleSheet.insertRule('.mapboxgl-canary { background-color: rgb(250, 128, 114); }', 0);

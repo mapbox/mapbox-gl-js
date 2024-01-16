@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.001
+    }
+  },
+  "center": [72.42, 37.062],
+  "zoom": 5.1,
+  "pitch": 70,
+  "sources": {},
+  "layers": [],
+  "terrain": null,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "projection": {
+          "name": "globe"
+        },
+        "terrain": {
+          "source": "rgbterrain",
+          "exaggeration": 10.0
+        },
+        "sources": {
+          "rgbterrain": {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.terrain.png"
+            ],
+            "maxzoom": 12,
+            "tileSize": 256
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "white"
+            }
+          },
+          {
+            "id": "hillshade",
+            "type": "hillshade",
+            "source": "rgbterrain"
+          }
+        ]
+      }
+    }
+  ]
+}

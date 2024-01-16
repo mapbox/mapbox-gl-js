@@ -18,6 +18,8 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
     const rootType = getType(terrain);
     if (terrain === undefined) {
         return errors;
+    } else if (rootType === 'null') {
+        return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('terrain', terrain, `object expected, ${rootType} found`)]);
         return errors;

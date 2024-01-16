@@ -625,6 +625,11 @@ class Style extends Evented {
         let transition;
         let camera;
 
+        // Reset terrain that might have been set by a previous merge
+        if (this.terrain && this.terrain.scope !== this.scope) {
+            delete this.terrain;
+        }
+
         this.forEachFragmentStyle((style: Style) => {
             if (!style.stylesheet) return;
 
@@ -641,14 +646,11 @@ class Style extends Evented {
                 }
             }
 
-            const isGlobe = style.stylesheet.projection && style.stylesheet.projection.name === 'globe';
-            if ((style.stylesheet.terrain || isGlobe) && style.terrain != null) {
-                const nextIsElevated = style.terrain.drapeRenderMode === DrapeRenderMode.elevated;
-                const prevIsDeffered = terrain && terrain.drapeRenderMode === DrapeRenderMode.deferred;
-                if (!terrain || prevIsDeffered || nextIsElevated) {
-                    terrain = style.terrain;
-                }
-            }
+            terrain = this._prioritizeTerrain(
+                terrain,
+                style.terrain,
+                style.stylesheet.terrain,
+            );
 
             if (style.stylesheet.fog && style.fog != null)
                 fog = style.fog;
@@ -667,8 +669,13 @@ class Style extends Evented {
         this.light = light;
         this.ambientLight = ambientLight;
         this.directionalLight = directionalLight;
-        this.terrain = terrain;
         this.fog = fog;
+
+        if (terrain === null) {
+            delete this.terrain;
+        } else {
+            this.terrain = terrain;
+        }
 
         // Use perspective camera as a fallback if no camera is specified
         this.camera = camera || {'camera-projection': 'perspective'};
@@ -691,20 +698,55 @@ class Style extends Evented {
         traverse(this);
     }
 
+    _prioritizeTerrain(prevTerrain: ?Terrain, nextTerrain: ?Terrain, nextTerrainSpec: ?TerrainSpecification): ?Terrain {
+        // Given the previous and next terrain during imports merging, in order of priority, we select:
+        // 1. null, if the next terrain is explicitly disabled and we are not using the globe
+        // 2. next terrain if it is not null
+        // 3. previous terrain
+
+        const prevIsDeffered = prevTerrain && prevTerrain.drapeRenderMode === DrapeRenderMode.deferred;
+        const nextIsDeffered = nextTerrain && nextTerrain.drapeRenderMode === DrapeRenderMode.deferred;
+
+        // Disable terrain if it was explicitly set to null and we are not using globe
+        if (nextTerrainSpec === null) {
+            // First, check if the terrain is deferred
+            // If so, we are using the globe and should keep the terrain
+            if (nextIsDeffered) return nextTerrain;
+            if (prevIsDeffered) return prevTerrain;
+
+            return null;
+        }
+
+        // Use next terrain if there is no previous terrain or if it is deferred
+        if (nextTerrain != null) {
+            const nextIsElevated = nextTerrain && nextTerrain.drapeRenderMode === DrapeRenderMode.elevated;
+            if (!prevTerrain || prevIsDeffered || nextIsElevated) return nextTerrain;
+        }
+
+        return prevTerrain;
+    }
+
     mergeTerrain() {
         let terrain;
 
+        // Reset terrain that might have been set by a previous merge
+        if (this.terrain && this.terrain.scope !== this.scope) {
+            delete this.terrain;
+        }
+
         this.forEachFragmentStyle((style: Style) => {
-            if (style.terrain != null) {
-                const nextIsElevated = style.terrain.drapeRenderMode === DrapeRenderMode.elevated;
-                const prevIsDeffered = terrain && terrain.drapeRenderMode === DrapeRenderMode.deferred;
-                if (!terrain || prevIsDeffered || nextIsElevated) {
-                    terrain = style.terrain;
-                }
-            }
+            terrain = this._prioritizeTerrain(
+                terrain,
+                style.terrain,
+                style.stylesheet.terrain,
+            );
         });
 
-        this.terrain = terrain;
+        if (terrain === null) {
+            delete this.terrain;
+        } else {
+            this.terrain = terrain;
+        }
     }
 
     mergeProjection() {
@@ -2062,7 +2104,9 @@ class Style extends Evented {
         this._checkLoaded();
 
         const terrain = this.getTerrain();
-        const scopedTerrain = terrain && this.terrain && this.terrain.scope === this.scope ? terrain : undefined;
+        const scopedTerrain = terrain && this.terrain && this.terrain.scope === this.scope ?
+            terrain :
+            this.stylesheet.terrain;
 
         return filterObject({
             version: this.stylesheet.version,
@@ -2320,7 +2364,13 @@ class Style extends Evented {
         // Disabling
         if (!terrainOptions) {
             delete this.terrain;
-            delete this.stylesheet.terrain;
+
+            if (terrainOptions === null) {
+                this.stylesheet.terrain = null;
+            } else {
+                delete this.stylesheet.terrain;
+            }
+
             this._force3DLayerUpdate();
             this._markersNeedUpdate = true;
             return;
@@ -2468,7 +2518,12 @@ class Style extends Evented {
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
         const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode, this.scope, this.options);
 
-        this.stylesheet.terrain = terrainOptions;
+        // We need to update the stylesheet only for the elevated mode,
+        // i.e., mock terrain shouldn't be propagated to the stylesheet
+        if (drapeRenderMode === DrapeRenderMode.elevated) {
+            this.stylesheet.terrain = terrainOptions;
+        }
+
         this.mergeTerrain();
         this.updateDrapeFirstLayers();
         this._force3DLayerUpdate();

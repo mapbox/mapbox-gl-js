@@ -82,6 +82,7 @@ function validSchema(k, t, obj, ref, version, kind) {
         'length',
         'min-length',
         'required',
+        'optional',
         'transition',
         'type',
         'value',
@@ -181,6 +182,10 @@ function validSchema(k, t, obj, ref, version, kind) {
         // schema key required checks
         if (obj.required !== undefined) {
             t.equal('boolean', typeof obj.required, `${k}.required (boolean)`);
+        }
+
+        if (obj.required && obj.optional) {
+            t.fail(`${k} is marked as "required" and "optional" at the same time`);
         }
 
         // schema key transition checks

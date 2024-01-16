@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.002
+    }
+  },
+  "center": [0, 50],
+  "zoom": 1.5,
+  "sources": {},
+  "layers": [],
+  "terrain": null,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "projection": {
+          "name": "globe"
+        },
+        "fog": {},
+        "sources": {
+          "satellite": {
+            "type": "raster",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.satellite.png"
+            ],
+            "tileSize": 256
+          }
+        },
+        "layers": [
+          {
+            "id": "satellite",
+            "type": "raster",
+            "source": "satellite",
+            "paint": {
+              "raster-fade-duration": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

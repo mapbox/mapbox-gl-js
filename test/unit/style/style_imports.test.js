@@ -1399,6 +1399,28 @@ test('Terrain', (t) => {
         });
     });
 
+    t.test('root style disables terrain in imports', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            terrain: null,
+            imports: [{
+                id: 'basemap',
+                url: '',
+                data: createStyleJSON({
+                    projection: {name: 'globe'},
+                    terrain: {source: 'dem', exaggeration: 1},
+                    sources: {dem: {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}}
+                })
+            }]
+        }));
+
+        style.on('style.load', () => {
+            t.equal(style.getTerrain(), null);
+            t.end();
+        });
+    });
+
     t.test('empty root style terrain overrides terrain in imports', (t) => {
         const style = new Style(new StubMap());
 

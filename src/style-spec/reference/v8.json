@@ -98,6 +98,7 @@
     },
     "terrain": {
       "type": "terrain",
+      "optional": true,
       "doc": "A global modifier that elevates layers and markers based on a DEM data source."
     },
     "fog": {
