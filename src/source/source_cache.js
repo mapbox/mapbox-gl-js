@@ -259,8 +259,19 @@ class SourceCache extends Evented {
         if (err) {
             tile.state = 'errored';
             if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
+            // If the requested tile is missing, try to load the parent tile
+            // to use it as an overscaled tile instead of the missing one.
             else {
-                // continue to try loading parent/children tiles if a tile doesn't exist (404)
+                const hasParent = tile.tileID.key in this._loadedParentTiles;
+                // If there are no parent tiles to load, fire a `data` event to trigger map render
+                if (!hasParent) {
+                    // We are firing an `error` source type event instead of `content` here because
+                    // the `content` event will reload all tiles and trigger redundant source cache updates
+                    this._source.fire(new Event('data', {dataType: 'source', sourceDataType: 'error', sourceId: this._source.id}));
+                    return;
+                }
+
+                // Otherwise, continue trying to load the parent tile until we find one that loads successfully
                 const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
                 if (updateForTerrain && this.map.painter.terrain) {
                     const terrain = this.map.painter.terrain;

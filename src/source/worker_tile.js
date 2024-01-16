@@ -199,6 +199,7 @@ class WorkerTile {
 
         const maybePrepare = () => {
             if (error) {
+                this.status = 'done';
                 return callback(error);
             } else if (this.extraShadowCaster) {
                 const m = PerformanceUtils.beginMeasure('parseTile2');

@@ -409,7 +409,7 @@ export type MapBoxZoomEvent = {
  * @property {Object} [source] The [style spec representation of the source](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) if the event has a `dataType` of `source`.
  * @property {string} [sourceId] The `id` of the [`source`](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/) that triggered the event, if the event has a `dataType` of `source`. Same as the `id` of the object in the `source` property.
  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
- *     that internal data has been received or changed. Possible values are `metadata`, `content` and `visibility`.
+ *     that internal data has been received or changed. Possible values are `metadata`, `content`, `visibility`, and `error`.
  * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
  *     the event is related to loading of a tile.
  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and

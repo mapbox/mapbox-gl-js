@@ -1841,6 +1841,37 @@ test('SourceCache loads tiles recursively', (t) => {
         sourceCache.getSource().onAdd();
     });
 
+    t.test('fires `data` event with `error` sourceDataType if all tiles are 404', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        const {sourceCache, eventedParent} = createSourceCache({
+            loadTile (tile, callback) {
+                setTimeout(() => callback({status: 404}), 0);
+            }
+        });
+
+        eventedParent.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                return;
+            }
+
+            if (e.dataType === 'source' && e.sourceDataType === 'error') {
+                t.equal(sourceCache.loaded(), true, 'source is loaded');
+                t.deepEqual(sourceCache.getRenderableIds(), [], 'all tiles are empty');
+
+                const tileStates = Object.values(sourceCache._tiles).map(t => t.state);
+                t.deepEqual(tileStates, Array(5).fill('errored'), 'all tiles are errored');
+
+                t.end();
+            }
+        });
+
+        sourceCache.getSource().onAdd();
+    });
+
     t.end();
 });
 

@@ -3599,7 +3599,7 @@ class Map extends Camera {
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.painter._updateFog(this.style);
-            this._updateTerrain(); // Terrain DEM source updates here and skips update in style._updateSources.
+            this._updateTerrain(); // Terrain DEM source updates here and skips update in Style#updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style.updateSources(this.transform);
             // Update positions of markers and popups on enabling/disabling terrain
@@ -3701,7 +3701,7 @@ class Map extends Camera {
         //
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
-        // Style#_updateSources could have caused them to be set again.
+        // Style#updateSources could have caused them to be set again.
         const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
