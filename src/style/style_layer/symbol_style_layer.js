@@ -6,9 +6,11 @@ import assert from 'assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket.js';
 import resolveTokens from '../../util/resolve_tokens.js';
 import properties from './symbol_style_layer_properties.js';
+
 import type {FormattedSection} from '../../style-spec/expression/types/formatted.js';
 import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format.js';
 import type {CreateProgramParams} from "../../render/painter.js";
+import type {ConfigOptions} from '../properties.js';
 
 import {
     Transitionable,
@@ -49,7 +51,7 @@ class SymbolStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
     }
 

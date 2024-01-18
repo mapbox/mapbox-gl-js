@@ -16,11 +16,10 @@ import featureFilter from '../style-spec/feature_filter/index.js';
 import {makeFQID} from '../util/fqid.js';
 
 import type {FeatureState} from '../style-spec/expression/index.js';
-import type {Expression} from '../style-spec/expression/expression.js';
 import type {Bucket} from '../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index.js';
-import type {TransitionParameters, PropertyValue} from './properties.js';
+import type {TransitionParameters, PropertyValue, ConfigOptions} from './properties.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type Transform from '../geo/transform.js';
 import type {
@@ -70,8 +69,9 @@ class StyleLayer extends Evented {
     _featureFilter: FeatureFilter;
     _filterCompiled: boolean;
 
-    options: ?Map<string, Expression>;
+    options: ?ConfigOptions;
     _stats: ?LayerRenderingStats;
+
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
                               feature: IVectorTileFeature,
@@ -87,7 +87,7 @@ class StyleLayer extends Evented {
     +onRemove: ?(map: MapboxMap) => void;
     +isLayerDraped: ?(sourceCache: ?SourceCache) => boolean;
 
-    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, options?: ?ConfigOptions) {
         super();
 
         this.id = layer.id;

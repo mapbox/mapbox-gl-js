@@ -13,9 +13,8 @@ import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProp
 import ProgramConfiguration from '../../data/program_configuration.js';
 
 import Step from '../../style-spec/expression/definitions/step.js';
-import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue} from '../properties.js';
+import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions} from '../properties.js';
 import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
@@ -58,7 +57,7 @@ class LineStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
         this.gradientVersion = 0;
     }

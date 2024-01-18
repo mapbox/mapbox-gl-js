@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "imports": [{
+    "id": "basemap",
+    "url": "",
+    "config": {
+      "width": 10
+    },
+    "data": {
+      "version": 8,
+      "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+      "schema": {
+        "width": {
+          "default": 1,
+          "maxValue": 5
+        }
+      },
+      "sources": {
+        "geojson": {
+          "type": "geojson",
+          "data": {
+            "type": "LineString",
+            "coordinates": [[-15, 0], [15, 0]]
+          }
+        }
+      },
+      "layers": [{
+        "id": "line",
+        "type": "line",
+        "source": "geojson",
+        "paint": {
+          "line-width": ["config", "width"]
+        }
+      }]
+    }
+  }]
+}

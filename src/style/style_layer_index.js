@@ -7,7 +7,7 @@ import groupByLayout from '../style-spec/group_by_layout.js';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer.js';
 import type {LayerSpecification} from '../style-spec/types.js';
-import type {Expression} from '../style-spec/expression/expression.js';
+import type {ConfigOptions} from './properties.js';
 
 export type LayerConfigs = {[_: string]: LayerSpecification };
 export type Family<Layer: TypedStyleLayer> = Array<Layer>;
@@ -19,7 +19,7 @@ class StyleLayerIndex {
 
     _layerConfigs: LayerConfigs;
     _layers: {[_: string]: TypedStyleLayer };
-    _options: ?Map<string, Expression>;
+    _options: ?ConfigOptions;
 
     constructor(layerConfigs: ?Array<LayerSpecification>) {
         this.keyCache = {};
@@ -30,13 +30,13 @@ class StyleLayerIndex {
         }
     }
 
-    replace(layerConfigs: Array<LayerSpecification>, options?: ?Map<string, Expression>) {
+    replace(layerConfigs: Array<LayerSpecification>, options?: ?ConfigOptions) {
         this._layerConfigs = {};
         this._layers = {};
         this.update(layerConfigs, [], options);
     }
 
-    update(layerConfigs: Array<LayerSpecification>, removedIds: Array<string>, options: ?Map<string, Expression>) {
+    update(layerConfigs: Array<LayerSpecification>, removedIds: Array<string>, options: ?ConfigOptions) {
         this._options = options;
 
         for (const layerConfig of layerConfigs) {

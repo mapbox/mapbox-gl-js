@@ -103,9 +103,8 @@ import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {Source, SourceClass} from '../source/source.js';
-import type {TransitionParameters} from './properties.js';
+import type {TransitionParameters, ConfigOptions} from './properties.js';
 import ModelManager from '../../3d-style/render/model_manager.js';
-import type {Expression} from '../style-spec/expression/expression.js';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
 import type {QueryRenderedFeaturesParams} from '../source/query_features.js';
 
@@ -160,6 +159,7 @@ export type StyleOptions = {
     importDepth?: number,
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
+    config?: ?ConfigSpecification
 };
 
 export type StyleSetterOptions = {
@@ -207,7 +207,7 @@ class Style extends Evented {
     // Keeps track of ancestors' Style URLs.
     resolvedImports: Set<string>;
 
-    options: Map<string, Expression>;
+    options: ConfigOptions;
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
@@ -236,6 +236,7 @@ class Style extends Evented {
     _markersNeedUpdate: boolean;
     _brightness: ?number;
     _configDependentLayers: Set<string>;
+    _config: ?ConfigSpecification;
     _buildingIndex: BuildingIndex;
     _transition: TransitionSpecification;
 
@@ -329,6 +330,7 @@ class Style extends Evented {
 
         this.options = new Map();
         this._configDependentLayers = new Set();
+        this._config = options.config;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
@@ -478,12 +480,11 @@ class Style extends Evented {
             imageManager: this.imageManager,
             glyphManager: this.glyphManager,
             modelManager: this.modelManager,
+            config: importSpec.config
         });
 
         // Bubble all events fired by the style to the map.
         style.setEventedParent(this.map, {style});
-
-        style.setConfig(importSpec.config);
 
         return style;
     }
@@ -516,7 +517,7 @@ class Style extends Evented {
             return;
         }
 
-        this.updateSchema(schema);
+        this.setConfig(this._config, schema);
 
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -1602,7 +1603,8 @@ class Style extends Evented {
     getConfigProperty(fragmentId: string, key: string): ?any {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
-        const expression = fragmentStyle.options.get(key);
+        const expressions = fragmentStyle.options.get(key);
+        const expression = expressions ? expressions.value || expressions.default : null;
         return expression ? expression.serialize() : null;
     }
 
@@ -1617,35 +1619,53 @@ class Style extends Evented {
 
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return;
-        fragmentStyle.options.set(key, expression);
+
+        const expressions = fragmentStyle.options.get(key);
+        if (!expressions) return;
+
+        fragmentStyle.options.set(key, {...expressions, value: expression});
         fragmentStyle.updateConfigDependencies();
     }
 
     setConfig(config: ?ConfigSpecification, schema: ?SchemaSpecification) {
-        this.options.clear();
-        if (!config) return;
+        this._config = config;
 
-        for (const key in config) {
-            const expressionParsed = createExpression(config[key]);
-            if (expressionParsed.result === 'success') {
-                this.options.set(key, expressionParsed.value.expression);
-            }
+        if (!config && !schema) return;
+
+        if (!schema) {
+            this.fire(new ErrorEvent(new Error(`Attempting to set config for a style without schema.`)));
+            return;
         }
 
-        this.updateSchema(schema);
-    }
-
-    updateSchema(schema: ?SchemaSpecification) {
-        if (!schema) return;
+        this.options.clear();
 
         for (const id in schema) {
-            // already set by config
-            if (this.options.has(id)) continue;
+            let defaultExpression;
+            let configExpression;
 
             const expression = schema[id].default;
             const expressionParsed = createExpression(expression);
             if (expressionParsed.result === 'success') {
-                this.options.set(id, expressionParsed.value.expression);
+                defaultExpression = expressionParsed.value.expression;
+            }
+
+            if (config && config[id] !== undefined) {
+                const expressionParsed = createExpression(config[id]);
+                if (expressionParsed.result === 'success') {
+                    configExpression = expressionParsed.value.expression;
+                }
+            }
+
+            const {minValue, maxValue, stepValue, type, values} = schema[id];
+
+            if (defaultExpression) {
+                this.options.set(id, {
+                    default: defaultExpression,
+                    value: configExpression,
+                    minValue, maxValue, stepValue, type, values
+                });
+            } else {
+                this.fire(new ErrorEvent(new Error(`No schema defined for config option "${id}".`)));
             }
         }
     }

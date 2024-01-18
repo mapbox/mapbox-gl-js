@@ -16,7 +16,6 @@ import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordi
 import EXTENT from '../../style-spec/data/extent.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
 import type Transform from '../../geo/transform.js';
 import type {Bucket, BucketParameters} from '../../data/bucket.js';
 import type {LayoutProps, PaintProps} from './circle_style_layer_properties.js';
@@ -27,6 +26,7 @@ import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import {circleDefinesValues} from '../../render/program/circle_program.js';
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
+import type {ConfigOptions} from '../properties.js';
 
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -36,7 +36,7 @@ class CircleStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
     }
 

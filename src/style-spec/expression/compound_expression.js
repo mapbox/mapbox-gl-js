@@ -21,17 +21,23 @@ class CompoundExpression implements Expression {
     type: Type;
     _evaluate: Evaluate;
     args: Array<Expression>;
+    _overloadIndex: number;
 
     static definitions: {[_: string]: Definition };
 
-    constructor(name: string, type: Type, evaluate: Evaluate, args: Array<Expression>) {
+    constructor(name: string, type: Type, evaluate: Evaluate, args: Array<Expression>, overloadIndex: number) {
         this.name = name;
         this.type = type;
         this._evaluate = evaluate;
         this.args = args;
+        this._overloadIndex = overloadIndex;
     }
 
     evaluate(ctx: EvaluationContext): Value {
+        if (!this._evaluate) { // restore evaluate function after transfer between threads
+            const definition = CompoundExpression.definitions[this.name];
+            this._evaluate = Array.isArray(definition) ? definition[2] : definition.overloads[this._overloadIndex][1];
+        }
         return this._evaluate(ctx, this.args);
     }
 
@@ -62,14 +68,18 @@ class CompoundExpression implements Expression {
             [[definition[1], definition[2]]] :
             definition.overloads;
 
-        const overloads = availableOverloads.filter(([signature]) => (
-            !Array.isArray(signature) || // varags
-            signature.length === args.length - 1 // correct param count
-        ));
+        const overloadParams = [];
 
         let signatureContext: ParsingContext = (null: any);
 
-        for (const [params, evaluate] of overloads) {
+        let overloadIndex = -1;
+
+        for (const [params, evaluate] of availableOverloads) {
+            if (Array.isArray(params) && params.length !== args.length - 1) continue; // param count doesn't match
+
+            overloadParams.push(params);
+            overloadIndex++;
+
             // Use a fresh context for each attempted signature so that, if
             // we eventually succeed, we haven't polluted `context.errors`.
             signatureContext = new ParsingContext(context.registry, context.path, null, context.scope, undefined, context.options);
@@ -111,19 +121,17 @@ class CompoundExpression implements Expression {
             }
 
             if (signatureContext.errors.length === 0) {
-                return new CompoundExpression(op, type, evaluate, parsedArgs);
+                return new CompoundExpression(op, type, evaluate, parsedArgs, overloadIndex);
             }
         }
 
         assert(!signatureContext || signatureContext.errors.length > 0);
 
-        if (overloads.length === 1) {
+        if (overloadParams.length === 1) {
             context.errors.push(...signatureContext.errors);
         } else {
-            const expected = overloads.length ? overloads : availableOverloads;
-            const signatures = expected
-                .map(([params]) => stringifySignature(params))
-                .join(' | ');
+            const expected = overloadParams.length ? overloadParams : availableOverloads.map(([params]) => params);
+            const signatures = expected.map(stringifySignature).join(' | ');
 
             const actualTypes = [];
             // For error message, re-parse arguments without trying to

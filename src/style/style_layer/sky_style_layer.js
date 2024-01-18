@@ -4,6 +4,10 @@ import StyleLayer from '../style_layer.js';
 import properties from './sky_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import {renderColorRamp} from '../../util/color_ramp.js';
+import {warnOnce, degToRad} from '../../util/util.js';
+import {vec3, quat} from 'gl-matrix';
+import assert from 'assert';
+
 import type {PaintProps} from './sky_style_layer_properties.js';
 import type Texture from '../../render/texture.js';
 import type Painter from '../../render/painter.js';
@@ -12,11 +16,7 @@ import type Framebuffer from '../../gl/framebuffer.js';
 import type {RGBAImage} from '../../util/image.js';
 import type SkyboxGeometry from '../../render/skybox_geometry.js';
 import type {Position} from '../../util/util.js';
-import {warnOnce, degToRad} from '../../util/util.js';
-import {vec3, quat} from 'gl-matrix';
-import assert from 'assert';
-
-import type {Expression} from '../../style-spec/expression/expression.js';
+import type {ConfigOptions} from '../properties.js';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
     const up = [0, 0, 1];
@@ -44,7 +44,7 @@ class SkyLayer extends StyleLayer {
 
     skyboxGeometry: SkyboxGeometry;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
         this._updateColorRamp();
     }

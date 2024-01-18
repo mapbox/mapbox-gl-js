@@ -2261,7 +2261,13 @@ test('Style#setConfigProperty', (t) => {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}}]
+                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}
+                    }],
+                    schema: {
+                        showBackground: {
+                            default: false
+                        }
+                    }
                 })
             }]
         });
@@ -2273,7 +2279,7 @@ test('Style#setConfigProperty', (t) => {
                 t.equal(key, 'updateLayers');
                 t.equal(value.scope, 'standard');
                 t.deepEqual(value.removedIds, []);
-                t.deepEqual(value.options.get('showBackground').value, true);
+                t.deepEqual(value.options.get('showBackground').value.value, true);
                 t.deepEqual(value.layers.map(layer => layer.id), ['background']);
                 t.end();
             };
@@ -2298,7 +2304,9 @@ test('Style#setConfigProperty', (t) => {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}}]
+                        layout: {visibility: ['case', ['config', 'showBackground'], 'visible', 'none']}
+                    }],
+                    schema: {showBackground: {default: false}}
                 })
             }]
         });
@@ -2517,8 +2525,13 @@ test('Style#setState', (t) => {
         const style = new Style(map);
         style.setEventedParent(map, {style});
 
-        const data = createStyleJSON({layers: [{id: 'a', type: 'background'}]});
-        window.server.respondWith('/style1.json', JSON.stringify(createStyleJSON()));
+        const data = createStyleJSON({
+            layers: [{id: 'a', type: 'background'}],
+            schema: {lightPreset: {default: 'day'}}
+        });
+        window.server.respondWith('/style1.json', JSON.stringify(createStyleJSON({
+            schema: {lightPreset: {default: 'day'}}
+        })));
         window.server.respondWith('/style2.json', JSON.stringify(data));
 
         const initialStyle = createStyleJSON({

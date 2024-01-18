@@ -10,7 +10,6 @@ import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../prope
 import ProgramConfiguration from '../../data/program_configuration.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
 import type {BucketParameters} from '../../data/bucket.js';
 import type Point from '@mapbox/point-geometry';
 import type {LayoutProps, PaintProps} from './fill_style_layer_properties.js';
@@ -20,6 +19,7 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../../render/painter.js";
+import type {ConfigOptions} from '../properties.js';
 
 class FillStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -29,7 +29,7 @@ class FillStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
     }
 

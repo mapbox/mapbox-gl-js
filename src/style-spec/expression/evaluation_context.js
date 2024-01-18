@@ -1,13 +1,13 @@
 // @flow
 
 import {Color} from './values.js';
-import type {Expression} from './expression.js';
 
 import type Point from '@mapbox/point-geometry';
 import type {FormattedSection} from './types/formatted.js';
 import type {GlobalProperties, Feature, FeatureState} from './index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {FeatureDistanceData} from '../feature_filter/index.js';
+import type {ConfigOptions, ConfigOptionValue} from '../../style/properties.js';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
@@ -20,11 +20,11 @@ class EvaluationContext {
     canonical: null | CanonicalTileID;
     featureTileCoord: ?Point;
     featureDistanceData: ?FeatureDistanceData;
-    options: ?Map<string, Expression>;
+    options: ?ConfigOptions;
 
     _parseColorCache: {[_: string]: ?Color};
 
-    constructor(options?: ?Map<string, Expression>) {
+    constructor(options?: ?ConfigOptions) {
         this.globals = (null: any);
         this.feature = null;
         this.featureState = null;
@@ -92,7 +92,7 @@ class EvaluationContext {
         return cached;
     }
 
-    getConfig(id: string): ?Expression {
+    getConfig(id: string): ?ConfigOptionValue {
         return this.options ? this.options.get(id) : null;
     }
 }

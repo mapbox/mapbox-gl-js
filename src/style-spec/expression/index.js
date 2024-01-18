@@ -33,6 +33,7 @@ import type {FormattedSection} from './types/formatted.js';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type {FeatureDistanceData} from '../feature_filter/index.js';
+import type {ConfigOptions} from '../../style/properties.js';
 
 export interface Feature {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
@@ -64,7 +65,7 @@ export class StyleExpression {
     _warningHistory: {[key: string]: boolean};
     _enumValues: ?{[_: string]: any};
 
-    constructor(expression: Expression, propertySpec: ?StylePropertySpecification, options?: ?Map<string, Expression>) {
+    constructor(expression: Expression, propertySpec: ?StylePropertySpecification, options?: ?ConfigOptions) {
         this.expression = expression;
         this._warningHistory = {};
         this._evaluator = new EvaluationContext(options);
@@ -131,7 +132,7 @@ export function isExpression(expression: mixed): boolean {
  *
  * @private
  */
-export function createExpression(expression: mixed, propertySpec: ?StylePropertySpecification, options?: ?Map<string, Expression>): Result<StyleExpression, Array<ParsingError>> {
+export function createExpression(expression: mixed, propertySpec: ?StylePropertySpecification, options?: ?ConfigOptions): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined, undefined, undefined, options);
 
     // For string-valued properties, coerce to string at the top level rather than asserting.
@@ -248,7 +249,7 @@ export type StylePropertyExpression =
     | CameraExpression
     | CompositeExpression;
 
-export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification, options?: ?Map<string, Expression>): Result<StylePropertyExpression, Array<ParsingError>> {
+export function createPropertyExpression(expression: mixed, propertySpec: StylePropertySpecification, options?: ?ConfigOptions): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, options);
     if (expression.result === 'error') {
         return expression;
@@ -330,7 +331,7 @@ export class StylePropertyFunction<T> {
     }
 }
 
-export function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification, options?: ?Map<string, Expression>): StylePropertyExpression {
+export function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification, options?: ?ConfigOptions): StylePropertyExpression {
     if (isFunction(value)) {
         return (new StylePropertyFunction(value, specification): any);
 

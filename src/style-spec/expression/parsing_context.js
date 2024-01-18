@@ -16,6 +16,7 @@ import Var from './definitions/var.js';
 
 import type {Expression, ExpressionRegistry} from './expression.js';
 import type {Type} from './types.js';
+import type {ConfigOptions} from '../../style/properties.js';
 
 /**
  * State associated parsing at a given point in an expression tree.
@@ -27,7 +28,7 @@ class ParsingContext {
     key: string;
     scope: Scope;
     errors: Array<ParsingError>;
-    options: ?Map<string, Expression>;
+    options: ?ConfigOptions;
 
     // The expected type of this expression. Provided only to allow Expression
     // implementations to infer argument types: Expression#parse() need not
@@ -41,7 +42,7 @@ class ParsingContext {
         expectedType: ?Type,
         scope: Scope = new Scope(),
         errors: Array<ParsingError> = [],
-        options?: ?Map<string, Expression>
+        options?: ?ConfigOptions
     ) {
         this.registry = registry;
         this.path = path;

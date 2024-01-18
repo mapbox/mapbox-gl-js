@@ -12,7 +12,6 @@ import EXTENT from '../../style-spec/data/extent.js';
 import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {FeatureState} from '../../style-spec/expression/index.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
 import type {BucketParameters} from '../../data/bucket.js';
 import type {PaintProps, LayoutProps} from './fill_extrusion_style_layer_properties.js';
 import type Transform from '../../geo/transform.js';
@@ -21,6 +20,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import type {ConfigOptions} from '../properties.js';
 
 class Point3D extends Point {
     z: number;
@@ -37,7 +37,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
     layout: PossiblyEvaluated<LayoutProps>;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
         this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }

@@ -190,6 +190,19 @@ export type RasterDEMSourceSpecification = {
     [_: string]: mixed
 }
 
+export type Raster_arraySourceSpecification = {
+    "type": "raster-array",
+    "url"?: string,
+    "tiles"?: Array<string>,
+    "bounds"?: [number, number, number, number],
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "tileSize"?: number,
+    "attribution"?: string,
+    "rasterLayers"?: mixed,
+    [_: string]: mixed
+}
+
 export type GeoJSONSourceSpecification = {|
     "type": "geojson",
     "data"?: mixed,
@@ -231,6 +244,7 @@ export type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
     | RasterDEMSourceSpecification
+    | Raster_arraySourceSpecification
     | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification

@@ -6,13 +6,13 @@ import properties from './raster_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js';
 import {renderColorRamp} from '../../util/color_ramp.js';
 import {RGBAImage} from '../../util/image.js';
+import ImageSource from '../../source/image_source.js';
+import SourceCache from '../../source/source_cache.js';
 
 import type {PaintProps} from './raster_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
-import ImageSource from '../../source/image_source.js';
-import SourceCache from '../../source/source_cache.js';
+import type {ConfigOptions} from '../properties.js';
 
 const COLOR_RAMP_RES = 256;
 
@@ -24,7 +24,7 @@ class RasterStyleLayer extends StyleLayer {
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
         this._updateColorRamp();
     }

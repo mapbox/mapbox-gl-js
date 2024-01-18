@@ -1,0 +1,59 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "imports": [{
+    "id": "basemap",
+    "url": "",
+    "config": {
+      "width": 5,
+      "width2": 3
+    },
+    "data": {
+      "version": 8,
+      "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+      "schema": {
+        "width": {
+          "default": 10,
+          "values": [1, 2, 3, 4]
+        },
+        "width2": {
+          "default": 10,
+          "values": [1, 2, 3, 4]
+        }
+      },
+      "sources": {
+        "geojson": {
+          "type": "geojson",
+          "data": {
+            "type": "LineString",
+            "coordinates": [[-15, 0], [15, 0]]
+          }
+        }
+      },
+      "layers": [{
+        "id": "line",
+        "type": "line",
+        "source": "geojson",
+        "paint": {
+          "line-width": ["config", "width"],
+          "line-offset": -6
+        }
+      }, {
+        "id": "line2",
+        "type": "line",
+        "source": "geojson",
+        "paint": {
+          "line-width": ["config", "width2"],
+          "line-offset": 6
+        }
+      }]
+    }
+  }]
+}

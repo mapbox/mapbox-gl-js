@@ -20,11 +20,11 @@ import ProgramConfiguration from '../../data/program_configuration.js';
 import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {DEMSampler} from '../../terrain/elevation.js';
 import type {FeatureState} from '../../style-spec/expression/index.js';
-import type {Expression} from '../../style-spec/expression/expression.js';
 import type Transform from '../../geo/transform.js';
 import type CircleBucket from '../../data/bucket/circle_bucket.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../../render/painter.js";
+import type {ConfigOptions} from '../properties.js';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -40,7 +40,7 @@ class HeatmapStyleLayer extends StyleLayer {
         return new HeatmapBucket(parameters);
     }
 
-    constructor(layer: LayerSpecification, options?: ?Map<string, Expression>) {
+    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
         super(layer, properties, options);
 
         // make sure color ramp texture is generated for default heatmap color too

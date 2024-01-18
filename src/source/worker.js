@@ -26,7 +26,7 @@ import type {
 import type {WorkerGlobalScopeInterface} from '../util/web_worker.js';
 import type {Callback} from '../types/callback.js';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types.js';
-import type {Expression} from '../style-spec/expression/expression.js';
+import type {ConfigOptions} from '../style/properties.js';
 import type {PluginState} from './rtl_text_plugin.js';
 import type Projection from '../geo/projection/projection.js';
 
@@ -157,12 +157,12 @@ export default class Worker {
         callback();
     }
 
-    setLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, options: Map<string, Expression>}, callback: WorkerTileCallback) {
+    setLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, options: ConfigOptions}, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
         callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, removedIds: Array<string>, options: Map<string, Expression>}, callback: WorkerTileCallback) {
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, scope: string, removedIds: Array<string>, options: ConfigOptions}, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
         callback();
     }

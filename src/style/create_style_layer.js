@@ -17,7 +17,7 @@ import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import model from '../../3d-style/style/style_layer/model_style_layer.js';
 
 import type {LayerSpecification} from '../style-spec/types.js';
-import type {Expression} from '../style-spec/expression/expression.js';
+import type {ConfigOptions} from './properties.js';
 
 const subclasses = {
     circle,
@@ -34,7 +34,7 @@ const subclasses = {
     model
 };
 
-export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, options?: ?Map<string, Expression>): StyleLayer | CustomStyleLayer {
+export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, options?: ?ConfigOptions): StyleLayer | CustomStyleLayer {
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer);
     } else {
