@@ -1,4 +1,4 @@
-## 3.1.0-beta.1
+## 3.1.0
 
 ### Features and improvements ✨
 
@@ -8,6 +8,9 @@
 - Add `Map` `getConfigProperty` method for getting current style config values.
 - Add `config` support in terrain options.
 - Improve performance for pitched views with many fill extrusions on higher zoom levels.
+- Allow turning off the terrain that is defined in the imports on the root-level Style by setting it to `null`.
+- Allow the partial terrain exaggeration update without specifying the source.
+- Respect style schema restrictions (`minValue`, `maxValue`, `stepValue`, `values`, `type`) when evaluating config options.
 
 ### Bug fixes 🐞
 
@@ -24,6 +27,11 @@
 - Fix an issue with tiles sometimes missing in terrain mode on views from a hill down on a valley.
 - Fix compact attribution style when using global CSS that sets `box-sizing: border-box`. (h/t [@simondriesen](https://github.com/simondriesen)) [#12982](https://github.com/mapbox/mapbox-gl-js/pull/12982)
 - Remove redundant `aria-label` attribute in attribution control that fails accessibility conformance. (h/t [@maggiewachs](https://github.com/maggiewachs)) [#12981](https://github.com/mapbox/mapbox-gl-js/pull/12981)
+- Disable terrain and hillshade when browser fingerprinting protection (e.g. in private browsing mode) prevents it from rendering correctly.
+- Fix layer rendering when import requests are failing.
+- Fix map `load` event not firing for the sources whose tiles are 404s.
+- Require either `url` or `tiles` for tiled sources during validation.
+- Validate for empty layer and source IDs in runtime.
 
 ## 3.0.1
 
