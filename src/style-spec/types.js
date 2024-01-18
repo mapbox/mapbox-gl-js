@@ -424,7 +424,8 @@ export type SymbolLayerSpecification = {|
         "text-halo-width"?: DataDrivenPropertyValueSpecification<number>,
         "text-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
         "text-translate"?: PropertyValueSpecification<[number, number]>,
-        "text-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">
+        "text-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "icon-color-saturation"?: ExpressionSpecification
     |}
 |}
 

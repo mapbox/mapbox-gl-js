@@ -1599,6 +1599,11 @@ test('Terrain', (t) => {
                 url: '/standard.json',
                 config: {showTerrain: true},
                 data: createStyleJSON({
+                    schema: {
+                        showTerrain: {
+                            default: true
+                        }
+                    },
                     terrain: {source: 'mapbox-dem', exaggeration: ['case', ['config', 'showTerrain'], 2, 0]},
                     sources: {
                         'mapbox-dem': {
