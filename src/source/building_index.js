@@ -98,6 +98,7 @@ class BuildingIndex {
 
     _getHeightAtTileOffset(tid: OverscaledTileID, x: number, y: number): number {
         let availableHeight;
+        let maxFillExtrusionHeight;
         // use FE data when landmark height is not available. Instead of asuming order, process
         // fill extrusions before landmarks
         for (let i = 0; i < this.layers.length; ++i) {
@@ -111,11 +112,14 @@ class BuildingIndex {
             const b: FillExtrusionBucket = (bucket: any);
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.height === undefined) continue;
-            if (heightData.hidden) {
+            if (heightData.hidden) { // read height, even if fill extrusion is hidden, until it is used for tiled 3D models.
                 availableHeight = heightData.height;
                 continue;
             }
-            return heightData.height * verticalScale;
+            maxFillExtrusionHeight = Math.max(heightData.height * verticalScale, maxFillExtrusionHeight || 0);
+        }
+        if (maxFillExtrusionHeight !== undefined) {
+            return maxFillExtrusionHeight;
         }
 
         for (let i = 0; i < this.layers.length; ++i) {
