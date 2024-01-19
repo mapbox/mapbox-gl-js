@@ -382,7 +382,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         assert(!isGlobeProjection || bucket.layoutVertexExtBuffer);
 
         let segments = bucket.segments;
-        if (!isGlobeProjection && !isShadowPass) {
+        if (tr.projection.name === 'mercator' && !isShadowPass) {
             segments = bucket.getVisibleSegments(tile.tileID, painter.terrain, painter.transform.getFrustum(0));
             if (!segments.get().length) {
                 continue;

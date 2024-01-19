@@ -715,7 +715,7 @@ class FillExtrusionBucket implements Bucket {
             options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
         this.sortBorders();
-        if (this.projection.name !== "globe") {
+        if (this.projection.name === "mercator") {
             this.splitToSubtiles();
         }
         this.groundEffect.prepareBorderSegments();
@@ -729,7 +729,7 @@ class FillExtrusionBucket implements Bucket {
             this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
         }
         this.sortBorders();
-        if (this.projection.name !== "globe") {
+        if (this.projection.name === "mercator") {
             this.splitToSubtiles();
         }
     }
