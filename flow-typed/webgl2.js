@@ -15,7 +15,16 @@ declare interface WebGLQuery {
     new(): WebGLQuery;
 }
 
-export type WebGL2RenderingContext = WebGLRenderingContext & {
+declare class WebGL2RenderingContext extends WebGLRenderingContext {
+    R8: 0x8229;
+    R32F: 0x822E;
+    RGBA16F: 0x881A;
+    RED: 0x1903;
+    HALF_FLOAT: 0x140B;
+    QUERY_RESULT: 0x8866;
+    MIN: 0x8007;
+    MAX: 0x8008;
+
     createVertexArray: () => WebGLVertexArrayObject | null;
     deleteVertexArray: (vertexArray: WebGLVertexArrayObject | null) => void;
     bindVertexArray: (array: WebGLVertexArrayObject | null) => void;

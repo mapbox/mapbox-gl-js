@@ -15,15 +15,15 @@ export default function(width: number, height: number, attributes: WebGLContextA
 
     // Override WebGL2 methods to bypass asserts in src/render/program.js
 
-    // $FlowFixMe[incompatible-use]
+    // $FlowFixMe[cannot-write]
     context.getShaderParameter = function() { return true; };
 
-    // $FlowFixMe[incompatible-use]
+    // $FlowFixMe[cannot-write]
     context.getProgramParameter = function() { return true; };
 
-    // $FlowFixMe[incompatible-use]
+    // $FlowFixMe[method-unbinding]
     const getExtension = context.getExtension;
-    // $FlowFixMe[incompatible-use]
+    // $FlowFixMe[cannot-write]
     context.getExtension = function(extension) {
         if (extension === 'OES_texture_float_linear') return undefined;
         return getExtension(extension);

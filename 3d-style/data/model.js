@@ -302,7 +302,6 @@ export default class Model {
 }
 
 export function uploadTexture(texture: ModelTexture, context: Context, useSingleChannelTexture: boolean = false) {
-    // $FlowFixMe[prop-missing]
     const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA;
     if (!texture.uploaded) {
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;

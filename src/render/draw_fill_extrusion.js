@@ -149,7 +149,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
                     /* $FlowFixMe[incompatible-call] */
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
-                    /* $FlowFixMe[prop-missing] */
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
                     drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, false);
                 }
@@ -180,7 +179,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
                         /* $FlowFixMe[incompatible-call] */
                         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
-                        /* $FlowFixMe[prop-missing] */
                         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
                         drawGroundEffect(painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
@@ -199,7 +197,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                         // We don't really need to encode the alpha values for AO as the layers have already been multiplied by its intensity. The gl.FUNC_ADD (as blending equation) and gl.ZERO (as dest alpha factor) would ensure this.
                         const dstAlphaFactor = aoPass ? gl.ZERO : gl.ONE;
-                        /* $FlowFixMe[prop-missing] */
                         const blendEquation = aoPass ? gl.FUNC_ADD : gl.MAX;
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, dstAlphaFactor], Color.transparent, [false, false, false, true], blendEquation);
                         drawGroundEffect(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);

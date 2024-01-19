@@ -22,7 +22,9 @@ export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant, BlendFuncCons
 export type BlendEquationType =
     | $PropertyType<WebGL2RenderingContext, 'FUNC_ADD'>
     | $PropertyType<WebGL2RenderingContext, 'FUNC_SUBTRACT'>
-    | $PropertyType<WebGL2RenderingContext, 'FUNC_REVERSE_SUBTRACT'>;
+    | $PropertyType<WebGL2RenderingContext, 'FUNC_REVERSE_SUBTRACT'>
+    | $PropertyType<WebGL2RenderingContext, 'MIN'>
+    | $PropertyType<WebGL2RenderingContext, 'MAX'>;
 
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
