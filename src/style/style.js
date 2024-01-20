@@ -1479,6 +1479,19 @@ class Style extends Evented {
         return sources;
     }
 
+    areTilesLoaded(): boolean {
+        const sources = this._mergedSourceCaches;
+        for (const id in sources) {
+            const source = sources[id];
+            const tiles = source._tiles;
+            for (const t in tiles) {
+                const tile = tiles[t];
+                if (!(tile.state === 'loaded' || tile.state === 'errored')) return false;
+            }
+        }
+        return true;
+    }
+
     setLights(lights: ?Array<LightsSpecification>) {
         this._checkLoaded();
 

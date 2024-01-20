@@ -2137,18 +2137,8 @@ class Map extends Camera {
      * @example
      * const tilesLoaded = map.areTilesLoaded();
      */
-
     areTilesLoaded(): boolean {
-        const sources = this.style && this.style._sourceCaches;
-        for (const id in sources) {
-            const source = sources[id];
-            const tiles = source._tiles;
-            for (const t in tiles) {
-                const tile = tiles[t];
-                if (!(tile.state === 'loaded' || tile.state === 'errored')) return false;
-            }
-        }
-        return true;
+        return this.style.areTilesLoaded();
     }
 
     /**

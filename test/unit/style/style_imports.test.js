@@ -1,3 +1,4 @@
+import Tile from '../../../src/source/tile.js';
 import Style from '../../../src/style/style.js';
 import Transform from '../../../src/geo/transform.js';
 import StyleLayer from '../../../src/style/style_layer.js';
@@ -2684,6 +2685,39 @@ test('Style#serialize', (t) => {
         t.notOk(serialized.projection);
         t.notOk(serialized.transition);
         t.deepEqual(serialized.sources, {});
+
+        t.end();
+    });
+
+    style.loadJSON(initialStyle);
+});
+
+test('Style#areTilesLoaded', (t) => {
+    const style = new Style(new StubMap());
+
+    const source = {type: 'geojson', data: {type: 'FeatureCollection', features: []}};
+    const initialStyle = createStyleJSON({
+        sources: {geojson: source},
+        imports: [{id: 'basemap', url: '', data: createStyleJSON({
+            sources: {geojson: source}
+        })}]
+    });
+
+    t.equal(style.areTilesLoaded(), true, 'returns true if there are no sources');
+
+    style.on('style.load', () => {
+        const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
+        style.getOwnSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+        t.equal(style.areTilesLoaded(), false, 'returns false if tiles are loading');
+
+        style.getOwnSourceCache('geojson')._tiles[fakeTileId.key].state = 'loaded';
+        t.equal(style.areTilesLoaded(), true, 'returns true if tiles are loaded');
+
+        style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles[fakeTileId.key] = new Tile(fakeTileId);
+        t.equal(style.areTilesLoaded(), false, 'returns false if tiles are loading');
+
+        style.getSourceCache(makeFQID('geojson', 'basemap'))._tiles[fakeTileId.key].state = 'loaded';
+        t.equal(style.areTilesLoaded(), true, 'returns true if tiles are loaded');
 
         t.end();
     });
