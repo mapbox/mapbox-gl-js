@@ -422,7 +422,7 @@ class ScrollZoomHandler {
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
-            this._alertContainer.setAttribute("role", "null");
+            this._alertContainer.removeAttribute("role");
         }, 200);
     }
 

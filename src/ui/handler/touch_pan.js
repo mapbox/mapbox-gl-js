@@ -156,7 +156,7 @@ export default class TouchPanHandler {
 
         this._alertTimer = setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-touch-pan-blocker-show');
-            this._alertContainer.setAttribute("role", "null");
+            this._alertContainer.removeAttribute("role");
         }, 500);
     }
 
