@@ -252,30 +252,25 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         if (source instanceof ImageSource) {
             const elevatedGlobeVertexBuffer = source.elevatedGlobeVertexBuffer;
             const elevatedGlobeIndexBuffer = source.elevatedGlobeIndexBuffer;
-            const elevatedGlobeSegments = source.elevatedGlobeSegments;
             if (renderingToTexture || !isGlobeProjection) {
                 if (source.boundsBuffer && source.boundsSegments) program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id, source.boundsBuffer,
                     painter.quadTriangleIndexBuffer, source.boundsSegments);
-            } else if (elevatedGlobeVertexBuffer && elevatedGlobeIndexBuffer && elevatedGlobeSegments) {
-                // During transition from the Globe projection to the Mercator projection some triangles becomes stretched.
-                // Close to the GLOBE_ZOOM_THRESHOLD_MAX these stretched triangles from the other side of the Globe
-                // rise above the Globe surface and we don't want to see them too.
-                // But we probably also don't want to see these stretched triangles over the horizon too, so we disable them
-                // starting from the GLOBE_ZOOM_THRESHOLD_MIN zoom level.
-                // Alternative idea: sort triangles inside index buffer by x coordinate and drop only the problematic ones,
-                // which are crossing the split line, so there will be two draw calls - for triangles before and after the split.
-                if (tr.zoom <= GLOBE_ZOOM_THRESHOLD_MIN) {
+            } else if (elevatedGlobeVertexBuffer && elevatedGlobeIndexBuffer) {
+                const segments = tr.zoom <= GLOBE_ZOOM_THRESHOLD_MIN ?
+                    source.elevatedGlobeSegments :
+                    source.getSegmentsForLongitude(tr.center.lng);
+                if (segments) {
                     program.draw(
                         painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCW,
                         uniformValues, layer.id, elevatedGlobeVertexBuffer,
-                        elevatedGlobeIndexBuffer, elevatedGlobeSegments);
+                        elevatedGlobeIndexBuffer, segments);
+                    program.draw(
+                        painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.frontCW,
+                        uniformValues, layer.id, elevatedGlobeVertexBuffer,
+                        elevatedGlobeIndexBuffer, segments);
                 }
-                program.draw(
-                    painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.frontCW,
-                    uniformValues, layer.id, elevatedGlobeVertexBuffer,
-                    elevatedGlobeIndexBuffer, elevatedGlobeSegments);
             }
         } else {
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);

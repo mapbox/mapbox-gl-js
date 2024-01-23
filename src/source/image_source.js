@@ -133,6 +133,32 @@ function calculateMinAndSizeForPoints(coords: ProjectedPoint[]) {
     return [minX, minY, maxX - minX, maxY - minY];
 }
 
+function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): [number[], TriangleIndexArray] {
+    const triangleCount = centerLatitudes.length;
+    assert(indices.length === triangleCount);
+
+    // Sorting triangles
+    const triangleIndexes = Array.from({length: triangleCount}, (v, i) => i);
+
+    triangleIndexes.sort((idx1: number, idx2: number) => {
+        return centerLatitudes[idx1] - centerLatitudes[idx2];
+    });
+
+    const sortedCenterLatitudes = [];
+    const sortedIndices = new TriangleIndexArray();
+
+    for (let i = 0; i < triangleIndexes.length; i++) {
+        const idx = triangleIndexes[i];
+        sortedCenterLatitudes.push(centerLatitudes[idx]);
+        const i0 = idx * 3;
+        const i1 = i0 + 1;
+        const i2 = i1 + 1;
+        sortedIndices.emplaceBack(indices.uint16[i0], indices.uint16[i1], indices.uint16[i2]);
+    }
+
+    return [sortedCenterLatitudes, sortedIndices];
+}
+
 /**
  * A data source containing an image.
  * See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.
@@ -203,6 +229,8 @@ class ImageSource extends Evented implements Source {
     elevatedGlobeVertexBuffer: ?VertexBuffer;
     elevatedGlobeIndexBuffer: ?IndexBuffer;
     elevatedGlobeSegments: ?SegmentVector;
+    elevatedGlobeTrianglesCenterLongitudes: ?number[];
+    maxLongitudeTriangleSize: number;
     elevatedGlobeGridMatrix: ?Float32Array;
     _loaded: boolean;
     _dirty: boolean;
@@ -519,76 +547,114 @@ class ImageSource extends Evented implements Source {
         // draped rasters.
         // We calculate UV using matrix for perspective projection for all vertices and also correct UV interpolation
         // inside a triangle in shader.
+        // During a transition from the Globe projection to the Mercator projection some triangles becomes stretched.
+        // In order to detect and skip these triangles we sort them by their middle longitude.
+        // We also calculate the maximum longitude size for triangles, and during rendering we find which triangles
+        // are close to the vertical line on the other side of the Globe and skip them - during rendering we can have
+        // two draw calls instead of one (draw all before the gap and after) or just one (dropped triangles are at
+        // the beginning and at the end of our array).
 
         const cellCount = GLOBE_VERTEX_GRID_SIZE;
         const lineSize = cellCount + 1;
         const linesCount = cellCount + 1;
-        const elevatedGlobeVerticesCount = lineSize * linesCount;
-        const elevatedGlobeVertexArray = new RasterBoundsArray();
-
-        const [minX, minY, dx, dy] = calculateMinAndSizeForPoints(globalTileCoords);
-
-        const transformToImagePoint = (coord: ProjectedPoint) => {
-            return [(coord.x - minX) / dx, (coord.y - minY) / dy];
-        };
-        const [p0, p1, p2, p3] = globalTileCoords.map(transformToImagePoint);
-        const toUV = getTileToTextureTransformMatrix(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-        this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-
+        const vertexCount = lineSize * linesCount;
+        const triangleCount = cellCount * cellCount * 2;
+        const verticesLongitudes = [];
         const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(this.coordinates);
-        const addVertex = (point: LngLat, tilePoint: ProjectedPoint) => {
-            const x = Math.round((point.lng - minLng) / lngDiff * EXTENT);
-            const y = Math.round((point.lat - minLat) / latDiff * EXTENT);
-            const imagePoint = transformToImagePoint(tilePoint);
-            const uv = vec3.transformMat3([], [imagePoint[0], imagePoint[1], 1], toUV);
-            const u = Math.round(uv[0] / uv[2] * EXTENT);
-            const v = Math.round(uv[1] / uv[2] * EXTENT);
-            elevatedGlobeVertexArray.emplaceBack(x, y, u, v);
-        };
 
-        const leftDx = globalTileCoords[3].x - globalTileCoords[0].x;
-        const leftDy = globalTileCoords[3].y - globalTileCoords[0].y;
-        const rightDx = globalTileCoords[2].x - globalTileCoords[1].x;
-        const rightDy = globalTileCoords[2].y - globalTileCoords[1].y;
+        // Vertices
+        {
+            const elevatedGlobeVertexArray = new RasterBoundsArray();
 
-        for (let i = 0; i < linesCount; i++) {
-            const linesPart = i / cellCount;
-            const startLinePoint = [globalTileCoords[0].x + linesPart * leftDx, globalTileCoords[0].y + linesPart * leftDy];
-            const endLinePoint = [globalTileCoords[1].x + linesPart * rightDx, globalTileCoords[1].y + linesPart * rightDy];
-            const lineDx = endLinePoint[0] - startLinePoint[0];
-            const lineDy = endLinePoint[1] - startLinePoint[1];
+            const [minX, minY, dx, dy] = calculateMinAndSizeForPoints(globalTileCoords);
 
-            for (let j = 0; j < lineSize; j++) {
-                const linePart = j / cellCount;
-                const point = {x: startLinePoint[0] + lineDx * linePart, y: startLinePoint[1] + lineDy * linePart, z: 0};
-                addVertex(globalTileTr.projection.unproject(point.x, point.y), point);
+            const transformToImagePoint = (coord: ProjectedPoint) => {
+                return [(coord.x - minX) / dx, (coord.y - minY) / dy];
+            };
+            const [p0, p1, p2, p3] = globalTileCoords.map(transformToImagePoint);
+            const toUV = getTileToTextureTransformMatrix(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+            this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+
+            const addVertex = (point: LngLat, tilePoint: ProjectedPoint) => {
+                verticesLongitudes.push(point.lng);
+                const x = Math.round((point.lng - minLng) / lngDiff * EXTENT);
+                const y = Math.round((point.lat - minLat) / latDiff * EXTENT);
+                const imagePoint = transformToImagePoint(tilePoint);
+                const uv = vec3.transformMat3([], [imagePoint[0], imagePoint[1], 1], toUV);
+                const u = Math.round(uv[0] / uv[2] * EXTENT);
+                const v = Math.round(uv[1] / uv[2] * EXTENT);
+                elevatedGlobeVertexArray.emplaceBack(x, y, u, v);
+            };
+
+            const leftDx = globalTileCoords[3].x - globalTileCoords[0].x;
+            const leftDy = globalTileCoords[3].y - globalTileCoords[0].y;
+            const rightDx = globalTileCoords[2].x - globalTileCoords[1].x;
+            const rightDy = globalTileCoords[2].y - globalTileCoords[1].y;
+
+            for (let i = 0; i < linesCount; i++) {
+                const linesPart = i / cellCount;
+                const startLinePoint = [globalTileCoords[0].x + linesPart * leftDx, globalTileCoords[0].y + linesPart * leftDy];
+                const endLinePoint = [globalTileCoords[1].x + linesPart * rightDx, globalTileCoords[1].y + linesPart * rightDy];
+                const lineDx = endLinePoint[0] - startLinePoint[0];
+                const lineDy = endLinePoint[1] - startLinePoint[1];
+
+                for (let j = 0; j < lineSize; j++) {
+                    const linePart = j / cellCount;
+                    const point = {x: startLinePoint[0] + lineDx * linePart, y: startLinePoint[1] + lineDy * linePart, z: 0};
+                    addVertex(globalTileTr.projection.unproject(point.x, point.y), point);
+                }
             }
+
+            this.elevatedGlobeVertexBuffer = context.createVertexBuffer(elevatedGlobeVertexArray, boundsAttributes.members);
         }
 
-        this.elevatedGlobeVertexBuffer = context.createVertexBuffer(elevatedGlobeVertexArray, boundsAttributes.members);
+        // Indices
+        {
+            this.maxLongitudeTriangleSize = 0;
+            let elevatedGlobeTrianglesCenterLongitudes = [];
 
-        const indices = new TriangleIndexArray();
-        const trianglesCount = cellCount * cellCount * 2;
-        for (let i = 0; i < cellCount; i++) {
-            for (let j = 0; j < cellCount; j++) {
-                // Making indexes the way that after transforming to the Globe projection triangles
-                // on our side will be rotated clockwise.
-                // lon
-                //  ^
-                //  | 2  3
-                //  | 0  1
-                //  +------> lat
-                const i0 = i * lineSize + j;
-                const i1 = i0 + 1;
-                const i2 = i0 + lineSize;
-                const i3 = i2 + 1;
-                indices.emplaceBack(i0, i2, i1);
-                indices.emplaceBack(i1, i2, i3);
+            let indices = new TriangleIndexArray();
+
+            const processTriangle = (i0: number, i1: number, i2: number) => {
+                indices.emplaceBack(i0, i1, i2);
+
+                const l0 = verticesLongitudes[i0];
+                const l1 = verticesLongitudes[i1];
+                const l2 = verticesLongitudes[i2];
+                const minLongitude = Math.min(Math.min(l0, l1), l2);
+                const maxLongitude = Math.max(Math.max(l0, l1), l2);
+                const diff = maxLongitude - minLongitude;
+                if (diff > this.maxLongitudeTriangleSize) {
+                    this.maxLongitudeTriangleSize = diff;
+                }
+                elevatedGlobeTrianglesCenterLongitudes.push(minLongitude + diff / 2.);
+            };
+
+            for (let i = 0; i < cellCount; i++) {
+                for (let j = 0; j < cellCount; j++) {
+                    // Making indexes the way that after transforming to the Globe projection triangles
+                    // on our side will be rotated clockwise.
+                    // lon
+                    //  ^
+                    //  | 2  3
+                    //  | 0  1
+                    //  +------> lat
+                    const i0 = i * lineSize + j;
+                    const i1 = i0 + 1;
+                    const i2 = i0 + lineSize;
+                    const i3 = i2 + 1;
+                    processTriangle(i0, i2, i1);
+                    processTriangle(i1, i2, i3);
+                }
             }
-        }
-        this.elevatedGlobeIndexBuffer = context.createIndexBuffer(indices);
 
-        this.elevatedGlobeSegments = SegmentVector.simpleSegment(0, 0, elevatedGlobeVerticesCount, trianglesCount);
+            [elevatedGlobeTrianglesCenterLongitudes, indices] = sortTriangles(elevatedGlobeTrianglesCenterLongitudes, indices);
+
+            this.elevatedGlobeTrianglesCenterLongitudes = elevatedGlobeTrianglesCenterLongitudes;
+            this.elevatedGlobeIndexBuffer = context.createIndexBuffer(indices);
+        }
+
+        this.elevatedGlobeSegments = SegmentVector.simpleSegment(0, 0, vertexCount, triangleCount);
         this.elevatedGlobeGridMatrix = new Float32Array([0, lngDiff / EXTENT, 0, latDiff / EXTENT, 0, 0, minLat, minLng, 0]);
     }
 
@@ -641,6 +707,107 @@ class ImageSource extends Evented implements Source {
 
     hasTransition(): boolean {
         return false;
+    }
+
+    getSegmentsForLongitude(longitude: number): ?SegmentVector {
+        const segments = this.elevatedGlobeSegments;
+        if (!this.elevatedGlobeTrianglesCenterLongitudes || !segments) {
+            return null;
+        }
+        const longitudes = this.elevatedGlobeTrianglesCenterLongitudes;
+        assert(longitudes.length !== 0);
+
+        // Normalizing longitude so that abs(normalizedLongitude - desiredLongitude) <= 180
+        const normalizeLongitudeTo = (longitude: number, desiredLongitude: number) => {
+            const diff = Math.round((desiredLongitude - longitude) / 360.);
+            return longitude + diff * 360.;
+        };
+
+        let gapLongitude = normalizeLongitudeTo(longitude + 180., longitudes[0]);
+        const ret = new SegmentVector();
+
+        const addTriangleRange = (triangleOffset: number, triangleCount: number) => {
+            ret.segments.push(
+                {
+                    vertexOffset: 0,
+                    primitiveOffset: triangleOffset,
+                    vertexLength: segments.segments[0].vertexLength,
+                    primitiveLength: triangleCount,
+                    sortKey: undefined,
+                    vaos: {}
+                });
+        };
+
+        // +0.01 - just to be sure that we don't draw "bad" triangles because of calculation errors
+        const distanceToDrop = 0.51 * this.maxLongitudeTriangleSize;
+        assert(distanceToDrop > 0);
+        assert(distanceToDrop < 180.);
+
+        const lowerBound = (array: number[], startIndex: number, target: number) => {
+            let lowIndex = startIndex;
+            let highIndex = array.length;
+
+            while (lowIndex < highIndex) {
+                const middleIndex = Math.floor((lowIndex + highIndex) / 2);
+
+                if (array[middleIndex] < target) {
+                    lowIndex = middleIndex + 1;
+                } else {
+                    highIndex = middleIndex;
+                }
+            }
+
+            return lowIndex;
+        };
+        const upperBound = (array: number[], startIndex: number, target: number) => {
+            let lowIndex = startIndex;
+            let highIndex = array.length;
+
+            while (lowIndex < highIndex) {
+                const middleIndex = Math.floor((lowIndex + highIndex) / 2);
+
+                if (array[middleIndex] <= target) {
+                    lowIndex = middleIndex + 1;
+                } else {
+                    highIndex = middleIndex;
+                }
+            }
+
+            return lowIndex;
+        };
+
+        if (Math.abs(longitudes[0] - gapLongitude) <= distanceToDrop) {
+            const minIdx = upperBound(longitudes, 0, gapLongitude + distanceToDrop);
+            if (minIdx === longitudes.length) {
+                // Rotated 90 degrees, and one side is almost zero?
+                return ret;
+            }
+            const maxIdx = lowerBound(longitudes, minIdx + 1, gapLongitude + 360. - distanceToDrop);
+            const count = maxIdx - minIdx;
+            addTriangleRange(minIdx, count);
+            return ret;
+        }
+
+        if (gapLongitude < longitudes[0]) {
+            gapLongitude += 360.;
+        }
+
+        // Looking for the range inside or in the end of our triangles array to skip
+        const minIdx = lowerBound(longitudes, 0, gapLongitude - distanceToDrop);
+        if (minIdx === longitudes.length) {
+            // Skip nothing
+            addTriangleRange(0, longitudes.length);
+            return ret;
+        }
+
+        addTriangleRange(0, minIdx - 0);
+
+        const maxIdx = upperBound(longitudes, minIdx + 1, gapLongitude + distanceToDrop);
+        if (maxIdx !== longitudes.length) {
+            addTriangleRange(maxIdx, longitudes.length - maxIdx);
+        }
+
+        return ret;
     }
 }
 
