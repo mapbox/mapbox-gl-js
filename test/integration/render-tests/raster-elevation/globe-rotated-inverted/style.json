@@ -26,10 +26,10 @@
     "image": {
       "type": "image",
       "coordinates": [
-        [-10, 20],
-        [10, 20],
-        [5, -20],
-        [-5, -20]
+        [40, 20],
+        [-20, 40],
+        [-40, -20],
+        [20, -40]
       ],
       "url": "local://image/0.png"
     }
@@ -61,7 +61,7 @@
       "paint": {
         "raster-fade-duration": 0,
         "raster-opacity": 1.0,
-        "raster-elevation": 5000000.0
+        "raster-elevation": 500000.0
       }
     }
   ]

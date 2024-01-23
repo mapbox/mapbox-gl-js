@@ -61,7 +61,7 @@
       "paint": {
         "raster-fade-duration": 0,
         "raster-opacity": 1.0,
-        "raster-elevation": 1000000.0
+        "raster-elevation": 500000.0
       }
     }
   ]

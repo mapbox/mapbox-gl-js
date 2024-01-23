@@ -9,6 +9,7 @@
   },
   "zoom": 1,
   "center": [0, 0],
+  "pitch": 0,
   "projection": {
     "name": "globe"
   },
@@ -26,10 +27,10 @@
     "image": {
       "type": "image",
       "coordinates": [
-        [-10, 20],
-        [10, 20],
-        [5, -20],
-        [-5, -20]
+        [-10, 10],
+        [10, 10],
+        [-10, -10],
+        [10, -10]
       ],
       "url": "local://image/0.png"
     }
@@ -55,13 +56,11 @@
       }
     },
     {
-      "id": "image",
+      "id": "raster",
       "type": "raster",
       "source": "image",
       "paint": {
-        "raster-fade-duration": 0,
-        "raster-opacity": 1.0,
-        "raster-elevation": 5000000.0
+        "raster-fade-duration": 0
       }
     }
   ]
