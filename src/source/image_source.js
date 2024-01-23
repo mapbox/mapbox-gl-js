@@ -2,6 +2,7 @@
 
 import {CanonicalTileID} from './tile_id.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
+import {lowerBound, upperBound} from '../util/util.js';
 import {getImage, ResourceType} from '../util/ajax.js';
 import EXTENT from '../style-spec/data/extent.js';
 import {RasterBoundsArray, TriangleIndexArray} from '../data/array_types.js';
@@ -743,46 +744,13 @@ class ImageSource extends Evented implements Source {
         assert(distanceToDrop > 0);
         assert(distanceToDrop < 180.);
 
-        const lowerBound = (array: number[], startIndex: number, target: number) => {
-            let lowIndex = startIndex;
-            let highIndex = array.length;
-
-            while (lowIndex < highIndex) {
-                const middleIndex = Math.floor((lowIndex + highIndex) / 2);
-
-                if (array[middleIndex] < target) {
-                    lowIndex = middleIndex + 1;
-                } else {
-                    highIndex = middleIndex;
-                }
-            }
-
-            return lowIndex;
-        };
-        const upperBound = (array: number[], startIndex: number, target: number) => {
-            let lowIndex = startIndex;
-            let highIndex = array.length;
-
-            while (lowIndex < highIndex) {
-                const middleIndex = Math.floor((lowIndex + highIndex) / 2);
-
-                if (array[middleIndex] <= target) {
-                    lowIndex = middleIndex + 1;
-                } else {
-                    highIndex = middleIndex;
-                }
-            }
-
-            return lowIndex;
-        };
-
         if (Math.abs(longitudes[0] - gapLongitude) <= distanceToDrop) {
-            const minIdx = upperBound(longitudes, 0, gapLongitude + distanceToDrop);
+            const minIdx = upperBound(longitudes, 0, longitudes.length, gapLongitude + distanceToDrop);
             if (minIdx === longitudes.length) {
                 // Rotated 90 degrees, and one side is almost zero?
                 return ret;
             }
-            const maxIdx = lowerBound(longitudes, minIdx + 1, gapLongitude + 360. - distanceToDrop);
+            const maxIdx = lowerBound(longitudes, minIdx + 1, longitudes.length, gapLongitude + 360. - distanceToDrop);
             const count = maxIdx - minIdx;
             addTriangleRange(minIdx, count);
             return ret;
@@ -793,7 +761,7 @@ class ImageSource extends Evented implements Source {
         }
 
         // Looking for the range inside or in the end of our triangles array to skip
-        const minIdx = lowerBound(longitudes, 0, gapLongitude - distanceToDrop);
+        const minIdx = lowerBound(longitudes, 0, longitudes.length, gapLongitude - distanceToDrop);
         if (minIdx === longitudes.length) {
             // Skip nothing
             addTriangleRange(0, longitudes.length);
@@ -802,7 +770,7 @@ class ImageSource extends Evented implements Source {
 
         addTriangleRange(0, minIdx - 0);
 
-        const maxIdx = upperBound(longitudes, minIdx + 1, gapLongitude + distanceToDrop);
+        const maxIdx = upperBound(longitudes, minIdx + 1, longitudes.length, gapLongitude + distanceToDrop);
         if (maxIdx !== longitudes.length) {
             addTriangleRange(maxIdx, longitudes.length - maxIdx);
         }

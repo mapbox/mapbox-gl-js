@@ -778,3 +778,31 @@ export function linearVec3TosRGB(v: [number, number, number]): [number, number, 
         Math.pow(v[2], 1.0 / 2.2)
     ];
 }
+
+export function lowerBound(array: number[], startIndex: number, finishIndex: number, target: number): number {
+    while (startIndex < finishIndex) {
+        const middleIndex = (startIndex + finishIndex) >> 1;
+
+        if (array[middleIndex] < target) {
+            startIndex = middleIndex + 1;
+        } else {
+            finishIndex = middleIndex;
+        }
+    }
+
+    return startIndex;
+}
+
+export function upperBound(array: number[], startIndex: number, finishIndex: number, target: number): number {
+    while (startIndex < finishIndex) {
+        const middleIndex = (startIndex + finishIndex) >> 1;
+
+        if (array[middleIndex] <= target) {
+            startIndex = middleIndex + 1;
+        } else {
+            finishIndex = middleIndex;
+        }
+    }
+
+    return startIndex;
+}
