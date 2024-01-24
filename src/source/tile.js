@@ -399,12 +399,12 @@ class Tile {
         }
 
         if (this.glyphAtlasImage) {
-            this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
+            this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.R8);
             this.glyphAtlasImage = null;
         }
 
         if (this.lineAtlas && !this.lineAtlas.uploaded) {
-            this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.ALPHA);
+            this.lineAtlasTexture = new Texture(context, this.lineAtlas.image, gl.R8);
             ((this.lineAtlas: any): LineAtlas).uploaded = true;
         }
     }

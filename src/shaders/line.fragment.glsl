@@ -56,7 +56,7 @@ void main() {
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 #ifdef RENDER_LINE_DASH
-    float sdfdist = texture(u_dash_image, v_tex).a;
+    float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
     alpha *= linearstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
 #endif

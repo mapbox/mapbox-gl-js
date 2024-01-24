@@ -51,7 +51,7 @@ function resizeImage<T: AlphaImage | RGBAImage>(image: T, newImage: T, channels:
     image.data = newImage.data;
 }
 
-function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, srcPt: Point, dstPt: Point, size: Size, channels: number): T {
+function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, srcPt: Point, dstPt: Point, size: Size, channels: number, overrideRGBWithWhite: ?boolean): T {
     if (size.width === 0 || size.height === 0) {
         return dstImg;
     }
@@ -72,14 +72,27 @@ function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, 
 
     const srcData = srcImg.data;
     const dstData = dstImg.data;
+    const overrideRGB = channels === 4 && overrideRGBWithWhite;
 
     assert(srcData !== dstData);
 
     for (let y = 0; y < size.height; y++) {
         const srcOffset = ((srcPt.y + y) * srcImg.width + srcPt.x) * channels;
         const dstOffset = ((dstPt.y + y) * dstImg.width + dstPt.x) * channels;
-        for (let i = 0; i < size.width * channels; i++) {
-            dstData[dstOffset + i] = srcData[srcOffset + i];
+        if (overrideRGB) {
+            for (let i = 0; i < size.width; i++) {
+                const srcByteOffset = srcOffset + i * channels + 3;
+                const dstPixelOffset = dstOffset + i * channels;
+                dstData[dstPixelOffset + 0] = 255;
+                dstData[dstPixelOffset + 1] = 255;
+                dstData[dstPixelOffset + 2] = 255;
+                dstData[dstPixelOffset + 3] = srcData[srcByteOffset];
+            }
+        } else {
+            for (let i = 0; i < size.width * channels; i++) {
+                const srcByte = srcOffset + i;
+                dstData[dstOffset + i] = srcData[srcByte];
+            }
         }
     }
     return dstImg;
@@ -139,8 +152,8 @@ export class RGBAImage {
         return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
-    static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size) {
-        copyImage(srcImg, dstImg, srcPt, dstPt, size, 4);
+    static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size, overrideRGBWithWhite: ?boolean) {
+        copyImage(srcImg, dstImg, srcPt, dstPt, size, 4, overrideRGBWithWhite);
     }
 }
 

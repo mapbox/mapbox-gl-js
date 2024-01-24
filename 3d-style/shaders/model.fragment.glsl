@@ -144,15 +144,14 @@ vec4 getBaseColor() {
     }
     texColor.w = 1.0;
 #endif
-    // Convert to linear
-    texColor.rgb = sRGBToLinear(texColor.rgb);
+
     if(u_baseTextureIsAlpha) {
-        if (texColor.w < 0.5) {
+        if (texColor.r < 0.5) {
             discard;
         }
-        albedo *= mix(vec4(texColor.rgb, texColor.a), vec4(texColor.a), float(u_baseTextureIsAlpha));
     } else {
         // gltf material
+        texColor.rgb = sRGBToLinear(texColor.rgb);
         albedo *= texColor;
     }
 #endif

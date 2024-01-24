@@ -9,7 +9,6 @@ import assert from 'assert';
 
 export type TextureFormat =
     | $PropertyType<WebGL2RenderingContext, 'RGBA'>
-    | $PropertyType<WebGL2RenderingContext, 'ALPHA'>
     | $PropertyType<WebGL2RenderingContext, 'DEPTH_COMPONENT'>
     | $PropertyType<WebGL2RenderingContext, 'R8'>
     | $PropertyType<WebGL2RenderingContext, 'R32F'>
@@ -94,10 +93,11 @@ class Texture {
                 if (this.format === gl.DEPTH_COMPONENT) {
                     // $FlowFixMe[incompatible-type]
                     internalFormat = gl.DEPTH_COMPONENT16;
-                    // $FlowFixMe[incompatible-type]
                     type = gl.UNSIGNED_SHORT;
                 }
-
+                if (this.format === gl.R8) {
+                    format = gl.RED;
+                }
                 if (this.format === gl.R32F) {
                     assert(image instanceof Float32Image);
                     type = gl.FLOAT;

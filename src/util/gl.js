@@ -5,6 +5,16 @@ import gl from 'gl';
 export default function(width: number, height: number, attributes: WebGLContextAttributes): WebGL2RenderingContext {
     const context = gl(width, height, attributes);
 
+    // Mock WebGL2 constants
+    context.R8 = 0x8229;
+    context.R32F = 0x822E;
+    context.RGBA16F = 0x881A;
+    context.RED = 0x1903;
+    context.HALF_FLOAT = 0x140B;
+    context.QUERY_RESULT = 0x8866;
+    context.MIN = 0x8007;
+    context.MAX = 0x8008;
+
     // Mock WebGL2 methods
     context.createVertexArray = function() { return null; };
     context.deleteVertexArray = function() {};
