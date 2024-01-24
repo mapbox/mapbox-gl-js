@@ -1,3 +1,9 @@
+## 3.1.1
+
+### Bug fixes 🐞
+
+- Fix an issue when WebGL might randomly crash to an unrecoverable state on some mobile devices, specifically Safari on iOS.
+
 ## 3.1.0
 
 ### Features and improvements ✨
