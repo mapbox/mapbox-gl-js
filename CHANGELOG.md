@@ -2,6 +2,7 @@
 
 ### Bug fixes 🐞
 
+- Fix `fill-extrusions` not being displayed in alternative projections.
 - Fix an issue when WebGL might randomly crash to an unrecoverable state on some mobile devices, specifically Safari on iOS.
 
 ## 3.1.0
