@@ -47,7 +47,7 @@ uniform vec3 u_ecef_origin;
 uniform mat4 u_tile_matrix;
 #endif
 
-flat out float v_draw_halo;
+out float v_draw_halo;
 out vec4 v_data0;
 out vec4 v_data1;
 

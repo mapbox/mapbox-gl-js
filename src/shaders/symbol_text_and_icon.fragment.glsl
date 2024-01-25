@@ -11,7 +11,7 @@ uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_halo;
 
-flat in float v_draw_halo;
+in float v_draw_halo;
 in vec4 v_data0;
 in vec4 v_data1;
 
