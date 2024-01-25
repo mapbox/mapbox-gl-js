@@ -8,7 +8,7 @@ uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 uniform bool u_is_halo;
 
-flat in float v_draw_halo;
+in float v_draw_halo;
 in vec2 v_data0;
 in vec3 v_data1;
 
