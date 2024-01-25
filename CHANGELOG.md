@@ -1,3 +1,9 @@
+## 3.1.2
+
+### Bug fixes 🐞
+
+- Fix attribution not being displayed for imported fragments (reintroducing the fix from v3.0.1 that was accidentally missing in v3.1.0).
+
 ## 3.1.1
 
 ### Bug fixes 🐞
