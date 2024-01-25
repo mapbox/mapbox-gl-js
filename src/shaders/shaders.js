@@ -208,6 +208,11 @@ export function compile(fragmentSource, vertexSource) {
         return '';
     });
 
+    if (vertexSource.includes("flat out")) {
+        console.error(`The usage of "flat" qualifier is disallowed, see: https://bugs.webkit.org/show_bug.cgi?id=268071`);
+        return;
+    }
+
     let usedDefines = [...commonDefines];
     parseUsedPreprocessorDefines(fragmentSource, usedDefines);
     parseUsedPreprocessorDefines(vertexSource, usedDefines);
