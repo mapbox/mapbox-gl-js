@@ -85,11 +85,28 @@ function isConvex(coords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, Proje
     const dy2 = coords[2].y - coords[1].y;
     const dx3 = coords[3].x - coords[2].x;
     const dy3 = coords[3].y - coords[2].y;
+    const dx4 = coords[0].x - coords[3].x;
+    const dy4 = coords[0].y - coords[3].y;
 
     const crossProduct1 = dx1 * dy2 - dx2 * dy1;
     const crossProduct2 = dx2 * dy3 - dx3 * dy2;
+    const crossProduct3 = dx3 * dy4 - dx4 * dy3;
+    const crossProduct4 = dx4 * dy1 - dx1 * dy4;
 
-    return (crossProduct1 > 0 && crossProduct2 > 0) || (crossProduct1 < 0 && crossProduct2 < 0);
+    return (crossProduct1 > 0 && crossProduct2 > 0 && crossProduct3 > 0 && crossProduct4 > 0) ||
+        (crossProduct1 < 0 && crossProduct2 < 0 && crossProduct3 < 0 && crossProduct4 < 0);
+}
+
+function constrainCoordinates(coords: [number, number]) {
+    return [coords[0], Math.min(Math.max(coords[1], -MAX_MERCATOR_LATITUDE), MAX_MERCATOR_LATITUDE)];
+}
+
+function constrain(coords: Coordinates) {
+    return [
+        constrainCoordinates(coords[0]),
+        constrainCoordinates(coords[1]),
+        constrainCoordinates(coords[2]),
+        constrainCoordinates(coords[3])];
 }
 
 function calculateMinAndSize(coords: Coordinates) {
@@ -561,7 +578,8 @@ class ImageSource extends Evented implements Source {
         const vertexCount = lineSize * linesCount;
         const triangleCount = cellCount * cellCount * 2;
         const verticesLongitudes = [];
-        const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(this.coordinates);
+        const constrainedCoordinates = constrain(this.coordinates);
+        const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(constrainedCoordinates);
 
         // Vertices
         {
