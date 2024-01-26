@@ -69,7 +69,7 @@ void main() {
     v_fog_pos = fog_position((u_normalize_matrix * vec4(globe_pos, 1.0)).xyz);
 #endif // FOG
 #else // else PROJECTION_GLOBE_VIEW
-    gl_Position = u_matrix * vec4(a_pos * w, u_raster_elevation, w);
+    gl_Position = u_matrix * vec4(a_pos * w, u_raster_elevation * w, w);
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);
 #endif // FOG
