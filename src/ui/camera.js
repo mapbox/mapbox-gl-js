@@ -185,7 +185,6 @@ class Camera extends Evented {
     _zooming: boolean;
     _rotating: boolean;
     _pitching: boolean;
-    _padding: boolean;
 
     _bearingSnap: number;
     _easeStart: number;
@@ -1365,7 +1364,6 @@ class Camera extends Evented {
         this._zooming = zoomChanged;
         this._rotating = bearingChanged;
         this._pitching = pitchChanged;
-        this._padding = paddingChanged;
 
         this._easeId = options.easeId;
         this._prepareEase(eventData, options.noMoveStart, currently);
@@ -1430,7 +1428,6 @@ class Camera extends Evented {
         this._zooming = false;
         this._rotating = false;
         this._pitching = false;
-        this._padding = false;
 
         if (wasZooming) {
             this.fire(new Event('zoomend', eventData));
@@ -1530,19 +1527,25 @@ class Camera extends Evented {
         const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
-            startPitch = this.getPitch(),
-            startPadding = this.getPadding();
+            startPitch = this.getPitch();
 
         const zoom = 'zoom' in options ? clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
-        const padding = 'padding' in options ? options.padding : tr.padding;
 
         const scale = tr.zoomScale(zoom - startZoom);
         const offsetAsPoint = Point.convert(options.offset);
-        let pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+        const pointAtOffset = tr.centerPoint.add(offsetAsPoint);
         const locationAtOffset = tr.pointLocation(pointAtOffset);
-        const center = LngLat.convert(options.center || locationAtOffset);
+
+        let center = options.center;
+        // Calculate center with respect to padding
+        if (center && options.padding) {
+            const easingOptions = this._cameraForBounds(this.transform, center, center, bearing, pitch, options);
+            if (easingOptions) center = easingOptions.center;
+        }
+
+        center = LngLat.convert(center || locationAtOffset);
         this._normalizeCenter(center);
 
         const from = tr.project(locationAtOffset);
@@ -1628,7 +1631,6 @@ class Camera extends Evented {
         const zoomChanged = true;
         const bearingChanged = (startBearing !== bearing);
         const pitchChanged = (pitch !== startPitch);
-        const paddingChanged = !tr.isPaddingEqual(padding);
 
         const frame = (tr: Transform) => (k: number) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -1641,12 +1643,6 @@ class Camera extends Evented {
             }
             if (pitchChanged) {
                 tr.pitch = interpolate(startPitch, pitch, k);
-            }
-            if (paddingChanged) {
-                tr.interpolatePadding(startPadding, padding, k);
-                // When padding is being applied, Transform#centerPoint is changing continuously,
-                // thus we need to recalculate offsetPoint every frame
-                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
@@ -1669,7 +1665,6 @@ class Camera extends Evented {
         this._zooming = zoomChanged;
         this._rotating = bearingChanged;
         this._pitching = pitchChanged;
-        this._padding = paddingChanged;
 
         this._prepareEase(eventData, false);
         this._ease(frame(tr), () => this._afterEase(eventData), options);
