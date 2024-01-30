@@ -4053,13 +4053,13 @@ has-bigints@^1.0.1, has-bigints@^1.0.2:
   resolved "https://registry.yarnpkg.com/has-bigints/-/has-bigints-1.0.2.tgz#0871bd3e3d51626f6ca0966668ba35d5602d6eaa"
   integrity sha512-tSvCKtBr9lkF0Ex0aQiP9N+OpV4zi2r/Nee5VkRDbaqv35RLYMzbwQfFSZZH0kR+Rd6302UJZ2p/bJCEoR3VoQ==
 
-has-dynamic-import@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/has-dynamic-import/-/has-dynamic-import-2.0.1.tgz#9bca87846aa264f2ad224fcd014946f5e5182f52"
-  integrity sha512-X3fbtsZmwb6W7fJGR9o7x65fZoodygCrZ3TVycvghP62yYQfS0t4RS0Qcz+j5tQYUKeSWS09tHkWW6WhFV3XhQ==
+has-dynamic-import@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/has-dynamic-import/-/has-dynamic-import-2.1.0.tgz#06359ad7672b9e764aea93a54bb9d6e17542d34c"
+  integrity sha512-su0anMkNEnJKZ/rB99jn3y6lV/J8Ro96hBJ28YAeVzj5rWxH+YL/AdCyiYYA1HDLV9YhmvqpWSJJj2KLo1MX6g==
   dependencies:
-    call-bind "^1.0.2"
-    get-intrinsic "^1.1.1"
+    call-bind "^1.0.5"
+    get-intrinsic "^1.2.2"
 
 has-flag@^3.0.0:
   version "3.0.0"
@@ -8137,10 +8137,10 @@ tape-filter@^1.0.4:
   dependencies:
     minimist "^1.2.0"
 
-tape@^5.7.3:
-  version "5.7.3"
-  resolved "https://registry.yarnpkg.com/tape/-/tape-5.7.3.tgz#d10975d79554089230dbada91dd85f38467ece6c"
-  integrity sha512-un2/TkloCBIxbrLac88Z9WElQ85WLE4t+jjfgrmxrlInWGYQf9r9Wbycc/nNP3zap6GBb7qln7h85QoNBNZdHg==
+tape@^5.7.4:
+  version "5.7.4"
+  resolved "https://registry.yarnpkg.com/tape/-/tape-5.7.4.tgz#5c515282a513599e9d1434665640900faf066a3b"
+  integrity sha512-uaigP+5H9+E8aaMLKMbGkDd33G5TKu4UFpapqT7um+8xSHQQUS2lJNd+hTj9fFVQLg8bmcIofwc8b9f6+ISSfQ==
   dependencies:
     "@ljharb/resumer" "^0.0.1"
     "@ljharb/through" "^2.3.11"
@@ -8152,7 +8152,7 @@ tape@^5.7.3:
     for-each "^0.3.3"
     get-package-type "^0.1.0"
     glob "^7.2.3"
-    has-dynamic-import "^2.0.1"
+    has-dynamic-import "^2.1.0"
     hasown "^2.0.0"
     inherits "^2.0.4"
     is-regex "^1.1.4"

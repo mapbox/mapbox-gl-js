@@ -95,7 +95,7 @@
     "stylelint": "^15.11.0",
     "stylelint-config-standard": "^34.0.0",
     "tap": "~16.3.10",
-    "tape": "^5.7.3",
+    "tape": "^5.7.4",
     "tape-filter": "^1.0.4",
     "testem": "^3.11.0"
   },
