@@ -1,0 +1,133 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 320,
+      "width": 320,
+      "allowed": 0.0004
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(200.0, 200.0, 255.0, 1.0)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(230.0, 230.0, 230.0, 1.0)",
+        "intensity": 0.9,
+        "direction": [
+          200.0,
+          40.0
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 30
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.00015,
+                    -0.00015
+                  ],
+                  [
+                    -0.00015,
+                    -0.00015
+                  ],
+                  [
+                    -0.00015,
+                    0.00015
+                  ],
+                  [
+                    0.00015,
+                    0.00015
+                  ],
+                  [
+                    0.00015,
+                    -0.00015
+                  ]
+                ],
+                [
+                  [
+                    0.00008,
+                    0.00008
+                  ],
+                  [
+                    -0.00008,
+                    0.00008
+                  ],
+                  [
+                    -0.00008,
+                    -0.00008
+                  ],
+                  [
+                    0.00008,
+                    -0.00008
+                  ],
+                  [
+                    0.00008,
+                    0.00008
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 61,
+  "bearing": 50,
+  "zoom": 18.6,
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": [
+          "rgba",
+          255,
+          255,
+          0,
+          0.0
+        ],
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-height": 10,
+        "fill-extrusion-flood-light-ground-radius": -10,
+        "fill-extrusion-flood-light-color": [
+          "rgb",
+          255,
+          255,
+          0
+        ],
+        "fill-extrusion-flood-light-intensity": 0.7
+      }
+    }
+  ]
+}

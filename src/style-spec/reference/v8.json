@@ -5643,7 +5643,6 @@
       "type": "number",
       "units": "meters",
       "default": 0,
-      "minimum": 0,
       "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
       "requires": [
         "lights"

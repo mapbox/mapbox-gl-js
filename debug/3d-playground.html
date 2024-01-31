@@ -95,7 +95,9 @@ const Demo3D = function() {
     this.floodLightColor = {r:255, g:255, b:146};
     this.floodLightIntensity = 0.0;
     this.floodLightGroundAttenuation = 0.69;
+    this.floodLightGroundRadius = 0.0;
     this.buildingColor = {r:255, g:255, b:255};
+    this.buildingAlpha = 1.0;
     this.buildingOpacity = 1;
     this.cutoffFadeRange = 0.0;
     this.ambientLightColor = {r:255, g:255, b:255};
@@ -385,6 +387,7 @@ window.onload = function() {
     });
     const verticalGradient = buildings.addInput(demo3d, 'verticalGradient');
     const buildingColor = buildings.addInput(demo3d, 'buildingColor');
+    const buildingAlpha = buildings.addInput(demo3d, 'buildingAlpha', {min:0.0, max:1.0});
     const buildingOpacity = buildings.addInput(demo3d, 'buildingOpacity', {min:0.0, max:1.0});
     const cutoffFadeRange = buildings.addInput(demo3d, 'cutoffFadeRange', {min:0.0, max:1.0});
     const edgeRadius = buildings.addInput(demo3d, 'edgeRadius');
@@ -393,7 +396,7 @@ window.onload = function() {
     buildings.on('change', (ev) => {
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-vertical-gradient', demo3d.verticalGradient);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-color',
-            'rgb(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ')');
+            'rgba(' + demo3d.buildingColor.r + ', ' + demo3d.buildingColor.g + ', ' + demo3d.buildingColor.b + ', ' + demo3d.buildingAlpha + ')');
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-opacity', demo3d.buildingOpacity);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-cutoff-fade-range', demo3d.cutoffFadeRange);
         map.setLayoutProperty(demo3d.buildingExtrusion, 'fill-extrusion-edge-radius', demo3d.edgeRadius);
@@ -416,6 +419,7 @@ window.onload = function() {
     const floodLightColor = groundEffects.addInput(demo3d, 'floodLightColor');
     const floodLightIntensity = groundEffects.addInput(demo3d, 'floodLightIntensity', {min:0.0, max:1.0});
     const floodLightGroundAttenuation = groundEffects.addInput(demo3d, 'floodLightGroundAttenuation', {min:0.0, max:1.0});
+    const floodLightGroundRadius = groundEffects.addInput(demo3d, 'floodLightGroundRadius', {min:-50.0, max:50.0});
     groundEffects.on('change', (ev) => {
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-intensity', demo3d.aoIntensity);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-ambient-occlusion-radius', demo3d.aoWallRadius);
@@ -426,6 +430,7 @@ window.onload = function() {
             'rgb(' + demo3d.floodLightColor.r + ', ' + demo3d.floodLightColor.g + ', ' + demo3d.floodLightColor.b + ')');
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-intensity', demo3d.floodLightIntensity);
         map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-ground-attenuation', demo3d.floodLightGroundAttenuation);
+        map.setPaintProperty(demo3d.buildingExtrusion, 'fill-extrusion-flood-light-ground-radius', demo3d.floodLightGroundRadius);
     });
 };
 

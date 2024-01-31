@@ -93,8 +93,9 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     } else if (painter.renderPass === 'translucent') {
 
         const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1: any));
+        const color = layer.paint.get('fill-extrusion-color').constantOr(Color.white);
 
-        if (!rtt) {
+        if (!rtt && color.a !== 0.0) {
             const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
             if (cutoffFadeRange === 0.0 && opacity === 1 && noPattern) {
