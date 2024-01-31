@@ -1,0 +1,184 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "1"
+          },
+          {
+            "picked": true
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "1"
+          },
+          {
+            "picked": false
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setFeatureState",
+          {
+            "source": "geojson",
+            "id": "2"
+          },
+          {
+            "picked": true
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)"
+      }
+    }
+  ],
+  "zoom": 3.33,
+  "center": [
+    3.85,
+    2.6
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": 1,
+            "properties": {
+              "class": "class1"
+            },
+            "geometry": {
+              "coordinates": [
+                0,
+                0
+              ],
+              "type": "Point"
+            }
+          },
+          {
+            "type": "Feature",
+            "id": 2,
+            "properties": {
+              "class": "class1"
+            },
+            "geometry": {
+              "coordinates": [
+                5,
+                5
+              ],
+              "type": "Point"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "paint": {
+        "text-color": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "class1"
+          ],
+          [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "measure-light",
+              "brightness"
+            ],
+            0.25,
+            [
+              "rgba",
+              236.00001525878907,
+              147.0,
+              206.00001525878907,
+              1.0
+            ],
+            0.3,
+            [
+              "rgba",
+              240.00001525878907,
+              66.0,
+              182.0,
+              1.0
+            ]
+          ],
+          "yellow"
+        ],
+        "text-opacity": [
+          "case",
+          [
+            "boolean",
+            [
+              "feature-state",
+              "picked"
+            ],
+            false
+          ],
+          0.0,
+          1.0
+        ]
+      },
+      "layout": {
+        "text-field": "test",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}
