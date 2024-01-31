@@ -427,7 +427,8 @@ void main() {
 vec4 finalColor;
 #ifdef DIFFUSE_SHADED
     vec3 N = getNormal();
-    vec3 diffuse = getDiffuseShadedColor(getBaseColor().rgb, N, lightDir, lightColor);
+    vec3 baseColor = getBaseColor().rgb;
+    vec3 diffuse = getDiffuseShadedColor(baseColor, N, lightDir, lightColor);
     // Ambient Occlusion
 #ifdef HAS_TEXTURE_u_occlusionTexture
     // For b3dm tiles where models contains occlusion textures we interpret them similarly to how
@@ -436,7 +437,7 @@ vec4 finalColor;
     float ao = (texture(u_occlusionTexture, uv_2f).r - 1.0) * u_aoIntensity + 1.0;
     diffuse *= ao;
 #endif
-    finalColor = vec4(diffuse, 1.0) * u_opacity;
+    finalColor = vec4(mix(diffuse, baseColor, u_emissive_strength), 1.0) * u_opacity;
 #else // DIFFUSE_SHADED
     Material mat = getPBRMaterial();
     vec3 color = computeLightContribution(mat, lightDir, lightColor);

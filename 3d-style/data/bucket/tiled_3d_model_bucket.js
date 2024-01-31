@@ -221,6 +221,8 @@ class Tiled3dModelBucket implements Bucket {
                 const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
                                          previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged);
+            } else {
+                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
             }
             nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
             if (!this.updatePbrBuffer(nodeInfo.node)) {

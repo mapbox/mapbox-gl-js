@@ -758,7 +758,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 mat4.scale(normalMatrix, normalMatrix, normalScale);
 
                 const worldViewProjection = mat4.multiply([], tr.expandedFarZProjMatrix, modelMatrix);
-
+                const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
+                const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
                 for (let i = 0; i < node.meshes.length; ++i) {
                     const mesh = node.meshes[i];
                     const isLight = i === node.lightMeshIndex;
@@ -778,8 +779,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     };
                     const dynamicBuffers = [];
                     setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter);
-
-                    if (!(modelTraits & ModelTraits.HasMapboxMeshFeatures)) {
+                    if (!hasMapboxFeatures) {
                         (programOptions.defines: any).push('DIFFUSE_SHADED');
                     }
 
@@ -822,7 +822,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     pbr.roughnessFactor = 0.5;
 
                     // Set emissive strength to zero for landmarks, as it is already used embedded in the PBR buffer.
-                    const emissiveStrength = 0.0;
                     const uniformValues = modelUniformValues(
                             new Float32Array(worldViewProjection),
                             new Float32Array(lightingMatrix),
