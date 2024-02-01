@@ -154,7 +154,7 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result) => {
+            requests.push((err, result: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
@@ -227,9 +227,9 @@ class GlyphManager {
         }
     }
 
-    _tinySDF(entry: Entry, stack: string, id: number, isFallback: boolean): ?StyleGlyph {
+    _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
         const fontFamily = this.localFontFamily;
-        if (!isFallback && (!fontFamily || !this._doesCharSupportLocalGlyph(id))) return;
+        if (!fontFamily || !this._doesCharSupportLocalGlyph(id)) return;
 
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
