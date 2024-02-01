@@ -135,6 +135,7 @@ function parseOptions(currentFixture, style) {
         height: 512,
         pixelRatio: 1,
         allowed: 0.00015,
+        'diff-calculation-threshold': 0.1285,
         ...((style.metadata && style.metadata.test) || {})
     };
 
@@ -285,7 +286,7 @@ function getActualImageDataURL(actualImageData, map, {w, h}, options) {
     return map.getCanvas().toDataURL();
 }
 
-function calculateDiff(actualImageData, expectedImages, {w, h}) {
+function calculateDiff(actualImageData, expectedImages, {w, h}, threshold) {
     // 2. draw expected.png into a canvas and extract ImageData
     let minImageSrc;
     let minDiffImage;
@@ -298,8 +299,7 @@ function calculateDiff(actualImageData, expectedImages, {w, h}) {
 
         // 4. Use pixelmatch to compare actual and expected images and write diff
         // all inputs must be Uint8Array or Uint8ClampedArray
-        const currentDiff = pixelmatch(actualImageData, expectedImages[i].data, diffImage, w, h, {threshold: 0.1285}) / (w * h);
-
+        const currentDiff = pixelmatch(actualImageData, expectedImages[i].data, diffImage, w, h, {threshold}) / (w * h);
         if (currentDiff < minDiff) {
             minDiff = currentDiff;
             minDiffImage = diffImage;
@@ -341,8 +341,7 @@ async function runTest(t) {
 
             return;
         }
-
-        const {minDiff, minDiffImage, minExpectedCanvas, minImageSrc} = calculateDiff(actualImageData, expectedImages, {w, h});
+        const {minDiff, minDiffImage, minExpectedCanvas, minImageSrc} = calculateDiff(actualImageData, expectedImages, {w, h}, options['diff-calculation-threshold']);
         const pass = minDiff <= options.allowed;
         const testMetaData = {
             name: currentTestName,
