@@ -91,8 +91,13 @@ class GlyphManager {
         const url = this.urls[scope] || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
+            let isFound = false;
             for (const id of glyphs[stack]) {
                 all.push({stack, id});
+                if (!isFound && Math.floor(id / 256) === 0) isFound = true;
+            }
+            if (!isFound) {
+                all.push({stack, id: 63});
             }
         }
 
@@ -158,28 +163,11 @@ class GlyphManager {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-
-                    const glyph = result.glyphs[id] || entry.glyphs[63];
-
-                    if (!glyph) {
-                        this.getGlyphs({[stack]:[63]}, '', (err, res) => {
-                            if (err) {
-                                fnCallback(err);
-                            } else {
-                                fnCallback(null, {
-                                    stack,
-                                    id,
-                                    glyph: res[stack].glyphs[63] || null
-                                });
-                            }
-                        });
-                    } else {
-                        fnCallback(null, {
-                            stack,
-                            id,
-                            glyph
-                        });
-                    }
+                    fnCallback(null, {
+                        stack,
+                        id,
+                        glyph: result.glyphs[id] || null
+                    });
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
@@ -192,10 +180,14 @@ class GlyphManager {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
                     if (result[stack] === undefined) result[stack] = {};
                     if (result[stack].glyphs === undefined) result[stack].glyphs = {};
-                    result[stack].glyphs[id] = glyph && {
+                    result[stack].glyphs[id] = glyph ? {
                         id: glyph.id,
                         bitmap: glyph.bitmap.clone(),
-                        metrics: glyph.metrics
+                        metrics: glyph.metrics,
+                    } : {
+                        id,
+                        bitmap: this.entries[stack].glyphs[63].bitmap.clone(),
+                        metrics: this.entries[stack].glyphs[63].metrics,
                     };
                     result[stack].ascender = this.entries[stack].ascender;
                     result[stack].descender = this.entries[stack].descender;
