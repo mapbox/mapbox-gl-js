@@ -91,12 +91,12 @@ class GlyphManager {
         const url = this.urls[scope] || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
-            let isFound = false;
+            let isFoundFallbackRange = false;
             for (const id of glyphs[stack]) {
                 all.push({stack, id});
-                if (!isFound && Math.floor(id / 256) === 0) isFound = true;
+                if (!isFoundFallbackRange && Math.floor(id / 256) === 0) isFoundFallbackRange = true;
             }
-            if (!isFound) {
+            if (!isFoundFallbackRange) {
                 all.push({stack, id: 63});
             }
         }
@@ -163,11 +163,7 @@ class GlyphManager {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-                    fnCallback(null, {
-                        stack,
-                        id,
-                        glyph: result.glyphs[id] || null
-                    });
+                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
