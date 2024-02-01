@@ -59,7 +59,6 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
-    fallbackGlyphs: {[stack: string] : StyleGlyph | null};
     urls: {[scope: string]: ?string};
 
     // exposed as statics to enable stubbing in unit tests
@@ -79,7 +78,6 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
-        this.fallbackGlyphs = {};
     }
 
     setURL(url: ?string, scope: string) {
@@ -156,27 +154,30 @@ class GlyphManager {
                     });
             }
 
-            requests.push((err, result: ?{glyphs: {[_: number]: StyleGlyph | null}, ascender?: number, descender?: number}) => {
+            requests.push((err, result) => {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-                    let glyph = result.glyphs[id];
-                    if (!glyph && !this.fallbackGlyphs[stack]) {
-                        this.getGlyphs({[stack]: [63]}, '', (err, results) => {
-                            if (!err) {
-                                this.fallbackGlyphs[stack] = glyph = results[stack].glyphs[63];
+
+                    const glyph = result.glyphs[id] || entry.glyphs[63];
+
+                    if (!glyph) {
+                        this.getGlyphs({[stack]:[63]}, '', (err, res) => {
+                            if (err) {
+                                fnCallback(err);
+                            } else {
+                                fnCallback(null, {
+                                    stack,
+                                    id,
+                                    glyph: res[stack].glyphs[63] || null
+                                });
                             }
-                            fnCallback(null, {
-                                stack,
-                                id,
-                                glyph
-                            });
                         });
                     } else {
                         fnCallback(null, {
                             stack,
                             id,
-                            glyph: glyph || this.fallbackGlyphs[stack]
+                            glyph
                         });
                     }
                 }
