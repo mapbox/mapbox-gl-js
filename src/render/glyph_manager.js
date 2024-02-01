@@ -59,6 +59,7 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
+    fallbackGlyphs: {[stack: string] : StyleGlyph | null};
     urls: {[scope: string]: ?string};
 
     // exposed as statics to enable stubbing in unit tests
@@ -78,6 +79,7 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
+        this.fallbackGlyphs = {};
     }
 
     setURL(url: ?string, scope: string) {
@@ -114,7 +116,7 @@ class GlyphManager {
                 return;
             }
 
-            glyph = this._tinySDF(entry, stack, id, false);
+            glyph = this._tinySDF(entry, stack, id);
             if (glyph) {
                 entry.glyphs[id] = glyph;
                 fnCallback(null, {stack, id, glyph});
@@ -158,7 +160,25 @@ class GlyphManager {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || this._tinySDF(entry, stack, id, true) || this._tinySDF(entry, stack, 63, true) || null});
+                    let glyph = result.glyphs[id];
+                    if (!glyph && !this.fallbackGlyphs[stack]) {
+                        this.getGlyphs({[stack]: [63]}, '', (err, results) => {
+                            if (!err) {
+                                this.fallbackGlyphs[stack] = glyph = results[stack].glyphs[63];
+                            }
+                            fnCallback(null, {
+                                stack,
+                                id,
+                                glyph
+                            });
+                        });
+                    } else {
+                        fnCallback(null, {
+                            stack,
+                            id,
+                            glyph: glyph || this.fallbackGlyphs[stack]
+                        });
+                    }
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
