@@ -114,7 +114,7 @@ class GlyphManager {
                 return;
             }
 
-            glyph = this._tinySDF(entry, stack, id);
+            glyph = this._tinySDF(entry, stack, id, false);
             if (glyph) {
                 entry.glyphs[id] = glyph;
                 fnCallback(null, {stack, id, glyph});
@@ -158,7 +158,7 @@ class GlyphManager {
                 if (err) {
                     fnCallback(err);
                 } else if (result) {
-                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
+                    fnCallback(null, {stack, id, glyph: result.glyphs[id] || this._tinySDF(entry, stack, id, true) || this._tinySDF(entry, stack, 63, true) || null});
                 }
             });
         }, (err, glyphs: ?Array<{stack: string, id: number, glyph: ?StyleGlyph}>) => {
@@ -206,9 +206,9 @@ class GlyphManager {
         }
     }
 
-    _tinySDF(entry: Entry, stack: string, id: number): ?StyleGlyph {
+    _tinySDF(entry: Entry, stack: string, id: number, isFallback: boolean): ?StyleGlyph {
         const fontFamily = this.localFontFamily;
-        if (!fontFamily || !this._doesCharSupportLocalGlyph(id)) return;
+        if (!isFallback && (!fontFamily || !this._doesCharSupportLocalGlyph(id))) return;
 
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
