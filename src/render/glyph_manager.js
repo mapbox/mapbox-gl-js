@@ -59,13 +59,14 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
+    enableFallbackGlyph: ?boolean
     urls: {[scope: string]: ?string};
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily: ?string) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily: ?string, enableFallbackGlyph: ?boolean) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
@@ -78,6 +79,7 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
+        this.enableFallbackGlyph = enableFallbackGlyph;
     }
 
     setURL(url: ?string, scope: string) {
@@ -91,12 +93,12 @@ class GlyphManager {
         const url = this.urls[scope] || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
-            let isFoundFallbackRange = false;
+            let doesCharSupportFallbackGlyphRange = false;
             for (const id of glyphs[stack]) {
                 all.push({stack, id});
-                if (!isFoundFallbackRange && Math.floor(id / 256) === 0) isFoundFallbackRange = true;
+                if (!!this.enableFallbackGlyph && id >= 0 && id <= 255) doesCharSupportFallbackGlyphRange = true;
             }
-            if (!isFoundFallbackRange) {
+            if (!!this.enableFallbackGlyph && !doesCharSupportFallbackGlyphRange) {
                 all.push({stack, id: 63});
             }
         }
@@ -180,7 +182,7 @@ class GlyphManager {
                         id: glyph.id,
                         bitmap: glyph.bitmap.clone(),
                         metrics: glyph.metrics,
-                    } : {
+                    } : !!this.enableFallbackGlyph && this.entries[stack].glyphs[63] && {
                         id,
                         bitmap: this.entries[stack].glyphs[63].bitmap.clone(),
                         metrics: this.entries[stack].glyphs[63].metrics,

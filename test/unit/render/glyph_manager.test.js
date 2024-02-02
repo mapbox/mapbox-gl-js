@@ -44,7 +44,7 @@ const createLoadGlyphRangeStub = (t) => {
 const createGlyphManager = (font, allGlyphs) => {
     const manager = new GlyphManager(identityTransform,
         font ? (allGlyphs ? LocalGlyphMode.all : LocalGlyphMode.ideographs) : LocalGlyphMode.none,
-        font);
+        font, false);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
     return manager;
 };

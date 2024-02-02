@@ -148,6 +148,7 @@ export type StyleOptions = {
     validate?: boolean,
     localFontFamily?: ?string,
     localIdeographFontFamily?: string,
+    enableFallbackGlyph?: Boolean,
 
     dispatcher?: Dispatcher,
     imageManager?: ImageManager,
@@ -306,7 +307,7 @@ class Style extends Evented {
                 options.localFontFamily ?
                     LocalGlyphMode.all :
                     (options.localIdeographFontFamily ? LocalGlyphMode.ideographs : LocalGlyphMode.none),
-                options.localFontFamily || options.localIdeographFontFamily);
+                options.localFontFamily || options.localIdeographFontFamily, options.enableFallbackGlyph);
         }
 
         if (options.modelManager) {
