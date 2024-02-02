@@ -178,19 +178,25 @@ class GlyphManager {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
                     if (result[stack] === undefined) result[stack] = {};
                     if (result[stack].glyphs === undefined) result[stack].glyphs = {};
-                    result[stack].glyphs[id] = glyph ? {
-                        id: glyph.id,
-                        bitmap: glyph.bitmap.clone(),
-                        metrics: glyph.metrics,
-                    } : !!this.enableFallbackGlyph && this.entries[stack].glyphs[63] && {
-                        id,
-                        bitmap: this.entries[stack].glyphs[63].bitmap.clone(),
-                        metrics: this.entries[stack].glyphs[63].metrics,
-                    };
+                    if (glyph) {
+                        result[stack].glyphs[id] = {
+                            id: glyph.id,
+                            bitmap: glyph.bitmap.clone(),
+                            metrics: glyph.metrics,
+                        };
+                    } else if (this.enableFallbackGlyph) {
+                        const fallbackGlyph = this.entries[stack].glyphs[63];
+                        if (fallbackGlyph) {
+                            result[stack].glyphs[id] = {
+                                id,
+                                bitmap: fallbackGlyph.bitmap.clone(),
+                                metrics: fallbackGlyph.metrics,
+                            };
+                        }
+                    }
                     result[stack].ascender = this.entries[stack].ascender;
                     result[stack].descender = this.entries[stack].descender;
                 }
-
                 callback(null, result);
             }
         });
