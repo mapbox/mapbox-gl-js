@@ -192,7 +192,11 @@ class GlyphManager {
                                 bitmap: fallbackGlyph.bitmap.clone(),
                                 metrics: fallbackGlyph.metrics,
                             };
+                        } else {
+                            result[stack].glyphs[id] = null;
                         }
+                    } else {
+                        result[stack].glyphs[id] = null;
                     }
                     result[stack].ascender = this.entries[stack].ascender;
                     result[stack].descender = this.entries[stack].descender;
