@@ -1227,7 +1227,7 @@
     },
     "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required for vector tile sources; prohibited for all other source types, including GeoJSON sources."
+      "doc": "Layer to use from a vector tile source. Required for vector and raster-array sources; prohibited for all other source types, including GeoJSON sources."
     },
     "slot": {
       "type": "string",
@@ -7615,7 +7615,12 @@
       "required": false,
       "property-type": "data-constant",
       "transition": false,
-      "doc": "Displayed band of raster array source layer",
+      "requires": [
+        {
+          "source": "raster-array"
+        }
+      ],
+      "doc": "Displayed band of raster array source layer. Defaults to the first band if not set.",
       "example": "band-name",
       "sdk-support": {
         "basic functionality": {
