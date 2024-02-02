@@ -41,10 +41,10 @@ const createLoadGlyphRangeStub = (t) => {
     });
 };
 
-const createGlyphManager = (font, allGlyphs) => {
+const createGlyphManager = (font, allGlyphs, enableFallbackGlyph) => {
     const manager = new GlyphManager(identityTransform,
         font ? (allGlyphs ? LocalGlyphMode.all : LocalGlyphMode.ideographs) : LocalGlyphMode.none,
-        font, false);
+        font, !!enableFallbackGlyph);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
     return manager;
 };

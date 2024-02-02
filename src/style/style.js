@@ -148,7 +148,7 @@ export type StyleOptions = {
     validate?: boolean,
     localFontFamily?: ?string,
     localIdeographFontFamily?: string,
-    enableFallbackGlyph?: Boolean,
+    enableFallbackGlyph?: boolean,
 
     dispatcher?: Dispatcher,
     imageManager?: ImageManager,
