@@ -55,12 +55,12 @@ const defaultOptions = {
  * Not all browsers support geolocation,
  * and some users may disable the feature. Geolocation support for modern
  * browsers including Chrome requires sites to be served over HTTPS. If
- * geolocation support is not available, the GeolocateControl will show
+ * geolocation support is not available, the `GeolocateControl` will show
  * as disabled.
  *
  * The [zoom level](https://docs.mapbox.com/help/glossary/zoom-level/) applied depends on the accuracy of the geolocation provided by the device.
  *
- * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three interaction states:
+ * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the `GeolocateControl` has three interaction states:
  * * active - The map's camera automatically updates as the user's location changes, keeping the location dot in the center. This is the initial state, and the state upon clicking the `GeolocateControl` button.
  * * passive - The user's location dot automatically updates, but the map's camera does not. Occurs upon the user initiating a map movement.
  * * disabled - Occurs if geolocation is not available, disabled, or denied.
@@ -71,7 +71,7 @@ const defaultOptions = {
  * @param {Object} [options]
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
  * @param {Object} [options.fitBoundsOptions={maxZoom: 15}] A {@link Map#fitBounds} options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
- * @param {Object} [options.trackUserLocation=false] If `true` the GeolocateControl becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {Object} [options.trackUserLocation=false] If `true` the `GeolocateControl` becomes a toggle button and when active the map will receive updates to the user's location as it changes.
  * @param {Object} [options.showAccuracyCircle=true] By default, if `showUserLocation` is `true`, a transparent circle will be drawn around the user location indicating the accuracy (95% confidence level) of the user's location. Set to `false` to disable. Always disabled when `showUserLocation` is `false`.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  * @param {Object} [options.showUserHeading=false] If `true` an arrow will be drawn next to the user location dot indicating the device's heading. This only has affect when `trackUserLocation` is `true`.
@@ -185,10 +185,10 @@ class GeolocateControl extends Evented {
     }
 
     /**
-     * Check if the Geolocation API Position is outside the map's maxbounds.
+     * Check if the Geolocation API Position is outside the map's `maxBounds`.
      *
      * @param {Position} position the Geolocation API Position
-     * @returns {boolean} Returns `true` if position is outside the map's maxbounds, otherwise returns `false`.
+     * @returns {boolean} Returns `true` if position is outside the map's `maxBounds`, otherwise returns `false`.
      * @private
      */
     _isOutOfMapMaxBounds(position: Position): boolean {
@@ -232,7 +232,7 @@ class GeolocateControl extends Evented {
     }
 
     /**
-     * When the Geolocation API returns a new location, update the GeolocateControl.
+     * When the Geolocation API returns a new location, update the `GeolocateControl`.
      *
      * @param {Position} position the Geolocation API Position
      * @private
@@ -494,7 +494,7 @@ class GeolocateControl extends Evented {
     * Programmatically request and move the map to the user's location.
     *
     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
-    * Called on a deviceorientation event.
+    * Called on a `deviceorientation` event.
     *
     * @param deviceOrientationEvent {DeviceOrientationEvent}
     * @private
@@ -788,7 +788,7 @@ export default GeolocateControl;
  */
 
 /**
- * Fired when the GeolocateControl changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or when the user clicks the geolocate button when in the background state, which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
+ * Fired when the `GeolocateControl` changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a `geolocate` event will follow), or when the user clicks the geolocate button when in the background state, which uses the last known position to recenter the map and enter active lock state (no `geolocate` event will follow unless the users's location changes).
  *
  * @event trackuserlocationstart
  * @memberof GeolocateControl
@@ -811,7 +811,7 @@ export default GeolocateControl;
  */
 
 /**
- * Fired when the GeolocateControl changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
+ * Fired when the `GeolocateControl` changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when `trackUserLocation` is `true`. In the background state, the dot on the map will update with location updates but the camera will not.
  *
  * @event trackuserlocationend
  * @memberof GeolocateControl
