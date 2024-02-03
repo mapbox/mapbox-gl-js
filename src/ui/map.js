@@ -195,6 +195,7 @@ const defaultOptions = {
     maxTileCacheSize: null,
     localIdeographFontFamily: 'sans-serif',
     localFontFamily: null,
+    enableFallbackGlyph: false,
     transformRequest: null,
     accessToken: null,
     fadeDuration: 300,
@@ -301,6 +302,7 @@ const defaultOptions = {
  * @param {string} [options.localFontFamily=null] Defines a CSS
  *     font-family for locally overriding generation of all glyphs. Font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *     If set, this option overrides the setting in localIdeographFontFamily.
+ * @param {boolean} [options.enableFallbackGlyph=false] IF true, will show the fallback character ? in place of characters which are missing from custom fonts
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *     Expected to return a {@link RequestParameters} object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
@@ -400,6 +402,7 @@ class Map extends Camera {
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily: ?string;
+    _enableFallbackGlyph: ?boolean;
     _requestManager: RequestManager;
     _locale: Object;
     _removed: boolean;
@@ -611,10 +614,11 @@ class Map extends Camera {
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
+        this._enableFallbackGlyph = options.enableFallbackGlyph;
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
-            this.setStyle(style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+            this.setStyle(style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily, enableFallbackGlyph: this._enableFallbackGlyph});
         }
 
         if (options.projection) {
@@ -1940,16 +1944,17 @@ class Map extends Camera {
      * @see [Example: Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions): this {
-        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
+        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily, enableFallbackGlyph: this._enableFallbackGlyph}, options);
 
         if ((options.diff !== false &&
             options.localIdeographFontFamily === this._localIdeographFontFamily &&
-            options.localFontFamily === this._localFontFamily) && this.style && style) {
+            options.localFontFamily === this._localFontFamily && options.enableFallbackGlyph === this._enableFallbackGlyph) && this.style && style) {
             this._diffStyle(style, options);
             return this;
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
             this._localFontFamily = options.localFontFamily;
+            this._enableFallbackGlyph = options.enableFallbackGlyph;
             return this._updateStyle(style, options);
         }
     }

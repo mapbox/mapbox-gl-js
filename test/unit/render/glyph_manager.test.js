@@ -227,3 +227,31 @@ test('GlyphManager locally generates latin glyphs', (t) => {
         t.end();
     });
 });
+
+test('GlyphManager replaces missing glyphs from custom font with ? character glyph of the corresponding font', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+    // enableFallbackGlyph option is set to true
+    const manager = createGlyphManager('sans-serif', true, true);
+
+    manager.getGlyphs({'Arial Unicode MS': [0x2253]}, undefined, (err, result) => {
+        t.ifError(err);
+        const glyphs = result['Arial Unicode MS'].glyphs;
+        t.equal(glyphs[0x2253].metrics.advance, 10);
+        t.equal(glyphs[0x2253].metrics.width, 11);
+        t.equal(glyphs[0x2253].metrics.height, 19);
+        t.end();
+    });
+});
+
+test('GlyphManager do not replace missing glyph from custom font with ? character glyph', (t) => {
+    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+    // enableFallbackGlyph option is set to false
+    const manager = createGlyphManager('sans-serif', true, false);
+
+    manager.getGlyphs({'Arial Unicode MS': [0x2253]}, undefined, (err, result) => {
+        t.ifError(err);
+        const glyphs = result['Arial Unicode MS'].glyphs;
+        t.equal(glyphs[0x2253], null);
+        t.end();
+    });
+});
