@@ -7,6 +7,11 @@
 
 const pages = [
     {
+        "key": "standard-style",
+        "title": "Standard Style",
+        "url": "./standard-style.html"
+    },
+    {
         "key": "animate-point-along-route",
         "title": "Animate route",
         "url": "./animate-point-along-route.html"
