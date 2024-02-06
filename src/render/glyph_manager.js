@@ -96,9 +96,9 @@ class GlyphManager {
             let doesCharSupportFallbackGlyphRange = false;
             for (const id of glyphs[stack]) {
                 all.push({stack, id});
-                if (!!this.enableFallbackGlyph && id >= 0 && id <= 255) doesCharSupportFallbackGlyphRange = true;
+                if (this.localGlyphMode !== LocalGlyphMode.all && !!this.enableFallbackGlyph && id >= 0 && id <= 255) doesCharSupportFallbackGlyphRange = true;
             }
-            if (!!this.enableFallbackGlyph && !doesCharSupportFallbackGlyphRange) {
+            if (this.localGlyphMode !== LocalGlyphMode.all && !!this.enableFallbackGlyph && !doesCharSupportFallbackGlyphRange) {
                 all.push({stack, id: 63});
             }
         }
