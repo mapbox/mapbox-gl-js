@@ -29,8 +29,8 @@ class FillStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
-        super(layer, properties, options);
+    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
+        super(layer, properties, scope, options);
     }
 
     getProgramIds(): string[] {

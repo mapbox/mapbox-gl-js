@@ -40,8 +40,8 @@ class HeatmapStyleLayer extends StyleLayer {
         return new HeatmapBucket(parameters);
     }
 
-    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
-        super(layer, properties, options);
+    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
+        super(layer, properties, scope, options);
 
         // make sure color ramp texture is generated for default heatmap color too
         this._updateColorRamp();

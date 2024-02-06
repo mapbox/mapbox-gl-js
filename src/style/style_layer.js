@@ -87,11 +87,15 @@ class StyleLayer extends Evented {
     +onRemove: ?(map: MapboxMap) => void;
     +isLayerDraped: ?(sourceCache: ?SourceCache) => boolean;
 
-    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, options?: ?ConfigOptions) {
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, scope: string, options?: ?ConfigOptions) {
         super();
 
         this.id = layer.id;
+        this.fqid = makeFQID(this.id, scope);
         this.type = layer.type;
+        this.scope = scope;
+        this.options = options;
+
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
         this.isConfigDependent = false;
@@ -110,17 +114,15 @@ class StyleLayer extends Evented {
             this.filter = layer.filter;
         }
 
-        this.options = options;
-
         if (layer.slot) this.slot = layer.slot;
 
         if (properties.layout) {
-            this._unevaluatedLayout = new Layout(properties.layout, options);
+            this._unevaluatedLayout = new Layout(properties.layout, this.scope, options);
             this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
         }
 
         if (properties.paint) {
-            this._transitionablePaint = new Transitionable(properties.paint, options);
+            this._transitionablePaint = new Transitionable(properties.paint, this.scope, options);
 
             for (const property in layer.paint) {
                 this.setPaintProperty(property, layer.paint[property], {validate: false});
@@ -134,16 +136,6 @@ class StyleLayer extends Evented {
             //$FlowFixMe
             this.paint = new PossiblyEvaluated(properties.paint);
         }
-    }
-
-    /**
-     * Sets the scope of the style layer to a particular Style.
-     *
-     * @private
-     */
-    setScope(scope: string) {
-        this.scope = scope;
-        this.fqid = makeFQID(this.id, scope);
     }
 
     getLayoutProperty(name: string): PropertyValueSpecification<mixed> {

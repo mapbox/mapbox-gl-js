@@ -154,12 +154,14 @@ export type StyleOptions = {
     glyphManager?: GlyphManager,
     modelManager?: ModelManager,
     styleChanges?: StyleChanges,
+    configOptions?: ConfigOptions,
 
     scope?: string,
     importDepth?: number,
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
-    config?: ?ConfigSpecification
+    config?: ?ConfigSpecification,
+    configDependentLayers?: Set<string>;
 };
 
 export type StyleSetterOptions = {
@@ -328,8 +330,8 @@ class Style extends Evented {
         this._order = [];
         this._markersNeedUpdate = false;
 
-        this.options = new Map();
-        this._configDependentLayers = new Set();
+        this.options = options.configOptions ? options.configOptions : new Map();
+        this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
         this._config = options.config;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
@@ -480,7 +482,9 @@ class Style extends Evented {
             imageManager: this.imageManager,
             glyphManager: this.glyphManager,
             modelManager: this.modelManager,
-            config: importSpec.config
+            config: importSpec.config,
+            configOptions: this.options,
+            configDependentLayers: this._configDependentLayers
         });
 
         // Bubble all events fired by the style to the map.
@@ -492,6 +496,7 @@ class Style extends Evented {
     _reloadImports() {
         this.mergeAll();
         this._updateMapProjection();
+        this.updateConfigDependencies();
         this.map._triggerCameraUpdate(this.camera);
 
         this.dispatcher.broadcast('setLayers', {
@@ -562,8 +567,7 @@ class Style extends Evented {
         this._layers = {};
         this._serializedLayers = {};
         for (const layer of layers) {
-            const styleLayer = createStyleLayer(layer, this.options);
-            styleLayer.setScope(this.scope);
+            const styleLayer = createStyleLayer(layer, this.scope, this.options);
             if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
             styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
             this._layers[styleLayer.id] = styleLayer;
@@ -1616,7 +1620,8 @@ class Style extends Evented {
     getConfigProperty(fragmentId: string, key: string): ?any {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
-        const expressions = fragmentStyle.options.get(key);
+        const fqid = makeFQID(key, fragmentStyle.scope);
+        const expressions = fragmentStyle.options.get(fqid);
         const expression = expressions ? expressions.value || expressions.default : null;
         return expression ? expression.serialize() : null;
     }
@@ -1633,11 +1638,12 @@ class Style extends Evented {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return;
 
-        const expressions = fragmentStyle.options.get(key);
+        const fqid = makeFQID(key, fragmentStyle.scope);
+        const expressions = fragmentStyle.options.get(fqid);
         if (!expressions) return;
 
-        fragmentStyle.options.set(key, {...expressions, value: expression});
-        fragmentStyle.updateConfigDependencies();
+        this.options.set(fqid, {...expressions, value: expression});
+        this.updateConfigDependencies();
     }
 
     setConfig(config: ?ConfigSpecification, schema: ?SchemaSpecification) {
@@ -1649,8 +1655,6 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`Attempting to set config for a style without schema.`)));
             return;
         }
-
-        this.options.clear();
 
         for (const id in schema) {
             let defaultExpression;
@@ -1672,7 +1676,8 @@ class Style extends Evented {
             const {minValue, maxValue, stepValue, type, values} = schema[id];
 
             if (defaultExpression) {
-                this.options.set(id, {
+                const fqid = makeFQID(id, this.scope);
+                this.options.set(fqid, {
                     default: defaultExpression,
                     value: configExpression,
                     minValue, maxValue, stepValue, type, values
@@ -1692,13 +1697,11 @@ class Style extends Evented {
             }
         }
 
-        // If the root style uses the lights from the updated fragment,
-        // update the configs in the corresponding light instances.
-        if (this.ambientLight && this.ambientLight.scope === this.scope) {
+        if (this.ambientLight) {
             this.ambientLight.updateConfig(this.options);
         }
 
-        if (this.directionalLight && this.directionalLight.scope === this.scope) {
+        if (this.directionalLight) {
             this.directionalLight.updateConfig(this.options);
         }
 
@@ -1726,7 +1729,7 @@ class Style extends Evented {
         let layer;
         if (layerObject.type === 'custom') {
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
-            layer = createStyleLayer(layerObject, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this.options);
         } else {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
@@ -1738,7 +1741,7 @@ class Style extends Evented {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
@@ -1746,7 +1749,6 @@ class Style extends Evented {
         }
 
         if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
-        layer.setScope(this.scope);
 
         let index = this._order.length;
         if (before) {
@@ -2843,7 +2845,8 @@ class Style extends Evented {
 
         fragment.config = config;
         fragment.style.setConfig(config, schema);
-        fragment.style.updateConfigDependencies();
+
+        this.updateConfigDependencies();
 
         return this;
     }

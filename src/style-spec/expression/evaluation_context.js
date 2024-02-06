@@ -20,11 +20,12 @@ class EvaluationContext {
     canonical: null | CanonicalTileID;
     featureTileCoord: ?Point;
     featureDistanceData: ?FeatureDistanceData;
+    scope: ?string;
     options: ?ConfigOptions;
 
     _parseColorCache: {[_: string]: ?Color};
 
-    constructor(options?: ?ConfigOptions) {
+    constructor(scope: ?string, options: ?ConfigOptions) {
         this.globals = (null: any);
         this.feature = null;
         this.featureState = null;
@@ -34,6 +35,7 @@ class EvaluationContext {
         this.canonical = null;
         this.featureTileCoord = null;
         this.featureDistanceData = null;
+        this.scope = scope;
         this.options = options;
     }
 

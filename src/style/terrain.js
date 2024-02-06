@@ -34,7 +34,7 @@ class Terrain extends Evented {
     constructor(terrainOptions: TerrainSpecification, drapeRenderMode: number, scope: string, configOptions?: ?ConfigOptions) {
         super();
         this.scope = scope;
-        this._transitionable = new Transitionable(properties, configOptions);
+        this._transitionable = new Transitionable(properties, scope, configOptions);
         this._transitionable.setTransitionOrValue<TerrainSpecification>(terrainOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this.drapeRenderMode = drapeRenderMode;

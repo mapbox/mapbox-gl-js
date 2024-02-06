@@ -20,7 +20,7 @@ class Lights<P: Object> extends Evented {
         this._options = options;
         this.properties = new PossiblyEvaluated(properties);
 
-        this._transitionable = new Transitionable(properties, new Map(configOptions));
+        this._transitionable = new Transitionable(properties, scope, new Map(configOptions));
         this._transitionable.setTransitionOrValue<LightsSpecification['properties']>(options.properties);
         this._transitioning = this._transitionable.untransitioned();
     }

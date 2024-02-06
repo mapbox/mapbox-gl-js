@@ -2285,7 +2285,8 @@ test('Style#setConfigProperty', (t) => {
                 t.equal(key, 'updateLayers');
                 t.equal(value.scope, 'standard');
                 t.deepEqual(value.removedIds, []);
-                t.deepEqual(value.options.get('showBackground').value.value, true);
+                const fqid = makeFQID('showBackground', 'standard');
+                t.deepEqual(value.options.get(fqid).value.value, true);
                 t.deepEqual(value.layers.map(layer => layer.id), ['background']);
                 t.end();
             };

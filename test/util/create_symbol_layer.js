@@ -8,8 +8,7 @@ export function createSymbolBucket(layerId, font, text, collisionBoxArray) {
         type: 'symbol',
         layout: {'text-font': [font], 'text-field': text},
         filter: featureFilter()
-    });
-    layer.setScope('');
+    }, '');
     layer.recalculate({zoom: 0});
 
     return new SymbolBucket({

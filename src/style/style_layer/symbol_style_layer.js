@@ -51,8 +51,8 @@ class SymbolStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
-        super(layer, properties, options);
+    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
+        super(layer, properties, scope, options);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
@@ -133,7 +133,7 @@ class SymbolStyleLayer extends StyleLayer {
             }
             const overriden = this.paint.get(overridable);
             const override = new FormatSectionOverride(overriden);
-            const styleExpression = new StyleExpression(override, overriden.property.specification);
+            const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options);
             let expression = null;
             // eslint-disable-next-line no-warning-comments
             // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions

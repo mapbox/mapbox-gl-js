@@ -195,8 +195,8 @@ class CustomStyleLayer extends StyleLayer {
 
     implementation: CustomLayerInterface;
 
-    constructor(implementation: CustomLayerInterface) {
-        super(implementation, {});
+    constructor(implementation: CustomLayerInterface, scope: string) {
+        super(implementation, {}, scope);
         this.implementation = implementation;
         if (implementation.slot) this.slot = implementation.slot;
     }

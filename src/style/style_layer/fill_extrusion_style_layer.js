@@ -37,8 +37,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
     layout: PossiblyEvaluated<LayoutProps>;
 
-    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
-        super(layer, properties, options);
+    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
+        super(layer, properties, scope, options);
         this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }
 

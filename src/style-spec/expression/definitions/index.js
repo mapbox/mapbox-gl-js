@@ -168,8 +168,8 @@ function clampToAllowedNumber(value: number, min: number | void, max: number | v
     return value;
 }
 
-function getConfig(ctx: EvaluationContext, key: string, scope: string) {
-    if (scope.length) {
+function getConfig(ctx: EvaluationContext, key: string, scope: ?string) {
+    if (scope && scope.length) {
         key += `\u{1f}${scope}`;
     }
     const config = ctx.getConfig(key);
@@ -295,7 +295,7 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [StringType],
-                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx), '')
+                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx), ctx.scope)
             ], [
                 [StringType, StringType],
                 (ctx, [key, scope]) => getConfig(ctx, key.evaluate(ctx), scope.evaluate(ctx))

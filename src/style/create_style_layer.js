@@ -34,10 +34,10 @@ const subclasses = {
     model
 };
 
-export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, options?: ?ConfigOptions): StyleLayer | CustomStyleLayer {
+export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, scope: string, options?: ?ConfigOptions): StyleLayer | CustomStyleLayer {
     if (layer.type === 'custom') {
-        return new CustomStyleLayer(layer);
+        return new CustomStyleLayer(layer, scope);
     } else {
-        return new subclasses[layer.type](layer, options);
+        return new subclasses[layer.type](layer, scope, options);
     }
 }

@@ -1,0 +1,285 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "operations": [
+        [
+          "setStyle",
+          {
+            "version": 8,
+            "center": [0, 0],
+            "zoom": 0,
+            "transition": {
+              "duration": 0
+            },
+            "sources": {},
+            "layers": [],
+            "imports": [
+              {
+                "id": "basemap",
+                "url": "",
+                "data": {
+                  "version": 8,
+                  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+                  "schema": {
+                    "lightPreset": {
+                      "default": "day"
+                    }
+                  },
+                  "lights": [
+                    {
+                      "type": "ambient",
+                      "id": "ambient",
+                      "properties": {
+                        "color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "day",
+                          "hsl(0, 0%, 100%)",
+                          "night",
+                          "hsl(217, 100%, 11%)",
+                          "hsl(0, 0%, 100%)"
+                        ],
+                        "intensity": 0.5
+                      }
+                    },
+                    {
+                      "type": "directional",
+                      "id": "directional",
+                      "properties": {
+                        "color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "day",
+                          "hsl(0, 0%, 100%)",
+                          "night",
+                          "hsl(0, 0%, 29%)",
+                          "hsl(0, 0%, 100%)"
+                        ],
+                        "intensity": 0.5
+                      }
+                    }
+                  ],
+                  "sources": {
+                    "point": {
+                      "type": "geojson",
+                      "data": {
+                        "type": "Point",
+                        "coordinates": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  },
+                  "layers": [
+                    {
+                      "id": "background",
+                      "type": "background",
+                      "paint": {
+                        "background-color": "violet"
+                      }
+                    },
+                    {
+                      "id": "circle",
+                      "type": "circle",
+                      "source": "point",
+                      "paint": {
+                        "circle-radius": 18,
+                        "circle-color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "day",
+                          "white",
+                          "night",
+                          "black",
+                          "red"
+                        ]
+                      }
+                    },
+                    {
+                      "id": "text",
+                      "type": "symbol",
+                      "source": "point",
+                      "layout": {
+                        "text-field": [
+                          "config",
+                          "lightPreset"
+                        ],
+                        "text-font": [
+                          "Open Sans Semibold",
+                          "Arial Unicode MS Bold"
+                        ]
+                      },
+                      "paint": {
+                        "text-color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "day",
+                          "black",
+                          "night",
+                          "white",
+                          "red"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "transition": {
+    "duration": 0
+  },
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "config": {
+        "lightPreset": "day"
+      },
+      "data": {
+        "version": 8,
+        "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+        "schema": {
+          "lightPreset": {
+            "default": "night"
+          }
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "id": "ambient",
+            "properties": {
+              "color": [
+                "match",
+                [
+                  "config",
+                  "lightPreset"
+                ],
+                "day",
+                "hsl(0, 0%, 100%)",
+                "night",
+                "hsl(217, 100%, 11%)",
+                "hsl(0, 0%, 100%)"
+              ],
+              "intensity": 0.5
+            }
+          },
+          {
+            "type": "directional",
+            "id": "directional",
+            "properties": {
+              "color": [
+                "match",
+                [
+                  "config",
+                  "lightPreset"
+                ],
+                "day",
+                "hsl(0, 0%, 100%)",
+                "night",
+                "hsl(0, 0%, 29%)",
+                "hsl(0, 0%, 100%)"
+              ],
+              "intensity": 0.5
+            }
+          }
+        ],
+        "sources": {
+          "point": {
+            "type": "geojson",
+            "data": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "violet"
+            }
+          },
+          {
+            "id": "circle",
+            "type": "circle",
+            "source": "point",
+            "paint": {
+              "circle-radius": 18,
+              "circle-color": [
+                "match",
+                [
+                  "config",
+                  "lightPreset"
+                ],
+                "day",
+                "white",
+                "night",
+                "black",
+                "red"
+              ]
+            }
+          },
+          {
+            "id": "text",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+              "text-field": [
+                "config",
+                "lightPreset"
+              ],
+              "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+              ]
+            },
+            "paint": {
+              "text-color": [
+                "match",
+                [
+                  "config",
+                  "lightPreset"
+                ],
+                "day",
+                "black",
+                "night",
+                "white",
+                "red"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

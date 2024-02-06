@@ -44,8 +44,8 @@ class SkyLayer extends StyleLayer {
 
     skyboxGeometry: SkyboxGeometry;
 
-    constructor(layer: LayerSpecification, options?: ?ConfigOptions) {
-        super(layer, properties, options);
+    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
+        super(layer, properties, scope, options);
         this._updateColorRamp();
     }
 
