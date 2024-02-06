@@ -30,7 +30,7 @@
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://models/landmark/mbx/{x}-{y}-{z}.b3dm"
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
       ]
     }
   },

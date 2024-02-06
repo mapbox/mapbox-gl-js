@@ -2,7 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.00068,
+      "allowed": 0.00085,
       "width": 512,
       "height": 512,
       "collisionDebug": true,
@@ -44,7 +44,7 @@
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://models/landmark/mbx/{x}-{y}-{z}.b3dm"
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
       ]
     }
   },
