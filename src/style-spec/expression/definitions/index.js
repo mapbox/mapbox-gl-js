@@ -46,11 +46,11 @@ import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
 import Distance from './distance.js';
+import {mulberry32} from '../../util/random.js';
 
 import type EvaluationContext from '../evaluation_context.js';
 import type {Varargs} from '../compound_expression.js';
 import type {Expression, ExpressionRegistry} from '../expression.js';
-import {mulberry32} from '../../util/random.js';
 
 const expressions: ExpressionRegistry = {
     // special forms
@@ -168,10 +168,13 @@ function clampToAllowedNumber(value: number, min: number | void, max: number | v
     return value;
 }
 
+const FQIDSeparator = '\u001F';
+
 function getConfig(ctx: EvaluationContext, key: string, scope: ?string) {
-    if (scope && scope.length) {
-        key += `\u{1f}${scope}`;
-    }
+    // Create a fully qualified key from the requested scope
+    // and the scope from the current evaluation context
+    key = [key, scope, ctx.scope].filter(Boolean).join(FQIDSeparator);
+
     const config = ctx.getConfig(key);
     if (!config) return null;
 
@@ -295,7 +298,7 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [StringType],
-                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx), ctx.scope)
+                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx))
             ], [
                 [StringType, StringType],
                 (ctx, [key, scope]) => getConfig(ctx, key.evaluate(ctx), scope.evaluate(ctx))
