@@ -142,7 +142,6 @@ class Actor {
         } else {
             const buffers: Set<Transferable> = new Set();
             const done = task.hasCallback ? (err: ?Error, data: mixed) => {
-                delete this.cancelCallbacks[id];
                 this.target.postMessage({
                     id,
                     type: '<response>',
