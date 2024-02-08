@@ -430,7 +430,7 @@ class Style extends Evented {
             const style = this._createFragmentStyle(importSpec);
 
             // Merge everything and update layers after the import style is settled.
-            const waitForStyle = new Promise(resolve => {
+            const waitForStyle = new Promise((resolve) => {
                 style.once('style.import.load', resolve);
                 style.once('error', resolve);
             })

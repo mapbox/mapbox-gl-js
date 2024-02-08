@@ -118,8 +118,8 @@ export class Elevation {
             (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
     }
 
-    getAtTileOffsetFunc(tileID: OverscaledTileID, lat: number, worldSize: number, projection: Projection): Function {
-        return (p => {
+    getAtTileOffsetFunc(tileID: OverscaledTileID, lat: number, worldSize: number, projection: Projection): (Point) => VecType {
+        return ((p: Point) => {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
             const upVector = projection.upVector(tileID.canonical, p.x, p.y);
             const upVectorScale = projection.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;

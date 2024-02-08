@@ -242,7 +242,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           glCoordMatrix: Float32Array,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
-                          getElevation: ?((p: Point) => Array<number>),
+                          getElevation: ?((p: Point) => VecType),
                           tileID: OverscaledTileID) {
 
     const tr = painter.transform;
@@ -367,7 +367,7 @@ function placeFirstAndLastGlyph(
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
     projectionCache: ProjectionCache,
-    getElevation: ?((p: Point) => Array<number>),
+    getElevation: ?((p: Point) => VecType),
     returnPathInTileCoords: ?boolean,
     projection: Projection,
     tileID: OverscaledTileID,
@@ -422,7 +422,7 @@ function requiresOrientationChange(writingMode: number, flipState: number, dx: n
     return dx < 0 ? {needsFlipping: true} : null;
 }
 
-function placeGlyphsAlongLine(symbol: PlacedSymbol, fontSize: number, flip: boolean, keepUpright: boolean, posMatrix: Float32Array, labelPlaneMatrix: Float32Array, glCoordMatrix: Float32Array, glyphOffsetArray: GlyphOffsetArray, lineVertexArray: SymbolLineVertexArray, dynamicLayoutVertexArray: SymbolDynamicLayoutArray, globeExtVertexArray: ?SymbolGlobeExtArray, anchorPoint: VecType, tileAnchorPoint: Point, projectionCache: ProjectionCache, aspectRatio: number, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: OverscaledTileID, pitchWithMap: boolean): PlacementStatus {
+function placeGlyphsAlongLine(symbol: PlacedSymbol, fontSize: number, flip: boolean, keepUpright: boolean, posMatrix: Float32Array, labelPlaneMatrix: Float32Array, glCoordMatrix: Float32Array, glyphOffsetArray: GlyphOffsetArray, lineVertexArray: SymbolLineVertexArray, dynamicLayoutVertexArray: SymbolDynamicLayoutArray, globeExtVertexArray: ?SymbolGlobeExtArray, anchorPoint: VecType, tileAnchorPoint: Point, projectionCache: ProjectionCache, aspectRatio: number, getElevation: ?((p: Point) => VecType), projection: Projection, tileID: OverscaledTileID, pitchWithMap: boolean): PlacementStatus {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontScale;
     const lineOffsetY = symbol.lineOffsetY * fontScale;
@@ -507,7 +507,7 @@ function placeGlyphsAlongLine(symbol: PlacedSymbol, fontSize: number, flip: bool
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation: ?((p: Point) => Array<number>)) {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation: ?((p: Point) => VecType)) {
     const {x, y, z} = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(x, y, z, posMatrix);
@@ -516,7 +516,7 @@ function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Fl
     return project(x + dx, y + dy, z + dz, posMatrix);
 }
 
-function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Vec3, minimumLength: number, projectionMatrix: Float32Array, getElevation: ?((p: Point) => Array<number>), projection: Projection, tileID: CanonicalTileID): Vec3 {
+function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Vec3, minimumLength: number, projectionMatrix: Float32Array, getElevation: ?((p: Point) => VecType), projection: Projection, tileID: CanonicalTileID): Vec3 {
     // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
@@ -542,7 +542,7 @@ function placeGlyphAlongLine(
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
     projectionCache: ProjectionCache,
-    getElevation: ?((p: Point) => Array<number>),
+    getElevation: ?((p: Point) => VecType),
     returnPathInTileCoords: ?boolean,
     endGlyph: ?boolean,
     reprojection: Projection,

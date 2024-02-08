@@ -101,7 +101,7 @@ export class Evented {
      */
     once(type: MapEvent, listener?: Listener): this | Promise<Event> {
         if (!listener) {
-            return new Promise(resolve => this.once(type, resolve));
+            return new Promise((resolve) => this.once(type, resolve));
         }
 
         this._oneTimeListeners = this._oneTimeListeners || {};
