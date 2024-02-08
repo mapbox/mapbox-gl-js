@@ -19,6 +19,7 @@
       ]
     },
     "trees": {
+      "minzoom": 15,
       "type": "geojson",
       "data": "local://data/trees.geojson"
     }
@@ -114,7 +115,6 @@
       "source": "mapbox",
       "minzoom": 14,
       "paint": {
-        "fill-extrusion-opacity": 0.7,
         "fill-extrusion-color": "white",
         "fill-extrusion-height": [
           "number",
@@ -130,7 +130,7 @@
             "min_height"
           ]
         ],
-        "fill-extrusion-cutoff-fade-range": 0.2
+        "fill-extrusion-cutoff-fade-range": 1
       },
       "filter": [
         "==",

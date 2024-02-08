@@ -42,7 +42,7 @@ export const getCutoffParams = (
         return {
             shouldRenderCutoff: false,
             uniformValues: {
-                'u_cutoff_params': [0, 0, 0, 0]
+                'u_cutoff_params': [0, 0, 0, 1]
             }
         };
     }
@@ -54,8 +54,7 @@ export const getCutoffParams = (
     const zRange = tr._farZ - tr._nearZ;
     const cameraToCenterDistance = tr.cameraToCenterDistance;
     const fadeRangePixels = cutoffFadeRange * tr.height;
-    // Scaled down by 0.75 because at the minimum zoom level the first LOD tile closer than the center
-    const cutoffDistance = lerp(cameraToCenterDistance * 0.75, tr._farZ + fadeRangePixels, pitchScale) * zoomScale;
+    const cutoffDistance = lerp(cameraToCenterDistance, tr._farZ + fadeRangePixels, pitchScale) * zoomScale;
     const relativeCutoffDistance = ((cutoffDistance - tr._nearZ) / zRange);
     const relativeCutoffFadeDistance = ((cutoffDistance - fadeRangePixels - tr._nearZ) / zRange);
     return {

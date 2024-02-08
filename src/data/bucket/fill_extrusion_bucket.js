@@ -1374,6 +1374,27 @@ class FillExtrusionBucket implements Bucket {
         return new Point((clamp(c.x, 1, EXTENT - 1) << 3) | spanX, (clamp(c.y, 1, EXTENT - 1) << 3) | spanY);
     }
 
+    // Border centroid data is unreliable for elevating parts split on tile borders.
+    // It is used only for synchronous lowering of splits as the centroid (not the size information in split parts) is consistent.
+    encodeBorderCentroid(borderCentroidData: BorderCentroidData): Point {
+        assert(borderCentroidData.borders);
+        if (!borderCentroidData.borders) return new Point(0, 0);
+        const b = borderCentroidData.borders;
+        const notOnBorder = Number.MAX_VALUE;
+        const span = 0x6; // any non zero value since span in this is not used in shader
+        assert(borderCentroidData.intersectsCount() === 1);
+        if (b[0][0] !== notOnBorder || b[1][0] !== notOnBorder) {
+            const x = (b[0][0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
+            const index = b[0][0] !== notOnBorder ? 0 : 1;
+            return new Point(x, (((((b[index][0] + b[index][1]) / 2) | 0) << 3) | span));
+        } else {
+            assert(b[2][0] !== notOnBorder || b[3][0] !== notOnBorder);
+            const y = (b[2][0] !== notOnBorder ? 0 : (0x1FFF << 3)) | span;
+            const index = b[2][0] !== notOnBorder ? 2 : 3;
+            return new Point((((((b[index][0] + b[index][1]) / 2) | 0) << 3) | span), y);
+        }
+    }
+
     showCentroid(borderCentroidData: BorderCentroidData) {
         const c = this.centroidData[borderCentroidData.centroidDataIndex];
         c.flags &= HIDDEN_BY_REPLACEMENT;

@@ -50,7 +50,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     const gl = context.gl;
     const terrain = painter.terrain;
     const rtt = terrain && terrain.renderingToTexture;
-    const cutoffFadeRange = layer.paint.get('fill-extrusion-cutoff-fade-range');
     if (opacity === 0) {
         return;
     }
@@ -98,7 +97,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         if (!rtt && color.a !== 0.0) {
             const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
-            if (cutoffFadeRange === 0.0 && opacity === 1 && noPattern) {
+            if (opacity === 1 && noPattern) {
                 drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, ColorMode.unblended, conflateLayer);
             } else {
                 // Draw transparent buildings in two passes so that only the closest surface is drawn.
@@ -727,10 +726,11 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     reconcileReplacement(centroidA, centroidB);
                 }
 
-                let centroidXY = new Point(0, 0);
+                const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
                 if (count > 1) {
                     ib = saveIb;    // rewind unprocessed ib so that it is processed again for the next ia.
-                } else if (neighborDEMTile && neighborDEMTile.dem && !(partA.intersectsCount() > 1 || partB.intersectsCount() > 1)) {
+                    centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
+                } else if (neighborDEMTile && neighborDEMTile.dem && !moreThanOneBorderIntersected) {
                     // If any of a or b crosses more than one tile edge, don't support flat roof.
                     // Now we have 1-1 matching of parts in both tiles that share the edge. Calculate flat base
                     // elevation as average of three points: 2 are edge points (combined span projected to border) and
@@ -739,9 +739,14 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     const edge = (i % 2) ? EXTENT - 1 : 0;
 
                     const height = flatBase(span[0], Math.min(EXTENT - 1, span[1]), edge, neighborDEMTile, nid, i < 2, span[2]);
-                    centroidXY = encodeHeightAsCentroid(height);
+                    centroidA.centroidXY = centroidB.centroidXY = encodeHeightAsCentroid(height);
+                }  else if (moreThanOneBorderIntersected) {
+                    centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
+                } else {
+                    centroidA.centroidXY = bucket.encodeBorderCentroid(partA);
+                    centroidB.centroidXY = nBucket.encodeBorderCentroid(partB);
                 }
-                centroidA.centroidXY = centroidB.centroidXY = centroidXY;
+
                 bucket.writeCentroidToBuffer(centroidA);
                 nBucket.writeCentroidToBuffer(centroidB);
             } else {

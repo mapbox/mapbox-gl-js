@@ -11,8 +11,7 @@ float cutoff_opacity(vec4 cutoff_params, float depth) {
     float near = cutoff_params.x;
     float far = cutoff_params.y;
     float cutoffStart = cutoff_params.z;
-    // 0.0001 subtracted to prevent division by zero
-    float cutoffEnd = cutoff_params.w - 0.0001;
+    float cutoffEnd = cutoff_params.w;
 
     float linearDepth = (depth - near) / (far - near);
     return clamp((linearDepth - cutoffStart) / (cutoffEnd - cutoffStart), 0.0, 1.0);

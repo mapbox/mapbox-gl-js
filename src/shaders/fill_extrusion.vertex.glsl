@@ -3,10 +3,6 @@
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_lighting.glsl"
 
-#ifdef RENDER_CUTOFF
-invariant gl_Position;
-#endif
-
 uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
@@ -96,6 +92,7 @@ void main() {
 
     base = max(0.0, base);
 
+    float attr_height = height;
     height = max(0.0, top_up_ny.y == 0.0 && top_up_ny.x == 1.0 ? height - u_edge_radius : height);
 
     float t = top_up_ny.x;
@@ -107,7 +104,7 @@ void main() {
 
     float ele = 0.0;
     float h = 0.0;
-    float c_ele;
+    float c_ele = 0.0;
     vec3 pos;
 #ifdef TERRAIN
     bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
@@ -131,8 +128,28 @@ void main() {
     pos = mix_globe_mercator(globe_pos, merc_pos, u_zoom_transition);
 #endif
 
-    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
-    gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
+    float cutoff = 1.0;
+    vec3 scaled_pos = pos;
+#ifdef RENDER_CUTOFF
+    vec3 centroid_random = vec3(centroid_pos.xy, centroid_pos.x + centroid_pos.y + 1.0);
+    vec3 ground_pos = centroid_pos.x == 0.0 ? pos.xyz : (centroid_random / 8.0);
+    vec4 ground = u_matrix * vec4(ground_pos.xy, ele, 1.0);
+    cutoff = max(0.01, cutoff_opacity(u_cutoff_params, ground.z));
+    if (centroid_pos.y != 0.0 && centroid_pos.x != 0.0) {
+        vec3 g = floor(ground_pos);
+        vec3 mod_ = centroid_random - g * 8.0;
+        float seed = min(1.0, 0.1 * (min(3.5, max(mod_.x + mod_.y, 0.2 * attr_height)) * 0.35 + mod_.z));
+        if (cutoff < 0.8 - seed) {
+            cutoff = 0.0;
+        }
+    }
+    float cutoff_scale = cutoff;
+
+    scaled_pos.z = mix(c_ele, h, cutoff_scale);
+#endif
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff < 0.01 && centroid_pos.x != 0.0));
+
+    gl_Position = mix(u_matrix * vec4(scaled_pos, 1), AWAY, hidden);
     h = h - ele;
     v_height = h;
 
@@ -228,9 +245,5 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
-#endif
-
-#ifdef RENDER_CUTOFF
-    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
 #endif
 }
