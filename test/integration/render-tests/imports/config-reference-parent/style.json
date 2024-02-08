@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "schema": {
+    "roadColor": {
+      "default": "red",
+      "type": "color"
+    }
+  },
+  "imports": [
+    {
+      "id": "fragment",
+      "url": "",
+      "config": {
+        "roadColor": ["config", "roadColor"]
+      },
+      "data": {
+        "version": 8,
+        "sources": {
+          "geojson": {
+            "type": "geojson",
+            "data": {
+              "type": "LineString",
+              "coordinates": [[-15, 0], [15, 0]]
+            }
+          }
+        },
+        "schema": {
+          "roadColor": {
+            "default": "blue",
+            "type": "color"
+          }
+        },
+        "layers": [
+          {
+            "id": "roads",
+            "type": "line",
+            "source": "geojson",
+            "paint": {
+              "line-color": ["config", "roadColor"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

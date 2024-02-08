@@ -181,7 +181,15 @@ function getConfig(ctx: EvaluationContext, key: string, scope: ?string) {
     const {type, value, values, minValue, maxValue, stepValue} = config;
 
     const defaultValue = config.default.evaluate(ctx);
-    let result = value ? value.evaluate(ctx) : defaultValue;
+
+    let result = defaultValue;
+    if (value) {
+        // temporarily override scope to parent to evaluate config expressions passed from the parent
+        const originalScope = ctx.scope;
+        ctx.scope = (originalScope || '').split(FQIDSeparator).slice(1).join(FQIDSeparator);
+        result = value.evaluate(ctx);
+        ctx.scope = originalScope;
+    }
 
     if (type) result = coerceValue(type, result);
 
