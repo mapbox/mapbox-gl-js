@@ -13,13 +13,11 @@
   "sources": {
     "mapbox": {
       "type": "vector",
-      "maxzoom": 15,
       "tiles": [
         "local://tiles/{z}-{x}-{y}.vector.pbf"
       ]
     },
     "trees": {
-      "minzoom": 15,
       "type": "geojson",
       "data": "local://data/trees.geojson"
     }
