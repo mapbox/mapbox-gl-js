@@ -9,7 +9,7 @@ workflows:
   version: 2
   default:
     jobs:
-      - prepare-linux:
+      - prepare-linux
       - install-mbx-ci:
           requires:
               - prepare-linux
