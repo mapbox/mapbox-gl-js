@@ -7,34 +7,6 @@ import type EvaluationContext from '../evaluation_context.js';
 import type ParsingContext from '../parsing_context.js';
 import type {Type} from '../types.js';
 
-declare var Intl: {
-    NumberFormat: Class<Intl$NumberFormat>
-};
-
-declare class Intl$NumberFormat {
-    constructor (
-        locales?: string | string[],
-        options?: NumberFormatOptions
-    ): Intl$NumberFormat;
-
-    static (
-        locales?: string | string[],
-        options?: NumberFormatOptions
-    ): Intl$NumberFormat;
-
-    format(a: number): string;
-
-    resolvedOptions(): any;
-}
-
-type NumberFormatOptions = {
-    style?: 'decimal' | 'currency' | 'percent' | 'unit';
-    currency?: null | string;
-    unit?: null | string;
-    minimumFractionDigits?: null | string;
-    maximumFractionDigits?: null | string;
-};
-
 export default class NumberFormat implements Expression {
     type: Type;
     number: Expression;

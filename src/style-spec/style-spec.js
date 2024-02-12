@@ -1,7 +1,7 @@
 // @flow
 
 type ExpressionType = 'data-driven' | 'color-ramp' | 'data-constant' | 'constant';
-type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress' | 'raster-value' | 'sky-radial-progress' | 'pitch' | 'distance-from-center'>;
+type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress' | 'raster-value' | 'sky-radial-progress' | 'pitch' | 'distance-from-center' | 'measure-light'>;
 
 export type ExpressionSpecification = {
     interpolated: boolean,

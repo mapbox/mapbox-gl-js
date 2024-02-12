@@ -9,7 +9,7 @@ import type {ValidationOptions} from './validate.js';
 import type {StyleSpecification} from '../types.js';
 
 type StyleValidationOptions = {
-    key?: ValidationOptions["key"]
+    key?: $PropertyType<ValidationOptions, 'key'>
 }
 
 export default function validateStyle(style: StyleSpecification, styleSpec: Object = latestStyleSpec, options: StyleValidationOptions = {}): ValidationError[] {

@@ -2,7 +2,9 @@
 
 import type {ExpressionSpecification, StylePropertySpecification} from '../style-spec.js';
 
-function expressionHasParameter(expression: ?ExpressionSpecification, parameter: string): boolean {
+type ExpressionParameter = ExpressionSpecification['parameters'][number];
+
+function expressionHasParameter(expression: ?ExpressionSpecification, parameter: ExpressionParameter): boolean {
     return !!expression && !!expression.parameters && expression.parameters.indexOf(parameter) > -1;
 }
 

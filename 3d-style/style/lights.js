@@ -21,12 +21,12 @@ class Lights<P: Object> extends Evented {
         this.properties = new PossiblyEvaluated(properties);
 
         this._transitionable = new Transitionable(properties, scope, new Map(configOptions));
-        this._transitionable.setTransitionOrValue<LightsSpecification['properties']>(options.properties);
+        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(options.properties);
         this._transitioning = this._transitionable.untransitioned();
     }
 
     updateConfig(configOptions?: ?ConfigOptions) {
-        this._transitionable.setTransitionOrValue<LightsSpecification['properties']>(this._options.properties, new Map(configOptions));
+        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(this._options.properties, new Map(configOptions));
     }
 
     updateTransitions(parameters: TransitionParameters) {
@@ -48,7 +48,7 @@ class Lights<P: Object> extends Evented {
 
     set(options: LightsSpecification, configOptions?: ?ConfigOptions) {
         this._options = options;
-        this._transitionable.setTransitionOrValue<LightsSpecification['properties']>(options.properties, configOptions);
+        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(options.properties, configOptions);
     }
 
     shadowsEnabled(): boolean {
