@@ -38,7 +38,7 @@ class Scheduler {
         this.nextId = 0;
     }
 
-    add(fn: TaskFunction, metadata: TaskMetadata): Cancelable {
+    add(fn: TaskFunction, metadata: TaskMetadata): Cancelable | null {
         const id = this.nextId++;
         const priority = getPriority(metadata);
 
@@ -50,9 +50,8 @@ class Scheduler {
             } finally {
                 if (m) PerformanceUtils.endMeasure(m);
             }
-            return {
-                cancel: () => {}
-            };
+            // Don't return an empty cancel because we can't actually be cancelled
+            return null;
         }
 
         this.tasks[id] = {fn, metadata, priority, id};

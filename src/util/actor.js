@@ -113,7 +113,8 @@ class Actor {
                 // We're using a MessageChannel object to get throttle the process() flow to one at a time.
                 const callback = this.callbacks[id];
                 const metadata = (callback && callback.metadata) || {type: "message"};
-                this.cancelCallbacks[id] = this.scheduler.add(() => this.processTask(id, data), metadata);
+                const cancel = this.scheduler.add(() => this.processTask(id, data), metadata);
+                if (cancel) this.cancelCallbacks[id] = cancel;
             } else {
                 // In the main thread, process messages immediately so that other work does not slip in
                 // between getting partial data back from workers.
@@ -123,6 +124,8 @@ class Actor {
     }
 
     processTask(id: number, task: any) {
+        // Always delete since we are no longer cancellable
+        delete this.cancelCallbacks[id];
         if (task.type === '<response>') {
             // The done() function in the counterpart has been called, and we are now
             // firing the callback in the originating actor, if there is one.
@@ -139,7 +142,6 @@ class Actor {
         } else {
             const buffers: Set<Transferable> = new Set();
             const done = task.hasCallback ? (err: ?Error, data: mixed) => {
-                delete this.cancelCallbacks[id];
                 this.target.postMessage({
                     id,
                     type: '<response>',
