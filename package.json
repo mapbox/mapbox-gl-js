@@ -60,7 +60,7 @@
     "eslint": "^7.32.0",
     "eslint-config-mourner": "^3.0.0",
     "eslint-plugin-flowtype": "^7.0.0",
-    "eslint-plugin-html": "^7.1.0",
+    "eslint-plugin-html": "^8.0.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.0.6",
     "flow-bin": "0.191.0",
