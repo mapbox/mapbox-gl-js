@@ -9,7 +9,8 @@ import assert from 'assert';
 import {CanonicalTileID} from '../../source/tile_id.js';
 
 import type {Vec3} from 'gl-matrix';
-import type Projection, {ProjectedPoint} from './projection.js';
+import type Projection from './projection.js';
+import type {ProjectedPoint} from './projection.js';
 import type Transform from '../transform.js';
 
 export type TileTransform = {

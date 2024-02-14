@@ -32,7 +32,8 @@ import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util.j
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer.js';
-import type SymbolBucket, {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import type {SymbolBuffers} from '../data/bucket/symbol_bucket.js';
 import Texture from '../render/texture.js';
 import type ColorMode from '../gl/color_mode.js';
 import {OverscaledTileID} from '../source/tile_id.js';

@@ -3,7 +3,8 @@
 import * as DOM from '../../util/dom.js';
 import {bindAll} from '../../util/util.js';
 
-import type Map, {ControlPosition} from '../map.js';
+import type Map from '../map.js';
+import type {ControlPosition} from '../map.js';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark

@@ -14,7 +14,8 @@ import * as symbolProjection from '../symbol/projection.js';
 
 import type Transform from '../geo/transform.js';
 import type Projection from '../geo/projection/projection.js';
-import type SymbolBucket, {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import type {SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {GlyphOffsetArray, SymbolLineVertexArray, PlacedSymbol} from '../data/array_types.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Vec3, Mat4} from 'gl-matrix';

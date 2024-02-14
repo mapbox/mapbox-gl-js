@@ -10,7 +10,8 @@ import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import Point from '@mapbox/point-geometry';
 
 import type Map from '../map.js';
-import type HandlerManager, {HandlerResult} from '../handler_manager.js';
+import type HandlerManager from '../handler_manager.js';
+import type {HandlerResult} from '../handler_manager.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 // deltaY value for mouse scroll wheel identification

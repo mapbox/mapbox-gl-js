@@ -5,7 +5,8 @@ import {bindAll} from '../../util/util.js';
 import config from '../../util/config.js';
 import {getHashString} from '../hash.js';
 
-import type Map, {ControlPosition} from '../map.js';
+import type Map from '../map.js';
+import type {ControlPosition} from '../map.js';
 
 type Options = {
     compact?: boolean,
