@@ -1,4 +1,4 @@
-
+// @noflow
 import deref from '../deref.js';
 
 function eachLayer(style, callback) {

@@ -1,3 +1,4 @@
+// @noflow
 
 import * as colorSpaces from '../util/color_spaces.js';
 import Color from '../util/color.js';

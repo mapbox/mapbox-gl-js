@@ -1,3 +1,4 @@
+// @noflow
 
 import reference from './reference/latest.js';
 import stringifyPretty from 'json-stringify-pretty-compact';

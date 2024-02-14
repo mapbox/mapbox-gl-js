@@ -1,6 +1,5 @@
-
+// @noflow
 // Disable Flow annotations here because Flow doesn't support importing GLSL files
-/* eslint-disable flowtype/require-valid-file-annotation */
 
 import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';

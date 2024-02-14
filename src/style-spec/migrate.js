@@ -1,3 +1,4 @@
+// @noflow
 
 import migrateToV8 from './migrate/v8.js';
 import migrateToExpressions from './migrate/expressions.js';

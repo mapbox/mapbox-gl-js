@@ -1,3 +1,4 @@
+// @noflow
 
 export default function (style) {
     const styleIDs = [];

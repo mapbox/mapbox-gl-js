@@ -1,4 +1,4 @@
-
+// @noflow
 import URL from 'url';
 import {eachSource, eachLayer, eachProperty} from '../visit.js';
 
