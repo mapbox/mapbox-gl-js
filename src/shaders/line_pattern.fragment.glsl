@@ -43,14 +43,16 @@ void main() {
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
-    float x = mod(v_linesofar / pattern_size.x * aspect, 1.0);
+    float pattern_x = v_linesofar / pattern_size.x * aspect;
+    float x = mod(pattern_x, 1.0);
 
     float y = 0.5 * v_normal.y + 0.5;
 
     vec2 texel_size = 1.0 / u_texsize;
 
     vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
-    vec4 color = texture(u_image, pos);
+    vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
+    vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef LIGHTING_3D_MODE
     color = apply_lighting_ground(color);

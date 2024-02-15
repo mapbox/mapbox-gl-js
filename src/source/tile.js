@@ -394,7 +394,7 @@ class Tile {
 
         const gl = context.gl;
         if (this.imageAtlas && !this.imageAtlas.uploaded) {
-            this.imageAtlasTexture = new Texture(context, this.imageAtlas.image, gl.RGBA);
+            this.imageAtlasTexture = new Texture(context, this.imageAtlas.image, gl.RGBA, {useMipmap: true});
             ((this.imageAtlas: any): ImageAtlas).uploaded = true;
         }
 

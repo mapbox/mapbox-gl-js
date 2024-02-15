@@ -20,13 +20,14 @@ void main() {
 
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
+    vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
 
     // find distance to outline for alpha interpolation
 
     float dist = length(v_pos_world - gl_FragCoord.xy);
     float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
 
-    vec4 out_color = texture(u_image, pos);
+    vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);

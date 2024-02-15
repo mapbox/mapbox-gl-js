@@ -21,7 +21,8 @@ void main() {
 
     vec2 imagecoord = mod(v_pos, 1.0);
     vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
-    vec4 out_color = texture(u_image, pos);
+    vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
+    vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);

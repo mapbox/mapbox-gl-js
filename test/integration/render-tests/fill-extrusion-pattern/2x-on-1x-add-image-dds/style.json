@@ -5,6 +5,7 @@
       "height": 256,
       "width": 256,
       "pixelRatio": 1,
+      "allowed": 0.0004,
       "operations": [
         [
           "wait"

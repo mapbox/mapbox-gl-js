@@ -52,3 +52,21 @@ vec4 applyCutout(vec4 color) {
 uniform highp vec4 u_cutoff_params;
 in float v_cutoff_opacity;
 #endif
+
+// This function should be used in cases where mipmap usage is expected and
+// the sampling coordinates are not continous. The lod_parameter should be 
+// a continous function derived from the sampling coordinates. 
+vec4 textureLodCustom(sampler2D image, vec2 pos, vec2 lod_coord) {
+    vec2 size = vec2(textureSize(image, 0));
+    vec2 dx = dFdx(lod_coord.xy * size);
+    vec2 dy = dFdy(lod_coord.xy * size);
+    float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
+    float lod = 0.5 * log2(delta_max_sqr); 
+    // Note: textureLod doesn't support anisotropic filtering
+    // We could use textureGrad instead which supports it, but it's discouraged 
+    // in the ARM Developer docs:
+    // "Do not use textureGrad() unless absolutely necessary. 
+    // It is much slower that texture() and textureLod()..."
+    // https://developer.arm.com/documentation/101897/0301/Buffers-and-textures/Texture-sampling-performance
+    return textureLod(image, pos, lod);
+}

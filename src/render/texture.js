@@ -131,7 +131,7 @@ class Texture {
         }
     }
 
-    bind(filter: TextureFilter, wrap: TextureWrap) {
+    bind(filter: TextureFilter, wrap: TextureWrap, ignoreMipMap: boolean = false) {
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -139,7 +139,7 @@ class Texture {
         if (filter !== this.minFilter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
-                this.useMipmap ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : filter
+                (this.useMipmap && !ignoreMipMap) ? (filter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_LINEAR) : filter
             );
             this.minFilter = filter;
         }
@@ -162,7 +162,7 @@ class Texture {
         }
         if (minFilter !== this.minFilter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
-                this.useMipmap ? (minFilter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_NEAREST) : minFilter
+                this.useMipmap ? (minFilter === gl.NEAREST ? gl.NEAREST_MIPMAP_NEAREST : gl.LINEAR_MIPMAP_LINEAR) : minFilter
             );
             this.minFilter = minFilter;
         }

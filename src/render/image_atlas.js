@@ -141,7 +141,7 @@ export default class ImageAtlas {
 
         position.version = image.version;
         const [x, y] = position.tl;
-        texture.update(image.data, undefined, {x, y});
+        texture.update(image.data, {useMipmap: true}, {x, y});
     }
 
 }

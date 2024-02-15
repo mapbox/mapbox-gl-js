@@ -470,12 +470,12 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
         }
         context.activeTexture.set(gl.TEXTURE0);
         if (state.atlasTexture) {
-            state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE);
+            state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE, true);
         }
         if (state.atlasTextureIcon) {
             context.activeTexture.set(gl.TEXTURE1);
             if (state.atlasTextureIcon) {
-                state.atlasTextureIcon.bind(state.atlasInterpolationIcon, gl.CLAMP_TO_EDGE);
+                state.atlasTextureIcon.bind(state.atlasInterpolationIcon, gl.CLAMP_TO_EDGE, true);
             }
         }
 

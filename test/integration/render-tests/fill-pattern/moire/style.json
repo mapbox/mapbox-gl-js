@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "zoom": 18.0,
+  "pitch": 55.0,
+  "bearing": 45.0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -100,
+              -100
+            ],
+            [
+              -100,
+              100
+            ],
+            [
+              100,
+              100
+            ],
+            [
+              100,
+              -100
+            ],
+            [
+              -100,
+              -100
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-pattern": "school_striped"
+      }
+    }
+  ]
+}
