@@ -10,6 +10,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
+import alias from '@rollup/plugin-alias';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -19,6 +20,11 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     minifyStyleSpec(),
     json({
         exclude: 'src/style-spec/reference/v8.json'
+    }),
+    alias({
+        entries: [
+            { find: 'tracked_parameters_proxy', replacement: production ? 'src/tracked-parameters/tracked_parameters_mock.js' : 'src/tracked-parameters/tracked_parameters_ui.js' },
+        ]
     }),
     (production && !bench) ? strip({
         sourceMap: true,

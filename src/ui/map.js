@@ -80,6 +80,9 @@ import type {QueryResult} from '../data/feature_index.js';
 import type {EasingOptions} from './camera.js';
 import type {ContextOptions} from '../gl/context.js';
 
+import * as TP from '../tracked-parameters/tracked_parameters.js';
+import * as TPM from '../tracked-parameters/tracked_parameters_mock.js';
+
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
 interface IControl {
@@ -146,6 +149,7 @@ type MapOptions = {
     collectResourceTiming?: boolean,
     respectPrefersReducedMotion?: boolean,
     contextCreateOptions?: ContextOptions,
+    enableEmbeddedDevUI?: boolean
 };
 
 const defaultMinZoom = -2;
@@ -204,6 +208,27 @@ const defaultOptions = {
     collectResourceTiming: false,
     testMode: false,
 };
+
+class DebugParams {
+    showOverdrawInspector: boolean;
+    showTileBoundaries: boolean;
+    continuousRedraw: boolean;
+
+    showTerrainWireframe: boolean;
+    showLayers2DWireframe: boolean;
+    showLayers3DWireframe: boolean;
+
+    constructor() {
+        this.showOverdrawInspector = false;
+        this.showTileBoundaries = false;
+
+        this.continuousRedraw = false;
+
+        this.showTerrainWireframe = false;
+        this.showLayers2DWireframe = false;
+        this.showLayers3DWireframe = false;
+    }
+}
 
 /**
  * The `Map` object represents the map on your page. It exposes methods
@@ -474,6 +499,8 @@ class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
+    _tp: TP.TrackedParameters | TPM.TrackedParameters;
+    _debugParams: DebugParams;
 
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(PerformanceMarkers.create);
@@ -507,6 +534,7 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
         super(transform, options);
 
+        this._repaint = false;
         this._interactive = options.interactive;
         this._minTileCacheSize = options.minTileCacheSize;
         this._maxTileCacheSize = options.maxTileCacheSize;
@@ -582,6 +610,19 @@ class Map extends Camera {
         ], this);
 
         this._setupContainer();
+        this._debugParams = new DebugParams();
+        if (options.enableEmbeddedDevUI) {
+            this._tp = new TP.TrackedParameters(`${this._mapId}`, this.getContainer());
+        } else {
+            this._tp = new TPM.TrackedParameters();
+        }
+        this._tp.registerParameter(this._debugParams, ["Debug"], "showOverdrawInspector", undefined, () => { this._update(); });
+        this._tp.registerParameter(this._debugParams, ["Debug"], "showTileBoundaries", undefined, () => { this._update(); });
+        this._tp.registerParameter(this._debugParams, ["Debug"], "continuousRedraw", undefined, (value) => { this.repaint = value; });
+        this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showTerrainWireframe", undefined, () => { this._update(); });
+        this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showLayers2DWireframe", undefined, () => { this._update(); });
+        this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showLayers3DWireframe", undefined, () => { this._update(); });
+
         this._setupPainter();
         if (this.painter === undefined) {
             throw new Error(`Failed to initialize WebGL.`);
@@ -3413,7 +3454,7 @@ class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._tp);
         this.on('data', (event: MapDataEvent) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -3604,13 +3645,13 @@ class Map extends Camera {
         // Actually draw
         if (this.style) {
             this.painter.render(this.style, {
-                showTileBoundaries: this.showTileBoundaries,
+                showTileBoundaries: this.showTileBoundaries || this._debugParams.showTileBoundaries,
                 wireframe: {
-                    terrain: this.showTerrainWireframe,
-                    layers2D: this.showLayers2DWireframe,
-                    layers3D: this.showLayers3DWireframe
+                    terrain: this.showTerrainWireframe || this._debugParams.showTerrainWireframe,
+                    layers2D: this.showLayers2DWireframe || this._debugParams.showLayers2DWireframe,
+                    layers3D: this.showLayers3DWireframe || this._debugParams.showLayers3DWireframe
                 },
-                showOverdrawInspector: this._showOverdrawInspector,
+                showOverdrawInspector: this._showOverdrawInspector || this._debugParams.showOverdrawInspector,
                 showQueryGeometry: !!this._showQueryGeometry,
                 showTileAABBs: this.showTileAABBs,
                 rotating: this.isRotating(),

@@ -66,7 +66,8 @@ function addMap (container) {
         center: [-122.514426, 37.562984],
         bearing: -96,
         style,
-        hash: false
+        hash: false,
+        enableEmbeddedDevUI: true,
     });
 
     map.addControl(new mapboxgl.GeolocateControl({

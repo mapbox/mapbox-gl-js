@@ -39,31 +39,50 @@ function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Ve
     return points;
 }
 
+class StarsParams {
+    starsCount: number;
+    sizeMultiplier: number;
+
+    constructor() {
+        this.starsCount = 16000;
+        this.sizeMultiplier = 0.15;
+    }
+}
 class Atmosphere {
     atmosphereBuffer: ?AtmosphereBuffer;
+    allocatedStarsCount: number;
     starsVx: ?VertexBuffer;
     starsIdx: ?IndexBuffer;
     starsSegments: SegmentVector;
     colorModeAlphaBlendedWriteRGB: ColorMode;
     colorModeWriteAlpha: ColorMode;
 
-    constructor() {
+    params: StarsParams;
+
+    constructor(painter: Painter) {
         this.colorModeAlphaBlendedWriteRGB = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA, ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, false]);
         this.colorModeWriteAlpha = new ColorMode([ONE, ZERO, ONE, ZERO], Color.transparent, [false, false, false, true]);
+
+        this.params = new StarsParams();
+        this.allocatedStarsCount = 0;
+
+        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1});
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min:0.01, max: 2.0, step:0.01});
     }
 
     update(painter: Painter) {
         const context = painter.context;
 
-        if (!this.atmosphereBuffer) {
+        if (!this.atmosphereBuffer || this.allocatedStarsCount !== this.params.starsCount) {
             this.atmosphereBuffer = new AtmosphereBuffer(context);
 
+            this.allocatedStarsCount = this.params.starsCount;
+
             // Part of internal stlye spec, not exposed to gl-js
-            const starsCount = 16000;
             const sizeRange = 100.0;
             const intensityRange = 200.0;
 
-            const stars = generateUniformDistributedPointsOnSphere(starsCount);
+            const stars = generateUniformDistributedPointsOnSphere(this.allocatedStarsCount);
             const sRand = mulberry32(300);
 
             const vertices = new StarsVertexArray();
@@ -188,9 +207,6 @@ class Atmosphere {
 
         const program = painter.getOrCreateProgram('stars');
 
-        // Exposed in internal style spec for mobile
-        const sizeMultiplier = 0.15;
-
         const orientation = quat.identity([]);
 
         quat.rotateX(orientation, orientation, -tr._pitch);
@@ -208,10 +224,10 @@ class Atmosphere {
 
         const camUp = [0, 1, 0];
         vec3.transformMat3(camUp, camUp, modelviewInv);
-        vec3.scale(camUp, camUp, sizeMultiplier);
+        vec3.scale(camUp, camUp, this.params.sizeMultiplier);
         const camRight = [1, 0, 0];
         vec3.transformMat3(camRight, camRight, modelviewInv);
-        vec3.scale(camRight, camRight, sizeMultiplier);
+        vec3.scale(camRight, camRight, this.params.sizeMultiplier);
 
         const uniforms = starsUniformValues(
               mvp,

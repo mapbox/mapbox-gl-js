@@ -102,6 +102,7 @@ function initialize(zoom, onLoad) {
     if (map) map.remove();
     map = window.map = new mapboxgl.Map({
         container: 'map',
+        enableEmbeddedDevUI: true,
         zoom,
         center: [-77.01866, 38.888],
         style: 'mapbox://styles/mapbox/streets-v10',
@@ -254,6 +255,7 @@ function initializeRaster(done) {
     if (map) map.remove();
     map = new mapboxgl.Map({
         container: 'map',
+        enableEmbeddedDevUI: true,
         zoom: 0,
         center: [137.9150899566626, 36.25956997955441],
         style: 'mapbox://styles/mapbox/satellite-v9'

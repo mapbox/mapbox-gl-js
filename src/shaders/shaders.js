@@ -92,6 +92,8 @@ export let preludeRasterArray = {};
 
 const commonDefines = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
+parseUsedPreprocessorDefines(preludeVert, commonDefines);
+parseUsedPreprocessorDefines(preludeFrag, commonDefines);
 export const includeMap = {
     "_prelude_fog.vertex.glsl": preludeFogVert,
     "_prelude_terrain.vertex.glsl": preludeTerrainVert,

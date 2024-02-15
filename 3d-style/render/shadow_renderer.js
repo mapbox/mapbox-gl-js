@@ -53,8 +53,10 @@ export type TileShadowVolume = {
 
 type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
 
-const cascadeCount = 2;
-const shadowMapResolution = 2048;
+const shadowParameters = {
+    cascadeCount: 2,
+    shadowMapResolution: 2048
+};
 
 class ShadowReceiver {
     constructor(aabb: Aabb, lastCascade: ?number) {
@@ -158,6 +160,9 @@ export class ShadowRenderer {
         this._uniformValues = defaultShadowUniformValues();
 
         this.useNormalOffset = false;
+
+        painter.tp.registerParameter(shadowParameters, ["Shadows"], "cascadeCount", {min: 1, max: 2, step: 1});
+        painter.tp.registerParameter(shadowParameters, ["Shadows"], "shadowMapResolution", {min: 32, max: 2048, step: 32});
     }
 
     destroy() {
@@ -199,11 +204,12 @@ export class ShadowRenderer {
         }
 
         const context = painter.context;
-        const width = shadowMapResolution;
-        const height = shadowMapResolution;
+        const width = shadowParameters.shadowMapResolution;
+        const height = shadowParameters.shadowMapResolution;
 
-        if (this._cascades.length === 0) {
-            for (let i = 0; i < cascadeCount; ++i) {
+        if (this._cascades.length === 0 || shadowParameters.shadowMapResolution !== this._cascades[0].texture.size[0]) {
+            this._cascades = [];
+            for (let i = 0; i < shadowParameters.cascadeCount; ++i) {
                 const useColor = painter._shadowMapDebug;
 
                 const gl = context.gl;
@@ -246,13 +252,13 @@ export class ShadowRenderer {
         const cascadeSplitDist = transform.cameraToCenterDistance * 1.5;
         const shadowCutoutDist = cascadeSplitDist * 3.0;
         const cameraInvProj = new Float64Array(16);
-        for (let cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
+        for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
             const cascade = this._cascades[cascadeIndex];
 
             let near = transform.height / 50.0;
             let far = 1.0;
 
-            if (cascadeCount === 1) {
+            if (shadowParameters.cascadeCount === 1) {
                 far = shadowCutoutDist;
             } else {
                 if (cascadeIndex === 0) {
@@ -263,7 +269,7 @@ export class ShadowRenderer {
                 }
             }
 
-            const [matrix, radius] = createLightMatrix(transform, this.shadowDirection, near, far, shadowMapResolution, verticalRange);
+            const [matrix, radius] = createLightMatrix(transform, this.shadowDirection, near, far, shadowParameters.shadowMapResolution, verticalRange);
             cascade.scale = transform.scale;
             cascade.matrix = matrix;
             cascade.boundingSphereRadius = radius;
@@ -272,11 +278,12 @@ export class ShadowRenderer {
             cascade.frustum = Frustum.fromInvProjectionMatrix(cameraInvProj, 1, 0, true);
             cascade.far = far;
         }
-        this._uniformValues['u_fade_range'] = [this._cascades[1].far * 0.75, this._cascades[1].far];
+        const fadeRangeIdx = this._cascades.length - 1;
+        this._uniformValues['u_fade_range'] = [this._cascades[fadeRangeIdx].far * 0.75, this._cascades[fadeRangeIdx].far];
         this._uniformValues['u_shadow_intensity'] = shadowIntensity;
         this._uniformValues['u_shadow_direction'] = [this.shadowDirection[0], this.shadowDirection[1], this.shadowDirection[2]];
-        this._uniformValues['u_shadow_texel_size'] = 1 / shadowMapResolution;
-        this._uniformValues['u_shadow_map_resolution'] = shadowMapResolution;
+        this._uniformValues['u_shadow_texel_size'] = 1 / shadowParameters.shadowMapResolution;
+        this._uniformValues['u_shadow_map_resolution'] = shadowParameters.shadowMapResolution;
         this._uniformValues['u_shadowmap_0'] = TextureSlots.ShadowMap0;
         this._uniformValues['u_shadowmap_1'] = TextureSlots.ShadowMap0 + 1;
 
@@ -323,7 +330,7 @@ export class ShadowRenderer {
         // shadows.
         this._numCascadesToRender = this._receivers.computeRequiredCascades(painter.transform.getFrustum(0), painter.transform.worldSize, this._cascades);
 
-        context.viewport.set([0, 0, shadowMapResolution, shadowMapResolution]);
+        context.viewport.set([0, 0, shadowParameters.shadowMapResolution, shadowParameters.shadowMapResolution]);
 
         for (let cascade = 0; cascade < this._numCascadesToRender; ++cascade) {
             painter.currentShadowCascade = cascade;
@@ -428,7 +435,7 @@ export class ShadowRenderer {
         const lightMatrix = new Float64Array(16);
         const tileMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.worldSize);
 
-        for (let i = 0; i < cascadeCount; i++) {
+        for (let i = 0; i < this._cascades.length; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, tileMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
@@ -439,9 +446,9 @@ export class ShadowRenderer {
 
         if (this.useNormalOffset) {
             const meterInTiles = tileToMeter(unwrappedTileID.canonical);
-            const texelScale = 2.0 / transform.tileSize * EXTENT / shadowMapResolution;
+            const texelScale = 2.0 / transform.tileSize * EXTENT / shadowParameters.shadowMapResolution;
             const shadowTexelInTileCoords0 = texelScale * this._cascades[0].boundingSphereRadius;
-            const shadowTexelInTileCoords1 = texelScale * this._cascades[1].boundingSphereRadius;
+            const shadowTexelInTileCoords1 = texelScale * this._cascades[this._cascades.length - 1].boundingSphereRadius;
             // Instanced model tiles could have smoothened (shared among neighbor faces) normals. Normal is not surface normal
             // and this is why it is needed to increase the offset. 3.0 in case of model-tile could be alternatively replaced by
             // 2.0 if normal would not get scaled by dotScale in shadow_normal_offset().
@@ -467,7 +474,7 @@ export class ShadowRenderer {
         const uniforms = this._uniformValues;
 
         const lightMatrix = new Float64Array(16);
-        for (let i = 0; i < cascadeCount; i++) {
+        for (let i = 0; i < shadowParameters.cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);

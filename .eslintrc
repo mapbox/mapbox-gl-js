@@ -60,7 +60,7 @@
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
     "no-warning-comments": "error",
     "no-mixed-operators": ["error", {"groups": [["&", "|", "^", "~", "<<", ">>", ">>>"], ["&&", "||"]]}],
     "object-curly-spacing": ["error", "never"],
