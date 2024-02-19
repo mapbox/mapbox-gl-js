@@ -141,7 +141,8 @@ export default class ImageAtlas {
 
         position.version = image.version;
         const [x, y] = position.tl;
-        texture.update(image.data, {useMipmap: true}, {x, y});
+        const hasPattern = !!Object.keys(this.patternPositions).length;
+        texture.update(image.data, {useMipmap: hasPattern}, {x, y});
     }
 
 }

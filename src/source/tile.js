@@ -393,8 +393,10 @@ class Tile {
         }
 
         const gl = context.gl;
-        if (this.imageAtlas && !this.imageAtlas.uploaded) {
-            this.imageAtlasTexture = new Texture(context, this.imageAtlas.image, gl.RGBA, {useMipmap: true});
+        const atlas = this.imageAtlas;
+        if (atlas && !atlas.uploaded) {
+            const hasPattern = !!Object.keys(atlas.patternPositions).length;
+            this.imageAtlasTexture = new Texture(context, atlas.image, gl.RGBA, {useMipmap: hasPattern});
             ((this.imageAtlas: any): ImageAtlas).uploaded = true;
         }
 
