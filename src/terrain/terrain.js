@@ -241,8 +241,16 @@ export class Terrain extends Elevation {
     _pendingGroundEffectLayers: Array<number>;
     framebufferCopyTexture: ?Texture;
 
+    debugParams: {
+        sortTilesHiZFirst: boolean
+    }
+
     constructor(painter: Painter, style: Style) {
         super();
+
+        this.debugParams = {sortTilesHiZFirst: true};
+        painter.tp.registerParameter(this.debugParams, ["Terrain"], "sortTilesHiZFirst");
+
         this.painter = painter;
         this.terrainTileForTile = {};
         this.prevTerrainTileForTile = {};
@@ -1429,6 +1437,7 @@ export class Terrain extends Elevation {
             }
         }
         let hasOverlap = false;
+        const proxiesToSort = new Set();
         for (let i = 0; i < sourceCoords.length; i++) {
             const tile = sourceCache.getTile(sourceCoords[i]);
             if (!tile || !tile.hasData()) continue;
@@ -1440,15 +1449,24 @@ export class Terrain extends Elevation {
                 if (!array) {
                     this.proxyToSource[proxy.tileID.key][sourceCache.id] = [id];
                 } else {
-                    // The last element is parent added in loop above. This way we get
-                    // a list in Z descending order which is needed for stencil masking.
                     array.splice(array.length - 1, 0, id);
+                }
+                const arr = this.proxyToSource[proxy.tileID.key][sourceCache.id];
+                if (!proxiesToSort.has(arr)) {
+                    proxiesToSort.add(arr);
                 }
                 coords.push(id);
                 hasOverlap = true;
             }
         }
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
+        if (hasOverlap && this.debugParams.sortTilesHiZFirst) {
+            for (const arr of proxiesToSort) {
+                arr.sort((a, b) => {
+                    return b.overscaledZ - a.overscaledZ;
+                });
+            }
+        }
     }
 
     _setupProxiedCoordsForImageSource(sourceCache: SourceCache, sourceCoords: Array<OverscaledTileID>, previousProxyToSource: {[number]: {[string]: Array<ProxiedTileID>}}) {

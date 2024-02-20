@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/d3@7.6.1/dist/d3.min.js"></script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script src="../debug/access_token_generated.js"></script>
+<script>
+
+/*global d3*/
+
+const presets = {
+    Satellite: {
+        tileset: "mapbox.satellite",
+        rasterColor: "Cubehelix",
+        rasterColorMix: "luminosity",
+        rasterColorRange: "[0, 1]"
+    },
+    Terrain: {
+        tileset: "mapbox.terrain-rgb",
+        rasterColor: "Hypsometric",
+        rasterColorMix: "decode terrain-rgb",
+        rasterColorRange: "[0, 8848]",
+        forcePngraw: true
+    }
+};
+
+function GUIParams () {
+    this.preset = "Satellite";
+    this.opacity = 0.5;
+    Object.assign(this, presets[this.preset]);
+}
+
+const guiParams = new GUIParams();
+
+const tilesets = {
+    "mapbox.terrain-rgb": "mapbox.terrain-rgb",
+    "mapbox.satellite": "mapbox.satellite"
+};
+
+function setStyle (tileset) {
+    map.setStyle({
+        version: 8,
+        sources: {
+            mapbox: {
+                type: "raster",
+                url: "mapbox://mapbox.satellite",
+                tileSize: 256
+            },
+            raster: {
+                type: "raster",
+                tiles: [ `https://api.mapbox.com/v4/${tilesets[tileset]}/{z}/{x}/{y}@2x.webp` ],
+                maxzoom: 14,
+                tileSize: 256
+            }
+        },
+        layers: [{
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(4,7,14)"
+            }
+        },
+        {
+            "type": "raster",
+            "source": "raster",
+            "id": "raster",
+            "paint": {
+                "raster-opacity": guiParams.opacity
+            }
+        }]
+    });
+}
+
+var map = window.map = new mapboxgl.Map({
+    container: "map",
+    enableEmbeddedDevUI: true,
+    style: {version: 8, layers: [], sources: {}},
+    hash: true,
+    transformRequest (url, type) {
+        if (type !== "Tile") return;
+        const preset = presets[guiParams.preset];
+        if (preset.forbid2x) url = url.replace('@2x', '');
+        if (preset.forcePngraw) url = url.replace('.webp', '.pngraw');
+        return {url};
+    }
+});
+
+map.once("load", function () {
+    var gui = window.gui = new dat.GUI(); // eslint-disable-line
+
+    map.setProjection("globe");
+
+    const tileset = gui.add(guiParams, "tileset", Object.keys(tilesets));
+    const opacity = gui.add(guiParams, "opacity", 0, 1);
+
+    function setTileset(range) {
+        setStyle(guiParams.tileset);
+    }
+
+    tileset.onChange(setTileset).listen();
+
+    opacity.onChange(opac => {
+        map.setPaintProperty("raster", "raster-opacity", opac);
+        document.getElementById("gradient").style.opacity = opac;
+    });
+
+    setTileset(guiParams.tileset);
+});
+
+</script>
+</body>
+</html>
