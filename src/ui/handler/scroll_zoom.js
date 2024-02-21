@@ -11,7 +11,7 @@ import Point from '@mapbox/point-geometry';
 
 import type Map from '../map.js';
 import type HandlerManager from '../handler_manager.js';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 
 // deltaY value for mouse scroll wheel identification
@@ -32,7 +32,7 @@ const maxScalePerFrame = 2;
  * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  * @see [Example: Disable scroll zoom](https://docs.mapbox.com/mapbox-gl-js/example/disable-scroll-zoom/)
  */
-class ScrollZoomHandler {
+class ScrollZoomHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
@@ -164,6 +164,7 @@ class ScrollZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
@@ -267,6 +268,7 @@ class ScrollZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     renderFrame(): ?HandlerResult {
         if (!this._frameId) return;
         this._frameId = null;

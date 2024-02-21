@@ -26,6 +26,7 @@ import {vec3} from 'gl-matrix';
 import MercatorCoordinate, {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate.js';
 
 import type {Vec3} from 'gl-matrix';
+import type {Handler, HandlerResult} from './handler.js';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -80,64 +81,6 @@ class TrackingEllipsoid {
         return intersection;
     }
 }
-
-// Handlers interpret dom events and return camera changes that should be
-// applied to the map (`HandlerResult`s). The camera changes are all deltas.
-// The handler itself should have no knowledge of the map's current state.
-// This makes it easier to merge multiple results and keeps handlers simpler.
-// For example, if there is a mousedown and mousemove, the mousePan handler
-// would return a `panDelta` on the mousemove.
-export interface Handler {
-    enable(): void;
-    disable(): void;
-    isEnabled(): boolean;
-    isActive(): boolean;
-
-    // `reset` can be called by the manager at any time and must reset everything to it's original state
-    reset(): void;
-
-    // Handlers can optionally implement these methods.
-    // They are called with dom events whenever those dom evens are received.
-    +touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
-    +touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
-    +touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
-    +touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => ?HandlerResult;
-    +mousedown?: (e: MouseEvent, point: Point) => ?HandlerResult;
-    +mousemove?: (e: MouseEvent, point: Point) => ?HandlerResult;
-    +mouseup?: (e: MouseEvent, point: Point) => ?HandlerResult;
-    +dblclick?: (e: MouseEvent, point: Point) => ?HandlerResult;
-    +wheel?: (e: WheelEvent, point: Point) => ?HandlerResult;
-    +keydown?: (e: KeyboardEvent) => ?HandlerResult;
-    +keyup?: (e: KeyboardEvent) => ?HandlerResult;
-
-    // `renderFrame` is the only non-dom event. It is called during render
-    // frames and can be used to smooth camera changes (see scroll handler).
-    +renderFrame?: () => ?HandlerResult;
-}
-
-// All handler methods that are called with events can optionally return a `HandlerResult`.
-export type HandlerResult = {
-    panDelta?: Point,
-    zoomDelta?: number,
-    bearingDelta?: number,
-    pitchDelta?: number,
-    // the point to not move when changing the camera
-    around?: Point | null,
-    // same as above, except for pinch actions, which are given higher priority
-    pinchAround?: Point | null,
-    // the point to not move when changing the camera in mercator coordinates
-    aroundCoord?: MercatorCoordinate | null,
-    // A method that can fire a one-off easing by directly changing the map's camera.
-    cameraAnimation?: (map: Map) => any;
-
-    // The last three properties are needed by only one handler: scrollzoom.
-    // The DOM event to be used as the `originalEvent` on any camera change events.
-    originalEvent?: any,
-    // Makes the manager trigger a frame, allowing the handler to return multiple results over time (see scrollzoom).
-    needsRenderFrame?: boolean,
-    // The camera changes won't get recorded for inertial zooming.
-    noInertia?: boolean
-};
 
 function hasChange(result: HandlerResult) {
     return (result.panDelta && result.panDelta.mag()) || result.zoomDelta || result.bearingDelta || result.pitchDelta;

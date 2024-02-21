@@ -2,10 +2,9 @@
 
 import type Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
-export default class ClickZoomHandler {
-
+export default class ClickZoomHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
 
@@ -21,6 +20,7 @@ export default class ClickZoomHandler {
         this.reset();
     }
 
+    // $FlowFixMe[method-unbinding]
     dblclick(e: MouseEvent, point: Point): HandlerResult {
         e.preventDefault();
         return {

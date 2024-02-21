@@ -130,7 +130,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const counters = getCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
     const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
-    const metrics = {counters: [], metadata: [], attributes: []};
+    const metrics: LivePerformanceMetrics = {counters: [], metadata: [], attributes: []};
 
     // Please read carefully before adding or modifying the following metrics:
     // https://github.com/mapbox/gl-js-team/blob/main/docs/live_performance_metrics.md

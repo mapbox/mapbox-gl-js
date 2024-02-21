@@ -2,7 +2,7 @@
 
 import * as DOM from '../../util/dom.js';
 import type Point from '@mapbox/point-geometry';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -18,8 +18,7 @@ function buttonStillPressed(e: MouseEvent, button: number) {
     return e.buttons === undefined || (e.buttons & flag) !== flag;
 }
 
-class MouseHandler {
-
+class MouseHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
     _lastPoint: ?Point;
@@ -51,6 +50,7 @@ class MouseHandler {
         return {}; // implemented by child
     }
 
+    // $FlowFixMe[method-unbinding]
     mousedown(e: MouseEvent, point: Point) {
         if (this._lastPoint) return;
 

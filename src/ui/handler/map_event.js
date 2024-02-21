@@ -5,10 +5,9 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events.js';
 
 import type Map from '../map.js';
 import type Point from '@mapbox/point-geometry';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
-export class MapEventHandler {
-
+export class MapEventHandler implements Handler {
     _mousedownPos: ?Point;
     _clickTolerance: number;
     _map: Map;
@@ -22,12 +21,14 @@ export class MapEventHandler {
         this._mousedownPos = undefined;
     }
 
+    // $FlowFixMe[method-unbinding]
     wheel(e: WheelEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - ScrollZoom
         return this._firePreventable(new MapWheelEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     mousedown(e: MouseEvent, point: Point): ?HandlerResult {
         this._mousedownPos = point;
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
@@ -38,6 +39,7 @@ export class MapEventHandler {
         return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     mouseup(e: MouseEvent) {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
@@ -54,6 +56,7 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     dblclick(e: MouseEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - DblClickZoom
@@ -68,6 +71,7 @@ export class MapEventHandler {
         this._map.fire(new MapMouseEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     touchstart(e: TouchEvent): ?HandlerResult {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - TouchPan
@@ -79,14 +83,17 @@ export class MapEventHandler {
         return this._firePreventable(new MapTouchEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     touchmove(e: TouchEvent) {
         this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     touchend(e: TouchEvent) {
         this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }
 
+    // $FlowFixMe[method-unbinding]
     touchcancel(e: TouchEvent) {
         this._map.fire(new MapTouchEvent(e.type, this._map, e));
     }

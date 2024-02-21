@@ -2,10 +2,9 @@
 
 import {TapRecognizer, MAX_TAP_INTERVAL} from './tap_recognizer.js';
 import type Point from '@mapbox/point-geometry';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
-export default class TapDragZoomHandler {
-
+export default class TapDragZoomHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
     _swipePoint: ?Point;
@@ -31,6 +30,7 @@ export default class TapDragZoomHandler {
         this._tap.reset();
     }
 
+    // $FlowFixMe[method-unbinding]
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (this._swipePoint) return;
 
@@ -47,6 +47,7 @@ export default class TapDragZoomHandler {
 
     }
 
+    // $FlowFixMe[method-unbinding]
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         if (!this._tapTime) {
             this._tap.touchmove(e, points, mapTouches);
@@ -68,6 +69,7 @@ export default class TapDragZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._tapTime) {
             const point = this._tap.touchend(e, points, mapTouches);
@@ -81,6 +83,7 @@ export default class TapDragZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     touchcancel() {
         this.reset();
     }

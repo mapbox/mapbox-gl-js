@@ -5,10 +5,9 @@ import type Map from '../map.js';
 import {indexTouches} from './handler_util.js';
 import {bindAll, isFullscreen} from '../../util/util.js';
 import * as DOM from '../../util/dom.js';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
-export default class TouchPanHandler {
-
+export default class TouchPanHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
@@ -35,10 +34,12 @@ export default class TouchPanHandler {
         this._sum = new Point(0, 0);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         return this._calculateTransform(e, points, mapTouches);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         if (!this._active || mapTouches.length < this._minTouches) return;
 
@@ -61,6 +62,7 @@ export default class TouchPanHandler {
         return this._calculateTransform(e, points, mapTouches);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         this._calculateTransform(e, points, mapTouches);
 
@@ -69,6 +71,7 @@ export default class TouchPanHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     touchcancel() {
         this.reset();
     }

@@ -6,7 +6,7 @@ import {Event} from '../../util/evented.js';
 
 import type Map from '../map.js';
 import type Point from '@mapbox/point-geometry';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
@@ -15,7 +15,7 @@ import type {HandlerResult} from '../handler_manager.js';
  * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
-class BoxZoomHandler {
+class BoxZoomHandler implements Handler {
     _map: Map;
     _el: HTMLElement;
     _container: HTMLElement;
@@ -82,6 +82,7 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
+    // $FlowFixMe[method-unbinding]
     mousedown(e: MouseEvent, point: Point) {
         if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
@@ -146,6 +147,7 @@ class BoxZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     keydown(e: KeyboardEvent) {
         if (!this._active) return;
 

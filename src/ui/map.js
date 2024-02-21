@@ -37,6 +37,7 @@ import {Debug} from '../util/debug.js';
 import config from '../util/config.js';
 import {isFQID} from '../util/fqid.js';
 
+import type {Listener} from '../util/evented.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
@@ -1611,7 +1612,7 @@ class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerIds: any, listener: any): this {
+    on(type: MapEvent, layerIds: any, listener?: Listener): this {
         if (listener === undefined) {
             return super.on(type, layerIds);
         }
@@ -1680,7 +1681,7 @@ class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerIds: any, listener: any): this | Promise<Event> {
+    once(type: MapEvent, layerIds: any, listener?: Listener): this | Promise<Event> {
 
         if (listener === undefined) {
             return super.once(type, layerIds);
@@ -1732,7 +1733,7 @@ class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, layerIds: any, listener: any): this {
+    off(type: MapEvent, layerIds: any, listener?: Listener): this {
         if (listener === undefined) {
             return super.off(type, layerIds);
         }

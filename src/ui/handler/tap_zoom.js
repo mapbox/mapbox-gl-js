@@ -3,10 +3,9 @@
 import {TapRecognizer} from './tap_recognizer.js';
 import type Point from '@mapbox/point-geometry';
 import type Map from '../map.js';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 
-export default class TapZoomHandler {
-
+export default class TapZoomHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
     _zoomIn: TapRecognizer;
@@ -32,16 +31,19 @@ export default class TapZoomHandler {
         this._zoomOut.reset();
     }
 
+    // $FlowFixMe[method-unbinding]
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         this._zoomIn.touchstart(e, points, mapTouches);
         this._zoomOut.touchstart(e, points, mapTouches);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         this._zoomIn.touchmove(e, points, mapTouches);
         this._zoomOut.touchmove(e, points, mapTouches);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         const zoomInPoint = this._zoomIn.touchend(e, points, mapTouches);
         const zoomOutPoint = this._zoomOut.touchend(e, points, mapTouches);
@@ -71,6 +73,7 @@ export default class TapZoomHandler {
         }
     }
 
+    // $FlowFixMe[method-unbinding]
     touchcancel() {
         this.reset();
     }

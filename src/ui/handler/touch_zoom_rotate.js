@@ -3,11 +3,10 @@
 import Point from '@mapbox/point-geometry';
 import * as DOM from '../../util/dom.js';
 import type Map from '../map.js';
-import type {HandlerResult} from '../handler_manager.js';
+import type {Handler, HandlerResult} from '../handler.js';
 import {isFullscreen} from '../../util/util.js';
 
-class TwoTouchHandler {
-
+class TwoTouchHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
     _firstTwoTouches: ?[number, number];
@@ -27,6 +26,7 @@ class TwoTouchHandler {
     _start(points: [Point, Point]) {} //eslint-disable-line
     _move(points: [Point, Point], pinchAround: ?Point, e: TouchEvent): ?HandlerResult { return {}; } //eslint-disable-line
 
+    // $FlowFixMe[method-unbinding]
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
         //log('touchstart', points, e.target.innerHTML, e.targetTouches.length ? e.targetTouches[0].target.innerHTML: undefined);
@@ -41,6 +41,7 @@ class TwoTouchHandler {
         this._start([points[0], points[1]]);
     }
 
+    // $FlowFixMe[method-unbinding]
     touchmove(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>): ?HandlerResult {
         const firstTouches = this._firstTwoTouches;
         if (!firstTouches) return;
@@ -58,6 +59,7 @@ class TwoTouchHandler {
 
     }
 
+    // $FlowFixMe[method-unbinding]
     touchend(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
         if (!this._firstTwoTouches) return;
 
@@ -71,6 +73,7 @@ class TwoTouchHandler {
         this.reset();
     }
 
+    // $FlowFixMe[method-unbinding]
     touchcancel() {
         this.reset();
     }
