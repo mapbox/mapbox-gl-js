@@ -12,20 +12,24 @@
           background-image: url("https://img.favpng.com/9/21/21/royalty-free-photography-illustration-png-favpng-d38x16Mw2kxSFqtUSXG8gT5CQ_t.jpg");
         }
         #flyTo {
+            padding: 10px 20px;
+            margin-top: 22px;
+        }
+
+        #container {
             position: absolute;
-            top: 0; left: 0;
-            margin: 15px;
-            font-size: 14px;
-            padding: 8px;
-            background-color: lightblue;
-            font-weight: bold;
+            top: 1em;
+            left: 1em;
         }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
-<button id='flyTo'>Fly to</button>
+<div id='container'>
+    <div id='gui'></div>
+    <button id='flyTo'>Fly to</button>
+</div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -163,7 +167,8 @@ function updatePreset(value) {
 updatePreset('preset1');
 
 window.onload = function() {
-    var gui = new dat.GUI(); // eslint-disable-line
+    var gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('gui').appendChild(gui.domElement);
 
     var presets = gui.add(guiParams, 'presets', [
         'preset1',

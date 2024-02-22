@@ -9,6 +9,11 @@
         body { margin: 0; padding: 0; }
         html, body { height: 100%; }
         #map { height: calc(100% - 40px); }
+        #container {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
         #controls {
             position: fixed;
             z-index: 1;
@@ -33,6 +38,7 @@
 
 <body>
 <div id="map"></div>
+<div id='container'></div>
 <div id="controls"></div>
 <div id="gradientbg"><div id="gradient"></div></div>
 
@@ -215,7 +221,8 @@ var map = window.map = new mapboxgl.Map({
 });
 
 map.once("load", function () {
-    var gui = window.gui = new dat.GUI(); // eslint-disable-line
+    var gui = window.gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('container').appendChild(gui.domElement);
 
     const preset = gui.add(guiParams, "preset", Object.keys(presets));
     const tileset = gui.add(guiParams, "tileset", Object.keys(tilesets));

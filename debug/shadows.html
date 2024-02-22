@@ -8,6 +8,11 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        #container {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
         #radius {
             position: absolute;
             width: 700px;
@@ -20,6 +25,7 @@
 
 <body>
 <div id='map'></div>
+<div id='container'></div>
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
@@ -68,7 +74,8 @@ function updateLights() {
 }
 
 window.onload = function() {
-    const gui = new dat.GUI(); // eslint-disable-line
+    const gui = window.gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('container').appendChild(gui.domElement);
 
     const lights = gui.addFolder('Lighting');
 

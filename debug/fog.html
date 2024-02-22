@@ -8,7 +8,11 @@
     <style>
         body { margin: 0; padding: 0 }
         html, body, #map { height: 100%; }
-
+        #container {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
         #checkboxes {
             position: absolute;
             top:0;
@@ -20,6 +24,7 @@
 
 <body>
 <div id='map'></div>
+<div id='container'></div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -59,7 +64,8 @@ var map = window.map = new mapboxgl.Map({
 });
 
 window.onload = function() {
-    var gui = new dat.GUI(); // eslint-disable-line
+    var gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('container').appendChild(gui.domElement);
 
     var style = gui.add(guiParams, 'style', [
         'mapbox/streets-v11',

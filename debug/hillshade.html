@@ -8,24 +8,21 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #checkboxes {
-            position: absolute;
-            top:0;
-            left:0;
-            padding:10px;
-        }
     </style>
 </head>
 
 <body>
 
 <style>
-    #menu {
-        background: #fff;
+    #container {
         position: absolute;
         z-index: 1;
-        top: 10px;
-        right: 10px;
+        top: 1em;
+        left: 1em;
+    }
+
+    #menu {
+        background: #fff;
         border-radius: 3px;
         width: 140px;
         border: 1px solid rgba(0,0,0,0.4);
@@ -61,13 +58,20 @@
     #menu a.active:hover {
         background: #3074a4;
     }
+
+    #checkboxes {
+        margin-top: 1em;
+    }
 </style>
 
-<nav id="menu"></nav>
-<div id='map'></div>
-<div id='checkboxes'>
-    <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+<div id="container">
+    <nav id="menu"></nav>
+    <div id='checkboxes'>
+        <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
+    </div>
 </div>
+
+<div id='map'></div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>

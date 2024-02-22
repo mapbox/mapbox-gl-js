@@ -9,11 +9,17 @@
     <style>
         body { margin: 0; padding: 0 }
         html, body, #map { height: 100%; }
+        #container {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
     </style>
 </head>
 
 <body>
-<div id='map'><div id='elevationDebug'></div></div>
+<div id='map'></div>
+<div id='container'></div>
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js'></script>
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -62,7 +68,8 @@ function updateLights(enable3dLights) {
 }
 
 window.onload = function() {
-    var gui = new dat.GUI(); // eslint-disable-line
+    var gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('container').appendChild(gui.domElement);
 
     var style = gui.add(demo3d, 'style', [
         'mapbox/streets-v11',

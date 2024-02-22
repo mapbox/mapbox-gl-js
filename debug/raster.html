@@ -9,11 +9,17 @@
         body { margin: 0; padding: 0; }
         html, body { height: 100%; }
         #map { height: 100%; }
+        #container {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
     </style>
 </head>
 
 <body>
 <div id="map"></div>
+<div id="container"></div>
 
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/d3@7.6.1/dist/d3.min.js"></script>
@@ -101,7 +107,8 @@ var map = window.map = new mapboxgl.Map({
 });
 
 map.once("load", function () {
-    var gui = window.gui = new dat.GUI(); // eslint-disable-line
+    var gui = window.gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
+    document.getElementById('container').appendChild(gui.domElement);
 
     map.setProjection("globe");
 
