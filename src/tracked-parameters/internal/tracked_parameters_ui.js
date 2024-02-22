@@ -1,9 +1,10 @@
 // @flow
+
 import {Pane} from 'tweakpane';
 import cloneDeep from 'lodash.clonedeep';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
-import window from '../../src/util/window.js';
+import window from '../../util/window.js';
 
 function deserialize(serialized: string): Object {
     return [eval][0](`(${serialized})`);
@@ -84,14 +85,16 @@ function deSerializePaneParams(input: string): PaneState {
     return p;
 }
 
-export function registerParameter(object: Object, scope: Array<string>, name: string, description: Object, onChange: Function) {
-    console.warn(`Dev only "registerParameter" call. For production consider replacing with tracked parameters container method.`);
-
-    global.registerParameter(object, scope, name, description, onChange);
-}
-
 // For fast prototyping in case of only one map present
-let global: TrackedParameters;
+let global: ?TrackedParameters;
+
+export function registerParameter(object: Object, scope: Array<string>, name: string, description: Object, onChange: Function) {
+    if (global) {
+        global.registerParameter(object, scope, name, description, onChange);
+
+        console.warn(`Dev only "registerParameter" call. For production consider replacing with tracked parameters container method.`);
+    }
+}
 
 // Reference to actual object and default values
 class ParameterInfo {

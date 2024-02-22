@@ -16,7 +16,7 @@
         top: 0;
         left: 0;
     }
-    
+
     .overlay button {
         font: 600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
         background-color: #3386c0;
@@ -28,7 +28,7 @@
         cursor: pointer;
         border-radius: 3px;
     }
- 
+
     .overlay button:hover {
         background-color: #4ea0da;
     }
@@ -49,7 +49,7 @@
 
     const map = new mapboxgl.Map({
         container: 'map',
-        enableEmbeddedDevUI: true,
+        devtools: true,
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [-96, 37.8],
         zoom: 2.5

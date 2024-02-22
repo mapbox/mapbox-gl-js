@@ -11,6 +11,7 @@ import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
 import alias from '@rollup/plugin-alias';
+import {fileURLToPath} from 'url';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -22,9 +23,12 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
         exclude: 'src/style-spec/reference/v8.json'
     }),
     alias({
-        entries: [
-            { find: 'tracked_parameters_proxy', replacement: production ? 'src/tracked-parameters/tracked_parameters_mock.js' : 'src/tracked-parameters/tracked_parameters_ui.js' },
-        ]
+        entries: [{
+            find: 'tracked_parameters_proxy',
+            replacement: production ?
+                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_mock.js', import.meta.url)) :
+                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_ui.js', import.meta.url))
+        }]
     }),
     (production && !bench) ? strip({
         sourceMap: true,

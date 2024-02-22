@@ -202,7 +202,7 @@ function setStyle (tileset) {
 
 var map = window.map = new mapboxgl.Map({
     container: "map",
-    enableEmbeddedDevUI: true,
+    devtools: true,
     style: {version: 8, layers: [], sources: {}},
     hash: true,
     transformRequest (url, type) {

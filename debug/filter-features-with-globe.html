@@ -30,7 +30,7 @@
         max-height: 100%;
         overflow: hidden;
     }
- 
+
     .map-overlay fieldset {
         display: none;
         background: #ddd;
@@ -38,7 +38,7 @@
         padding: 10px;
         margin: 0;
     }
-    
+
     .map-overlay input {
         display: block;
         border: none;
@@ -48,28 +48,28 @@
         margin: 0;
         box-sizing: border-box;
     }
-    
+
     .map-overlay .listing {
         overflow: auto;
         max-height: 100%;
     }
- 
+
     .map-overlay .listing > * {
         display: block;
         padding: 5px 10px;
         margin: 0;
     }
-    
+
     .map-overlay .listing a {
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         color: #404;
         text-decoration: none;
     }
-    
+
     .map-overlay .listing a:last-child {
         border: none;
     }
-    
+
     .map-overlay .listing a:hover {
         background: #f0f0f0;
     }
@@ -82,9 +82,9 @@
         font-weight: bold;
     }
 </style>
- 
+
 <div id="map"></div>
- 
+
 <div class="map-overlay">
 <button id="globe">Switch to globe</button>
 <fieldset>
@@ -98,7 +98,7 @@
 <script>
     const map = new mapboxgl.Map({
         container: 'map',
-        enableEmbeddedDevUI: true,
+        devtools: true,
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [-98, 38.88],
         maxZoom: 5,
@@ -279,6 +279,6 @@
         }
     });
 </script>
- 
+
 </body>
 </html>

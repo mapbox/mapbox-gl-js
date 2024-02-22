@@ -82,7 +82,6 @@ import type {EasingOptions} from './camera.js';
 import type {ContextOptions} from '../gl/context.js';
 
 import * as TP from '../tracked-parameters/tracked_parameters.js';
-import * as TPM from '../tracked-parameters/tracked_parameters_mock.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -150,7 +149,7 @@ type MapOptions = {
     collectResourceTiming?: boolean,
     respectPrefersReducedMotion?: boolean,
     contextCreateOptions?: ContextOptions,
-    enableEmbeddedDevUI?: boolean
+    devtools?: boolean
 };
 
 const defaultMinZoom = -2;
@@ -500,7 +499,7 @@ class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
-    _tp: TP.TrackedParameters | TPM.TrackedParameters;
+    _tp: TP.TrackedParameters | TP.TrackedParametersMock;
     _debugParams: DebugParams;
 
     constructor(options: MapOptions) {
@@ -612,10 +611,10 @@ class Map extends Camera {
 
         this._setupContainer();
         this._debugParams = new DebugParams();
-        if (options.enableEmbeddedDevUI) {
+        if (options.devtools) {
             this._tp = new TP.TrackedParameters(`${this._mapId}`, this.getContainer());
         } else {
-            this._tp = new TPM.TrackedParameters();
+            this._tp = new TP.TrackedParametersMock();
         }
         this._tp.registerParameter(this._debugParams, ["Debug"], "showOverdrawInspector", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug"], "showTileBoundaries", undefined, () => { this._update(); });

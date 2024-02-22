@@ -21,13 +21,13 @@
 
         #map-container {
             width: 1720px;
-            height: 880px;  
+            height: 880px;
             transform: translate(100px, 100px);
         }
 
         #map {
             height: 100%;
-            width: 100%; 
+            width: 100%;
         }
     </style>
 </head>
@@ -45,7 +45,7 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    enableEmbeddedDevUI: true,
+    devtools: true,
     zoom: 8,
     center: [-77.048, 38.845],
     style: 'mapbox://styles/mapbox/streets-v10',

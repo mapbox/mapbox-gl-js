@@ -8,7 +8,7 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #globe { 
+        #globe {
             position: absolute;
             top: 0; left: 0;
             margin: 15px;
@@ -31,7 +31,7 @@
 
 const map = new mapboxgl.Map({
     container: 'map',
-    enableEmbeddedDevUI: true,
+    devtools: true,
     style: 'mapbox://styles/mapbox/dark-v10',
     center: [-120, 50],
     zoom: 2
@@ -185,6 +185,6 @@ map.on('load', () => {
 
 });
 </script>
- 
+
 </body>
 </html>

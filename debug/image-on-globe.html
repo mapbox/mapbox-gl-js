@@ -7,10 +7,10 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #controls { 
+        #controls {
             position: absolute;
             top: 0;
-            left: 0; 
+            left: 0;
             padding:10px;
             background-color: lightblue;
             font-family: Arial, Helvetica, sans-serif;
@@ -44,7 +44,7 @@
 <script>
     const map = new mapboxgl.Map({
         container: 'map',
-        enableEmbeddedDevUI: true,
+        devtools: true,
         zoom: 5,
         center: [-75.789, 41.874],
         style: 'mapbox://styles/mapbox/dark-v10',
@@ -99,6 +99,6 @@
     });
 
 </script>
- 
+
 </body>
 </html>

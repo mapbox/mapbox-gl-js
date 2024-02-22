@@ -11,7 +11,7 @@ export async function resolve(specifier, context, nextResolve) {
     }
 
     if (specifier == 'tracked_parameters_proxy') {
-        specifier = './tracked_parameters_mock.js';
+        specifier = './internal/tracked_parameters_mock.js';
     }
 
     return nextResolve(specifier);
