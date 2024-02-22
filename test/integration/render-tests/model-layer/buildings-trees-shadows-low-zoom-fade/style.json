@@ -1,0 +1,147 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00085,
+      "height": 512,
+      "width": 512,
+      "standardDerivatives": true
+    }
+  },
+  "fog": {
+    "range": [-0.5, 5.0],
+    "color": "lightgray"
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "intensity": 0.4,
+        "direction": [
+          120,
+          70
+        ]
+      }
+    }
+  ],
+  "models": {
+    "maple1": "local://models/maple1-lod2.glb",
+    "maple2": "local://models/maple2-lod2.glb",
+    "oak1": "local://models/oak1-lod2.glb",
+    "oak2": "local://models/oak2-lod2.glb"
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/trees/{z}-{x}-{y}.pbf"
+      ]
+    }
+  },
+  "pitch": 63,
+  "zoom": 16.5,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "sky",
+      "type": "sky",
+      "paint": {
+        "sky-type": "atmosphere",
+        "sky-atmosphere-sun": [0, 0],
+        "sky-atmosphere-sun-intensity": 15
+      }
+    },
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "source-layer": "trees",
+      "layout" : {
+        "model-id": 
+          ["match", ["%", ["id"], 4],
+            0, "maple1",
+            1, "maple2",
+            3, "oak1",
+            "oak2"]
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 50.0]],
+          2, ["literal", [10.0, 0.0, 120.0]],
+          ["literal", [0.0, -3.0, -60]]],
+        "model-scale": ["match", ["%", ["id"], 3],
+          0, ["literal", [3.0, 3.25, 3.0]],
+          1, ["literal", [1.8, 1.9, 1.8]],
+          ["literal", [5.2, 5.1, 5.1]]],
+        "model-color": [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          "blue",
+          ["match", ["%", ["id"], 6],
+            0, "orange",
+            1, "gray",
+            2, "white",
+            3, "pink",
+            4, "yellow",
+            "green"]
+        ],
+        "model-color-mix-intensity": 0.2,
+        "model-cutoff-fade-range": 0.2
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "minzoom": 17,
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-vertical-scale": 0.6,
+        "fill-extrusion-opacity": 0.4,
+        "fill-extrusion-cutoff-fade-range": 0.2
+      }
+    }
+  ]
+}
