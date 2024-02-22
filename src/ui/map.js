@@ -612,7 +612,7 @@ class Map extends Camera {
         this._setupContainer();
         this._debugParams = new DebugParams();
         if (options.devtools) {
-            this._tp = new TP.TrackedParameters(`${this._mapId}`, this.getContainer());
+            this._tp = new TP.TrackedParameters(this);
         } else {
             this._tp = new TP.TrackedParametersMock();
         }

@@ -5,6 +5,30 @@ import cloneDeep from 'lodash.clonedeep';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
 import window from '../../util/window.js';
+import {isWorker} from '../../../src/util/util.js';
+import type {default as MapboxMap} from '../../../src/ui/map.js';
+
+if (!isWorker()) {
+    const style = window.document.createElement('style');
+    style.innerHTML = `
+        .mapbox-devtools::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .mapbox-devtools::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        .mapbox-devtools::-webkit-scrollbar-thumb {
+            background: rgba(110, 110, 110);
+            border-radius: 10px;
+        }
+        .mapbox-devtools::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(90, 90, 90);
+        }
+    `;
+    window.document.head.appendChild(style);
+}
 
 function deserialize(serialized: string): Object {
     return [eval][0](`(${serialized})`);
@@ -28,7 +52,7 @@ class PaneState {
 
     constructor() {
         this.isMainPaneShown = false;
-        this.folders = new Map < string, FolderState >();
+        this.folders = new Map <string, FolderState>();
     }
 }
 
@@ -111,6 +135,9 @@ class ParameterInfo {
 
 // Tracked parameters container
 export class TrackedParameters {
+    _map: MapboxMap;
+    _container: HTMLElement;
+
     // All TweakPane scopes
     _folders: Map<string, any>;
 
@@ -123,18 +150,17 @@ export class TrackedParameters {
 
     _storageName: string;
 
-    constructor(id: string, container: HTMLElement) {
+    constructor(map: MapboxMap) {
+        this._map = map;
+        this._folders = new Map <string, any>();
 
-        this._folders = new Map < string, any >();
-
-        const location = window.location;
-        const url = location.toString().split("?")[0].split("#")[0];
-
-        this._parametersInfo = new Map < string, ParameterInfo >();
-
+        const id = map._getMapId();
+        const url = new URL(window.location.pathname, window.location.href).toString();
         this._storageName = `TP_${id}_${url}`;
 
-        this.initPane(container);
+        this._parametersInfo = new Map<string, ParameterInfo>();
+
+        this.initPane();
 
         // Keep global reference, making it possible to register parameters
         // without passing reference to TrackedParameters class
@@ -146,65 +172,6 @@ export class TrackedParameters {
     dump() {
         const serialized = serialize(this._paneState);
         window.localStorage.setItem(this._storageName, serialized);
-    }
-
-    addPaneContainersToDocument(container: HTMLElement): Array<HTMLDivElement> {
-        const paneContainer = window.document.createElement("div");
-        const toggleContainer = window.document.createElement("div");
-        paneContainer.className = `mapboxEmbeddedConfig`;
-        toggleContainer.className = `mapboxToggleConfig`;
-
-        const styles = window.document.getElementsByTagName("head")[0].getElementsByTagName("style");
-        const mapboxStyle = styles.namedItem("mapboxEmbeddedConfigStyle");
-
-        if (!mapboxStyle) {
-            const styleElement = window.document.createElement("style");
-            styleElement.id = "mapboxEmbeddedConfigStyle";
-            styleElement.appendChild(window.document.createTextNode(
-                `
-            .mapboxToggleConfig {
-                position: absolute;
-                bottom:3px;
-                left:100px;
-                z-index: 100;
-            }
-    
-            .mapboxToggleConfig .tp-lblv_v {
-                width: 25px;
-            }
-    
-            .mapboxEmbeddedConfig {
-                position: absolute;
-                top:20%;
-                right:20px;
-                max-height: 75%;
-                overflow-y:auto;
-                z-index: 100;
-            }
-    
-            .mapboxEmbeddedConfig::-webkit-scrollbar {
-                width: 10px;
-                height: 10px;
-            }
-            .mapboxEmbeddedConfig::-webkit-scrollbar-track {
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 10px;
-            }
-            .mapboxEmbeddedConfig::-webkit-scrollbar-thumb {
-                background: rgba(110, 110, 110);
-                border-radius: 10px;
-            }
-            .mapboxEmbeddedConfig::-webkit-scrollbar-thumb:hover {
-                background-color: rgba(90, 90, 90);
-            }
-            `
-            ));
-            window.document.getElementsByTagName("head")[0].appendChild(styleElement);
-        }
-
-        container.appendChild(paneContainer);
-        container.appendChild(toggleContainer);
-        return [paneContainer, toggleContainer];
     }
 
     resetToDefaults() {
@@ -290,25 +257,27 @@ export class TrackedParameters {
         });
     }
 
-    initPane(container: HTMLElement) {
+    initPane() {
         // Load state
         const serializedPaneState = window.localStorage.getItem(this._storageName);
         this._paneState = deSerializePaneParams(serializedPaneState);
 
         // Create containers for UI elements
-        const [paneContainer, toggleContainer] = this.addPaneContainersToDocument(container);
+        this._container = window.document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapbox-devtools';
 
-        const togglePaneParams = {
-            debug: true,
-        };
-        togglePaneParams.debug = this._paneState.isMainPaneShown;
-
-        const togglePane = new Pane({container: toggleContainer});
-        const debugToggle = togglePane.addBinding(togglePaneParams, 'debug');
+        const positionContainer = this._map._controlPositions['top-right'];
+        positionContainer.appendChild(this._container);
 
         const pane = new Pane({
-            container: paneContainer,
-            title: 'Engine parameters',
+            container: this._container,
+            expanded: this._paneState.isMainPaneShown,
+            title: 'devtools',
+        });
+
+        pane.on('fold', (e) => {
+            this._paneState.isMainPaneShown = e.expanded;
+            this.dump();
         });
 
         const resetToDefaultsButton = pane.addButton({
@@ -333,14 +302,6 @@ export class TrackedParameters {
 
         loadButton.on('click', () => {
             this.loadParameters();
-        });
-
-        pane.hidden = !this._paneState.isMainPaneShown;
-
-        debugToggle.on('change', (ev) => {
-            pane.hidden = !ev.value;
-            this._paneState.isMainPaneShown = !pane.hidden;
-            this.dump();
         });
 
         this._folders.set("_", pane);
