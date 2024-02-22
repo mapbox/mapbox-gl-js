@@ -20,9 +20,20 @@ const leftColor = new Color(0, 0, 1, 1);
 const rightColor = new Color(1, 0, 1, 1);
 const centerColor = new Color(0, 1, 1, 1);
 
-export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
+export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>, color: Color, silhouette: boolean) {
     for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
+        if (silhouette) {
+            const radius = 1;
+            const darkenFactor = 0.8;
+            const colorMiddle = new Color(color.r * darkenFactor, color.g * darkenFactor, color.b * darkenFactor, 1.0);
+            drawDebugTile(painter, sourceCache, coords[i], color, -radius, -radius);
+            drawDebugTile(painter, sourceCache, coords[i], color, -radius, radius);
+            drawDebugTile(painter, sourceCache, coords[i], color, radius, radius);
+            drawDebugTile(painter, sourceCache, coords[i], color, radius, -radius);
+            drawDebugTile(painter, sourceCache, coords[i], colorMiddle, 0, 0);
+        } else {
+            drawDebugTile(painter, sourceCache, coords[i], color, 0, 0);
+        }
     }
 }
 
@@ -48,7 +59,7 @@ export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCach
     }
 }
 
-function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID) {
+function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID, color: Color, offsetX: number, offsetY: number) {
     const context = painter.context;
     const tr = painter.transform;
     const gl = context.gl;
@@ -56,7 +67,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const isGlobeProjection = tr.projection.name === 'globe';
     const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
 
-    let posMatrix = coord.projMatrix;
+    let posMatrix = mat4.clone(coord.projMatrix);
 
     if (isGlobeProjection && globeToMercatorTransition(tr.zoom) > 0) {
         // We use a custom tile matrix here in order to handle the globe-to-mercator transition
@@ -65,8 +76,15 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         const bounds = transitionTileAABBinECEF(coord.canonical, tr);
         const decode = globeDenormalizeECEF(bounds);
         posMatrix = mat4.multiply(new Float32Array(16), tr.globeMatrix, decode);
+
         mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
     }
+
+    const jitterMatrix = mat4.create();
+    jitterMatrix[12] += 2 * offsetX / (browser.devicePixelRatio * tr.width);
+    jitterMatrix[13] += 2 * offsetY / (browser.devicePixelRatio * tr.height);
+
+    mat4.multiply(posMatrix, jitterMatrix, posMatrix);
 
     const program = painter.getOrCreateProgram('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
@@ -92,7 +110,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
     program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, Color.red), id,
+        debugUniformValues(posMatrix, color), id,
         debugBuffer, debugIndexBuffer, debugSegments,
         null, null, null, [tile._globeTileDebugBorderBuffer]);
 

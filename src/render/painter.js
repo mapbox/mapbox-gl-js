@@ -211,6 +211,10 @@ class Painter {
 
     tp: TrackedParameters;
 
+    _debugParams: {
+        showTerrainProxyTiles: boolean;
+    }
+
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: TrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
         this.transform = transform;
@@ -218,6 +222,14 @@ class Painter {
         this.frameCopies = [];
         this.loadTimeStamps = [];
         this.tp = tp;
+
+        this._debugParams = {
+            showTerrainProxyTiles: false
+        };
+
+        tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
+            this.style.map.triggerRepaint();
+        });
 
         this.setup();
 
@@ -953,7 +965,7 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
-                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates());
+                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false);
                 }
 
                 Debug.run(() => {
@@ -966,6 +978,10 @@ class Painter {
                     }
                 });
             }
+        }
+
+        if (this.terrain && this._debugParams.showTerrainProxyTiles) {
+            draw.debug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true);
         }
 
         if (this.options.showPadding) {
