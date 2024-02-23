@@ -26,6 +26,9 @@ if (!isWorker()) {
         .mapbox-devtools::-webkit-scrollbar-thumb:hover {
             background-color: rgba(90, 90, 90);
         }
+        .mapboxgl-ctrl.mapbox-devtools button.tp-btnv_b:hover {
+            background-color: var(--btn-bg-h);
+        }
     `;
     window.document.head.appendChild(style);
 }
