@@ -5,8 +5,8 @@ uniform vec2 u_texsize;
 uniform sampler2D u_image;
 uniform float u_emissive_strength;
 
-in vec2 v_pos;
-in vec2 v_pos_world;
+in highp vec2 v_pos;
+in highp vec2 v_pos_world;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern

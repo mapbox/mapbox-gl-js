@@ -8,8 +8,8 @@ uniform float u_tile_units_to_pixels;
 
 in vec2 a_pos;
 
-out vec2 v_pos;
-out vec2 v_pos_world;
+out highp vec2 v_pos;
+out highp vec2 v_pos_world;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
