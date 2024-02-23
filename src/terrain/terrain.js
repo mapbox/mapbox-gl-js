@@ -241,15 +241,25 @@ export class Terrain extends Elevation {
     _pendingGroundEffectLayers: Array<number>;
     framebufferCopyTexture: ?Texture;
 
-    debugParams: {
-        sortTilesHiZFirst: boolean
+    _debugParams: {
+        sortTilesHiZFirst: boolean,
+        disableRenderCache: boolean
     }
 
     constructor(painter: Painter, style: Style) {
         super();
 
-        this.debugParams = {sortTilesHiZFirst: true};
-        painter.tp.registerParameter(this.debugParams, ["Terrain"], "sortTilesHiZFirst");
+        this._debugParams = {sortTilesHiZFirst: true, disableRenderCache: false};
+        painter.tp.registerParameter(this._debugParams, ["Terrain"], "sortTilesHiZFirst", {}, () => {
+            this._style.map.triggerRepaint();
+        });
+        painter.tp.registerParameter(this._debugParams, ["Terrain"], "disableRenderCache", {}, () => {
+            this._style.map.triggerRepaint();
+        });
+        painter.tp.registerButton(["Terrain"], "Invalidate Render Cache", () => {
+            this.invalidateRenderCache = true;
+            this._style.map.triggerRepaint();
+        });
 
         this.painter = painter;
         this.terrainTileForTile = {};
@@ -1040,6 +1050,10 @@ export class Terrain extends Elevation {
     }
 
     _shouldDisableRenderCache(): boolean {
+        if (this._debugParams.disableRenderCache) {
+            return true;
+        }
+
         // Disable render caches on dynamic events due to fading or transitioning.
         if (this._style.hasLightTransitions()) {
             return true;
@@ -1460,7 +1474,7 @@ export class Terrain extends Elevation {
             }
         }
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
-        if (hasOverlap && this.debugParams.sortTilesHiZFirst) {
+        if (hasOverlap && this._debugParams.sortTilesHiZFirst) {
             for (const arr of proxiesToSort) {
                 arr.sort((a, b) => {
                     return b.overscaledZ - a.overscaledZ;

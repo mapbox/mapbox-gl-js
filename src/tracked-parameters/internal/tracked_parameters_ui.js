@@ -123,6 +123,14 @@ export function registerParameter(object: Object, scope: Array<string>, name: st
     }
 }
 
+export function registerButton(scope: Array<string>, buttonTitle: string, onClick: Function) {
+    if (global) {
+        global.registerButton(scope, buttonTitle, onClick);
+
+        console.warn(`Dev only "registerButton" call. For production consider replacing with tracked parameters container method.`);
+    }
+}
+
 // Reference to actual object and default values
 class ParameterInfo {
     containerObject: Object;
@@ -310,7 +318,7 @@ export class TrackedParameters {
         this._folders.set("_", pane);
     }
 
-    registerParameter(containerObject: Object, scope: Array<string>, name: string, description: ?Object, changeValueCallback: ?Function) {
+    createFoldersChainAndSelectScope(scope: Array<string>): {currentScope: any, fullScopeName: string } {
         assert(scope.length >= 1);
 
         // Iterate/create panes
@@ -346,6 +354,12 @@ export class TrackedParameters {
             }
         }
 
+        return {currentScope, fullScopeName};
+    }
+
+    registerParameter(containerObject: Object, scope: Array<string>, name: string, description: ?Object, changeValueCallback: ?Function) {
+        const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
+
         const folderObj: FolderState = (this._paneState.folders.get(fullScopeName): any);
 
         // Full parameter name with scope prefix
@@ -367,6 +381,16 @@ export class TrackedParameters {
             folderObj.current[name] = cloneDeep(ev.value);
             this.dump();
             if (changeValueCallback) { changeValueCallback(ev.value); }
+        });
+    }
+
+    registerButton(scope: Array<string>, buttonTitle: string, onClick: Function) {
+        const {currentScope} = this.createFoldersChainAndSelectScope(scope);
+
+        // Add button to TweakPane UI
+        const button = currentScope.addButton({title: buttonTitle});
+        button.on('click', () => {
+            onClick();
         });
     }
 }
