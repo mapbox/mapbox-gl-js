@@ -1,14 +1,7 @@
 // @flow
 
-import type Painter from '../../src/render/painter.js';
-import type {CreateProgramParams} from '../../src/render/painter.js';
-import type SourceCache from '../../src/source/source_cache.js';
-import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
-
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program.js';
-import type {Mesh, Node, ModelTexture} from '../data/model.js';
 import {ModelTraits, DefaultModelScale} from '../data/model.js';
-import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 
 import Transform from '../../src/geo/transform.js';
 import EXTENT from '../../src/style-spec/data/extent.js';
@@ -17,13 +10,11 @@ import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4} from 'gl-matrix';
 import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
 import {clamp, warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
-import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
@@ -32,6 +23,15 @@ import {Aabb} from '../../src/util/primitives.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers.js';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index.js';
+
+import type Painter from '../../src/render/painter.js';
+import type {CreateProgramParams} from '../../src/render/painter.js';
+import type SourceCache from '../../src/source/source_cache.js';
+import type ModelStyleLayer from '../style/style_layer/model_style_layer.js';
+import type {Mesh, Node, ModelTexture} from '../data/model.js';
+import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
+import type {Mat4} from 'gl-matrix';
+import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 
 export default drawModels;
 

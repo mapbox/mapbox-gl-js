@@ -1,27 +1,28 @@
 // @flow
 
 import {register} from '../../../src/util/web_worker_transfer.js';
-import type {Bucket} from '../../../src/data/bucket.js';
-import type {Node} from '../model.js';
 import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model.js';
-import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
-import type {CanonicalTileID} from '../../../src/source/tile_id.js';
 import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
-import type Context from '../../../src/gl/context.js';
-import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
-import type Painter from '../../../src/render/painter.js';
-import type {Vec4} from 'gl-matrix';
 import {ReplacementSource} from '../../source/replacement_source.js';
 import {FeatureVertexArray} from '../../../src/data/array_types.js';
 import {number as interpolate} from '../../../src/style-spec/util/interpolate.js';
 import {clamp} from '../../../src/util/util.js';
 import {DEMSampler} from '../../../src/terrain/elevation.js';
-import type {Terrain} from '../../../src/terrain/terrain.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import browser from '../../../src/util/browser.js';
+
+import type {Bucket} from '../../../src/data/bucket.js';
+import type {Node} from '../model.js';
+import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
+import type {CanonicalTileID} from '../../../src/source/tile_id.js';
+import type Context from '../../../src/gl/context.js';
+import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
+import type Painter from '../../../src/render/painter.js';
+import type {Vec4} from 'gl-matrix';
+import type {Terrain} from '../../../src/terrain/terrain.js';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -183,7 +184,7 @@ class Tiled3dModelBucket implements Bucket {
         const canonical = this.id.canonical;
         for (const nodeInfo of nodesInfo) {
             const evaluationFeature = nodeInfo.feature;
-            nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
+            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
         }
     }
 
@@ -224,7 +225,7 @@ class Tiled3dModelBucket implements Bucket {
             } else {
                 nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
             }
-            nodeInfo.evaluatedScale = (layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical): any);
+            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
             if (!this.updatePbrBuffer(nodeInfo.node)) {
                 this.needsUpload = true;
             }

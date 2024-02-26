@@ -1,12 +1,12 @@
 // @flow
 
 import Context from '../../src/gl/context.js';
-import type {UniformValues} from '../../src/render/uniform_binding.js';
 import {Uniform3f} from '../../src/render/uniform_binding.js';
 import {sRGBToLinearAndScale, linearVec3TosRGB, clamp} from '../../src/util/util.js';
 import {vec3} from 'gl-matrix';
 
 import Lights from '../style/lights.js';
+import type {UniformValues} from '../../src/render/uniform_binding.js';
 import type {LightProps as Ambient} from '../style/ambient_light_properties.js';
 import type {LightProps as Directional} from '../style/directional_light_properties.js';
 import type {Vec3} from 'gl-matrix';

@@ -7,6 +7,12 @@ import {validateStyle, validateFog, emitValidationErrors} from './validate_style
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties.js';
 import Color from '../style-spec/util/color.js';
 import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFovAdjustedFogRange, getFogOpacityForBounds} from './fog_helpers.js';
+import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate.js';
+import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+import {Frustum} from '../util/primitives.js';
+import {OverscaledTileID} from '../source/tile_id.js';
+import EXTENT from '../style-spec/data/extent.js';
+
 import type {FogSpecification} from '../style-spec/types.js';
 import type EvaluationParameters from './evaluation_parameters.js';
 import type {TransitionParameters} from './properties.js';
@@ -15,11 +21,6 @@ import type Transform from '../geo/transform.js';
 import type {StyleSetterOptions} from '../style/style.js';
 import type {FogState} from './fog_helpers.js';
 import type {Mat4, Vec3} from 'gl-matrix';
-import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate.js';
-import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
-import {Frustum} from '../util/primitives.js';
-import {OverscaledTileID} from '../source/tile_id.js';
-import EXTENT from '../style-spec/data/extent.js';
 
 type Props = {|
     "range": DataConstantProperty<[number, number]>,

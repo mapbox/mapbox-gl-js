@@ -8,7 +8,6 @@ import {
 } from '../../src/geo/mercator_coordinate.js';
 import {getProjectionInterpolationT} from '../../src/geo/projection/adjustments.js';
 import {mat4, vec3, quat} from 'gl-matrix';
-import type {Mat4, Vec3, Quat} from 'gl-matrix';
 import {degToRad} from '../../src/util/util.js';
 import {
     interpolateVec3,
@@ -20,6 +19,8 @@ import {
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import Transform from '../../src/geo/transform.js';
 import assert from 'assert';
+
+import type {Mat4, Vec3, Quat} from 'gl-matrix';
 
 export function rotationScaleYZFlipMatrix(out: Mat4, rotation: Vec3, scale: Vec3) {
     mat4.identity(out);

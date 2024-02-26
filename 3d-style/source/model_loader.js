@@ -1,10 +1,8 @@
 // @flow
 
 import {type Footprint, type Mesh, type Node, type Material, type ModelTexture, type Sampler, type AreaLight, HEIGHTMAP_DIM} from '../data/model.js';
-import type {TextureImage} from '../../src/render/texture.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
-import type {Vec2, Vec3} from 'gl-matrix';
 import {mat4, vec3} from 'gl-matrix';
 import {TriangleIndexArray,
     ModelLayoutArray,
@@ -22,6 +20,9 @@ import window from '../../src/util/window.js';
 import {warnOnce, base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
+
+import type {Vec2, Vec3} from 'gl-matrix';
+import type {TextureImage} from '../../src/render/texture.js';
 
 function convertTextures(gltf: Object, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];

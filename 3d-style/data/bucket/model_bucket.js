@@ -4,10 +4,18 @@ import EXTENT from '../../../src/style-spec/data/extent.js';
 import {register} from '../../../src/util/web_worker_transfer.js';
 import loadGeometry from '../../../src/data/load_geometry.js';
 import toEvaluationFeature from '../../../src/data/evaluation_feature.js';
-import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import EvaluationParameters from '../../../src/style/evaluation_parameters.js';
 import Point from '@mapbox/point-geometry';
 import {vec3} from 'gl-matrix';
+import {InstanceVertexArray} from '../../../src/data/array_types.js';
+import assert from 'assert';
+import {warnOnce} from '../../../src/util/util.js';
+import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
+import {rotationScaleYZFlipMatrix} from '../../util/model_util.js';
+import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
+import {instanceAttributes} from '../model_attributes.js';
+
+import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import type {Mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
 import type {
@@ -25,13 +33,6 @@ import type {SpritePositions} from '../../../src/util/image.js';
 import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type {TileTransform} from '../../../src/geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
-import {InstanceVertexArray} from '../../../src/data/array_types.js';
-import assert from 'assert';
-import {warnOnce} from '../../../src/util/util.js';
-import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
-import {rotationScaleYZFlipMatrix} from '../../util/model_util.js';
-import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
-import {instanceAttributes} from '../model_attributes.js';
 
 class ModelFeature {
     feature: EvaluationFeature;

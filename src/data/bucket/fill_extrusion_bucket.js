@@ -9,7 +9,6 @@ import {TriangleIndexArray} from '../index_array_type.js';
 import EXTENT from '../../style-spec/data/extent.js';
 import earcut from 'earcut';
 import {VectorTileFeature} from '@mapbox/vector-tile';
-import type {Feature} from "../../style-spec/expression";
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import classifyRings from '../../util/classify_rings.js';
 import assert from 'assert';
@@ -25,6 +24,11 @@ import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from 
 import {subdividePolygons} from '../../util/polygon_clipping.js';
 import {ReplacementSource, regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source.js';
 import {clamp} from '../../util/util.js';
+import {earthRadius} from '../../geo/lng_lat.js';
+import {Aabb, Frustum} from '../../util/primitives.js';
+import {Elevation} from '../../terrain/elevation.js';
+
+import type {Feature} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping.js';
 import type {Vec3} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
@@ -36,8 +40,6 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket.js';
-import {earthRadius} from '../../geo/lng_lat.js';
-
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer.js';
 import type Context from '../../gl/context.js';
 import type IndexBuffer from '../../gl/index_buffer.js';
@@ -47,8 +49,6 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
-import {Aabb, Frustum} from '../../util/primitives.js';
-import {Elevation} from '../../terrain/elevation.js';
 
 export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-base',

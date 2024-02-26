@@ -1,9 +1,16 @@
 // @flow
 
-import type Actor from '../../src/util/actor.js';
 import {getArrayBuffer} from '../../src/util/ajax.js';
-import type StyleLayerIndex from '../../src/style/style_layer_index.js';
 import FeatureIndex from '../../src/data/feature_index.js';
+import {process3DTile} from './model_loader.js';
+import {tileToMeter} from '../../src/geo/mercator_coordinate.js';
+import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
+import {CanonicalTileID, OverscaledTileID} from '../../src/source/tile_id.js';
+import {load3DTile} from '../util/loaders.js';
+import EvaluationParameters from '../../src/style/evaluation_parameters.js';
+
+import type Actor from '../../src/util/actor.js';
+import type StyleLayerIndex from '../../src/style/style_layer_index.js';
 import type {
     WorkerSource,
     WorkerTileParameters,
@@ -11,14 +18,8 @@ import type {
     TileParameters,
     WorkerTileResult
 } from '../../src/source/worker_source.js';
-import {process3DTile} from './model_loader.js';
-import {tileToMeter} from '../../src/geo/mercator_coordinate.js';
-import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import type {Bucket} from '../../src/data/bucket.js';
-import {CanonicalTileID, OverscaledTileID} from '../../src/source/tile_id.js';
 import type Projection from '../../src/geo/projection/projection.js';
-import {load3DTile} from '../util/loaders.js';
-import EvaluationParameters from '../../src/style/evaluation_parameters.js';
 
 class Tiled3dWorkerTile {
     tileID: OverscaledTileID;

@@ -1,18 +1,19 @@
 // @flow
 
 import {Evented, ErrorEvent, Event} from '../../src/util/evented.js';
+import {ResourceType} from '../../src/util/ajax.js';
+import loadTileJSON from '../../src/source/load_tilejson.js';
+import TileBounds from '../../src/source/tile_bounds.js';
+import {extend} from '../../src/util/util.js';
+import {postTurnstileEvent} from '../../src/util/mapbox.js';
+
 import type {Source} from '../../src/source/source.js';
 import type Tile from '../../src/source/tile.js';
 import type {Callback} from '../../src/types/callback.js';
 import type {Cancelable} from '../../src/types/cancelable.js';
 import type Dispatcher from '../../src/util/dispatcher.js';
-import {ResourceType} from '../../src/util/ajax.js';
 import type {ModelSourceSpecification} from '../../src/style-spec/types.js';
 import type Map from '../../src/ui/map.js';
-import loadTileJSON from '../../src/source/load_tilejson.js';
-import TileBounds from '../../src/source/tile_bounds.js';
-import {extend} from '../../src/util/util.js';
-import {postTurnstileEvent} from '../../src/util/mapbox.js';
 import type {OverscaledTileID} from '../../src/source/tile_id.js';
 
 class Tiled3DModelSource extends Evented implements Source {

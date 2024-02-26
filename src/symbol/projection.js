@@ -5,6 +5,10 @@ import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec3, vec4} from 'gl-matrix';
 import * as symbolSize from './symbol_size.js';
 import {addDynamicAttributes, updateGlobeVertexNormal} from '../data/bucket/symbol_bucket.js';
+import {WritingMode} from '../symbol/shaping.js';
+import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
+import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
+
 import type Projection from '../geo/projection/projection.js';
 import type Painter from '../render/painter.js';
 import type Transform from '../geo/transform.js';
@@ -18,9 +22,6 @@ import type {
 } from '../data/array_types.js';
 import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 
-import {WritingMode} from '../symbol/shaping.js';
-import {CanonicalTileID, OverscaledTileID} from '../source/tile_id.js';
-import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util.js';
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 
 type PlacedGlyph = {|

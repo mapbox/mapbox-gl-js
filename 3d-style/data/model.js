@@ -1,27 +1,28 @@
 // @flow
 
-import type Painter from '../../src/render/painter.js';
 import LngLat from '../../src/geo/lng_lat.js';
-import Color from "../../src/style-spec/util/color.js";
+import Color from '../../src/style-spec/util/color.js';
 import Texture from '../../src/render/texture.js';
-import type IndexBuffer from '../../src/gl/index_buffer.js';
 import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types.js';
 import {StructArray} from '../../src/util/struct_array.js';
-import type VertexBuffer from '../../src/gl/vertex_buffer.js';
-import type {Mat4, Vec2, Vec3, Vec4, Quat} from 'gl-matrix';
-import type Context from "../../src/gl/context.js";
 import {Aabb} from '../../src/util/primitives.js';
 import {mat4, vec4} from 'gl-matrix';
 import {modelAttributes, normalAttributes, texcoordAttributes, color3fAttributes, color4fAttributes, featureAttributes} from './model_attributes.js';
-import type {TextureImage, TextureWrap, TextureFilter} from '../../src/render/texture.js';
 import SegmentVector from '../../src/data/segment.js';
 import {globeToMercatorTransition} from '../../src/geo/projection/globe_util.js';
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import MercatorCoordinate, {getMetersPerPixelAtLatitude, getLatitudeScale, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import Transform from '../../src/geo/transform.js';
 import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convertModelMatrixForGlobe} from '../util/model_util.js';
+
 import type Point from '@mapbox/point-geometry';
+import type {Mat4, Vec2, Vec3, Vec4, Quat} from 'gl-matrix';
+import type Context from '../../src/gl/context.js';
+import type IndexBuffer from '../../src/gl/index_buffer.js';
+import type Painter from '../../src/render/painter.js';
 import type TriangleGridIndex from '../../src/util/triangle_grid_index.js';
+import type VertexBuffer from '../../src/gl/vertex_buffer.js';
+import type {TextureImage, TextureWrap, TextureFilter} from '../../src/render/texture.js';
 
 export type Sampler = {
     minFilter: TextureFilter;

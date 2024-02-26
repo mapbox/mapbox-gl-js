@@ -3,11 +3,12 @@ import {RGBAImage, Float32Image} from '../util/image.js';
 
 import {warnOnce, clamp} from '../util/util.js';
 import {register} from '../util/web_worker_transfer.js';
-import type {DEMSourceEncoding} from '../source/worker_source.js';
 import DemMinMaxQuadTree from './dem_tree.js';
 import assert from 'assert';
 import {CanonicalTileID} from '../source/tile_id.js';
 import browser from '../util/browser.js';
+
+import type {DEMSourceEncoding} from '../source/worker_source.js';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially

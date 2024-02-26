@@ -6,17 +6,17 @@ import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import Program from './program.js';
-import type SourceCache from '../source/source_cache.js';
 import SkyboxGeometry from './skybox_geometry.js';
 import {skyboxUniformValues, skyboxGradientUniformValues} from './program/skybox_program.js';
 import {skyboxCaptureUniformValues} from './program/skybox_capture_program.js';
 import SkyLayer from '../style/style_layer/sky_style_layer.js';
-import type Painter from './painter.js';
 import {mat3, mat4} from 'gl-matrix';
 import assert from 'assert';
-
-import type {Mat4} from 'gl-matrix';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+
+import type SourceCache from '../source/source_cache.js';
+import type Painter from './painter.js';
+import type {Mat4} from 'gl-matrix';
 
 export default drawSky;
 

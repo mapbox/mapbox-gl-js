@@ -9,13 +9,14 @@ import {
     UniformMatrix4f
 } from '../../../src/render/uniform_binding.js';
 
+import Color from '../../../src/style-spec/util/color.js';
+import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
+import TextureSlots from '../texture_slots.js';
+
 import type {UniformValues} from '../../../src/render/uniform_binding.js';
 import type Context from '../../../src/gl/context.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Material} from '../../data/model.js';
-import Color from '../../../src/style-spec/util/color.js';
-import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
-import TextureSlots from '../texture_slots.js';
 
 export type ModelUniformsType = {
     'u_matrix': UniformMatrix4f,

@@ -18,6 +18,8 @@ import {TriangleIndexArray, GlobeVertexArray, PosArray} from '../../data/array_t
 import {Aabb, Ray} from '../../util/primitives.js';
 import LngLat, {earthRadius} from '../lng_lat.js';
 import LngLatBounds from '../lng_lat_bounds.js';
+import Point from '@mapbox/point-geometry';
+import assert from 'assert';
 
 import type Painter from '../../render/painter.js';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
@@ -26,8 +28,6 @@ import type {Vec3, Mat4} from 'gl-matrix';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
 import type Transform from '../transform.js';
-import Point from '@mapbox/point-geometry';
-import assert from 'assert';
 
 export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
 export const GLOBE_ZOOM_THRESHOLD_MAX = 6;

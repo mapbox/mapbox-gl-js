@@ -10,6 +10,10 @@ import {getAnchorAlignment, WritingMode} from './shaping.js';
 import {mat4} from 'gl-matrix';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
+import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
+import BuildingIndex from '../source/building_index.js';
+import {warnOnce} from '../util/util.js';
+
 import type Transform from '../geo/transform.js';
 import type StyleLayer from '../style/style_layer.js';
 import type Tile from '../source/tile.js';
@@ -17,14 +21,11 @@ import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 import type {SymbolBuffers, CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket.js';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types.js';
 import type FeatureIndex from '../data/feature_index.js';
-import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Mat4} from 'gl-matrix';
 import type {PlacedCollisionBox} from './collision_index.js';
-import BuildingIndex from '../source/building_index.js';
-import {warnOnce} from '../util/util.js';
 
 // PlacedCollisionBox with all fields optional
 type PartialPlacedCollisionBox = $ObjMap<PlacedCollisionBox, <V>() => ?V>;

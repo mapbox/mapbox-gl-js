@@ -66,6 +66,12 @@ export type StructArrayLayout = {
     alignment: ?number
 }
 
+export interface IStructArrayLayout {
+    _refreshViews(): void;
+    emplace(...args: number[]): number;
+    emplaceBack(...args: number[]): number;
+}
+
 export type SerializedStructArray = {
     length: number,
     arrayBuffer: ArrayBuffer

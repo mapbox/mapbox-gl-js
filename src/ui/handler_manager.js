@@ -2,7 +2,6 @@
 
 import {Event} from '../util/evented.js';
 import * as DOM from '../util/dom.js';
-import type Map from './map.js';
 import HandlerInertia from './handler_inertia.js';
 import {MapEventHandler, BlockableMapEventHandler} from './handler/map_event.js';
 import BoxZoomHandler from './handler/box_zoom.js';
@@ -25,6 +24,7 @@ import assert from 'assert';
 import {vec3} from 'gl-matrix';
 import MercatorCoordinate, {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate.js';
 
+import type Map from './map.js';
 import type {Vec3} from 'gl-matrix';
 import type {Handler, HandlerResult} from './handler.js';
 

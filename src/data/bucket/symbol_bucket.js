@@ -50,12 +50,13 @@ import ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin.js';
 import {resamplePred} from '../../geo/projection/resample.js';
 import {tileCoordToECEF} from '../../geo/projection/globe_util.js';
-import type {ProjectionSpecification} from '../../style-spec/types.js';
 import {getProjection} from '../../geo/projection/index.js';
-import type Projection from '../../geo/projection/projection.js';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
+import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
 
+import type {ProjectionSpecification} from '../../style-spec/types.js';
+import type Projection from '../../geo/projection/projection.js';
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
@@ -65,7 +66,6 @@ import type {
 } from '../bucket.js';
 import type {CollisionBoxArray, CollisionBox, SymbolInstance, StructArrayLayout1f4} from '../array_types.js';
 import type {StructArray, StructArrayMember} from '../../util/struct_array.js';
-import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
 import type Context from '../../gl/context.js';
 import type IndexBuffer from '../../gl/index_buffer.js';
 import type VertexBuffer from '../../gl/vertex_buffer.js';
@@ -73,6 +73,7 @@ import type {SymbolQuad} from '../../symbol/quads.js';
 import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
+
 export type SingleCollisionBox = {
     x1: number;
     y1: number;
@@ -87,6 +88,7 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
+
 import type {Mat4, Vec3} from 'gl-matrix';
 import type {SpritePositions} from '../../util/image.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';

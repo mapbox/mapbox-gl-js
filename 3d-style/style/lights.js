@@ -42,7 +42,7 @@ class Lights<P: Object> extends Evented {
     }
 
     get(): LightsSpecification {
-        this._options.properties = (this._transitionable.serialize(): any);
+        this._options.properties = this._transitionable.serialize();
         return this._options;
     }
 

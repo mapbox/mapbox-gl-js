@@ -18,6 +18,9 @@ import SymbolBucket from '../data/bucket/symbol_bucket.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {SIZE_PACK_FACTOR} from './symbol_size.js';
 import ONE_EM from './one_em.js';
+import Point from '@mapbox/point-geometry';
+import murmur3 from 'murmurhash-js';
+
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {Shaping, PositionedIcon, TextJustify} from './shaping.js';
 import type {CollisionBoxArray} from '../data/array_types.js';
@@ -30,9 +33,6 @@ import type {GlyphPositions} from '../render/glyph_atlas.js';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties.js';
 import type Projection from '../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
-
-import Point from '@mapbox/point-geometry';
-import murmur3 from 'murmurhash-js';
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:

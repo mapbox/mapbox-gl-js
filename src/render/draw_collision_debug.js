@@ -1,10 +1,5 @@
 // @flow
 
-import type Painter from './painter.js';
-import type SourceCache from '../source/source_cache.js';
-import type StyleLayer from '../style/style_layer.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
-import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
@@ -13,10 +8,16 @@ import {QuadTriangleArray, CollisionCircleLayoutArray} from '../data/array_types
 import {collisionCircleLayout} from '../data/bucket/symbol_attributes.js';
 import SegmentVector from '../data/segment.js';
 import {mat4} from 'gl-matrix';
-import type Projection from '../geo/projection/projection.js';
 import {getCollisionDebugTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import VertexBuffer from '../gl/vertex_buffer.js';
 import IndexBuffer from '../gl/index_buffer.js';
+
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type StyleLayer from '../style/style_layer.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import type Projection from '../geo/projection/projection.js';
 
 export default drawCollisionDebug;
 

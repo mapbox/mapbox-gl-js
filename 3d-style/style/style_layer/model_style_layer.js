@@ -2,11 +2,11 @@
 
 import StyleLayer from '../../../src/style/style_layer.js';
 import ModelBucket from '../../data/bucket/model_bucket.js';
-import type {LayerSpecification} from '../../../src/style-spec/types.js';
 import properties from './model_style_layer_properties.js';
 import {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue} from '../../../src/style/properties.js';
 import {ZoomDependentExpression} from '../../../src/style-spec/expression/index.js';
 
+import type {LayerSpecification} from '../../../src/style-spec/types.js';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties.js';
 import type {BucketParameters} from '../../../src/data/bucket.js';
 import type {ConfigOptions} from '../../../src/style/properties.js';

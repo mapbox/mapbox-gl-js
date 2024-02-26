@@ -22,9 +22,6 @@ import {properties as ambientProps} from '../../3d-style/style/ambient_light_pro
 import {properties as directionalProps} from '../../3d-style/style/directional_light_properties.js';
 import {createExpression} from '../style-spec/expression/index.js';
 
-import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
-import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
-import type {Vec3} from 'gl-matrix';
 import {
     validateStyle,
     validateSource,
@@ -60,6 +57,8 @@ import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index.js';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer.js';
 import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.js';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer.js';
+import ModelManager from '../../3d-style/render/model_manager.js';
+import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -67,6 +66,9 @@ import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_render
 const emitValidationErrors = (evented: Evented, errors: ?ValidationErrors) =>
     _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
+import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
+import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
+import type {Vec3} from 'gl-matrix';
 import type {default as MapboxMap} from '../ui/map.js';
 import type Transform from '../geo/transform.js';
 import type {StyleImage} from './style_image.js';
@@ -104,8 +106,6 @@ import type {FeatureStates} from '../source/source_state.js';
 import type {PointLike} from '@mapbox/point-geometry';
 import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters, ConfigOptions} from './properties.js';
-import ModelManager from '../../3d-style/render/model_manager.js';
-import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
 import type {QueryRenderedFeaturesParams} from '../source/query_features.js';
 
 const supportedDiffOperations = pick(diffOperations, [

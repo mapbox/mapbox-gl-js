@@ -56,7 +56,7 @@ const registry: Registry = {};
 export function register<T: any>(klass: Class<T>, name: string, options: RegisterOptions<T> = {}) {
     assert(name, 'Can\'t register a class without a name.');
     assert(!registry[name], `${name} is already registered.`);
-    (Object.defineProperty: any)(klass, '_classRegistryKey', {
+    Object.defineProperty(klass, '_classRegistryKey', {
         value: name,
         writeable: false
     });

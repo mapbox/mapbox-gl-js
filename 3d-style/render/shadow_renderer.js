@@ -14,24 +14,25 @@ import {FreeCamera} from '../../src/ui/free_camera.js';
 import {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id.js';
 import Painter from '../../src/render/painter.js';
 import Program from '../../src/render/program.js';
-import type {UniformValues} from '../../src/render/uniform_binding.js';
 import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate.js';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util.js';
 
-import type {LightProps as Directional} from '../style/directional_light_properties.js';
-import type {LightProps as Ambient} from '../style/ambient_light_properties.js';
 import Lights from '../style/lights.js';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms.js';
-import type {ShadowUniformsType} from '../render/shadow_uniforms.js';
 import TextureSlots from './texture_slots.js';
 
 import assert from 'assert';
 
 import {mat4, vec3} from 'gl-matrix';
-import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program.js';
 import EXTENT from '../../src/style-spec/data/extent.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
+
+import type {UniformValues} from '../../src/render/uniform_binding.js';
+import type {LightProps as Directional} from '../style/directional_light_properties.js';
+import type {LightProps as Ambient} from '../style/ambient_light_properties.js';
+import type {ShadowUniformsType} from '../render/shadow_uniforms.js';
+import type {Mat4, Vec3, Vec4} from 'gl-matrix';
 
 type ShadowCascade = {
     framebuffer: Framebuffer,

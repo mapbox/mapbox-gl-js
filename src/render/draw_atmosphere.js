@@ -10,19 +10,19 @@ import {
     globeUseCustomAntiAliasing
 } from './../geo/projection/globe_util.js';
 import {atmosphereUniformValues} from '../terrain/globe_raster_program.js';
-import type Painter from './painter.js';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer.js';
 import {degToRad, mapValue, clamp} from '../util/util.js';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';
-import type {Vec3} from 'gl-matrix';
 import Fog from '../style/fog.js';
-import type IndexBuffer from '../gl/index_buffer.js';
-import type VertexBuffer from '../gl/vertex_buffer.js';
 import SegmentVector from '../data/segment.js';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types.js';
 import {starsLayout} from './stars_attributes.js';
 import {starsUniformValues} from '../terrain/stars_program.js';
 import {mulberry32} from '../style-spec/util/random.js';
+import type Painter from './painter.js';
+import type {Vec3} from 'gl-matrix';
+import type IndexBuffer from '../gl/index_buffer.js';
+import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 
 function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Vec3> {

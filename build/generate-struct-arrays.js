@@ -114,8 +114,7 @@ function camelize (str: string) {
 
 global.camelize = camelize;
 
-import posAttributes from '../src/data/pos_attributes.js';
-import {posAttributesGlobeExt} from '../src/data/pos_attributes.js';
+import posAttributes, {posAttributesGlobeExt} from '../src/data/pos_attributes.js';
 import boundsAttributes from '../src/data/bounds_attributes.js';
 
 createStructArrayType('pos', posAttributes);
@@ -129,7 +128,6 @@ import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
 import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
-import tileBoundsAttributes from '../src/data/bounds_attributes.js';
 import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes} from '../src/data/bucket/fill_extrusion_attributes.js';
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes.js';
 
@@ -200,35 +198,35 @@ createStructArrayType('stars_vertex', starsLayout);
 // feature index array
 createStructArrayType('feature_index', createLayout([
     // the index of the feature in the original vectortile
-    { type: 'Uint32', name: 'featureIndex' },
+    {type: 'Uint32', name: 'featureIndex'},
     // the source layer the feature appears in
-    { type: 'Uint16', name: 'sourceLayerIndex' },
+    {type: 'Uint16', name: 'sourceLayerIndex'},
     // the bucket the feature appears in
-    { type: 'Uint16', name: 'bucketIndex' },
+    {type: 'Uint16', name: 'bucketIndex'},
     // Offset into bucket.layoutVertexArray
-    { type: 'Uint16', name: 'layoutVertexArrayOffset' },
+    {type: 'Uint16', name: 'layoutVertexArrayOffset'},
 ]), true);
 
 // triangle index array
 createStructArrayType('triangle_index', createLayout([
-    { type: 'Uint16', name: 'vertices', components: 3 }
+    {type: 'Uint16', name: 'vertices', components: 3}
 ]));
 
 // line index array
 createStructArrayType('line_index', createLayout([
-    { type: 'Uint16', name: 'vertices', components: 2 }
+    {type: 'Uint16', name: 'vertices', components: 2}
 ]));
 
 // line strip index array
 createStructArrayType('line_strip_index', createLayout([
-    { type: 'Uint16', name: 'vertices', components: 1 }
+    {type: 'Uint16', name: 'vertices', components: 1}
 ]));
 
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);
 
 // tile bounds vertex array
-createStructArrayType(`tile_bounds`, tileBoundsAttributes);
+createStructArrayType(`tile_bounds`, boundsAttributes);
 
 // model attributes
 createStructArrayType(`model_layout`, modelAttributes);
@@ -281,6 +279,7 @@ fs.writeFileSync('src/data/array_types.js',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array.js';
 import {register} from '../util/web_worker_transfer.js';
+import type {IStructArrayLayout} from '../util/struct_array.js';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}

@@ -694,7 +694,7 @@ const defaultLayouts = {
 
 type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string';
 
-function layoutType(property: string, type: LayoutType, binderType: string) {
+function layoutType(property: string, type: LayoutType, binderType: string): Class<StructArray> {
     const layoutException = propertyExceptions[property];
     // $FlowFixMe[prop-missing] - we don't cover all types in defaultLayouts for some reason
     return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
