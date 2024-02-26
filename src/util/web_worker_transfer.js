@@ -12,6 +12,7 @@ import window from './window.js';
 import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
+import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted.js';
 
 type SerializedObject = interface { [_: string]: Serialized };
 export type Serialized =
@@ -87,6 +88,8 @@ register(Grid, 'Grid');
 
 register(Color, 'Color');
 register(Error, 'Error');
+register(Formatted, 'Formatted');
+register(FormattedSection, 'FormattedSection');
 register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
