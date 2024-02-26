@@ -577,27 +577,34 @@ export default class Popup extends Evented {
 
         if (!map || !container || !pos) return 'bottom';
 
+        const padding = map.transform.padding;
+        const paddingTop = (padding.top || 0);
+        const paddingBottom = (padding.bottom || 0);
+        const paddingLeft = (padding.left || 0);
+        const paddingRight = (padding.right || 0);
+
         const width = container.offsetWidth;
         const height = container.offsetHeight;
 
-        const isTop = pos.y + bottomY < height;
-        const isBottom = pos.y > map.transform.height - height;
-        const isLeft = pos.x < width / 2;
-        const isRight = pos.x > map.transform.width - width / 2;
+        const isTop = pos.y + bottomY < height + paddingTop;
+        const isLeft = pos.x < width / 2 + paddingLeft;
+        const isRight = pos.x > map.transform.width - width / 2 - paddingRight;
+        const isTopOnEitherSide = pos.y + bottomY < height / 2  + paddingTop;
+        const isBottomOnEitherSide = pos.y > map.transform.height - height / 2 - paddingBottom;
 
-        if (isTop) {
-            if (isLeft) return 'top-left';
-            if (isRight) return 'top-right';
-            return 'top';
+        if (isLeft) {
+            if (isTopOnEitherSide) return 'top-left';
+            if (isBottomOnEitherSide) return 'bottom-left';
+            return 'left';
         }
-        if (isBottom) {
-            if (isLeft) return 'bottom-left';
-            if (isRight) return 'bottom-right';
-        }
-        if (isLeft) return 'left';
-        if (isRight) return 'right';
 
-        return 'bottom';
+        if (isRight) {
+            if (isTopOnEitherSide) return 'top-right';
+            if (isBottomOnEitherSide) return 'bottom-right';
+            return 'right';
+        }
+
+        return isTop ? 'top' : 'bottom';
     }
 
     _updateClassList() {
