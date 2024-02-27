@@ -1,9 +1,10 @@
 /* eslint-disable import/extensions */
 import path from 'path';
+import fs from 'fs';
 import isBuiltin from 'is-builtin-module';
 import {rollup} from 'rollup';
 
-import {test} from '../util/test.js';
+import {test} from 'tape';
 import rollupConfig from '../../src/style-spec/rollup.config.js';
 
 import {createRequire} from 'module';
@@ -13,11 +14,14 @@ import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const styleSpecDirectory = path.join(__dirname, '../../src/style-spec');
-import styleSpecPackage from '../../src/style-spec/package.json';
+
+const styleSpecPackage = JSON.parse(fs.readFileSync(path.join(styleSpecDirectory, 'package.json')));
+// import styleSpecPackage from '../../src/style-spec/package.json';
 
 test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
     t.test('builds self-contained bundle without undeclared dependencies', (t) => {
-        t.stub(console, 'warn');
+        const warn = console.warn;
+        console.warn = () => {};
         rollup({
             input: `${styleSpecDirectory}/style-spec.js`,
             plugins: [{
@@ -41,8 +45,10 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
                 }
             }].concat(rollupConfig[0].plugins)
         }).then(() => {
+            console.warn = warn;
             t.end();
         }).catch(e => {
+            console.warn = warn;
             t.error(e);
         });
     });

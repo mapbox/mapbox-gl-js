@@ -1,4 +1,4 @@
-import {test} from '../util/test.js';
+import {test} from 'tape';
 import fs from 'fs';
 
 test('dev build contains asserts', (t) => {
