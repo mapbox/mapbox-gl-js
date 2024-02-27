@@ -101,7 +101,7 @@
     "tap": "~16.3.10",
     "tape": "^5.7.5",
     "tape-filter": "^1.0.4",
-    "testem": "^3.11.0"
+    "testem": "^3.12.0"
   },
   "browser": {
     "./src/shaders/index.js": "./src/shaders/shaders.js",
