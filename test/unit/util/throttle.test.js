@@ -1,53 +1,46 @@
-// @flow
-
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 
 import throttle from '../../../src/util/throttle.js';
 
-test('throttle', (t) => {
-
-    t.test('does not execute unthrottled function unless throttled function is invoked', (t) => {
+describe('throttle', () => {
+    test('does not execute unthrottled function unless throttled function is invoked', () => {
         let executionCount = 0;
         throttle(() => { executionCount++; }, 0);
-        t.equal(executionCount, 0);
-        t.end();
+        expect(executionCount).toEqual(0);
     });
 
-    t.test('executes unthrottled function once per tick when period is 0', (t) => {
+    test('executes unthrottled function once per tick when period is 0', () => {
         let executionCount = 0;
         const throttledFunction = throttle(() => { executionCount++; }, 0);
         throttledFunction();
         throttledFunction();
-        t.equal(executionCount, 1);
+        expect(executionCount).toEqual(1);
         setTimeout(() => {
             throttledFunction();
             throttledFunction();
-            t.equal(executionCount, 2);
-            t.end();
+            expect(executionCount).toEqual(2);
         }, 0);
     });
 
-    t.test('executes unthrottled function immediately once when period is > 0', (t) => {
+    test('executes unthrottled function immediately once when period is > 0', () => {
         let executionCount = 0;
         const throttledFunction = throttle(() => { executionCount++; }, 5);
         throttledFunction();
         throttledFunction();
         throttledFunction();
-        t.equal(executionCount, 1);
-        t.end();
-    });
+        expect(executionCount).toEqual(1);
+    }
+    );
 
-    t.test('queues exactly one execution of unthrottled function when period is > 0', (t) => {
+    test('queues exactly one execution of unthrottled function when period is > 0', () => {
         let executionCount = 0;
         const throttledFunction = throttle(() => { executionCount++; }, 5);
         throttledFunction();
         throttledFunction();
         throttledFunction();
         setTimeout(() => {
-            t.equal(executionCount, 2);
-            t.end();
+            expect(executionCount).toEqual(2);
         }, 10);
-    });
-
-    t.end();
+    }
+    );
 });

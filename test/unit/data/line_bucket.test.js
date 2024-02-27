@@ -1,18 +1,15 @@
-import {test} from '../../util/test.js';
-import fs from 'fs';
-import path from 'path';
+import {test, expect, vi} from "../../util/vitest.js";
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
 import segment from '../../../src/data/segment.js';
 import LineBucket from '../../../src/data/bucket/line_bucket.js';
 import LineStyleLayer from '../../../src/style/style_layer/line_style_layer.js';
-
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+// eslint-disable-next-line import/no-unresolved
+import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.
-const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+const vt = new VectorTile(new Protobuf(tileStub));
 const feature = vt.layers.road.feature(0);
 
 function createLine(numPoints) {
@@ -23,7 +20,7 @@ function createLine(numPoints) {
     return points;
 }
 
-test('LineBucket', (t) => {
+test('LineBucket', () => {
     const layer = new LineStyleLayer({id: 'test', type: 'line'});
     layer.recalculate({zoom: 0});
 
@@ -96,16 +93,14 @@ test('LineBucket', (t) => {
     ], polygon);
 
     bucket.addFeature(feature, feature.loadGeometry());
-
-    t.end();
 });
 
-test('LineBucket segmentation', (t) => {
-    t.stub(console, 'warn');
+test('LineBucket segmentation', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     // Stub MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
+    vi.spyOn(segment, 'MAX_VERTEX_ARRAY_LENGTH', 'get').mockImplementation(() => 256);
 
     const layer = new LineStyleLayer({id: 'test', type: 'line'});
     layer.recalculate({zoom: 0});
@@ -123,8 +118,8 @@ test('LineBucket segmentation', (t) => {
     // first segment to include the first feature and the first polygon
     // of the second feature, and the second segment to include the
     // second polygon of the second feature.
-    t.equal(bucket.layoutVertexArray.length, 276);
-    t.deepEqual(bucket.segments.get(), [{
+    expect(bucket.layoutVertexArray.length).toEqual(276);
+    expect(bucket.segments.get()).toEqual([{
         vertexOffset: 0,
         vertexLength: 20,
         primitiveOffset: 0,
@@ -136,7 +131,5 @@ test('LineBucket segmentation', (t) => {
         primitiveLength: 254
     }]);
 
-    t.equal(console.warn.callCount, 1);
-
-    t.end();
+    expect(console.warn).toHaveBeenCalledTimes(1);
 });

@@ -1,4 +1,3 @@
-import window from '../../src/util/window.js';
 import Map from '../../src/ui/map.js';
 import {extend} from '../../src/util/util.js';
 

@@ -1,10 +1,10 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {ReplacementSource} from '../../../3d-style/source/replacement_source.js';
 import {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id.js';
 import Point from '@mapbox/point-geometry';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index.js';
 
-test('ReplacementSource', (t) => {
+describe('ReplacementSource', () => {
     const footprintSetA = [
         {min: [1000.0, 1000.0], max: [3000.0, 3000.0]},
         {min: [4000.0, 1500.0], max: [6000.0, 2000.0]},
@@ -74,7 +74,7 @@ test('ReplacementSource', (t) => {
         return new UnwrappedTileID(0, new CanonicalTileID(z, x, y));
     };
 
-    t.test('single source', (t) => {
+    test('single source', () => {
         const replacementSource = new ReplacementSource();
 
         const preUpdateTime = replacementSource.updateTime;
@@ -82,42 +82,40 @@ test('ReplacementSource', (t) => {
         const postUpdateTime = replacementSource.updateTime;
 
         // Update time should have changed
-        t.ok(postUpdateTime > preUpdateTime);
+        expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
         // Expect to find all footprints from a single source
         const regions = replacementSource.getReplacementRegionsForTile(createId(0, 0, 0));
 
-        t.equal(regions.length, 5);
-        t.strictSame(regions[0].min, new Point(1000, 1000));
-        t.strictSame(regions[0].max, new Point(3000, 3000));
-        t.equal(regions[0].sourceId, "source");
-        t.strictSame(regions[0].footprintTileId, createId(0, 0, 0));
+        expect(regions.length).toEqual(5);
+        expect(regions[0].min).toStrictEqual(new Point(1000, 1000));
+        expect(regions[0].max).toStrictEqual(new Point(3000, 3000));
+        expect(regions[0].sourceId).toEqual("source");
+        expect(regions[0].footprintTileId).toStrictEqual(createId(0, 0, 0));
 
-        t.strictSame(regions[1].min, new Point(2500.0, 5000.0));
-        t.strictSame(regions[1].max, new Point(5000.0, 6000.0));
-        t.equal(regions[1].sourceId, "source");
-        t.strictSame(regions[1].footprintTileId, createId(0, 0, 0));
+        expect(regions[1].min).toStrictEqual(new Point(2500.0, 5000.0));
+        expect(regions[1].max).toStrictEqual(new Point(5000.0, 6000.0));
+        expect(regions[1].sourceId).toEqual("source");
+        expect(regions[1].footprintTileId).toStrictEqual(createId(0, 0, 0));
 
-        t.strictSame(regions[2].min, new Point(3500.0, 3000.0));
-        t.strictSame(regions[2].max, new Point(4000.0, 5500.0));
-        t.equal(regions[2].sourceId, "source");
-        t.strictSame(regions[2].footprintTileId, createId(0, 0, 0));
+        expect(regions[2].min).toStrictEqual(new Point(3500.0, 3000.0));
+        expect(regions[2].max).toStrictEqual(new Point(4000.0, 5500.0));
+        expect(regions[2].sourceId).toEqual("source");
+        expect(regions[2].footprintTileId).toStrictEqual(createId(0, 0, 0));
 
-        t.strictSame(regions[3].min, new Point(4000.0, 1500.0));
-        t.strictSame(regions[3].max, new Point(6000.0, 2000.0));
-        t.equal(regions[3].sourceId, "source");
-        t.strictSame(regions[3].footprintTileId, createId(0, 0, 0));
+        expect(regions[3].min).toStrictEqual(new Point(4000.0, 1500.0));
+        expect(regions[3].max).toStrictEqual(new Point(6000.0, 2000.0));
+        expect(regions[3].sourceId).toEqual("source");
+        expect(regions[3].footprintTileId).toStrictEqual(createId(0, 0, 0));
 
-        t.strictSame(regions[4].min, new Point(5500.0, 2500.0));
-        t.strictSame(regions[4].max, new Point(6500.0, 6500.0));
-        t.equal(regions[4].sourceId, "source");
-        t.strictSame(regions[4].footprintTileId, createId(0, 0, 0));
-
-        t.end();
+        expect(regions[4].min).toStrictEqual(new Point(5500.0, 2500.0));
+        expect(regions[4].max).toStrictEqual(new Point(6500.0, 6500.0));
+        expect(regions[4].sourceId).toEqual("source");
+        expect(regions[4].footprintTileId).toStrictEqual(createId(0, 0, 0));
     });
 
-    t.test('Tile and region overlap', (t) => {
-        t.test('single source', (t) => {
+    describe('Tile and region overlap', () => {
+        test('single source', () => {
             const replacementSource = new ReplacementSource();
 
             // Expect to find footprints from every overlapping tile
@@ -125,28 +123,26 @@ test('ReplacementSource', (t) => {
             replacementSource._setSources([createMockSource("source", createId(2, 2, 3), footprintSetC)]);
             const postUpdateTime = replacementSource.updateTime;
 
-            t.ok(postUpdateTime > preUpdateTime);
+            expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
             const regionsA = replacementSource.getReplacementRegionsForTile(createId(2, 2, 3));
             const regionsB = replacementSource.getReplacementRegionsForTile(createId(2, 1, 3));
 
-            t.strictSame(regionsA.length, 1);
-            t.strictSame(regionsB.length, 1);
+            expect(regionsA.length).toStrictEqual(1);
+            expect(regionsB.length).toStrictEqual(1);
 
-            t.strictSame(regionsA[0].min, new Point(-2000.0, 2000.0));
-            t.strictSame(regionsA[0].max, new Point(2345.0, 4567.0));
-            t.equal(regionsA[0].sourceId, "source");
-            t.strictSame(regionsA[0].footprintTileId, createId(2, 2, 3));
+            expect(regionsA[0].min).toStrictEqual(new Point(-2000.0, 2000.0));
+            expect(regionsA[0].max).toStrictEqual(new Point(2345.0, 4567.0));
+            expect(regionsA[0].sourceId).toEqual("source");
+            expect(regionsA[0].footprintTileId).toStrictEqual(createId(2, 2, 3));
 
-            t.strictSame(regionsB[0].min, new Point(6192.0, 2000.0));
-            t.strictSame(regionsB[0].max, new Point(10537.0, 4567.0));
-            t.equal(regionsB[0].sourceId, "source");
-            t.strictSame(regionsB[0].footprintTileId, createId(2, 2, 3));
-
-            t.end();
+            expect(regionsB[0].min).toStrictEqual(new Point(6192.0, 2000.0));
+            expect(regionsB[0].max).toStrictEqual(new Point(10537.0, 4567.0));
+            expect(regionsB[0].sourceId).toEqual("source");
+            expect(regionsB[0].footprintTileId).toStrictEqual(createId(2, 2, 3));
         });
 
-        t.test('multiple sources', (t) => {
+        test('multiple sources', () => {
             const replacementSource = new ReplacementSource();
 
             const preUpdateTime = replacementSource.updateTime;
@@ -156,41 +152,38 @@ test('ReplacementSource', (t) => {
             ]);
             const postUpdateTime = replacementSource.updateTime;
 
-            t.ok(postUpdateTime > preUpdateTime);
+            expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
             // Expect some of the regions from the source A to be replaced by regions from the source B
             const regions = replacementSource.getReplacementRegionsForTile(createId(2, 1, 1));
 
-            t.equal(regions.length, 7);
-            t.equal(regions[0].sourceId, "sourceB");
-            t.equal(regions[1].sourceId, "sourceB");
-            t.equal(regions[2].sourceId, "sourceB");
-            t.equal(regions[3].sourceId, "sourceB");
-            t.equal(regions[4].sourceId, "sourceA");
-            t.equal(regions[5].sourceId, "sourceA");
-            t.equal(regions[6].sourceId, "sourceA");
+            expect(regions.length).toEqual(7);
+            expect(regions[0].sourceId).toEqual("sourceB");
+            expect(regions[1].sourceId).toEqual("sourceB");
+            expect(regions[2].sourceId).toEqual("sourceB");
+            expect(regions[3].sourceId).toEqual("sourceB");
+            expect(regions[4].sourceId).toEqual("sourceA");
+            expect(regions[5].sourceId).toEqual("sourceA");
+            expect(regions[6].sourceId).toEqual("sourceA");
 
-            t.strictSame(regions[0].min, new Point(1000.0, 3500.0));
-            t.strictSame(regions[0].max, new Point(2000.0, 7000.0));
-            t.strictSame(regions[1].min, new Point(2500.0, 6500.0));
-            t.strictSame(regions[1].max, new Point(5000.0, 8000.0));
-            t.strictSame(regions[2].min, new Point(4500.0, 7000.0));
-            t.strictSame(regions[2].max, new Point(7000.0, 7500.0));
-            t.strictSame(regions[3].min, new Point(5000.0, 1000.0));
-            t.strictSame(regions[3].max, new Point(6000.0, 4000.0));
-            t.strictSame(regions[4].min, new Point(1000.0, 1000.0));
-            t.strictSame(regions[4].max, new Point(3000.0, 3000.0));
-            t.strictSame(regions[5].min, new Point(2500.0, 5000.0));
-            t.strictSame(regions[5].max, new Point(5000.0, 6000.0));
-            t.strictSame(regions[6].min, new Point(3500.0, 3000.0));
-            t.strictSame(regions[6].max, new Point(4000.0, 5500.0));
-            t.end();
+            expect(regions[0].min).toStrictEqual(new Point(1000.0, 3500.0));
+            expect(regions[0].max).toStrictEqual(new Point(2000.0, 7000.0));
+            expect(regions[1].min).toStrictEqual(new Point(2500.0, 6500.0));
+            expect(regions[1].max).toStrictEqual(new Point(5000.0, 8000.0));
+            expect(regions[2].min).toStrictEqual(new Point(4500.0, 7000.0));
+            expect(regions[2].max).toStrictEqual(new Point(7000.0, 7500.0));
+            expect(regions[3].min).toStrictEqual(new Point(5000.0, 1000.0));
+            expect(regions[3].max).toStrictEqual(new Point(6000.0, 4000.0));
+            expect(regions[4].min).toStrictEqual(new Point(1000.0, 1000.0));
+            expect(regions[4].max).toStrictEqual(new Point(3000.0, 3000.0));
+            expect(regions[5].min).toStrictEqual(new Point(2500.0, 5000.0));
+            expect(regions[5].max).toStrictEqual(new Point(5000.0, 6000.0));
+            expect(regions[6].min).toStrictEqual(new Point(3500.0, 3000.0));
+            expect(regions[6].max).toStrictEqual(new Point(4000.0, 5500.0));
         });
-
-        t.end();
     });
 
-    t.test('single source added twice', (t) => {
+    test('single source added twice', () => {
         const replacementSource = new ReplacementSource();
 
         // Expect to find footprints from every overlapping tiles
@@ -198,29 +191,28 @@ test('ReplacementSource', (t) => {
         replacementSource._setSources([createMockSource("source", createId(1, 0, 0), footprintSetB)]);
         const postUpdateTime = replacementSource.updateTime;
 
-        t.ok(postUpdateTime > preUpdateTime);
+        expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
         // Expect to find footprints from the source only once
         const regions = replacementSource.getReplacementRegionsForTile(createId(1, 0, 0));
 
-        t.equal(regions.length, 4);
-        t.equal(regions[0].sourceId, "source");
-        t.equal(regions[1].sourceId, "source");
-        t.equal(regions[2].sourceId, "source");
-        t.equal(regions[3].sourceId, "source");
+        expect(regions.length).toEqual(4);
+        expect(regions[0].sourceId).toEqual("source");
+        expect(regions[1].sourceId).toEqual("source");
+        expect(regions[2].sourceId).toEqual("source");
+        expect(regions[3].sourceId).toEqual("source");
 
-        t.strictSame(regions[0].min, new Point(1000.0, 3500.0));
-        t.strictSame(regions[0].max, new Point(2000.0, 7000.0));
-        t.strictSame(regions[1].min, new Point(2500.0, 6500.0));
-        t.strictSame(regions[1].max, new Point(5000.0, 8000.0));
-        t.strictSame(regions[2].min, new Point(4500.0, 7000.0));
-        t.strictSame(regions[2].max, new Point(7000.0, 7500.0));
-        t.strictSame(regions[3].min, new Point(5000.0, 1000.0));
-        t.strictSame(regions[3].max, new Point(6000.0, 4000.0));
-        t.end();
+        expect(regions[0].min).toStrictEqual(new Point(1000.0, 3500.0));
+        expect(regions[0].max).toStrictEqual(new Point(2000.0, 7000.0));
+        expect(regions[1].min).toStrictEqual(new Point(2500.0, 6500.0));
+        expect(regions[1].max).toStrictEqual(new Point(5000.0, 8000.0));
+        expect(regions[2].min).toStrictEqual(new Point(4500.0, 7000.0));
+        expect(regions[2].max).toStrictEqual(new Point(7000.0, 7500.0));
+        expect(regions[3].min).toStrictEqual(new Point(5000.0, 1000.0));
+        expect(regions[3].max).toStrictEqual(new Point(6000.0, 4000.0));
     });
 
-    t.test('remove source', (t) => {
+    test('remove source', () => {
         const replacementSource = new ReplacementSource();
 
         const preUpdateTime = replacementSource.updateTime;
@@ -228,21 +220,20 @@ test('ReplacementSource', (t) => {
         replacementSource._setSources([createMockSource("sourceC", createId(1, 0, 0), footprintSetC)]);
         const postUpdateTime = replacementSource.updateTime;
 
-        t.ok(postUpdateTime > preUpdateTime);
+        expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
         // Change sources and expect to find regions from the existing one only
         const regions = replacementSource.getReplacementRegionsForTile(createId(1, 0, 0));
 
-        t.equal(regions.length, 1);
-        t.strictSame(regions[0].min, new Point(-2000.0, 2000.0));
-        t.strictSame(regions[0].max, new Point(2345.0, 4567.0));
-        t.equal(regions[0].sourceId, "sourceC");
-        t.strictSame(regions[0].footprintTileId, createId(1, 0, 0));
-        t.end();
+        expect(regions.length).toEqual(1);
+        expect(regions[0].min).toStrictEqual(new Point(-2000.0, 2000.0));
+        expect(regions[0].max).toStrictEqual(new Point(2345.0, 4567.0));
+        expect(regions[0].sourceId).toEqual("sourceC");
+        expect(regions[0].footprintTileId).toStrictEqual(createId(1, 0, 0));
     });
 
-    t.test('no unnecessary updates', (t) => {
-        t.test('Retain a source between frames', (t) => {
+    describe('no unnecessary updates', () => {
+        test('Retain a source between frames', () => {
             // Retaining a source between frames should not trigger an update
             const replacementSource = new ReplacementSource();
 
@@ -250,17 +241,16 @@ test('ReplacementSource', (t) => {
             replacementSource._setSources([createMockSource("source", createId(9, 32, 9), footprintSetB)]);
             let postUpdateTime = replacementSource.updateTime;
 
-            t.ok(postUpdateTime > preUpdateTime);
+            expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
             preUpdateTime = postUpdateTime;
             replacementSource._setSources([createMockSource("source", createId(9, 32, 9), footprintSetB)]);
             postUpdateTime = replacementSource.updateTime;
 
-            t.ok(preUpdateTime === postUpdateTime);
-            t.end();
+            expect(preUpdateTime === postUpdateTime).toBeTruthy();
         });
 
-        t.test('Add empty source without loaded tiles', (t) => {
+        test('Add empty source without loaded tiles', () => {
             // Adding a higher priority source without any loaded tiles should not trigger an update
             const replacementSource = new ReplacementSource();
 
@@ -268,7 +258,7 @@ test('ReplacementSource', (t) => {
             replacementSource._setSources([createMockSource("source", createId(9, 32, 9), footprintSetB)]);
             let postUpdateTime = replacementSource.updateTime;
 
-            t.ok(postUpdateTime > preUpdateTime);
+            expect(postUpdateTime > preUpdateTime).toBeTruthy();
 
             preUpdateTime = postUpdateTime;
             replacementSource._setSources([
@@ -277,11 +267,10 @@ test('ReplacementSource', (t) => {
             ]);
             postUpdateTime = replacementSource.updateTime;
 
-            t.ok(preUpdateTime === postUpdateTime);
-            t.end();
+            expect(preUpdateTime === postUpdateTime).toBeTruthy();
         });
 
-        t.test('New source, no changes on coverage of adjacent tiles', (t) => {
+        test('New source, no changes on coverage of adjacent tiles', () => {
             // Adding a new source should trigger an update but should not change coverage on adjacent tiles
             const replacementSource = new ReplacementSource();
 
@@ -289,8 +278,8 @@ test('ReplacementSource', (t) => {
             const coverageTileA = replacementSource.getReplacementRegionsForTile(createId(9, 32, 9));
             const coverageTileB = replacementSource.getReplacementRegionsForTile(createId(9, 33, 9));
 
-            t.equal(coverageTileA.length, 5);
-            t.equal(coverageTileB.length, 0);
+            expect(coverageTileA.length).toEqual(5);
+            expect(coverageTileB.length).toEqual(0);
 
             const preUpdateTime = replacementSource.updateTime;
             replacementSource._setSources([
@@ -299,14 +288,9 @@ test('ReplacementSource', (t) => {
             ]);
             const postUpdateTime = replacementSource.updateTime;
 
-            t.ok(postUpdateTime > preUpdateTime);
-            t.strictSame(replacementSource.getReplacementRegionsForTile(createId(9, 32, 9)), coverageTileA);
-            t.strictNotSame(replacementSource.getReplacementRegionsForTile(createId(9, 33, 9)), coverageTileB);
-            t.end();
+            expect(postUpdateTime > preUpdateTime).toBeTruthy();
+            expect(replacementSource.getReplacementRegionsForTile(createId(9, 32, 9))).toStrictEqual(coverageTileA);
+            expect(replacementSource.getReplacementRegionsForTile(createId(9, 33, 9))).not.toStrictEqual(coverageTileB);
         });
-
-        t.end();
     });
-
-    t.end();
 });

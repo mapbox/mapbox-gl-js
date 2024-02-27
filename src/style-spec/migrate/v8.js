@@ -1,5 +1,4 @@
 // @noflow
-import URL from 'url';
 import {eachSource, eachLayer, eachProperty} from '../visit.js';
 
 function eachLayout(layer, callback) {
@@ -109,7 +108,7 @@ export default function(style) {
     });
 
     function migrateFontstackURL(input) {
-        const inputParsed = URL.parse(input);
+        const inputParsed = new URL(input);
         const inputPathnameParts = inputParsed.pathname.split('/');
 
         if (inputParsed.protocol !== 'mapbox:') {

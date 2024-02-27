@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import TileCache from '../../../src/source/tile_cache.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 
@@ -12,57 +12,53 @@ const tileB = {tileID: idB};
 const tileC = {tileID: idC};
 const tileD = {tileID: idD};
 
-function keysExpected(t, cache, ids) {
-    t.deepEqual(cache.order, ids.map((id) => id.key), 'keys');
+function keysExpected(cache, ids) {
+    expect(cache.order).toEqual(ids.map((id) => id.key));
 }
 
-test('TileCache', (t) => {
+test('TileCache', () => {
     const cache = new TileCache(10, (removed) => {
-        t.equal(removed, 'dc');
+        expect(removed).toEqual('dc');
     });
-    t.equal(cache.getAndRemove(idC), null, '.getAndRemove() to null');
-    t.equal(cache.add(idA, tileA), cache, '.add()');
-    keysExpected(t, cache, [idA]);
-    t.equal(cache.has(idA), true, '.has()');
-    t.equal(cache.getAndRemove(idA), tileA, '.getAndRemove()');
-    t.equal(cache.getAndRemove(idA), null, '.getAndRemove()');
-    t.equal(cache.has(idA), false, '.has()');
-    keysExpected(t, cache, []);
-    t.end();
+    expect(cache.getAndRemove(idC)).toEqual(null);
+    expect(cache.add(idA, tileA)).toEqual(cache);
+    keysExpected(cache, [idA]);
+    expect(cache.has(idA)).toEqual(true);
+    expect(cache.getAndRemove(idA)).toEqual(tileA);
+    expect(cache.getAndRemove(idA)).toEqual(null);
+    expect(cache.has(idA)).toEqual(false);
+    keysExpected(cache, []);
 });
 
-test('TileCache - getWithoutRemoving', (t) => {
+test('TileCache - getWithoutRemoving', () => {
     const cache = new TileCache(10, () => {
-        t.fail();
+        expect.unreachable();
     });
-    t.equal(cache.add(idA, tileA), cache, '.add()');
-    t.equal(cache.get(idA), tileA, '.get()');
-    keysExpected(t, cache, [idA]);
-    t.equal(cache.get(idA), tileA, '.get()');
-    t.end();
+    expect(cache.add(idA, tileA)).toEqual(cache);
+    expect(cache.get(idA)).toEqual(tileA);
+    keysExpected(cache, [idA]);
+    expect(cache.get(idA)).toEqual(tileA);
 });
 
-test('TileCache - duplicate add', (t) => {
+test('TileCache - duplicate add', () => {
     const cache = new TileCache(10, () => {
-        t.fail();
+        expect.unreachable();
     });
 
     cache.add(idA, tileA);
     cache.add(idA, tileA2);
 
-    keysExpected(t, cache, [idA, idA]);
-    t.ok(cache.has(idA));
-    t.equal(cache.getAndRemove(idA), tileA);
-    t.ok(cache.has(idA));
-    t.equal(cache.getAndRemove(idA), tileA2);
-    t.end();
+    keysExpected(cache, [idA, idA]);
+    expect(cache.has(idA)).toBeTruthy();
+    expect(cache.getAndRemove(idA)).toEqual(tileA);
+    expect(cache.has(idA)).toBeTruthy();
+    expect(cache.getAndRemove(idA)).toEqual(tileA2);
 });
 
-test('TileCache - expiry', (t) => {
+test('TileCache - expiry', () => {
     const cache = new TileCache(10, (removed) => {
-        t.ok(cache.has(idB));
-        t.equal(removed, tileA2);
-        t.end();
+        expect(cache.has(idB)).toBeTruthy();
+        expect(removed).toEqual(tileA2);
     });
 
     cache.add(idB, tileB, 0);
@@ -74,52 +70,48 @@ test('TileCache - expiry', (t) => {
     cache.add(idA, tileA2, 0); // expires immediately and `onRemove` is called.
 });
 
-test('TileCache - remove', (t) => {
+test('TileCache - remove', () => {
     const cache = new TileCache(10, () => {});
 
     cache.add(idA, tileA);
     cache.add(idB, tileB);
     cache.add(idC, tileC);
 
-    keysExpected(t, cache, [idA, idB, idC]);
-    t.ok(cache.has(idB));
+    keysExpected(cache, [idA, idB, idC]);
+    expect(cache.has(idB)).toBeTruthy();
 
     cache.remove(idB);
 
-    keysExpected(t, cache, [idA, idC]);
-    t.notOk(cache.has(idB));
+    keysExpected(cache, [idA, idC]);
+    expect(cache.has(idB)).toBeFalsy();
 
-    t.ok(cache.remove(idB));
-
-    t.end();
+    expect(cache.remove(idB)).toBeTruthy();
 });
 
-test('TileCache - overflow', (t) => {
+test('TileCache - overflow', () => {
     const cache = new TileCache(1, (removed) => {
-        t.equal(removed, tileA);
+        expect(removed).toEqual(tileA);
     });
     cache.add(idA, tileA);
     cache.add(idB, tileB);
 
-    t.ok(cache.has(idB));
-    t.notOk(cache.has(idA));
-    t.end();
+    expect(cache.has(idB)).toBeTruthy();
+    expect(cache.has(idA)).toBeFalsy();
 });
 
-test('TileCache#reset', (t) => {
+test('TileCache#reset', () => {
     let called;
     const cache = new TileCache(10, (removed) => {
-        t.equal(removed, tileA);
+        expect(removed).toEqual(tileA);
         called = true;
     });
     cache.add(idA, tileA);
-    t.equal(cache.reset(), cache);
-    t.equal(cache.has(idA), false);
-    t.ok(called);
-    t.end();
+    expect(cache.reset()).toEqual(cache);
+    expect(cache.has(idA)).toEqual(false);
+    expect(called).toBeTruthy();
 });
 
-test('TileCache#setMaxSize', (t) => {
+test('TileCache#setMaxSize', () => {
     let numRemoved = 0;
     const cache = new TileCache(10, () => {
         numRemoved++;
@@ -127,12 +119,11 @@ test('TileCache#setMaxSize', (t) => {
     cache.add(idA, tileA);
     cache.add(idB, tileB);
     cache.add(idC, tileC);
-    t.equal(numRemoved, 0);
+    expect(numRemoved).toEqual(0);
     cache.setMaxSize(15);
-    t.equal(numRemoved, 0);
+    expect(numRemoved).toEqual(0);
     cache.setMaxSize(1);
-    t.equal(numRemoved, 2);
+    expect(numRemoved).toEqual(2);
     cache.add(idD, tileD);
-    t.equal(numRemoved, 3);
-    t.end();
+    expect(numRemoved).toEqual(3);
 });

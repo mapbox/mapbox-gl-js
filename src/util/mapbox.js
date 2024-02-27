@@ -14,7 +14,6 @@
 ******************************************************************************/
 
 import config from './config.js';
-import window from './window.js';
 import webpSupported from './webp_supported.js';
 import {createSkuToken, SKU_ID} from './sku_token.js';
 import {version as sdkVersion} from '../../package.json';
@@ -351,12 +350,12 @@ class TelemetryEvent {
         if (isLocalStorageAvailable) {
             //Retrieve cached data
             try {
-                const data = window.localStorage.getItem(storageKey);
+                const data = localStorage.getItem(storageKey);
                 if (data) {
                     this.eventData = JSON.parse(data);
                 }
 
-                const uuid = window.localStorage.getItem(uuidKey);
+                const uuid = localStorage.getItem(uuidKey);
                 if (uuid) this.anonId = uuid;
             } catch (e) {
                 warnOnce('Unable to read from LocalStorage');
@@ -368,11 +367,12 @@ class TelemetryEvent {
         const isLocalStorageAvailable = storageAvailable('localStorage');
         const storageKey =  this.getStorageKey();
         const uuidKey = this.getStorageKey('uuid');
-        if (isLocalStorageAvailable) {
+        const anonId = this.anonId;
+        if (isLocalStorageAvailable && anonId) {
             try {
-                window.localStorage.setItem(uuidKey, this.anonId);
+                localStorage.setItem(uuidKey, anonId);
                 if (Object.keys(this.eventData).length >= 1) {
-                    window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
+                    localStorage.setItem(storageKey, JSON.stringify(this.eventData));
                 }
             } catch (e) {
                 warnOnce('Unable to write to LocalStorage');

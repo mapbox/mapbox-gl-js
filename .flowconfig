@@ -9,7 +9,6 @@
 .*/node_modules/@mapbox/geojson-types/fixtures/.*
 .*/node_modules/browserify/.*
 .*/node_modules/nyc/.*
-.*/node_modules/jsdom/.*
 .*/node_modules/eslint.*/.*
 .*/node_modules/highlight.*/.*
 .*/node_modules/@?babel.*/.*

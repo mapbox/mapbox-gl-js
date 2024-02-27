@@ -1,7 +1,6 @@
 // @flow
 
 import {bindAll} from '../util/util.js';
-import window from '../util/window.js';
 import throttle from '../util/throttle.js';
 
 import type Map from './map.js';
@@ -70,7 +69,7 @@ export default class Hash {
         if (this._hashName) {
             const hashName = this._hashName;
             let found = false;
-            const parts = window.location.hash.slice(1).split('&').map(part => {
+            const parts = location.hash.slice(1).split('&').map(part => {
                 const key = part.split('=')[0];
                 if (key === hashName) {
                     found = true;
@@ -89,7 +88,7 @@ export default class Hash {
 
     _getCurrentHash(): Array<string> {
         // Get the current hash from location, stripped from its number sign
-        const hash = window.location.hash.replace('#', '');
+        const hash = location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
             let keyval;
@@ -124,8 +123,7 @@ export default class Hash {
 
     _updateHashUnthrottled() {
         // Replace if already present, else append the updated hash string
-        const location = window.location.href.replace(/(#.+)?$/, this.getHashString());
-        window.history.replaceState(window.history.state, null, location);
+        history.replaceState(history.state, '', location.href.replace(/(#.+)?$/, this.getHashString()));
     }
 }
 

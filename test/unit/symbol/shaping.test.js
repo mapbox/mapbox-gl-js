@@ -1,28 +1,19 @@
-import {test} from '../../util/test.js';
-import fs from 'fs';
-import path from 'path';
+import {describe, test, expect} from "../../util/vitest.js";
 import * as shaping from '../../../src/symbol/shaping.js';
 import Formatted, {FormattedSection} from '../../../src/style-spec/expression/types/formatted.js';
 import ResolvedImage from '../../../src/style-spec/expression/types/resolved_image.js';
 import {ImagePosition} from '../../../src/render/image_atlas.js';
+import fontstackGlyphs from '../../fixtures/fontstack-glyphs.json';
 
 const WritingMode = shaping.WritingMode;
 
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-
-let UPDATE = false;
-if (typeof process !== 'undefined' && process.env !== undefined) {
-    UPDATE = !!process.env.UPDATE;
-}
-
-test('shaping', (t) => {
+describe('shaping', () => {
     const oneEm = 24;
     const layoutTextSize = 16;
     const layoutTextSizeThisZoom = 16;
     const fontStack = 'Test';
     const glyphMap = {
-        'Test': JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')))
+        'Test': fontstackGlyphs
     };
 
     const glyphPositions = {'Test' : {}};
@@ -46,73 +37,73 @@ test('shaping', (t) => {
         return new FormattedSection(name, null, scale, null, null);
     };
 
-    let shaped;
+    const basePath = '../../fixtures/expected';
 
-    const basePath = path.join(__dirname, '../../fixtures/expected');
-
-    shaped = shaping.shapeText(Formatted.fromString(`hi${String.fromCharCode(0)}`), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-null.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-null.json'))));
-
-    // Default shaping.
-    shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-default.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-default.json'))));
-
-    // Letter spacing.
-    shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0.125 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-spacing.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-spacing.json'))));
-
-    // Line break.
-    shaped = shaping.shapeText(Formatted.fromString('abcde abcde'), glyphMap, glyphPositions, images, fontStack, 4 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-linebreak.json'))));
-
-    const expectedNewLine = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-newline.json')));
-
-    shaped = shaping.shapeText(Formatted.fromString('abcde\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-newline.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, expectedNewLine);
-
-    shaped = shaping.shapeText(Formatted.fromString('abcde\r\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    t.deepEqual(shaped.positionedLines, expectedNewLine.positionedLines);
-
-    const expectedNewLinesInMiddle = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-newlines-in-middle.json')));
-
-    shaped = shaping.shapeText(Formatted.fromString('abcde\n\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-newlines-in-middle.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, expectedNewLinesInMiddle);
-
-    // Prefer zero width spaces when breaking lines. Zero width spaces are used by Mapbox data sources as a hint that
-    // a position is ideal for breaking.
-    const expectedZeroWidthSpaceBreak = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-zero-width-space.json')));
-
-    shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-zero-width-space.json'), JSON.stringify(shaped, null, 2));
-    t.deepEqual(shaped, expectedZeroWidthSpaceBreak);
-
-    // Null shaping.
-    shaped = shaping.shapeText(Formatted.fromString(''), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    t.equal(false, shaped);
-
-    shaped = shaping.shapeText(Formatted.fromString(String.fromCharCode(0)), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    t.equal(false, shaped);
-
-    // https://github.com/mapbox/mapbox-gl-js/issues/3254
-    shaped = shaping.shapeText(Formatted.fromString('   foo bar\n'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    const shaped2 = shaping.shapeText(Formatted.fromString('foo bar'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-    t.same(shaped.positionedLines, shaped2.positionedLines);
-
-    t.test('basic image shaping', (t) => {
-        const shaped = shaping.shapeText(new Formatted([sectionForImage('square')]), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        t.same(shaped.top, -12);    // 1em line height
-        t.same(shaped.left, -10.5); // 16 - 2px border * 1.5 scale factor
-        t.end();
+    test('Text shaping null', () => {
+        const shaped = shaping.shapeText(Formatted.fromString(`hi${String.fromCharCode(0)}`), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-null.json`);
     });
 
-    t.test('images in horizontal layout', (t) => {
-        const expectedImagesHorizontal = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-images-horizontal.json')));
+    // Default shaping.
+    test('Default shaping', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-default.json`);
+    });
+
+    test('Letter spacing', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0.125 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-spacing.json`);
+    });
+
+    test('Line break', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde abcde'), glyphMap, glyphPositions, images, fontStack, 4 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-linebreak.json`);
+    });
+
+    test('New line', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline.json`);
+    });
+
+    test('New line with carriage return', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde\r\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline-carriege.json`);
+    });
+
+    test('New lines in the middle', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('abcde\n\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newlines-in-middle.json`);
+    });
+
+    test('Zero width space', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-zero-width-space.json`);
+    });
+
+    test('Null shaping', () => {
+        let shaped;
+
+        // Null shaping.
+        shaped = shaping.shapeText(Formatted.fromString(''), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(false).toEqual(shaped);
+
+        shaped = shaping.shapeText(Formatted.fromString(String.fromCharCode(0)), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(false).toEqual(shaped);
+    });
+
+    test('mapbox-gl-js#3254', () => {
+        const shaped = shaping.shapeText(Formatted.fromString('   foo bar\n'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        const shaped2 = shaping.shapeText(Formatted.fromString('foo bar'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(shaped.positionedLines).toStrictEqual(shaped2.positionedLines);
+    });
+
+    test('basic image shaping', () => {
+        const shaped = shaping.shapeText(new Formatted([sectionForImage('square')]), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+        expect(shaped.top).toBe(-12);    // 1em line height
+        expect(shaped.left).toBe(-10.5); // 16 - 2px border * 1.5 scale factor
+    });
+
+    test('images in horizontal layout', () => {
         const horizontalFormatted = new Formatted([
             sectionForText('Foo'),
             sectionForImage('square'),
@@ -123,13 +114,10 @@ test('shaping', (t) => {
             sectionForText(' bar'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-images-horizontal.json'), JSON.stringify(shaped, null, 2));
-        t.deepEqual(shaped, expectedImagesHorizontal);
-        t.end();
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-horizontal.json`);
     });
 
-    t.test('images in vertical layout', (t) => {
-        const expectedImagesVertical = JSON.parse(fs.readFileSync(path.join(basePath, 'text-shaping-images-vertical.json')));
+    test('images in vertical layout', () => {
         const horizontalFormatted = new Formatted([
             sectionForText('三'),
             sectionForImage('square'),
@@ -140,92 +128,83 @@ test('shaping', (t) => {
             sectionForText('三'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom);
-        if (UPDATE) fs.writeFileSync(path.join(basePath, 'text-shaping-images-vertical.json'), JSON.stringify(shaped, null, 2));
-        t.deepEqual(shaped, expectedImagesVertical);
-        t.end();
+        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-vertical.json`);
     });
-
-    t.end();
 });
 
-test('shapeIcon', (t) => {
+describe('shapeIcon', () => {
     const imagePosition = new ImagePosition({x: 0, y: 0, w: 22, h: 22}, {pixelRatio: 1, version: 1});
     const imagePrimary = Object.freeze({
-        content: null,
-        stretchX: null,
-        stretchY: null,
+        content: undefined,
+        stretchX: undefined,
+        stretchY: undefined,
         paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22}),
         pixelRatio: 1,
         version: 1
     });
 
-    t.test('text-anchor: center', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'center'), {
+    test('text-anchor: center', () => {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'center')).toEqual({
             top: -10,
             bottom: 10,
             left: -10,
             right: 10,
             imagePrimary,
             imageSecondary: undefined
-        }, 'no offset');
+        });
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'center'), {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'center')).toEqual({
             top: -3,
             bottom: 17,
             left: -6,
             right: 14,
             imagePrimary,
             imageSecondary: undefined
-        }, 'with offset');
-        t.end();
+        });
     });
 
-    t.test('text-anchor: left', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'left'), {
+    test('text-anchor: left', () => {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'left')).toEqual({
             top: -10,
             bottom: 10,
             left: 0,
             right: 20,
             imagePrimary,
             imageSecondary: undefined
-        }, 'no offset');
+        });
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'left'), {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'left')).toEqual({
             top: -3,
             bottom: 17,
             left: 4,
             right: 24,
             imagePrimary,
             imageSecondary: undefined
-        }, 'with offset');
-        t.end();
+        });
     });
 
-    t.test('text-anchor: bottom-right', (t) => {
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'bottom-right'), {
+    test('text-anchor: bottom-right', () => {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 0, 0 ], 'bottom-right')).toEqual({
             top: -20,
             bottom: 0,
             left: -20,
             right: 0,
             imagePrimary,
             imageSecondary: undefined
-        }, 'no offset');
+        });
 
-        t.deepEqual(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'bottom-right'), {
+        expect(shaping.shapeIcon(imagePosition, undefined, [ 4, 7 ], 'bottom-right')).toEqual({
             top: -13,
             bottom: 7,
             left: -16,
             right: 4,
             imagePrimary,
             imageSecondary: undefined
-        }, 'with offset');
-        t.end();
+        });
     });
-
-    t.end();
 });
 
-test('fitIconToText', (t) => {
+describe('fitIconToText', () => {
     const glyphSize = 24;
     const shapedIcon = Object.freeze({
         top: -10,
@@ -248,8 +227,10 @@ test('fitIconToText', (t) => {
         right: 20
     });
 
-    t.test('icon-text-fit: width', (t) => {
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
+    test('icon-text-fit: width', () => {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -257,9 +238,11 @@ test('fitIconToText', (t) => {
             right: 20,
             bottom: 20,
             left: -60
-        }, 'preserves icon height, centers vertically');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -267,9 +250,11 @@ test('fitIconToText', (t) => {
             right: 23,
             bottom: 27,
             left: -57
-        }, 'preserves icon height, centers vertically, applies offset');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'width', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -277,10 +262,12 @@ test('fitIconToText', (t) => {
             right: 10,
             bottom: 15,
             left: -30
-        }, 'preserves icon height, centers vertically, adjusts for textSize');
+        });
 
         // Ignores padding for top/bottom, since the icon is only stretched to the text's width but not height
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'width', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'width', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -288,13 +275,13 @@ test('fitIconToText', (t) => {
             right: 20,
             bottom: 15,
             left: -40
-        }, 'preserves icon height, centers vertically, adjusts for textSize, includes padding');
-
-        t.end();
+        });
     });
 
-    t.test('icon-text-fit: height', (t) => {
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
+    test('icon-text-fit: height', () => {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -302,9 +289,11 @@ test('fitIconToText', (t) => {
             right: -10,
             bottom: 30,
             left: -30
-        }, 'preserves icon width, centers horizontally');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -312,9 +301,11 @@ test('fitIconToText', (t) => {
             right: -7,
             bottom: 37,
             left: -27
-        }, 'preserves icon width, centers horizontally, applies offset');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'height', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -322,10 +313,12 @@ test('fitIconToText', (t) => {
             right: 0,
             bottom: 15,
             left: -20
-        }, 'preserves icon width, centers horizontally, adjusts for textSize');
+        });
 
         // Ignores padding for left/right, since the icon is only stretched to the text's height but not width
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'height', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'height', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -333,13 +326,13 @@ test('fitIconToText', (t) => {
             right: 0,
             bottom: 20,
             left: -20
-        }, 'preserves icon width, centers horizontally, adjusts for textSize, includes padding');
-
-        t.end();
+        });
     });
 
-    t.test('icon-text-fit: both', (t) => {
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 24 / glyphSize), {
+    test('icon-text-fit: both', () => {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -347,9 +340,11 @@ test('fitIconToText', (t) => {
             right: 20,
             bottom: 30,
             left: -60
-        }, 'stretches icon to text width and height');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [3, 7], 24 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [3, 7], 24 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -357,9 +352,11 @@ test('fitIconToText', (t) => {
             right: 23,
             bottom: 37,
             left: -57
-        }, 'stretches icon to text width and height, applies offset');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'both', [0, 0, 0, 0], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -367,9 +364,11 @@ test('fitIconToText', (t) => {
             right: 10,
             bottom: 15,
             left: -30
-        }, 'stretches icon to text width and height, adjusts for textSize');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 5, 10, 5, 10 ], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -377,9 +376,11 @@ test('fitIconToText', (t) => {
             right: 20,
             bottom: 20,
             left: -40
-        }, 'stretches icon to text width and height, adjusts for textSize, includes padding');
+        });
 
-        t.deepEqual(shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 0, 5, 10, 15 ], [0, 0], 12 / glyphSize), {
+        expect(
+            shaping.fitIconToText(shapedIcon, shapedText, 'both', [ 0, 5, 10, 15 ], [0, 0], 12 / glyphSize)
+        ).toEqual({
             imagePrimary: shapedIcon.imagePrimary,
             imageSecondary: undefined,
             collisionPadding: undefined,
@@ -387,10 +388,6 @@ test('fitIconToText', (t) => {
             right: 15,
             bottom: 25,
             left: -45
-        }, 'stretches icon to text width and height, adjusts for textSize, includes padding t/r/b/l');
-
-        t.end();
+        });
     });
-
-    t.end();
 });

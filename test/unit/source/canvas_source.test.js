@@ -1,13 +1,10 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect, vi} from "../../util/vitest.js";
 import CanvasSource from '../../../src/source/canvas_source.js';
 import Transform from '../../../src/geo/transform.js';
 import {Event, Evented} from '../../../src/util/evented.js';
 import {extend} from '../../../src/util/util.js';
-import window from '../../../src/util/window.js';
 
 function createSource(options) {
-    window.useFakeHTMLCanvasGetContext();
-
     const c = (options && options.canvas) || window.document.createElement('canvas');
     c.width = 20;
     c.height = 20;
@@ -36,152 +33,141 @@ class StubMap extends Evented {
     }
 }
 
-test('CanvasSource', (t) => {
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    t.test('constructor', (t) => {
+describe('CanvasSource', () => {
+    test('constructor', async () => {
         const source = createSource();
 
-        t.equal(source.minzoom, 0);
-        t.equal(source.maxzoom, 22);
-        t.equal(source.tileSize, 512);
-        t.equal(source.animate, true);
-        source.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(typeof source.play, 'function');
-                t.end();
-            }
-        });
+        expect(source.minzoom).toEqual(0);
+        expect(source.maxzoom).toEqual(22);
+        expect(source.tileSize).toEqual(512);
+        expect(source.animate).toEqual(true);
+        await new Promise(resolve => {
+            source.on('data', (e) => {
+                if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                    expect(typeof source.play).toEqual('function');
+                    resolve();
+                }
+            });
 
-        source.onAdd(new StubMap());
+            source.onAdd(new StubMap());
+        });
     });
 
-    t.test('self-validates', (t) => {
-        const stub = t.stub(console, 'error');
+    test('self-validates', () => {
+        const stub = vi.spyOn(console, 'error').mockImplementation(() => {});
         createSource({coordinates: []});
-        t.ok(stub.called, 'should error when `coordinates` array parameter has incorrect number of elements');
-        stub.resetHistory();
+        expect(stub).toHaveBeenCalled();
+        stub.mockClear();
 
         createSource({coordinates: 'asdf'});
-        t.ok(stub.called, 'should error with non-array `coordinates` parameter');
-        stub.resetHistory();
+        expect(stub).toHaveBeenCalled();
+        stub.mockClear();
 
         createSource({animate: 8});
-        t.ok(stub.called, 'should error with non-boolean `animate` parameter');
-        stub.resetHistory();
+        expect(stub).toHaveBeenCalled();
+        stub.mockClear();
 
         createSource({canvas: {}});
-        t.ok(stub.called, 'should error with non-string/non-Canvas `canvas` parameter');
-        stub.resetHistory();
+        expect(stub).toHaveBeenCalled();
+        stub.mockClear();
 
         const canvasEl = window.document.createElement('canvas');
         createSource({canvas: canvasEl});
-        t.notOk(stub.called, 'should not error with HTMLCanvasElement');
-        stub.resetHistory();
-
-        t.end();
+        expect(stub).not.toHaveBeenCalled();
+        stub.mockClear();
     });
 
-    t.test('can be initialized with HTML element', (t) => {
+    test('can be initialized with HTML element', async () => {
         const el = window.document.createElement('canvas');
         const source = createSource({
             canvas: el
         });
 
-        source.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(source.canvas, el);
-                t.end();
-            }
-        });
+        await new Promise(resolve => {
+            source.on('data', (e) => {
+                if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                    expect(source.canvas).toBe(el);
+                    resolve();
+                }
+            });
 
-        source.onAdd(new StubMap());
+            source.onAdd(new StubMap());
+        });
     });
 
-    t.test('rerenders if animated', (t) => {
+    test('rerenders if animated', async () => {
         const source = createSource();
         const map = new StubMap();
 
-        map.on('rerender', () => {
-            t.ok(true, 'fires rerender event');
-            t.end();
-        });
+        await new Promise((resolve) => {
+            map.on('rerender', () => {
+                resolve();
+            });
 
-        source.onAdd(map);
+            source.onAdd(map);
+        });
     });
 
-    t.test('can be static', (t) => {
+    test('can be static', async () => {
         const source = createSource({
             animate: false
         });
         const map = new StubMap();
 
         map.on('rerender', () => {
-            t.notOk(true, 'shouldn\'t rerender here');
-            t.end();
+            expect.unreachable();
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
-                t.ok(true, 'fires load event without rerendering');
-                t.end();
-            }
-        });
+        await new Promise(resolve => {
+            source.on('data', e => {
+                if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                    resolve();
+                }
+            });
 
-        source.onAdd(map);
+            source.onAdd(map);
+        });
     });
 
-    t.test('onRemove stops animation', (t) => {
+    test('onRemove stops animation', () => {
         const source = createSource();
         const map = new StubMap();
 
         source.onAdd(map);
 
-        t.equal(source.hasTransition(), true, 'should animate initially');
+        expect(source.hasTransition()).toEqual(true);
 
         source.onRemove();
 
-        t.equal(source.hasTransition(), false, 'should stop animating');
+        expect(source.hasTransition()).toEqual(false);
 
         source.onAdd(map);
 
-        t.equal(source.hasTransition(), true, 'should animate when added again');
-
-        t.end();
+        expect(source.hasTransition()).toEqual(true);
     });
 
-    t.test('play and pause animation', (t) => {
+    test('play and pause animation', () => {
         const source = createSource();
         const map = new StubMap();
 
         source.onAdd(map);
 
-        t.equal(source.hasTransition(), true, 'initially animating');
+        expect(source.hasTransition()).toEqual(true);
 
         source.pause();
 
-        t.equal(source.hasTransition(), false, 'can be paused');
+        expect(source.hasTransition()).toEqual(false);
 
         source.play();
 
-        t.equal(source.hasTransition(), true, 'can be played');
-
-        t.end();
+        expect(source.hasTransition()).toEqual(true);
     });
-
-    t.end();
 });
 
-test('CanvasSource#serialize', (t) => {
+test('CanvasSource#serialize', () => {
     const source = createSource();
 
     const serialized = source.serialize();
-    t.equal(serialized.type, 'canvas');
-    t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
-
-    window.restore();
-
-    t.end();
+    expect(serialized.type).toEqual('canvas');
+    expect(serialized.coordinates).toEqual([[0, 0], [1, 0], [1, 1], [0, 1]]);
 });

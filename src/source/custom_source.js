@@ -1,7 +1,6 @@
 // @flow
 
 import Tile from './tile.js';
-import window from '../util/window.js';
 import Texture from '../render/texture.js';
 import TileBounds from './tile_bounds.js';
 import {extend, pick} from '../util/util.js';
@@ -17,10 +16,10 @@ import type {OverscaledTileID} from './tile_id.js';
 type DataType = 'raster';
 
 function isRaster(data: any): boolean {
-    return data instanceof window.ImageData ||
-        data instanceof window.HTMLCanvasElement ||
-        data instanceof window.ImageBitmap ||
-        data instanceof window.HTMLImageElement;
+    return data instanceof ImageData ||
+        data instanceof HTMLCanvasElement ||
+        data instanceof ImageBitmap ||
+        data instanceof HTMLImageElement;
 }
 
 /* eslint-disable jsdoc/check-examples */
@@ -257,7 +256,7 @@ class CustomSource<T> extends Evented implements Source {
 
     loadTile(tile: Tile, callback: Callback<void>): void {
         const {x, y, z} = tile.tileID.canonical;
-        const controller = new window.AbortController();
+        const controller = new AbortController();
         const signal = controller.signal;
 
         // $FlowFixMe[prop-missing]

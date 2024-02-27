@@ -1,54 +1,44 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import LineAtlas from '../../../src/render/line_atlas.js';
 
-test('LineAtlas', (t) => {
+describe('LineAtlas', () => {
     const lineAtlas = new LineAtlas(64, 64);
-    t.test('round [0, 0]', (t) => {
+    test('round [0, 0]', () => {
         const entry = lineAtlas.addDash([0, 0], 'round');
-        t.equal(entry.br[0], 0);
-        t.end();
+        expect(entry.br[0]).toEqual(0);
     });
-    t.test('round [1, 0]', (t) => {
+    test('round [1, 0]', () => {
         const entry = lineAtlas.addDash([1, 0], 'round');
-        t.equal(entry.br[0], 1);
-        t.end();
+        expect(entry.br[0]).toEqual(1);
     });
-    t.test('round [0, 1]', (t) => {
+    test('round [0, 1]', () => {
         const entry = lineAtlas.addDash([0, 1], 'round');
-        t.equal(entry.br[0], 1);
-        t.end();
+        expect(entry.br[0]).toEqual(1);
     });
-    t.test('odd round [1, 2, 1]', (t) => {
+    test('odd round [1, 2, 1]', () => {
         const entry = lineAtlas.addDash([1, 2, 1], 'round');
-        t.equal(entry.br[0], 4);
-        t.end();
+        expect(entry.br[0]).toEqual(4);
     });
 
-    t.test('regular [0, 0]', (t) => {
+    test('regular [0, 0]', () => {
         const entry = lineAtlas.addDash([0, 0], 'butt');
-        t.equal(entry.br[0], 0);
-        t.end();
+        expect(entry.br[0]).toEqual(0);
     });
-    t.test('regular [1, 0]', (t) => {
+    test('regular [1, 0]', () => {
         const entry = lineAtlas.addDash([1, 0], 'butt');
-        t.equal(entry.br[0], 1);
-        t.end();
+        expect(entry.br[0]).toEqual(1);
     });
-    t.test('regular [0, 1]', (t) => {
+    test('regular [0, 1]', () => {
         const entry = lineAtlas.addDash([0, 1], 'butt');
-        t.equal(entry.br[0], 1);
-        t.end();
+        expect(entry.br[0]).toEqual(1);
     });
-    t.test('odd regular [1, 2, 1]', (t) => {
+    test('odd regular [1, 2, 1]', () => {
         const entry = lineAtlas.addDash([1, 2, 1], 'butt');
-        t.equal(entry.br[0], 4);
-        t.end();
+        expect(entry.br[0]).toEqual(4);
     });
-    t.test('trims & uses cached positions', (t) => {
+    test('trims & uses cached positions', () => {
         lineAtlas.trim();
-        t.ok(lineAtlas.addDash([0, 0], 'butt'));
-        t.ok(lineAtlas.addDash([0, 0], 'round'));
-        t.end();
+        expect(lineAtlas.addDash([0, 0], 'butt')).toBeTruthy();
+        expect(lineAtlas.addDash([0, 0], 'round')).toBeTruthy();
     });
-    t.end();
 });

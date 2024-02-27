@@ -1,64 +1,59 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {Aabb, Frustum, Ray} from '../../../src/util/primitives.js';
 import {mat4, vec3} from 'gl-matrix';
 import {fixedVec3} from '../../util/fixed.js';
 
-test('primitives', (t) => {
-    t.test('aabb', (t) => {
-        t.test('Create an aabb', (t) => {
+describe('primitives', () => {
+    describe('aabb', () => {
+        test('Create an aabb', () => {
             const min = vec3.fromValues(0, 0, 0);
             const max = vec3.fromValues(2, 4, 6);
             const aabb = new Aabb(min, max);
 
-            t.equal(aabb.min, min);
-            t.equal(aabb.max, max);
-            t.deepEqual(aabb.center, vec3.fromValues(1, 2, 3));
-            t.end();
+            expect(aabb.min).toEqual(min);
+            expect(aabb.max).toEqual(max);
+            expect(aabb.center).toStrictEqual([1, 2, 3]);
         });
 
-        t.test('Create an aabb from points', (t) => {
+        test('Create an aabb from points', () => {
             const p0 = vec3.fromValues(-10, 20, 30);
             const p1 = vec3.fromValues(10, -30, 50);
             const p2 = vec3.fromValues(50, 10, -100);
             const p3 = vec3.fromValues(-15, 5, 120);
             const aabb = Aabb.fromPoints([p0, p1, p2, p3]);
 
-            t.deepEqual(aabb.min, vec3.fromValues(-15, -30, -100));
-            t.deepEqual(aabb.max, vec3.fromValues(50, 20, 120));
-            t.deepEqual(aabb.center, vec3.fromValues(17.5, -5, 10));
-            t.end();
+            expect(aabb.min).toEqual([-15, -30, -100]);
+            expect(aabb.max).toEqual([50, 20, 120]);
+            expect(aabb.center).toEqual([17.5, -5, 10]);
         });
 
-        t.test('Create 4 quadrants', (t) => {
+        test('Create 4 quadrants', () => {
             const min = vec3.fromValues(0, 0, 0);
             const max = vec3.fromValues(2, 4, 1);
             const aabb = new Aabb(min, max);
 
-            t.deepEqual(aabb.quadrant(0), new Aabb(vec3.fromValues(0, 0, 0), vec3.fromValues(1, 2, 1)));
-            t.deepEqual(aabb.quadrant(1), new Aabb(vec3.fromValues(1, 0, 0), vec3.fromValues(2, 2, 1)));
-            t.deepEqual(aabb.quadrant(2), new Aabb(vec3.fromValues(0, 2, 0), vec3.fromValues(1, 4, 1)));
-            t.deepEqual(aabb.quadrant(3), new Aabb(vec3.fromValues(1, 2, 0), vec3.fromValues(2, 4, 1)));
-
-            t.end();
+            expect(aabb.quadrant(0)).toEqual(new Aabb(vec3.fromValues(0, 0, 0), vec3.fromValues(1, 2, 1)));
+            expect(aabb.quadrant(1)).toEqual(new Aabb(vec3.fromValues(1, 0, 0), vec3.fromValues(2, 2, 1)));
+            expect(aabb.quadrant(2)).toEqual(new Aabb(vec3.fromValues(0, 2, 0), vec3.fromValues(1, 4, 1)));
+            expect(aabb.quadrant(3)).toEqual(new Aabb(vec3.fromValues(1, 2, 0), vec3.fromValues(2, 4, 1)));
         });
 
-        t.test('Distance to a point', (t) => {
+        test('Distance to a point', () => {
             const min = vec3.fromValues(-1, -1, -1);
             const max = vec3.fromValues(1, 1, 1);
             const aabb = new Aabb(min, max);
 
-            t.equal(aabb.distanceX([0.5, -0.5]), 0);
-            t.equal(aabb.distanceY([0.5, -0.5]), 0);
+            expect(aabb.distanceX([0.5, -0.5])).toEqual(0);
+            expect(aabb.distanceY([0.5, -0.5])).toEqual(0);
 
-            t.equal(aabb.distanceX([1, 1]), 0);
-            t.equal(aabb.distanceY([1, 1]), 0);
+            expect(aabb.distanceX([1, 1])).toEqual(0);
+            expect(aabb.distanceY([1, 1])).toEqual(0);
 
-            t.equal(aabb.distanceX([0, 10]), 0);
-            t.equal(aabb.distanceY([0, 10]), -9);
+            expect(aabb.distanceX([0, 10])).toEqual(0);
+            expect(aabb.distanceY([0, 10])).toEqual(-9);
 
-            t.equal(aabb.distanceX([-2, -2]), 1);
-            t.equal(aabb.distanceY([-2, -2]), 1);
-            t.end();
+            expect(aabb.distanceX([-2, -2])).toEqual(1);
+            expect(aabb.distanceY([-2, -2])).toEqual(1);
         });
 
         const createTestCameraFrustum = (fovy, aspectRatio, zNear, zFar, elevation, rotation) => {
@@ -75,7 +70,7 @@ test('primitives', (t) => {
             return Frustum.fromInvProjectionMatrix(invProj, 1.0, 0.0);
         };
 
-        t.test('Aabb fully inside a frustum', (t) => {
+        test('Aabb fully inside a frustum', () => {
             const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5, 0);
 
             // Intersection test is done in xy-plane
@@ -86,12 +81,10 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 2);
-
-            t.end();
+                expect(aabb.intersects(frustum)).toEqual(2);
         });
 
-        t.test('Aabb intersecting with a frustum', (t) => {
+        test('Aabb intersecting with a frustum', () => {
             const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5, 0);
 
             const aabbList = [
@@ -100,23 +93,19 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 1);
-
-            t.end();
+                expect(aabb.intersects(frustum)).toEqual(1);
         });
 
-        t.test('Aabb conservative intersection with a frustum', (t) => {
+        test('Aabb conservative intersection with a frustum', () => {
             const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5, Math.PI / 4);
             const aabb = new Aabb(vec3.fromValues(-10, 10, 0), vec3.fromValues(10, 12, 0));
 
             // Intersection test should report intersection even though shapes are separate
-            t.equal(aabb.intersects(frustum), 1);
-            t.equal(aabb.intersectsPrecise(frustum), 0);
-
-            t.end();
+            expect(aabb.intersects(frustum)).toEqual(1);
+            expect(aabb.intersectsPrecise(frustum)).toEqual(0);
         });
 
-        t.test('No intersection between aabb and frustum', (t) => {
+        test('No intersection between aabb and frustum', () => {
             const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, -5);
 
             const aabbList = [
@@ -126,16 +115,12 @@ test('primitives', (t) => {
             ];
 
             for (const aabb of aabbList)
-                t.equal(aabb.intersects(frustum), 0);
-
-            t.end();
+                expect(aabb.intersects(frustum)).toEqual(0);
         });
-
-        t.end();
     });
 
-    t.test('frustum', (t) => {
-        t.test('Create a frustum from inverse projection matrix', (t) => {
+    describe('frustum', () => {
+        test('Create a frustum from inverse projection matrix', () => {
             const proj = new Float64Array(16);
             const invProj = new Float64Array(16);
             mat4.perspective(proj, Math.PI / 2, 1.0, 0.1, 100.0);
@@ -162,162 +147,141 @@ test('primitives', (t) => {
 
             const expectedFrustumPlanes = [
                 [0, 0, 1.0, 0.1],
-                [0, 0, -1.0, -100.0],
-                [-0.707, 0, 0.707, 0],
-                [0.707, 0, 0.707, 0],
-                [0, -0.707, 0.707, 0],
-                [0, 0.707, 0.707, 0]
+                [-0, -0, -1.0, -100.0],
+                [-0.707, 0, 0.707, -0],
+                [0.707, 0, 0.707, -0],
+                [0, -0.707, 0.707, -0],
+                [-0, 0.707, 0.707, -0]
             ];
 
-            t.deepEqual(frustum.points, expectedFrustumPoints);
-            t.deepEqual(frustum.planes, expectedFrustumPlanes);
-            t.end();
+            expect(frustum.points).toEqual(expectedFrustumPoints);
+            expect(frustum.planes).toEqual(expectedFrustumPlanes);
         });
-        t.end();
     });
 
-    t.test('ray', (t) => {
-        t.test('intersectsPlane', (t) => {
-            t.test('parallel', (t) => {
+    describe('ray', () => {
+        describe('intersectsPlane', () => {
+            test('parallel', () => {
                 const r = new Ray(vec3.fromValues(0, 0, 1), vec3.fromValues(1, 1, 0));
-                t.notOk(r.intersectsPlane(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 1), vec3.create()));
-                t.end();
+                expect(
+                    r.intersectsPlane(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 1), vec3.create())
+                ).toBeFalsy();
             });
 
-            t.test('orthogonal', (t) => {
+            test('orthogonal', () => {
                 const r = new Ray(vec3.fromValues(10, 20, 50), vec3.fromValues(0, 0, -1));
                 const out = vec3.create();
-                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, 1), out));
-                assertAlmostEqual(t, out[0], 10);
-                assertAlmostEqual(t, out[1], 20);
-                assertAlmostEqual(t, out[2], 5);
-                t.end();
+                expect(r.intersectsPlane(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, 1), out)).toBeTruthy();
+                assertAlmostEqual(out[0], 10);
+                assertAlmostEqual(out[1], 20);
+                assertAlmostEqual(out[2], 5);
             });
 
-            t.test('angled down', (t) => {
+            test('angled down', () => {
                 const r = new Ray(vec3.fromValues(-10, -10, 20), vec3.fromValues(0.5773, 0.5773, -0.5773));
                 const out = vec3.create();
-                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out));
-                assertAlmostEqual(t, out[0], 0);
-                assertAlmostEqual(t, out[1], 0);
-                assertAlmostEqual(t, out[2], 10);
-                t.end();
+                expect(
+                    r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out)
+                ).toBeTruthy();
+                assertAlmostEqual(out[0], 0);
+                assertAlmostEqual(out[1], 0);
+                assertAlmostEqual(out[2], 10);
             });
 
-            t.test('angled up', (t) => {
+            test('angled up', () => {
                 const r = new Ray(vec3.fromValues(-10, -10, 20), vec3.fromValues(0.5773, 0.5773, 0.5773));
                 const out = vec3.create();
-                t.ok(r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out));
-                assertAlmostEqual(t, out[0], -20);
-                assertAlmostEqual(t, out[1], -20);
-                assertAlmostEqual(t, out[2], 10);
-                t.end();
+                expect(
+                    r.intersectsPlane(vec3.fromValues(0, 0, 10), vec3.fromValues(0, 0, 1), out)
+                ).toBeTruthy();
+                assertAlmostEqual(out[0], -20);
+                assertAlmostEqual(out[1], -20);
+                assertAlmostEqual(out[2], 10);
             });
-
-            t.end();
         });
 
-        t.test('closestPointOnSphere', (t) => {
-            t.test('intersection', (t) => {
+        describe('closestPointOnSphere', () => {
+            test('intersection', () => {
                 const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, -1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 let intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
-                t.ok(intersection);
-                t.same(vec3.fromValues(0, 0, 1), point);
+                expect(intersection).toBeTruthy();
+                expect(vec3.fromValues(0, 0, 1)).toEqual(point);
 
                 r.pos = vec3.fromValues(0.8, 0.0, 100000.0);
                 intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
-                t.ok(intersection);
-                t.same(vec3.fromValues(0.8, 0, 0.60000050), point);
+                expect(intersection).toBeTruthy();
+                expect(vec3.fromValues(0.8, 0, 0.60000050)).toEqual(point);
 
                 r.pos = vec3.fromValues(1, 1, 1);
                 r.dir = vec3.normalize([], vec3.fromValues(-1, -1, -1));
                 intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
-                t.ok(intersection);
-                t.same(vec3.fromValues(0.57735026, 0.57735026, 0.57735026), point);
-
-                t.end();
+                expect(intersection).toBeTruthy();
+                expect(vec3.fromValues(0.57735026, 0.57735026, 0.57735026)).toEqual(point);
             });
 
-            t.test('away', (t) => {
+            test('away', () => {
                 const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, 1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 4.99, point);
-                t.notOk(intersection);
-                t.same(fixedVec3(vec3.fromValues(0, 0, 4.99), 2), fixedVec3(point, 2));
-
-                t.end();
+                expect(intersection).toBeFalsy();
+                expect(fixedVec3(vec3.fromValues(0, 0, 4.99), 2)).toEqual(fixedVec3(point, 2));
             });
 
-            t.test('no intersection', (t) => {
+            test('no intersection', () => {
                 const r = new Ray(vec3.fromValues(0, 0, 5), vec3.fromValues(0, 0, -1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 const intersection = r.closestPointOnSphere(vec3.fromValues(2, 0, 0), 1, point);
-                t.notOk(intersection);
-                t.same(vec3.fromValues(-1, 0, 0), point);
-
-                t.end();
+                expect(intersection).toBeFalsy();
+                expect(vec3.fromValues(-1, 0, 0)).toEqual(point);
             });
 
-            t.test('inside', (t) => {
+            test('inside', () => {
                 const r = new Ray(vec3.fromValues(0.5, 0.1, 0), vec3.fromValues(1, 0, 1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1, point);
-                t.notOk(intersection);
-                t.same(fixedVec3(vec3.fromValues(0.98058, 0.19612, 0), 5), fixedVec3(point, 5));
-
-                t.end();
+                expect(intersection).toBeFalsy();
+                expect(fixedVec3(vec3.fromValues(0.98058, 0.19612, 0), 5)).toEqual(fixedVec3(point, 5));
             });
 
-            t.test('zero radius', (t) => {
+            test('zero radius', () => {
                 const r = new Ray(vec3.fromValues(1.0, 0.0, 3.0), vec3.fromValues(0, 0, -1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 let intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 0, point);
-                t.notOk(intersection);
-                t.same(vec3.fromValues(0, 0, 0), point);
+                expect(intersection).toBeFalsy();
+                expect(vec3.fromValues(0, 0, 0)).toEqual(point);
 
                 intersection = r.closestPointOnSphere(vec3.fromValues(1.0, 0, 0), 0, point);
-                t.notOk(intersection);
-                t.same(vec3.fromValues(0, 0, 0), point);
-
-                t.end();
+                expect(intersection).toBeFalsy();
+                expect(vec3.fromValues(0, 0, 0)).toEqual(point);
             });
 
-            t.test('point at sphere center', (t) => {
+            test('point at sphere center', () => {
                 const r = new Ray(vec3.fromValues(0.5, 2, 0), vec3.fromValues(1, 0, 0));
 
                 const point = vec3.fromValues(0, 0, 0);
                 const intersection = r.closestPointOnSphere(vec3.fromValues(0.5, 2.0, 0), 3.0, point);
-                t.notOk(intersection);
-                t.same(vec3.fromValues(0, 0, 0), point);
-
-                t.end();
+                expect(intersection).toBeFalsy();
+                expect(vec3.fromValues(0, 0, 0)).toEqual(point);
             });
 
-            t.test('point at surface', (t) => {
+            test('point at surface', () => {
                 const r = new Ray(vec3.fromValues(1, 0, 0), vec3.fromValues(0, 0, 1));
 
                 const point = vec3.fromValues(0, 0, 0);
                 const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1, point);
-                t.ok(intersection);
-                t.same(vec3.fromValues(1, 0, 0), point);
-
-                t.end();
+                expect(intersection).toBeTruthy();
+                expect(vec3.fromValues(1, 0, 0)).toEqual(point);
             });
-
-            t.end();
         });
-
-        t.end();
     });
-    t.end();
 });
 
-function assertAlmostEqual(t, actual, expected, epsilon = 1e-6) {
-    t.ok(Math.abs(actual - expected) < epsilon);
+function assertAlmostEqual(actual, expected, epsilon = 1e-6) {
+    expect(Math.abs(actual - expected) < epsilon).toBeTruthy();
 }

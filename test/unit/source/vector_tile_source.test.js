@@ -1,7 +1,7 @@
-import {test} from '../../util/test.js';
+import {describe, test, beforeAll, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {getNetworkWorker, http, HttpResponse} from '../../util/network.js';
 import VectorTileSource from '../../../src/source/vector_tile_source.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
-import window from '../../../src/util/window.js';
 import {Evented} from '../../../src/util/evented.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
 import sourceFixture from '../../fixtures/source.json';
@@ -39,16 +39,18 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
     return source;
 }
 
-test('VectorTileSource', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+let networkWorker;
 
-    t.afterEach(() => {
-        window.restore();
-    });
+beforeAll(async () => {
+    networkWorker = await getNetworkWorker(window);
+});
 
-    t.test('can be constructed from TileJSON', (t) => {
+afterEach(() => {
+    networkWorker.resetHandlers();
+});
+
+describe('VectorTileSource', () => {
+    test('can be constructed from TileJSON', async () => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -56,104 +58,123 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-                t.deepEqual(source.minzoom, 1);
-                t.deepEqual(source.maxzoom, 10);
-                t.deepEqual(source.attribution, "Mapbox");
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tiles).toEqual(["http://example.com/{z}/{x}/{y}.png"]);
+            expect(source.minzoom).toEqual(1);
+            expect(source.maxzoom).toEqual(10);
+            expect(source.attribution).toEqual("Mapbox");
+        }
     });
 
-    t.test('can be constructed from a TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+    test('can be constructed from a TileJSON URL', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
 
         const source = createSource({url: "/source.json"});
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-                t.deepEqual(source.minzoom, 1);
-                t.deepEqual(source.maxzoom, 10);
-                t.deepEqual(source.attribution, "Mapbox");
-                t.end();
-            }
-        });
-
-        window.server.respond();
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tiles).toEqual(["http://example.com/{z}/{x}/{y}.png"]);
+            expect(source.minzoom).toEqual(1);
+            expect(source.maxzoom).toEqual(10);
+            expect(source.attribution).toEqual("Mapbox");
+        }
     });
 
-    t.test('transforms the request for TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
-        const transformSpy = t.spy((url) => {
+    test('transforms the request for TileJSON URL', () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
+        const transformSpy = vi.fn((url) => {
             return {url};
         });
 
         createSource({url: "/source.json"}, {transformCallback: transformSpy});
-        window.server.respond();
-        t.equal(transformSpy.getCall(0).args[0], '/source.json');
-        t.equal(transformSpy.getCall(0).args[1], 'Source');
-        t.end();
+        expect(transformSpy.mock.calls[0][0]).toEqual('/source.json');
+        expect(transformSpy.mock.calls[0][1]).toEqual('Source');
     });
 
-    t.test('fires event with metadata property', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+    test('fires event with metadata property', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
         const source = createSource({url: "/source.json"});
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'content') t.end();
+        await new Promise(resolve => {
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'content') {
+                    resolve();
+                }
+            });
         });
-        window.server.respond();
     });
 
-    t.test('fires "dataloading" event', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
-        const evented = new Evented();
-        let dataloadingFired = false;
-        evented.on('dataloading', () => {
-            dataloadingFired = true;
+    test('fires "dataloading" event', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
+        await new Promise(resolve => {
+            const evented = new Evented();
+            let dataloadingFired = false;
+            evented.on('dataloading', () => {
+                dataloadingFired = true;
+            });
+            const source = createSource({url: "/source.json", eventedParent: evented});
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    if (!dataloadingFired) expect.unreachable();
+                    resolve();
+                }
+            });
         });
-        const source = createSource({url: "/source.json", eventedParent: evented});
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                if (!dataloadingFired) t.fail();
-                t.end();
-            }
-        });
-        window.server.respond();
     });
 
-    t.test('serialize URL', (t) => {
+    test('serialize URL', async () => {
+        networkWorker.use(
+            http.get('http://localhost:2900/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
+
         const source = createSource({
             url: "http://localhost:2900/source.json"
         });
-        t.deepEqual(source.serialize(), {
+
+        expect(source.serialize()).toEqual({
             type: 'vector',
             url: "http://localhost:2900/source.json"
         });
-        t.end();
+
+        await waitFor(source, 'data');
     });
 
-    t.test('serialize TileJSON', (t) => {
+    test('serialize TileJSON', () => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
-        t.deepEqual(source.serialize(), {
+        expect(source.serialize()).toEqual({
             type: 'vector',
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
-        t.end();
     });
 
     function testScheme(scheme, expectedURL) {
-        t.test(`scheme "${scheme}"`, (t) => {
+        test(`scheme "${scheme}"`, async () => {
             const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,
@@ -162,19 +183,22 @@ test('VectorTileSource', (t) => {
                 scheme
             });
 
-            source.dispatcher = wrapDispatcher({
-                send(type, params) {
-                    t.equal(type, 'loadTile');
-                    t.equal(expectedURL, params.request.url);
-                    t.end();
-                }
+            await new Promise(resolve => {
+                source.dispatcher = wrapDispatcher({
+                    send(type, params) {
+                        expect(type).toEqual('loadTile');
+                        expect(expectedURL).toEqual(params.request.url);
+                        resolve();
+                    }
+                });
+
+                source.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') source.loadTile({
+                        tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                    }, () => {});
+                });
             });
 
-            source.on('data', (e) => {
-                if (e.sourceDataType === 'metadata') source.loadTile({
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5)
-                }, () => {});
-            });
         });
     }
 
@@ -182,87 +206,90 @@ test('VectorTileSource', (t) => {
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
     function testRemoteScheme(scheme, expectedURL) {
-        t.test(`remote scheme "${scheme}"`, (t) => {
-            window.server.respondWith('/source.json', JSON.stringify({...sourceFixture, scheme}));
+        test(`remote scheme "${scheme}"`, async () => {
+            networkWorker.use(
+                http.get('/source.json', async () => {
+                    return HttpResponse.json({...sourceFixture, scheme});
+                }),
+            );
 
             const source = createSource({url: "/source.json"});
 
-            source.dispatcher = wrapDispatcher({
-                send(type, params) {
-                    t.equal(type, 'loadTile');
-                    t.equal(expectedURL, params.request.url);
-                    t.end();
-                }
-            });
+            await new Promise(resolve => {
+                source.dispatcher = wrapDispatcher({
+                    send(type, params) {
+                        expect(type).toEqual('loadTile');
+                        expect(expectedURL).toEqual(params.request.url);
+                    }
+                });
 
-            source.on('data', (e) => {
-                if (e.sourceDataType === 'metadata') {
-                    t.deepEqual(source.scheme, scheme);
-                    source.loadTile({
-                        tileID: new OverscaledTileID(10, 0, 10, 5, 5)
-                    }, () => {});
-                }
+                source.on('data', (e) => {
+                    if (e.sourceDataType === 'metadata') {
+                        expect(source.scheme).toEqual(scheme);
+                        source.loadTile({
+                            tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                        }, () => {});
+                        resolve();
+                    }
+                });
             });
-
-            window.server.respond();
         });
     }
 
     testRemoteScheme('xyz', 'http://example.com/10/5/5.png');
     testRemoteScheme('tms', 'http://example.com/10/5/1018.png');
 
-    t.test('transforms tile urls before requesting', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+    test('transforms tile urls before requesting', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
 
         const source = createSource({url: "/source.json"});
-        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-                t.ok(transformSpy.calledOnce);
-                t.equal(transformSpy.getCall(0).args[0], 'http://example.com/10/5/5.png');
-                t.equal(transformSpy.getCall(0).args[1], 'Tile');
-                t.end();
-            }
-        });
-
-        window.server.respond();
+        const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData () {},
+                setExpiryData() {}
+            };
+            source.loadTile(tile, () => {});
+            expect(transformSpy).toHaveBeenCalledTimes(1);
+            expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/10/5/5.png');
+            expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
+        }
     });
 
-    t.test('canonicalizes tile URLs in inline TileJSON', (t) => {
+    test('canonicalizes tile URLs in inline TileJSON', async () => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
             tiles: ["https://api.mapbox.com/v4/user.map/{z}/{x}/{y}.png?access_token=key"]
         });
-        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tiles, ["mapbox://tiles/user.map/{z}/{x}/{y}.png?access_token=key"]);
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-                t.ok(transformSpy.calledOnce);
-                t.equal(transformSpy.getCall(0).args[0], `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`);
-                t.equal(transformSpy.getCall(0).args[1], 'Tile');
-                t.end();
-            }
-        });
-
+        const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tiles).toEqual(["mapbox://tiles/user.map/{z}/{x}/{y}.png?access_token=key"]);
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData () {},
+                setExpiryData() {}
+            };
+            source.loadTile(tile, () => {});
+            expect(transformSpy).toHaveBeenCalledTimes(1);
+            expect(transformSpy.mock.calls[0][0]).toEqual(
+                `https://api.mapbox.com/v4/user.map/10/5/5.png?sku=${source.map._requestManager._skuToken}&access_token=key`
+            );
+            expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
+        }
     });
 
-    t.test('reloads a loading tile properly', (t) => {
+    test('reloads a loading tile properly', async () => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
@@ -275,28 +302,30 @@ test('VectorTileSource', (t) => {
             }
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {
-                        this.state = 'loaded';
-                        events.push('tileLoaded');
-                    },
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-                t.equal(tile.state, 'loading');
-                source.loadTile(tile, () => {
-                    t.same(events, ['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
-                    t.end();
-                });
-            }
+        await new Promise(resolve => {
+            source.once('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    const tile = {
+                        tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                        state: 'loading',
+                        loadVectorData () {
+                            this.state = 'loaded';
+                            events.push('tileLoaded');
+                        },
+                        setExpiryData() {}
+                    };
+                    source.loadTile(tile, () => {});
+                    expect(tile.state).toEqual('loading');
+                    source.loadTile(tile, () => {
+                        expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
+                        resolve();
+                    });
+                }
+            });
         });
     });
 
-    t.test('respects TileJSON.bounds', (t) => {
+    test('respects TileJSON.bounds', async () => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -304,16 +333,14 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             bounds: [-47, -7, -45, -5]
         });
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
-                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132))).toBeFalsy();
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132))).toBeTruthy();
+        }
     });
 
-    t.test('does not error on invalid bounds', (t) => {
+    test('does not error on invalid bounds', async () => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -322,44 +349,42 @@ test('VectorTileSource', (t) => {
             bounds: [-47, -7, -45, 91]
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tileBounds.bounds, {_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}}, 'converts invalid bounds to closest valid bounds');
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tileBounds.bounds).toEqual({_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}});
+        }
     });
 
-    t.test('respects TileJSON.bounds when loaded from TileJSON', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify({
-            minzoom: 0,
-            maxzoom: 22,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5]
-        }));
+    test('respects TileJSON.bounds when loaded from TileJSON', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json({
+                    minzoom: 0,
+                    maxzoom: 22,
+                    attribution: "Mapbox",
+                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                    bounds: [-47, -7, -45, -5]
+                });
+            }),
+        );
         const source = createSource({url: "/source.json"});
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
-                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
-                t.end();
-            }
-        });
-        window.server.respond();
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132))).toBeFalsy();
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132))).toBeTruthy();
+        }
     });
 
-    t.test('respects collectResourceTiming parameter on source', (t) => {
+    test('respects collectResourceTiming parameter on source', async () => {
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             collectResourceTiming: true
         });
         source.dispatcher = wrapDispatcher({
             send(type, params, cb) {
-                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                expect(params.request.collectResourceTiming).toBeTruthy();
                 setTimeout(cb, 0);
-                t.end();
 
                 // do nothing for cache size check dispatch
                 source.dispatcher = mockDispatcher;
@@ -368,70 +393,81 @@ test('VectorTileSource', (t) => {
             }
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData () {},
+                setExpiryData() {}
+            };
+            source.loadTile(tile, () => {});
+        }
     });
 
-    t.test('cancels TileJSON request if removed', (t) => {
+    test('cancels TileJSON request if removed', () => {
+        const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
         const source = createSource({url: "/source.json"});
         source.onRemove();
-        t.equal(window.server.lastRequest.aborted, true);
-        t.end();
+        expect(abortSpy).toHaveBeenCalledTimes(1);
     });
 
-    t.test('supports property updates', (t) => {
-        window.server.configure({respondImmediately: true});
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+    test('supports property updates', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
         const source = createSource({url: '/source.json'});
 
-        const loadSpy = t.spy(source, 'load');
-        const clearSourceSpy = t.spy(source.map.style, 'clearSource');
+        const loadSpy = vi.spyOn(source, 'load');
+        const clearSourceSpy = vi.spyOn(source.map.style, 'clearSource');
+        const responseSpy = vi.fn();
 
-        const responseSpy = t.spy((xhr) =>
-            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));
+        await waitFor(source, 'data');
+        networkWorker.resetHandlers();
 
-        window.server.respondWith('/source.json', responseSpy);
+        networkWorker.use(
+            http.get('/source.json', async ({request}) => {
+                responseSpy(request);
+                return HttpResponse.json({...sourceFixture, maxzoom: 22});
+            }),
+        );
 
         source.attribution = 'OpenStreetMap';
         source.reload();
 
-        t.ok(loadSpy.calledOnce);
-        t.ok(responseSpy.calledOnce);
-        t.ok(clearSourceSpy.calledOnce);
-        t.ok(clearSourceSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
+        await waitFor(source, 'data');
 
-        t.end();
+        expect(loadSpy).toHaveBeenCalledTimes(1);
+        expect(responseSpy).toHaveBeenCalledTimes(1);
+        expect(clearSourceSpy).toHaveBeenCalledTimes(1);
+        expect(clearSourceSpy).toHaveBeenCalledAfter(responseSpy);
     });
 
-    t.test('supports url property updates', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
-        window.server.respondWith('/new-source.json', JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}));
-        window.server.configure({autoRespond: true, autoRespondAfter: 0});
+    test('supports url property updates', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+            http.get('/new-source.json', async () => {
+                return HttpResponse.json({...sourceFixture, minzoom: 0, maxzoom: 22});
+            })
+        );
 
         const source = createSource({url: '/source.json'});
         source.setUrl('/new-source.json');
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.minzoom, 0);
-                t.deepEqual(source.maxzoom, 22);
-                t.deepEqual(source.attribution, 'Mapbox');
-                t.deepEqual(source.serialize(), {type: 'vector', url: '/new-source.json'});
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.minzoom).toEqual(0);
+            expect(source.maxzoom).toEqual(22);
+            expect(source.attribution).toEqual('Mapbox');
+            expect(source.serialize()).toEqual({type: 'vector', url: '/new-source.json'});
+        }
     });
 
-    t.test('supports tiles property updates', (t) => {
+    test('supports tiles property updates', async () => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -441,23 +477,24 @@ test('VectorTileSource', (t) => {
 
         source.setTiles(['http://example.com/v2/{z}/{x}/{y}.png']);
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.serialize(), {
-                    type: 'vector',
-                    minzoom: 1,
-                    maxzoom: 10,
-                    attribution: 'Mapbox',
-                    tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
-                });
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.serialize()).toEqual({
+                type: 'vector',
+                minzoom: 1,
+                maxzoom: 10,
+                attribution: 'Mapbox',
+                tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
+            });
+        }
     });
 
-    t.test('prefers TileJSON tiles, if both URL and tiles options are set', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
-        window.server.configure({autoRespond: true, autoRespondAfter: 0});
+    test('prefers TileJSON tiles, if both URL and tiles options are set', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            })
+        );
 
         const source = createSource({
             minzoom: 1,
@@ -468,22 +505,17 @@ test('VectorTileSource', (t) => {
 
         source.setUrl('/source.json');
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tiles, ['http://example.com/{z}/{x}/{y}.png']);
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tiles).toEqual(['http://example.com/{z}/{x}/{y}.png']);
 
-                t.deepEqual(source.serialize(), {
-                    type: 'vector',
-                    url: '/source.json',
-                    minzoom: 1,
-                    maxzoom: 10,
-                    attribution: 'Mapbox'
-                });
-
-                t.end();
-            }
-        });
+            expect(source.serialize()).toEqual({
+                type: 'vector',
+                url: '/source.json',
+                minzoom: 1,
+                maxzoom: 10,
+                attribution: 'Mapbox'
+            });
+        }
     });
-
-    t.end();
 });

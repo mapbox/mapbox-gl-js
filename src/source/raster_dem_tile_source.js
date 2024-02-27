@@ -4,7 +4,6 @@ import {getImage, ResourceType} from '../util/ajax.js';
 import {extend, prevPowerOfTwo} from '../util/util.js';
 import {Evented} from '../util/evented.js';
 import browser from '../util/browser.js';
-import window from '../util/window.js';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported.js';
 import {OverscaledTileID} from './tile_id.js';
 import RasterTileSource from './raster_tile_source.js';
@@ -45,7 +44,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 callback(err);
             } else if (img) {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
-                const transfer = window.ImageBitmap && img instanceof window.ImageBitmap && offscreenCanvasSupported();
+                const transfer = ImageBitmap && img instanceof ImageBitmap && offscreenCanvasSupported();
                 // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
                 // in order to keep the previous implementation working (no validation against tileSize).
                 const buffer = (img.width - prevPowerOfTwo(img.width)) / 2;

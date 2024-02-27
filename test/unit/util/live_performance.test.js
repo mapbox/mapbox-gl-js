@@ -1,18 +1,9 @@
-import {test} from '../../util/test.js';
-import window from '../../../src/util/window.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {getLivePerformanceMetrics} from '../../../src/util/live_performance.js';
 import {version} from '../../../package.json';
 
-test('LivePerformance', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
-
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    t.test('getLivePerformanceMetrics', (t) => {
+describe('LivePerformance', () => {
+    test('getLivePerformanceMetrics', () => {
         window.performance.getEntriesByType = (type) => {
             if (type === 'mark') {
                 return [
@@ -152,7 +143,7 @@ test('LivePerformance', (t) => {
             renderer: 'webgl renderer',
             zoom: 5
         });
-        t.deepEqual(metrics.counters, [
+        expect(metrics.counters).toEqual([
             {name: 'cssResolveRangeMin', value: '25'},
             {name: 'cssResolveRangeMax', value: '52'},
             {name: 'cssRequestCount', value: '1'},
@@ -175,16 +166,17 @@ test('LivePerformance', (t) => {
             {name: 'load', value: '2076.900000035763'},
             {name: 'fullLoad', value: '112120.10000002384'},
         ]);
-        t.deepEqual(metrics.metadata, [
+        expect(metrics.metadata).toEqual([
             {name: 'devicePixelRatio', value: '1'},
+            {name: 'connectionEffectiveType', value: '4g'},
             {
                 name: 'navigatorUserAgent',
                 value: window.navigator.userAgent
             },
             {name: 'screenWidth', value: window.screen.width.toString()},
             {name: 'screenHeight', value: window.screen.height.toString()},
-            {name: 'windowWidth', value: '1024'},
-            {name: 'windowHeight', value: '768'},
+            {name: 'windowWidth', value: '1280'},
+            {name: 'windowHeight', value: '720'},
             {name: 'mapWidth', value: '100'},
             {name: 'mapHeight', value: '50'},
             {name: 'webglRenderer', value: 'webgl renderer'},
@@ -192,15 +184,12 @@ test('LivePerformance', (t) => {
             {name: 'sdkVersion', value: version},
             {name: 'sdkIdentifier', value: 'mapbox-gl-js'}
         ]);
-        t.deepEqual(metrics.attributes, [
+        expect(metrics.attributes).toEqual([
             {name: 'style', value: 'mapbox://styles/mapbox/streets-v11'},
             {name: 'terrainEnabled', value: 'false'},
             {name: 'fogEnabled', value: 'false'},
             {name: 'projection', value: 'mercator'},
             {name: 'zoom', value: '5'}
         ]);
-        t.end();
     });
-
-    t.end();
 });

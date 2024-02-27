@@ -1,42 +1,36 @@
-// @flow
-
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {StructArrayLayout3i6, FeatureIndexArray} from '../../../src/data/array_types.js';
 
-test('StructArray', (t) => {
+describe('StructArray', () => {
     class TestArray extends StructArrayLayout3i6 {}
 
-    t.test('array constructs itself', (t) => {
+    test('array constructs itself', () => {
         const array = new TestArray();
-        t.equal(array.length, 0);
-        t.ok(array.arrayBuffer);
-        t.end();
+        expect(array.length).toEqual(0);
+        expect(array.arrayBuffer).toBeTruthy();
     });
 
-    t.test('emplaceBack', (t) => {
+    test('emplaceBack', () => {
         const array = new TestArray();
 
-        t.equal(0, array.emplaceBack(1, 7, 3));
-        t.equal(1, array.emplaceBack(4, 2, 5));
+        expect(0).toEqual(array.emplaceBack(1, 7, 3));
+        expect(1).toEqual(array.emplaceBack(4, 2, 5));
 
-        t.equal(array.length, 2);
+        expect(array.length).toEqual(2);
 
-        t.deepEqual(array.int16.slice(0, 6), [1, 7, 3, 4, 2, 5]);
-
-        t.end();
+        expect(Array.from(array.int16.slice(0, 6))).toEqual([1, 7, 3, 4, 2, 5]);
     });
 
-    t.test('emplaceBack gracefully accepts extra arguments', (t) => {
+    test('emplaceBack gracefully accepts extra arguments', () => {
         // emplaceBack is typically used in fairly hot code paths, where
         // conditionally varying the number of arguments can be expensive.
         const array = new TestArray();
-        t.equal((array/*: any*/).emplaceBack(3, 1, 4, 1, 5, 9), 0);
-        t.equal(array.length, 1);
-        t.deepEqual(array.int16.slice(0, 3), [3, 1, 4]);
-        t.end();
+        expect((array/*: any*/).emplaceBack(3, 1, 4, 1, 5, 9)).toEqual(0);
+        expect(array.length).toEqual(1);
+        expect(Array.from(array.int16.slice(0, 3))).toEqual([3, 1, 4]);
     });
 
-    t.test('reserve', (t) => {
+    test('reserve', () => {
         const array = new TestArray();
 
         array.reserve(100);
@@ -44,13 +38,11 @@ test('StructArray', (t) => {
 
         for (let i = 0; i < 100; i++) {
             array.emplaceBack(1, 1, 1);
-            t.equal(array.capacity, initialCapacity);
+            expect(array.capacity).toEqual(initialCapacity);
         }
-
-        t.end();
     });
 
-    t.test('automatically resizes', (t) => {
+    test('automatically resizes', () => {
         const array = new TestArray();
         const initialCapacity = array.capacity;
 
@@ -58,66 +50,55 @@ test('StructArray', (t) => {
             array.emplaceBack(1, 1, 1);
         }
 
-        t.equal(array.capacity, initialCapacity);
+        expect(array.capacity).toEqual(initialCapacity);
 
         array.emplaceBack(1, 1, 1);
-        t.ok(array.capacity > initialCapacity);
-
-        t.end();
+        expect(array.capacity > initialCapacity).toBeTruthy();
     });
 
-    t.test('trims', (t) => {
+    test('trims', () => {
         const array = new TestArray();
         const capacityInitial = array.capacity;
 
         array.emplaceBack(1, 1, 1);
-        t.equal(array.capacity, capacityInitial);
+        expect(array.capacity).toEqual(capacityInitial);
 
         array._trim();
-        t.equal(array.capacity, 1);
-        t.equal(array.arrayBuffer.byteLength, array.bytesPerElement);
-
-        t.end();
+        expect(array.capacity).toEqual(1);
+        expect(array.arrayBuffer.byteLength).toEqual(array.bytesPerElement);
     });
-
-    t.end();
 });
 
-test('FeatureIndexArray', (t) => {
+describe('FeatureIndexArray', () => {
     class TestArray extends FeatureIndexArray {}
 
-    t.test('array constructs itself', (t) => {
+    test('array constructs itself', () => {
         const array = new TestArray();
-        t.equal(array.length, 0);
-        t.ok(array.arrayBuffer);
-        t.end();
+        expect(array.length).toEqual(0);
+        expect(array.arrayBuffer).toBeTruthy();
     });
 
-    t.test('emplace and retrieve', (t) => {
+    test('emplace and retrieve', () => {
         const array = new TestArray();
-        t.equal(0, array.emplaceBack(1, 7, 3, 6));
-        t.equal(1, array.emplaceBack(4, 2, 5, 9));
+        expect(0).toEqual(array.emplaceBack(1, 7, 3, 6));
+        expect(1).toEqual(array.emplaceBack(4, 2, 5, 9));
 
-        t.equal(array.length, 2);
+        expect(array.length).toEqual(2);
 
         const elem0 = array.get(0);
-        t.ok(elem0);
+        expect(elem0).toBeTruthy();
 
-        t.equal(elem0.featureIndex, 1, 'returns correct featureIndex');
-        t.equal(elem0.sourceLayerIndex, 7, 'returns correct sourceLayerIndex');
-        t.equal(elem0.bucketIndex, 3, 'returns correct bucketIndex');
-        t.equal(elem0.layoutVertexArrayOffset, 6, 'returns correct layoutVertexArrayOffset');
+        expect(elem0.featureIndex).toEqual(1);
+        expect(elem0.sourceLayerIndex).toEqual(7);
+        expect(elem0.bucketIndex).toEqual(3);
+        expect(elem0.layoutVertexArrayOffset).toEqual(6);
 
         const elem1 = array.get(1);
-        t.ok(elem1);
+        expect(elem1).toBeTruthy();
 
-        t.equal(elem1.featureIndex, 4, 'returns correct featureIndex');
-        t.equal(elem1.sourceLayerIndex, 2, 'returns correct sourceLayerIndex');
-        t.equal(elem1.bucketIndex, 5, 'returns correct bucketIndex');
-        t.equal(elem1.layoutVertexArrayOffset, 9, 'returns correct layoutVertexArrayOffset');
-
-        t.end();
+        expect(elem1.featureIndex).toEqual(4);
+        expect(elem1.sourceLayerIndex).toEqual(2);
+        expect(elem1.bucketIndex).toEqual(5);
+        expect(elem1.layoutVertexArrayOffset).toEqual(9);
     });
-
-    t.end();
 });

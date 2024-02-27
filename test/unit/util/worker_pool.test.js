@@ -1,26 +1,25 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect, vi} from "../../util/vitest.js";
 import WorkerPool from '../../../src/util/worker_pool.js';
 
-test('WorkerPool', (t) => {
-    t.test('#acquire', (t) => {
-        t.stub(WorkerPool, 'workerCount').value(4);
+describe('WorkerPool', () => {
+    test('#acquire', () => {
+        vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 4);
 
         const pool = new WorkerPool();
 
-        t.notOk(pool.workers);
+        expect(pool.workers).toBeFalsy();
         const workers1 = pool.acquire('map-1');
         const workers2 = pool.acquire('map-2');
-        t.equal(workers1.length, 4);
-        t.equal(workers2.length, 4);
+        expect(workers1.length).toEqual(4);
+        expect(workers2.length).toEqual(4);
 
         // check that the two different dispatchers' workers arrays correspond
-        workers1.forEach((w, i) => { t.equal(w, workers2[i]); });
-        t.end();
+        workers1.forEach((w, i) => { expect(w).toEqual(workers2[i]); });
     });
 
-    t.test('#release', (t) => {
+    test('#release', () => {
         let workersTerminated = 0;
-        t.stub(WorkerPool, 'workerCount').value(4);
+        vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 4);
 
         const pool = new WorkerPool();
         pool.acquire('map-1');
@@ -30,20 +29,16 @@ test('WorkerPool', (t) => {
         });
 
         pool.release('map-2');
-        t.comment('keeps workers if a dispatcher is still active');
-        t.equal(workersTerminated, 0);
-        t.ok(pool.workers.length > 0);
+        // keeps workers if a dispatcher is still active
+        expect(workersTerminated).toEqual(0);
+        expect(pool.workers.length > 0).toBeTruthy();
 
-        t.comment('terminates workers if no dispatchers are active');
+        // terminates workers if no dispatchers are active
         pool.release('map-1');
-        t.equal(workersTerminated, 4);
-        t.notOk(pool.workers);
+        expect(workersTerminated).toEqual(4);
+        expect(pool.workers).toBeFalsy();
 
-        t.comment('doesn\'t throw when terminating multiple times');
-        t.doesNotThrow(() => { pool.release('map-1'); });
-
-        t.end();
+        // doesn't throw when terminating multiple times
+        expect(() => { pool.release('map-1'); }).not.toThrowError();
     });
-
-    t.end();
 });

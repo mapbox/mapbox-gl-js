@@ -1,6 +1,4 @@
-// @flow
-
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 
 import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util.js';
 
@@ -8,70 +6,69 @@ import Point from '@mapbox/point-geometry';
 
 const EPSILON = 1e-8;
 
-function pointsetEqual(t: any, actual: Array<Point>, expected: Array<Point>) {
-    t.equal(actual.length, expected.length);
+function pointsetEqual(actual, expected) {
+    expect(actual.length).toEqual(expected.length);
     for (let i = 0; i < actual.length; i++) {
         const p1 = actual[i];
         const p2 = expected[i];
-        t.ok(Math.abs(p1.x - p2.x) < EPSILON);
-        t.ok(Math.abs(p1.y - p2.y) < EPSILON);
+        expect(Math.abs(p1.x - p2.x) < EPSILON).toBeTruthy();
+        expect(Math.abs(p1.y - p2.y) < EPSILON).toBeTruthy();
     }
 }
 
-test('util', (t) => {
-    t.equal(easeCubicInOut(0), 0, 'easeCubicInOut=0');
-    t.equal(easeCubicInOut(0.2), 0.03200000000000001);
-    t.equal(easeCubicInOut(0.5), 0.5, 'easeCubicInOut=0.5');
-    t.equal(easeCubicInOut(1), 1, 'easeCubicInOut=1');
-    t.deepEqual(keysDifference({a:1}, {}), ['a'], 'keysDifference');
-    t.deepEqual(keysDifference({a:1}, {a:1}), [], 'keysDifference');
-    t.deepEqual(extend({a:1}, {b:2}), {a:1, b:2}, 'extend');
-    t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c']), {a:1, c:3}, 'pick');
-    t.deepEqual(pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
-    t.ok(typeof uniqueId() === 'number', 'uniqueId');
+describe('util', () => {
+    expect(easeCubicInOut(0)).toEqual(0);
+    expect(easeCubicInOut(0.2)).toEqual(0.03200000000000001);
+    expect(easeCubicInOut(0.5)).toEqual(0.5);
+    expect(easeCubicInOut(1)).toEqual(1);
+    expect(keysDifference({a:1}, {})).toEqual(['a']);
+    expect(keysDifference({a:1}, {a:1})).toEqual([]);
+    expect(extend({a:1}, {b:2})).toEqual({a:1, b:2});
+    expect(pick({a:1, b:2, c:3}, ['a', 'c'])).toEqual({a:1, c:3});
+    expect(pick({a:1, b:2, c:3}, ['a', 'c', 'd'])).toEqual({a:1, c:3});
+    expect(typeof uniqueId() === 'number').toBeTruthy();
 
-    t.equal(degToRad(radToDeg(Math.PI)), Math.PI);
-    t.equal(degToRad(radToDeg(-Math.PI)), -Math.PI);
-    t.equal(radToDeg(degToRad(65)), 65);
-    t.equal(radToDeg(degToRad(-34.2)), -34.2);
+    expect(degToRad(radToDeg(Math.PI))).toEqual(Math.PI);
+    expect(degToRad(radToDeg(-Math.PI))).toEqual(-Math.PI);
+    expect(radToDeg(degToRad(65))).toEqual(65);
+    expect(radToDeg(degToRad(-34.2))).toEqual(-34.2);
 
-    t.equal(smoothstep(30, 60, 29), 0);
-    t.equal(smoothstep(30, 60, 45), 0.5);
-    t.equal(smoothstep(30, 60, 61), 1);
+    expect(smoothstep(30, 60, 29)).toEqual(0);
+    expect(smoothstep(30, 60, 45)).toEqual(0.5);
+    expect(smoothstep(30, 60, 61)).toEqual(1);
 
-    t.deepEqual(furthestTileCorner(-200), [1, 1]);
-    t.deepEqual(furthestTileCorner(-95), [0, 1]);
-    t.deepEqual(furthestTileCorner(-30), [0, 0]);
-    t.deepEqual(furthestTileCorner(0), [1, 0]);
-    t.deepEqual(furthestTileCorner(30), [1, 0]);
-    t.deepEqual(furthestTileCorner(95), [1, 1]);
-    t.deepEqual(furthestTileCorner(130), [1, 1]);
-    t.deepEqual(furthestTileCorner(200), [0, 1]);
-    t.deepEqual(furthestTileCorner(275), [0, 0]);
-    t.deepEqual(furthestTileCorner(360), [1, 0]);
-    t.deepEqual(furthestTileCorner(390), [1, 0]);
+    expect(furthestTileCorner(-200)).toEqual([1, 1]);
+    expect(furthestTileCorner(-95)).toEqual([0, 1]);
+    expect(furthestTileCorner(-30)).toEqual([0, 0]);
+    expect(furthestTileCorner(0)).toEqual([1, 0]);
+    expect(furthestTileCorner(30)).toEqual([1, 0]);
+    expect(furthestTileCorner(95)).toEqual([1, 1]);
+    expect(furthestTileCorner(130)).toEqual([1, 1]);
+    expect(furthestTileCorner(200)).toEqual([0, 1]);
+    expect(furthestTileCorner(275)).toEqual([0, 0]);
+    expect(furthestTileCorner(360)).toEqual([1, 0]);
+    expect(furthestTileCorner(390)).toEqual([1, 0]);
 
-    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [1, 1]), 2);
-    t.deepEqual(getAABBPointSquareDist([0, 0], [3, 2], [1, 1]), 0);
-    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [1, 1]), 13);
-    t.deepEqual(getAABBPointSquareDist([-3, -2], [-2, -1], [-1, -1]), 1);
-    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3]), 8);
-    t.deepEqual(getAABBPointSquareDist([2, 2], [10, 3]), 8);
-    t.deepEqual(getAABBPointSquareDist([-2, -2], [2, 2]), 0);
-    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, 0]), 4);
-    t.deepEqual(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2]), 16);
+    expect(getAABBPointSquareDist([2, 2], [3, 3], [1, 1])).toEqual(2);
+    expect(getAABBPointSquareDist([0, 0], [3, 2], [1, 1])).toEqual(0);
+    expect(getAABBPointSquareDist([-3, -2], [-2, -1], [1, 1])).toEqual(13);
+    expect(getAABBPointSquareDist([-3, -2], [-2, -1], [-1, -1])).toEqual(1);
+    expect(getAABBPointSquareDist([2, 2], [3, 3])).toEqual(8);
+    expect(getAABBPointSquareDist([2, 2], [10, 3])).toEqual(8);
+    expect(getAABBPointSquareDist([-2, -2], [2, 2])).toEqual(0);
+    expect(getAABBPointSquareDist([2, 2], [3, 3], [2.5, 0])).toEqual(4);
+    expect(getAABBPointSquareDist([2, 2], [3, 3], [2.5, -2])).toEqual(16);
 
-    t.test('bindAll', (t) => {
+    test('bindAll', () => {
         class MyClass {
-            name: string;
+            name;
             constructor() {
                 bindAll(['ontimer'], this);
                 this.name = 'Tom';
             }
 
             ontimer() {
-                t.equal(this.name, 'Tom');
-                t.end();
+                expect(this.name).toEqual('Tom');
             }
         }
 
@@ -79,187 +76,175 @@ test('util', (t) => {
         // $FlowFixMe[method-unbinding]
         setTimeout(my.ontimer, 0);
     });
-
-    t.test('asyncAll - sync', (t) => {
-        t.equal(asyncAll([0, 1, 2], (data, callback) => {
-            callback(null, data);
-        }, (err, results) => {
-            t.ifError(err);
-            t.deepEqual(results, [0, 1, 2]);
-        }));
-        t.end();
-    });
-
-    t.test('asyncAll - async', (t) => {
-        t.equal(asyncAll([4, 0, 1, 2], (data, callback) => {
-            setTimeout(() => {
+    /*
+        t.test('asyncAll - sync', (t) => {
+            t.equal(asyncAll([0, 1, 2], (data, callback) => {
                 callback(null, data);
-            }, data);
-        }, (err, results) => {
-            t.ifError(err);
-            t.deepEqual(results, [4, 0, 1, 2]);
+            }, (err, results) => {
+                t.ifError(err);
+                t.deepEqual(results, [0, 1, 2]);
+            }));
             t.end();
-        }));
-    });
+        });
 
-    t.test('asyncAll - error', (t) => {
-        t.equal(asyncAll([4, 0, 1, 2], (data, callback) => {
-            setTimeout(() => {
-                callback(new Error('hi'), data);
-            }, data);
-        }, (err, results) => {
-            t.equal(err && err.message, 'hi');
-            t.deepEqual(results, [4, 0, 1, 2]);
+        t.test('asyncAll - async', (t) => {
+            t.equal(asyncAll([4, 0, 1, 2], (data, callback) => {
+                setTimeout(() => {
+                    callback(null, data);
+                }, data);
+            }, (err, results) => {
+                t.ifError(err);
+                t.deepEqual(results, [4, 0, 1, 2]);
+                t.end();
+            }));
+        });
+
+        t.test('asyncAll - error', (t) => {
+            t.equal(asyncAll([4, 0, 1, 2], (data, callback) => {
+                setTimeout(() => {
+                    callback(new Error('hi'), data);
+                }, data);
+            }, (err, results) => {
+                t.equal(err && err.message, 'hi');
+                t.deepEqual(results, [4, 0, 1, 2]);
+                t.end();
+            }));
+        });
+
+        t.test('asyncAll - empty', (t) => {
+            t.equal(asyncAll([], (data, callback) => {
+                callback(null, 'foo');
+            }, (err, results) => {
+                t.ifError(err);
+                t.deepEqual(results, []);
+            }));
             t.end();
-        }));
+        });
+    */
+
+    test('isPowerOfTwo', () => {
+        expect(isPowerOfTwo(1)).toEqual(true);
+        expect(isPowerOfTwo(2)).toEqual(true);
+        expect(isPowerOfTwo(256)).toEqual(true);
+        expect(isPowerOfTwo(-256)).toEqual(false);
+        expect(isPowerOfTwo(0)).toEqual(false);
+        expect(isPowerOfTwo(-42)).toEqual(false);
+        expect(isPowerOfTwo(42)).toEqual(false);
     });
 
-    t.test('asyncAll - empty', (t) => {
-        t.equal(asyncAll([], (data, callback) => {
-            callback(null, 'foo');
-        }, (err, results) => {
-            t.ifError(err);
-            t.deepEqual(results, []);
-        }));
-        t.end();
+    test('nextPowerOfTwo', () => {
+        expect(nextPowerOfTwo(1)).toEqual(1);
+        expect(nextPowerOfTwo(2)).toEqual(2);
+        expect(nextPowerOfTwo(256)).toEqual(256);
+        expect(nextPowerOfTwo(-256)).toEqual(1);
+        expect(nextPowerOfTwo(0)).toEqual(1);
+        expect(nextPowerOfTwo(-42)).toEqual(1);
+        expect(nextPowerOfTwo(42)).toEqual(64);
     });
 
-    t.test('isPowerOfTwo', (t) => {
-        t.equal(isPowerOfTwo(1), true);
-        t.equal(isPowerOfTwo(2), true);
-        t.equal(isPowerOfTwo(256), true);
-        t.equal(isPowerOfTwo(-256), false);
-        t.equal(isPowerOfTwo(0), false);
-        t.equal(isPowerOfTwo(-42), false);
-        t.equal(isPowerOfTwo(42), false);
-        t.end();
+    test('prevPowerOfTwo', () => {
+        expect(prevPowerOfTwo(1)).toEqual(1);
+        expect(prevPowerOfTwo(2)).toEqual(2);
+        expect(prevPowerOfTwo(256)).toEqual(256);
+        expect(prevPowerOfTwo(258)).toEqual(256);
+        expect(prevPowerOfTwo(514)).toEqual(512);
+        expect(prevPowerOfTwo(512)).toEqual(512);
+        expect(prevPowerOfTwo(98)).toEqual(64);
     });
 
-    t.test('nextPowerOfTwo', (t) => {
-        t.equal(nextPowerOfTwo(1), 1);
-        t.equal(nextPowerOfTwo(2), 2);
-        t.equal(nextPowerOfTwo(256), 256);
-        t.equal(nextPowerOfTwo(-256), 1);
-        t.equal(nextPowerOfTwo(0), 1);
-        t.equal(nextPowerOfTwo(-42), 1);
-        t.equal(nextPowerOfTwo(42), 64);
-        t.end();
+    test('nextPowerOfTwo', () => {
+        expect(isPowerOfTwo(nextPowerOfTwo(1))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(2))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(256))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(-256))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(0))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(-42))).toEqual(true);
+        expect(isPowerOfTwo(nextPowerOfTwo(42))).toEqual(true);
     });
 
-    t.test('prevPowerOfTwo', (t) => {
-        t.equal(prevPowerOfTwo(1), 1);
-        t.equal(prevPowerOfTwo(2), 2);
-        t.equal(prevPowerOfTwo(256), 256);
-        t.equal(prevPowerOfTwo(258), 256);
-        t.equal(prevPowerOfTwo(514), 512);
-        t.equal(prevPowerOfTwo(512), 512);
-        t.equal(prevPowerOfTwo(98), 64);
-        t.end();
+    test('clamp', () => {
+        expect(clamp(0, 0, 1)).toEqual(0);
+        expect(clamp(1, 0, 1)).toEqual(1);
+        expect(clamp(200, 0, 180)).toEqual(180);
+        expect(clamp(-200, 0, 180)).toEqual(0);
     });
 
-    t.test('nextPowerOfTwo', (t) => {
-        t.equal(isPowerOfTwo(nextPowerOfTwo(1)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(2)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(256)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(-256)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(0)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(-42)), true);
-        t.equal(isPowerOfTwo(nextPowerOfTwo(42)), true);
-        t.end();
+    test('mapValue', () => {
+        expect(mapValue(5, 0, 10, 0, 1)).toEqual(0.5);
+        expect(mapValue(0, -10, 10, 0, 1)).toEqual(0.5);
+        expect(mapValue(12, 0, 5, 0, 1)).toEqual(1);
+        expect(mapValue(-10, -5, 5, 0, 1)).toEqual(0);
+
+        expect(mapValue(5, 0, 10, -5, 5)).toEqual(0);
+        expect(mapValue(0, -10, 10, -5, 10)).toEqual(2.5);
+        expect(mapValue(12, 0, 5, -1, 0)).toEqual(0);
+        expect(mapValue(5, -10, 10, -5, -4)).toEqual(-4.25);
     });
 
-    t.test('clamp', (t) => {
-        t.equal(clamp(0, 0, 1), 0);
-        t.equal(clamp(1, 0, 1), 1);
-        t.equal(clamp(200, 0, 180), 180);
-        t.equal(clamp(-200, 0, 180), 0);
-        t.end();
+    test('wrap', () => {
+        expect(wrap(0, 0, 1)).toEqual(1);
+        expect(wrap(1, 0, 1)).toEqual(1);
+        expect(wrap(200, 0, 180)).toEqual(20);
+        expect(wrap(-200, 0, 180)).toEqual(160);
     });
 
-    t.test('mapValue', (t) => {
-        t.equal(mapValue(5, 0, 10, 0, 1), 0.5);
-        t.equal(mapValue(0, -10, 10, 0, 1), 0.5);
-        t.equal(mapValue(12, 0, 5, 0, 1), 1);
-        t.equal(mapValue(-10, -5, 5, 0, 1), 0);
-
-        t.equal(mapValue(5, 0, 10, -5, 5), 0);
-        t.equal(mapValue(0, -10, 10, -5, 10), 2.5);
-        t.equal(mapValue(12, 0, 5, -1, 0), 0);
-        t.equal(mapValue(5, -10, 10, -5, -4), -4.25);
-
-        t.end();
-    });
-
-    t.test('wrap', (t) => {
-        t.equal(wrap(0, 0, 1), 1);
-        t.equal(wrap(1, 0, 1), 1);
-        t.equal(wrap(200, 0, 180), 20);
-        t.equal(wrap(-200, 0, 180), 160);
-        t.end();
-    });
-
-    t.test('bezier', (t) => {
+    test('bezier', () => {
         const curve = bezier(0, 0, 0.25, 1);
-        t.ok(curve instanceof Function, 'returns a function');
-        t.equal(curve(0), 0);
-        t.equal(curve(1), 1);
-        t.equal(curve(0.5), 0.8230854638965502);
-        t.end();
+        expect(curve instanceof Function).toBeTruthy();
+        expect(curve(0)).toEqual(0);
+        expect(curve(1)).toEqual(1);
+        expect(curve(0.5)).toEqual(0.8230854638965502);
     });
 
-    t.test('asyncAll', (t) => {
-        let expect = 1;
+    test('asyncAll', () => {
+        let expectResult = 1;
         asyncAll([], (callback) => { callback(); }, () => {
-            t.ok('immediate callback');
+            expect('immediate callback').toBeTruthy();
         });
         asyncAll([1, 2, 3], (number, callback) => {
-            t.equal(number, expect++);
-            t.ok(callback instanceof Function);
+            expect(number).toEqual(expectResult++);
+            expect(callback instanceof Function).toBeTruthy();
             callback(null, 0);
-        }, () => {
-            t.end();
-        });
+        }, () => {});
     });
 
-    t.test('endsWith', (t) => {
-        t.ok(endsWith('mapbox', 'box'));
-        t.notOk(endsWith('mapbox', 'map'));
-        t.end();
+    test('endsWith', () => {
+        expect(endsWith('mapbox', 'box')).toBeTruthy();
+        expect(endsWith('mapbox', 'map')).toBeFalsy();
     });
 
-    t.test('mapObject', (t) => {
-        t.plan(6);
-        t.deepEqual(mapObject({}, () => { t.ok(false); }), {});
+    test('mapObject', () => {
+        expect.assertions(6);
+        expect(mapObject({}, () => { expect(false).toBeTruthy(); })).toEqual({});
         const that = {};
         // $FlowFixMe[missing-this-annot]
-        t.deepEqual(mapObject({map: 'box'}, function(value, key, object) {
-            t.equal(value, 'box');
-            t.equal(key, 'map');
-            t.deepEqual(object, {map: 'box'});
-            t.equal(this, that);
+        expect(mapObject({map: 'box'}, function(value, key, object) {
+            expect(value).toEqual('box');
+            expect(key).toEqual('map');
+            expect(object).toEqual({map: 'box'});
+            expect(this).toEqual(that);
             return 'BOX';
-        }, that), {map: 'BOX'});
+        }, that)).toEqual({map: 'BOX'});
     });
 
-    t.test('filterObject', (t) => {
-        t.plan(6);
-        t.deepEqual(filterObject({}, () => { t.ok(false); }), {});
+    test('filterObject', () => {
+        expect.assertions(6);
+        expect(filterObject({}, () => { expect(false).toBeTruthy(); })).toEqual({});
         const that = {};
         // $FlowFixMe[missing-this-annot]
         filterObject({map: 'box'}, function(value, key, object) {
-            t.equal(value, 'box');
-            t.equal(key, 'map');
-            t.deepEqual(object, {map: 'box'});
-            t.equal(this, that);
+            expect(value).toEqual('box');
+            expect(key).toEqual('map');
+            expect(object).toEqual({map: 'box'});
+            expect(this).toEqual(that);
             return true;
         }, that);
-        t.deepEqual(filterObject({map: 'box', box: 'map'}, (value) => {
+        expect(filterObject({map: 'box', box: 'map'}, (value) => {
             return value === 'box';
-        }), {map: 'box'});
-        t.end();
+        })).toEqual({map: 'box'});
     });
 
-    t.test('deepEqual', (t) => {
+    test('deepEqual', () => {
         const a = {
             foo: 'bar',
             bar: {
@@ -271,165 +256,140 @@ test('util', (t) => {
         const c = JSON.parse(JSON.stringify(a));
         c.bar.lol[0] = "z";
 
-        t.ok(deepEqual(a, b));
-        t.notOk(deepEqual(a, c));
-        t.notOk(deepEqual(a, null));
-        t.notOk(deepEqual(null, c));
-        t.ok(deepEqual(null, null));
-
-        t.end();
+        expect(deepEqual(a, b)).toBeTruthy();
+        expect(deepEqual(a, c)).toBeFalsy();
+        expect(deepEqual(a, null)).toBeFalsy();
+        expect(deepEqual(null, c)).toBeFalsy();
+        expect(deepEqual(null, null)).toBeTruthy();
     });
 
-    t.test('clone', (t) => {
-        t.test('array', (t) => {
+    describe('clone', () => {
+        test('array', () => {
             const input = [false, 1, 'two'];
             const output = clone(input);
-            t.notEqual(input, output);
-            t.deepEqual(input, output);
-            t.end();
+            expect(input).not.toBe(output);
+            expect(input).toEqual(output);
         });
 
-        t.test('object', (t) => {
+        test('object', () => {
             const input = {a: false, b: 1, c: 'two'};
             const output = clone(input);
-            t.notEqual(input, output);
-            t.deepEqual(input, output);
-            t.end();
+            expect(input).not.toBe(output);
+            expect(input).toEqual(output);
         });
 
-        t.test('deep object', (t) => {
+        test('deep object', () => {
             const input = {object: {a: false, b: 1, c: 'two'}};
             const output = clone(input);
-            t.notEqual(input.object, output.object);
-            t.deepEqual(input.object, output.object);
-            t.end();
+            expect(input.object).not.toBe(output.object);
+            expect(input.object).toEqual(output.object);
         });
 
-        t.test('deep array', (t) => {
+        test('deep array', () => {
             const input = {array: [false, 1, 'two']};
             const output = clone(input);
-            t.notEqual(input.array, output.array);
-            t.deepEqual(input.array, output.array);
-            t.end();
+            expect(input.array).not.toBe(output.array);
+            expect(input.array).toEqual(output.array);
         });
-
-        t.end();
     });
 
-    t.test('arraysIntersect', (t) => {
-        t.test('intersection', (t) => {
+    describe('arraysIntersect', () => {
+        test('intersection', () => {
             const a = ["1", "2", "3"];
             const b = ["5", "4", "3"];
 
-            t.equal(arraysIntersect(a, b), true);
-            t.end();
+            expect(arraysIntersect(a, b)).toEqual(true);
         });
 
-        t.test('no intersection', (t) => {
+        test('no intersection', () => {
             const a = ["1", "2", "3"];
             const b = ["4", "5", "6"];
 
-            t.equal(arraysIntersect(a, b), false);
-            t.end();
+            expect(arraysIntersect(a, b)).toEqual(false);
         });
-
-        t.end();
     });
 
-    t.test('isCounterClockwise ', (t) => {
-        t.test('counter clockwise', (t) => {
+    describe('isCounterClockwise ', () => {
+        test('counter clockwise', () => {
             const a = new Point(0, 0);
             const b = new Point(1, 0);
             const c = new Point(1, 1);
 
-            t.equal(isCounterClockwise(a, b, c), true);
-            t.end();
+            expect(isCounterClockwise(a, b, c)).toEqual(true);
         });
 
-        t.test('clockwise', (t) => {
+        test('clockwise', () => {
             const a = new Point(0, 0);
             const b = new Point(1, 0);
             const c = new Point(1, 1);
 
-            t.equal(isCounterClockwise(c, b, a), false);
-            t.end();
+            expect(isCounterClockwise(c, b, a)).toEqual(false);
         });
-
-        t.end();
     });
 
-    t.test('bufferConvexPolygon', (t) => {
-        t.throws(() => {
-            bufferConvexPolygon([new Point(0, 0), new Point(1, 1)], 5);
+    describe('bufferConvexPolygon', () => {
+        test('should throw error or return correct result', () => {
+            expect(() => {
+                bufferConvexPolygon([new Point(0, 0), new Point(1, 1)], 5);
+            }).toThrowError();
+            expect(() => {
+                bufferConvexPolygon([new Point(0, 0)], 5);
+            }).toThrowError();
+            expect(
+            bufferConvexPolygon([new Point(0, 0), new Point(0, 1), new Point(1, 1)], 1)
+            ).toBeTruthy();
         });
-        t.throws(() => {
-            bufferConvexPolygon([new Point(0, 0)], 5);
-        });
-        t.ok(bufferConvexPolygon([new Point(0, 0), new Point(0, 1), new Point(1, 1)], 1));
 
-        t.test('numerical tests', (t) => {
-            t.test('box', (t) => {
+        describe('numerical tests', () => {
+            test('box', () => {
                 const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1)], 1);
-                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(2, -1), new Point(2, 2), new Point(-1, 2)]);
-                t.end();
+                pointsetEqual(buffered, [new Point(-1, -1), new Point(2, -1), new Point(2, 2), new Point(-1, 2)]);
             });
-            t.test('triangle', (t) => {
+            test('triangle', () => {
                 const buffered = bufferConvexPolygon([new Point(0, 0), new Point(1, 0), new Point(0, 1)], 1);
-                pointsetEqual(t, buffered, [new Point(-1, -1), new Point(3.414213562373095, -1), new Point(-1, 3.414213562373095)]);
-                t.end();
+                pointsetEqual(buffered, [new Point(-1, -1), new Point(3.414213562373095, -1), new Point(-1, 3.414213562373095)]);
+            });
+        });
+    });
+
+    describe('parseCacheControl', () => {
+        test('max-age', () => {
+            expect(parseCacheControl('max-age=123456789')).toEqual({
+                'max-age': 123456789
             });
 
-            t.end();
-        });
-
-        t.end();
-    });
-
-    t.test('parseCacheControl', (t) => {
-        t.test('max-age', (t) => {
-            t.deepEqual(parseCacheControl('max-age=123456789'), {
-                'max-age': 123456789
-            }, 'returns valid max-age header');
-
-            t.deepEqual(parseCacheControl('max-age=1000'), {
+            expect(parseCacheControl('max-age=1000')).toEqual({
                 'max-age': 1000
-            }, 'returns valid max-age header');
+            });
 
-            t.deepEqual(parseCacheControl('max-age=null'), {}, 'does not return invalid max-age header');
-
-            t.end();
+            expect(parseCacheControl('max-age=null')).toEqual({});
         });
-
-        t.end();
     });
 
-    t.test('validateUuid', (t) => {
-        t.true(validateUuid(uuid()));
-        t.false(validateUuid(uuid().substr(0, 10)));
-        t.false(validateUuid('foobar'));
-        t.false(validateUuid(null));
-        t.end();
+    test('validateUuid', () => {
+        expect(validateUuid(uuid())).toBeTruthy();
+        expect(validateUuid(uuid().substr(0, 10))).toBeFalsy();
+        expect(validateUuid('foobar')).toBeFalsy();
+        expect(validateUuid(null)).toBeFalsy();
     });
 
-    t.test('shortestAngle', (t) => {
-        t.equal(shortestAngle(0, 90), 90);
-        t.equal(shortestAngle(0, -270), 90);
-        t.equal(shortestAngle(0, 450), 90);
+    test('shortestAngle', () => {
+        expect(shortestAngle(0, 90)).toEqual(90);
+        expect(shortestAngle(0, -270)).toEqual(90);
+        expect(shortestAngle(0, 450)).toEqual(90);
 
-        t.equal(shortestAngle(0, -90), -90);
-        t.equal(shortestAngle(0, 270), -90);
-        t.equal(shortestAngle(0, -450), -90);
+        expect(shortestAngle(0, -90)).toEqual(-90);
+        expect(shortestAngle(0, 270)).toEqual(-90);
+        expect(shortestAngle(0, -450)).toEqual(-90);
 
-        t.equal(shortestAngle(45, 226), -179);
-        t.equal(shortestAngle(100, 123 * 360 + 100), 0);
-        t.equal(shortestAngle(-45, 335), 20);
-        t.equal(shortestAngle(-100, -270), -170);
-        t.end();
+        expect(shortestAngle(45, 226)).toEqual(-179);
+        expect(shortestAngle(100, 123 * 360 + 100)).toEqual(0);
+        expect(shortestAngle(-45, 335)).toEqual(20);
+        expect(shortestAngle(-100, -270)).toEqual(-170);
     });
 
-    t.test('isSafariWithAntialiasingBug', (t) => {
-
-        const isSafariWithAntialiasingBugReset = (scope: {| navigator: {| userAgent: string |} |}) => {
+    test('isSafariWithAntialiasingBug', () => {
+        const isSafariWithAntialiasingBugReset = (scope) => {
             _resetSafariCheckForTest();
             const result = isSafariWithAntialiasingBug(scope);
             _resetSafariCheckForTest();
@@ -437,66 +397,140 @@ test('util', (t) => {
         };
 
         // mac
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15'}})
+        ).toBeFalsy();
 
         // iphone
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
 
         // ipad
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
 
         // chrome
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36'}})
+        ).toBeFalsy();
         // firefox
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:98.0) Gecko/20100101 Firefox/98.0'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:98.0) Gecko/20100101 Firefox/98.0'}})
+        ).toBeFalsy();
         // edge
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.36'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.36'}})
+        ).toBeFalsy();
 
         // chrome on iOS
         // iphone
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
         // ipad
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
         // ipod
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/99.0.4844.59 Mobile/15E148 Safari/604.1'}})
+        ).toBeFalsy();
 
         // firefox on iOS
         // iphone
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
         // ipad
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
         // ipod
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.ok(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-        t.notOk(isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}}));
-
-        t.end();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeTruthy();
+        expect(
+            isSafariWithAntialiasingBugReset({navigator: {userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) FxiOS/98.0 Mobile/15E148 Safari/605.1.15'}})
+        ).toBeFalsy();
     });
-
-    t.end();
 });

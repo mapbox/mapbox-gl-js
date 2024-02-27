@@ -6,7 +6,6 @@ import {MapMouseEvent} from '../ui/events.js';
 import * as DOM from '../util/dom.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
-import window from '../util/window.js';
 import smartWrap from '../util/smart_wrap.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
@@ -375,7 +374,7 @@ export default class Popup extends Evented {
      *     .addTo(map);
      */
     setText(text: string): this {
-        return this.setDOMContent(window.document.createTextNode(text));
+        return this.setDOMContent(document.createTextNode(text));
     }
 
     /**
@@ -398,8 +397,8 @@ export default class Popup extends Evented {
      * @see [Example: Attach a popup to a marker instance](https://docs.mapbox.com/mapbox-gl-js/example/set-popup/)
      */
     setHTML(html: string): this {
-        const frag = window.document.createDocumentFragment();
-        const temp = window.document.createElement('body');
+        const frag = document.createDocumentFragment();
+        const temp = document.createElement('body');
         let child;
         temp.innerHTML = html;
         while (true) {

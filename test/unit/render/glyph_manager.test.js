@@ -1,11 +1,12 @@
-import {test} from '../../util/test.js';
+import {test, expect, vi} from "../../util/vitest.js";
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf.js';
 import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager.js';
-import fs from 'fs';
+// eslint-disable-next-line import/no-unresolved,import/extensions
+import glyphStub from '/test/fixtures/0-255.pbf?arraybuffer';
 
 const glyphData = {};
 glyphData.glyphs = [];
-const data = parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf'));
+const data = parseGlyphPBF(glyphStub);
 glyphData.ascender = data.ascender;
 glyphData.descender = data.descender;
 for (const glyph of data.glyphs) {
@@ -31,13 +32,13 @@ const TinySDF = class {
     }
 };
 
-const createLoadGlyphRangeStub = (t) => {
-    return t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
-        t.equal(stack, 'Arial Unicode MS');
-        t.equal(range, 0);
-        t.equal(urlTemplate, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf');
-        t.equal(transform, identityTransform);
-        setImmediate(() => callback(null, glyphData));
+const createLoadGlyphRangeStub = () => {
+    return vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+        expect(stack).toEqual('Arial Unicode MS');
+        expect(range).toEqual(0);
+        expect(urlTemplate).toEqual('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+        expect(transform).toEqual(identityTransform);
+        setTimeout(() => callback(null, glyphData));
     });
 };
 
@@ -49,54 +50,60 @@ const createGlyphManager = (font, allGlyphs) => {
     return manager;
 };
 
-test('GlyphManager requests 0-255 PBF', (t) => {
-    createLoadGlyphRangeStub(t);
+test('GlyphManager requests 0-255 PBF', async () => {
+    createLoadGlyphRangeStub();
     const manager = createGlyphManager();
 
-    manager.getGlyphs({'Arial Unicode MS': [55]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.equal(result['Arial Unicode MS'].glyphs['55'].metrics.advance, 12);
-        t.end();
-    });
-});
-
-test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', (t) => {
-    const stub = createLoadGlyphRangeStub(t);
-    const manager = createGlyphManager();
-
-    manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
-        t.ifError(err);
-        t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
-        t.equal(stub.calledOnce, true);
-
-        // We remove all requests as in getGlyphs code.
-        delete manager.entries['Arial Unicode MS'].requests[0];
-
-        manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
-            t.ifError(err);
-            t.equal(manager.entries['Arial Unicode MS'].ranges[0], true);
-            t.equal(stub.calledOnce, true);
-            t.end();
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [55]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs['55'].metrics.advance).toEqual(12);
+            resolve();
         });
     });
 });
 
-test('GlyphManager requests remote CJK PBF', (t) => {
-    t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
-        setImmediate(() => callback(null, glyphData));
+test('GlyphManager doesn\'t request twice 0-255 PBF if a glyph is missing', async () => {
+    const stub = createLoadGlyphRangeStub();
+    const manager = createGlyphManager();
+
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
+            expect(err).toBeFalsy();
+            expect(manager.entries['Arial Unicode MS'].ranges[0]).toEqual(true);
+            expect(stub).toHaveBeenCalledTimes(1);
+
+            // We remove all requests as in getGlyphs code.
+            delete manager.entries['Arial Unicode MS'].requests[0];
+
+            manager.getGlyphs({'Arial Unicode MS': [0.5]}, undefined, (err) => {
+                expect(err).toBeFalsy();
+                expect(manager.entries['Arial Unicode MS'].ranges[0]).toEqual(true);
+                expect(stub).toHaveBeenCalledTimes(1);
+                resolve();
+            });
+        });
+    });
+});
+
+test('GlyphManager requests remote CJK PBF', async () => {
+    vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
+        setTimeout(() => callback(null, glyphData));
     });
 
     const manager = createGlyphManager();
 
-    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, results) => {
-        t.ifError(err);
-        t.equal(results['Arial Unicode MS'].glyphs[0x5e73], null); // The fixture returns a PBF without the glyph we requested
-        t.end();
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, results) => {
+            expect(err).toBeFalsy();
+            expect(results['Arial Unicode MS'].glyphs[0x5e73]).toEqual(null); // The fixture returns a PBF without the glyph we requested
+            resolve();
+        });
     });
 });
 
-test('GlyphManager does not cache CJK chars that should be rendered locally', (t) => {
-    t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
+test('GlyphManager does not cache CJK chars that should be rendered locally', async () => {
+    vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         const overlappingGlyphs = {};
         overlappingGlyphs.glyphs = [];
         overlappingGlyphs.ascender = glyphData.ascender;
@@ -106,68 +113,77 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', (t
         for (let i = start, j = 0; i < end; i++, j++) {
             overlappingGlyphs.glyphs[i] = glyphData.glyphs[j];
         }
-        setImmediate(() => callback(null, overlappingGlyphs));
+        setTimeout(() => callback(null, overlappingGlyphs));
     });
-    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
     const manager = createGlyphManager('sans-serif');
 
-    //Request char that overlaps Katakana range
-    manager.getGlyphs({'Arial Unicode MS': [0x3005]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.notEqual(result['Arial Unicode MS'].glyphs[0x3005], null);
-        //Request char from Katakana range (te)
-        manager.getGlyphs({'Arial Unicode MS': [0x30C6]}, undefined, (err, result) => {
-            t.ifError(err);
-            const glyph = result['Arial Unicode MS'].glyphs[0x30c6];
-            //Ensure that te is locally generated.
-            t.equal(glyph.bitmap.height, 30);
-            t.equal(glyph.bitmap.width, 30);
-            t.end();
+    await new Promise(resolve => {
+        // Request char that overlaps Katakana range
+        manager.getGlyphs({'Arial Unicode MS': [0x3005]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs[0x3005]).not.toEqual(null);
+            // Request char from Katakana range (te)
+            manager.getGlyphs({'Arial Unicode MS': [0x30C6]}, undefined, (err, result) => {
+                expect(err).toBeFalsy();
+                const glyph = result['Arial Unicode MS'].glyphs[0x30c6];
+                // Ensure that te is locally generated.
+                expect(glyph.bitmap.height).toEqual(30);
+                expect(glyph.bitmap.width).toEqual(30);
+
+                resolve();
+            });
         });
     });
 });
 
-test('GlyphManager generates CJK PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+test('GlyphManager generates CJK PBF locally', async () => {
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
-    manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.equal(result['Arial Unicode MS'].glyphs[0x5e73].metrics.advance, 24);
-        t.end();
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [0x5e73]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs[0x5e73].metrics.advance).toEqual(24);
+            resolve();
+        });
     });
 });
 
-test('GlyphManager generates Katakana PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+test('GlyphManager generates Katakana PBF locally', async () => {
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
-    // Katakana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.equal(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance, 24);
-        t.end();
+    await new Promise(resolve => {
+        // Katakana letter te
+        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance).toEqual(24);
+            resolve();
+        });
     });
 });
 
-test('GlyphManager generates Hiragana PBF locally', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(TinySDF);
+test('GlyphManager generates Hiragana PBF locally', async () => {
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => TinySDF);
 
     const manager = createGlyphManager('sans-serif');
 
-    //Hiragana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x3066]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.equal(result['Arial Unicode MS'].glyphs[0x3066].metrics.advance, 24);
-        t.end();
+    await new Promise(resolve => {
+        // Hiragana letter te
+        manager.getGlyphs({'Arial Unicode MS': [0x3066]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs[0x3066].metrics.advance).toEqual(24);
+            resolve();
+        });
     });
 });
 
-test('GlyphManager caches locally generated glyphs', (t) => {
+test('GlyphManager caches locally generated glyphs', async () => {
     let drawCallCount = 0;
-    t.stub(GlyphManager, 'TinySDF').value(class {
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => class {
         constructor() {
             this.fontWeight = '400';
         }
@@ -187,19 +203,21 @@ test('GlyphManager caches locally generated glyphs', (t) => {
 
     const manager = createGlyphManager('sans-serif');
 
-    // Katakana letter te
-    manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
-        t.ifError(err);
-        t.equal(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance, 24);
-        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, () => {
-            t.equal(drawCallCount, 1);
-            t.end();
+    await new Promise(resolve => {
+        // Katakana letter te
+        manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result['Arial Unicode MS'].glyphs[0x30c6].metrics.advance).toEqual(24);
+            manager.getGlyphs({'Arial Unicode MS': [0x30c6]}, undefined, () => {
+                expect(drawCallCount).toEqual(1);
+                resolve();
+            });
         });
     });
 });
 
-test('GlyphManager locally generates latin glyphs', (t) => {
-    t.stub(GlyphManager, 'TinySDF').value(class {
+test('GlyphManager locally generates latin glyphs', async () => {
+    vi.spyOn(GlyphManager, 'TinySDF', 'get').mockImplementation(() => class {
         constructor() {
             this.fontWeight = '400';
         }
@@ -218,12 +236,14 @@ test('GlyphManager locally generates latin glyphs', (t) => {
 
     const manager = createGlyphManager('sans-serif', true);
 
-    manager.getGlyphs({'Arial Unicode MS': [65]}, undefined, (err, result) => {
-        t.ifError(err);
-        const glyphs = result['Arial Unicode MS'].glyphs;
-        t.equal(glyphs[65].metrics.advance, 10);
-        t.equal(glyphs[65].metrics.width, 14);
-        t.equal(glyphs[65].metrics.height, 18);
-        t.end();
+    await new Promise(resolve => {
+        manager.getGlyphs({'Arial Unicode MS': [65]}, undefined, (err, result) => {
+            expect(err).toBeFalsy();
+            const glyphs = result['Arial Unicode MS'].glyphs;
+            expect(glyphs[65].metrics.advance).toEqual(10);
+            expect(glyphs[65].metrics.width).toEqual(14);
+            expect(glyphs[65].metrics.height).toEqual(18);
+            resolve();
+        });
     });
 });

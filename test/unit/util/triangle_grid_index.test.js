@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import TriangleGridIndex from '../../../src/util/triangle_grid_index.js';
 import Point  from "@mapbox/point-geometry";
 
@@ -19,28 +19,25 @@ function createMesh(triangles) {
     return {vertices, indices};
 }
 
-test('TriangleGridIndex', (t) => {
-    t.test('Empty input', (t) => {
+describe('TriangleGridIndex', () => {
+    test('Empty input', () => {
         const grid = new TriangleGridIndex([], [], 0);
         const result = [];
         grid.query(new Point(0, 0), new Point(16, 16), result);
-        t.strictSame(result, []);
-
-        t.end();
+        expect(result).toStrictEqual([]);
     });
 
-    t.test('Zero cell count', (t) => {
+    test('Zero cell count', () => {
         const mesh = createMesh([new Point(0, 0), new Point(1, 0), new Point(1, 1)]);
         const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 0);
 
         const result = [];
         grid.query(new Point(0, 0), new Point(1, 1), result);
 
-        t.strictSame(result, []);
-        t.end();
+        expect(result).toStrictEqual([]);
     });
 
-    t.test('Query', (t) => {
+    describe('Query', () => {
         const mesh = createMesh([
             new Point(0, 0), new Point(2, 0), new Point(0, 2),
             new Point(0, 4), new Point(4, 0), new Point(4, 4),
@@ -48,85 +45,75 @@ test('TriangleGridIndex', (t) => {
             new Point(1, 2.5), new Point(3.5, 1.5), new Point(2.5, 4.5)
         ]);
 
-        t.test('Out of bounds', (t) => {
+        test('Out of bounds', () => {
             const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 1);
             const result = [];
             grid.query(new Point(-2, -1), new Point(-0.1, 2.0), result);
-            t.strictSame(result, []);
-            t.end();
+            expect(result).toStrictEqual([]);
         });
 
-        t.test('All triangles fit a single cell', (t) => {
+        test('All triangles fit a single cell', () => {
             const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 1);
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [0, 1, 2, 3]);
+            expect(result).toStrictEqual([0, 1, 2, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 1, 2, 3]);
+            expect(result).toStrictEqual([0, 1, 2, 3]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
-            t.strictSame(result, [0, 1, 2, 3]);
-
-            t.end();
+            expect(result).toStrictEqual([0, 1, 2, 3]);
         });
 
-        t.test('2x2 grid', (t) => {
+        test('2x2 grid', () => {
             const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 2);
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [1, 3]);
+            expect(result).toStrictEqual([1, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 1, 3, 2]);
+            expect(result).toStrictEqual([0, 1, 3, 2]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
-            t.strictSame(result, [0, 1, 3]);
-            t.end();
+            expect(result).toStrictEqual([0, 1, 3]);
         });
 
-        t.test('4x4 grid', (t) => {
+        test('4x4 grid', () => {
             const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 4);
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [1, 3]);
+            expect(result).toStrictEqual([1, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 1, 2, 3]);
+            expect(result).toStrictEqual([0, 1, 2, 3]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
-            t.strictSame(result, [0, 1, 3]);
-            t.end();
+            expect(result).toStrictEqual([0, 1, 3]);
         });
 
-        t.test('8x8 grid', (t) => {
+        test('8x8 grid', () => {
             const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 8);
             const result = [];
 
             grid.query(new Point(3, 3), new Point(3, 3), result);
-            t.strictSame(result, [1, 3]);
+            expect(result).toStrictEqual([1, 3]);
 
             result.length = 0;
             grid.query(new Point(0, 0), new Point(1, 3), result);
-            t.strictSame(result, [0, 2, 3, 1]);
+            expect(result).toStrictEqual([0, 2, 3, 1]);
 
             result.length = 0;
             grid.query(new Point(1.5, 1.0), new Point(2.5, 1.5), result);
-            t.strictSame(result, [0, 1]);
-            t.end();
+            expect(result).toStrictEqual([0, 1]);
         });
-
-        t.end();
     });
-
-    t.end();
 });

@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import {
     Uniform1i,
     Uniform1f,
@@ -7,103 +7,98 @@ import {
     Uniform4f
 } from '../../../src/render/uniform_binding.js';
 
-test('Uniform1i', (t) => {
+test('Uniform1i', () => {
     // test counts ensure we don't call the gl.uniform* setters more than expected
-    t.plan(4);
+    expect.assertions(4);
 
     const context = {
         gl: {
-            uniform1i: () => { t.ok(true, 'sets value when unique'); },
+            uniform1i: () => { expect(true).toBeTruthy(); },
             getUniformLocation: () => { return true; }
         }
     };
 
     const u = new Uniform1i(context, 0);
 
-    t.equal(u.current, 0, 'not set upon initialization');
+    expect(u.current).toEqual(0);
     u.set(0, '', 1);
-    t.equal(u.current, 1, 'correctly set value');
+    expect(u.current).toEqual(1);
     u.set(0, '', 1);
     u.set(0, '', 2);
-    t.end();
 });
 
-test('Uniform1f', (t) => {
-    t.plan(4);
+test('Uniform1f', () => {
+    expect.assertions(4);
 
     const context = {
         gl: {
-            uniform1f: () => { t.ok(true, 'sets value when unique'); },
+            uniform1f: () => { expect(true).toBeTruthy(); },
             getUniformLocation: () => { return true; }
         }
     };
 
     const u = new Uniform1f(context, 0);
 
-    t.equal(u.current, 0, 'not set upon initialization');
+    expect(u.current).toEqual(0);
     u.set(0, '', 1);
-    t.equal(u.current, 1, 'correctly set value');
+    expect(u.current).toEqual(1);
     u.set(0, '', 1);
     u.set(0, '', 2);
-    t.end();
 });
 
-test('Uniform2f', (t) => {
-    t.plan(4);
+test('Uniform2f', () => {
+    expect.assertions(4);
 
     const context = {
         gl: {
-            uniform2f: () => { t.ok(true, 'sets value when unique'); },
+            uniform2f: () => { expect(true).toBeTruthy(); },
             getUniformLocation: () => { return true; }
         }
     };
 
     const u = new Uniform2f(context, 0);
 
-    t.deepEqual(u.current, [0, 0], 'not set upon initialization');
+    expect(u.current).toEqual([0, 0]);
     u.set(0, '', [1, 1]);
-    t.deepEqual(u.current, [1, 1], 'correctly set value');
+    expect(u.current).toEqual([1, 1]);
     u.set(0, '', [1, 1]);
     u.set(0, '', [1, 2]);
-    t.end();
 });
 
-test('Uniform3f', (t) => {
-    t.plan(4);
+test('Uniform3f', () => {
+    expect.assertions(4);
 
     const context = {
         gl: {
-            uniform3f: () => { t.ok(true, 'sets value when unique'); },
+            uniform3f: () => { expect(true).toBeTruthy(); },
             getUniformLocation: () => { return true; }
         }
     };
 
     const u = new Uniform3f(context, 0);
 
-    t.deepEqual(u.current, [0, 0, 0], 'not set upon initialization');
+    expect(u.current).toEqual([0, 0, 0]);
     u.set(0, '', [1, 1, 1]);
-    t.deepEqual(u.current, [1, 1, 1], 'correctly set value');
+    expect(u.current).toEqual([1, 1, 1]);
     u.set(0, '', [1, 1, 1]);
     u.set(0, '', [1, 1, 2]);
-    t.end();
 });
 
-test('Uniform4f', (t) => {
-    t.plan(4);
+test('Uniform4f', () => {
+    expect.assertions(4);
 
     const context = {
         gl: {
-            uniform4f: () => { t.ok(true, 'sets value when unique'); },
+            uniform4f: () => { expect(true).toBeTruthy(); },
             getUniformLocation: () => { return true; }
         }
     };
 
     const u = new Uniform4f(context, 0);
 
-    t.deepEqual(u.current, [0, 0, 0, 0], 'not set upon initialization');
+    expect(u.current).toEqual([0, 0, 0, 0]);
     u.set(0, '', [1, 1, 1, 1]);
-    t.deepEqual(u.current, [1, 1, 1, 1], 'correctly set value');
+    expect(u.current).toEqual([1, 1, 1, 1]);
     u.set(0, '', [1, 1, 1, 1]);
     u.set(0, '', [2, 1, 1, 1]);
-    t.end();
 });

@@ -1,26 +1,22 @@
-import {test} from '../../util/test.js';
-import fs from 'fs';
-import path from 'path';
+import {test, expect} from "../../util/vitest.js";
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import loadGeometry from '../../../src/data/load_geometry.js';
-
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+// eslint-disable-next-line import/no-unresolved
+import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.
-const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+const vt = new VectorTile(new Protobuf(tileStub));
 
-test('loadGeometry', (t) => {
+test('loadGeometry', () => {
     const feature = vt.layers.road.feature(0);
     const originalGeometry = feature.loadGeometry();
     const scaledGeometry = loadGeometry(feature);
-    t.equal(scaledGeometry[0][0].x, originalGeometry[0][0].x * 2, 'scales x coords by 2x');
-    t.equal(scaledGeometry[0][0].y, originalGeometry[0][0].y * 2, 'scales y coords by 2x');
-    t.end();
+    expect(scaledGeometry[0][0].x).toEqual(originalGeometry[0][0].x * 2);
+    expect(scaledGeometry[0][0].y).toEqual(originalGeometry[0][0].y * 2);
 });
 
-test('loadGeometry warns and clamps when exceeding extent', (t) => {
+test('loadGeometry warns and clamps when exceeding extent', () => {
     const feature = vt.layers.road.feature(0);
     feature.extent = 2048;
 
@@ -36,7 +32,7 @@ test('loadGeometry warns and clamps when exceeding extent', (t) => {
 
     const lines = loadGeometry(feature);
 
-    t.equal(numWarnings, 1);
+    expect(numWarnings).toEqual(1);
 
     let maxValue = -Infinity;
     for (const line of lines) {
@@ -44,10 +40,8 @@ test('loadGeometry warns and clamps when exceeding extent', (t) => {
             maxValue = Math.max(x, y, maxValue);
         }
     }
-    t.equal(maxValue, 16383);
+    expect(maxValue).toEqual(16383);
 
     // Put it back
     console.warn = warn;
-
-    t.end();
 });

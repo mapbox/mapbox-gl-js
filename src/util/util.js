@@ -3,7 +3,6 @@
 import UnitBezier from '@mapbox/unitbezier';
 
 import Point from '@mapbox/point-geometry';
-import window from './window.js';
 import assert from 'assert';
 
 import type {Callback} from '../types/callback.js';
@@ -635,7 +634,7 @@ export function cartesianPositionToSpherical(x: number, y: number, z: number): [
     return [radial, azimuthal, polar];
 }
 
-/* global self, WorkerGlobalScope */
+/* global WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.
  *
@@ -712,12 +711,12 @@ export function isSafariWithAntialiasingBug(scope: any): ?boolean {
 }
 
 export function isFullscreen(): boolean {
-    return !!window.document.fullscreenElement || !!window.document.webkitFullscreenElement;
+    return !!document.fullscreenElement || !!(document: any).webkitFullscreenElement;
 }
 
 export function storageAvailable(type: string): boolean {
     try {
-        const storage = window[type];
+        const storage = self[type];
         storage.setItem('_mapbox_test_', 1);
         storage.removeItem('_mapbox_test_');
         return true;
@@ -729,7 +728,7 @@ export function storageAvailable(type: string): boolean {
 // The following methods are from https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
 //Unicode compliant base64 encoder for strings
 export function b64EncodeUnicode(str: string): string {
-    return window.btoa(
+    return btoa(
         encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
             (match, p1) => {
                 return String.fromCharCode(Number('0x' + p1)); //eslint-disable-line
@@ -740,7 +739,7 @@ export function b64EncodeUnicode(str: string): string {
 
 // Unicode compliant decoder for base64-encoded strings
 export function b64DecodeUnicode(str: string): string {
-    return decodeURIComponent(window.atob(str).split('').map((c) => {
+    return decodeURIComponent(atob(str).split('').map((c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); //eslint-disable-line
     }).join(''));
 }

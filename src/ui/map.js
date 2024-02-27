@@ -3,7 +3,6 @@
 import {version} from '../../package.json';
 import {asyncAll, extend, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util.js';
 import browser from '../util/browser.js';
-import window from '../util/window.js';
 import * as DOM from '../util/dom.js';
 import {getImage, getJSON, ResourceType} from '../util/ajax.js';
 import {RequestManager, getMapSessionAPI, postPerformanceEvent, postMapLoadEvent, AUTH_ERR_MSG, storeAuthState, removeAuthState} from '../util/mapbox.js';
@@ -581,12 +580,14 @@ class Map extends Camera {
         }
 
         if (typeof options.container === 'string') {
-            this._container = window.document.getElementById(options.container);
-
-            if (!this._container) {
+            const container = document.getElementById(options.container);
+            if (container) {
+                this._container = container;
+            } else {
                 throw new Error(`Container '${options.container.toString()}' not found.`);
             }
-        } else if (options.container instanceof window.HTMLElement) {
+
+        } else if (options.container instanceof HTMLElement) {
             this._container = options.container;
         } else {
             throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
@@ -632,22 +633,20 @@ class Map extends Camera {
         this.on('moveend', () => this._update(false));
         this.on('zoom', () => this._update(true));
 
-        if (typeof window !== 'undefined') {
-            this._fullscreenchangeEvent = 'onfullscreenchange' in window.document ?
-                'fullscreenchange' :
-                'webkitfullscreenchange';
+        this._fullscreenchangeEvent = 'onfullscreenchange' in document ?
+            'fullscreenchange' :
+            'webkitfullscreenchange';
 
-            // $FlowFixMe[method-unbinding]
-            window.addEventListener('online', this._onWindowOnline, false);
-            // $FlowFixMe[method-unbinding]
-            window.addEventListener('resize', this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.addEventListener('orientationchange', this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.addEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.addEventListener('visibilitychange', this._onVisibilityChange, false);
-        }
+        // $FlowFixMe[method-unbinding]
+        window.addEventListener('online', this._onWindowOnline, false);
+        // $FlowFixMe[method-unbinding]
+        window.addEventListener('resize', this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.addEventListener('orientationchange', this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.addEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.addEventListener('visibilitychange', this._onVisibilityChange, false);
 
         this.handlers = new HandlerManager(this, options);
 
@@ -1171,10 +1170,10 @@ class Map extends Camera {
     }
 
     _parseLanguage(language?: 'auto' | ?string | ?string[]): ?string | ?string[] {
-        if (language === 'auto') return window.navigator.language;
+        if (language === 'auto') return navigator.language;
         if (Array.isArray(language)) return language.length === 0 ?
             undefined :
-            language.map(l => l === 'auto' ? window.navigator.language : l);
+            language.map(l => l === 'auto' ? navigator.language : l);
 
         return language;
     }
@@ -2295,7 +2294,7 @@ class Map extends Camera {
         this._lazyInitEmptyStyle();
         const version = 0;
 
-        if (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) {
+        if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
         } else if (image.width === undefined || image.height === undefined) {
@@ -2356,7 +2355,7 @@ class Map extends Camera {
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
             return;
         }
-        const imageData = (image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap)) ? browser.getImageData(image) : image;
+        const imageData = (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) ? browser.getImageData(image) : image;
         const {width, height} = imageData;
         // Flow can't refine the type enough to exclude ImageBitmap
         const data = ((imageData: any).data: Uint8Array | Uint8ClampedArray);
@@ -2376,7 +2375,7 @@ class Map extends Camera {
             return;
         }
 
-        const copy = !(image instanceof window.HTMLImageElement || (window.ImageBitmap && image instanceof window.ImageBitmap));
+        const copy = !(image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap));
         existingImage.data.replace(data, copy);
 
         this.style.updateImage(id, existingImage);
@@ -2441,7 +2440,7 @@ class Map extends Camera {
      */
     loadImage(url: string, callback: Function) {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
-            callback(err, img instanceof window.HTMLImageElement ? browser.getImageData(img) : img);
+            callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
         });
     }
 
@@ -3586,8 +3585,8 @@ class Map extends Camera {
         this.painter.setBaseState();
 
         if (this.isMoving() || this.isRotating() || this.isZooming()) {
-            this._interactionRange[0] = Math.min(this._interactionRange[0], window.performance.now());
-            this._interactionRange[1] = Math.max(this._interactionRange[1], window.performance.now());
+            this._interactionRange[0] = Math.min(this._interactionRange[0], performance.now());
+            this._interactionRange[1] = Math.max(this._interactionRange[1], performance.now());
         }
 
         this._renderTaskQueue.run(paintStartTimeStamp);
@@ -3695,7 +3694,8 @@ class Map extends Camera {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
                 }));
-                window.performance.mark('frame-gpu', {
+                // $FlowFixMe extra-arg: fixed in later Flow versions
+                performance.mark('frame-gpu', {
                     startTime: frameStartTime,
                     detail: {
                         gpuTime: renderGPUTime
@@ -3978,18 +3978,16 @@ class Map extends Camera {
         this.handlers = undefined;
         this.setStyle(null);
 
-        if (typeof window !== 'undefined') {
-            // $FlowFixMe[method-unbinding]
-            window.removeEventListener('resize', this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.removeEventListener('orientationchange', this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.removeEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
-            // $FlowFixMe[method-unbinding]
-            window.removeEventListener('online', this._onWindowOnline, false);
-            // $FlowFixMe[method-unbinding]
-            window.removeEventListener('visibilitychange', this._onVisibilityChange, false);
-        }
+        // $FlowFixMe[method-unbinding]
+        window.removeEventListener('resize', this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.removeEventListener('orientationchange', this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.removeEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
+        // $FlowFixMe[method-unbinding]
+        window.removeEventListener('online', this._onWindowOnline, false);
+        // $FlowFixMe[method-unbinding]
+        window.removeEventListener('visibilitychange', this._onVisibilityChange, false);
 
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
@@ -4075,7 +4073,7 @@ class Map extends Camera {
     }
 
     _onVisibilityChange() {
-        if (window.document.visibilityState === 'hidden') {
+        if (document.visibilityState === 'hidden') {
             this._visibilityHidden++;
         }
     }

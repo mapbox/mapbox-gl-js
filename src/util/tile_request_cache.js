@@ -1,7 +1,6 @@
 // @flow
 
 import {warnOnce, parseCacheControl} from './util.js';
-import window from './window.js';
 
 import type Dispatcher from './dispatcher.js';
 
@@ -24,7 +23,7 @@ let sharedCache: ?Promise<Cache>;
 
 function getCaches() {
     try {
-        return window.caches;
+        return caches;
     } catch (e) {
         // <iframe sandbox> triggers exceptions when trying to access window.caches
         // Chrome: DOMException, Safari: SecurityError, Firefox: NS_ERROR_FAILURE
@@ -35,7 +34,7 @@ function getCaches() {
 function cacheOpen() {
     const caches = getCaches();
     if (caches && !sharedCache) {
-        sharedCache = window.caches.open(CACHE_NAME);
+        sharedCache = caches.open(CACHE_NAME);
     }
 }
 
@@ -71,7 +70,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     const options: ResponseOptions = {
         status: response.status,
         statusText: response.statusText,
-        headers: new window.Headers()
+        headers: new Headers()
     };
     response.headers.forEach((v, k) => options.headers.set(k, v));
 
@@ -89,7 +88,8 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     if (timeUntilExpiry < MIN_TIME_UNTIL_EXPIRY) return;
 
     prepareBody(response, body => {
-        const clonedResponse = new window.Response(body, options);
+        // $FlowFixMe[incompatible-call]
+        const clonedResponse = new Response(body, options);
 
         cacheOpen();
         if (!sharedCache) return;
@@ -194,7 +194,7 @@ export function clearTileCache(callback?: (err: ?Error) => void) {
     const caches = getCaches();
     if (!caches) return;
 
-    const promise = window.caches.delete(CACHE_NAME);
+    const promise = caches.delete(CACHE_NAME);
     if (callback) {
         promise.catch(callback).then(() => callback());
     }

@@ -5,7 +5,6 @@ import * as DOM from '../../util/dom.js';
 
 import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util.js';
 import browser from '../../util/browser.js';
-import window from '../../util/window.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import Point from '@mapbox/point-geometry';
 
@@ -180,7 +179,7 @@ class ScrollZoomHandler implements Handler {
         }
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
-        let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
+        let value = e.deltaMode === (WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
         const now = browser.now(),
             timeDelta = now - (this._lastWheelEventTime || 0);
 
@@ -405,7 +404,7 @@ class ScrollZoomHandler implements Handler {
         if (this._map && !this._alertContainer) {
             this._alertContainer = DOM.create('div', 'mapboxgl-scroll-zoom-blocker', this._map._container);
 
-            if (/(Mac|iPad)/i.test(window.navigator.userAgent)) {
+            if (/(Mac|iPad)/i.test(navigator.userAgent)) {
                 this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CmdMessage');
             } else {
                 this._alertContainer.textContent = this._map._getUIString('ScrollZoomBlocker.CtrlMessage');

@@ -1,5 +1,4 @@
 // @flow
-/* global self: false */
 /* eslint-disable new-cap */
 
 import config from '../../src/util/config.js';
@@ -8,7 +7,6 @@ import Dispatcher from '../../src/util/dispatcher.js';
 import getWorkerPool from '../../src/util/global_worker_pool.js';
 import {Evented} from '../../src/util/evented.js';
 import {isWorker, warnOnce} from '../../src/util/util.js';
-import window from '../../src/util/window.js';
 import assert from 'assert';
 import {DracoDecoderModule} from './draco_decoder_gltf.js';
 
@@ -195,14 +193,15 @@ function loadImage(img: {uri?: string, bufferView?: number, mimeType: string}, g
         const uri = resolveUrl(img.uri, baseUrl);
         return fetch(uri)
             .then(response => response.blob())
-            .then(blob => window.createImageBitmap(blob))
+            // $FlowFixMe https://github.com/facebook/flow/pull/7483
+            .then(blob => createImageBitmap(blob))
             .then(imageBitmap => {
                 gltf.images[index] = imageBitmap;
             });
     } else if (img.bufferView !== undefined) {
         const bytes = getGLTFBytes(gltf, img.bufferView);
-        const blob = new window.Blob([bytes], {type: img.mimeType});
-        return window.createImageBitmap(blob)
+        const blob = new Blob([bytes], {type: img.mimeType});
+        return createImageBitmap(blob)
             .then(imageBitmap => {
                 gltf.images[index] = imageBitmap;
             });

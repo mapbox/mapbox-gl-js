@@ -2,7 +2,6 @@
 
 import {Event, Evented} from '../../util/evented.js';
 import * as DOM from '../../util/dom.js';
-import window from '../../util/window.js';
 import {extend, bindAll, warnOnce} from '../../util/util.js';
 import assert from 'assert';
 import Marker from '../marker.js';
@@ -111,7 +110,7 @@ class GeolocateControl extends Evented {
 
     constructor(options: $Shape<Options>) {
         super();
-        const geolocation = window.navigator.geolocation;
+        const geolocation = navigator.geolocation;
         this.options = extend({geolocation}, defaultOptions, options);
 
         bindAll([
@@ -171,11 +170,11 @@ class GeolocateControl extends Evented {
         if (this._supportsGeolocation !== undefined) {
             callback(this._supportsGeolocation);
 
-        } else if (window.navigator.permissions !== undefined) {
+        } else if (navigator.permissions !== undefined) {
             // navigator.permissions has incomplete browser support http://caniuse.com/#feat=permissions-api
             // Test for the case where a browser disables Geolocation because of an insecure origin;
             // in some environments like iOS16 WebView, permissions reject queries but still support geolocation
-            window.navigator.permissions.query({name: 'geolocation'})
+            navigator.permissions.query({name: 'geolocation'})
                 .then(p => updateSupport(p.state !== 'denied'))
                 .catch(() => updateSupport());
 
@@ -663,8 +662,8 @@ class GeolocateControl extends Evented {
             }
         };
 
-        if (typeof window.DeviceMotionEvent !== "undefined" &&
-            typeof window.DeviceMotionEvent.requestPermission === 'function') {
+        // $FlowFixMe[cannot-resolve-name]
+        if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === 'function') {
             // $FlowFixMe
             DeviceOrientationEvent.requestPermission()
                 .then(response => {

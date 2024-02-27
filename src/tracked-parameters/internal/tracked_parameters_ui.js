@@ -4,12 +4,11 @@ import {Pane} from 'tweakpane';
 import cloneDeep from 'lodash.clonedeep';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
-import window from '../../util/window.js';
 import {isWorker} from '../../../src/util/util.js';
 import type {default as MapboxMap} from '../../../src/ui/map.js';
 
 if (!isWorker()) {
-    const style = window.document.createElement('style');
+    const style = document.createElement('style');
     style.innerHTML = `
         .mapbox-devtools::-webkit-scrollbar {
             width: 10px;
@@ -34,7 +33,10 @@ if (!isWorker()) {
             background-color: var(--btn-bg-h);
         }
     `;
-    window.document.head.appendChild(style);
+
+    if (document.head) {
+        document.head.appendChild(style);
+    }
 }
 
 function deserialize(serialized: string): Object {
@@ -83,7 +85,7 @@ function mergePaneParams(dest: PaneState, src: PaneState) {
     }
 }
 
-function deSerializePaneParams(input: string): PaneState {
+function deSerializePaneParams(input: ?string): PaneState {
     let obj = {};
     if (input) {
         try {
@@ -186,7 +188,7 @@ export class TrackedParameters {
     // Serialize pane state and write it to local storage
     dump() {
         const serialized = serialize(this._paneState);
-        window.localStorage.setItem(this._storageName, serialized);
+        localStorage.setItem(this._storageName, serialized);
     }
 
     resetToDefaults() {
@@ -202,7 +204,7 @@ export class TrackedParameters {
 
     saveParameters() {
         if (!("showSaveFilePicker" in window)) {
-            window.alert("File System Access API not supported, consider switching to recent versions of chrome");
+            alert("File System Access API not supported, consider switching to recent versions of Chrome");
             return;
         }
 
@@ -228,7 +230,7 @@ export class TrackedParameters {
 
     loadParameters() {
         if (!("showSaveFilePicker" in window)) {
-            window.alert("File System Access API not supported, consider switching to recent versions of chrome");
+            alert("File System Access API not supported, consider switching to recent versions of chrome");
             return;
         }
 
@@ -274,7 +276,7 @@ export class TrackedParameters {
 
     initPane() {
         // Load state
-        const serializedPaneState = window.localStorage.getItem(this._storageName);
+        const serializedPaneState = localStorage.getItem(this._storageName);
         this._paneState = deSerializePaneParams(serializedPaneState);
 
         // Create containers for UI elements

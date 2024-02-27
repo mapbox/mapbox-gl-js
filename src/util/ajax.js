@@ -1,6 +1,5 @@
 // @flow
 
-import window from './window.js';
 import {extend, warnOnce, isWorker} from './util.js';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox.js';
 import config from './config.js';
@@ -96,10 +95,9 @@ export class AJAXError extends Error {
 // For files loaded from the local file system, `location.origin` will be set
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
-/* global self */
 export const getReferrer: (() => string) = isWorker() ?
     () => self.worker && self.worker.referrer :
-    () => (window.location.protocol === 'blob:' ? window.parent : window).location.href;
+    () => (location.protocol === 'blob:' ? parent : self).location.href;
 
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins
 // with file://. Relative URLs are also file:// URLs iff the original document was loaded
@@ -107,8 +105,8 @@ export const getReferrer: (() => string) = isWorker() ?
 const isFileURL = (url: string) => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
 
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
-    const controller = new window.AbortController();
-    const request = new window.Request(requestParameters.url, {
+    const controller = new AbortController();
+    const request = new Request(requestParameters.url, {
         method: requestParameters.method || 'GET',
         body: requestParameters.body,
         credentials: requestParameters.credentials,
@@ -148,7 +146,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 
         const requestTime = Date.now();
 
-        window.fetch(request).then(response => {
+        fetch(request).then(response => {
             if (response.ok) {
                 const cacheableResponse = cacheIgnoringSearch ? response.clone() : null;
                 return finishRequest(response, cacheableResponse, requestTime);
@@ -199,7 +197,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 }
 
 function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
-    const xhr: XMLHttpRequest = new window.XMLHttpRequest();
+    const xhr: XMLHttpRequest = new XMLHttpRequest();
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
     if (requestParameters.type === 'arrayBuffer') {
         xhr.responseType = 'arraybuffer';
@@ -237,13 +235,13 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
 
 export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
-    // - Safari exposes window.AbortController, but it doesn't work actually abort any requests in
+    // - Safari exposes AbortController, but it doesn't work actually abort any requests in
     //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
     //   we dispatch the request to the main thread so that we can get an accurate referrer header.
     // - Requests for resources with the file:// URI scheme don't work with the Fetch API either. In
     //   this case we unconditionally use XHR on the current thread since referrers don't matter.
     if (!isFileURL(requestParameters.url)) {
-        if (window.fetch && window.Request && window.AbortController && window.Request.prototype.hasOwnProperty('signal')) {
+        if (self.fetch && self.Request && self.AbortController && Request.prototype.hasOwnProperty('signal')) {
             return makeFetchRequest(requestParameters, callback);
         }
         if (isWorker() && self.worker && self.worker.actor) {
@@ -271,16 +269,15 @@ export const getData = function(requestParameters: RequestParameters, callback: 
 };
 
 function sameOrigin(url: string) {
-    const a: HTMLAnchorElement = window.document.createElement('a');
+    const a: HTMLAnchorElement = document.createElement('a');
     a.href = url;
-    return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
+    return a.protocol === location.protocol && a.host === location.host;
 }
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
 function arrayBufferToImage(data: ArrayBuffer, callback: Callback<HTMLImageElement>) {
-    const img: HTMLImageElement = new window.Image();
-    const URL = window.URL;
+    const img: HTMLImageElement = new Image();
     img.onload = () => {
         callback(null, img);
         URL.revokeObjectURL(img.src);
@@ -288,16 +285,17 @@ function arrayBufferToImage(data: ArrayBuffer, callback: Callback<HTMLImageEleme
         // but don't free the image immediately because it might be uploaded in the next frame
         // https://github.com/mapbox/mapbox-gl-js/issues/10226
         img.onload = null;
-        window.requestAnimationFrame(() => { img.src = transparentPngUrl; });
+        requestAnimationFrame(() => { img.src = transparentPngUrl; });
     };
     img.onerror = () => callback(new Error('Could not load image. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.'));
-    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
+    const blob: Blob = new Blob([new Uint8Array(data)], {type: 'image/png'});
     img.src = data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
 }
 
 function arrayBufferToImageBitmap(data: ArrayBuffer, callback: Callback<ImageBitmap>) {
-    const blob: Blob = new window.Blob([new Uint8Array(data)], {type: 'image/png'});
-    window.createImageBitmap(blob).then((imgBitmap) => {
+    const blob: Blob = new Blob([new Uint8Array(data)], {type: 'image/png'});
+    // $FlowFixMe[cannot-resolve-name] https://github.com/facebook/flow/pull/7483
+    createImageBitmap(blob).then((imgBitmap) => {
         callback(null, imgBitmap);
     }).catch((e) => {
         callback(new Error(`Could not load image because of ${e.message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`));
@@ -358,7 +356,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (err) {
             callback(err);
         } else if (data) {
-            if (window.createImageBitmap) {
+            if (self.createImageBitmap) {
                 arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, cacheControl, expires));
             } else {
                 arrayBufferToImage(data, (err, img) => callback(err, img, cacheControl, expires));
@@ -375,13 +373,13 @@ export const getImage = function(requestParameters: RequestParameters, callback:
 };
 
 export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
-    const video: HTMLVideoElement = window.document.createElement('video');
+    const video: HTMLVideoElement = document.createElement('video');
     video.muted = true;
     video.onloadstart = function() {
         callback(null, video);
     };
     for (let i = 0; i < urls.length; i++) {
-        const s: HTMLSourceElement = window.document.createElement('source');
+        const s: HTMLSourceElement = document.createElement('source');
         if (!sameOrigin(urls[i])) {
             video.crossOrigin = 'Anonymous';
         }

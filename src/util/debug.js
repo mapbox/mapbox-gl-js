@@ -1,6 +1,5 @@
 // @flow
 import {extend} from './util.js';
-import window from './window.js';
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {aabbForTileOnGlobe} from '../geo/projection/globe_util.js';
@@ -39,7 +38,7 @@ export const Debug: {
     },
 
     logToElement(message: string, overwrite: boolean = false, id: string = "log") {
-        const el = window.document.getElementById(id);
+        const el = document.getElementById(id);
         if (el) {
             if (overwrite) el.innerHTML = '';
             el.innerHTML += `<br>${message}`;
@@ -52,20 +51,17 @@ export const Debug: {
 
     _initializeCanvas(tr: Transform) {
         if (!Debug.debugCanvas) {
-            Debug.debugCanvas = window.document.createElement('canvas');
-            window.document.body.appendChild(Debug.debugCanvas);
-            // Supress Flow check because we're checking for null above
-            if (!Debug.debugCanvas) return;
+            const canvas = Debug.debugCanvas = document.createElement('canvas');
+            if (document.body) document.body.appendChild(canvas);
 
-            Debug.debugCanvas.style.position = 'absolute';
-            Debug.debugCanvas.style.left = '0';
-            Debug.debugCanvas.style.top = '0';
-            Debug.debugCanvas.style.pointerEvents = 'none';
+            canvas.style.position = 'absolute';
+            canvas.style.left = '0';
+            canvas.style.top = '0';
+            canvas.style.pointerEvents = 'none';
 
             const resize = () => {
-                if (!Debug.debugCanvas) { return; }
-                Debug.debugCanvas.width = tr.width;
-                Debug.debugCanvas.height = tr.height;
+                canvas.width = tr.width;
+                canvas.height = tr.height;
             };
             resize();
 

@@ -1,7 +1,6 @@
 // @flow
 
 import DEMData from '../data/dem_data.js';
-import window from '../util/window.js';
 
 import type Actor from '../util/actor.js';
 import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source.js';
@@ -14,8 +13,8 @@ class RasterDEMTileWorkerSource {
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const {uid, encoding, rawImageData, padding} = params;
         // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
-        // Flow struggles to refine ImageBitmap type, likely due to the JSDom shim
-        const imagePixels = window.ImageBitmap && rawImageData instanceof window.ImageBitmap ? this.getImageData(rawImageData, padding) : ((rawImageData: any): ImageData);
+        // Flow struggles to refine ImageBitmap type
+        const imagePixels = ImageBitmap && rawImageData instanceof ImageBitmap ? this.getImageData(rawImageData, padding) : ((rawImageData: any): ImageData);
         const dem = new DEMData(uid, imagePixels, encoding, padding < 1);
         callback(null, dem);
     }

@@ -1,114 +1,113 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import diffStyles from '../../../src/style-spec/diff.js';
 
-test('diff', (t) => {
-
-    t.deepEqual(diffStyles({
+test('diff', () => {
+    expect(diffStyles({
         layers: [{id: 'a'}]
     }, {
         layers: [{id: 'a'}]
-    }), [], 'no changes');
+    })).toEqual([]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         version: 7,
         layers: [{id: 'a'}]
     }, {
         version: 8,
         layers: [{id: 'a'}]
-    }), [
+    })).toEqual([
         {command: 'setStyle', args: [{version: 8, layers: [{id: 'a'}]}]}
-    ], 'version change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a'}]
     }, {
         layers: [{id: 'a'}, {id: 'b'}]
-    }), [
+    })).toEqual([
         {command: 'addLayer', args: [{id: 'b'}, undefined]}
-    ], 'add a layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'b'}]
     }, {
         layers: [{id: 'a'}, {id: 'b'}]
-    }), [
+    })).toEqual([
         {command: 'addLayer', args: [{id: 'a'}, 'b']}
-    ], 'add a layer before another');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a'}, {id: 'b', source: 'foo', nested: [1]}]
     }, {
         layers: [{id: 'a'}]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['b']}
-    ], 'remove a layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a'}, {id: 'b'}]
     }, {
         layers: [{id: 'b'}, {id: 'a'}]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a'}, undefined]}
-    ], 'move a layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', paint: {foo: 1}}]
     }, {
         layers: [{id: 'a', paint: {foo: 2}}]
-    }), [
+    })).toEqual([
         {command: 'setPaintProperty', args: ['a', 'foo', 2, null]}
-    ], 'update paint property');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', 'paint.light': {foo: 1}}]
     }, {
         layers: [{id: 'a', 'paint.light': {foo: 2}}]
-    }), [
+    })).toEqual([
         {command: 'setPaintProperty', args: ['a', 'foo', 2, 'light']}
-    ], 'update paint property class');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', paint: {foo: {ramp: [1, 2]}}}]
     }, {
         layers: [{id: 'a', paint: {foo: {ramp: [1]}}}]
-    }), [
+    })).toEqual([
         {command: 'setPaintProperty', args: ['a', 'foo', {ramp: [1]}, null]}
-    ], 'nested style change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', layout: {foo: 1}}]
     }, {
         layers: [{id: 'a', layout: {foo: 2}}]
-    }), [
+    })).toEqual([
         {command: 'setLayoutProperty', args: ['a', 'foo', 2, null]}
-    ], 'update layout property');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', filter: ['==', 'foo', 'bar']}]
     }, {
         layers: [{id: 'a', filter: ['==', 'foo', 'baz']}]
-    }), [
+    })).toEqual([
         {command: 'setFilter', args: ['a', [ '==', 'foo', 'baz' ] ]}
-    ], 'update a filter');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {foo: 1}
     }, {
         sources: {}
-    }), [
+    })).toEqual([
         {command: 'removeSource', args: ['foo']}
-    ], 'remove a source');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {}
     }, {
         sources: {foo: 1}
-    }), [
+    })).toEqual([
         {command: 'addSource', args: ['foo', 1]}
-    ], 'add a source');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {
             foo: {
                 type: 'geojson',
@@ -128,7 +127,7 @@ test('diff', (t) => {
                 }
             }
         }
-    }), [
+    })).toEqual([
         {command: 'setGeoJSONSourceData', args: ['foo', {
             type: 'FeatureCollection',
             features: [{
@@ -136,9 +135,9 @@ test('diff', (t) => {
                 geometry: {type: 'Point', coordinates: [10, 20]}
             }]
         }]}
-    ], 'update a geojson source');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {
             foo: {
                 type: 'geojson',
@@ -153,16 +152,16 @@ test('diff', (t) => {
                 cluster: true
             }
         }
-    }), [
+    })).toEqual([
         {command: 'removeSource', args: ['foo']},
         {command: 'addSource', args: ['foo', {
             type: 'geojson',
             cluster: true,
             data: {type: 'FeatureCollection', features: []}
         }]}
-    ], 'remove and re-add a source if cluster changes');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {
             foo: {
                 type: 'geojson',
@@ -179,7 +178,7 @@ test('diff', (t) => {
                 clusterRadius: 100
             }
         }
-    }), [
+    })).toEqual([
         {command: 'removeSource', args: ['foo']},
         {command: 'addSource', args: ['foo', {
             type: 'geojson',
@@ -187,9 +186,9 @@ test('diff', (t) => {
             clusterRadius: 100,
             data: {type: 'FeatureCollection', features: []}
         }]}
-    ], 'remove and re-add a source if cluster radius changes');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {
             foo: {
                 type: 'geojson',
@@ -206,58 +205,58 @@ test('diff', (t) => {
                 cluster: true
             }
         }
-    }), [
+    })).toEqual([
         {command: 'removeSource', args: ['foo']},
         {command: 'addSource', args: ['foo', {
             type: 'geojson',
             cluster: true,
             data: {type: 'FeatureCollection', features: []}
         }]}
-    ], 'remove and re-add a source if cluster radius changes (before and after swapped)');
+    ]);
 
-    t.deepEqual(diffStyles({}, {
+    expect(diffStyles({}, {
         metadata: {'mapbox:author': 'nobody'}
-    }), [], 'ignore style metadata');
+    })).toEqual([]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', metadata: {'mapbox:group': 'Group Name'}}]
     }, {
         layers: [{id: 'a', metadata: {'mapbox:group': 'Another Name'}}]
-    }), [], 'ignore layer metadata');
+    })).toEqual([]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         center: [0, 0]
     }, {
         center: [1, 1]
-    }), [
+    })).toEqual([
         {command: 'setCenter', args: [[1, 1]]}
-    ], 'center change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         zoom: 12
     }, {
         zoom: 15
-    }), [
+    })).toEqual([
         {command: 'setZoom', args: [15]}
-    ], 'zoom change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         bearing: 0
     }, {
         bearing: 180
-    }), [
+    })).toEqual([
         {command: 'setBearing', args: [180]}
-    ], 'bearing change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         pitch: 0
     }, {
         pitch: 1
-    }), [
+    })).toEqual([
         {command: 'setPitch', args: [1]}
-    ], 'pitch change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {
             anchor: 'map',
             color: 'white',
@@ -271,42 +270,42 @@ test('diff', (t) => {
             position: [0, 1, 0],
             intensity: 1
         }
-    }), [
-    ], 'light no change');
+    })).toEqual([
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {anchor: 'map'}
     }, {
         light: {anchor: 'viewport'}
-    }), [
+    })).toEqual([
         {command: 'setLight', args: [{'anchor': 'viewport'}]}
-    ], 'light anchor change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {color: 'white'}
     }, {
         light: {color: 'red'}
-    }), [
+    })).toEqual([
         {command: 'setLight', args: [{'color': 'red'}]}
-    ], 'light color change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {position: [0, 1, 0]}
     }, {
         light: {position: [1, 0, 0]}
-    }), [
+    })).toEqual([
         {command: 'setLight', args: [{'position': [1, 0, 0]}]}
-    ], 'light position change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {intensity: 1}
     }, {
         light: {intensity: 10}
-    }), [
+    })).toEqual([
         {command: 'setLight', args: [{'intensity': 10}]}
-    ], 'light intensity change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         light: {
             anchor: 'map',
             color: 'orange',
@@ -320,43 +319,43 @@ test('diff', (t) => {
             position: [1, 40, 30],
             intensity: 1.0
         }
-    }), [
+    })).toEqual([
         {command: 'setLight', args: [{
             anchor: 'map',
             color: 'red',
             position: [1, 40, 30],
             intensity: 1.0
         }]}
-    ], 'multiple light properties change');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [ {id: 'a', source: 'source-one'} ]
     }, {
         layers: [ {id: 'a', source: 'source-two'} ]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a', source: 'source-two'}, undefined]}
-    ], 'updating a layer\'s source removes/re-adds the layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', type: 'fill'}]
     }, {
         layers: [{id: 'a', type: 'line'}]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a', type: 'line'}, undefined]}
-    ], 'updating a layer\'s type removes/re-adds the layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [{id: 'a', source: 'a', 'source-layer': 'layer-one'}]
     }, {
         layers: [{id: 'a', source: 'a', 'source-layer': 'layer-two'}]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a', source: 'a', 'source-layer': 'layer-two'}, undefined]}
-    ], 'updating a layer\'s source-layer removes/re-adds the layer');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         layers: [
             {id: 'b'},
             {id: 'c'},
@@ -368,14 +367,14 @@ test('diff', (t) => {
             {id: 'a', type: 'line'},
             {id: 'b'}
         ]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['b']},
         {command: 'addLayer', args: [{id: 'b'}, undefined]},
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a', type: 'line'}, 'b']}
-    ], 'pair respects layer reordering');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {foo: {data: 1}, bar: {}},
         layers: [
             {id: 'a', source: 'bar'},
@@ -389,14 +388,14 @@ test('diff', (t) => {
             {id: 'b', source: 'foo'},
             {id: 'c', source: 'bar'}
         ]
-    }), [
+    })).toEqual([
         {command: 'removeLayer', args: ['b']},
         {command: 'removeSource', args: ['foo']},
         {command: 'addSource', args: ['foo', {data: 2}]},
         {command: 'addLayer', args: [{id: 'b', source: 'foo'}, 'c']}
-    ], 'changing a source removes and re-adds dependent layers');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         sources: {foo: {data: 1}, bar: {}},
         layers: [
             {id: 'a', source: 'bar'}
@@ -407,11 +406,11 @@ test('diff', (t) => {
             {id: 'a', source: 'bar'}
         ],
         transition: 'transition'
-    }), [
+    })).toEqual([
         {command: 'setTransition', args: ['transition']}
-    ], 'changing transition');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         'fog': {
             'range': [1000, 2000],
             'color': 'white',
@@ -423,10 +422,10 @@ test('diff', (t) => {
             'color': 'white',
             'horizon-blend': 0.05
         }
-    }), [
-    ], 'fog no change');
+    })).toEqual([
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         'fog': {
             'range': [1000, 2000],
             'color': 'white',
@@ -438,49 +437,49 @@ test('diff', (t) => {
             'color': 'blue',
             'horizon-blend': 0.5
         }
-    }), [{
+    })).toEqual([{
         command: 'setFog',
         args: [{
             'range': [0, 2000],
             'color': 'blue',
             'horizon-blend': 0.5
         }]
-    }], 'changing fog');
+    }]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         imports: [{id: 'a', url: ''}]
     }, {
         imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
-    }), [
+    })).toEqual([
         {command: 'addImport', args: [{id: 'b', url: ''}, undefined]}
-    ], 'add an import');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         imports: [{id: 'b', url: ''}]
     }, {
         imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
-    }), [
+    })).toEqual([
         {command: 'addImport', args: [{id: 'a', url: ''}, 'b']}
-    ], 'add an import before another');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
     }, {
         imports: [{id: 'a', url: ''}]
-    }), [
+    })).toEqual([
         {command: 'removeImport', args: ['b']}
-    ], 'remove an import');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         imports: [{id: 'a', url: ''}, {id: 'b', url: ''}]
     }, {
         imports: [{id: 'b', url: ''}, {id: 'a', url: ''}]
-    }), [
+    })).toEqual([
         {command: 'removeImport', args: ['a']},
         {command: 'addImport', args: [{id: 'a', url: ''}, undefined]}
-    ], 'move an import');
+    ]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         'imports': [{
             'id': 'basemap',
             'url': 'before'
@@ -490,12 +489,12 @@ test('diff', (t) => {
             'id': 'basemap',
             'url': 'after'
         }]
-    }), [{
+    })).toEqual([{
         command: 'setImportUrl',
         args: ['basemap', 'after']
-    }], 'updates import url');
+    }]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         'imports': [{
             'id': 'basemap',
             'url': '',
@@ -511,14 +510,14 @@ test('diff', (t) => {
                 'version': 9
             }
         }]
-    }), [{
+    })).toEqual([{
         command: 'setImportData',
         args: ['basemap', {
             'version': 9
         }]
-    }], 'updates import data');
+    }]);
 
-    t.deepEqual(diffStyles({
+    expect(diffStyles({
         'layers': [{
             'id': 'national-park',
             'type': 'fill',
@@ -556,7 +555,7 @@ test('diff', (t) => {
                 ]
             },
         }]
-    }), [{
+    })).toEqual([{
         command: 'setImportData',
         args: ['basemap', {
             'version': 8,
@@ -572,7 +571,5 @@ test('diff', (t) => {
     }, {
         command: 'setSlot',
         args: ['national-park', 'above-water']
-    }], 'updates import data and ignores slots');
-
-    t.end();
+    }]);
 });

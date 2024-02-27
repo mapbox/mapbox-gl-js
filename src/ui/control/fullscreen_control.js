@@ -3,7 +3,6 @@
 import * as DOM from '../../util/dom.js';
 
 import {bindAll, warnOnce} from '../../util/util.js';
-import window from '../../util/window.js';
 
 import type Map from '../map.js';
 
@@ -35,7 +34,7 @@ class FullscreenControl {
     constructor(options: Options) {
         this._fullscreen = false;
         if (options && options.container) {
-            if (options.container instanceof window.HTMLElement) {
+            if (options.container instanceof HTMLElement) {
                 this._container = options.container;
             } else {
                 warnOnce('Full screen control \'container\' must be a DOM element.');
@@ -45,9 +44,9 @@ class FullscreenControl {
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
-        if ('onfullscreenchange' in window.document) {
+        if ('onfullscreenchange' in document) {
             this._fullscreenchange = 'fullscreenchange';
-        } else if ('onwebkitfullscreenchange' in window.document) {
+        } else if ('onwebkitfullscreenchange' in document) {
             this._fullscreenchange = 'webkitfullscreenchange';
         }
     }
@@ -69,13 +68,13 @@ class FullscreenControl {
         this._controlContainer.remove();
         this._map = (null: any);
         // $FlowFixMe[method-unbinding]
-        window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
+        document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _checkFullscreenSupport(): boolean {
         return !!(
-            window.document.fullscreenEnabled ||
-            (window.document: any).webkitFullscreenEnabled
+            document.fullscreenEnabled ||
+            (document: any).webkitFullscreenEnabled
         );
     }
 
@@ -87,7 +86,7 @@ class FullscreenControl {
         // $FlowFixMe[method-unbinding]
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
         // $FlowFixMe[method-unbinding]
-        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
+        document.addEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _updateTitle() {
@@ -106,8 +105,8 @@ class FullscreenControl {
 
     _changeIcon() {
         const fullscreenElement =
-            window.document.fullscreenElement ||
-            (window.document: any).webkitFullscreenElement;
+            document.fullscreenElement ||
+            (document: any).webkitFullscreenElement;
 
         if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
@@ -119,10 +118,12 @@ class FullscreenControl {
 
     _onClickFullscreen() {
         if (this._isFullscreen()) {
-            if (window.document.exitFullscreen) {
-                (window.document: any).exitFullscreen();
-            } else if (window.document.webkitCancelFullScreen) {
-                (window.document: any).webkitCancelFullScreen();
+            // $FlowFixMe[method-unbinding]
+            if (document.exitFullscreen) {
+                (document: any).exitFullscreen();
+            // $FlowFixMe[method-unbinding]
+            } else if ((document: any).webkitCancelFullScreen) {
+                (document: any).webkitCancelFullScreen();
             }
         // $FlowFixMe[method-unbinding]
         } else if (this._container.requestFullscreen) {

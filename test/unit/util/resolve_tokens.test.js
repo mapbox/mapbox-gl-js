@@ -1,41 +1,41 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import resolveTokens from '../../../src/util/resolve_tokens.js';
 
-test('resolveToken', (t) => {
-    t.equal('3 Fine Fields', resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));
+test('resolveToken', () => {
+    expect('3 Fine Fields').toEqual(resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));
 
     // No tokens.
-    t.equal(resolveTokens({}, 'Test'), 'Test');
+    expect(resolveTokens({}, 'Test')).toEqual('Test');
 
     // Basic.
-    t.equal(resolveTokens({name: 'Test'}, '{name}'), 'Test');
-    t.equal(resolveTokens({name: 'Test'}, '{name}-suffix'), 'Test-suffix');
+    expect(resolveTokens({name: 'Test'}, '{name}')).toEqual('Test');
+    expect(resolveTokens({name: 'Test'}, '{name}-suffix')).toEqual('Test-suffix');
 
     // Undefined property.
-    t.equal(resolveTokens({}, '{name}'), '');
-    t.equal(resolveTokens({}, '{name}-suffix'), '-suffix');
+    expect(resolveTokens({}, '{name}')).toEqual('');
+    expect(resolveTokens({}, '{name}-suffix')).toEqual('-suffix');
 
     // Non-latin.
-    t.equal(resolveTokens({city: '서울특별시'}, '{city}'), '서울특별시');
+    expect(resolveTokens({city: '서울특별시'}, '{city}')).toEqual('서울특별시');
 
     // Unicode up to 65535.
-    t.equal(resolveTokens({text: '\ufff0'}, '{text}'), '\ufff0');
-    t.equal(resolveTokens({text: '\uffff'}, '{text}'), '\uffff');
+    expect(resolveTokens({text: '\ufff0'}, '{text}')).toEqual('\ufff0');
+    expect(resolveTokens({text: '\uffff'}, '{text}')).toEqual('\uffff');
 
     // Non-string values cast to strings.
-    t.equal(resolveTokens({name: 5000}, '{name}'), '5000');
-    t.equal(resolveTokens({name: -15.5}, '{name}'), '-15.5');
-    t.equal(resolveTokens({name: true}, '{name}'), 'true');
+    expect(resolveTokens({name: 5000}, '{name}')).toEqual('5000');
+    expect(resolveTokens({name: -15.5}, '{name}')).toEqual('-15.5');
+    expect(resolveTokens({name: true}, '{name}')).toEqual('true');
 
     // Non-string values cast to strings, with token replacement.
-    t.equal(resolveTokens({name: 5000}, '{name}-suffix'), '5000-suffix');
-    t.equal(resolveTokens({name: -15.5}, '{name}-suffix'), '-15.5-suffix');
-    t.equal(resolveTokens({name: true}, '{name}-suffix'), 'true-suffix');
+    expect(resolveTokens({name: 5000}, '{name}-suffix')).toEqual('5000-suffix');
+    expect(resolveTokens({name: -15.5}, '{name}-suffix')).toEqual('-15.5-suffix');
+    expect(resolveTokens({name: true}, '{name}-suffix')).toEqual('true-suffix');
 
     // Special characters in token.
-    t.equal(resolveTokens({'dashed-property': 'dashed'}, '{dashed-property}'), 'dashed');
-    t.equal(resolveTokens({'HØYDE': 150}, '{HØYDE} m'), '150 m');
-    t.equal(resolveTokens({'$special:characters;': 'mapbox'}, '{$special:characters;}'), 'mapbox');
-
-    t.end();
+    expect(resolveTokens({'dashed-property': 'dashed'}, '{dashed-property}')).toEqual('dashed');
+    expect(resolveTokens({'HØYDE': 150}, '{HØYDE} m')).toEqual('150 m');
+    expect(
+        resolveTokens({'$special:characters;': 'mapbox'}, '{$special:characters;}')
+    ).toEqual('mapbox');
 });

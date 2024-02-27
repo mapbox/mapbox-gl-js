@@ -1,6 +1,6 @@
-import {test} from '../../util/test.js';
+import {describe, test, beforeAll, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import RasterTileSource from '../../../src/source/raster_tile_source.js';
-import window from '../../../src/util/window.js';
 import config from '../../../src/util/config.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
@@ -26,36 +26,42 @@ function createSource(options, transformCallback) {
     return source;
 }
 
-test('RasterTileSource', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+let networkWorker;
 
-    t.afterEach(() => {
-        window.restore();
-    });
+beforeAll(async () => {
+    networkWorker = await getNetworkWorker(window);
+});
 
-    t.test('transforms request for TileJSON URL', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify({
-            minzoom: 0,
-            maxzoom: 22,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5]
-        }));
-        const transformSpy = t.spy((url) => {
+afterEach(() => {
+    networkWorker.resetHandlers();
+});
+
+describe('RasterTileSource', () => {
+    test('transforms request for TileJSON URL', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json({
+                    minzoom: 0,
+                    maxzoom: 22,
+                    attribution: "Mapbox",
+                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                    bounds: [-47, -7, -45, -5]
+                });
+            }),
+        );
+        const transformSpy = vi.fn((url) => {
             return {url};
         });
 
-        createSource({url: "/source.json"}, transformSpy);
-        window.server.respond();
+        const source = createSource({url: "/source.json"}, transformSpy);
 
-        t.equal(transformSpy.getCall(0).args[0], '/source.json');
-        t.equal(transformSpy.getCall(0).args[1], 'Source');
-        t.end();
+        expect(transformSpy.mock.calls[0][0]).toEqual('/source.json');
+        expect(transformSpy.mock.calls[0][1]).toEqual('Source');
+
+        await waitFor(source, 'data');
     });
 
-    t.test('respects TileJSON.bounds', (t) => {
+    test('respects TileJSON.bounds', async () => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -63,16 +69,15 @@ test('RasterTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             bounds: [-47, -7, -45, -5]
         });
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
-                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
-                t.end();
-            }
-        });
+
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132))).toBeFalsy();
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132))).toBeTruthy();
+        }
     });
 
-    t.test('does not error on invalid bounds', (t) => {
+    test('does not error on invalid bounds', async () => {
         const source = createSource({
             minzoom: 0,
             maxzoom: 22,
@@ -81,65 +86,91 @@ test('RasterTileSource', (t) => {
             bounds: [-47, -7, -45, 91]
         });
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.tileBounds.bounds, {_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}}, 'converts invalid bounds to closest valid bounds');
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.tileBounds.bounds).toEqual({_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}});
+        }
     });
 
-    t.test('respects TileJSON.bounds when loaded from TileJSON', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify({
-            minzoom: 0,
-            maxzoom: 22,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5]
-        }));
+    test('respects TileJSON.bounds when loaded from TileJSON', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json({
+                    minzoom: 0,
+                    maxzoom: 22,
+                    attribution: "Mapbox",
+                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                    bounds: [-47, -7, -45, -5]
+                });
+            }),
+        );
         const source = createSource({url: "/source.json"});
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
-                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
-                t.end();
-            }
-        });
-        window.server.respond();
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132))).toBeFalsy();
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132))).toBeTruthy();
+        }
     });
 
-    t.test('transforms tile urls before requesting', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify({
-            minzoom: 0,
-            maxzoom: 22,
-            attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5]
-        }));
+    test('transforms tile urls before requesting', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json({
+                    minzoom: 0,
+                    maxzoom: 22,
+                    attribution: "Mapbox",
+                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                    bounds: [-47, -7, -45, -5]
+                });
+            }),
+            http.get('http://example.com/10/5/5.png', async () => {
+                return new HttpResponse(await getPNGResponse());
+            }),
+        );
         const source = createSource({url: "/source.json"});
-        const transformSpy = t.spy(source.map._requestManager, 'transformRequest');
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                const tile = {
-                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                    state: 'loading',
-                    loadVectorData () {},
-                    setExpiryData() {}
-                };
-                source.loadTile(tile, () => {});
-                t.ok(transformSpy.calledOnce);
-                t.equal(transformSpy.getCall(0).args[0], 'http://example.com/10/5/5.png');
-                t.equal(transformSpy.getCall(0).args[1], 'Tile');
-                t.end();
-            }
-        });
-        window.server.respond();
+        const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
+        const e = await waitFor(source, "data");
+
+        if (e.sourceDataType === 'metadata') {
+            const tile = {
+                tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                state: 'loading',
+                loadVectorData () {},
+                setExpiryData() {}
+            };
+
+            await new Promise(resolve => {
+                source.loadTile(tile, () => {
+                    expect(transformSpy).toHaveBeenCalledTimes(1);
+                    expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/10/5/5.png');
+                    expect(transformSpy.mock.calls[0][1]).toEqual('Tile');
+                    resolve();
+                });
+            });
+        }
     });
 
-    t.test('adds @2x to requests on hidpi devices', (t) => {
+    describe('adds @2x to requests on hidpi devices', () => {
         // helper function that makes a mock mapbox raster source and makes it load a tile
-        function makeMapboxSource(url, extension, loadCb, accessToken) {
+        async function makeMapboxSource(url, extension, loadCb, accessToken) {
+            networkWorker.use(
+                http.get('/source.json', async () => {
+                    return HttpResponse.json(sourceFixture);
+                }),
+                http.get('http://path.png/v4/path.png.json', async () => {
+                    return HttpResponse.json({});
+                }),
+                http.get('http://path.png/v4/10/5/5@2x.png', async () => {
+                    return new HttpResponse(await getPNGResponse());
+                }),
+                http.get('http://path.png/v4/10/5/5@2x.png32', async () => {
+                    return new HttpResponse(await getPNGResponse());
+                }),
+                http.get('http://path.png/v4/10/5/5@2x.jpg70', async () => {
+                    return new HttpResponse(await getPNGResponse());
+                })
+            );
             window.devicePixelRatio = 2;
             config.API_URL = 'http://path.png';
             config.REQUIRE_ACCESS_TOKEN = !!accessToken;
@@ -149,95 +180,109 @@ test('RasterTileSource', (t) => {
 
             const source = createSource({url});
             source.tiles = [`${url}/{z}/{x}/{y}.${extension}`];
-            const urlNormalizerSpy = t.spy(source.map._requestManager, 'normalizeTileURL');
+            const urlNormalizerSpy = vi.spyOn(source.map._requestManager, 'normalizeTileURL');
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
                 loadVectorData () {},
                 setExpiryData() {}
             };
-            source.loadTile(tile, () => {});
-            loadCb(urlNormalizerSpy);
+
+            await new Promise((resolve) => {
+                source.loadTile(tile, () => {
+                    loadCb(urlNormalizerSpy);
+                    resolve();
+                });
+            });
         }
 
-        t.test('png extension', (t) => {
-            makeMapboxSource('mapbox://path.png', 'png', (spy) => {
-                t.ok(spy.calledOnce);
-                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.png');
-                t.equal(spy.getCall(0).args[1], true);
-                t.end();
+        test('png extension', async () => {
+            await makeMapboxSource('mapbox://path.png', 'png', (spy) => {
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.png');
+                expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });
-        t.test('png32 extension', (t) => {
-            makeMapboxSource('mapbox://path.png', 'png32', (spy) => {
-                t.ok(spy.calledOnce);
-                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.png32');
-                t.equal(spy.getCall(0).args[1], true);
-                t.end();
+        test('png32 extension', async () => {
+            await makeMapboxSource('mapbox://path.png', 'png32', (spy) => {
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.png32');
+                expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });
-        t.test('jpg70 extension', (t) => {
-            makeMapboxSource('mapbox://path.png', 'jpg70', (spy) => {
-                t.ok(spy.calledOnce);
-                t.equal(spy.getCall(0).args[0], 'mapbox://path.png/10/5/5.jpg70');
-                t.equal(spy.getCall(0).args[1], true);
-                t.end();
+        test('jpg70 extension', async () => {
+            await makeMapboxSource('mapbox://path.png', 'jpg70', (spy) => {
+                expect(spy).toHaveBeenCalledTimes(1);
+                expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.jpg70');
+                expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });
-        t.end();
     });
 
-    t.test('cancels TileJSON request if removed', (t) => {
+    test('cancels TileJSON request if removed', () => {
+        const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
         const source = createSource({url: "/source.json"});
         source.onRemove();
-        t.equal(window.server.lastRequest.aborted, true);
-        t.end();
+        expect(abortSpy).toHaveBeenCalledTimes(1);
     });
 
-    t.test('supports property updates', (t) => {
-        window.server.configure({respondImmediately: true});
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
+    test('supports property updates', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+        );
         const source = createSource({url: '/source.json'});
 
-        const loadSpy = t.spy(source, 'load');
-        const clearSourceSpy = t.spy(source.map.style, 'clearSource');
+        const loadSpy = vi.spyOn(source, 'load');
+        const clearSourceSpy = vi.spyOn(source.map.style, 'clearSource');
 
-        const responseSpy = t.spy((xhr) =>
-            xhr.respond(200, {"Content-Type": "application/json"}, JSON.stringify({...sourceFixture, maxzoom: 22})));
+        await waitFor(source, 'data');
+        networkWorker.resetHandlers();
 
-        window.server.respondWith('/source.json', responseSpy);
+        const responseSpy = vi.fn();
+
+        networkWorker.use(
+            http.get('/source.json', async ({request}) => {
+                responseSpy.call(request);
+                return HttpResponse.json({...sourceFixture, maxzoom: 22});
+            }),
+        );
 
         source.attribution = 'OpenStreetMap';
         source.reload();
 
-        t.ok(loadSpy.calledOnce);
-        t.ok(responseSpy.calledOnce);
-        t.ok(clearSourceSpy.calledOnce);
-        t.ok(clearSourceSpy.calledAfter(responseSpy), 'Tiles should be cleared after TileJSON is loaded');
+        await waitFor(source, 'data');
 
-        t.end();
+        expect(loadSpy).toHaveBeenCalledTimes(1);
+        expect(responseSpy).toHaveBeenCalledTimes(1);
+        expect(clearSourceSpy).toHaveBeenCalledTimes(1);
+        expect(clearSourceSpy).toHaveBeenCalledAfter(responseSpy);
     });
 
-    t.test('supports url property updates', (t) => {
-        window.server.respondWith('/source.json', JSON.stringify(sourceFixture));
-        window.server.respondWith('/new-source.json', JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}));
-        window.server.configure({autoRespond: true, autoRespondAfter: 0});
+    test('supports url property updates', async () => {
+        networkWorker.use(
+            http.get('/source.json', async () => {
+                return HttpResponse.json(sourceFixture);
+            }),
+            http.get('/new-source.json', async () => {
+                return HttpResponse.json({...sourceFixture, minzoom: 0, maxzoom: 22});
+            })
+        );
 
         const source = createSource({url: '/source.json'});
         source.setUrl('/new-source.json');
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.minzoom, 0);
-                t.deepEqual(source.maxzoom, 22);
-                t.deepEqual(source.attribution, 'Mapbox');
-                t.deepEqual(source.serialize(), {type: 'raster', url: '/new-source.json'});
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.minzoom).toEqual(0);
+            expect(source.maxzoom).toEqual(22);
+            expect(source.attribution).toEqual('Mapbox');
+            expect(source.serialize()).toEqual({type: 'raster', url: '/new-source.json'});
+        }
     });
 
-    t.test('supports tiles property updates', (t) => {
+    test('supports tiles property updates', async () => {
         const source = createSource({
             minzoom: 1,
             maxzoom: 10,
@@ -247,19 +292,15 @@ test('RasterTileSource', (t) => {
 
         source.setTiles(['http://example.com/v2/{z}/{x}/{y}.png']);
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                t.deepEqual(source.serialize(), {
-                    type: 'raster',
-                    minzoom: 1,
-                    maxzoom: 10,
-                    attribution: 'Mapbox',
-                    tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
-                });
-                t.end();
-            }
-        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            expect(source.serialize()).toEqual({
+                type: 'raster',
+                minzoom: 1,
+                maxzoom: 10,
+                attribution: 'Mapbox',
+                tiles: ['http://example.com/v2/{z}/{x}/{y}.png']
+            });
+        }
     });
-
-    t.end();
 });

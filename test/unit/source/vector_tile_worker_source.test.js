@@ -1,20 +1,19 @@
-import fs from 'fs';
-import path from 'path';
+import {test, expect, vi} from "../../util/vitest.js";
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import {test} from '../../util/test.js';
 import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import perf from '../../../src/util/performance.js';
 import {getProjection} from '../../../src/geo/projection/index.js';
-
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+// eslint-disable-next-line import/no-unresolved
+import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 const actor = {send: () => {}};
 
-test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
+test('VectorTileWorkerSource#abortTile aborts pending request', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+
+    expect.assertions(3);
 
     source.loadTile({
         source: 'source',
@@ -23,23 +22,22 @@ test('VectorTileWorkerSource#abortTile aborts pending request', (t) => {
         projection: getProjection({name: 'mercator'}),
         request: {url: 'http://localhost:2900/abort'}
     }, (err, res) => {
-        t.false(err);
-        t.false(res);
+        expect(err).toBeFalsy();
+        expect(res).toBeFalsy();
     });
 
     source.abortTile({
         source: 'source',
         uid: 0
     }, (err, res) => {
-        t.false(err);
-        t.false(res);
+        expect(err).toBeFalsy();
+        expect(res).toBeFalsy();
     });
 
-    t.deepEqual(source.loading, {});
-    t.end();
+    expect(source.loading).toEqual({});
 });
 
-test('VectorTileWorkerSource#abortTile aborts pending async request', (t) => {
+test('VectorTileWorkerSource#abortTile aborts pending async request', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true, (params, cb) => {
         setTimeout(() => {
             cb(null, {});
@@ -51,15 +49,16 @@ test('VectorTileWorkerSource#abortTile aborts pending async request', (t) => {
         tileID: {overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0}},
         projection: getProjection({name: 'mercator'})
     }, (err, res) => {
-        t.false(err);
-        t.false(res);
-        t.end();
+        expect(err).toBeFalsy();
+        expect(res).toBeFalsy();
     });
     source.abortTile({uid: 0}, () => {});
 });
 
-test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
+test('VectorTileWorkerSource#removeTile removes loaded tile', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+
+    expect.assertions(3);
 
     source.loaded = {
         '0': {}
@@ -69,17 +68,16 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
         source: 'source',
         uid: 0
     }, (err, res) => {
-        t.false(err);
-        t.false(res);
+        expect(err).toBeFalsy();
+        expect(res).toBeFalsy();
     });
 
-    t.deepEqual(source.loaded, {});
-    t.end();
+    expect(source.loaded).toEqual({});
 });
 
-test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) => {
+test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
-    const parse = t.spy();
+    const parse = vi.fn();
 
     source.loaded = {
         '0': {
@@ -89,19 +87,17 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) =
         }
     };
 
-    const callback = t.spy();
+    const callback = vi.fn();
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
-    t.equal(parse.callCount, 1);
+    expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.firstCall.args[4]();
-    t.equal(callback.callCount, 1);
-
-    t.end();
+    parse.mock.calls[0][4]();
+    expect(callback).toHaveBeenCalledTimes(1);
 });
 
-test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', (t) => {
+test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
-    const parse = t.spy();
+    const parse = vi.fn();
 
     source.loaded = {
         '0': {
@@ -111,31 +107,29 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
         }
     };
 
-    const callback1 = t.spy();
-    const callback2 = t.spy();
+    const callback1 = vi.fn();
+    const callback2 = vi.fn();
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback1);
-    t.equal(parse.callCount, 1);
+    expect(parse).toHaveBeenCalledTimes(1);
 
     source.loaded[0].status = 'parsing';
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
-    t.equal(parse.callCount, 1);
+    expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.firstCall.args[4]();
-    t.equal(parse.callCount, 2);
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 0);
+    parse.mock.calls[0][4]();
+    expect(parse).toHaveBeenCalledTimes(2);
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).not.toHaveBeenCalled();
 
-    parse.secondCall.args[4]();
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 1);
-
-    t.end();
+    parse.mock.calls[1][4]();
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).toHaveBeenCalledTimes(1);
 });
 
-test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) => {
+test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6308
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
-    const parse = t.spy();
+    const parse = vi.fn();
 
     source.loaded = {
         '0': {
@@ -145,45 +139,43 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) =
         }
     };
 
-    const callback1 = t.spy();
-    const callback2 = t.spy();
-    const callback3 = t.spy();
+    const callback1 = vi.fn();
+    const callback2 = vi.fn();
+    const callback3 = vi.fn();
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback1);
-    t.equal(parse.callCount, 1);
+    expect(parse).toHaveBeenCalledTimes(1);
 
     source.loaded[0].status = 'parsing';
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
-    t.equal(parse.callCount, 1);
+    expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.firstCall.args[4]();
-    t.equal(parse.callCount, 2);
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 0);
-    t.equal(callback3.callCount, 0);
+    parse.mock.calls[0][4]();
+    expect(parse).toHaveBeenCalledTimes(2);
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).not.toHaveBeenCalled();
+    expect(callback3).not.toHaveBeenCalled();
 
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback3);
-    t.equal(parse.callCount, 2);
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 0);
-    t.equal(callback3.callCount, 0);
+    expect(parse).toHaveBeenCalledTimes(2);
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).not.toHaveBeenCalled();
+    expect(callback3).not.toHaveBeenCalled();
 
-    parse.secondCall.args[4]();
-    t.equal(parse.callCount, 3);
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 1);
-    t.equal(callback3.callCount, 0);
+    parse.mock.calls[1][4]();
+    expect(parse).toHaveBeenCalledTimes(3);
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).toHaveBeenCalledTimes(1);
+    expect(callback3).not.toHaveBeenCalled();
 
-    parse.thirdCall.args[4]();
-    t.equal(callback1.callCount, 1);
-    t.equal(callback2.callCount, 1);
-    t.equal(callback3.callCount, 1);
-
-    t.end();
+    parse.mock.calls[2][4]();
+    expect(callback1).toHaveBeenCalledTimes(1);
+    expect(callback2).toHaveBeenCalledTimes(1);
+    expect(callback3).toHaveBeenCalledTimes(1);
 });
 
-test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', (t) => {
+test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
-    const parse = t.spy();
+    const parse = vi.fn();
 
     source.loaded = {
         '0': {
@@ -192,18 +184,14 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
         }
     };
 
-    const callback = t.spy();
+    const callback = vi.fn();
 
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
-    t.ok(parse.notCalled);
-    t.ok(callback.calledOnce);
-
-    t.end();
+    expect(parse).not.toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledTimes(1);
 });
 
-test('VectorTileWorkerSource provides resource timing information', (t) => {
-    const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
-
+test('VectorTileWorkerSource provides resource timing information', () => {
     function loadVectorData(params, callback) {
         return callback(null, {
             vectorTile: new VectorTile(new Protobuf(rawTileData)),
@@ -243,7 +231,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
 
     const source = new VectorTileWorkerSource(actor, layerIndex, [], true, loadVectorData);
 
-    t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
+    vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [ exampleResourceTiming ]; });
 
     source.loadTile({
         source: 'source',
@@ -252,8 +240,7 @@ test('VectorTileWorkerSource provides resource timing information', (t) => {
         projection: getProjection({name: 'mercator'}),
         request: {url: 'http://localhost:2900/faketile.pbf', collectResourceTiming: true}
     }, (err, res) => {
-        t.false(err);
-        t.deepEquals(res.resourceTiming[0], exampleResourceTiming, 'resourceTiming resp is expected');
-        t.end();
+        expect(err).toBeFalsy();
+        expect(res.resourceTiming[0]).toStrictEqual(exampleResourceTiming);
     });
 });

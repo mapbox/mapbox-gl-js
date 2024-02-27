@@ -336,7 +336,7 @@ export default class Worker {
     }
 }
 
-/* global self, WorkerGlobalScope */
+/* global WorkerGlobalScope */
 if (typeof WorkerGlobalScope !== 'undefined' &&
     typeof self !== 'undefined' &&
     self instanceof WorkerGlobalScope) {

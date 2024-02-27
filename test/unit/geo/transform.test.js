@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform.js';
 import LngLat from '../../../src/geo/lng_lat.js';
@@ -10,111 +10,102 @@ import {vec3, quat} from 'gl-matrix';
 import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import {degToRad, radToDeg} from '../../../src/util/util.js';
 
-test('transform', (t) => {
-
-    t.test('creates a transform', (t) => {
+describe('transform', () => {
+    test('creates a transform', () => {
         const transform = new Transform();
         transform.resize(500, 500);
-        t.equal(transform.unmodified, true);
-        t.equal(transform.tileSize, 512, 'tileSize');
-        t.equal(transform.worldSize, 512, 'worldSize');
-        t.equal(transform.width, 500, 'width');
-        t.equal(transform.minZoom, 0, 'minZoom');
-        t.equal(transform.minPitch, 0, 'minPitch');
-        t.equal(transform.bearing, 0, 'bearing');
-        t.equal(transform.bearing = 1, 1, 'set bearing');
-        t.equal(transform.bearing, 1, 'bearing');
-        t.equal(transform.bearing = 0, 0, 'set bearing');
-        t.equal(transform.unmodified, false);
-        t.equal(transform.minZoom = 10, 10);
-        t.equal(transform.maxZoom = 10, 10);
-        t.equal(transform.minZoom, 10);
-        t.deepEqual(transform.center, {lng: 0, lat: 0});
-        t.equal(transform.maxZoom, 10);
-        t.equal(transform.minPitch = 10, 10);
-        t.equal(transform.maxPitch = 10, 10);
-        t.equal(transform.size.equals(new Point(500, 500)), true);
-        t.equal(transform.centerPoint.equals(new Point(250, 250)), true);
-        t.equal(transform.scaleZoom(0), -Infinity);
-        t.equal(transform.scaleZoom(10), 3.3219280948873626);
-        t.deepEqual(transform.point, new Point(262144, 262144));
-        t.equal(transform.height, 500);
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(250, 250))), {lng: 0, lat: 0});
-        t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
-        t.deepEqual(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: 250, y: 250});
-        t.deepEqual(transform.locationCoordinate(new LngLat(0, 0)), {x: 0.5, y: 0.5, z: 0});
-        t.deepEqual(fixedLngLat(transform.pointLocation3D(new Point(250, 250))), {lng: 0, lat: 0});
-        t.deepEqual(fixedCoord(transform.pointCoordinate3D(new Point(250, 250))), {x: 0.5, y: 0.5, z: 0});
-        t.deepEqual(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: 250, y: 250});
-        t.end();
+        expect(transform.unmodified).toEqual(true);
+        expect(transform.tileSize).toEqual(512);
+        expect(transform.worldSize).toEqual(512);
+        expect(transform.width).toEqual(500);
+        expect(transform.minZoom).toEqual(0);
+        expect(transform.minPitch).toEqual(0);
+        expect(transform.bearing).toEqual(0);
+        expect(transform.bearing = 1).toEqual(1);
+        expect(transform.bearing).toEqual(1);
+        expect(transform.bearing = 0).toEqual(0);
+        expect(transform.unmodified).toEqual(false);
+        expect(transform.minZoom = 10).toEqual(10);
+        expect(transform.maxZoom = 10).toEqual(10);
+        expect(transform.minZoom).toEqual(10);
+        expect(transform.center).toEqual({lng: 0, lat: 0});
+        expect(transform.maxZoom).toEqual(10);
+        expect(transform.minPitch = 10).toEqual(10);
+        expect(transform.maxPitch = 10).toEqual(10);
+        expect(transform.size.equals(new Point(500, 500))).toEqual(true);
+        expect(transform.centerPoint.equals(new Point(250, 250))).toEqual(true);
+        expect(transform.scaleZoom(0)).toEqual(-Infinity);
+        expect(transform.scaleZoom(10)).toEqual(3.3219280948873626);
+        expect(transform.point).toEqual(new Point(262144, 262144));
+        expect(transform.height).toEqual(500);
+        expect(fixedLngLat(transform.pointLocation(new Point(250, 250)))).toEqual({lng: 0, lat: -0});
+        expect(fixedCoord(transform.pointCoordinate(new Point(250, 250)))).toEqual({x: 0.5, y: 0.5, z: 0});
+        expect(fixedPoint(transform.locationPoint(new LngLat(0, 0)))).toEqual({x: 250, y: 250});
+        expect(transform.locationCoordinate(new LngLat(0, 0))).toEqual({x: 0.5, y: 0.5, z: 0});
+        expect(fixedLngLat(transform.pointLocation3D(new Point(250, 250)))).toEqual({lng: 0, lat: -0});
+        expect(fixedCoord(transform.pointCoordinate3D(new Point(250, 250)))).toEqual({x: 0.5, y: 0.5, z: 0});
+        expect(fixedPoint(transform.locationPoint3D(new LngLat(0, 0)))).toEqual({x: 250, y: 250});
     });
 
-    t.test('does not throw on bad center', (t) => {
+    test('does not throw on bad center', () => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.center = {lng: 50, lat: -90};
-        t.end();
     });
 
-    t.test('setLocationAt', (t) => {
+    test('setLocationAt', () => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 4;
-        t.deepEqual(transform.center, {lng: 0, lat: 0});
+        expect(transform.center).toEqual({lng: 0, lat: 0});
         transform.setLocationAtPoint({lng: 13, lat: 10}, new Point(15, 45));
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), {lng: 13, lat: 10});
-        t.end();
+        expect(fixedLngLat(transform.pointLocation(new Point(15, 45)))).toEqual({lng: 13, lat: 10});
     });
 
-    t.test('setLocationAt tilted', (t) => {
+    test('setLocationAt tilted', () => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 4;
         transform.pitch = 50;
-        t.deepEqual(transform.center, {lng: 0, lat: 0});
+        expect(transform.center).toEqual({lng: 0, lat: 0});
         transform.setLocationAtPoint({lng: 13, lat: 10}, new Point(15, 45));
-        t.deepEqual(fixedLngLat(transform.pointLocation(new Point(15, 45))), {lng: 13, lat: 10});
-        t.end();
+        expect(fixedLngLat(transform.pointLocation(new Point(15, 45)))).toEqual({lng: 13, lat: 10});
     });
 
-    t.test('has a default zoom', (t) => {
+    test('has a default zoom', () => {
         const transform = new Transform();
         transform.resize(500, 500);
-        t.equal(transform.tileZoom, 0);
-        t.equal(transform.tileZoom, transform.zoom);
-        t.end();
+        expect(transform.tileZoom).toEqual(0);
+        expect(transform.tileZoom).toEqual(transform.zoom);
     });
 
-    t.test('set fov', (t) => {
+    test('set fov', () => {
         const transform = new Transform();
         transform.fov = 10;
-        t.equal(radToDeg(transform._fov), 10);
+        expect(radToDeg(transform._fov)).toEqual(10);
         transform.fov = 10;
-        t.equal(radToDeg(transform._fov), 10);
-        t.end();
+        expect(radToDeg(transform._fov)).toEqual(10);
     });
 
-    t.test('maxBounds constrain zoom and center', (t) => {
+    test('maxBounds constrain zoom and center', () => {
         const transform = new Transform();
         transform.center = new LngLat(0, 0);
         transform.zoom = 10;
         transform.resize(500, 500);
         transform.setMaxBounds(LngLatBounds.convert([-5, -5, 5, 5]));
         transform.zoom = 0;
-        t.equal(transform.zoom, 5.135709286104402);
+        expect(transform.zoom).toEqual(5.135709286104402);
 
         transform.center = new LngLat(-50, -30);
-        t.same(transform.center, new LngLat(0, -0.0063583052861417855));
+        expect(transform.center).toStrictEqual(new LngLat(0, -0.0063583052861417855));
 
         transform.zoom = 10;
         transform.center = new LngLat(-50, -30);
-        t.same(transform.center, new LngLat(-4.828338623046875, -4.828969771321582));
-
-        t.end();
+        expect(transform.center).toStrictEqual(new LngLat(-4.828338623046875, -4.828969771321582));
     });
 
-    t.test('maxBounds should not jump to the wrong side when crossing 180th meridian (#10447)', (t) => {
-        t.test(' to the East', (t) => {
+    describe('maxBounds should not jump to the wrong side when crossing 180th meridian (#10447)', () => {
+        test(' to the East', () => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
@@ -122,13 +113,11 @@ test('transform', (t) => {
 
             transform.center = new LngLat(-170, -40);
 
-            t.ok(transform.center.lng < 190);
-            t.ok(transform.center.lng > 175);
-
-            t.end();
+            expect(transform.center.lng < 190).toBeTruthy();
+            expect(transform.center.lng > 175).toBeTruthy();
         });
 
-        t.test('to the West', (t) => {
+        test('to the West', () => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
@@ -136,13 +125,11 @@ test('transform', (t) => {
 
             transform.center = new LngLat(170, -40);
 
-            t.ok(transform.center.lng > -190);
-            t.ok(transform.center.lng < -175);
-
-            t.end();
+            expect(transform.center.lng > -190).toBeTruthy();
+            expect(transform.center.lng < -175).toBeTruthy();
         });
 
-        t.test('longitude 0 - 360', (t) => {
+        test('longitude 0 - 360', () => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
@@ -150,45 +137,38 @@ test('transform', (t) => {
 
             transform.center = new LngLat(-155, 0);
 
-            t.same(transform.center, new LngLat(205, 0));
-
-            t.end();
+            expect(transform.center).toStrictEqual(new LngLat(205, 0));
         });
 
-        t.test('longitude -360 - 0', (t) => {
+        test('longitude -360 - 0', () => {
             const transform = new Transform();
             transform.zoom = 6;
             transform.resize(500, 500);
             transform.setMaxBounds(LngLatBounds.convert([-360, -90, 0, 90]));
 
             transform.center = new LngLat(160, 0);
-            t.same(transform.center.lng.toFixed(10), -200);
-
-            t.end();
+            expect(transform.center.lng.toFixed(10)).toBe('-200.0000000000');
         });
+    }
+    );
 
-        t.end();
-
-    });
-
-    t.test('maxBounds snaps in the correct direction (no forcing to other edge when width < 360)', (t) => {
+    test('maxBounds snaps in the correct direction (no forcing to other edge when width < 360)', () => {
         const transform = new Transform();
         transform.zoom = 6;
         transform.resize(500, 500);
         transform.setMaxBounds(new LngLatBounds([-160, -20], [160, 20]));
 
         transform.center = new LngLat(170, 0);
-        t.ok(transform.center.lng > 150);
-        t.ok(transform.center.lng < 160);
+        expect(transform.center.lng > 150).toBeTruthy();
+        expect(transform.center.lng < 160).toBeTruthy();
 
         transform.center = new LngLat(-170, 0);
-        t.ok(transform.center.lng > -160);
-        t.ok(transform.center.lng < -150);
+        expect(transform.center.lng > -160).toBeTruthy();
+        expect(transform.center.lng < -150).toBeTruthy();
+    }
+    );
 
-        t.end();
-    });
-
-    t.test('maxBounds works with unwrapped values across the 180th meridian (#6985)', (t) => {
+    test('maxBounds works with unwrapped values across the 180th meridian (#6985)', () => {
         const transform = new Transform();
         transform.zoom = 6;
         transform.resize(500, 500);
@@ -197,36 +177,34 @@ test('transform', (t) => {
         const wrap = val => ((val + 360) % 360);
 
         transform.center = new LngLat(170, 0);
-        t.same(wrap(transform.center.lng), 170);
+        expect(wrap(transform.center.lng)).toBe(170);
 
         transform.center = new LngLat(-170, 0);
-        t.same(wrap(transform.center.lng), wrap(-170));
+        expect(wrap(transform.center.lng)).toBe(wrap(-170));
 
         transform.center = new LngLat(150, 0);
         let lng = wrap(transform.center.lng);
-        t.ok(lng > 160);
-        t.ok(lng < 180);
+        expect(lng > 160).toBeTruthy();
+        expect(lng < 180).toBeTruthy();
 
         transform.center = new LngLat(-150, 0);
         lng = wrap(transform.center.lng);
-        t.ok(lng < 360 - 160);
-        t.ok(lng > 360 - 180);
+        expect(lng < 360 - 160).toBeTruthy();
+        expect(lng > 360 - 180).toBeTruthy();
+    }
+    );
 
-        t.end();
-    });
-
-    t.test('_minZoomForBounds respects maxBounds', (t) => {
-        t.test('it returns 0 when lngRange is undefined', (t) => {
+    describe('_minZoomForBounds respects maxBounds', () => {
+        test('it returns 0 when lngRange is undefined', () => {
             const transform = new Transform();
             transform.center = new LngLat(0, 0);
             transform.zoom = 10;
             transform.resize(500, 500);
 
-            t.equal(transform._minZoomForBounds(), 0);
-            t.end();
+            expect(transform._minZoomForBounds()).toEqual(0);
         });
 
-        t.test('it results in equivalent minZoom as _constrain()', (t) => {
+        test('it results in equivalent minZoom as _constrain()', () => {
             const transform = new Transform();
             transform.center = new LngLat(0, 0);
             transform.zoom = 10;
@@ -237,14 +215,11 @@ test('transform', (t) => {
             transform.zoom = 0;
             const constrainedMinZoom = transform.zoom;
 
-            t.equal(preComputedMinZoom, constrainedMinZoom);
-            t.end();
+            expect(preComputedMinZoom).toEqual(constrainedMinZoom);
         });
-
-        t.end();
     });
 
-    test('mapbox-gl-js-internal#373', (t) => {
+    test('mapbox-gl-js-internal#373', () => {
         const options = {
             minzoom: 3,
             maxzoom: 22,
@@ -258,7 +233,7 @@ test('transform', (t) => {
         transform.pitch = 65;
         transform.bearing = 45;
 
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(3, 0, 3, 3, 3),
             new OverscaledTileID(3, 0, 3, 3, 4),
             new OverscaledTileID(3, 0, 3, 4, 3),
@@ -270,23 +245,20 @@ test('transform', (t) => {
             new OverscaledTileID(3, 0, 3, 6, 3),
             new OverscaledTileID(3, 0, 3, 5, 1),
             new OverscaledTileID(3, 0, 3, 6, 2)]);
-
-        t.end();
     });
 
-    test('pointCoordinate retains direction when point is offscreen', (t) => {
-
-        function assertDueNorth(t, m1, m2) {
+    describe('pointCoordinate retains direction when point is offscreen', () => {
+        function assertDueNorth(m1, m2) {
             const dx = m2.x - m1.x;
             const dy = m2.y - m1.y;
             const l = Math.sqrt(dx * dx + dy * dy);
             const ndx = dx / l;
             const ndy = dy / l;
-            t.ok(Math.abs(ndx) < 1e-10);
-            t.ok(Math.abs(ndy + 1) < 1e-10);
+            expect(Math.abs(ndx) < 1e-10).toBeTruthy();
+            expect(Math.abs(ndy + 1) < 1e-10).toBeTruthy();
         }
 
-        t.test('no pitch', (t) => {
+        test('no pitch', () => {
             const transform = new Transform();
             transform.center = {lng: 0, lat: 0};
             transform.zoom = 16;
@@ -295,11 +267,10 @@ test('transform', (t) => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
-            t.end();
+            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
         });
 
-        t.test('high pitch', (t) => {
+        test('high pitch', () => {
             const transform = new Transform();
             transform.center = {lng: 0, lat: 0};
             transform.zoom = 16;
@@ -308,11 +279,10 @@ test('transform', (t) => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
-            t.end();
+            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
         });
 
-        t.test('medium pitch', (t) => {
+        test('medium pitch', () => {
             const transform = new Transform();
             transform.center = {lng: 0, lat: 0};
             transform.zoom = 16;
@@ -321,58 +291,54 @@ test('transform', (t) => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth(t, {x: 0.5, y: 0.5, z : 0}, coord);
-            t.end();
+            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
         });
-
-        t.end();
     });
 
-    t.test('getBounds (#10261)', (t) => {
+    describe('getBounds (#10261)', () => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 2;
         transform.pitch = 80;
 
-        t.test('Looking at North Pole', (t) => {
+        test('Looking at North Pole', () => {
             transform.center = {lng: 0, lat: 90};
-            t.deepEqual(transform.center, {lng: 0, lat: 79.3677012485858});
+            expect(transform.center).toEqual({lng: 0, lat: 79.3677012485858});
             const bounds = transform.getBounds();
 
             // Bounds stops at the edge of the map
-            t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
+            expect(bounds.getNorth().toFixed(6)).toBe(`${MAX_MERCATOR_LATITUDE}`);
             // Top corners of bounds line up with side of view
-            t.same(transform.locationPoint(bounds.getNorthWest()).x.toFixed(10), 0);
-            t.same(transform.locationPoint(bounds.getNorthEast()).x.toFixed(10), transform.width);
+            expect(transform.locationPoint(bounds.getNorthWest()).x.toFixed(10)).toBe('-0.0000000000');
+            expect(transform.locationPoint(bounds.getNorthEast()).x.toFixed(10)).toBe(transform.width.toFixed(10));
             // Bottom of bounds lines up with bottom of view
-            t.same(transform.locationPoint(bounds.getSouthEast()).y.toFixed(10), transform.height);
-            t.same(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10), transform.height);
+            expect(transform.locationPoint(bounds.getSouthEast()).y.toFixed(10)).toBe(transform.height.toFixed(10));
+            expect(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
-            t.same(toFixed(bounds.toArray()), toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]]));
-
-            t.end();
+            expect(toFixed(bounds.toArray())).toStrictEqual(
+                toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]])
+            );
         });
-        t.test('Looking at South Pole', (t) => {
+        test('Looking at South Pole', () => {
             transform.bearing = 180;
             transform.center = {lng: 0, lat: -90};
 
-            t.deepEqual(transform.center, {lng: 0, lat: -79.3677012485858});
+            expect(transform.center).toEqual({lng: 0, lat: -79.3677012485858});
             const bounds = transform.getBounds();
 
             // Bounds stops at the edge of the map
-            t.same(bounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
+            expect(bounds.getSouth().toFixed(6)).toBe((-MAX_MERCATOR_LATITUDE).toFixed(6));
             // Top corners of bounds line up with side of view
-            t.same(transform.locationPoint(bounds.getSouthEast()).x.toFixed(10), 0);
-            t.same(transform.locationPoint(bounds.getSouthWest()).x.toFixed(10), transform.width);
+            expect(transform.locationPoint(bounds.getSouthEast()).x.toFixed(10)).toBe('-0.0000000000');
+            expect(transform.locationPoint(bounds.getSouthWest()).x.toFixed(10)).toBe(transform.width.toFixed(10));
             // Bottom of bounds lines up with bottom of view
-            t.same(transform.locationPoint(bounds.getNorthEast()).y.toFixed(10), transform.height);
-            t.same(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10), transform.height);
+            expect(transform.locationPoint(bounds.getNorthEast()).y.toFixed(10)).toBe(transform.height.toFixed(10));
+            expect(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
-            t.same(toFixed(bounds.toArray()), toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]]));
-
-            t.end();
+            expect(toFixed(bounds.toArray())).toStrictEqual(
+                toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]])
+            );
         });
-        t.end();
 
         function toFixed(bounds) {
             const n = 10;
@@ -388,7 +354,7 @@ test('transform', (t) => {
         }
     });
 
-    test('coveringTiles', (t) => {
+    describe('coveringTiles', () => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -402,31 +368,31 @@ test('transform', (t) => {
         transform.center = {lng: -0.01, lat: 0.01};
 
         transform.zoom = 0;
-        t.deepEqual(transform.coveringTiles(options), []);
+        expect(transform.coveringTiles(options)).toEqual([]);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(1, 0, 1, 0, 0),
             new OverscaledTileID(1, 0, 1, 1, 0),
             new OverscaledTileID(1, 0, 1, 0, 1),
             new OverscaledTileID(1, 0, 1, 1, 1)]);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(2, 0, 2, 1, 1),
             new OverscaledTileID(2, 0, 2, 2, 1),
             new OverscaledTileID(2, 0, 2, 1, 2),
             new OverscaledTileID(2, 0, 2, 2, 2)]);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 511),
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
             new OverscaledTileID(10, 0, 10, 512, 512)]);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 511),
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
@@ -437,7 +403,7 @@ test('transform', (t) => {
         transform.bearing = 32.0;
         transform.center = new LngLat(56.90, 48.20);
         transform.resize(1024, 768);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(5, 0, 5, 21, 11),
             new OverscaledTileID(5, 0, 5, 20, 11),
             new OverscaledTileID(5, 0, 5, 21, 10),
@@ -466,14 +432,14 @@ test('transform', (t) => {
         transform.bearing = 45.0;
         transform.center = new LngLat(25.02, 60.15);
         transform.resize(300, 50);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(8, 0, 8, 145, 74),
             new OverscaledTileID(8, 0, 8, 145, 73),
             new OverscaledTileID(8, 0, 8, 146, 74)
         ]);
 
         transform.resize(50, 300);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(8, 0, 8, 145, 74),
             new OverscaledTileID(8, 0, 8, 145, 73),
             new OverscaledTileID(8, 0, 8, 146, 74),
@@ -484,52 +450,51 @@ test('transform', (t) => {
         transform.pitch = 0;
         transform.bearing = 0;
         transform.resize(300, 300);
-        t.test('calculates tile coverage at w > 0', (t) => {
+        test('calculates tile coverage at w > 0', () => {
             transform.center = {lng: 630.02, lat: 0.01};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(2, 2, 2, 1, 1),
                 new OverscaledTileID(2, 2, 2, 1, 2),
                 new OverscaledTileID(2, 2, 2, 0, 1),
                 new OverscaledTileID(2, 2, 2, 0, 2)
             ]);
-            t.end();
         });
 
-        t.test('calculates tile coverage at w = -1', (t) => {
+        test('calculates tile coverage at w = -1', () => {
             transform.center = {lng: -360.01, lat: 0.02};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(2, -1, 2, 1, 1),
                 new OverscaledTileID(2, -1, 2, 2, 1),
                 new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 2)
             ]);
-            t.end();
         });
 
-        t.test('calculates tile coverage across meridian', (t) => {
+        test('calculates tile coverage across meridian', () => {
             transform.zoom = 1;
             transform.center = {lng: -180.01, lat: 0.02};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(1, -1, 1, 1, 0),
                 new OverscaledTileID(1, 0, 1, 0, 0),
                 new OverscaledTileID(1, -1, 1, 1, 1),
                 new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
-            t.end();
         });
 
-        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
-            transform.zoom = 1;
-            transform.center = {lng: -180.01, lat: 0.01};
-            transform.renderWorldCopies = false;
-            t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(1, 0, 1, 0, 0),
-                new OverscaledTileID(1, 0, 1, 0, 1)
-            ]);
-            t.end();
-        });
+        test(
+            'only includes tiles for a single world, if renderWorldCopies is set to false',
+            () => {
+                transform.zoom = 1;
+                transform.center = {lng: -180.01, lat: 0.01};
+                transform.renderWorldCopies = false;
+                expect(transform.coveringTiles(options)).toEqual([
+                    new OverscaledTileID(1, 0, 1, 0, 0),
+                    new OverscaledTileID(1, 0, 1, 0, 1)
+                ]);
+            }
+        );
 
-        t.test('mapbox-gl-js-internal#86', (t) => {
+        test('mapbox-gl-js-internal#86', () => {
             transform.renderWorldCopies = true;
             transform.maxPitch = 85;
             transform.zoom = 1.28;
@@ -537,7 +502,7 @@ test('transform', (t) => {
             transform.pitch = 81;
             transform.center = {lng: -153.3, lat: 0.0};
             transform.resize(2759, 1242);
-            t.deepEqual(transform.coveringTiles({tileSize: 512}), [
+            expect(transform.coveringTiles({tileSize: 512})).toEqual([
                 new OverscaledTileID(1, 0, 1, 0, 1),
                 new OverscaledTileID(1, 0, 1, 0, 0),
                 new OverscaledTileID(0, -1, 0, 0, 0),
@@ -548,10 +513,9 @@ test('transform', (t) => {
                 new OverscaledTileID(0, -2, 0, 0, 0),
                 new OverscaledTileID(0, -3, 0, 0, 0)
             ]);
-            t.end();
         });
 
-        t.test('Extend tile coverage for shadow casters', (t) => {
+        test('Extend tile coverage for shadow casters', () => {
             transform.resize(512, 512);
             transform.center = new LngLat(-146.2148, 73.1277);
             transform.zoom = 5.08;
@@ -560,7 +524,7 @@ test('transform', (t) => {
 
             const visibleTiles = transform.coveringTiles({tileSize: 512});
 
-            t.strictSame(visibleTiles, [
+            expect(visibleTiles).toStrictEqual([
                 new OverscaledTileID(5, 0, 5, 3, 6),
                 new OverscaledTileID(5, 0, 5, 2, 6),
                 new OverscaledTileID(5, 0, 5, 3, 7),
@@ -574,21 +538,17 @@ test('transform', (t) => {
 
             const shadowCasterTiles = transform.extendTileCoverForShadows(visibleTiles, [0.25, -0.433, -0.866], 5);
 
-            t.strictSame(shadowCasterTiles, [
+            expect(shadowCasterTiles).toStrictEqual([
                 new OverscaledTileID(3, -1, 3, 7, 0),
                 new OverscaledTileID(3, -1, 3, 7, 1),
                 new OverscaledTileID(5, 0, 5, 1, 8),
                 new OverscaledTileID(5, 0, 5, 2, 8),
                 new OverscaledTileID(5, 0, 5, 3, 8)
             ]);
-
-            t.end();
         });
-
-        t.end();
     });
 
-    test('coveringTiles with fog culling enabled', (t) => {
+    test('coveringTiles with fog culling enabled', () => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -601,25 +561,25 @@ test('transform', (t) => {
         transform.zoom = 0;
         transform.fogCullDistSq = 1.5;
         transform.pitch = 85.0;
-        t.deepEqual(transform.coveringTiles(options), []);
+        expect(transform.coveringTiles(options)).toEqual([]);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(1, 0, 1, 0, 1),
             new OverscaledTileID(1, 0, 1, 1, 1)]);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(2, 0, 2, 1, 2),
             new OverscaledTileID(2, 0, 2, 2, 2)]);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 512),
             new OverscaledTileID(10, 0, 10, 512, 512)]);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 511),
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
@@ -629,7 +589,7 @@ test('transform', (t) => {
         transform.bearing = 32.0;
         transform.center = new LngLat(56.90, 48.20);
         transform.resize(1024, 768);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(5, 0, 5, 21, 11),
             new OverscaledTileID(5, 0, 5, 20, 11),
             new OverscaledTileID(5, 0, 5, 20, 10),
@@ -642,17 +602,15 @@ test('transform', (t) => {
         transform.bearing = 45.0;
         transform.center = new LngLat(25.02, 60.15);
         transform.resize(300, 50);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(8, 0, 8, 145, 74)
         ]);
 
         transform.resize(50, 300);
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(8, 0, 8, 145, 74),
             new OverscaledTileID(8, 0, 8, 145, 73)
         ]);
-
-        t.end();
     });
 
     const createCollisionElevation = (elevation) => {
@@ -750,7 +708,7 @@ test('transform', (t) => {
         };
     };
 
-    test('Pitch does not change when camera collides with terrain', (t) => {
+    test('Pitch does not change when camera collides with terrain', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.maxPitch = 85;
@@ -764,14 +722,12 @@ test('transform', (t) => {
         transform.zoom = zoom;
 
         const cameraAltitude = transform.getFreeCameraOptions().position.z / mercatorZfromAltitude(1, transform.center.lat);
-        t.ok(cameraAltitude > 10);
-        t.equal(fixedNum(transform.bearing), -45);
-        t.equal(fixedNum(transform.pitch), 85);
-
-        t.end();
+        expect(cameraAltitude > 10).toBeTruthy();
+        expect(fixedNum(transform.bearing)).toEqual(-45);
+        expect(fixedNum(transform.pitch)).toEqual(85);
     });
 
-    test('Camera height is above terrain with constant elevation', (t) => {
+    test('Camera height is above terrain with constant elevation', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.maxPitch = 85;
@@ -787,15 +743,13 @@ test('transform', (t) => {
 
         const cameraAltitude = altitudeFromMercatorZ(transform.getFreeCameraOptions().position.z, transform.getFreeCameraOptions().position.y);
 
-        t.ok(cameraAltitude > 10);
-        t.equal(fixedNum(transform.zoom), fixedNum(zoom));
-        t.equal(fixedNum(transform.bearing), -45);
-        t.equal(fixedNum(transform.pitch), 85);
-
-        t.end();
+        expect(cameraAltitude > 10).toBeTruthy();
+        expect(fixedNum(transform.zoom)).toEqual(fixedNum(zoom));
+        expect(fixedNum(transform.bearing)).toEqual(-45);
+        expect(fixedNum(transform.pitch)).toEqual(85);
     });
 
-    test('Constrained camera height over terrain with exaggeration change', (t) => {
+    test('Constrained camera height over terrain with exaggeration change', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.maxPitch = 85;
@@ -816,35 +770,35 @@ test('transform', (t) => {
             return transform.getFreeCameraOptions().position.z / mercatorZfromAltitude(1, transform.center.lat);
         };
 
-        t.equal(fixedNum(cameraAltitude()), 5);
-        t.equal(transform._centerAltitude, 0);
+        expect(fixedNum(cameraAltitude())).toEqual(5);
+        expect(transform._centerAltitude).toEqual(0);
 
         // increase exaggeration to lift the center (and camera that follows it) up.
         transform.elevation._exaggeration = 1;
         transform.updateElevation(false);
-        t.equal(transform._centerAltitude, 10);
+        expect(transform._centerAltitude).toEqual(10);
 
         const cameraAltitudeAfterLift = cameraAltitude();
-        t.equal(fixedNum(cameraAltitudeAfterLift), 15);
+        expect(fixedNum(cameraAltitudeAfterLift)).toEqual(15);
 
         transform.elevation._exaggeration = 15;
         transform.updateElevation(false);
-        t.equal(transform._centerAltitude, 150);
-        t.equal(fixedNum(cameraAltitude()), 155);
+        expect(transform._centerAltitude).toEqual(150);
+        expect(fixedNum(cameraAltitude())).toEqual(155);
 
         transform.elevation._exaggeration = 0;
         transform.updateElevation(false);
-        t.equal(fixedNum(cameraAltitude()), 5);
+        expect(fixedNum(cameraAltitude())).toEqual(5);
 
         // zoom out to 10 meters and back to 5
         transform.zoom = transform._zoomFromMercatorZ(altitudeZ * 2);
-        t.equal(fixedNum(cameraAltitude()), 10);
+        expect(fixedNum(cameraAltitude())).toEqual(10);
         transform.zoom = zoom;
-        t.equal(fixedNum(cameraAltitude()), 5);
-        t.equal(fixedNum(transform.pitch), 85);
+        expect(fixedNum(cameraAltitude())).toEqual(5);
+        expect(fixedNum(transform.pitch)).toEqual(85);
 
         transform.elevation = null;
-        t.ok(cameraAltitude() < 10);
+        expect(cameraAltitude() < 10).toBeTruthy();
 
         // collision elevation keeps center at 0 but pushes camera up.
         const elevation1 = createCollisionElevation(10);
@@ -852,25 +806,23 @@ test('transform', (t) => {
 
         transform.elevation = elevation1;
         transform.updateElevation(false);
-        t.equal(transform._centerAltitude, 0);
-        t.ok(cameraAltitude() < 10);
+        expect(transform._centerAltitude).toEqual(0);
+        expect(cameraAltitude() < 10).toBeTruthy();
 
         elevation1._exaggeration = 1;
         transform.updateElevation(false);
-        t.equal(transform._centerAltitude, 0);
-        t.ok(cameraAltitude() > 10);
-        t.equal(fixedNum(transform.pitch), 85);
-
-        t.end();
+        expect(transform._centerAltitude).toEqual(0);
+        expect(cameraAltitude() > 10).toBeTruthy();
+        expect(fixedNum(transform.pitch)).toEqual(85);
     });
 
-    t.test('Constrained camera height over terrain without data', t => {
+    test('Constrained camera height over terrain without data', () => {
         const transform = new Transform();
         transform.resize(200, 200);
 
         transform.elevation = createCollisionElevationNoData();
 
-        t.equal(transform._centerAltitudeValidForExaggeration, undefined);
+        expect(transform._centerAltitudeValidForExaggeration).toEqual(undefined);
 
         const transformBefore = transform.clone();
 
@@ -881,71 +833,65 @@ test('transform', (t) => {
         // Apply zoom
         transform.zoom = zoom;
 
-        t.equal(transform._centerAltitudeValidForExaggeration, undefined);
-        t.equal(transform._seaLevelZoom, transformBefore._seaLevelZoom);
-
-        t.end();
+        expect(transform._centerAltitudeValidForExaggeration).toEqual(undefined);
+        expect(transform._seaLevelZoom).toEqual(transformBefore._seaLevelZoom);
     });
 
-    test('Compute zoom from camera height', (t) => {
+    test('Compute zoom from camera height', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.center = {lng: 0, lat: 0};
         transform.zoom = 16;
         transform.elevation = createRampElevation(500);
-        t.equal(transform.elevation.getAtPointOrZero(new MercatorCoordinate(1.0, 0.5)), 250);
+        expect(transform.elevation.getAtPointOrZero(new MercatorCoordinate(1.0, 0.5))).toEqual(250);
 
-        t.equal(transform.zoom, 16);
-        t.equal(transform._seaLevelZoom, 16);
+        expect(transform.zoom).toEqual(16);
+        expect(transform._seaLevelZoom).toEqual(16);
 
         // zoom should remain unchanged
         transform.cameraElevationReference = "ground";
         transform.center = new LngLat(180, 0);
-        t.equal(transform.zoom, 16);
+        expect(transform.zoom).toEqual(16);
 
         transform.center = new LngLat(0, 0);
-        t.equal(transform.zoom, 16);
+        expect(transform.zoom).toEqual(16);
 
         // zoom should change so that the altitude remains constant
         transform.cameraElevationReference = "sea";
         transform.center = new LngLat(180, 0);
-        t.equal(transform._seaLevelZoom, 16);
+        expect(transform._seaLevelZoom).toEqual(16);
 
         const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(250, 0);
-        t.equal(fixedNum(elevationZ + heightZ), fixedNum(altitudeZ));
-
-        t.end();
+        expect(fixedNum(elevationZ + heightZ)).toEqual(fixedNum(altitudeZ));
     });
 
-    test('Constant camera height over terrain', (t) => {
+    test('Constant camera height over terrain', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.center = {lng: 0, lat: 0};
         transform.zoom = 16;
 
         transform.elevation = createConstantElevation(0);
-        t.equal(transform.zoom, transform._seaLevelZoom);
+        expect(transform.zoom).toEqual(transform._seaLevelZoom);
 
         // Camera zoom should change so that the standard zoom value describes distance between the camera and the terrain
         transform.elevation = createConstantElevation(10000);
-        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
+        expect(fixedNum(transform._seaLevelZoom)).toEqual(11.1449615644);
 
         // Camera height over terrain should remain constant
         const altitudeZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform._seaLevelZoom) * transform.tileSize);
         const heightZ = transform.cameraToCenterDistance / (Math.pow(2.0, transform.zoom) * transform.tileSize);
         const elevationZ = mercatorZfromAltitude(10000, 0);
-        t.equal(elevationZ + heightZ, altitudeZ);
+        expect(elevationZ + heightZ).toEqual(altitudeZ);
 
         transform.pitch = 32;
-        t.equal(fixedNum(transform._seaLevelZoom), 11.1449615644);
-        t.equal(transform.zoom, 16);
-
-        t.end();
+        expect(fixedNum(transform._seaLevelZoom)).toEqual(11.1449615644);
+        expect(transform.zoom).toEqual(16);
     });
 
-    test('coveringTiles for terrain', (t) => {
+    describe('coveringTiles for terrain', () => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -984,31 +930,31 @@ test('transform', (t) => {
         transform.center = {lng: -0.01, lat: 0.01};
 
         transform.zoom = 0;
-        t.deepEqual(transform.coveringTiles(options), []);
+        expect(transform.coveringTiles(options)).toEqual([]);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(1, 0, 1, 0, 0),
             new OverscaledTileID(1, 0, 1, 1, 0),
             new OverscaledTileID(1, 0, 1, 0, 1),
             new OverscaledTileID(1, 0, 1, 1, 1)]);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(2, 0, 2, 1, 1),
             new OverscaledTileID(2, 0, 2, 2, 1),
             new OverscaledTileID(2, 0, 2, 1, 2),
             new OverscaledTileID(2, 0, 2, 2, 2)]);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 511),
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
             new OverscaledTileID(10, 0, 10, 512, 512)]);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringTiles(options), [
+        expect(transform.coveringTiles(options)).toEqual([
             new OverscaledTileID(10, 0, 10, 511, 511),
             new OverscaledTileID(10, 0, 10, 512, 511),
             new OverscaledTileID(10, 0, 10, 511, 512),
@@ -1022,17 +968,17 @@ test('transform', (t) => {
         transform.elevation = null;
         const cover2D = transform.coveringTiles(options);
         // No LOD as there is no elevation data.
-        t.true(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ);
+        expect(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ).toBeTruthy();
 
         transform.pitch = 65.0;
         transform.elevation = elevation;
         const cover = transform.coveringTiles(options);
         // First part of the cover should be the same as for 60 degrees no elevation case.
-        t.deepEqual(cover.slice(0, 6), cover2D.slice(0, 6));
+        expect(cover.slice(0, 6)).toEqual(cover2D.slice(0, 6));
 
         // Even though it is larger pitch, less tiles are expected as LOD kicks in.
-        t.true(cover.length < cover2D.length);
-        t.true(cover[0].overscaledZ > cover[cover.length - 1].overscaledZ);
+        expect(cover.length < cover2D.length).toBeTruthy();
+        expect(cover[0].overscaledZ > cover[cover.length - 1].overscaledZ).toBeTruthy();
 
         // Elevated LOD with elevated center returns the same
         tilesDefaultElevation = centerElevation = 10000;
@@ -1041,106 +987,104 @@ test('transform', (t) => {
         transform.elevation = elevation;
 
         const cover10k = transform.coveringTiles(options);
-        t.deepEqual(cover, cover10k);
+        expect(cover).toEqual(cover10k);
 
         // Lower tiles on side get clipped.
         const lowTiles = [
             new OverscaledTileID(9, 0, 9, 335, 178).key,
             new OverscaledTileID(9, 0, 9, 337, 178).key
         ];
-        t.true(cover.filter(t => lowTiles.includes(t.key)).length === lowTiles.length);
+        expect(cover.filter(t => lowTiles.includes(t.key)).length === lowTiles.length).toBeTruthy();
 
         for (const t of lowTiles) {
             tileElevation[t] = 0;
         }
         const coverLowSide = transform.coveringTiles(options);
-        t.true(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0);
+        expect(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0).toBeTruthy();
 
         tileElevation[lowTiles[0]] = null; // missing elevation information gets to cover.
-        t.ok(transform.coveringTiles(options).find(t => t.key === lowTiles[0]));
+        expect(transform.coveringTiles(options).find(t => t.key === lowTiles[0])).toBeTruthy();
 
         transform.zoom = 2;
         transform.pitch = 0;
         transform.bearing = 0;
         transform.resize(300, 300);
-        t.test('calculates tile coverage at w > 0', (t) => {
+        test('calculates tile coverage at w > 0', () => {
             transform.center = {lng: 630.02, lat: 0.01};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(2, 2, 2, 1, 1),
                 new OverscaledTileID(2, 2, 2, 1, 2),
                 new OverscaledTileID(2, 2, 2, 0, 1),
                 new OverscaledTileID(2, 2, 2, 0, 2)
             ]);
-            t.end();
         });
 
-        t.test('calculates tile coverage at w = -1', (t) => {
+        test('calculates tile coverage at w = -1', () => {
             transform.center = {lng: -360.01, lat: 0.02};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(2, -1, 2, 1, 1),
                 new OverscaledTileID(2, -1, 2, 2, 1),
                 new OverscaledTileID(2, -1, 2, 1, 2),
                 new OverscaledTileID(2, -1, 2, 2, 2)
             ]);
-            t.end();
         });
 
-        t.test('calculates tile coverage across meridian', (t) => {
+        test('calculates tile coverage across meridian', () => {
             transform.zoom = 1;
             transform.center = {lng: -180.01, lat: 0.02};
-            t.deepEqual(transform.coveringTiles(options), [
+            expect(transform.coveringTiles(options)).toEqual([
                 new OverscaledTileID(1, -1, 1, 1, 0),
                 new OverscaledTileID(1, 0, 1, 0, 0),
                 new OverscaledTileID(1, -1, 1, 1, 1),
                 new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
-            t.end();
         });
-        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
-            transform.zoom = 1;
-            transform.center = {lng: -180.01, lat: 0.01};
-            transform.renderWorldCopies = false;
-            t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(1, 0, 1, 0, 0),
-                new OverscaledTileID(1, 0, 1, 0, 1)
-            ]);
-            t.end();
-        });
-        t.test('proper distance to center with wrap. Zoom drop at the end.', (t) => {
+        test(
+            'only includes tiles for a single world, if renderWorldCopies is set to false',
+            () => {
+                transform.zoom = 1;
+                transform.center = {lng: -180.01, lat: 0.01};
+                transform.renderWorldCopies = false;
+                expect(transform.coveringTiles(options)).toEqual([
+                    new OverscaledTileID(1, 0, 1, 0, 0),
+                    new OverscaledTileID(1, 0, 1, 0, 1)
+                ]);
+            }
+        );
+        test('proper distance to center with wrap. Zoom drop at the end.', () => {
             transform.resize(2000, 2000);
             transform.zoom = 3.29;
             transform.pitch = 57;
             transform.bearing = 91.8;
             transform.center = {lng: -134.66, lat: 20.52};
             const cover = transform.coveringTiles(options);
-            t.assert(cover[0].overscaledZ === 3);
-            t.assert(cover[cover.length - 1].overscaledZ <= 2);
-            t.end();
+            expect(cover[0].overscaledZ === 3).toBeTruthy();
+            expect(cover[cover.length - 1].overscaledZ <= 2).toBeTruthy();
         });
 
-        t.test('zoom 22 somewhere in Mile High City should load only visible tiles', (t) => {
-            tilesDefaultElevation = null;
-            centerElevation = 1600;
-            tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
-            transform.pitch = 0;
-            transform.bearing = 0;
-            transform.resize(768, 768);
-            transform.zoom = options.maxzoom = 22;
-            transform.center = {lng: -104.99813327, lat: 39.72784465999999};
-            options.roundZoom = true;
-            t.deepEqual(transform.coveringTiles(options), [
-                new OverscaledTileID(22, 0, 22, 873835, 1592007),
-                new OverscaledTileID(22, 0, 22, 873834, 1592007),
-                new OverscaledTileID(22, 0, 22, 873835, 1592006),
-                new OverscaledTileID(22, 0, 22, 873834, 1592006)
-            ]);
-            t.end();
-        });
-
-        t.end();
+        test(
+            'zoom 22 somewhere in Mile High City should load only visible tiles',
+            () => {
+                tilesDefaultElevation = null;
+                centerElevation = 1600;
+                tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+                transform.pitch = 0;
+                transform.bearing = 0;
+                transform.resize(768, 768);
+                transform.zoom = options.maxzoom = 22;
+                transform.center = {lng: -104.99813327, lat: 39.72784465999999};
+                options.roundZoom = true;
+                expect(transform.coveringTiles(options)).toEqual([
+                    new OverscaledTileID(22, 0, 22, 873835, 1592007),
+                    new OverscaledTileID(22, 0, 22, 873834, 1592007),
+                    new OverscaledTileID(22, 0, 22, 873835, 1592006),
+                    new OverscaledTileID(22, 0, 22, 873834, 1592006)
+                ]);
+            }
+        );
     });
 
-    test('loads only visible on terrain', (t) => {
+    test('loads only visible on terrain', () => {
         // See https://github.com/mapbox/mapbox-gl-js/pull/10462
         const demTiles = {};
         demTiles[new CanonicalTileID(14, 8546, 5850).key] = 2760;
@@ -1199,13 +1143,12 @@ test('transform', (t) => {
 
         const cover = transform.coveringTiles(options);
 
-        t.assert(cover.length === 43);
-        t.assert(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927));
-        t.assert(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461));
-        t.end();
+        expect(cover.length === 43).toBeTruthy();
+        expect(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927)).toBeTruthy();
+        expect(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461)).toBeTruthy();
     });
 
-    test('coveringZoomLevel', (t) => {
+    test('coveringZoomLevel', () => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -1215,65 +1158,62 @@ test('transform', (t) => {
         const transform = new Transform();
 
         transform.zoom = 0;
-        t.deepEqual(transform.coveringZoomLevel(options), 0);
+        expect(transform.coveringZoomLevel(options)).toEqual(0);
 
         transform.zoom = 0.1;
-        t.deepEqual(transform.coveringZoomLevel(options), 0);
+        expect(transform.coveringZoomLevel(options)).toEqual(0);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringZoomLevel(options), 1);
+        expect(transform.coveringZoomLevel(options)).toEqual(1);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringZoomLevel(options), 2);
+        expect(transform.coveringZoomLevel(options)).toEqual(2);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringZoomLevel(options), 10);
+        expect(transform.coveringZoomLevel(options)).toEqual(10);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringZoomLevel(options), 11);
+        expect(transform.coveringZoomLevel(options)).toEqual(11);
 
         transform.zoom = 11.5;
-        t.deepEqual(transform.coveringZoomLevel(options), 11);
+        expect(transform.coveringZoomLevel(options)).toEqual(11);
 
         options.tileSize = 256;
 
         transform.zoom = 0;
-        t.deepEqual(transform.coveringZoomLevel(options), 1);
+        expect(transform.coveringZoomLevel(options)).toEqual(1);
 
         transform.zoom = 0.1;
-        t.deepEqual(transform.coveringZoomLevel(options), 1);
+        expect(transform.coveringZoomLevel(options)).toEqual(1);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringZoomLevel(options), 2);
+        expect(transform.coveringZoomLevel(options)).toEqual(2);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringZoomLevel(options), 3);
+        expect(transform.coveringZoomLevel(options)).toEqual(3);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringZoomLevel(options), 11);
+        expect(transform.coveringZoomLevel(options)).toEqual(11);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringZoomLevel(options), 12);
+        expect(transform.coveringZoomLevel(options)).toEqual(12);
 
         transform.zoom = 11.5;
-        t.deepEqual(transform.coveringZoomLevel(options), 12);
+        expect(transform.coveringZoomLevel(options)).toEqual(12);
 
         options.roundZoom = true;
 
-        t.deepEqual(transform.coveringZoomLevel(options), 13);
-
-        t.end();
+        expect(transform.coveringZoomLevel(options)).toEqual(13);
     });
 
-    t.test('clamps latitude', (t) => {
+    test('clamps latitude', () => {
         const transform = new Transform();
 
-        t.deepEqual(transform.project(new LngLat(0, -90)), transform.project(new LngLat(0, -MAX_MERCATOR_LATITUDE)));
-        t.deepEqual(transform.project(new LngLat(0, 90)), transform.project(new LngLat(0, MAX_MERCATOR_LATITUDE)));
-        t.end();
+        expect(transform.project(new LngLat(0, -90))).toEqual(transform.project(new LngLat(0, -MAX_MERCATOR_LATITUDE)));
+        expect(transform.project(new LngLat(0, 90))).toEqual(transform.project(new LngLat(0, MAX_MERCATOR_LATITUDE)));
     });
 
-    t.test('horizonLineFromTop', (t) => {
+    test('horizonLineFromTop', () => {
         const transform = new Transform();
         transform.maxPitch = 90;
         transform.resize(800, 800);
@@ -1287,54 +1227,47 @@ test('transform', (t) => {
         };
 
         // Horizon line is in the center
-        t.true(eq(transform.horizonLineFromTop(), 400.0));
+        expect(eq(transform.horizonLineFromTop(), 400.0)).toBeTruthy();
 
         // Padding from top, horizon line should go down
         transform.padding = {top:300, bottom:0, left:0, right:0};
-        t.true(eq(transform.horizonLineFromTop(), 550.0));
+        expect(eq(transform.horizonLineFromTop(), 550.0)).toBeTruthy();
 
         // Padding from bottom, horizon line should go up
         transform.padding = {top:0, bottom:300, left:0, right:0};
-        t.true(eq(transform.horizonLineFromTop(), 250.0));
-
-        t.end();
+        expect(eq(transform.horizonLineFromTop(), 250.0)).toBeTruthy();
     });
 
-    t.test('clamps pitch', (t) => {
+    test('clamps pitch', () => {
         const transform = new Transform();
 
         transform.pitch = 45;
-        t.equal(transform.pitch, 45);
+        expect(transform.pitch).toEqual(45);
 
         transform.pitch = -10;
-        t.equal(transform.pitch, 0);
+        expect(transform.pitch).toEqual(0);
 
         transform.pitch = 90;
-        t.equal(transform.pitch, 60);
-
-        t.end();
+        expect(transform.pitch).toEqual(60);
     });
 
-    t.test('visibleUnwrappedCoordinates', (t) => {
+    test('visibleUnwrappedCoordinates', () => {
         const transform = new Transform();
         transform.resize(200, 200);
         transform.zoom = 0;
         transform.center = {lng: -170.01, lat: 0.01};
 
         let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
-        t.equal(unwrappedCoords.length, 4);
+        expect(unwrappedCoords.length).toEqual(4);
 
         //getVisibleUnwrappedCoordinates should honor _renderWorldCopies
         transform._renderWorldCopies = false;
         unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
-        t.equal(unwrappedCoords.length, 1);
-
-        t.end();
+        expect(unwrappedCoords.length).toEqual(1);
     });
 
-    t.test('isHorizonVisible', (t) => {
-
-        t.test('anyCornerOffEdge', (t) => {
+    describe('isHorizonVisible', () => {
+        test('anyCornerOffEdge', () => {
             const transform = new Transform();
             transform.maxPitch = 85;
             transform.resize(800, 800);
@@ -1343,29 +1276,30 @@ test('transform', (t) => {
             transform.pitch = 85;
             let p0, p1;
 
-            t.true(transform.isHorizonVisible());
+            expect(transform.isHorizonVisible()).toBeTruthy();
 
-            p0 = new Point(0, 0); p1 = new Point(10, 10);
-            t.true(transform.anyCornerOffEdge(p0, p1));
+            p0 = new Point(0, 0);
+            p1 = new Point(10, 10);
+            expect(transform.anyCornerOffEdge(p0, p1)).toBeTruthy();
 
-            p0 = new Point(0, 250); p1 = new Point(10, 350);
-            t.true(transform.anyCornerOffEdge(p0, p1));
+            p0 = new Point(0, 250);
+            p1 = new Point(10, 350);
+            expect(transform.anyCornerOffEdge(p0, p1)).toBeTruthy();
 
             p0 = new Point(0, transform.horizonLineFromTop() - 10);
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.true(transform.anyCornerOffEdge(p0, p1));
+            expect(transform.anyCornerOffEdge(p0, p1)).toBeTruthy();
 
-            p0 = new Point(0, 700); p1 = new Point(10, 710);
-            t.false(transform.anyCornerOffEdge(p0, p1));
+            p0 = new Point(0, 700);
+            p1 = new Point(10, 710);
+            expect(transform.anyCornerOffEdge(p0, p1)).toBeFalsy();
 
             p0 = new Point(0, transform.horizonLineFromTop());
             p1 = new Point(10, transform.horizonLineFromTop() + 10);
-            t.false(transform.anyCornerOffEdge(p0, p1));
-
-            t.end();
+            expect(transform.anyCornerOffEdge(p0, p1)).toBeFalsy();
         });
 
-        t.test('high pitch', (t) => {
+        test('high pitch', () => {
             const transform = new Transform();
             transform.maxPitch = 85;
             transform.resize(300, 300);
@@ -1373,43 +1307,37 @@ test('transform', (t) => {
             transform.center = {lng: 0, lat: 0};
             transform.pitch = 0;
 
-            t.false(transform.isHorizonVisible());
+            expect(transform.isHorizonVisible()).toBeFalsy();
             transform.pitch = 85;
-            t.true(transform.isHorizonVisible());
-
-            t.end();
+            expect(transform.isHorizonVisible()).toBeTruthy();
         });
 
-        t.test('with large top padding', (t) => {
+        test('with large top padding', () => {
             const transform = new Transform();
             transform.resize(200, 200);
             transform.zoom = 10;
             transform.center = {lng: 0, lat: 0};
             transform.pitch = 60;
 
-            t.false(transform.isHorizonVisible());
+            expect(transform.isHorizonVisible()).toBeFalsy();
             transform.padding = {top: 180};
-            t.true(transform.isHorizonVisible());
-
-            t.end();
+            expect(transform.isHorizonVisible()).toBeTruthy();
         });
 
-        t.test('lower zoom level, rotated map making background visible', (t) => {
+        test('lower zoom level, rotated map making background visible', () => {
             const transform = new Transform();
             transform.resize(1300, 1300);
             transform.zoom = 3;
             transform.center = {lng: 0, lat: 0};
             transform.pitch = 0;
 
-            t.false(transform.isHorizonVisible());
+            expect(transform.isHorizonVisible()).toBeFalsy();
             transform.zoom = 0;
             transform.bearing = 45;
-            t.true(transform.isHorizonVisible());
-
-            t.end();
+            expect(transform.isHorizonVisible()).toBeTruthy();
         });
 
-        t.test('accounts for renderWorldCopies', (t) => {
+        test('accounts for renderWorldCopies', () => {
             const transform = new Transform();
             transform.resize(1300, 1300);
             transform.zoom = 2;
@@ -1418,17 +1346,13 @@ test('transform', (t) => {
             transform.bearing = -45;
             transform.renderWorldCopies = true;
 
-            t.false(transform.isHorizonVisible());
+            expect(transform.isHorizonVisible()).toBeFalsy();
             transform.renderWorldCopies = false;
-            t.true(transform.isHorizonVisible());
-
-            t.end();
+            expect(transform.isHorizonVisible()).toBeTruthy();
         });
-
-        t.end();
     });
 
-    t.test('freeCamera', (t) => {
+    describe('freeCamera', () => {
         const rotatedFrame = (quaternion) => {
             return {
                 up: vec3.transformQuat([], [0, -1, 0], quaternion),
@@ -1437,7 +1361,7 @@ test('transform', (t) => {
             };
         };
 
-        t.test('invalid height', (t) => {
+        test('invalid height', () => {
             const transform = new Transform();
             const options = new FreeCameraOptions();
 
@@ -1449,12 +1373,11 @@ test('transform', (t) => {
             const updatedPosition = transform.getFreeCameraOptions().position;
 
             // Expect default state as height is invalid
-            t.deepEqual(updatedOrientation, [0, 0, 0, 1]);
-            t.deepEqual(updatedPosition, new MercatorCoordinate(0, 0, 0));
-            t.end();
+            expect(updatedOrientation).toEqual([0, 0, 0, 1]);
+            expect(updatedPosition).toEqual(new MercatorCoordinate(0, 0, 0));
         });
 
-        t.test('invalid z', (t) => {
+        test('invalid z', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1462,18 +1385,16 @@ test('transform', (t) => {
             // Invalid z-value (<= 0.0 || > 1) should be clamped to respect both min & max zoom values
             options.position = new MercatorCoordinate(0.1, 0.1, 0.0);
             transform.setFreeCameraOptions(options);
-            t.equal(transform.zoom, transform.maxZoom);
-            t.true(transform.getFreeCameraOptions().position.z > 0.0);
+            expect(transform.zoom).toEqual(transform.maxZoom);
+            expect(transform.getFreeCameraOptions().position.z > 0.0).toBeTruthy();
 
             options.position = new MercatorCoordinate(0.5, 0.2, 123.456);
             transform.setFreeCameraOptions(options);
-            t.equal(transform.zoom, transform.minZoom);
-            t.true(transform.getFreeCameraOptions().position.z <= 1.0);
-
-            t.end();
+            expect(transform.zoom).toEqual(transform.minZoom);
+            expect(transform.getFreeCameraOptions().position.z <= 1.0).toBeTruthy();
         });
 
-        t.test('orientation', (t) => {
+        test('orientation', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1481,39 +1402,37 @@ test('transform', (t) => {
             // Default orientation
             options.orientation = [0, 0, 0, 1];
             transform.setFreeCameraOptions(options);
-            t.equal(transform.bearing, 0);
-            t.equal(transform.pitch, 0);
-            t.deepEqual(transform.center, new LngLat(0, 0));
+            expect(transform.bearing).toEqual(0);
+            expect(transform.pitch).toEqual(0);
+            expect(transform.center).toEqual(new LngLat(0, 0));
 
             // 60 pitch
             options.orientation = [0, 0, 0, 1];
             quat.rotateX(options.orientation, options.orientation, -60.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
-            t.equal(transform.bearing, 0.0);
-            t.equal(transform.pitch, 60.0);
-            t.deepEqual(fixedPoint(transform.point, 5), new Point(256, 50));
+            expect(transform.bearing).toEqual(0.0);
+            expect(transform.pitch).toEqual(60.0);
+            expect(fixedPoint(transform.point, 5)).toEqual(new Point(256, 50));
 
             // 56 bearing
             options.orientation = [0, 0, 0, 1];
             quat.rotateZ(options.orientation, options.orientation, 56.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
-            t.equal(fixedNum(transform.bearing), 56.0);
-            t.equal(fixedNum(transform.pitch), 0.0);
-            t.deepEqual(fixedPoint(transform.point, 5), new Point(512, 359.80761));
+            expect(fixedNum(transform.bearing)).toEqual(56.0);
+            expect(fixedNum(transform.pitch)).toEqual(0.0);
+            expect(fixedPoint(transform.point, 5)).toEqual(new Point(512, 359.80761));
 
             // 30 pitch and -179 bearing
             options.orientation = [0, 0, 0, 1];
             quat.rotateZ(options.orientation, options.orientation, -179.0 * Math.PI / 180.0);
             quat.rotateX(options.orientation, options.orientation, -30.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
-            t.equal(fixedNum(transform.bearing), -179.0);
-            t.equal(fixedNum(transform.pitch), 30.0);
-            t.deepEqual(fixedPoint(transform.point, 5), new Point(442.09608, 386.59111));
-
-            t.end();
+            expect(fixedNum(transform.bearing)).toEqual(-179.0);
+            expect(fixedNum(transform.pitch)).toEqual(30.0);
+            expect(fixedPoint(transform.point, 5)).toEqual(new Point(442.09608, 386.59111));
         });
 
-        t.test('invalid orientation', (t) => {
+        test('invalid orientation', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1521,24 +1440,22 @@ test('transform', (t) => {
             // Zero length quaternion
             options.orientation = [0, 0, 0, 0];
             transform.setFreeCameraOptions(options);
-            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+            expect(transform.getFreeCameraOptions().orientation).toEqual([0, 0, 0, 1]);
 
             // up vector is on the xy-plane. Right vector can't be computed
             options.orientation = [0, 0, 0, 1];
             quat.rotateY(options.orientation, options.orientation, Math.PI * 0.5);
             transform.setFreeCameraOptions(options);
-            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
+            expect(transform.getFreeCameraOptions().orientation).toEqual([0, 0, 0, 1]);
 
             // Camera is upside down
             options.orientation = [0, 0, 0, 1];
             quat.rotateX(options.orientation, options.orientation, Math.PI * 0.75);
             transform.setFreeCameraOptions(options);
-            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
-
-            t.end();
+            expect(transform.getFreeCameraOptions().orientation).toEqual([0, 0, 0, 1]);
         });
 
-        t.test('wraps coordinates when renderWorldCopies is true', (t) => {
+        test('wraps coordinates when renderWorldCopies is true', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1548,11 +1465,10 @@ test('transform', (t) => {
             options.position = MercatorCoordinate.fromLngLat(lngLatLike);
             transform.setFreeCameraOptions(options);
 
-            t.equal(parseFloat(options.position.toLngLat().lng.toFixed(2)), -122.44);
-            t.end();
+            expect(parseFloat(options.position.toLngLat().lng.toFixed(2))).toEqual(-122.44);
         });
 
-        t.test('does not wrap coordinates when renderWorldCopies is falsey', (t) => {
+        test('does not wrap coordinates when renderWorldCopies is falsey', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1561,11 +1477,10 @@ test('transform', (t) => {
             options.position = MercatorCoordinate.fromLngLat(lngLatLike);
             transform.setFreeCameraOptions(options);
 
-            t.equal(parseFloat(options.position.toLngLat().lng.toFixed(2)), lngLatLike[0]);
-            t.end();
+            expect(parseFloat(options.position.toLngLat().lng.toFixed(2))).toEqual(lngLatLike[0]);
         });
 
-        t.test('clamp pitch', (t) => {
+        test('clamp pitch', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             const options = new FreeCameraOptions();
@@ -1574,17 +1489,15 @@ test('transform', (t) => {
             options.orientation = [0, 0, 0, 1];
             quat.rotateX(options.orientation, options.orientation, -85.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
-            t.equal(transform.pitch, transform.maxPitch);
+            expect(transform.pitch).toEqual(transform.maxPitch);
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
 
-            t.deepEqual(fixedVec3(frame.right, 5), [1, 0, 0]);
-            t.deepEqual(fixedVec3(frame.up, 5), [0, -0.5, 0.86603]);
-            t.deepEqual(fixedVec3(frame.forward, 5), [0, -0.86603, -0.5]);
-
-            t.end();
+            expect(fixedVec3(frame.right, 5)).toEqual([1, 0, 0]);
+            expect(fixedVec3(frame.up, 5)).toEqual([0, -0.5, 0.86603]);
+            expect(fixedVec3(frame.forward, 5)).toEqual([0, -0.86603, -0.5]);
         });
 
-        t.test('clamp to bounds', (t) => {
+        test('clamp to bounds', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             transform.setMaxBounds(new LngLatBounds(new LngLat(-180, -MAX_MERCATOR_LATITUDE), new LngLat(180, MAX_MERCATOR_LATITUDE)));
@@ -1596,27 +1509,23 @@ test('transform', (t) => {
             options.orientation = quat.rotateX([], [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
 
-            t.deepEqual(fixedPoint(transform.point, 5), new Point(50, 50));
-            t.equal(fixedNum(transform.bearing), 0.0);
-            t.equal(fixedNum(transform.pitch), 45.0);
-
-            t.end();
+            expect(fixedPoint(transform.point, 5)).toEqual(new Point(50, 50));
+            expect(fixedNum(transform.bearing)).toEqual(0.0);
+            expect(fixedNum(transform.pitch)).toEqual(45.0);
         });
 
-        t.test('invalid state', (t) => {
+        test('invalid state', () => {
             const transform = new Transform();
 
-            t.equal(transform.pitch, 0);
-            t.equal(transform.bearing, 0);
-            t.deepEqual(transform.point, new Point(256, 256));
+            expect(transform.pitch).toEqual(0);
+            expect(transform.bearing).toEqual(0);
+            expect(transform.point).toEqual(new Point(256, 256));
 
-            t.deepEqual(transform.getFreeCameraOptions().position, new MercatorCoordinate(0, 0, 0));
-            t.deepEqual(transform.getFreeCameraOptions().orientation, [0, 0, 0, 1]);
-
-            t.end();
+            expect(transform.getFreeCameraOptions().position).toEqual(new MercatorCoordinate(0, 0, 0));
+            expect(transform.getFreeCameraOptions().orientation).toEqual([0, 0, 0, 1]);
         });
 
-        t.test('orientation roll', (t) => {
+        test('orientation roll', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             let options = new FreeCameraOptions();
@@ -1628,15 +1537,13 @@ test('transform', (t) => {
             transform.setFreeCameraOptions(options);
             options = transform.getFreeCameraOptions();
 
-            t.deepEqual(fixedVec4(options.orientation, 5), fixedVec4(orientationWithoutRoll, 5));
-            t.equal(fixedNum(transform.pitch), 45.0);
-            t.equal(fixedNum(transform.bearing), 0.0);
-            t.deepEqual(fixedPoint(transform.point), new Point(256, 106));
-
-            t.end();
+            expect(fixedVec4(options.orientation, 5)).toEqual(fixedVec4(orientationWithoutRoll, 5));
+            expect(fixedNum(transform.pitch)).toEqual(45.0);
+            expect(fixedNum(transform.bearing)).toEqual(0.0);
+            expect(fixedPoint(transform.point)).toEqual(new Point(256, 106));
         });
 
-        t.test('state synchronization', (t) => {
+        test('state synchronization', () => {
             const transform = new Transform();
             transform.resize(100, 100);
             let frame = null;
@@ -1644,48 +1551,46 @@ test('transform', (t) => {
             transform.pitch = 0.0;
             transform.bearing = 0.0;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
-            t.deepEqual(transform.getFreeCameraOptions().position, new MercatorCoordinate(0.5, 0.5, 0.29296875));
-            t.deepEqual(frame.right, [1, 0, 0]);
-            t.deepEqual(frame.up, [0, -1, 0]);
-            t.deepEqual(frame.forward, [0, 0, -1]);
+            expect(transform.getFreeCameraOptions().position).toEqual(new MercatorCoordinate(0.5, 0.5, 0.29296875));
+            expect(frame.right).toEqual([1, 0, 0]);
+            expect(frame.up).toEqual([0, -1, 0]);
+            expect(frame.forward).toEqual([0, 0, -1]);
 
             transform.center = new LngLat(24.9384, 60.1699);
-            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.56927, 0.28945, 0.29297));
+            expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.56927, 0.28945, 0.29297));
 
             transform.center = new LngLat(20, -20);
             transform.pitch = 20;
             transform.bearing = 77;
-            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.45792, 0.57926, 0.27530));
+            expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.45792, 0.57926, 0.27530));
 
             transform.pitch = 0;
             transform.bearing = 90;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
-            t.deepEqual(fixedVec3(frame.right), [0, 1, 0]);
-            t.deepEqual(fixedVec3(frame.up), [1, 0, 0]);
-            t.deepEqual(fixedVec3(frame.forward), [0, 0, -1]);
+            expect(fixedVec3(frame.right)).toEqual([0, 1, 0]);
+            expect(fixedVec3(frame.up)).toEqual([1, -0, 0]);
+            expect(fixedVec3(frame.forward)).toEqual([0, 0, -1]);
 
             // Invalid pitch
             transform.bearing = 0;
             transform.pitch = -10;
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
-            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.55556, 0.55672, 0.29297));
-            t.deepEqual(frame.right, [1, 0, 0]);
-            t.deepEqual(frame.up, [0, -1, 0]);
-            t.deepEqual(frame.forward, [0, 0, -1]);
+            expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.55556, 0.55672, 0.29297));
+            expect(frame.right).toEqual([1, 0, 0]);
+            expect(frame.up).toEqual([0, -1, 0]);
+            expect(frame.forward).toEqual([0, 0, -1]);
 
             transform.bearing = 0;
             transform.pitch = 85;
             transform.center = new LngLat(0, -80);
             frame = rotatedFrame(transform.getFreeCameraOptions().orientation);
-            t.deepEqual(fixedCoord(transform.getFreeCameraOptions().position, 5), new MercatorCoordinate(0.5, 1.14146, 0.14648));
-            t.deepEqual(fixedVec3(frame.right, 5), [1, 0, 0]);
-            t.deepEqual(fixedVec3(frame.up, 5), [0, -0.5, 0.86603]);
-            t.deepEqual(fixedVec3(frame.forward, 5), [0, -0.86603, -0.5]);
-
-            t.end();
+            expect(fixedCoord(transform.getFreeCameraOptions().position, 5)).toEqual(new MercatorCoordinate(0.5, 1.14146, 0.14648));
+            expect(fixedVec3(frame.right, 5)).toEqual([1, 0, 0]);
+            expect(fixedVec3(frame.up, 5)).toEqual([0, -0.5, 0.86603]);
+            expect(fixedVec3(frame.forward, 5)).toEqual([0, -0.86603, -0.5]);
         });
 
-        t.test('Position should ignore the camera elevation reference mode', (t) => {
+        test('Position should ignore the camera elevation reference mode', () => {
             let groundElevation = 200;
             const transform = new Transform(0, 22, 0, 85);
             transform.resize(100, 100);
@@ -1705,22 +1610,20 @@ test('transform', (t) => {
             transform.cameraElevationReference = "sea";
             transform.setFreeCameraOptions(expected);
             let actual = transform.getFreeCameraOptions();
-            t.deepEqual(fixedCoord(actual.position), fixedCoord(expected.position));
-            t.deepEqual(fixedVec4(actual.orientation), fixedVec4(expected.orientation));
+            expect(fixedCoord(actual.position)).toEqual(fixedCoord(expected.position));
+            expect(fixedVec4(actual.orientation)).toEqual(fixedVec4(expected.orientation));
 
             transform.cameraElevationReference = "ground";
             groundElevation = 300;
             expected.position = new MercatorCoordinate(0.16, 0.39, 0.000078);
             transform.setFreeCameraOptions(expected);
             actual = transform.getFreeCameraOptions();
-            t.deepEqual(fixedCoord(actual.position), fixedCoord(expected.position));
-            t.deepEqual(fixedVec4(actual.orientation), fixedVec4(expected.orientation));
-
-            t.end();
+            expect(fixedCoord(actual.position)).toEqual(fixedCoord(expected.position));
+            expect(fixedVec4(actual.orientation)).toEqual(fixedVec4(expected.orientation));
         });
 
-        t.test('_translateCameraConstrained', (t) => {
-            t.test('it clamps at zoom 0 when maxBounds are not defined', (t) => {
+        describe('_translateCameraConstrained', () => {
+            test('it clamps at zoom 0 when maxBounds are not defined', () => {
                 const transform = new Transform();
                 transform.center = new LngLat(0, 0);
                 transform.zoom = 10;
@@ -1729,11 +1632,10 @@ test('transform', (t) => {
                 transform._updateCameraState();
                 transform._translateCameraConstrained([0.2, 0.3, 1000]);
 
-                t.equal(transform.zoom, 0);
-                t.end();
+                expect(transform.zoom).toEqual(0);
             });
 
-            t.test('it performs no clamping if camera z movementis not upwards', (t) => {
+            test('it performs no clamping if camera z movementis not upwards', () => {
                 const transform = new Transform();
                 transform.center = new LngLat(0, 0);
                 transform.zoom = 10;
@@ -1744,13 +1646,12 @@ test('transform', (t) => {
                 transform._translateCameraConstrained([0.2, 0.3, 0]);
                 const finalPos = transform._camera.position;
 
-                t.equal(initialPos[0] + 0.2, finalPos[0]);
-                t.equal(initialPos[1] + 0.3, finalPos[1]);
-                t.equal(initialPos[2], finalPos[2]);
-                t.end();
+                expect(initialPos[0] + 0.2).toEqual(finalPos[0]);
+                expect(initialPos[1] + 0.3).toEqual(finalPos[1]);
+                expect(initialPos[2]).toEqual(finalPos[2]);
             });
 
-            t.test('it clamps at a height equivalent to _constrain', (t) => {
+            test('it clamps at a height equivalent to _constrain', () => {
                 const transform = new Transform();
                 transform.center = new LngLat(0, 0);
                 transform.zoom = 20;
@@ -1765,100 +1666,102 @@ test('transform', (t) => {
                 transform.zoom = 20;
                 transform._updateCameraState();
                 transform._translateCameraConstrained([0.1, 0.2, 1]);
-                t.equal(transform.zoom, minZoom);
-
-                t.end();
+                expect(transform.zoom).toEqual(minZoom);
             });
-
-            t.end();
         });
-
-        t.end();
     });
 
-    t.test("pointRayIntersection with custom altitude", (t) => {
+    test("pointRayIntersection with custom altitude", () => {
         const transform = new Transform();
         transform.resize(100, 100);
         transform.pitch = 45;
 
         let result = transform.rayIntersectionCoordinate(transform.pointRayIntersection(transform.centerPoint));
-        t.deepEqual(fixedCoord(result), new MercatorCoordinate(0.5, 0.5, 0.0));
+        expect(fixedCoord(result)).toEqual(new MercatorCoordinate(0.5, 0.5, 0.0));
 
         result = transform.rayIntersectionCoordinate(transform.pointRayIntersection(transform.centerPoint, 1000));
         const diff = mercatorZfromAltitude(1000, 0);
-        t.deepEqual(fixedCoord(result), fixedCoord(new MercatorCoordinate(0.5, 0.5 + diff, diff)));
-
-        t.end();
+        expect(fixedCoord(result)).toEqual(fixedCoord(new MercatorCoordinate(0.5, 0.5 + diff, diff)));
     });
 
-    t.test("zoomFromMercatorZAdjusted", (t) => {
+    test("zoomFromMercatorZAdjusted", () => {
         const transform = new Transform();
         transform.resize(500, 500);
-        t.ok(transform.setProjection({name: 'globe'}));
+        expect(transform.setProjection({name: 'globe'})).toBeTruthy();
 
         for (let zoom = 0; zoom < 6; ++zoom) {
             transform.zoom = zoom;
 
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e3, 0)), 3), 6);
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e6, 0)), 3), 5.874);
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(4e6, 0)), 3), 3.87);
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e7, 0)), 3), 2.054);
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(2e7, 0)), 3), 1.052);
-            t.equal(fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(5e7, 0)), 3), 0);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e3, 0)), 3)
+            ).toEqual(6);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e6, 0)), 3)
+            ).toEqual(5.874);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(4e6, 0)), 3)
+            ).toEqual(3.87);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(1e7, 0)), 3)
+            ).toEqual(2.054);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(2e7, 0)), 3)
+            ).toEqual(1.052);
+            expect(
+                fixedNum(transform.zoomFromMercatorZAdjusted(mercatorZfromAltitude(5e7, 0)), 3)
+            ).toEqual(0);
         }
-
-        t.end();
     });
 
-    t.test("ZoomDeltaToMovement", (t) => {
+    test("ZoomDeltaToMovement", () => {
         const transform = new Transform();
         transform.resize(100, 100);
 
         // Incrementing zoom by 1 is expected reduce distance by half
         let foundMovement = transform.zoomDeltaToMovement([0.5, 0.5, 0.0], 1.0);
         let expectedMovement = transform.cameraToCenterDistance / transform.worldSize * 0.5;
-        t.equal(foundMovement, expectedMovement);
+        expect(foundMovement).toEqual(expectedMovement);
 
         foundMovement = transform.zoomDeltaToMovement([0.5, 0.5, 0.0], 2.0);
         expectedMovement = transform.cameraToCenterDistance / transform.worldSize * 0.75;
-        t.equal(foundMovement, expectedMovement);
-
-        t.end();
+        expect(foundMovement).toEqual(expectedMovement);
     });
 
-    t.test("ComputeZoomRelativeTo", (t) => {
+    test("ComputeZoomRelativeTo", () => {
         const transform = new Transform();
         transform.resize(100, 100);
         transform.zoom = 0;
 
         const height = transform._camera.position[2];
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0)), 0);
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.0, 0.0, 0.0)), 0);
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.5)), 1);
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.75)), 2);
+        expect(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0))).toEqual(0);
+        expect(transform.computeZoomRelativeTo(new MercatorCoordinate(0.0, 0.0, 0.0))).toEqual(0);
+        expect(
+            transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.5))
+        ).toEqual(1);
+        expect(
+            transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.75))
+        ).toEqual(2);
 
         transform.zoom += 1;
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0)), 1);
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.25)), 2);
-        t.equal(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.375)), 3);
-
-        t.end();
+        expect(transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, 0.0))).toEqual(1);
+        expect(
+            transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.25))
+        ).toEqual(2);
+        expect(
+            transform.computeZoomRelativeTo(new MercatorCoordinate(0.5, 0.5, height * 0.375))
+        ).toEqual(3);
     });
 
-    t.test("setProjection", (t) => {
+    test("setProjection", () => {
         const transform = new Transform();
-        t.equal(transform.getProjection().name, 'mercator');
+        expect(transform.getProjection().name).toEqual('mercator');
 
         // correctly returns indication of whether projection changed
-        t.ok(transform.setProjection({name: 'albers'}));
-        t.notOk(transform.setProjection({name: 'albers'}));
-        t.notOk(transform.setProjection({name: 'albers', center: [-96, 37.5]}));
-        t.ok(transform.setProjection({name: 'albers', center: [-100, 37.5]}));
-        t.ok(transform.setProjection({name: 'mercator'}));
-        t.notOk(transform.setProjection());
-
-        t.end();
+        expect(transform.setProjection({name: 'albers'})).toBeTruthy();
+        expect(transform.setProjection({name: 'albers'})).toBeFalsy();
+        expect(transform.setProjection({name: 'albers', center: [-96, 37.5]})).toBeFalsy();
+        expect(transform.setProjection({name: 'albers', center: [-100, 37.5]})).toBeTruthy();
+        expect(transform.setProjection({name: 'mercator'})).toBeTruthy();
+        expect(transform.setProjection()).toBeFalsy();
     });
-
-    t.end();
 });

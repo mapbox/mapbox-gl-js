@@ -16,7 +16,6 @@ import {GLTF_TO_ARRAY_TYPE, GLTF_COMPONENTS, GLTF_USHORT, GLTF_FLOAT} from '../u
 import Point from '@mapbox/point-geometry';
 import earcut from 'earcut';
 
-import window from '../../src/util/window.js';
 import {warnOnce, base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
@@ -26,7 +25,7 @@ import type {TextureImage} from '../../src/render/texture.js';
 
 function convertTextures(gltf: Object, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
-    const gl = window.WebGL2RenderingContext;
+    const gl = WebGL2RenderingContext;
     if (gltf.json.textures) {
         for (const textureDesc of gltf.json.textures) {
             const sampler: Sampler = {

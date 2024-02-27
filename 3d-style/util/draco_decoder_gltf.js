@@ -1,5 +1,4 @@
 // @noflow
-/* global WebAssembly: false */
 /* eslint-disable new-cap */
 
 // Emscripten-based JavaScript wrapper for Google Draco WASM decoder, manually optimized for much smaller size

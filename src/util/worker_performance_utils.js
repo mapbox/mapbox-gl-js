@@ -1,12 +1,8 @@
 // @flow
 
-import window from '../util/window.js';
-
 import Dispatcher from './dispatcher.js';
 import getWorkerPool from './global_worker_pool.js';
 import {PerformanceUtils} from './performance.js';
-
-const performance = window.performance;
 
 // separate from PerformanceUtils to avoid circular dependency
 
@@ -30,6 +26,7 @@ export const WorkerPerformanceUtils = {
                     sums[measure.name] = (sums[measure.name] || 0) + measure.duration;
                 }
 
+                // $FlowFixMe[prop-missing] incomplete Flow type for performance
                 sums.workerInitialization = result.timeOrigin - performance.timeOrigin - createTime;
             }
 

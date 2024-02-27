@@ -18,7 +18,6 @@ import DragPanHandler from './handler/shim/drag_pan.js';
 import DragRotateHandler from './handler/shim/drag_rotate.js';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate.js';
 import {bindAll, extend} from '../util/util.js';
-import window from '../util/window.js';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
@@ -98,7 +97,7 @@ class HandlerManager {
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, Object, any]>;
     _previousActiveHandlers: { [string]: Handler };
-    _listeners: Array<[HTMLElement, string, void | EventListenerOptionsOrUseCapture]>;
+    _listeners: Array<[HTMLElement | Document, string, void | EventListenerOptionsOrUseCapture]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: ?Vec3;
     _originalZoom: ?number;
@@ -147,8 +146,8 @@ class HandlerManager {
             // window-level event listeners give us the best shot at capturing events that
             // fall outside the map canvas element. Use `{capture: true}` for the move event
             // to prevent map move events from being fired during a drag.
-            [window.document, 'mousemove', {capture: true}],
-            [window.document, 'mouseup', undefined],
+            [document, 'mousemove', {capture: true}],
+            [document, 'mouseup', undefined],
 
             [el, 'mouseover', undefined],
             [el, 'mouseout', undefined],
@@ -166,7 +165,7 @@ class HandlerManager {
 
         for (const [target, type, listenerOptions] of this._listeners) {
             // $FlowFixMe[method-unbinding]
-            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            const listener = target === document ? this.handleWindowEvent : this.handleEvent;
             target.addEventListener((type: any), (listener: any), listenerOptions);
         }
     }
@@ -174,7 +173,7 @@ class HandlerManager {
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
             // $FlowFixMe[method-unbinding]
-            const listener = target === window.document ? this.handleWindowEvent : this.handleEvent;
+            const listener = target === document ? this.handleWindowEvent : this.handleEvent;
             target.removeEventListener((type: any), (listener: any), listenerOptions);
         }
     }

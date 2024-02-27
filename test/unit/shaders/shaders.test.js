@@ -1,11 +1,11 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import {parseUsedPreprocessorDefines} from '../../../src/shaders/shaders.js';
 
-test('parseUsedPreprocessorDefines', (t) => {
+test('parseUsedPreprocessorDefines', () => {
     let defines = [];
 
     parseUsedPreprocessorDefines(``, defines);
-    t.deepEqual(defines, []);
+    expect(defines).toEqual([]);
 
     defines = [];
     parseUsedPreprocessorDefines(`
@@ -15,35 +15,35 @@ test('parseUsedPreprocessorDefines', (t) => {
     #endif
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if defined(SHADER_DEFINE_1) || defined(SHADER_DEFINE_2)
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if defined(SHADER_DEFINE_1) && defined(SHADER_DEFINE_2)
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if !defined(SHADER_DEFINE_1) && !defined(SHADER_DEFINE_2)
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #ifndef SHADER_DEFINE_1
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1']);
+    expect(defines).toEqual(['SHADER_DEFINE_1']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
@@ -51,7 +51,7 @@ test('parseUsedPreprocessorDefines', (t) => {
     #elif defined(SHADER_DEFINE_2)
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
@@ -59,33 +59,31 @@ test('parseUsedPreprocessorDefines', (t) => {
     #elif defined(SHADER_DEFINE_1)
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1']);
+    expect(defines).toEqual(['SHADER_DEFINE_1']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if ! defined( (SHADER_DEFINE_1) )  &&  ! defined( (SHADER_DEFINE_2) )
     #endif
     `, defines);
-    t.deepEqual(defines, ['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
+    expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     if (SHADER_VARIABLE) {
     }
     `, defines);
-    t.deepEqual(defines, []);
+    expect(defines).toEqual([]);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #endif // SHADER_DEFINE
     `, defines);
-    t.deepEqual(defines, []);
+    expect(defines).toEqual([]);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #define SHADER_DEFINE
     `, defines);
-    t.deepEqual(defines, []);
-
-    t.end();
+    expect(defines).toEqual([]);
 });

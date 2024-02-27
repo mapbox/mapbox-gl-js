@@ -1,7 +1,7 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import composite from '../../../src/style-spec/composite.js';
 
-test('composites Mapbox vector sources', (t) => {
+test('composites Mapbox vector sources', () => {
     const result = composite({
         "version": 7,
         "sources": {
@@ -25,19 +25,18 @@ test('composites Mapbox vector sources', (t) => {
         }]
     });
 
-    t.deepEqual(result.sources, {
+    expect(result.sources).toEqual({
         "a,b": {
             "type": "vector",
             "url": "mapbox://a,b"
         }
     });
 
-    t.equal(result.layers[0].source, "a,b");
-    t.equal(result.layers[1].source, "a,b");
-    t.end();
+    expect(result.layers[0].source).toEqual("a,b");
+    expect(result.layers[1].source).toEqual("a,b");
 });
 
-test('does not composite vector + raster', (t) => {
+test('does not composite vector + raster', () => {
     const result = composite({
         "version": 7,
         "sources": {
@@ -53,11 +52,10 @@ test('does not composite vector + raster', (t) => {
         "layers": []
     });
 
-    t.deepEqual(Object.keys(result.sources), ["a", "b"]);
-    t.end();
+    expect(Object.keys(result.sources)).toEqual(["a", "b"]);
 });
 
-test('incorrect url match', (t) => {
+test('incorrect url match', () => {
     const result = composite({
         "version": 7,
         "sources": {
@@ -73,12 +71,11 @@ test('incorrect url match', (t) => {
         "layers": []
     });
 
-    t.deepEqual(Object.keys(result.sources), ["a", "b"]);
-    t.end();
+    expect(Object.keys(result.sources)).toEqual(["a", "b"]);
 });
 
-test('composites Mapbox vector sources with conflicting source layer names', (t) => {
-    t.throws(() => {
+test('composites Mapbox vector sources with conflicting source layer names', () => {
+    expect(() => {
         composite({
             "version": 7,
             "sources": {
@@ -103,7 +100,5 @@ test('composites Mapbox vector sources with conflicting source layer names', (t)
                 "source": "mapbox-b"
             }]
         });
-    }, /Conflicting source layer names/, 'throws error on conflicting source layer names');
-
-    t.end();
+    }).toThrowError(/Conflicting source layer names/);
 });

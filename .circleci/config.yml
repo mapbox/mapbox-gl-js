@@ -68,12 +68,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-browser:
-          requires:
-            - prepare-linux
-          filters:
-            tags:
-              only: /.*/
       - test-webpack:
           requires:
             - build
@@ -326,27 +320,6 @@ jobs:
           command: |
             yarn run codegen
             git add -A && git diff --staged --exit-code | tee check.patch
-
-  test-browser:
-    <<: *linux-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - browser-tools/install-browser-tools:
-          chrome-version: "114.0.5735.90"
-      - run: yarn run build-token
-      - run:
-          name: Test Chrome
-          environment:
-            SELENIUM_BROWSER: chrome
-            TAP_COLORS: 1
-          command: yarn run test-browser
-      - run:
-          name: Test Firefox
-          environment:
-            SELENIUM_BROWSER: firefox
-            TAP_COLORS: 1
-          command: yarn run test-browser
 
   test-expressions:
     <<: *linux-defaults

@@ -1,34 +1,30 @@
-import {test} from '../../../util/test.js';
-import {createMap} from '../../../util/index.js';
+import {test, expect, vi, createMap} from "../../../util/vitest.js";
 
-test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) => {
-    const map = createMap(t);
-    t.stub(map, 'triggerRepaint');
+test('Map#_requestRenderFrame schedules a new render frame if necessary', () => {
+    const map = createMap();
+    vi.spyOn(map, 'triggerRepaint').mockImplementation(() => {});
     map._requestRenderFrame(() => {});
-    t.equal(map.triggerRepaint.callCount, 1);
+    expect(map.triggerRepaint).toHaveBeenCalledTimes(1);
     map.remove();
-    t.end();
 });
 
-test('Map#_requestRenderFrame queues a task for the next render frame', (t) => {
-    const map = createMap(t);
-    const cb = t.spy();
+test('Map#_requestRenderFrame queues a task for the next render frame', () => {
+    const map = createMap();
+    const cb = vi.fn();
     map._requestRenderFrame(cb);
     map.once('render', () => {
-        t.equal(cb.callCount, 1);
+        expect(cb).toHaveBeenCalledTimes(1);
         map.remove();
-        t.end();
     });
 });
 
-test('Map#_cancelRenderFrame cancels a queued task', (t) => {
-    const map = createMap(t);
-    const cb = t.spy();
+test('Map#_cancelRenderFrame cancels a queued task', () => {
+    const map = createMap();
+    const cb = vi.fn();
     const id = map._requestRenderFrame(cb);
     map._cancelRenderFrame(id);
     map.once('render', () => {
-        t.equal(cb.callCount, 0);
+        expect(cb).not.toHaveBeenCalled(0);
         map.remove();
-        t.end();
     });
 });

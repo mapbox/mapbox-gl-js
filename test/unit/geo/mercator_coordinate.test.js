@@ -1,43 +1,35 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import LngLat from '../../../src/geo/lng_lat.js';
 import MercatorCoordinate, {mercatorScale} from '../../../src/geo/mercator_coordinate.js';
 
-test('LngLat', (t) => {
-    t.test('#constructor', (t) => {
-        t.ok(new MercatorCoordinate(0, 0) instanceof MercatorCoordinate, 'creates an object');
-        t.ok(new MercatorCoordinate(0, 0, 0) instanceof MercatorCoordinate, 'creates an object with altitude');
-        t.end();
+describe('LngLat', () => {
+    test('#constructor', () => {
+        expect(new MercatorCoordinate(0, 0) instanceof MercatorCoordinate).toBeTruthy();
+        expect(new MercatorCoordinate(0, 0, 0) instanceof MercatorCoordinate).toBeTruthy();
     });
 
-    t.test('#fromLngLat', (t) => {
+    test('#fromLngLat', () => {
         const nullIsland = new LngLat(0, 0);
-        t.deepEqual(MercatorCoordinate.fromLngLat(nullIsland), {x: 0.5, y: 0.5, z: 0});
-        t.end();
+        expect(MercatorCoordinate.fromLngLat(nullIsland)).toEqual({x: 0.5, y: 0.5, z: 0});
     });
 
-    t.test('#toLngLat', (t) => {
+    test('#toLngLat', () => {
         const dc = new LngLat(-77, 39);
-        t.deepEqual(MercatorCoordinate.fromLngLat(dc, 500).toLngLat(), {lng: -77, lat: 39});
-        t.end();
+        expect(MercatorCoordinate.fromLngLat(dc, 500).toLngLat()).toEqual({lng: -77, lat: 39});
     });
 
-    t.test('#toAltitude', (t) => {
+    test('#toAltitude', () => {
         const dc = new LngLat(-77, 39);
-        t.equal(MercatorCoordinate.fromLngLat(dc, 500).toAltitude(), 500);
-        t.end();
+        expect(MercatorCoordinate.fromLngLat(dc, 500).toAltitude()).toEqual(500);
     });
 
-    t.test('#mercatorScale', (t) => {
-        t.equal(mercatorScale(0), 1, 'mercator scale at the equator');
-        t.equal(mercatorScale(45), 1.414213562373095, 'mercator scale at 45 degrees latitude');
-        t.end();
+    test('#mercatorScale', () => {
+        expect(mercatorScale(0)).toEqual(1);
+        expect(mercatorScale(45)).toEqual(1.414213562373095);
     });
 
-    t.test('#meterInMercatorCoordinateUnits', (t) => {
+    test('#meterInMercatorCoordinateUnits', () => {
         const nullIsland = new LngLat(0, 0);
-        t.equal(MercatorCoordinate.fromLngLat(nullIsland).meterInMercatorCoordinateUnits(), 2.4981121214570498e-8, 'length of 1 meter in MercatorCoordinate units at the equator');
-        t.end();
+        expect(MercatorCoordinate.fromLngLat(nullIsland).meterInMercatorCoordinateUnits()).toEqual(2.4981121214570498e-8);
     });
-
-    t.end();
 });

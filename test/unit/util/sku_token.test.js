@@ -1,32 +1,26 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {createSkuToken, SKU_ID} from '../../../src/util/sku_token.js';
 
-test('sku token generation', (t) => {
+describe('sku token generation', () => {
     const skuToken = createSkuToken().token;
 
-    t.test('token is the correct length', (t) => {
-        t.equal(skuToken.length, 13);
-        t.end();
+    test('token is the correct length', () => {
+        expect(skuToken.length).toEqual(13);
     });
 
-    t.test('token has the correct token version', (t) => {
-        t.equal(skuToken.charAt(0), '1');
-        t.end();
+    test('token has the correct token version', () => {
+        expect(skuToken.charAt(0)).toEqual('1');
     });
 
-    t.test('token has the correct sku ID', (t) => {
-        t.equal(skuToken.slice(1, 3), SKU_ID);
-        t.end();
+    test('token has the correct sku ID', () => {
+        expect(skuToken.slice(1, 3)).toEqual(SKU_ID);
     });
 
-    t.test('createSkuToken generates a unique token each time it\'s called', (t) => {
+    test('createSkuToken generates a unique token each time it\'s called', () => {
         const secondSkuToken = createSkuToken().token;
         const thirdSkuToken = createSkuToken().token;
-        t.notEqual(skuToken, secondSkuToken);
-        t.notEqual(skuToken, thirdSkuToken);
-        t.notEqual(secondSkuToken, thirdSkuToken);
-        t.end();
+        expect(skuToken).not.toEqual(secondSkuToken);
+        expect(skuToken).not.toEqual(thirdSkuToken);
+        expect(secondSkuToken).not.toEqual(thirdSkuToken);
     });
-
-    t.end();
 });

@@ -1,82 +1,72 @@
-import {test} from '../../../util/test.js';
-import window from '../../../../src/util/window.js';
-import Map from '../../../../src/ui/map.js';
-import * as DOM from '../../../../src/util/dom.js';
-import simulate from '../../../util/simulate_interaction.js';
+import {test, expect, vi, createMap as globalCreateMap} from "../../../util/vitest.js";
+import simulate, {constructTouch} from '../../../util/simulate_interaction.js';
 
-function createMapWithCooperativeGestures(t) {
-    t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({
-        container: DOM.create('div', '', window.document.body),
+function createMapWithCooperativeGestures() {
+    return globalCreateMap({
         cooperativeGestures: true,
-        testMode: true
+        interactive: true
     });
 }
 
-test('If cooperativeGestures option is set to true, a `.mapboxgl-touch-pan-blocker` element is added to map', (t) => {
-    const map = createMapWithCooperativeGestures(t);
+test('If cooperativeGestures option is set to true, a `.mapboxgl-touch-pan-blocker` element is added to map', () => {
+    const map = createMapWithCooperativeGestures();
 
-    t.equal(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length, 1);
-    t.end();
+    expect(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length).toEqual(1);
 });
 
-test('If cooperativeGestures option is set to true, touch pan is prevented when one finger is used to pan', (t) => {
-    const map = createMapWithCooperativeGestures(t);
+test('If cooperativeGestures option is set to true, touch pan is prevented when one finger is used to pan', () => {
+    const map = createMapWithCooperativeGestures();
     const target = map.getCanvas();
 
-    const moveSpy = t.spy();
+    const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
-    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -50}]});
+    simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50})]});
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -40}]});
+    simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 
-    t.equal(moveSpy.callCount, 0);
-    t.end();
+    expect(moveSpy).not.toHaveBeenCalled();
 });
 
-test('If cooperativeGestures option is set to true, touch pan is triggered when two fingers are used to pan', (t) => {
-    const map = createMapWithCooperativeGestures(t);
+test('If cooperativeGestures option is set to true, touch pan is triggered when two fingers are used to pan', () => {
+    const map = createMapWithCooperativeGestures();
     const target = map.getCanvas();
 
-    const moveSpy = t.spy();
+    const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
-    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -40}, {target, identifier: 2, clientX: 0, clientY: -30}]});
+    simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: -30})]});
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -50}, {target, identifier: 2, clientX: 0, clientY: -40}]});
+    simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 
-    t.equal(moveSpy.callCount, 1);
-    t.end();
+    expect(moveSpy).toHaveBeenCalledTimes(1);
 });
 
-test('When cooperativeGestures is true and map is in fullscreen, touch pan is not prevented', (t) => {
-    window.document.fullscreenElement = true;
-    const map = createMapWithCooperativeGestures(t);
+test('When cooperativeGestures is true and map is in fullscreen, touch pan is not prevented', () => {
+    vi.spyOn(window.document, 'fullscreenElement', 'get').mockImplementation(() => true);
+    const map = createMapWithCooperativeGestures();
     const target = map.getCanvas();
 
-    const moveSpy = t.spy();
+    const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
-    simulate.touchstart(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -50}]});
+    simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50})]});
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas(), {touches: [{target, identifier: 1, clientX: 0, clientY: -40}]});
+    simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 
-    t.equal(moveSpy.callCount, 1);
-    t.end();
+    expect(moveSpy).toHaveBeenCalledTimes(1);
 });
 
-test('Disabling touch pan removes the `.mapboxgl-touch-pan-blocker` element', (t) => {
-    const map = createMapWithCooperativeGestures(t);
+test('Disabling touch pan removes the `.mapboxgl-touch-pan-blocker` element', () => {
+    const map = createMapWithCooperativeGestures();
 
     map.handlers._handlersById.touchPan.disable();
 
-    t.equal(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length, 0);
-    t.end();
+    expect(map.getContainer().querySelectorAll('.mapboxgl-touch-pan-blocker').length).toEqual(0);
 });

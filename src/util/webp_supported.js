@@ -1,7 +1,5 @@
 // @flow strict
 
-import window from './window.js';
-
 const exported = {
     supported: false,
     testSupport
@@ -13,6 +11,11 @@ let glForTesting;
 let webpCheckComplete = false;
 let webpImgTest;
 let webpImgTestOnloadComplete = false;
+
+/**
+ * @note Expressions test suite run in Node.js and use this file
+ */
+const window = typeof self !== 'undefined' ? self : {};
 
 if (window.document) {
     webpImgTest = window.document.createElement('img');

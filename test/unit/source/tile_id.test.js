@@ -1,124 +1,107 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
 
-test('CanonicalTileID', (t) => {
-    t.test('#constructor', (t) => {
-        t.throws(() => {
+describe('CanonicalTileID', () => {
+    test('#constructor', () => {
+        expect(() => {
             /*eslint no-new: 0*/
             new CanonicalTileID(-1, 0, 0);
-        });
-        t.throws(() => {
+        }).toThrowError();
+        expect(() => {
             /*eslint no-new: 0*/
             new CanonicalTileID(26, 0, 0);
-        });
-        t.throws(() => {
+        }).toThrowError();
+        expect(() => {
             /*eslint no-new: 0*/
             new CanonicalTileID(2, 4, 0);
-        });
-        t.throws(() => {
+        }).toThrowError();
+        expect(() => {
             /*eslint no-new: 0*/
             new CanonicalTileID(2, 0, 4);
-        });
-        t.end();
+        }).toThrowError();
     });
 
-    t.test('.key', (t) => {
-        t.deepEqual(new CanonicalTileID(0, 0, 0).key, 0);
-        t.deepEqual(new CanonicalTileID(1, 0, 0).key, 16);
-        t.deepEqual(new CanonicalTileID(1, 1, 0).key, 528);
-        t.deepEqual(new CanonicalTileID(1, 1, 1).key, 1552);
-        t.end();
+    test('.key', () => {
+        expect(new CanonicalTileID(0, 0, 0).key).toEqual(0);
+        expect(new CanonicalTileID(1, 0, 0).key).toEqual(16);
+        expect(new CanonicalTileID(1, 1, 0).key).toEqual(528);
+        expect(new CanonicalTileID(1, 1, 1).key).toEqual(1552);
     });
 
-    t.test('.equals', (t) => {
-        t.ok(new CanonicalTileID(3, 2, 1).equals(new CanonicalTileID(3, 2, 1)));
-        t.notOk(new CanonicalTileID(9, 2, 3).equals(new CanonicalTileID(3, 2, 1)));
-        t.end();
+    test('.equals', () => {
+        expect(new CanonicalTileID(3, 2, 1).equals(new CanonicalTileID(3, 2, 1))).toBeTruthy();
+        expect(new CanonicalTileID(9, 2, 3).equals(new CanonicalTileID(3, 2, 1))).toBeFalsy();
     });
 
-    t.test('.url', (t) => {
-        t.test('replaces {z}/{x}/{y}', (t) => {
-            t.equal(new CanonicalTileID(1, 0, 0).url(['{z}/{x}/{y}.json']), '1/0/0.json');
-            t.equal(new CanonicalTileID(15, 9876, 4321).url(['{z}/{x}/{z}_{x}_{y}.json']), '15/9876/15_9876_4321.json');
-            t.end();
+    describe('.url', () => {
+        test('replaces {z}/{x}/{y}', () => {
+            expect(new CanonicalTileID(1, 0, 0).url(['{z}/{x}/{y}.json'])).toEqual('1/0/0.json');
+            expect(new CanonicalTileID(15, 9876, 4321).url(['{z}/{x}/{z}_{x}_{y}.json'])).toEqual('15/9876/15_9876_4321.json');
         });
 
-        t.test('replaces {quadkey}', (t) => {
-            t.equal(new CanonicalTileID(1, 0, 0).url(['quadkey={quadkey}']), 'quadkey=0');
-            t.equal(new CanonicalTileID(2, 0, 0).url(['quadkey={quadkey}']), 'quadkey=00');
-            t.equal(new CanonicalTileID(2, 1, 1).url(['quadkey={quadkey}']), 'quadkey=03');
-            t.equal(new CanonicalTileID(17, 22914, 52870).url(['quadkey={quadkey}']), 'quadkey=02301322130000230');
+        test('replaces {quadkey}', () => {
+            expect(new CanonicalTileID(1, 0, 0).url(['quadkey={quadkey}'])).toEqual('quadkey=0');
+            expect(new CanonicalTileID(2, 0, 0).url(['quadkey={quadkey}'])).toEqual('quadkey=00');
+            expect(new CanonicalTileID(2, 1, 1).url(['quadkey={quadkey}'])).toEqual('quadkey=03');
+            expect(new CanonicalTileID(17, 22914, 52870).url(['quadkey={quadkey}'])).toEqual('quadkey=02301322130000230');
 
             // Test case confirmed by quadkeytools package
             // https://bitbucket.org/steele/quadkeytools/src/master/test/quadkey.js?fileviewer=file-view-default#quadkey.js-57
-            t.equal(new CanonicalTileID(6, 29, 3).url(['quadkey={quadkey}']), 'quadkey=011123');
-
-            t.end();
+            expect(new CanonicalTileID(6, 29, 3).url(['quadkey={quadkey}'])).toEqual('quadkey=011123');
         });
 
-        t.test('replaces {bbox-epsg-3857}', (t) => {
-            t.equal(new CanonicalTileID(1, 0, 0).url(['bbox={bbox-epsg-3857}']), 'bbox=-20037508.342789244,0,0,20037508.342789244');
-            t.end();
+        test('replaces {bbox-epsg-3857}', () => {
+            expect(new CanonicalTileID(1, 0, 0).url(['bbox={bbox-epsg-3857}'])).toEqual('bbox=-20037508.342789244,0,0,20037508.342789244');
         });
-
-        t.end();
     });
-
-    t.end();
 });
 
-test('OverscaledTileID', (t) => {
-    t.test('#constructor', (t) => {
-        t.ok(new OverscaledTileID(0, 0, 0, 0, 0) instanceof OverscaledTileID);
-        t.throws(() => {
+describe('OverscaledTileID', () => {
+    test('#constructor', () => {
+        expect(new OverscaledTileID(0, 0, 0, 0, 0) instanceof OverscaledTileID).toBeTruthy();
+        expect(() => {
             /*eslint no-new: 0*/
             new OverscaledTileID(7, 0, 8, 0, 0);
+        }).toThrowError();
+    });
+
+    test('.key', () => {
+        expect(new OverscaledTileID(0, 0, 0, 0, 0).key).toEqual(0);
+        expect(new OverscaledTileID(1, 0, 1, 0, 0).key).toEqual(16);
+        expect(new OverscaledTileID(1, 0, 1, 1, 0).key).toEqual(528);
+        expect(new OverscaledTileID(1, 0, 1, 1, 1).key).toEqual(1552);
+        expect(new OverscaledTileID(1, -1, 1, 1, 1).key).toEqual(3600);
+    });
+
+    describe('.toString', () => {
+        test('calculates strings', () => {
+            expect(new OverscaledTileID(1, 0, 1, 1, 1).toString()).toEqual('1/1/1');
         });
-        t.end();
     });
 
-    t.test('.key', (t) => {
-        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).key, 0);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).key, 16);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 0).key, 528);
-        t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).key, 1552);
-        t.deepEqual(new OverscaledTileID(1, -1, 1, 1, 1).key, 3600);
-        t.end();
-    });
-
-    t.test('.toString', (t) => {
-        t.test('calculates strings', (t) => {
-            t.deepEqual(new OverscaledTileID(1, 0, 1, 1, 1).toString(), '1/1/1');
-            t.end();
-        });
-        t.end();
-    });
-
-    t.test('.children', (t) => {
-        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).children(25), [
+    test('.children', () => {
+        expect(new OverscaledTileID(0, 0, 0, 0, 0).children(25)).toEqual([
             new OverscaledTileID(1, 0, 1, 0, 0),
             new OverscaledTileID(1, 0, 1, 1, 0),
             new OverscaledTileID(1, 0, 1, 0, 1),
             new OverscaledTileID(1, 0, 1, 1, 1)]);
-        t.deepEqual(new OverscaledTileID(0, 0, 0, 0, 0).children(0), [new OverscaledTileID(1, 0, 0, 0, 0)]);
-        t.end();
+        expect(new OverscaledTileID(0, 0, 0, 0, 0).children(0)).toEqual([new OverscaledTileID(1, 0, 0, 0, 0)]);
     });
 
-    t.test('.scaledTo', (t) => {
-        t.test('returns a parent', (t) => {
-            t.deepEqual(new OverscaledTileID(2, 0, 2, 0, 0).scaledTo(0), new OverscaledTileID(0, 0, 0, 0, 0));
-            t.deepEqual(new OverscaledTileID(1, 0, 1, 0, 0).scaledTo(0), new OverscaledTileID(0, 0, 0, 0, 0));
-            t.deepEqual(new OverscaledTileID(1, 0, 0, 0, 0).scaledTo(0), new OverscaledTileID(0, 0, 0, 0, 0));
-            t.end();
+    describe('.scaledTo', () => {
+        test('returns a parent', () => {
+            expect(new OverscaledTileID(2, 0, 2, 0, 0).scaledTo(0)).toEqual(new OverscaledTileID(0, 0, 0, 0, 0));
+            expect(new OverscaledTileID(1, 0, 1, 0, 0).scaledTo(0)).toEqual(new OverscaledTileID(0, 0, 0, 0, 0));
+            expect(new OverscaledTileID(1, 0, 0, 0, 0).scaledTo(0)).toEqual(new OverscaledTileID(0, 0, 0, 0, 0));
         });
-        t.end();
     });
 
-    t.test('.isChildOf', (t) => {
-        t.ok(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 0, 0, 0, 0)), "child of z0 tile");
-        t.notOk(new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 1, 0, 0, 0)), "not child of tile with different wrap");
-        t.end();
+    test('.isChildOf', () => {
+        expect(
+            new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 0, 0, 0, 0))
+        ).toBeTruthy();
+        expect(
+            new OverscaledTileID(2, 0, 2, 0, 0).isChildOf(new OverscaledTileID(0, 1, 0, 0, 0))
+        ).toBeFalsy();
     });
-
-    t.end();
 });

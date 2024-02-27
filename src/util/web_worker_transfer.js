@@ -8,7 +8,6 @@ import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomCon
 import CompoundExpression from '../style-spec/expression/compound_expression.js';
 import expressions from '../style-spec/expression/definitions/index.js';
 import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
-import window from './window.js';
 import {AJAXError} from './ajax.js';
 
 import type {Transferable} from '../types/transferable.js';
@@ -108,8 +107,7 @@ function isArrayBuffer(val: any): boolean {
 }
 
 function isImageBitmap(val: any): boolean {
-    return window.ImageBitmap &&
-        val instanceof window.ImageBitmap;
+    return self.ImageBitmap && val instanceof ImageBitmap;
 }
 
 /**
@@ -155,7 +153,7 @@ export function serialize(input: mixed, transferables: ?Set<Transferable>): Seri
         return view;
     }
 
-    if (input instanceof window.ImageData) {
+    if (input instanceof ImageData) {
         if (transferables) {
             transferables.add(input.data.buffer);
         }
@@ -239,7 +237,7 @@ export function deserialize(input: Serialized): mixed {
         isArrayBuffer(input) ||
         isImageBitmap(input) ||
         ArrayBuffer.isView(input) ||
-        input instanceof window.ImageData) {
+        input instanceof ImageData) {
         return input;
     }
 

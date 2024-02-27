@@ -1,13 +1,11 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import {packUint8ToFloat} from '../../../src/shaders/encode_attribute.js';
 
-test('packUint8ToFloat', (t) => {
-    t.equal(packUint8ToFloat(0, 0), 0);
-    t.equal(packUint8ToFloat(255, 255), 65535);
-    t.equal(packUint8ToFloat(123, 45), 31533);
+test('packUint8ToFloat', () => {
+    expect(packUint8ToFloat(0, 0)).toEqual(0);
+    expect(packUint8ToFloat(255, 255)).toEqual(65535);
+    expect(packUint8ToFloat(123, 45)).toEqual(31533);
 
-    t.equal(packUint8ToFloat(-1, -1), 0);
-    t.equal(packUint8ToFloat(256, 256), 65535);
-
-    t.end();
+    expect(packUint8ToFloat(-1, -1)).toEqual(0);
+    expect(packUint8ToFloat(256, 256)).toEqual(65535);
 });

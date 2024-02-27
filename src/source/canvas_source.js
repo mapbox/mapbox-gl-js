@@ -2,7 +2,6 @@
 
 import ImageSource from './image_source.js';
 
-import window from '../util/window.js';
 import Texture, {UserManagedTexture} from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
 import ValidationError from '../style-spec/error/validation_error.js';
@@ -85,7 +84,7 @@ class CanvasSource extends ImageSource {
 
         if (!options.canvas) {
             this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'missing required property "canvas"')));
-        } else if (typeof options.canvas !== 'string' && !(options.canvas instanceof window.HTMLCanvasElement)) {
+        } else if (typeof options.canvas !== 'string' && !(options.canvas instanceof HTMLCanvasElement)) {
             this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, '"canvas" must be either a string representing the ID of the canvas element from which to read, or an HTMLCanvasElement instance')));
         }
 
@@ -112,9 +111,9 @@ class CanvasSource extends ImageSource {
     load() {
         this._loaded = true;
         if (!this.canvas) {
-            this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
+            this.canvas = (this.options.canvas instanceof HTMLCanvasElement) ?
                 this.options.canvas :
-                window.document.getElementById(this.options.canvas);
+                ((document.getElementById(this.options.canvas): any): HTMLCanvasElement);
         }
         this.width = this.canvas.width;
         this.height = this.canvas.height;

@@ -1,11 +1,9 @@
 // @flow
 
-import window from '../util/window.js';
 import {
     PerformanceMarkers,
     LivePerformanceUtils
 } from '../util/live_performance.js';
-const performance = window.performance;
 
 performance.mark('library-evaluate');
 
@@ -64,6 +62,7 @@ export const PerformanceUtils = {
         placementTime += time;
     },
     frame(timestamp: number, isRenderFrame: boolean) {
+        // $FlowFixMe[extra-arg]
         performance.mark('frame', {
             detail: {
                 timestamp,
@@ -102,7 +101,9 @@ export const PerformanceUtils = {
     getWorkerPerformanceMetrics(): { timeOrigin: string, entries: Array<Object>, scope: string } {
         const entries = performance.getEntries().map(entry => {
             const result = entry.toJSON();
+            // $FlowFixMe[prop-missing]
             if (entry.detail) {
+                // $FlowFixMe[incompatible-use]
                 Object.assign(result, {
                     detail: entry.detail
                 });
@@ -111,6 +112,7 @@ export const PerformanceUtils = {
         });
         return {
             scope: isWorker() ? 'Worker' : 'Window',
+            // $FlowFixMe[prop-missing]
             timeOrigin: performance.timeOrigin,
             entries
         };
@@ -119,6 +121,9 @@ export const PerformanceUtils = {
 
 export function getPerformanceMeasurement(request: ?RequestParameters): Array<PerformanceEntry> {
     const url = request ? request.url.toString() : undefined;
+    if (!url) {
+        return [];
+    }
     return performance.getEntriesByName(url);
 }
 

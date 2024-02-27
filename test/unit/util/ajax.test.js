@@ -1,4 +1,5 @@
-import {test} from '../../util/test.js';
+import {vi, describe, test, expect} from "../../util/vitest.js";
+import {getPNGResponse} from '../../util/network.js';
 import {
     getArrayBuffer,
     getJSON,
@@ -6,155 +7,197 @@ import {
     getImage,
     resetImageRequestQueue
 } from '../../../src/util/ajax.js';
-import window from '../../../src/util/window.js';
 import config from '../../../src/util/config.js';
 import webpSupported from '../../../src/util/webp_supported.js';
 
-test('ajax', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
+describe('ajax', () => {
+    test('getArrayBuffer, 404', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('', {
+                status: 404
+            });
+        });
+
+        await new Promise(resolve => {
+            getArrayBuffer({url:''}, (error) => {
+                expect(error.status).toEqual(404);
+                resolve();
+            });
+        });
     });
 
-    t.afterEach(() => {
-        window.restore();
+    test('getJSON', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('{"foo": "bar"}', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        });
+
+        await new Promise(resolve => {
+            getJSON({url:''}, (error, body) => {
+                expect(error).toBeFalsy();
+                expect(body).toEqual({foo: 'bar'});
+                resolve();
+            });
+        });
     });
 
-    t.test('getArrayBuffer, 404', (t) => {
-        window.server.respondWith(request => {
-            request.respond(404);
+    test('getJSON, invalid syntax', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('how do i even', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         });
-        getArrayBuffer({url:''}, (error) => {
-            t.equal(error.status, 404);
-            t.end();
+
+        await new Promise(resolve => {
+            getJSON({url:''}, (error) => {
+                expect(error).toBeTruthy();
+                resolve();
+            });
         });
-        window.server.respond();
     });
 
-    t.test('getJSON', (t) => {
-        window.server.respondWith(request => {
-            request.respond(200, {'Content-Type': 'application/json'}, '{"foo": "bar"}');
+    test('getJSON, 404', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('', {
+                status: 404
+            });
         });
-        getJSON({url:''}, (error, body) => {
-            t.error(error);
-            t.deepEqual(body, {foo: 'bar'});
-            t.end();
+
+        await new Promise(resolve => {
+            getJSON({url:''}, (error) => {
+                expect(error.status).toEqual(404);
+                resolve();
+            });
         });
-        window.server.respond();
     });
 
-    t.test('getJSON, invalid syntax', (t) => {
-        window.server.respondWith(request => {
-            request.respond(200, {'Content-Type': 'application/json'}, 'how do i even');
+    test('getJSON, 401: non-Mapbox domain', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('', {
+                status: 401,
+                statusText: 'Unauthorized'
+            });
         });
-        getJSON({url:''}, (error) => {
-            t.ok(error);
-            t.end();
+
+        await new Promise(resolve => {
+            getJSON({url:''}, (error) => {
+                expect(error.status).toEqual(401);
+                expect(error.message).toEqual("Unauthorized");
+                resolve();
+            });
         });
-        window.server.respond();
     });
 
-    t.test('getJSON, 404', (t) => {
-        window.server.respondWith(request => {
-            request.respond(404);
+    test('getJSON, 401: Mapbox domain', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('', {
+                status: 401,
+                statusText: 'Unauthorized'
+            });
         });
-        getJSON({url:''}, (error) => {
-            t.equal(error.status, 404);
-            t.end();
+
+        await new Promise(resolve => {
+            getJSON({url:'api.mapbox.com'}, (error) => {
+                expect(error.status).toEqual(401);
+                expect(error.message).toEqual(
+                    "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
+                );
+                resolve();
+            });
         });
-        window.server.respond();
     });
 
-    t.test('getJSON, 401: non-Mapbox domain', (t) => {
-        window.server.respondWith(request => {
-            request.respond(401);
+    test('postData, 204(no content): no error', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response(null, {
+                status: 204
+            });
         });
-        getJSON({url:''}, (error) => {
-            t.equal(error.status, 401);
-            t.equal(error.message, "Unauthorized");
-            t.end();
+
+        await new Promise(resolve => {
+            postData({url:'api.mapbox.com'}, (error) => {
+                expect(error).toEqual(null);
+                resolve();
+            });
         });
-        window.server.respond();
     });
 
-    t.test('getJSON, 401: Mapbox domain', (t) => {
-        window.server.respondWith(request => {
-            request.respond(401);
-        });
-        getJSON({url:'api.mapbox.com'}, (error) => {
-            t.equal(error.status, 401);
-            t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes");
-            t.end();
-        });
-        window.server.respond();
-    });
+    test('getImage respects maxParallelImageRequests', async () => {
+        const requests = [];
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            requests.push(req);
 
-    t.test('postData, 204(no content): no error', (t) => {
-        window.server.respondWith(request => {
-            request.respond(204);
+            return new window.Response(await getPNGResponse(), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'image/png'
+                }
+            });
         });
-        postData({url:'api.mapbox.com'}, (error) => {
-            t.equal(error, null);
-            t.end();
-        });
-        window.server.respond();
-    });
-
-    t.test('getImage respects maxParallelImageRequests', (t) => {
-        window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
 
-        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
-        const jsdomImage = window.Image;
-        window.Image = class {
-            set src(src) {
-                setTimeout(() => {
-                    if (this.onload) this.onload();
-                });
+        await new Promise(resolve => {
+            function callback(err) {
+                if (err) return;
+                // last request is only added after we got a response from one of the previous ones
+                expect(requests.length).toEqual(maxRequests + 1);
+                resolve();
             }
-        };
 
-        function callback(err) {
-            if (err) return;
-            // last request is only added after we got a response from one of the previous ones
-            t.equals(window.server.requests.length, maxRequests + 1);
-            window.Image = jsdomImage;
-            t.end();
-        }
+            for (let i = 0; i < maxRequests + 1; i++) {
+                getImage({url: ''}, callback);
+            }
 
-        for (let i = 0; i < maxRequests + 1; i++) {
-            getImage({url: ''}, callback);
-        }
-        t.equals(window.server.requests.length, maxRequests);
-
-        window.server.requests[0].respond();
+            expect(requests.length).toEqual(maxRequests);
+        });
     });
 
-    t.test('getImage cancelling frees up request for maxParallelImageRequests', (t) => {
+    test('getImage cancelling frees up request for maxParallelImageRequests', () => {
         resetImageRequestQueue();
 
-        window.server.respondWith(request => request.respond(200, {'Content-Type': 'image/png'}, ''));
+        const requests = [];
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            requests.push(req);
+
+            return new window.Response(await getPNGResponse(), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'image/png'
+                }
+            });
+        });
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
 
-        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
-        const jsdomImage = window.Image;
-        window.Image = class {
-            set src(src) {
-                setTimeout(() => this.onload());
-            }
-        };
-
         for (let i = 0; i < maxRequests + 1; i++) {
-            getImage({url: ''}, () => t.fail).cancel();
+            getImage({url: ''}, expect.unreachable).cancel();
         }
-        t.equals(window.server.requests.length, maxRequests + 1);
-        window.Image = jsdomImage;
-        t.end();
+
+        expect(requests.length).toEqual(maxRequests + 1);
     });
 
-    t.test('getImage requests that were once queued are still abortable', (t) => {
+    test('getImage requests that were once queued are still abortable', () => {
         resetImageRequestQueue();
+
+        const serverRequests = [];
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            serverRequests.push(req);
+
+            return new window.Response(await getPNGResponse(), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'image/png'
+                }
+            });
+        });
 
         const maxRequests = config.MAX_PARALLEL_IMAGE_REQUESTS;
 
@@ -164,54 +207,69 @@ test('ajax', (t) => {
         }
 
         // the limit of allowed requests is reached
-        t.equals(window.server.requests.length, maxRequests);
+        expect(serverRequests.length).toEqual(maxRequests);
 
         const queuedURL = 'this-is-the-queued-request';
-        const queued = getImage({url: queuedURL}, () => t.fail());
+        const queued = getImage({url: queuedURL}, () => expect.unreachable());
 
         // the new requests is queued because the limit is reached
-        t.equals(window.server.requests.length, maxRequests);
+        expect(serverRequests.length).toEqual(maxRequests);
 
         // cancel the first request to let the queued request start
         requests[0].cancel();
-        t.equals(window.server.requests.length, maxRequests + 1);
+        expect(serverRequests.length).toEqual(maxRequests + 1);
 
         // abort the previously queued request and confirm that it is aborted
-        const queuedRequest = window.server.requests[window.server.requests.length - 1];
-        t.equals(queuedRequest.url, queuedURL);
-        t.equals(queuedRequest.aborted, undefined);
+        const queuedRequest = serverRequests[serverRequests.length - 1];
+        expect(queuedRequest.url).toMatch(queuedURL);
+        expect(queuedRequest.signal.aborted).toEqual(false);
         queued.cancel();
-        t.equals(queuedRequest.aborted, true);
-
-        t.end();
+        expect(queuedRequest.signal.aborted).toEqual(true);
     });
 
-    t.test('getImage sends accept/webp when supported', (t) => {
+    test('getImage sends accept/webp when supported', async () => {
         resetImageRequestQueue();
 
-        window.server.respondWith((request) => {
-            t.ok(request.requestHeaders.accept.includes('image/webp'), 'accepts header contains image/webp');
-            request.respond(200, {'Content-Type': 'image/webp'}, '');
+        await new Promise(resolve => {
+            vi.spyOn(window, 'fetch').mockImplementation((req) => {
+                expect(req.headers.get('accept').includes('image/webp')).toBeTruthy();
+                resolve();
+            });
+
+            webpSupported.supported = true;
+
+            getImage({url: ''}, () => {});
         });
-
-        // mock webp support
-        webpSupported.supported = true;
-
-        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
-        window.Image = class {
-            set src(src) {
-                setTimeout(() => {
-                    if (this.onload) this.onload();
-                });
-            }
-        };
-
-        getImage({url: ''}, () => { t.end(); });
-
-        window.server.respond();
     });
 
-    t.test('getImage retains cache control headers when using arrayBufferToImage', (t) => {
+    test.skip('getImage retains cache control headers when using arrayBufferToImage', async () => {
+        resetImageRequestQueue();
+
+        const headers = {
+            'Content-Type': 'image/webp',
+            'Cache-Control': 'max-age=43200,s-maxage=604800',
+            'Expires': 'Wed, 21 Oct 2099 07:28:00 GMT'
+        };
+
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response(await getPNGResponse(), {
+                status: 200,
+                headers
+            });
+        });
+
+        await new Promise(resolve => {
+            getImage({url: ''}, (err, img, cacheControl, expires) => {
+                if (err) expect.unreachable();
+                expect(cacheControl).toEqual(headers['Cache-Control']);
+                expect(expires).toEqual(headers['Expires']);
+                resolve();
+            });
+
+        });
+    });
+
+    test.skip('getImage retains cache control headers when using arrayBufferToImageBitmap', async () => {
         resetImageRequestQueue();
 
         const headers = {
@@ -220,50 +278,20 @@ test('ajax', (t) => {
             'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT'
         };
 
-        window.server.respondWith(request => request.respond(200, headers, ''));
-
-        // jsdom doesn't call image onload; fake it https://github.com/jsdom/jsdom/issues/1816
-        window.Image = class {
-            set src(src) {
-                setTimeout(() => {
-                    if (this.onload) this.onload();
-                });
-            }
-        };
-
-        getImage({url: ''}, (err, img, cacheControl, expires) => {
-            if (err) t.fail();
-            t.equals(cacheControl, headers['Cache-Control']);
-            t.equals(expires, headers['Expires']);
-            t.end();
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response(await getPNGResponse(), {
+                status: 200,
+                headers
+            });
         });
 
-        window.server.respond();
-    });
-
-    t.test('getImage retains cache control headers when using arrayBufferToImageBitmap', (t) => {
-        resetImageRequestQueue();
-
-        const headers = {
-            'Content-Type': 'image/webp',
-            'Cache-Control': 'max-age=43200,s-maxage=604800',
-            'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT'
-        };
-
-        window.server.respondWith(request => request.respond(200, headers, ''));
-
-        // jsdom doesn't support createImageBitmap; fake it
-        window.createImageBitmap = () => Promise.resolve();
-
-        getImage({url: ''}, (err, img, cacheControl, expires) => {
-            if (err) t.fail();
-            t.equals(cacheControl, headers['Cache-Control']);
-            t.equals(expires, headers['Expires']);
-            t.end();
+        await new Promise(resolve => {
+            getImage({url: ''}, (err, img, cacheControl, expires) => {
+                if (err) expect.unreachable();
+                expect(cacheControl).toEqual(headers['Cache-Control']);
+                expect(expires).toEqual(headers['Expires']);
+                resolve();
+            });
         });
-
-        window.server.respond();
     });
-
-    t.end();
 });

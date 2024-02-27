@@ -1,8 +1,8 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import {mapObject} from '../../../src/util/util.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 
-test('StyleLayerIndex#replace', (t) => {
+test('StyleLayerIndex#replace', () => {
     const index = new StyleLayerIndex([
         {id: '1', type: 'fill', source: 'source', 'source-layer': 'layer', paint: {'fill-color': 'red'}},
         {id: '2', type: 'circle', source: 'source', 'source-layer': 'layer', paint: {'circle-color': 'green'}},
@@ -10,20 +10,18 @@ test('StyleLayerIndex#replace', (t) => {
     ]);
 
     const families = index.familiesBySource['source']['layer'];
-    t.equal(families.length, 2);
-    t.equal(families[0].length, 1);
-    t.equal(families[0][0].id, '1');
-    t.equal(families[1].length, 2);
-    t.equal(families[1][0].id, '2');
-    t.equal(families[1][1].id, '3');
+    expect(families.length).toEqual(2);
+    expect(families[0].length).toEqual(1);
+    expect(families[0][0].id).toEqual('1');
+    expect(families[1].length).toEqual(2);
+    expect(families[1][0].id).toEqual('2');
+    expect(families[1][1].id).toEqual('3');
 
     index.replace([], new Map());
-    t.deepEqual(index.familiesBySource, {});
-
-    t.end();
+    expect(index.familiesBySource).toEqual({});
 });
 
-test('StyleLayerIndex#update', (t) => {
+test('StyleLayerIndex#update', () => {
     const index = new StyleLayerIndex([
         {id: '1', type: 'fill', source: 'foo', 'source-layer': 'layer', paint: {'fill-color': 'red'}},
         {id: '2', type: 'circle', source: 'foo', 'source-layer': 'layer', paint: {'circle-color': 'green'}},
@@ -37,19 +35,17 @@ test('StyleLayerIndex#update', (t) => {
     ], []);
 
     const families = index.familiesBySource['bar']['layer'];
-    t.equal(families.length, 2);
-    t.equal(families[0].length, 1);
-    t.equal(families[0][0].getPaintProperty('fill-color'), 'cyan');
-    t.equal(families[1].length, 2);
-    t.equal(families[1][0].getPaintProperty('circle-color'), 'magenta');
-    t.equal(families[1][0].source, 'bar');
-    t.equal(families[1][1].getPaintProperty('circle-color'), 'yellow');
-    t.equal(families[1][1].source, 'bar');
-
-    t.end();
+    expect(families.length).toEqual(2);
+    expect(families[0].length).toEqual(1);
+    expect(families[0][0].getPaintProperty('fill-color')).toEqual('cyan');
+    expect(families[1].length).toEqual(2);
+    expect(families[1][0].getPaintProperty('circle-color')).toEqual('magenta');
+    expect(families[1][0].source).toEqual('bar');
+    expect(families[1][1].getPaintProperty('circle-color')).toEqual('yellow');
+    expect(families[1][1].source).toEqual('bar');
 });
 
-test('StyleLayerIndex#familiesBySource', (t) => {
+test('StyleLayerIndex#familiesBySource', () => {
     const index = new StyleLayerIndex([
         {id: '0', type: 'fill', 'source': 'A', 'source-layer': 'foo'},
         {id: '1', type: 'fill', 'source': 'A', 'source-layer': 'foo'},
@@ -68,7 +64,7 @@ test('StyleLayerIndex#familiesBySource', (t) => {
         });
     });
 
-    t.deepEqual(ids, {
+    expect(ids).toEqual({
         'A': {
             'foo': [['0', '1'], ['2']],
             'bar': [['3']]
@@ -83,11 +79,9 @@ test('StyleLayerIndex#familiesBySource', (t) => {
             '_geojsonTileLayer': [['6']]
         }
     });
-
-    t.end();
 });
 
-test('StyleLayerIndex groups families even if layout key order differs', (t) => {
+test('StyleLayerIndex groups families even if layout key order differs', () => {
     const index = new StyleLayerIndex([
         {id: '0', type: 'line', 'source': 'source', 'source-layer': 'layer',
             'layout': {'line-cap': 'butt', 'line-join': 'miter'}},
@@ -96,7 +90,5 @@ test('StyleLayerIndex groups families even if layout key order differs', (t) => 
     ]);
 
     const families = index.familiesBySource['source']['layer'];
-    t.equal(families[0].length, 2);
-
-    t.end();
+    expect(families[0].length).toEqual(2);
 });

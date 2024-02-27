@@ -1,104 +1,88 @@
-import {test} from '../../../util/test.js';
-import window from '../../../../src/util/window.js';
-import Map from '../../../../src/ui/map.js';
-import * as DOM from '../../../../src/util/dom.js';
-import simulate from '../../../util/simulate_interaction.js';
+import {test, expect, waitFor, vi, createMap} from "../../../util/vitest.js";
+import simulate, {constructTouch, simulateDoubleTap} from '../../../util/simulate_interaction.js';
+import land from '../../../util/fixtures/land.json';
 
-function createMap(t) {
-    t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({container: DOM.create('div', '', window.document.body), testMode: true});
-}
-
-function simulateDoubleTap(map, delay = 100) {
-    const canvas = map.getCanvas();
-    return new Promise(resolve => {
-        simulate.touchstart(canvas, {touches: [{target: canvas, clientX: 0, clientY: 0}]});
-        simulate.touchend(canvas);
-        setTimeout(() => {
-            simulate.touchstart(canvas, {touches: [{target: canvas, clientX: 0, clientY: 0}]});
-            simulate.touchend(canvas);
-            map._renderTaskQueue.run();
-            resolve();
-        }, delay);
+test('DoubleClickZoomHandler zooms on dblclick event', () => {
+    const map = createMap({
+        interactive: true
     });
-}
 
-test('DoubleClickZoomHandler zooms on dblclick event', (t) => {
-    const map = createMap(t);
-
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoomstart', zoom);
 
     simulate.dblclick(map.getCanvas());
     map._renderTaskQueue.run();
 
-    t.ok(zoom.called);
+    expect(zoom).toHaveBeenCalled();
 
     map.remove();
-    t.end();
 });
 
-test('DoubleClickZoomHandler does not zoom if preventDefault is called on the dblclick event', (t) => {
-    const map = createMap(t);
+test('DoubleClickZoomHandler does not zoom if preventDefault is called on the dblclick event', () => {
+    const map = createMap({
+        interactive: true
+    });
 
     map.on('dblclick', e => e.preventDefault());
 
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoomstart', zoom);
 
     simulate.dblclick(map.getCanvas());
     map._renderTaskQueue.run();
 
-    t.equal(zoom.callCount, 0);
+    expect(zoom).not.toHaveBeenCalled();
 
     map.remove();
-    t.end();
 });
 
-test('DoubleClickZoomHandler zooms on double tap if touchstart events are < 300ms apart', (t) => {
-    const map = createMap(t);
-
-    const zoom = t.spy();
-    map.on('zoomstart', zoom);
-
-    simulateDoubleTap(map, 100).then(() => {
-        t.ok(zoom.called);
-
-        map.remove();
-        t.end();
+test('DoubleClickZoomHandler zooms on double tap if touchstart events are < 300ms apart', async () => {
+    const map = createMap({
+        interactive: true
     });
 
+    await waitFor(map, 'style.load');
+
+    await new Promise(resolve => {
+        map.on('zoomstart', () => {
+            resolve();
+        });
+        simulateDoubleTap(map, 100);
+    });
 });
 
-test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are > 500ms apart', (t) => {
-    const map = createMap(t);
+test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are > 500ms apart', () => {
+    const map = createMap({
+        interactive: true
+    });
 
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoom', zoom);
 
     simulateDoubleTap(map, 500).then(() => {
-        t.equal(zoom.callCount, 0);
+        expect(zoom).not.toHaveBeenCalled();
 
         map.remove();
-        t.end();
     });
 
 });
 
-test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are in different locations', (t) => {
-    const map = createMap(t);
+test('DoubleClickZoomHandler does not zoom on double tap if touchstart events are in different locations', () => {
+    const map = createMap({
+        interactive: true
+    });
 
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoom', zoom);
 
     const canvas = map.getCanvas();
 
     const simulateTwoDifferentTaps = () => {
         return new Promise(resolve => {
-            simulate.touchstart(canvas, {touches: [{clientX: 0, clientY: 0}]});
+            simulate.touchstart(canvas, {touches: [constructTouch(canvas, {clientX: 0, clientY: 0})]});
             simulate.touchend(canvas);
             setTimeout(() => {
-                simulate.touchstart(canvas, {touches: [{clientX: 30.5, clientY: 30.5}]});
+                simulate.touchstart(canvas, {touches: [constructTouch(canvas, {clientX: 30.5, clientY: 30.5})]});
                 simulate.touchend(canvas);
                 map._renderTaskQueue.run();
                 resolve();
@@ -107,53 +91,54 @@ test('DoubleClickZoomHandler does not zoom on double tap if touchstart events ar
     };
 
     simulateTwoDifferentTaps().then(() => {
-        t.equal(zoom.callCount, 0);
+        expect(zoom).not.toHaveBeenCalled();
 
         map.remove();
-        t.end();
     });
 
 });
 
-test('DoubleClickZoomHandler zooms on the second touchend event of a double tap', (t) => {
-    const map = createMap(t);
+test('DoubleClickZoomHandler zooms on the second touchend event of a double tap', () => {
+    const map = createMap({
+        interactive: true
+    });
 
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoomstart', zoom);
 
     const canvas = map.getCanvas();
-    const touchOptions = {touches: [{target: canvas, clientX: 0.5, clientY: 0.5}]};
+    const touchOptions = {touches: [constructTouch(canvas, {target: canvas, clientX: 0.5, clientY: 0.5})]};
 
     simulate.touchstart(canvas, touchOptions);
     simulate.touchend(canvas);
     simulate.touchstart(canvas, touchOptions);
     map._renderTaskQueue.run();
     map._renderTaskQueue.run();
-    t.notOk(zoom.called, 'should not trigger zoom before second touchend');
+    expect(zoom).not.toHaveBeenCalled();
 
     simulate.touchcancel(canvas);
     simulate.touchend(canvas);
     map._renderTaskQueue.run();
-    t.notOk(zoom.called, 'should not trigger zoom if second touch is canceled');
+    expect(zoom).not.toHaveBeenCalled();
 
     simulate.touchstart(canvas, touchOptions);
     simulate.touchend(canvas);
     simulate.touchstart(canvas, touchOptions);
     map._renderTaskQueue.run();
-    t.notOk(zoom.called);
+    expect(zoom).not.toHaveBeenCalled();
 
     simulate.touchend(canvas);
     map._renderTaskQueue.run();
 
-    t.ok(zoom.called, 'should trigger zoom after second touchend');
-
-    t.end();
+    expect(zoom).toHaveBeenCalled();
 });
 
-test('DoubleClickZoomHandler does not zoom on double tap if second touchend is >300ms after first touchstart', (t) => {
-    const map = createMap(t);
+test('DoubleClickZoomHandler does not zoom on double tap if second touchend is >300ms after first touchstart', () => {
+    const map = createMap({
+        interactive: true
+    });
 
-    const zoom = t.spy();
+    const zoom = vi.fn();
     map.on('zoom', zoom);
 
     const canvas = map.getCanvas();
@@ -172,8 +157,47 @@ test('DoubleClickZoomHandler does not zoom on double tap if second touchend is >
     };
 
     simulateSlowSecondTap().then(() => {
-        t.notOk(zoom.called);
-
-        t.end();
+        expect(zoom).not.toHaveBeenCalled();
     });
+});
+
+test("Double click at the center", async () => {
+    const map = createMap({
+        interactive: true,
+        zoom: 1,
+        fadeDuration: 0,
+        center: [0, 0],
+        style: {
+            version: 8,
+            sources: {
+                land: {
+                    type: 'geojson',
+                    data: land
+                }
+            },
+            layers: [
+                {
+                    id: 'background',
+                    type: 'background',
+                    paint: {
+                        'background-color': '#72d0f2'
+                    }
+                },
+                {
+                    id: 'land',
+                    type: 'fill',
+                    source: 'land',
+                    paint: {
+                        'fill-color': '#f0e9e1'
+                    }
+                }
+            ]
+        }
+    });
+
+    await waitFor(map, 'load');
+    await simulateDoubleTap(map);
+    await waitFor(map, 'idle');
+
+    expect(map.getZoom()).toEqual(2);
 });

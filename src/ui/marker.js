@@ -1,7 +1,6 @@
 // @flow
 
 import * as DOM from '../util/dom.js';
-import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap.js';
@@ -85,7 +84,7 @@ export default class Marker extends Evented {
     _rotationAlignment: string;
     _originalTabIndex: ?string; // original tabindex of _element
     _fadeTimer: ?TimeoutID;
-    _updateFrameId: number;
+    _updateFrameId: AnimationFrameID;
     _updateMoving: () => void;
     _occludedOpacity: number;
 
@@ -93,7 +92,7 @@ export default class Marker extends Evented {
         super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
-        if (options instanceof window.HTMLElement || legacyOptions) {
+        if (options instanceof HTMLElement || legacyOptions) {
             options = extend({element: options}, legacyOptions);
         }
 
@@ -571,7 +570,7 @@ export default class Marker extends Evented {
     }
 
     _update(delaySnap?: boolean) {
-        window.cancelAnimationFrame(this._updateFrameId);
+        cancelAnimationFrame(this._updateFrameId);
         const map = this._map;
         if (!map) return;
 
@@ -585,7 +584,7 @@ export default class Marker extends Evented {
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (delaySnap === true) {
-            this._updateFrameId = window.requestAnimationFrame(() => {
+            this._updateFrameId = requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
                     this._updateDOM();

@@ -1,10 +1,10 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect, vi} from "../../util/vitest.js";
 import Dispatcher from '../../../src/util/dispatcher.js';
 import WebWorker from '../../../src/util/web_worker.js';
 import WorkerPool from '../../../src/util/worker_pool.js';
 
-test('Dispatcher', (t) => {
-    t.test('requests and releases workers from pool', (t) => {
+describe('Dispatcher', () => {
+    test('requests and releases workers from pool', () => {
         const workers = [new WebWorker(), new WebWorker()];
 
         const releaseCalled = [];
@@ -18,44 +18,37 @@ test('Dispatcher', (t) => {
         };
 
         const dispatcher = new Dispatcher(workerPool, {});
-        t.same(dispatcher.actors.map((actor) => { return actor.target; }), workers);
+        expect(dispatcher.actors.map((actor) => { return actor.target; })).toStrictEqual(workers);
         dispatcher.remove();
-        t.equal(dispatcher.actors.length, 0, 'actors discarded');
-        t.same(releaseCalled, [dispatcher.id]);
-
-        t.end();
+        expect(dispatcher.actors.length).toEqual(0);
+        expect(releaseCalled).toStrictEqual([dispatcher.id]);
     });
 
-    t.test('creates Actors with unique map id', (t) => {
+    test('creates Actors with unique map id', () => {
         const ids = [];
         function Actor (target, parent, mapId) { ids.push(mapId); }
-        t.stub(Dispatcher, 'Actor').callsFake(Actor);
-        t.stub(Dispatcher.prototype, 'broadcast').callsFake(() => {});
-        t.stub(WorkerPool, 'workerCount').value(1);
+        vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
+        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});
+        vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 1);
 
         const workerPool = new WorkerPool();
         const dispatchers = [new Dispatcher(workerPool, {}), new Dispatcher(workerPool, {})];
-        t.same(ids, dispatchers.map((d) => { return d.id; }));
-
-        t.end();
+        expect(ids).toStrictEqual(dispatchers.map((d) => { return d.id; }));
     });
 
-    t.test('#remove destroys actors', (t) => {
+    test('#remove destroys actors', () => {
         const actorsRemoved = [];
         function Actor() {
             this.remove = function() { actorsRemoved.push(this); };
         }
-        t.stub(Dispatcher, 'Actor').callsFake(Actor);
-        t.stub(Dispatcher.prototype, 'broadcast').callsFake(() => {});
-        t.stub(WorkerPool, 'workerCount').value(4);
+        vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
+        vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});
+        vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 4);
 
         const workerPool = new WorkerPool();
         const dispatcher = new Dispatcher(workerPool, {});
         dispatcher.remove();
-        t.equal(actorsRemoved.length, 4);
-        t.end();
+        expect(actorsRemoved.length).toEqual(4);
     });
-
-    t.end();
 });
 

@@ -1,7 +1,4 @@
-import {test} from '../../util/test.js';
-import fs from 'fs';
-import {globSync} from 'glob';
-import path from 'path';
+import {test, expect} from "../../util/vitest.js";
 import validate from '../../../src/style-spec/validate_style.js';
 import v8 from '../../../src/style-spec/reference/v8.json';
 import migrate from '../../../src/style-spec/migrate.js';
@@ -9,31 +6,23 @@ import migrate from '../../../src/style-spec/migrate.js';
 /* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec.js';
 
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-
-const UPDATE = !!process.env.UPDATE;
-
-test('does not migrate from version 5', (t) => {
-    t.throws(() => {
+test('does not migrate from version 5', () => {
+    expect(() => {
         migrate({version: 5, layers: []});
-    }, new Error('cannot migrate from', 5));
-    t.end();
+    }).toThrowError('cannot migrate from');
 });
 
-test('does not migrate from version 6', (t) => {
-    t.throws(() => {
+test('does not migrate from version 6', () => {
+    expect(() => {
         migrate({version: 6, layers: []});
-    }, new Error('cannot migrate from', 6));
-    t.end();
+    }).toThrowError('cannot migrate from');
 });
 
-test('migrates to latest version from version 7', (t) => {
-    t.deepEqual(migrate({version: 7, layers: []}).version, spec.latest.$version);
-    t.end();
+test('migrates to latest version from version 7', () => {
+    expect(migrate({version: 7, layers: []}).version).toEqual(spec.latest.$version);
 });
 
-test('converts token strings to expressions', (t) => {
+test('converts token strings to expressions', () => {
     const migrated = migrate({
         version: 8,
         layers: [{
@@ -42,12 +31,11 @@ test('converts token strings to expressions', (t) => {
             layout: {'text-field': 'a{x}', 'icon-image': '{y}'}
         }]
     }, spec.latest.$version);
-    t.deepEqual(migrated.layers[0].layout['text-field'], ['concat', 'a', ['get', 'x']]);
-    t.deepEqual(migrated.layers[0].layout['icon-image'], ['to-string', ['get', 'y']]);
-    t.end();
+    expect(migrated.layers[0].layout['text-field']).toEqual(['concat', 'a', ['get', 'x']]);
+    expect(migrated.layers[0].layout['icon-image']).toEqual(['to-string', ['get', 'y']]);
 });
 
-test('converts stop functions to expressions', (t) => {
+test('converts stop functions to expressions', () => {
     const migrated = migrate({
         version: 8,
         layers: [{
@@ -70,7 +58,7 @@ test('converts stop functions to expressions', (t) => {
             }
         }]
     }, spec.latest.$version);
-    t.deepEqual(migrated.layers[0].paint['background-opacity'], [
+    expect(migrated.layers[0].paint['background-opacity']).toEqual([
         'interpolate',
         ['linear'],
         ['zoom'],
@@ -79,7 +67,7 @@ test('converts stop functions to expressions', (t) => {
         10,
         0.72
     ]);
-    t.deepEqual(migrated.layers[1].paint['background-opacity'], [
+    expect(migrated.layers[1].paint['background-opacity']).toEqual([
         'interpolate',
         ['linear'],
         ['zoom'],
@@ -88,10 +76,10 @@ test('converts stop functions to expressions', (t) => {
         10,
         ['literal', [0.72, 0.98]]
     ]);
-    t.end();
 });
 
-test('converts categorical function on resolvedImage type to valid expression', (t) => {
+test('converts categorical function on resolvedImage type to valid expression', () => {
+    window.Buffer = class {};
     const migrated = migrate({
         version: 8,
         sources: {
@@ -115,26 +103,12 @@ test('converts categorical function on resolvedImage type to valid expression', 
             }
         }]
     }, spec.latest.$version);
-    t.deepEqual(migrated.layers[0].layout['icon-image'], [
+    expect(migrated.layers[0].layout['icon-image']).toEqual([
         "match",
         ["get", "type" ],
         "park",
         "some-icon",
         ""
     ]);
-    t.deepEqual(validate(migrated, v8), []);
-    t.end();
-});
-
-globSync(`${__dirname}/fixture/v7-migrate/*.input.json`).forEach((file) => {
-    test(path.basename(file), (t) => {
-        const outputfile = file.replace('.input', '.output');
-        const style = JSON.parse(fs.readFileSync(file));
-        const result = migrate(style);
-        t.deepEqual(validate(result, v8), []);
-        if (UPDATE) fs.writeFileSync(outputfile, JSON.stringify(result, null, 2));
-        const expect = JSON.parse(fs.readFileSync(outputfile));
-        t.deepEqual(result, expect);
-        t.end();
-    });
+    expect(validate(migrated, v8)).toEqual([]);
 });

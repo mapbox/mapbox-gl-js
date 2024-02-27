@@ -1,18 +1,15 @@
-import {test} from '../../util/test.js';
-import fs from 'fs';
-import path from 'path';
+import {test, expect, vi} from "../../util/vitest.js";
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import Point from '@mapbox/point-geometry';
 import segment from '../../../src/data/segment.js';
 import FillBucket from '../../../src/data/bucket/fill_bucket.js';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer.js';
-
-import {fileURLToPath} from 'url';
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+// eslint-disable-next-line import/no-unresolved
+import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a fill feature from fixture tile.
-const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+const vt = new VectorTile(new Protobuf(tileStub));
 const feature = vt.layers.water.feature(0);
 
 function createPolygon(numPoints) {
@@ -23,7 +20,7 @@ function createPolygon(numPoints) {
     return points;
 }
 
-test('FillBucket', (t) => {
+test('FillBucket', () => {
     const layer = new FillStyleLayer({id: 'test', type: 'fill', layout: {}});
     layer.recalculate({zoom: 0});
 
@@ -41,14 +38,12 @@ test('FillBucket', (t) => {
     ]]);
 
     bucket.addFeature(feature, feature.loadGeometry());
-
-    t.end();
 });
 
-test('FillBucket segmentation', (t) => {
+test('FillBucket segmentation', () => {
     // Stub MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
+    vi.spyOn(segment, 'MAX_VERTEX_ARRAY_LENGTH', 'get').mockImplementation(() => 256);
 
     const layer = new FillStyleLayer({
         id: 'test',
@@ -76,19 +71,17 @@ test('FillBucket segmentation', (t) => {
     // first segment to include the first feature and the first polygon
     // of the second feature, and the second segment to include the
     // second polygon of the second feature.
-    t.equal(bucket.layoutVertexArray.length, 266);
-    t.deepEqual(bucket.segments.get()[0], {
+    expect(bucket.layoutVertexArray.length).toEqual(266);
+    expect(bucket.segments.get()[0]).toEqual({
         vertexOffset: 0,
         vertexLength: 138,
         primitiveOffset: 0,
         primitiveLength: 134
     });
-    t.deepEqual(bucket.segments.get()[1], {
+    expect(bucket.segments.get()[1]).toEqual({
         vertexOffset: 138,
         vertexLength: 128,
         primitiveOffset: 134,
         primitiveLength: 126
     });
-
-    t.end();
 });

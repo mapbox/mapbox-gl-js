@@ -9,7 +9,6 @@
           "y": -18.5,
           "vertical": true,
           "scale": 1,
-          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 0,
           "metrics": {
@@ -138,7 +137,6 @@
           "y": 5.5,
           "vertical": true,
           "scale": 1,
-          "localGlyph": null,
           "fontStack": "Test",
           "sectionIndex": 6,
           "metrics": {

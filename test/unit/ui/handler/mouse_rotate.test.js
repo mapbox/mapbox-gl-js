@@ -1,60 +1,56 @@
-import {test} from '../../../util/test.js';
-import {extend} from '../../../../src/util/util.js';
-import window from '../../../../src/util/window.js';
-import Map from '../../../../src/ui/map.js';
-import * as DOM from '../../../../src/util/dom.js';
+import {test, expect, vi, createMap as globalCreateMap} from "../../../util/vitest.js";
 import simulate from '../../../util/simulate_interaction.js';
 import browser from '../../../../src/util/browser.js';
 
 function createMap(t, options) {
-    t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map(extend({container: DOM.create('div', '', window.document.body), testMode: true}, options));
+    return globalCreateMap({
+        interactive: true,
+        ...options
+    });
 }
 
-test('MouseRotateHandler#isActive', (t) => {
-    const map = createMap(t);
+test('MouseRotateHandler#isActive', () => {
+    const map = createMap();
     const mouseRotate = map.handlers._handlersById.mouseRotate;
 
     // Prevent inertial rotation.
-    t.stub(browser, 'now').returns(0);
-    t.equal(mouseRotate.isActive(), false);
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
+    expect(mouseRotate.isActive()).toEqual(false);
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), false);
+    expect(mouseRotate.isActive()).toEqual(false);
 
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(window.document, {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), true);
+    expect(mouseRotate.isActive()).toEqual(true);
 
-    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    simulate.mouseup(window.document,   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), false);
+    expect(mouseRotate.isActive()).toEqual(false);
 
     map.remove();
-    t.end();
 });
 
-test('MouseRotateHandler#isActive #4622 regression test', (t) => {
-    const map = createMap(t);
+test('MouseRotateHandler#isActive #4622 regression test', () => {
+    const map = createMap();
     const mouseRotate = map.handlers._handlersById.mouseRotate;
 
     // Prevent inertial rotation.
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), false);
+    expect(mouseRotate.isActive()).toEqual(false);
 
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(window.document, {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), true);
+    expect(mouseRotate.isActive()).toEqual(true);
 
     // Some browsers don't fire mouseup when it happens outside the window.
     // Make the handler in active when it encounters a mousemove without the button pressed.
 
-    simulate.mousemove(map.getCanvas(), {buttons: 0, clientX: 10, clientY: 10});
+    simulate.mousemove(window.document, {buttons: 0, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
-    t.equal(mouseRotate.isActive(), false);
+    expect(mouseRotate.isActive()).toEqual(false);
 
     map.remove();
-    t.end();
 });

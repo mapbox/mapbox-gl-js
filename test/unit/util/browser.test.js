@@ -1,32 +1,25 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import browser from '../../../src/util/browser.js';
 
-test('browser', (t) => {
-    t.test('frame', (t) => {
+describe('browser', () => {
+    test('frame', () => {
         const id = browser.frame(() => {
-            t.pass('called frame');
-            t.ok(id, 'returns id');
-            t.end();
+            expect(id).toBeTruthy();
         });
     });
 
-    t.test('now', (t) => {
-        t.equal(typeof browser.now(), 'number');
-        t.end();
+    test('now', () => {
+        expect(typeof browser.now()).toEqual('number');
     });
 
-    t.test('frame', (t) => {
+    test('frame', () => {
         const frame = browser.frame(() => {
-            t.fail();
+            expect.unreachable();
         });
         frame.cancel();
-        t.end();
     });
 
-    t.test('devicePixelRatio', (t) => {
-        t.equal(typeof browser.devicePixelRatio, 'number');
-        t.end();
+    test('devicePixelRatio', () => {
+        expect(typeof browser.devicePixelRatio).toEqual('number');
     });
-
-    t.end();
 });

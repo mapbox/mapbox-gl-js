@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect, vi} from "../../util/vitest.js";
 import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source.js';
 import StyleLayerIndex from '../../../src/style/style_layer_index.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -7,8 +7,8 @@ import {getProjection} from '../../../src/geo/projection/index.js';
 
 const actor = {send: () => {}};
 
-test('reloadTile', (t) => {
-    t.test('does not rebuild vector data unless data has changed', (t) => {
+describe('reloadTile', () => {
+    test('does not rebuild vector data unless data has changed', () => {
         const layers = [
             {
                 id: 'mylayer',
@@ -41,14 +41,14 @@ test('reloadTile', (t) => {
 
         function addData(callback) {
             source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)}, (err) => {
-                t.equal(err, null);
+                expect(err).toEqual(null);
                 callback();
             });
         }
 
         function reloadTile(callback) {
             source.reloadTile(tileParams, (err, data) => {
-                t.equal(err, null);
+                expect(err).toEqual(null);
                 return callback(data);
             });
         }
@@ -59,36 +59,32 @@ test('reloadTile', (t) => {
             reloadTile(data => {
                 firstData = data;
             });
-            t.equal(loadVectorCallCount, 1);
+            expect(loadVectorCallCount).toEqual(1);
 
             // second call won't give us new rawTileData
             reloadTile(data => {
-                t.notOk('rawTileData' in data);
+                expect('rawTileData' in data).toBeFalsy();
                 data.rawTileData = firstData.rawTileData;
-                t.deepEqual(data, firstData);
+                expect(data).toEqual(firstData);
             });
 
             // also shouldn't call loadVectorData again
-            t.equal(loadVectorCallCount, 1);
+            expect(loadVectorCallCount).toEqual(1);
 
             // replace geojson data
             addData(() => {
                 // should call loadVectorData again after changing geojson data
                 reloadTile(data => {
-                    t.ok('rawTileData' in data);
-                    t.deepEqual(data, firstData);
+                    expect('rawTileData' in data).toBeTruthy();
+                    expect(data).toEqual(firstData);
                 });
-                t.equal(loadVectorCallCount, 2);
-                t.end();
+                expect(loadVectorCallCount).toEqual(2);
             });
         });
     });
-
-    t.end();
 });
 
-test('resourceTiming', (t) => {
-
+describe('resourceTiming', () => {
     const layers = [
         {
             id: 'mylayer',
@@ -104,7 +100,7 @@ test('resourceTiming', (t) => {
         }
     };
 
-    t.test('loadData - url', (t) => {
+    test('loadData - url', () => {
         const exampleResourceTiming = {
             connectEnd: 473,
             connectStart: 473,
@@ -126,28 +122,24 @@ test('resourceTiming', (t) => {
             secureConnectionStart: 0
         };
 
-        t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
+        vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [ exampleResourceTiming ]; });
 
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource(actor, layerIndex, [], true, (params, callback) => { return callback(null, geoJson); });
 
         source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
-            t.equal(err, null);
-            t.deepEquals(result.resourceTiming.testSource, [ exampleResourceTiming ], 'got expected resource timing');
-            t.end();
+            expect(err).toEqual(null);
+            expect(result.resourceTiming.testSource).toStrictEqual([ exampleResourceTiming ]); // got expected resource timing
         });
     });
 
-    t.test('loadData - data', (t) => {
+    test('loadData - data', () => {
         const layerIndex = new StyleLayerIndex(layers);
         const source = new GeoJSONWorkerSource(actor, layerIndex, [], true);
 
         source.loadData({source: 'testSource', data: JSON.stringify(geoJson)}, (err, result) => {
-            t.equal(err, null);
-            t.equal(result.resourceTiming, undefined, 'no resourceTiming property when loadData is not sent a URL');
-            t.end();
+            expect(err).toEqual(null);
+            expect(result.resourceTiming).toEqual(undefined);
         });
     });
-
-    t.end();
 });

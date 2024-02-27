@@ -1,15 +1,14 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import Point from '@mapbox/point-geometry';
 import PathInterpolator from '../../../src/symbol/path_interpolator.js';
 
-test('PathInterpolator', (t) => {
-
+describe('PathInterpolator', () => {
     const pointEquals = (p0, p1) => {
         const e = 0.000001;
         return Math.abs(p0.x - p1.x) < e && Math.abs(p0.y - p1.y) < e;
     };
 
-    t.test('Interpolate single segment path', (t) => {
+    test('Interpolate single segment path', () => {
         const line = [
             new Point(0, 0),
             new Point(10, 0)
@@ -17,35 +16,32 @@ test('PathInterpolator', (t) => {
 
         const interpolator = new PathInterpolator(line);
 
-        t.deepEqual(interpolator.lerp(0.0), line[0]);
-        t.deepEqual(interpolator.lerp(0.5), new Point(5, 0));
-        t.deepEqual(interpolator.lerp(1.0), line[1]);
-        t.end();
+        expect(interpolator.lerp(0.0)).toEqual(line[0]);
+        expect(interpolator.lerp(0.5)).toEqual(new Point(5, 0));
+        expect(interpolator.lerp(1.0)).toEqual(line[1]);
     });
 
-    t.test('t < 0', (t) => {
+    test('t < 0', () => {
         const line = [
             new Point(0, 0),
             new Point(10, 0)
         ];
 
         const interpolator = new PathInterpolator(line);
-        t.deepEqual(interpolator.lerp(-100.0), line[0]);
-        t.end();
+        expect(interpolator.lerp(-100.0)).toEqual(line[0]);
     });
 
-    t.test('t > 0', (t) => {
+    test('t > 0', () => {
         const line = [
             new Point(0, 0),
             new Point(10, 0)
         ];
 
         const interpolator = new PathInterpolator(line);
-        t.deepEqual(interpolator.lerp(100.0), line[1]);
-        t.end();
+        expect(interpolator.lerp(100.0)).toEqual(line[1]);
     });
 
-    t.test('Interpolate multi-segment path', (t) => {
+    test('Interpolate multi-segment path', () => {
         const line = [
             new Point(-3, 3),
             new Point(-1, 3),
@@ -56,16 +52,15 @@ test('PathInterpolator', (t) => {
         ];
 
         const interpolator = new PathInterpolator(line);
-        t.ok(pointEquals(interpolator.lerp(1.0), new Point(-3, 1)));
-        t.ok(pointEquals(interpolator.lerp(0.95), new Point(-2.1, 1)));
-        t.ok(pointEquals(interpolator.lerp(0.5), new Point(1, -2)));
-        t.ok(pointEquals(interpolator.lerp(0.25), new Point(-1, 0.5)));
-        t.ok(pointEquals(interpolator.lerp(0.1), new Point(-1.2, 3)));
-        t.ok(pointEquals(interpolator.lerp(0.0), new Point(-3, 3)));
-        t.end();
+        expect(pointEquals(interpolator.lerp(1.0), new Point(-3, 1))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.95), new Point(-2.1, 1))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.5), new Point(1, -2))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.25), new Point(-1, 0.5))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.1), new Point(-1.2, 3))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.0), new Point(-3, 3))).toBeTruthy();
     });
 
-    t.test('Small padding', (t) => {
+    test('Small padding', () => {
         const line = [
             new Point(-4, 1),
             new Point(4, 1)
@@ -74,14 +69,13 @@ test('PathInterpolator', (t) => {
         const padding = 0.5;
         const interpolator = new PathInterpolator(line, padding);
 
-        t.ok(pointEquals(interpolator.lerp(0.0), new Point(-3.5, 1)));
-        t.ok(pointEquals(interpolator.lerp(0.25), new Point(-1.75, 1)));
-        t.ok(pointEquals(interpolator.lerp(0.5), new Point(0, 1)));
-        t.ok(pointEquals(interpolator.lerp(1.0), new Point(3.5, 1)));
-        t.end();
+        expect(pointEquals(interpolator.lerp(0.0), new Point(-3.5, 1))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.25), new Point(-1.75, 1))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.5), new Point(0, 1))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1.0), new Point(3.5, 1))).toBeTruthy();
     });
 
-    t.test('Padding cannot be larger than the length / 2', (t) => {
+    test('Padding cannot be larger than the length / 2', () => {
         const line = [
             new Point(-3, 0),
             new Point(3, 0)
@@ -90,20 +84,18 @@ test('PathInterpolator', (t) => {
         const padding = 10.0;
         const interpolator = new PathInterpolator(line, padding);
 
-        t.ok(pointEquals(interpolator.lerp(0.0), new Point(0, 0)));
-        t.ok(pointEquals(interpolator.lerp(0.4), new Point(0, 0)));
-        t.ok(pointEquals(interpolator.lerp(1.0), new Point(0, 0)));
-        t.end();
+        expect(pointEquals(interpolator.lerp(0.0), new Point(0, 0))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.4), new Point(0, 0))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1.0), new Point(0, 0))).toBeTruthy();
     });
 
-    t.test('Single point path', (t) => {
+    test('Single point path', () => {
         const interpolator = new PathInterpolator([new Point(0, 0)]);
-        t.ok(pointEquals(interpolator.lerp(0), new Point(0, 0)));
-        t.ok(pointEquals(interpolator.lerp(1.0), new Point(0, 0)));
-        t.end();
+        expect(pointEquals(interpolator.lerp(0), new Point(0, 0))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1.0), new Point(0, 0))).toBeTruthy();
     });
 
-    t.test('Interpolator instance can be reused by calling reset()', (t) => {
+    test('Interpolator instance can be reused by calling reset()', () => {
         const line0 = [
             new Point(0, 0),
             new Point(10, 0)
@@ -116,18 +108,17 @@ test('PathInterpolator', (t) => {
 
         const interpolator = new PathInterpolator(line0);
 
-        t.deepEqual(interpolator.lerp(0.0), line0[0]);
-        t.deepEqual(interpolator.lerp(0.5), new Point(5, 0));
-        t.deepEqual(interpolator.lerp(1.0), line0[1]);
+        expect(interpolator.lerp(0.0)).toEqual(line0[0]);
+        expect(interpolator.lerp(0.5)).toEqual(new Point(5, 0));
+        expect(interpolator.lerp(1.0)).toEqual(line0[1]);
 
         interpolator.reset(line1);
-        t.ok(pointEquals(interpolator.lerp(0.0), line1[0]));
-        t.ok(pointEquals(interpolator.lerp(0.5), new Point(0, 0)));
-        t.ok(pointEquals(interpolator.lerp(1.0), line1[1]));
-        t.end();
+        expect(pointEquals(interpolator.lerp(0.0), line1[0])).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.5), new Point(0, 0))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1.0), line1[1])).toBeTruthy();
     });
 
-    t.test('Path with zero length segment', (t) => {
+    test('Path with zero length segment', () => {
         const line = [
             new Point(-1, 0),
             new Point(1, 0),
@@ -135,12 +126,9 @@ test('PathInterpolator', (t) => {
         ];
 
         const interpolator = new PathInterpolator(line);
-        t.ok(pointEquals(interpolator.lerp(0), line[0]));
-        t.ok(pointEquals(interpolator.lerp(0.5), new Point(0, 0)));
-        t.ok(pointEquals(interpolator.lerp(1), line[1]));
-        t.ok(pointEquals(interpolator.lerp(1), line[2]));
-        t.end();
+        expect(pointEquals(interpolator.lerp(0), line[0])).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(0.5), new Point(0, 0))).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1), line[1])).toBeTruthy();
+        expect(pointEquals(interpolator.lerp(1), line[2])).toBeTruthy();
     });
-
-    t.end();
 });

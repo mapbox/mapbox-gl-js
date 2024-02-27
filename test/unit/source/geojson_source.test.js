@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect, vi} from "../../util/vitest.js";
 import Tile from '../../../src/source/tile.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import GeoJSONSource from '../../../src/source/geojson_source.js';
@@ -52,7 +52,7 @@ const hawkHill = {
     }]
 };
 
-test('GeoJSONSource#setData', (t) => {
+describe('GeoJSONSource#setData', () => {
     function createSource(opts) {
         opts = opts || {};
         opts = extend(opts, {data: {}});
@@ -65,28 +65,31 @@ test('GeoJSONSource#setData', (t) => {
         }));
     }
 
-    t.test('returns self', (t) => {
+    test('returns self', () => {
         const source = createSource();
-        t.equal(source.setData({}), source);
-        t.end();
+        expect(source.setData({})).toEqual(source);
     });
 
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const source = createSource();
-        source.once('data', () => {
-            source.once('data', t.end);
+        await new Promise(resolve => {
+            source.once('data', () => {
+                source.once('data', resolve);
+                source.setData({});
+            });
             source.setData({});
         });
-        source.setData({});
     });
 
-    t.test('fires "dataloading" event', (t) => {
+    test('fires "dataloading" event', async () => {
         const source = createSource();
-        source.on('dataloading', t.end);
-        source.setData({});
+        await new Promise(resolve => {
+            source.on('dataloading', resolve);
+            source.setData({});
+        });
     });
 
-    t.test('respects collectResourceTiming parameter on source', (t) => {
+    test('respects collectResourceTiming parameter on source', () => {
         const source = createSource({collectResourceTiming: true});
         source.map = {
             _requestManager: {
@@ -95,18 +98,15 @@ test('GeoJSONSource#setData', (t) => {
         };
         source.actor.send = function(type, params, cb) {
             if (type === 'geojson.loadData') {
-                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                expect(params.request.collectResourceTiming).toBeTruthy();
                 setTimeout(cb, 0);
-                t.end();
             }
         };
         source.setData('http://localhost/nonexistent');
     });
-
-    t.end();
 });
 
-test('GeoJSONSource#update', (t) => {
+describe('GeoJSONSource#update', () => {
     const transform = new Transform();
     transform.resize(200, 200);
     const lngLat = LngLat.convert([-122.486052, 37.830348]);
@@ -114,11 +114,10 @@ test('GeoJSONSource#update', (t) => {
     transform.zoom = 15;
     transform.setLocationAtPoint(lngLat, point);
 
-    t.test('sends initial loadData request to dispatcher', (t) => {
+    test('sends initial loadData request to dispatcher', () => {
         const mockDispatcher = wrapDispatcher({
             send(message) {
-                t.equal(message, 'geojson.loadData');
-                t.end();
+                expect(message).toEqual('geojson.loadData');
             }
         });
 
@@ -126,11 +125,11 @@ test('GeoJSONSource#update', (t) => {
         new GeoJSONSource('id', {data: {}}, mockDispatcher).setData({});
     });
 
-    t.test('forwards geojson-vt options with worker request', (t) => {
+    test('forwards geojson-vt options with worker request', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, params) {
-                t.equal(message, 'geojson.loadData');
-                t.deepEqual(params.geojsonVtOptions, {
+                expect(message).toEqual('geojson.loadData');
+                expect(params.geojsonVtOptions).toEqual({
                     extent: 8192,
                     maxZoom: 10,
                     tolerance: 4,
@@ -138,7 +137,6 @@ test('GeoJSONSource#update', (t) => {
                     lineMetrics: false,
                     generateId: true
                 });
-                t.end();
             }
         });
 
@@ -151,11 +149,11 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).setData({});
     });
 
-    t.test('forwards Supercluster options with worker request', (t) => {
+    test('forwards Supercluster options with worker request', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, params) {
-                t.equal(message, 'geojson.loadData');
-                t.deepEqual(params.superclusterOptions, {
+                expect(message).toEqual('geojson.loadData');
+                expect(params.superclusterOptions).toEqual({
                     maxZoom: 12,
                     minPoints: 3,
                     extent: 8192,
@@ -163,7 +161,6 @@ test('GeoJSONSource#update', (t) => {
                     log: false,
                     generateId: true
                 });
-                t.end();
             }
         });
 
@@ -177,20 +174,19 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).setData({});
     });
 
-    t.test('transforms url before making request', (t) => {
+    test('transforms url before making request', () => {
         const mapStub = {
             _requestManager: {
                 transformRequest: (url) => { return {url}; }
             }
         };
-        const transformSpy = t.spy(mapStub._requestManager, 'transformRequest');
+        const transformSpy = vi.spyOn(mapStub._requestManager, 'transformRequest');
         const source = new GeoJSONSource('id', {data: 'https://example.com/data.geojson'}, mockDispatcher);
         source.onAdd(mapStub);
-        t.ok(transformSpy.calledOnce);
-        t.equal(transformSpy.getCall(0).args[0], 'https://example.com/data.geojson');
-        t.end();
+        expect(transformSpy).toHaveBeenCalledTimes(1);
+        expect(transformSpy.mock.calls[0][0]).toEqual('https://example.com/data.geojson');
     });
-    t.test('fires event when metadata loads', (t) => {
+    test('fires event when metadata loads', async () => {
         const mockDispatcher = wrapDispatcher({
             send(message, args, callback) {
                 if (callback) {
@@ -201,14 +197,16 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') t.end();
-        });
+        await new Promise((resolve) => {
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') resolve();
+            });
 
-        source.setData({});
+            source.setData({});
+        });
     });
 
-    t.test('fires "error"', (t) => {
+    test('fires "error"', async () => {
         const mockDispatcher = wrapDispatcher({
             send(message, args, callback) {
                 if (callback) {
@@ -219,91 +217,88 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('error', (err) => {
-            t.equal(err.error, 'error');
-            t.end();
-        });
+        await new Promise(resolve => {
 
-        source.setData({});
+            source.on('error', (err) => {
+                expect(err.error).toEqual('error');
+                resolve();
+            });
+
+            source.setData({});
+        });
     });
 
-    t.test('sends loadData request to dispatcher after data update', (t) => {
+    test('sends loadData request to dispatcher after data update', async () => {
         let expectedLoadDataCalls = 2;
-        const mockDispatcher = wrapDispatcher({
-            send(message, args, callback) {
-                if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
-                    t.end();
+
+        await new Promise(resolve => {
+            const mockDispatcher = wrapDispatcher({
+                send(message, args, callback) {
+                    if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
+                        resolve();
+                    }
+                    if (callback) {
+                        setTimeout(callback, 0);
+                    }
                 }
-                if (callback) {
-                    setTimeout(callback, 0);
+            });
+
+            const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+            source.map = {
+                transform: {}
+            };
+
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    source.setData({});
+                    source.loadTile(new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512), () => {});
                 }
-            }
+            });
+            source.setData({});
         });
-
-        const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-        source.map = {
-            transform: {}
-        };
-
-        source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata') {
-                source.setData({});
-                source.loadTile(new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512), () => {});
-            }
-        });
-
-        source.setData({});
     });
-
-    t.end();
 });
 
-test('GeoJSONSource#serialize', (t) => {
+describe('GeoJSONSource#serialize', () => {
     const mapStub = {
         _requestManager: {
             transformRequest: (url) => { return {url}; }
         }
     };
-    t.test('serialize source with inline data', (t) => {
+    test('serialize source with inline data', () => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
         source.onAdd(mapStub);
-        t.deepEqual(source.serialize(), {
+        expect(source.serialize()).toEqual({
             type: 'geojson',
             data: hawkHill
         });
-        t.end();
     });
 
-    t.test('serialize source with url', (t) => {
+    test('serialize source with url', () => {
         const source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
         source.onAdd(mapStub);
-        t.deepEqual(source.serialize(), {
+        expect(source.serialize()).toEqual({
             type: 'geojson',
             data: 'local://data.json'
         });
-        t.end();
     });
 
-    t.test('serialize source with updated data', (t) => {
+    test('serialize source with updated data', () => {
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.onAdd(mapStub);
         source.setData(hawkHill);
-        t.deepEqual(source.serialize(), {
+        expect(source.serialize()).toEqual({
             type: 'geojson',
             data: hawkHill
         });
-        t.end();
     });
 
-    t.test('serialize source with additional options', (t) => {
+    test('serialize source with additional options', () => {
         const source = new GeoJSONSource('id', {data: {}, cluster: true}, mockDispatcher);
-        t.deepEqual(source.serialize(), {
+        expect(source.serialize()).toEqual({
             type: 'geojson',
             data: {},
             cluster: true
         });
-        t.end();
     });
-
-    t.end();
 });

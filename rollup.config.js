@@ -1,3 +1,4 @@
+/* eslint-disable flowtype/require-valid-file-annotation */
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins.js';
@@ -11,15 +12,15 @@ const production = BUILD === 'production' || bench;
 
 function buildType(build, minified) {
     switch (build) {
-        case 'production':
-            if (minified) return 'dist/mapbox-gl.js';
-            return 'dist/mapbox-gl-unminified.js';
-        case 'bench':
-            return 'dist/mapbox-gl-bench.js';
-        case 'dev':
-            return 'dist/mapbox-gl-dev.js';
-        default:
-            return 'dist/mapbox-gl-dev.js';
+    case 'production':
+        if (minified) return 'dist/mapbox-gl.js';
+        return 'dist/mapbox-gl-unminified.js';
+    case 'bench':
+        return 'dist/mapbox-gl-bench.js';
+    case 'dev':
+        return 'dist/mapbox-gl-dev.js';
+    default:
+        return 'dist/mapbox-gl-dev.js';
     }
 }
 const outputFile = buildType(BUILD, MINIFY);

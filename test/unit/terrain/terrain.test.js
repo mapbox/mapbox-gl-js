@@ -1,10 +1,9 @@
-import {test} from '../../util/test.js';
+import {describe, test, beforeAll, beforeEach, afterEach, expect, waitFor, vi, createMap} from "../../util/vitest.js";
+import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import {extend} from '../../../src/util/util.js';
-import {createMap} from '../../util/index.js';
 import DEMData from '../../../src/data/dem_data.js';
 import {RGBAImage} from '../../../src/util/image.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
-import window from '../../../src/util/window.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import styleSpec from '../../../src/style-spec/reference/latest.js';
 import Terrain from '../../../src/style/terrain.js';
@@ -20,6 +19,8 @@ import browser from '../../../src/util/browser.js';
 import * as DOM from '../../../src/util/dom.js';
 import Map, {AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
+// eslint-disable-next-line import/no-unresolved
+import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';
 
 function createStyle() {
     return {
@@ -84,125 +85,145 @@ const createNegativeGradientDEM = () => {
     return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox");
 };
 
-test('Elevation', (t) => {
+let networkWorker;
+
+beforeAll(async () => {
+    networkWorker = await getNetworkWorker(window);
+});
+
+afterEach(() => {
+    networkWorker.resetHandlers();
+});
+
+describe('Elevation', () => {
     const dem = createGradientDEM();
 
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+    describe('elevation sampling', () => {
+        let map;
 
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    t.test('elevation sampling', t => {
-        const map = createMap(t);
-        map.on('style.load', () => {
+        beforeAll(async () => {
+            map = createMap();
+            await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.once('render', () => {
-                const elevationError = -1;
-                t.test('Sample', t => {
-                    const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49}, elevationError);
-                    t.equal(elevation, 0);
-                    t.end();
-                });
+            await waitFor(map, 'render');
+        });
 
-                t.test('Invalid sample position', t => {
-                    const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, elevationError);
-                    const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, elevationError);
-                    t.equal(elevation1, elevationError);
-                    t.equal(elevation2, elevationError);
-                    t.end();
-                });
-                t.end();
-            });
+        const elevationError = -1;
+
+        test('Sample', () => {
+            const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49}, elevationError);
+            expect(elevation).toEqual(0);
+        });
+
+        test('Invalid sample position', () => {
+            const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, elevationError);
+            const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, elevationError);
+            expect(elevation1).toEqual(elevationError);
+            expect(elevation2).toEqual(elevationError);
         });
     });
 
-    t.test('Out of bounds when sampling 514x514 tile', (t) => {
-        const map = createMap(t, {zoom: 15.1, center:[11.594417, 48.095821]});
-        map.on('style.load', () => {
+    describe('Out of bounds when sampling 514x514 tile', () => {
+        let map;
+
+        beforeAll(async () => {
+            map = createMap({zoom: 15.1, center:[11.594417, 48.095821]});
+            await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, 512, 11);
-            map.once('render', () => {
+            await waitFor(map, 'render');
+        });
 
-                t.test('Sample', t => {
-                    const points = [[8191, 8191, 1]];
-                    map.painter.terrain.getForTilePoints(new OverscaledTileID(15, 0, 15, 17439, 11377), points);
-                    t.equal(points[0][2], 0);
-                    t.end();
-                });
+        test('Sample', () => {
+            const points = [[8191, 8191, 1]];
+            map.painter.terrain.getForTilePoints(new OverscaledTileID(15, 0, 15, 17439, 11377), points);
+            expect(points[0][2]).toEqual(0);
+        });
+    });
 
-                t.end();
+    test('style diff / remove dem source cache', () => {
+        let map;
+
+        beforeAll(async () => {
+            map = createMap();
+            await waitFor(map, 'style.load');
+            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+            await waitFor(map, 'render');
+        });
+
+        describe('Throws error if style update tries to remove terrain DEM source', () => {
+            test('remove source', () => {
+                const stub = vi.spyOn(console, 'error');
+                map.removeSource('mapbox-dem');
+                expect(stub.calledOnce).toBeTruthy();
             });
         });
     });
 
-    t.test('style diff / remove dem source cache', t => {
-        const map = createMap(t);
-        map.on('style.load', () => {
-            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.once('render', () => {
-                t.test('Throws error if style update tries to remove terrain DEM source', t => {
-                    t.test('remove source', t => {
-                        const stub = t.stub(console, 'error');
-                        map.removeSource('mapbox-dem');
-                        t.ok(stub.calledOnce);
-                        t.end();
+    test('style diff=false removes dem source', async () => {
+        const map = createMap();
+        await waitFor(map, "style.load");
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+        await waitFor(map, "render");
+        map._updateTerrain();
+        const elevationError = -1;
+        const terrain = map.painter.terrain;
+        const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+        expect(elevation1).toEqual(0);
+
+        map.setStyle(createStyle(), {diff: false});
+
+        const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
+        expect(elevation2).toEqual(elevationError);
+    });
+
+    describe('interpolation', () => {
+        let map, cache, dx, coord;
+
+        beforeEach(() => {
+            networkWorker.use(
+                ...[
+                    'http://example.com/10/1023/511.png',
+                    'http://example.com/10/0/511.png',
+                    'http://example.com/10/0/512.png',
+                    'http://example.com/10/1023/512.png'
+                ].map(path => {
+                    return http.get(path, async () => {
+                        return new HttpResponse(vectorStub);
                     });
-                    t.end();
-                });
-                t.end();
+                })
+            );
+        });
+
+        beforeAll(async () => {
+            map = createMap({
+                style: extend(createStyle(), {
+                    sources: {
+                        mapbox: {
+                            type: 'vector',
+                            minzoom: 1,
+                            maxzoom: 10,
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        }
+                    },
+                    layers: [{
+                        id: 'layerId1',
+                        type: 'circle',
+                        source: 'mapbox',
+                        'source-layer': 'sourceLayer'
+                    }]
+                })
             });
-        });
-    });
 
-    t.test('style diff=false removes dem source', t => {
-        const map = createMap(t);
-        map.once('style.load', () => {
-            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.once('render', () => {
-                map._updateTerrain();
-                const elevationError = -1;
-                const terrain = map.painter.terrain;
-                const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                t.equal(elevation1, 0);
+            await waitFor(map, 'style.load');
 
-                map.setStyle(createStyle(), {diff: false});
-
-                const elevation2 = terrain.getAtPoint({x: 0.5, y: 0.5}, elevationError);
-                t.equal(elevation2, elevationError);
-                t.end();
-            });
-        });
-    });
-
-    t.test('interpolation', t => {
-        const map = createMap(t, {
-            style: extend(createStyle(), {
-                sources: {
-                    mapbox: {
-                        type: 'vector',
-                        minzoom: 1,
-                        maxzoom: 10,
-                        tiles: ['http://example.com/{z}/{x}/{y}.png']
-                    }
-                },
-                layers: [{
-                    id: 'layerId1',
-                    type: 'circle',
-                    source: 'mapbox',
-                    'source-layer': 'sourceLayer'
-                }]
-            })
-        });
-        map.on('style.load', () => {
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
+
+            cache = map.style.getOwnSourceCache('mapbox-dem');
             cache.used = cache._sourceLoaded = true;
             cache._loadTile = (tile, callback) => {
                 tile.dem = dem;
@@ -212,79 +233,73 @@ test('Elevation', (t) => {
                 callback(null);
             };
             map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                const cache = map.style.getOwnSourceCache('mapbox-dem');
+            await waitFor(map, 'render');
+            cache = map.style.getOwnSourceCache('mapbox-dem');
 
-                t.test('terrain tiles loaded wrap', t => {
-                    const tile = cache.getTile(new OverscaledTileID(14, 1, 14, 0, 8192));
-                    t.assert(tile.dem);
-                    t.end();
-                });
+            const tilesAtTileZoom = 1 << 14;
+            // Calculate offset to neighbor value in dem bitmap.
+            dx = 1 / (tilesAtTileZoom * TILE_SIZE);
 
-                t.test('terrain tiles loaded no wrap', t => {
-                    const tile = cache.getTile(new OverscaledTileID(14, 0, 14, 16383, 8192));
-                    t.assert(tile.dem);
-                    t.end();
-                });
+            coord = MercatorCoordinate.fromLngLat({lng: 180, lat: 0});
+        });
 
-                const tilesAtTileZoom = 1 << 14;
-                // Calculate offset to neighbor value in dem bitmap.
-                const dx = 1 / (tilesAtTileZoom * TILE_SIZE);
+        test('terrain tiles loaded wrap', () => {
+            const tile = cache.getTile(new OverscaledTileID(14, 1, 14, 0, 8192));
+            expect(tile.dem).toBeTruthy();
+        });
 
-                const coord = MercatorCoordinate.fromLngLat({lng: 180, lat: 0});
-                t.equal(map.painter.terrain.getAtPoint(coord), 0);
+        test('terrain tiles loaded no wrap', () => {
+            const tile = cache.getTile(new OverscaledTileID(14, 0, 14, 16383, 8192));
+            expect(tile.dem).toBeTruthy();
+        });
 
-                t.test('dx', t => {
-                    const elevationDx = map.painter.terrain.getAtPoint({x: coord.x + dx, y: coord.y}, 0);
-                    t.assert(Math.abs(elevationDx - 0.1) < 1e-8);
-                    t.end();
-                });
+        test('terrain at coord should be 0', () => {
+            expect(map.painter.terrain.getAtPoint(coord)).toEqual(0);
+        });
 
-                t.test('dy', t => {
-                    const elevationDy = map.painter.terrain.getAtPoint({x: coord.x, y: coord.y + dx}, 0);
-                    const expectation = TILE_SIZE * 0.1;
-                    t.assert(Math.abs(elevationDy - expectation) < 1e-6);
-                    t.end();
-                });
+        test('dx', () => {
+            const elevationDx = map.painter.terrain.getAtPoint({x: coord.x + dx, y: coord.y}, 0);
+            expect(Math.abs(elevationDx - 0.1) < 1e-8).toBeTruthy();
+        });
 
-                t.test('dx/3 dy/3', t => {
-                    const elevation = map.painter.terrain.getAtPoint({x: coord.x + dx / 3, y: coord.y + dx / 3}, 0);
-                    const expectation = (2 * TILE_SIZE + 2) * 0.1 / 6;
-                    t.assert(Math.abs(elevation - expectation) < 1e-9);
-                    t.end();
-                });
+        test('dy', () => {
+            const elevationDy = map.painter.terrain.getAtPoint({x: coord.x, y: coord.y + dx}, 0);
+            const expectation = TILE_SIZE * 0.1;
+            expect(Math.abs(elevationDy - expectation) < 1e-6).toBeTruthy();
+        });
 
-                t.test('-dx -wrap', t => {
-                    const elevation = map.painter.terrain.getAtPoint({x: coord.x - dx, y: coord.y}, 0);
-                    const expectation = (TILE_SIZE - 1) * 0.1;
-                    t.assert(Math.abs(elevation - expectation) < 1e-6);
-                    t.end();
-                });
+        test('dx/3 dy/3', () => {
+            const elevation = map.painter.terrain.getAtPoint({x: coord.x + dx / 3, y: coord.y + dx / 3}, 0);
+            const expectation = (2 * TILE_SIZE + 2) * 0.1 / 6;
+            expect(Math.abs(elevation - expectation) < 1e-9).toBeTruthy();
+        });
 
-                t.test('-1.5dx -wrap', t => {
-                    const elevation = map.painter.terrain.getAtPoint({x: coord.x - 1.5 * dx, y: coord.y}, 0);
-                    const expectation = (TILE_SIZE - 1.5) * 0.1;
-                    t.assert(Math.abs(elevation - expectation) < 1e-7);
-                    t.end();
-                });
+        test('-dx -wrap', () => {
+            const elevation = map.painter.terrain.getAtPoint({x: coord.x - dx, y: coord.y}, 0);
+            const expectation = (TILE_SIZE - 1) * 0.1;
+            expect(Math.abs(elevation - expectation) < 1e-6).toBeTruthy();
+        });
 
-                t.test('disable terrain', t => {
-                    t.ok(map.painter.terrain);
-                    map.setTerrain(null);
-                    map.once('render', () => {
-                        t.notOk(map.painter.terrain);
-                        t.end();
-                    });
-                });
+        test('-1.5dx -wrap', () => {
+            const elevation = map.painter.terrain.getAtPoint({x: coord.x - 1.5 * dx, y: coord.y}, 0);
+            const expectation = (TILE_SIZE - 1.5) * 0.1;
+            expect(Math.abs(elevation - expectation) < 1e-7).toBeTruthy();
+        });
 
-                t.end();
-            });
+        test('disable terrain', async () => {
+            expect(map.painter.terrain).toBeTruthy();
+            map.setTerrain(null);
+            await waitFor(map, "render");
+            expect(map.painter.terrain).toBeFalsy();
+            await waitFor(map, "idle");
         });
     });
 
-    t.test('elevation.isDataAvailableAtPoint', t => {
-        const map = createMap(t);
-        map.on('style.load', () => {
+    describe('elevation.isDataAvailableAtPoint', () => {
+        let map;
+        beforeAll(async () => {
+            map = createMap();
+            await waitFor(map, 'style.load');
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
@@ -292,38 +307,35 @@ test('Elevation', (t) => {
                 "maxzoom": 14
             });
             map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                t.test('Sample before loading DEMs', t => {
-                    t.false(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5}));
-                    t.end();
-                });
-                const cache = map.style.getOwnSourceCache('mapbox-dem');
-                cache.used = cache._sourceLoaded = true;
-                cache._loadTile = (tile, callback) => {
-                    tile.dem = zeroDem;
-                    tile.needsHillshadePrepare = true;
-                    tile.needsDEMTextureUpload = true;
-                    tile.state = 'loaded';
-                    callback(null);
-                };
-                map.once('render', () => {
-                    t.test('Sample within after loading', t => {
-                        t.true(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5}));
-                        t.end();
-                    });
-                    t.test('Sample outside after loading', t => {
-                        t.false(map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}));
-                        t.false(map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}));
-                        t.end();
-                    });
-                    t.end();
-                });
-            });
+            await waitFor(map, 'render');
+        });
+
+        test('Sample before loading DEMs', () => {
+            expect(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5})).toBeFalsy();
+        });
+
+        test('Sample within after loading', async () => {
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
+            cache.used = cache._sourceLoaded = true;
+            cache._loadTile = (tile, callback) => {
+                tile.dem = zeroDem;
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            await waitFor(map, 'render');
+            expect(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5})).toBeTruthy();
+        });
+
+        test('Sample outside after loading', () => {
+            expect(map.painter.terrain.getAtPoint({x: 0.5, y: 1.1})).toBeFalsy();
+            expect(map.painter.terrain.getAtPoint({x: 1.15, y: -0.001})).toBeFalsy();
         });
     });
 
-    t.test('map._updateAverageElevation', t => {
-        const map = createMap(t, {
+    test('map._updateAverageElevation', async () => {
+        const map = createMap({
             style: extend(createStyle(), {
                 layers: [{
                     "id": "background",
@@ -337,87 +349,83 @@ test('Elevation', (t) => {
         map.setPitch(85);
         map.setZoom(12);
 
-        map.once('style.load', () => {
-            map.addSource('mapbox-dem', {
-                "type": "raster-dem",
-                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                "tileSize": TILE_SIZE,
-                "maxzoom": 14
-            });
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
-            cache.used = cache._sourceLoaded = true;
-            cache._loadTile = (tile, callback) => {
-                // Elevate tiles above center.
-                tile.dem = createGradientDEM();
-                tile.state = 'loaded';
-                callback(null);
-            };
-            map.setTerrain({"source": "mapbox-dem"});
-            t.equal(map.transform.averageElevation, 0);
-
-            map.once('render', () => {
-                map._updateTerrain();
-                map._isInitialLoad = false;
-
-                t.false(map.painter.averageElevationNeedsEasing());
-
-                map.setFog({});
-                map.setPitch(85);
-                t.true(map.painter.averageElevationNeedsEasing());
-
-                let changed;
-                let timestamp;
-
-                timestamp = browser.now();
-                changed = map._updateAverageElevation(timestamp);
-                t.false(changed);
-                t.false(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 0);
-
-                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
-                changed = map._updateAverageElevation(timestamp);
-                t.false(changed);
-                t.false(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 0);
-
-                map.setZoom(13);
-                map.setPitch(70);
-                map.setCenter([map.getCenter().lng + 0.01, map.getCenter().lat]);
-
-                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
-                changed = map._updateAverageElevation(timestamp);
-                t.true(changed);
-                t.true(map._averageElevation.isEasing(timestamp));
-                t.equal(map.transform.averageElevation, 0);
-
-                const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
-                    t.ok(Math.abs(actual - expected) < epsilon);
-                };
-
-                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
-                changed = map._updateAverageElevation(timestamp);
-                t.true(changed);
-                t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, 797.6258610429736);
-
-                timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
-                changed = map._updateAverageElevation(timestamp);
-                t.true(changed);
-                t.true(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, 1595.2517220859472);
-
-                timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
-                changed = map._updateAverageElevation(timestamp);
-                t.false(changed);
-                t.false(map._averageElevation.isEasing(timestamp));
-                assertAlmostEqual(t, map.transform.averageElevation, 1595.2517220859472);
-
-                t.end();
-            });
+        await waitFor(map, "style.load");
+        map.addSource('mapbox-dem', {
+            "type": "raster-dem",
+            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+            "tileSize": TILE_SIZE,
+            "maxzoom": 14
         });
+        const cache = map.style.getOwnSourceCache('mapbox-dem');
+        cache.used = cache._sourceLoaded = true;
+        cache._loadTile = (tile, callback) => {
+            // Elevate tiles above center.
+            tile.dem = createGradientDEM();
+            tile.state = 'loaded';
+            callback(null);
+        };
+        map.setTerrain({"source": "mapbox-dem"});
+        expect(map.transform.averageElevation).toEqual(0);
+
+        await waitFor(map, "render");
+        map._updateTerrain();
+        map._isInitialLoad = false;
+
+        expect(map.painter.averageElevationNeedsEasing()).toBeFalsy();
+
+        map.setFog({});
+        map.setPitch(85);
+        expect(map.painter.averageElevationNeedsEasing()).toBeTruthy();
+
+        let changed;
+        let timestamp;
+
+        timestamp = browser.now();
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeFalsy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
+        expect(map.transform.averageElevation).toEqual(0);
+
+        timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeFalsy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
+        expect(map.transform.averageElevation).toEqual(0);
+
+        map.setZoom(13);
+        map.setPitch(70);
+        map.setCenter([map.getCenter().lng + 0.01, map.getCenter().lat]);
+
+        timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeTruthy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
+        expect(map.transform.averageElevation).toEqual(0);
+
+        const assertAlmostEqual = (actual, expected, epsilon = 1e-3) => {
+            expect(Math.abs(actual - expected) < epsilon).toBeTruthy();
+        };
+
+        timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeTruthy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
+        assertAlmostEqual(map.transform.averageElevation, 797.6258610429736);
+
+        timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeTruthy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
+        assertAlmostEqual(map.transform.averageElevation, 1595.2517220859472);
+
+        timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        changed = map._updateAverageElevation(timestamp);
+        expect(changed).toBeFalsy();
+        expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
+        assertAlmostEqual(map.transform.averageElevation, 1595.2517220859472);
     });
 
-    t.skip('mapbox-gl-js-internal#91', t => {
+    test('mapbox-gl-js-internal#91', () => {
         const data = {
             "type": "FeatureCollection",
             "features": [{
@@ -429,7 +437,7 @@ test('Elevation', (t) => {
                 }
             }]
         };
-        const map = createMap(t, {
+        const map = createMap({
             style: extend(createStyle(), {
                 projection: {
                     name: 'mercator'
@@ -467,11 +475,11 @@ test('Elevation', (t) => {
                 [180.2, 0.1]
             ];
             source.setData(data);
-            t.equal(source.loaded(), false);
+            expect(source.loaded()).toEqual(false);
             const onLoaded = (e) => {
                 if (e.sourceDataType === 'visibility') return;
                 source.off('data', onLoaded);
-                t.equal(map.getSource('trace').loaded(), true);
+                expect(map.getSource('trace').loaded()).toEqual(true);
                 let beganRenderingContent = false;
                 map.on('render', () => {
                     const gl = map.painter.context.gl;
@@ -484,13 +492,12 @@ test('Elevation', (t) => {
                         if (beganRenderingContent) {
                             data.features[0].geometry.coordinates.push([180.1, 0.1]);
                             source.setData(data);
-                            t.equal(map.getSource('trace').loaded(), false);
+                            expect(map.getSource('trace').loaded()).toEqual(false);
                         }
                     } else {
                         // Previous trace data should be rendered while loading update.
-                        t.ok(isCenterRendered);
+                        expect(isCenterRendered).toBeTruthy();
                         setTimeout(() => map.remove(), 0); // avoids re-triggering render after t.end. Don't remove while in render().
-                        t.end();
                     }
                 });
             };
@@ -498,93 +505,106 @@ test('Elevation', (t) => {
         });
     });
 
-    t.test('mapbox-gl-js-internal#281', t => {
-        const data = {
-            "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "properties": {},
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": []
-                }
-            }]
-        };
-        const map = createMap(t, {
-            style: {
-                version: 8,
-                center: [85, 85],
-                zoom: 2.1,
-                sources: {
-                    mapbox: {
-                        type: 'vector',
-                        minzoom: 1,
-                        maxzoom: 10,
-                        tiles: ['http://example.com/{z}/{x}/{y}.png']
-                    },
-                    'mapbox-dem': {
-                        type: "raster-dem",
-                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
-                        tileSize: 512,
-                        maxzoom: 14
-                    }
-                },
-                layers: [{
-                    "id": "background",
-                    "type": "background",
-                    "paint": {
-                        "background-color": "black"
+    describe('mapbox-gl-js-internal#281', () => {
+        let map;
+
+        beforeAll(async () => {
+            const data = {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": []
                     }
                 }]
-            }
-        });
-        map.on('style.load', () => {
-            map.addSource('trace', {type: 'geojson', data});
-            map.addLayer({
-                'id': 'trace',
-                'type': 'line',
-                'source': 'trace',
-                'paint': {
-                    'line-color': 'yellow',
-                    'line-opacity': 0.75,
-                    'line-width': 5
+            };
+            map = createMap({
+                style: {
+                    version: 8,
+                    center: [85, 85],
+                    zoom: 2.1,
+                    sources: {
+                        mapbox: {
+                            type: 'vector',
+                            minzoom: 1,
+                            maxzoom: 10,
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        },
+                        'mapbox-dem': {
+                            type: "raster-dem",
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 512,
+                            maxzoom: 14
+                        }
+                    },
+                    layers: [{
+                        "id": "background",
+                        "type": "background",
+                        "paint": {
+                            "background-color": "black"
+                        }
+                    }]
                 }
             });
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
-            cache._loadTile = (tile, callback) => {
-                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
-            cache.used = cache._sourceLoaded = true;
-            map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                map._updateTerrain();
-                map.painter.style.on('data', (event) => {
-                    if (event.sourceCacheId === 'other:trace') {
-                        t.test('Source other:trace is cleared from cache', t => {
-                            t.ok(map.painter.terrain._tilesDirty.hasOwnProperty('other:trace'));
-                            t.true(map.painter.terrain._tilesDirty['other:trace']['0']);
-                            t.end();
+
+            await new Promise(resolve => {
+                map.on('style.load', () => {
+                    map.addSource('trace', {type: 'geojson', data});
+                    map.addLayer({
+                        'id': 'trace',
+                        'type': 'line',
+                        'source': 'trace',
+                        'paint': {
+                            'line-color': 'yellow',
+                            'line-opacity': 0.75,
+                            'line-width': 5
+                        }
+                    });
+                    const cache = map.style.getOwnSourceCache('mapbox-dem');
+                    cache._loadTile = (tile, callback) => {
+                        const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                        tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                        tile.needsHillshadePrepare = true;
+                        tile.needsDEMTextureUpload = true;
+                        tile.state = 'loaded';
+                        callback(null);
+                    };
+                    cache.used = cache._sourceLoaded = true;
+                    map.setTerrain({"source": "mapbox-dem"});
+                    map.once('render', () => {
+                        map._updateTerrain();
+                        map.painter.style.on('data', (event) => {
+                            if (event.sourceCacheId === 'other:trace') {
+                                resolve();
+                            }
                         });
-                        t.end();
-                    }
+                        const cache = map.style.getOwnSourceCache('trace');
+                        cache.transform = map.painter.transform;
+                        cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
+                        cache.onAdd();
+                        cache.reload();
+                        cache.used = cache._sourceLoaded = true;
+                    });
                 });
-                const cache = map.style.getOwnSourceCache('trace');
-                cache.transform = map.painter.transform;
-                cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
-                cache.onAdd();
-                cache.reload();
-                cache.used = cache._sourceLoaded = true;
             });
+        });
+
+        test('Source other:trace is cleared from cache', () => {
+            expect(map.painter.terrain._tilesDirty.hasOwnProperty('other:trace')).toBeTruthy();
+            expect(map.painter.terrain._tilesDirty['other:trace']['0']).toBeTruthy();
         });
     });
 
-    t.test('mapbox-gl-js-internal#349', t => {
-        const map = createMap(t, {
+    test('mapbox-gl-js-internal#349', async () => {
+        networkWorker.use(
+            http.get('http://example.com/0/0/0.png', async () => {
+                return new HttpResponse(await getPNGResponse());
+            })
+        );
+
+        const map = createMap({
             style: {
                 version: 8,
                 center: [85, 85],
@@ -606,92 +626,91 @@ test('Elevation', (t) => {
                 }]
             }
         });
-        map.on('style.load', () => {
-            const customLayer = {
-                id: 'custom',
-                type: 'custom',
-                onAdd: () => {},
-                render: () => {}
-            };
-            map.addLayer(customLayer);
-            map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                t.false(map.painter.terrain._shouldDisableRenderCache());
-                t.end();
-            });
-        });
+        await waitFor(map, "style.load");
+        const customLayer = {
+            id: 'custom',
+            type: 'custom',
+            onAdd: () => {},
+            render: () => {}
+        };
+        map.addLayer(customLayer);
+        map.setTerrain({"source": "mapbox-dem"});
+        await waitFor(map, "render");
+        expect(map.painter.terrain._shouldDisableRenderCache()).toBeFalsy();
+        await waitFor(map, "idle");
     });
 
-    t.test('mapbox-gl-js-internal#32', t => {
-        const map = createMap(t, {
-            style: {
-                version: 8,
-                center: [85, 85],
-                zoom: 2.1,
-                sources: {
-                    mapbox: {
-                        type: 'vector',
-                        minzoom: 1,
-                        maxzoom: 10,
-                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+    describe('mapbox-gl-js-internal#32', () => {
+        let map, tr;
+        beforeAll(async () => {
+            map = createMap({
+                style: {
+                    version: 8,
+                    center: [85, 85],
+                    zoom: 2.1,
+                    sources: {
+                        mapbox: {
+                            type: 'vector',
+                            minzoom: 1,
+                            maxzoom: 10,
+                            tiles: ['http://example.com/{z}/{x}/{y}.png']
+                        },
+                        'mapbox-dem': {
+                            type: "raster-dem",
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 512,
+                            maxzoom: 14
+                        }
                     },
-                    'mapbox-dem': {
-                        type: "raster-dem",
-                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
-                        tileSize: 512,
-                        maxzoom: 14
-                    }
-                },
-                layers: [{
-                    id: 'layerId1',
-                    type: 'circle',
-                    source: 'mapbox',
-                    'source-layer': 'sourceLayer'
-                }]
-            }
-        });
+                    layers: [{
+                        id: 'layerId1',
+                        type: 'circle',
+                        source: 'mapbox',
+                        'source-layer': 'sourceLayer'
+                    }]
+                }
+            });
 
-        map.on('style.load', () => {
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
-            cache._loadTile = (tile, callback) => {
-                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
-            cache.used = cache._sourceLoaded = true;
-            const tr = map.painter.transform.clone();
-            map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                map._updateTerrain();
-                t.test('center is not further constrained', t => {
-                    t.deepEqual(tr.center, map.painter.transform.center);
-                    t.end();
+            await new Promise(resolve => {
+                map.on('style.load', () => {
+                    const cache = map.style.getOwnSourceCache('mapbox-dem');
+                    cache._loadTile = (tile, callback) => {
+                        const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                        tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                        tile.needsHillshadePrepare = true;
+                        tile.needsDEMTextureUpload = true;
+                        tile.state = 'loaded';
+                        callback(null);
+                    };
+                    cache.used = cache._sourceLoaded = true;
+                    tr = map.painter.transform.clone();
+                    map.setTerrain({"source": "mapbox-dem"});
+                    map.once('render', () => {
+                        map._updateTerrain();
+                        resolve();
+                    });
                 });
-                t.end();
             });
         });
-    });
 
-    t.end();
+        test('center is not further constrained', () => {
+            expect(tr.center).toEqual(map.painter.transform.center);
+        });
+    });
 });
 
 const spec = styleSpec.terrain;
 
-test('Terrain style', (t) => {
-    test('Terrain defaults', (t) => {
+describe('Terrain style', () => {
+    test('Terrain defaults', () => {
         const terrain = new Terrain({});
         terrain.recalculate({zoom: 0});
 
-        t.deepEqual(terrain.properties.get('source'), spec.source.default);
-        t.deepEqual(terrain.properties.get('exaggeration'), spec.exaggeration.default);
-
-        t.end();
+        expect(terrain.properties.get('source')).toEqual(spec.source.default);
+        expect(terrain.properties.get('exaggeration')).toEqual(spec.exaggeration.default);
     });
 
-    test('Exaggeration with stops function', (t) => {
+    test('Exaggeration with stops function', () => {
         const terrain = new Terrain({
             source: "dem",
             exaggeration: {
@@ -700,19 +719,16 @@ test('Terrain style', (t) => {
         });
         terrain.recalculate({zoom: 16});
 
-        t.deepEqual(terrain.properties.get('exaggeration'), 0.5);
-        t.end();
+        expect(terrain.properties.get('exaggeration')).toEqual(0.5);
     });
-
-    t.end();
 });
 
 function nearlyEquals(a, b, eps = 0.000000001) {
     return Object.keys(a).length >= 2 && Object.keys(a).every(key => Math.abs(a[key] - b[key]) < eps);
 }
 
-test('Raycast projection 2D/3D', t => {
-    const map = createMap(t, {
+test('Raycast projection 2D/3D', async () => {
+    const map = createMap({
         style: {
             version: 8,
             center: [0, 0],
@@ -729,81 +745,80 @@ test('Raycast projection 2D/3D', t => {
         }
     });
 
-    map.once('style.load', () => {
-        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-        map.once('render', () => {
-            map._updateTerrain();
+    await waitFor(map, 'style.load');
 
-            const transform = map.transform;
-            const cx = transform.width / 2;
-            const cy = transform.height / 2;
-            t.deepEqual(fixedLngLat(transform.pointLocation(new Point(cx, cy))), {lng: 0, lat: 0});
-            t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0});
-            t.ok(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy}));
-            // Lower precision as we are raycasting using GPU depth render.
-            t.ok(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0}, 0.00006));
-            t.ok(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0}, 0.000001));
-            t.ok(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy}));
+    setMockElevationTerrain(map, zeroDem, TILE_SIZE);
 
-            // above horizon:
-            const skyPoint = new Point(cx, 0);
-            // raycast implementation returns null as there is no point at the top.
-            t.equal(transform.elevation.pointCoordinate(skyPoint), null);
+    await waitFor(map, 'render');
+    map._updateTerrain();
 
-            t.ok(transform.elevation.pointCoordinate(new Point(transform.width, transform.height)));
-            t.deepEqual(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))[2].toFixed(10), 0);
+    const transform = map.transform;
+    const cx = transform.width / 2;
+    const cy = transform.height / 2;
+    expect(fixedLngLat(transform.pointLocation(new Point(cx, cy)))).toEqual({lng: 0, lat: 0});
+    expect(fixedCoord(transform.pointCoordinate(new Point(cx, cy)))).toEqual({x: 0.5, y: 0.5, z: 0});
+    expect(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy})).toBeTruthy();
+    // Lower precision as we are raycasting using GPU depth render.
+    expect(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0}, 0.00006)).toBeTruthy();
+    expect(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0}, 0.000001)).toBeTruthy();
+    expect(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy})).toBeTruthy();
 
-            const coord2D = transform.pointCoordinate(skyPoint);
-            const coord3D = transform.pointCoordinate3D(skyPoint);
-            t.ok(nearlyEquals(coord2D, coord3D, 0.001));
+    // above horizon:
+    const skyPoint = new Point(cx, 0);
+    // raycast implementation returns null as there is no point at the top.
+    expect(transform.elevation.pointCoordinate(skyPoint)).toEqual(null);
 
-            // Screen points above horizon line should return locations on the horizon line.
-            const latLng3D = transform.pointLocation3D(skyPoint);
-            const latLng2D = transform.pointLocation(skyPoint);
+    expect(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))).toBeTruthy();
+    expect(transform.elevation.pointCoordinate(new Point(transform.width, transform.height))[2].toFixed(10)).toEqual('-0.0000000000');
 
-            t.same(latLng2D.lng, latLng3D.lng);
-            // Small differences in screen position, close to the horizon, becomes a large distance in latitude.
-            t.same(latLng2D.lat.toFixed(0), latLng3D.lat.toFixed(0));
+    const coord2D = transform.pointCoordinate(skyPoint);
+    const coord3D = transform.pointCoordinate3D(skyPoint);
+    expect(nearlyEquals(coord2D, coord3D, 0.001)).toBeTruthy();
 
-            const horizonPoint3D = transform.locationPoint3D(latLng3D);
-            const horizonPoint2D = transform.locationPoint(latLng2D);
+    // Screen points above horizon line should return locations on the horizon line.
+    const latLng3D = transform.pointLocation3D(skyPoint);
+    const latLng2D = transform.pointLocation(skyPoint);
 
-            t.same(horizonPoint3D.x.toFixed(7), cx);
-            t.same(horizonPoint2D.x.toFixed(7), cx);
-            t.same(horizonPoint2D.x.toFixed(7), horizonPoint3D.x.toFixed(7));
+    expect(latLng2D.lng).toBe(latLng3D.lng);
+    // Small differences in screen position, close to the horizon, becomes a large distance in latitude.
+    expect(latLng2D.lat.toFixed(0)).toBe(latLng3D.lat.toFixed(0));
 
-            t.same(transform.horizonLineFromTop(), 52.39171520871443);
-            t.same(horizonPoint2D.y.toFixed(7), transform.horizonLineFromTop().toFixed(7));
-            t.same((horizonPoint2D.y / 10).toFixed(0), (horizonPoint3D.y / 10).toFixed(0));
+    const horizonPoint3D = transform.locationPoint3D(latLng3D);
+    const horizonPoint2D = transform.locationPoint(latLng2D);
 
-            // disable terrain.
-            map.setTerrain(null);
-            map.once('render', () => {
-                t.notOk(map.painter.terrain);
-                const latLng = transform.pointLocation3D(skyPoint);
-                t.same(latLng, latLng2D);
+    expect(horizonPoint3D.x.toFixed(7)).toEqual(cx.toFixed(7));
+    expect(horizonPoint2D.x.toFixed(7)).toBe(cx.toFixed(7));
+    expect(horizonPoint2D.x.toFixed(7)).toBe(horizonPoint3D.x.toFixed(7));
 
-                t.deepEqual(fixedLngLat(transform.pointLocation(new Point(cx, cy))), {lng: 0, lat: 0});
-                t.deepEqual(fixedCoord(transform.pointCoordinate(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0});
-                t.ok(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy}));
-                // Higher precision as we are using the same as for 2D, given there is no terrain.
-                t.ok(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0}));
-                t.ok(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0}));
-                t.ok(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy}));
+    expect(transform.horizonLineFromTop()).toBe(52.39171520871443);
+    expect(horizonPoint2D.y.toFixed(7)).toBe(transform.horizonLineFromTop().toFixed(7));
+    expect((horizonPoint2D.y / 10).toFixed(0)).toBe((horizonPoint3D.y / 10).toFixed(0));
 
-                t.end();
-            });
-        });
-    });
+    // disable terrain.
+    map.setTerrain(null);
+
+    await waitFor(map, 'render');
+    expect(map.painter.terrain).toBeFalsy();
+    const latLng = transform.pointLocation3D(skyPoint);
+    expect(latLng).toStrictEqual(latLng2D);
+
+    expect(fixedLngLat(transform.pointLocation(new Point(cx, cy)))).toEqual({lng: 0, lat: 0});
+    expect(fixedCoord(transform.pointCoordinate(new Point(cx, cy)))).toEqual({x: 0.5, y: 0.5, z: 0});
+    expect(nearlyEquals(fixedPoint(transform.locationPoint(new LngLat(0, 0))), {x: cx, y: cy})).toBeTruthy();
+    // Higher precision as we are using the same as for 2D, given there is no terrain.
+    expect(nearlyEquals(fixedLngLat(transform.pointLocation3D(new Point(cx, cy))), {lng: 0, lat: 0})).toBeTruthy();
+    expect(nearlyEquals(fixedCoord(transform.pointCoordinate3D(new Point(cx, cy))), {x: 0.5, y: 0.5, z: 0})).toBeTruthy();
+    expect(nearlyEquals(fixedPoint(transform.locationPoint3D(new LngLat(0, 0))), {x: cx, y: cy})).toBeTruthy();
 });
 
-function createInteractiveMap(t, clickTolerance, dragPan) {
-    t.stub(Map.prototype, '_detectMissingCSS');
+function createInteractiveMap(clickTolerance, dragPan) {
+    vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     return new Map({
         container: DOM.create('div', '', window.document.body),
         clickTolerance: clickTolerance || 0,
         dragPan: dragPan || true,
         testMode: true,
+        interactive: true,
         style: {
             version: 8,
             center: [0, 0],
@@ -821,189 +836,180 @@ function createInteractiveMap(t, clickTolerance, dragPan) {
     });
 }
 
-test('Drag pan ortho', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+describe('Drag pan ortho', () => {
+    let map, cache;
 
-    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
-        t.ok(Math.abs(actual - expected) < epsilon);
+    const assertAlmostEqual = (actual, expected, epsilon = 1e-3) => {
+        expect(Math.abs(actual - expected) < epsilon).toBeTruthy();
     };
 
-    const map = createInteractiveMap(t);
+    beforeAll(async () => {
+        map = createInteractiveMap();
 
-    map.on('style.load', () => {
+        await waitFor(map, 'style.load');
         map.addSource('mapbox-dem', {
             "type": "raster-dem",
             "tiles": ['http://example.com/{z}/{x}/{y}.png'],
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style.getOwnSourceCache('mapbox-dem');
+        cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
-        const mockDem = (dem, cache) => {
-            cache._loadTile = (tile, callback) => {
-                tile.dem = dem;
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
+    });
+
+    const mockDem = (dem, cache) => {
+        cache._loadTile = (tile, callback) => {
+            tile.dem = dem;
+            tile.needsHillshadePrepare = true;
+            tile.needsDEMTextureUpload = true;
+            tile.state = 'loaded';
+            callback(null);
         };
+    };
 
-        t.test('ortho camera & drag over zero pitch elevation', t => {
-            mockDem(createNegativeGradientDEM(), cache);
-            map.setTerrain({"source": "mapbox-dem"});
-            map.setPitch(0);
-            map.setZoom(15.7);
-            map.setCamera({"camera-projection": "orthographic"});
-            map.once('render', () => {
+    test('ortho camera & drag over zero pitch elevation', async () => {
+        mockDem(createNegativeGradientDEM(), cache);
+        map.setTerrain({"source": "mapbox-dem"});
+        map.setPitch(0);
+        map.setZoom(15.7);
+        map.setCamera({"camera-projection": "orthographic"});
+        await waitFor(map, "render");
 
-                // MouseEvent.buttons = 1 // left button
-                const buttons = 1;
-                map._updateTerrain();
-                t.equal(map.getZoom(), 15.7);
+        // MouseEvent.buttons = 1 // left button
+        const buttons = 1;
+        map._updateTerrain();
+        expect(map.getZoom()).toEqual(15.7);
 
-                const dragstart = t.spy();
-                const drag      = t.spy();
-                const dragend   = t.spy();
+        const dragstart = vi.fn();
+        const drag      = vi.fn();
+        const dragend   = vi.fn();
 
-                map.on('dragstart', dragstart);
-                map.on('drag',      drag);
-                map.on('dragend',   dragend);
+        map.on('dragstart', dragstart);
+        map.on('drag',      drag);
+        map.on('dragend',   dragend);
 
-                simulate.mousedown(map.getCanvas());
-                map._renderTaskQueue.run();
-                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
-                map._renderTaskQueue.run();
-                t.equal(dragstart.callCount, 1);
-                t.equal(drag.callCount, 1);
-                t.equal(dragend.callCount, 0);
+        simulate.mousedown(map.getCanvas());
+        map._renderTaskQueue.run();
+        simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        map._renderTaskQueue.run();
+        expect(dragstart).toHaveBeenCalledTimes(1);
+        expect(drag).toHaveBeenCalledTimes(1);
+        expect(dragend).not.toHaveBeenCalled();
 
-                simulate.mouseup(map.getCanvas());
-                map._renderTaskQueue.run();
-                t.equal(dragstart.callCount, 1);
-                t.equal(drag.callCount, 1);
-                t.equal(dragend.callCount, 1);
+        simulate.mouseup(map.getCanvas());
+        map._renderTaskQueue.run();
+        expect(dragstart).toHaveBeenCalledTimes(1);
+        expect(drag).toHaveBeenCalledTimes(1);
+        expect(dragend).toHaveBeenCalledTimes(1);
 
-                t.equal(map.getZoom(), 15.7); // recenter on pitch.
+        expect(map.getZoom()).toEqual(15.7); // recenter on pitch.
 
-                // Still in ortho
-                map.setPitch(5);
-                simulate.mousedown(map.getCanvas());
-                map._renderTaskQueue.run();
-                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
-                map._renderTaskQueue.run();
+        // Still in ortho
+        map.setPitch(5);
+        simulate.mousedown(map.getCanvas());
+        map._renderTaskQueue.run();
+        simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        map._renderTaskQueue.run();
 
-                simulate.mouseup(map.getCanvas());
-                map._renderTaskQueue.run();
-                t.equal(dragend.callCount, 2);
-                assertAlmostEqual(t, map.getZoom(), 14.06, 0.01);
+        simulate.mouseup(map.getCanvas());
+        map._renderTaskQueue.run();
+        expect(dragend).toHaveBeenCalledTimes(2);
+        assertAlmostEqual(map.getZoom(), 13.37, 0.01);
 
-                map.setPitch(0);
-                simulate.mousedown(map.getCanvas());
-                map._renderTaskQueue.run();
-                simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
-                map._renderTaskQueue.run();
+        map.setPitch(0);
+        simulate.mousedown(map.getCanvas());
+        map._renderTaskQueue.run();
+        simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        map._renderTaskQueue.run();
 
-                simulate.mouseup(map.getCanvas());
-                map._renderTaskQueue.run();
-                t.equal(dragend.callCount, 3);
-                assertAlmostEqual(t, map.getZoom(), 14.06, 0.01); // no pitch, keep old zoom.
+        simulate.mouseup(map.getCanvas());
+        map._renderTaskQueue.run();
+        expect(dragend).toHaveBeenCalledTimes(3);
+        assertAlmostEqual(map.getZoom(), 13.37, 0.01); // no pitch, keep old zoom.
 
-                map.remove();
-                t.end();
-            });
-        });
-
-        t.end();
+        map.remove();
     });
 });
 
-test('Negative Elevation', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+describe('Negative Elevation', () => {
+    let map, cache;
 
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    const map = createMap(t, {
-        style: createStyle()
-    });
-
-    const assertAlmostEqual = (t, actual, expected, epsilon = 1e-3) => {
-        t.ok(Math.abs(actual - expected) < epsilon);
-    };
-
-    map.on('style.load', () => {
+    beforeAll(async () => {
+        map = createMap({
+            style: createStyle()
+        });
+        await waitFor(map, 'style.load');
         map.addSource('mapbox-dem', {
             "type": "raster-dem",
             "tiles": ['http://example.com/{z}/{x}/{y}.png'],
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
-        const cache = map.style.getOwnSourceCache('mapbox-dem');
+        cache = map.style.getOwnSourceCache('mapbox-dem');
         cache.used = cache._sourceLoaded = true;
-        const mockDem = (dem, cache) => {
-            cache._loadTile = (tile, callback) => {
-                tile.dem = dem;
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
+    });
+
+    const mockDem = (dem, cache) => {
+        cache._loadTile = (tile, callback) => {
+            tile.dem = dem;
+            tile.needsHillshadePrepare = true;
+            tile.needsDEMTextureUpload = true;
+            tile.state = 'loaded';
+            callback(null);
         };
-        t.test('sampling with negative elevation', t => {
+    };
+
+    const assertAlmostEqual = (actual, expected, epsilon = 1e-3) => {
+        expect(Math.abs(actual - expected) < epsilon).toBeTruthy();
+    };
+
+    describe('sampling with negative elevation', () => {
+        beforeAll(async () => {
             mockDem(createNegativeGradientDEM(), cache);
             map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                map._updateTerrain();
-                t.test('negative elevation', t => {
-                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
-                    assertAlmostEqual(t, minElevation, -1671.55);
-                    cache.clearTiles();
-                    t.end();
-                });
-                t.end();
-            });
+            await waitFor(map, 'render');
+            map._updateTerrain();
         });
 
-        t.test('sampling with negative elevation and exaggeration', t => {
+        test('negative elevation', () => {
+            const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+            assertAlmostEqual(minElevation, -1671.55);
+            cache.clearTiles();
+        });
+    });
+
+    describe('sampling with negative elevation and exaggeration', () => {
+        beforeAll(async () => {
             mockDem(createNegativeGradientDEM(), cache);
             map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
-            map.once('render', () => {
-                map._updateTerrain();
-                t.test('negative elevation with exaggeration', t => {
-                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
-                    assertAlmostEqual(t, minElevation, -2507.325);
-                    cache.clearTiles();
-                    t.end();
-                });
-                t.end();
-            });
+            await waitFor(map, 'render');
+            map._updateTerrain();
         });
 
-        t.test('sampling with no negative elevation', t => {
+        test('negative elevation with exaggeration', () => {
+            const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+            assertAlmostEqual(minElevation, -2507.325);
+            cache.clearTiles();
+        });
+    });
+
+    describe('sampling with no negative elevation', () => {
+        beforeAll(async () => {
             mockDem(createGradientDEM(), cache);
             map.setTerrain({"source": "mapbox-dem"});
-            map.once('render', () => {
-                map._updateTerrain();
-                t.test('no negative elevation', t => {
-                    const minElevation = map.painter.terrain.getMinElevationBelowMSL();
-                    t.deepEqual(minElevation, 0);
-                    cache.clearTiles();
-                    t.end();
-                });
-                t.end();
-            });
+            await waitFor(map, 'render');
+            map._updateTerrain();
         });
-        t.end();
+
+        test('no negative elevation', () => {
+            const minElevation = map.painter.terrain.getMinElevationBelowMSL();
+            expect(minElevation).toEqual(0);
+            cache.clearTiles();
+        });
     });
 });
 
-test('Vertex morphing', (t) => {
+describe('Vertex morphing', () => {
     const createTile = (id) => {
         const tile = new Tile(id);
         tile.demTexture = {};
@@ -1011,7 +1017,7 @@ test('Vertex morphing', (t) => {
         return tile;
     };
 
-    t.test('Morph single tile', (t) => {
+    test('Morph single tile', () => {
         const morphing = new VertexMorphing();
         const coord = new OverscaledTileID(2, 0, 2, 1, 1);
         const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
@@ -1019,30 +1025,28 @@ test('Vertex morphing', (t) => {
 
         morphing.newMorphing(coord.key, src, dst, 0, 250);
         let values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
+        expect(values).toBeTruthy();
 
         // Initial state
-        t.deepEqual(values.from, src);
-        t.deepEqual(values.to, dst);
-        t.equal(values.phase, 0);
+        expect(values.from).toEqual(src);
+        expect(values.to).toEqual(dst);
+        expect(values.phase).toEqual(0);
 
         morphing.update(125);
 
         // Half way through
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, src);
-        t.deepEqual(values.to, dst);
-        t.equal(values.phase, 0.5);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(src);
+        expect(values.to).toEqual(dst);
+        expect(values.phase).toEqual(0.5);
 
         // Done
         values = morphing.getMorphValuesForProxy(250);
-        t.notOk(values);
-
-        t.end();
+        expect(values).toBeFalsy();
     });
 
-    t.test('Queue dem tiles', (t) => {
+    test('Queue dem tiles', () => {
         const morphing = new VertexMorphing();
         const coord = new OverscaledTileID(2, 0, 2, 1, 1);
         const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
@@ -1055,38 +1059,36 @@ test('Vertex morphing', (t) => {
         morphing.newMorphing(coord.key, dst, intermediate, 0, 500);
         morphing.newMorphing(coord.key, src, queued, 0, 500);
         let values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
+        expect(values).toBeTruthy();
 
         morphing.update(250);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, src);
-        t.deepEqual(values.to, dst);
-        t.equal(values.phase, 0.5);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(src);
+        expect(values.to).toEqual(dst);
+        expect(values.phase).toEqual(0.5);
 
         // Expect to find the `queued` tile. `intermediate` should have been discarded
         morphing.update(500);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, dst);
-        t.deepEqual(values.to, queued);
-        t.equal(values.phase, 0.0);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(dst);
+        expect(values.to).toEqual(queued);
+        expect(values.phase).toEqual(0.0);
 
         morphing.update(750);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, dst);
-        t.deepEqual(values.to, queued);
-        t.equal(values.phase, 0.5);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(dst);
+        expect(values.to).toEqual(queued);
+        expect(values.phase).toEqual(0.5);
 
         morphing.update(1000);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.notOk(values);
-
-        t.end();
+        expect(values).toBeFalsy();
     });
 
-    t.test('Queue dem tiles multiple times', (t) => {
+    test('Queue dem tiles multiple times', () => {
         const morphing = new VertexMorphing();
         const coord = new OverscaledTileID(2, 0, 2, 1, 1);
         const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
@@ -1100,23 +1102,21 @@ test('Vertex morphing', (t) => {
         morphing.newMorphing(coord.key, src, duplicate1, 0, 100);
         morphing.newMorphing(coord.key, src, duplicate2, 0, 100);
         let values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
+        expect(values).toBeTruthy();
 
         morphing.update(75);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, src);
-        t.deepEqual(values.to, dst);
-        t.equal(values.phase, 0.75);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(src);
+        expect(values.to).toEqual(dst);
+        expect(values.phase).toEqual(0.75);
 
         morphing.update(110);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.notOk(values);
-
-        t.end();
+        expect(values).toBeFalsy();
     });
 
-    t.test('Expired data', (t) => {
+    test('Expired data', () => {
         const morphing = new VertexMorphing();
         const coord = new OverscaledTileID(2, 0, 2, 1, 1);
         const src = createTile(new OverscaledTileID(4, 0, 4, 8, 15));
@@ -1128,19 +1128,19 @@ test('Vertex morphing', (t) => {
 
         morphing.update(200);
         let values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, src);
-        t.deepEqual(values.to, dst);
-        t.equal(values.phase, 0.2);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(src);
+        expect(values.to).toEqual(dst);
+        expect(values.phase).toEqual(0.2);
 
         // source tile is expired
         src.state = 'unloaded';
         morphing.update(300);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.ok(values);
-        t.deepEqual(values.from, dst);
-        t.deepEqual(values.to, queued);
-        t.equal(values.phase, 0.0);
+        expect(values).toBeTruthy();
+        expect(values.from).toEqual(dst);
+        expect(values.to).toEqual(queued);
+        expect(values.phase).toEqual(0.0);
 
         const newQueued = createTile(new OverscaledTileID(7, 0, 7, 9, 16));
         morphing.newMorphing(coord.key, queued, newQueued, 1000);
@@ -1149,462 +1149,450 @@ test('Vertex morphing', (t) => {
         queued.state = 'unloaded';
         morphing.update(500);
         values = morphing.getMorphValuesForProxy(coord.key);
-        t.notOk(values);
-
-        t.end();
+        expect(values).toBeFalsy();
     });
-
-    t.end();
 });
 
-test('Render cache efficiency', (t) => {
-    t.test('Optimized for terrain, various efficiency', (t) => {
-        const map = createMap(t, {
-            style: {
-                version: 8,
-                center: [85, 85],
-                zoom: 2.1,
-                sources: {
-                    'mapbox-dem': {
-                        type: 'raster-dem',
-                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
-                        tileSize: 512,
-                        maxzoom: 14
-                    },
-                    geojson: {
-                        type: 'geojson',
-                        data: {
-                            type: 'Point',
-                            coordinates: [
-                                0,
-                                0
-                            ]
+describe('Render cache efficiency', () => {
+    describe('Optimized for terrain, various efficiency', () => {
+        let map;
+        beforeAll(async () => {
+            map = createMap({
+                style: {
+                    version: 8,
+                    center: [85, 85],
+                    zoom: 2.1,
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 512,
+                            maxzoom: 14
+                        },
+                        geojson: {
+                            type: 'geojson',
+                            data: {
+                                type: 'Point',
+                                coordinates: [
+                                    0,
+                                    0
+                                ]
+                            }
                         }
-                    }
-                },
-                layers: []
-            }
-        });
-
-        map.on('style.load', () => {
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
-            cache._loadTile = (tile, callback) => {
-                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
-            map.setTerrain({'source': 'mapbox-dem'});
-            map.once('render', () => {
-                map._updateTerrain();
-                map.addLayer({
-                    'id': 'background',
-                    'type': 'background'
-                });
-
-                // Stub console.warn to prevent test fail
-                const warn = console.warn;
-                console.warn = (_) => {};
-
-                t.test('Cache efficiency 1', (t) => {
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 2', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 3', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped3',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('draped3');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 4', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped3',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('draped3');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                console.warn = warn;
-
-                t.end();
-            });
-        });
-    });
-
-    t.test('Optimized for terrain, 100% efficiency', (t) => {
-        const map = createMap(t, {
-            style: {
-                version: 8,
-                center: [85, 85],
-                zoom: 2.1,
-                sources: {
-                    'mapbox-dem': {
-                        type: 'raster-dem',
-                        tiles: ['http://example.com/{z}/{x}/{y}.png'],
-                        tileSize: 512,
-                        maxzoom: 14
                     },
-                    geojson: {
-                        type: 'geojson',
-                        data: {
-                            type: 'Point',
-                            coordinates: [
-                                0,
-                                0
-                            ]
-                        }
-                    }
-                },
-                layers: []
-            }
-        });
-
-        map.on('style.load', () => {
-            const cache = map.style.getOwnSourceCache('mapbox-dem');
-            cache._loadTile = (tile, callback) => {
-                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                tile.needsHillshadePrepare = true;
-                tile.needsDEMTextureUpload = true;
-                tile.state = 'loaded';
-                callback(null);
-            };
-            map.setTerrain({'source': 'mapbox-dem'});
-            map.once('render', () => {
-                map._updateTerrain();
-                map.addLayer({
-                    'id': 'background',
-                    'type': 'background'
-                });
-
-                // Stub console.warn to prevent test fail
-                const warn = console.warn;
-                console.warn = (_) => {};
-
-                t.test('Cache efficiency 1', (t) => {
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 2', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 3', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped3',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('draped3');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                t.test('Cache efficiency 4', (t) => {
-                    map.addLayer({
-                        'id': 'draped1',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'undraped1',
-                        'type': 'symbol',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped2',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    map.addLayer({
-                        'id': 'draped3',
-                        'type': 'fill',
-                        'source': 'geojson'
-                    });
-                    t.ok(map.painter.terrain.isLayerOrderingCorrect(map.painter.style));
-                    map.removeLayer('draped1');
-                    map.removeLayer('draped2');
-                    map.removeLayer('draped3');
-                    map.removeLayer('undraped1');
-                    t.end();
-                });
-
-                console.warn = warn;
-
-                t.end();
-            });
-        });
-    });
-
-    t.end();
-});
-
-test('Marker interaction and raycast', (t) => {
-    const map = createMap(t, {
-        style: extend(createStyle(), {
-            layers: [{
-                "id": "background",
-                "type": "background",
-                "paint": {
-                    "background-color": "black"
+                    layers: []
                 }
-            }]
-        })
-    });
-    map.setPitch(85);
-    map.setZoom(13);
-
-    const tr = map.transform;
-    const marker = new Marker({draggable: true})
-        .setLngLat(tr.center)
-        .addTo(map)
-        .setPopup(new Popup().setHTML(`a popup content`))
-        .togglePopup();
-    t.equal(map.project(marker.getLngLat()).y, tr.height / 2);
-    t.equal(tr.locationPoint3D(marker.getLngLat()).y, tr.height / 2);
-    t.deepEqual(marker.getPopup()._pos, new Point(tr.width / 2, tr.height / 2));
-
-    map.once('style.load', () => {
-        map.addSource('mapbox-dem', {
-            "type": "raster-dem",
-            "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-            "tileSize": TILE_SIZE,
-            "maxzoom": 14
+            });
+            await waitFor(map, 'style.load');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
+            cache._loadTile = (tile, callback) => {
+                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            map.setTerrain({'source': 'mapbox-dem'});
+            await waitFor(map, 'render');
+            map._updateTerrain();
+            map.addLayer({
+                'id': 'background',
+                'type': 'background'
+            });
         });
+
+        beforeEach(() => {
+            // Stub console.warn to prevent test fail
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+        });
+
+        test('Cache efficiency 1', () => {
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 2', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 3', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped3',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('draped3');
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 4', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped3',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('draped3');
+            map.removeLayer('undraped1');
+        });
+    });
+
+    describe('Optimized for terrain, 100% efficiency', () => {
+        let map;
+        beforeAll(async () => {
+
+            map = createMap({
+                style: {
+                    version: 8,
+                    center: [85, 85],
+                    zoom: 2.1,
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: 512,
+                            maxzoom: 14
+                        },
+                        geojson: {
+                            type: 'geojson',
+                            data: {
+                                type: 'Point',
+                                coordinates: [
+                                    0,
+                                    0
+                                ]
+                            }
+                        }
+                    },
+                    layers: []
+                }
+            });
+            await waitFor(map, 'style.load');
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
+            cache._loadTile = (tile, callback) => {
+                const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            map.setTerrain({'source': 'mapbox-dem'});
+            await waitFor(map, 'render');
+            map._updateTerrain();
+            map.addLayer({
+                'id': 'background',
+                'type': 'background'
+            });
+        });
+
+        beforeEach(() => {
+            // Stub console.warn to prevent test fail
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+        });
+
+        test('Cache efficiency 1', () => {
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 2', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 3', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped3',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('draped3');
+            map.removeLayer('undraped1');
+        });
+
+        test('Cache efficiency 4', () => {
+            map.addLayer({
+                'id': 'draped1',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'undraped1',
+                'type': 'symbol',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped2',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            map.addLayer({
+                'id': 'draped3',
+                'type': 'fill',
+                'source': 'geojson'
+            });
+            expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            map.removeLayer('draped1');
+            map.removeLayer('draped2');
+            map.removeLayer('draped3');
+            map.removeLayer('undraped1');
+        });
+    });
+});
+
+describe('Marker interaction and raycast', () => {
+    let map, marker, tr;
+
+    beforeAll(async () => {
+        map = createMap({
+            style: extend(createStyle(), {
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }]
+            })
+        });
+        map.setPitch(85);
+        map.setZoom(13);
+
+        tr = map.transform;
+        marker = new Marker({draggable: true})
+            .setLngLat(tr.center)
+            .addTo(map)
+            .setPopup(new Popup().setHTML(`a popup content`))
+            .togglePopup();
+
+        await waitFor(map, 'style.load');
+    });
+
+    test('marker positioned in center', () => {
+        expect(map.project(marker.getLngLat()).y).toEqual(tr.height / 2);
+        expect(tr.locationPoint3D(marker.getLngLat()).y).toEqual(tr.height / 2);
+        expect(marker.getPopup()._pos).toEqual(new Point(tr.width / 2, tr.height / 2));
+    });
+
+    describe('interaction', () => {
+        let terrainTop, terrainTopLngLat;
+
+        beforeAll(async () => {
+            map.addSource('mapbox-dem', {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": TILE_SIZE,
+                "maxzoom": 14
+            });
+            map.transform._horizonShift = 0;
+            const cache = map.style.getOwnSourceCache('mapbox-dem');
+            cache.used = cache._sourceLoaded = true;
+            cache._loadTile = (tile, callback) => {
+            // Elevate tiles above center.
+                tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ), TILE_SIZE);
+                tile.needsHillshadePrepare = true;
+                tile.needsDEMTextureUpload = true;
+                tile.state = 'loaded';
+                callback(null);
+            };
+            map.setTerrain({"source": "mapbox-dem"});
+            await waitFor(map, 'render');
+            map._updateTerrain();
+            terrainTopLngLat = tr.pointLocation3D(new Point(tr.width / 2, 0)); // gets clamped at the top of terrain
+            terrainTop = tr.locationPoint3D(terrainTopLngLat);
+        });
+
+        test('no changes at center', () => {
+            expect(map.project(marker.getLngLat()).y).toEqual(tr.height / 2);
+            expect(tr.locationPoint3D(marker.getLngLat()).y).toEqual(tr.height / 2);
+            expect(marker.getPopup()._pos).toEqual(new Point(tr.width / 2, tr.height / 2));
+        });
+
+        test('terrain is above horizon line', () => {
+        // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
+            expect(terrainTop.y < tr.horizonLineFromTop() - 3).toBeTruthy();
+        });
+
+        test('Drag above clamps at horizon', () => {
+        // Offset marker down, 2 pixels under terrain top above horizon.
+            const startPos = new Point(0, 2)._add(terrainTop);
+            marker.setLngLat(tr.pointLocation3D(startPos));
+            expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
+            const el = marker.getElement();
+
+            simulate.mousedown(el);
+            simulate.mousemove(el, {clientX: 0, clientY: -40});
+            simulate.mouseup(el);
+
+            const endPos = tr.locationPoint3D(marker.getLngLat());
+            expect(Math.abs(endPos.x - startPos.x) < 0.00000000001).toBeTruthy();
+            expect(endPos.y).toEqual(terrainTop.y);
+            expect(marker.getPopup()._pos).toEqual(endPos);
+        });
+
+        test('Drag below / behind camera', () => {
+            const startPos = new Point(terrainTop.x, tr.height - 20);
+            marker.setLngLat(tr.pointLocation3D(startPos));
+            expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
+            const el = marker.getElement();
+
+            simulate.mousedown(el);
+            simulate.mousemove(el, {clientX: 0, clientY: 40});
+            simulate.mouseup(el);
+
+            const endPos = tr.locationPoint3D(marker.getLngLat());
+            expect(Math.round(endPos.y)).toEqual(Math.round(startPos.y) + 40);
+            expect(marker.getPopup()._pos).toEqual(endPos);
+        });
+
+        test('Occluded', async () => {
+            marker._fadeTimer = null;
+            // Occlusion is happening with Timers API. Advance them
+            vi.spyOn(window, 'setTimeout').mockImplementation((cb) => cb());
+            marker.setLngLat(terrainTopLngLat);
+            const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
+            // Raycast returns distance to closer point evaluates to occluded marker.
+            vi.spyOn(tr, 'pointLocation3D').mockImplementation(() => bottomLngLat);
+            await waitFor(map, "render");
+            expect(marker.getElement().style.opacity).toEqual("0.2");
+        });
+
+        test(`Marker updates position on removing terrain (#10982)`, async () => {
+            const update = vi.spyOn(marker, "_update");
+            map.setTerrain(null);
+            await waitFor(map, 'render');
+            expect(update).toHaveBeenCalledTimes(1);
+        });
+
+        test(`Marker updates position on adding terrain (#10982)`, async () => {
+            const update = vi.spyOn(marker, "_update");
+            map.setTerrain({"source": "mapbox-dem"});
+            await waitFor(map, 'render');
+            expect(update).toHaveBeenCalledTimes(1);
+        });
+    });
+});
+
+describe('terrain getBounds', () => {
+    test('should has correct coordinates of center', async () => {
+        const map = createMap({
+            style: extend(createStyle(), {
+                layers: [{
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "black"
+                    }
+                }]
+            })
+        });
+        map.setPitch(85);
+        map.setZoom(13);
         map.transform._horizonShift = 0;
-        const cache = map.style.getOwnSourceCache('mapbox-dem');
-        cache.used = cache._sourceLoaded = true;
-        cache._loadTile = (tile, callback) => {
-            // Elevate tiles above center.
-            tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ), TILE_SIZE);
-            tile.needsHillshadePrepare = true;
-            tile.needsDEMTextureUpload = true;
-            tile.state = 'loaded';
-            callback(null);
-        };
-        map.setTerrain({"source": "mapbox-dem"});
-        map.once('render', () => {
-            map._updateTerrain();
-            // expect no changes at center
-            t.equal(map.project(marker.getLngLat()).y, tr.height / 2);
-            t.equal(tr.locationPoint3D(marker.getLngLat()).y, tr.height / 2);
-            t.deepEqual(marker.getPopup()._pos, new Point(tr.width / 2, tr.height / 2));
 
-            const terrainTopLngLat = tr.pointLocation3D(new Point(tr.width / 2, 0)); // gets clamped at the top of terrain
-            const terrainTop = tr.locationPoint3D(terrainTopLngLat);
-            // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
-            t.ok(terrainTop.y < tr.horizonLineFromTop() - 3);
+        const tr = map.transform;
+        await waitFor(map, 'style.load');
 
-            t.test('Drag above clamps at horizon', (t) => {
-                // Offset marker down, 2 pixels under terrain top above horizon.
-                const startPos = new Point(0, 2)._add(terrainTop);
-                marker.setLngLat(tr.pointLocation3D(startPos));
-                t.ok(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001);
-                const el = marker.getElement();
-
-                simulate.mousedown(el);
-                simulate.mousemove(el, {clientX: 0, clientY: -40});
-                simulate.mouseup(el);
-
-                const endPos = tr.locationPoint3D(marker.getLngLat());
-                t.true(Math.abs(endPos.x - startPos.x) < 0.00000000001);
-                t.equal(endPos.y, terrainTop.y);
-                t.deepEqual(marker.getPopup()._pos, endPos);
-
-                t.end();
-            });
-
-            t.test('Drag below / behind camera', (t) => {
-                const startPos = new Point(terrainTop.x, tr.height - 20);
-                marker.setLngLat(tr.pointLocation3D(startPos));
-                t.ok(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001);
-                const el = marker.getElement();
-
-                simulate.mousedown(el);
-                simulate.mousemove(el, {clientX: 0, clientY: 40});
-                simulate.mouseup(el);
-
-                const endPos = tr.locationPoint3D(marker.getLngLat());
-                t.equal(Math.round(endPos.y), Math.round(startPos.y) + 40);
-                t.deepEqual(marker.getPopup()._pos, endPos);
-                t.end();
-            });
-
-            t.test('Occluded', (t) => {
-                marker._fadeTimer = null;
-                // Occlusion is happening with Timers API. Advance them
-                t.stub(global, 'setTimeout').callsFake((cb) => cb());
-                marker.setLngLat(terrainTopLngLat);
-                const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
-                // Raycast returns distance to closer point evaluates to occluded marker.
-                t.stub(tr, 'pointLocation3D').returns(bottomLngLat);
-                map.once('render', () => {
-                    t.deepEqual(marker.getElement().style.opacity, 0.2);
-                    t.end();
-                });
-            });
-
-            t.test(`Marker updates position on removing terrain (#10982)`, (t) => {
-                const update = t.spy(marker, "_update");
-                map.setTerrain(null);
-                map.once('render', () => {
-                    t.same(update.callCount, 1);
-                    t.end();
-                });
-            });
-
-            t.test(`Marker updates position on adding terrain (#10982)`, (t) => {
-                const update = t.spy(marker, "_update");
-                map.setTerrain({"source": "mapbox-dem"});
-                map.once('render', () => {
-                    t.same(update.callCount, 1);
-                    t.end();
-                });
-            });
-
-            t.end();
-        });
-    });
-});
-
-test('terrain getBounds', (t) => {
-    const map = createMap(t, {
-        style: extend(createStyle(), {
-            layers: [{
-                "id": "background",
-                "type": "background",
-                "paint": {
-                    "background-color": "black"
-                }
-            }]
-        })
-    });
-    map.setPitch(85);
-    map.setZoom(13);
-    map.transform._horizonShift = 0;
-
-    const tr = map.transform;
-    map.once('style.load', () => {
         map.addSource('mapbox-dem', {
             "type": "raster-dem",
             "tiles": ['http://example.com/{z}/{x}/{y}.png'],
@@ -1621,30 +1609,29 @@ test('terrain getBounds', (t) => {
             tile.state = 'loaded';
             callback(null);
         };
-
-        t.deepEqual(map.getBounds().getCenter().lng.toFixed(7), 0, 'horizon, no terrain getBounds');
-        t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5358013246, 'horizon, no terrain getBounds');
+        expect(map.getBounds().getCenter().lng.toFixed(7)).toEqual('-0.0000000');
+        expect(map.getBounds().getCenter().lat.toFixed(10)).toEqual('-42.5358013246');
 
         map.setTerrain({"source": "mapbox-dem"});
-        map.once('render', () => {
-            map._updateTerrain();
+        await waitFor(map, 'render');
 
-            // As tiles above center are elevated, center of bounds is closer to camera.
-            t.deepEqual(map.getBounds().getCenter().lng.toFixed(4), 0, 'horizon terrain getBounds');
-            t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), -42.5482497247, 'horizon terrain getBounds');
+        map._updateTerrain();
 
-            map.setPitch(0);
-            map.once('render', () => {
-                t.deepEqual(map.getBounds().getCenter().lng.toFixed(10), 0, 'terrain 0 getBounds');
-                t.deepEqual(map.getBounds().getCenter().lat.toFixed(10), 0, 'terrain 0 getBounds');
-                t.end();
-            });
-        });
+        // As tiles above center are elevated, center of bounds is closer to camera.
+        expect(map.getBounds().getCenter().lng.toFixed(4)).toEqual('0.0000');
+        expect(map.getBounds().getCenter().lat.toFixed(10)).toEqual('-42.5482497247');
+
+        map.setPitch(0);
+
+        await waitFor(map, 'render');
+
+        expect(map.getBounds().getCenter().lng.toFixed(10)).toEqual('-0.0000000000');
+        expect(map.getBounds().getCenter().lat.toFixed(10)).toEqual('0.0000000000');
     });
 
-    test('recognizes padding', (t) => {
+    test('recognizes padding', async () => {
         const style = createStyle();
-        const map = createMap(t, {style, zoom: 1, bearing: 45});
+        const map = createMap({style, zoom: 1, bearing: 45});
 
         map.setPadding({
             left: 100,
@@ -1654,86 +1641,61 @@ test('terrain getBounds', (t) => {
         });
         map.setCenter([0, 0]);
 
-        map.on('style.load', () => {
-            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.once('render', () => {
-                t.ok(map.transform.elevation);
-                const padded = toFixed(map.getBounds().toArray());
-                map.setPadding({
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0
-                });
-                const unpadded = toFixed(map.getBounds().toArray());
-                t.notSame(padded, unpadded);
-                t.same(
-                    toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]]),
-                    padded
-                );
+        await waitFor(map, 'style.load');
 
-                t.same(
-                    toFixed([[-49.7184455522, -44.4454158060], [49.7184455522, 44.4454158060]]),
-                    unpadded
-                );
-                t.end();
-            });
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+
+        await waitFor(map, 'render');
+        expect(map.transform.elevation).toBeTruthy();
+        const padded = toFixed(map.getBounds().toArray());
+        map.setPadding({
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0
         });
+        const unpadded = toFixed(map.getBounds().toArray());
+        expect(padded).not.toBe(unpadded);
+        expect(toFixed([[-33.5599507477, -31.7907658998], [33.5599507477, 31.7907658998]])).toStrictEqual(padded);
+        expect(toFixed([[-49.7184455522, -44.4454158060], [49.7184455522, 44.4454158060]])).toStrictEqual(unpadded);
     });
 
-    test('Does not overflow at poles', (t) => {
-        const map = createMap(t,
-            {zoom: 2, center: [0, 90], pitch: 80});
-        map.on('style.load', () => {
-            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.once('render', () => {
-                t.ok(map.transform.elevation);
-                const bounds = map.getBounds();
-                t.same(bounds.getNorth().toFixed(6), MAX_MERCATOR_LATITUDE);
-                t.same(
-                    toFixed(bounds.toArray()),
-                    toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
-                );
+    test('Does not overflow at poles', async () => {
+        const map = createMap({zoom: 2, center: [0, 90], pitch: 80});
+        await waitFor(map, 'style.load');
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+        await waitFor(map, 'render');
+        expect(map.transform.elevation).toBeTruthy();
+        const bounds = map.getBounds();
+        expect(bounds.getNorth().toFixed(6)).toBe(MAX_MERCATOR_LATITUDE.toFixed(6));
+        expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]]));
 
-                map.setBearing(180);
-                map.setCenter({lng: 0, lat: -90});
+        map.setBearing(180);
+        map.setCenter({lng: 0, lat: -90});
 
-                const sBounds = map.getBounds();
-                t.same(sBounds.getSouth().toFixed(6), -MAX_MERCATOR_LATITUDE);
-                t.same(
-                    toFixed(sBounds.toArray()),
-                    toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
-                );
-                t.end();
-            });
-        });
+        const sBounds = map.getBounds();
+        expect(sBounds.getSouth().toFixed(6)).toBe((-MAX_MERCATOR_LATITUDE).toFixed(6));
+        expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]]));
     });
 
-    test("Does not break with no visible DEM tiles (#10610)", (t) => {
+    test("Does not break with no visible DEM tiles (#10610)", async () => {
         const style = createStyle();
-        const map = createMap(t, {style, zoom: 1, bearing: 45});
+        const map = createMap({style, zoom: 1, bearing: 45});
         map.setCenter([0, 0]);
+        await waitFor(map, 'load');
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+        map.setTerrain({source: "mapbox-dem"});
+        await waitFor(map, 'render');
+        expect(map.transform.elevation).toBeTruthy();
+        const bounds = toFixed(map.getBounds().toArray());
 
-        map.on("load", () => {
-            setMockElevationTerrain(map, zeroDem, TILE_SIZE);
-            map.setTerrain({source: "mapbox-dem"});
-            map.once("render", () => {
-                t.ok(map.transform.elevation);
-                const bounds = toFixed(map.getBounds().toArray());
+        // Mocking the behavior when the map zooms quickly
+        map.transform.elevation._visibleDemTiles = [];
 
-                // Mocking the behavior when the map zooms quickly
-                map.transform.elevation._visibleDemTiles = [];
-
-                t.same(
-                    toFixed([
-                        [-49.7184455522, -44.445415806],
-                        [49.7184455522, 44.445415806],
-                    ]),
-                    bounds
-                );
-                t.end();
-            });
-        });
+        expect(toFixed([
+            [-49.7184455522, -44.445415806],
+            [49.7184455522, 44.445415806],
+        ])).toStrictEqual(bounds);
     });
 
     function toFixed(bounds) {
@@ -1746,63 +1708,61 @@ test('terrain getBounds', (t) => {
 
 });
 
-test('terrain recursively loads parent tiles on 404', (t) => {
-    t.plan(2);
-
+test('terrain recursively loads parent tiles on 404', async () => {
     const style = createStyle();
-    const map = createMap(t, {style, center: [0, 0], zoom: 16});
+    const map = createMap({style, center: [0, 0], zoom: 16});
 
-    map.once('style.load', () => {
-        map.addSource('mapbox-dem', {
-            'type': 'raster-dem',
-            'tiles': ['http://example.com/{z}/{x}/{y}.png'],
-            'tileSize': TILE_SIZE,
-            'maxzoom': 14
-        });
+    await waitFor(map, 'style.load');
 
-        const cache = map.style.getOwnSourceCache('mapbox-dem');
-        cache.used = cache._sourceLoaded = true;
-        cache._loadTile = (tile, callback) => {
-            if (tile.tileID.canonical.z > 10) {
-                setTimeout(() => callback({status: 404}), 0);
-            } else {
-                tile.state = 'loaded';
-                callback(null);
-            }
-        };
-
-        map.setTerrain({'source': 'mapbox-dem'});
-
-        map.once('idle', () => {
-            t.deepEqual(cache.getRenderableIds(), [
-                new OverscaledTileID(10, 0, 10, 512, 512).key,
-                new OverscaledTileID(10, 0, 10, 511, 512).key,
-                new OverscaledTileID(10, 0, 10, 512, 511).key,
-                new OverscaledTileID(10, 0, 10, 511, 511).key,
-            ], 'contains first renderable tiles');
-
-            t.deepEqual(cache.getIds(), [
-                new OverscaledTileID(10, 0, 10, 512, 512).key,
-                new OverscaledTileID(10, 0, 10, 511, 512).key,
-                new OverscaledTileID(10, 0, 10, 512, 511).key,
-                new OverscaledTileID(10, 0, 10, 511, 511).key,
-                new OverscaledTileID(11, 0, 11, 1024, 1024).key,
-                new OverscaledTileID(11, 0, 11, 1023, 1024).key,
-                new OverscaledTileID(11, 0, 11, 1024, 1023).key,
-                new OverscaledTileID(11, 0, 11, 1023, 1023).key,
-                new OverscaledTileID(12, 0, 12, 2048, 2048).key,
-                new OverscaledTileID(12, 0, 12, 2047, 2048).key,
-                new OverscaledTileID(12, 0, 12, 2048, 2047).key,
-                new OverscaledTileID(12, 0, 12, 2047, 2047).key,
-                new OverscaledTileID(13, 0, 13, 4096, 4096).key,
-                new OverscaledTileID(13, 0, 13, 4095, 4096).key,
-                new OverscaledTileID(13, 0, 13, 4096, 4095).key,
-                new OverscaledTileID(13, 0, 13, 4095, 4095).key,
-                new OverscaledTileID(14, 0, 14, 8192, 8192).key,
-                new OverscaledTileID(14, 0, 14, 8191, 8192).key,
-                new OverscaledTileID(14, 0, 14, 8192, 8191).key,
-                new OverscaledTileID(14, 0, 14, 8191, 8191).key,
-            ], 'recursively loads parent tiles if current tiles not found');
-        });
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'tiles': ['http://example.com/{z}/{x}/{y}.png'],
+        'tileSize': TILE_SIZE,
+        'maxzoom': 14
     });
+
+    const cache = map.style.getOwnSourceCache('mapbox-dem');
+    cache.used = cache._sourceLoaded = true;
+    cache._loadTile = (tile, callback) => {
+        if (tile.tileID.canonical.z > 10) {
+            setTimeout(() => callback({status: 404}), 0);
+        } else {
+            tile.state = 'loaded';
+            callback(null);
+        }
+    };
+
+    map.setTerrain({'source': 'mapbox-dem'});
+
+    await waitFor(map, 'idle');
+
+    expect(cache.getRenderableIds()).toEqual([
+        new OverscaledTileID(10, 0, 10, 512, 512).key,
+        new OverscaledTileID(10, 0, 10, 511, 512).key,
+        new OverscaledTileID(10, 0, 10, 512, 511).key,
+        new OverscaledTileID(10, 0, 10, 511, 511).key,
+    ]);
+
+    expect(cache.getIds()).toEqual([
+        new OverscaledTileID(10, 0, 10, 512, 512).key,
+        new OverscaledTileID(10, 0, 10, 511, 512).key,
+        new OverscaledTileID(10, 0, 10, 512, 511).key,
+        new OverscaledTileID(10, 0, 10, 511, 511).key,
+        new OverscaledTileID(11, 0, 11, 1024, 1024).key,
+        new OverscaledTileID(11, 0, 11, 1023, 1024).key,
+        new OverscaledTileID(11, 0, 11, 1024, 1023).key,
+        new OverscaledTileID(11, 0, 11, 1023, 1023).key,
+        new OverscaledTileID(12, 0, 12, 2048, 2048).key,
+        new OverscaledTileID(12, 0, 12, 2047, 2048).key,
+        new OverscaledTileID(12, 0, 12, 2048, 2047).key,
+        new OverscaledTileID(12, 0, 12, 2047, 2047).key,
+        new OverscaledTileID(13, 0, 13, 4096, 4096).key,
+        new OverscaledTileID(13, 0, 13, 4095, 4096).key,
+        new OverscaledTileID(13, 0, 13, 4096, 4095).key,
+        new OverscaledTileID(13, 0, 13, 4095, 4095).key,
+        new OverscaledTileID(14, 0, 14, 8192, 8192).key,
+        new OverscaledTileID(14, 0, 14, 8191, 8192).key,
+        new OverscaledTileID(14, 0, 14, 8192, 8191).key,
+        new OverscaledTileID(14, 0, 14, 8191, 8191).key,
+    ]);
 });

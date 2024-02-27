@@ -1,41 +1,42 @@
 // @flow strict
 
 import Point from '@mapbox/point-geometry';
-
-import window from './window.js';
 import assert from 'assert';
 
 // refine the return type based on tagName, e.g. 'button' -> HTMLButtonElement
 // $FlowFixMe[method-unbinding]
 export function create<T: string>(tagName: T, className: ?string, container?: HTMLElement): $Call<typeof document.createElement, T> {
-    const el = window.document.createElement(tagName);
-    if (className !== undefined) el.className = className;
+    const el = document.createElement(tagName);
+    if (className !== undefined && className !== null) el.className = className;
     if (container) container.appendChild(el);
     return el;
 }
 
 export function createSVG(tagName: string, attributes: {[string]: string | number}, container?: Element): Element {
-    const el = window.document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tagName);
     for (const name of Object.keys(attributes)) {
-        el.setAttributeNS(null, name, attributes[name]);
+        el.setAttributeNS(null, name, String(attributes[name]));
     }
     if (container) container.appendChild(el);
     return el;
 }
 
-const docStyle = window.document && window.document.documentElement.style;
+const docStyle = typeof document !== 'undefined' ? document.documentElement && document.documentElement.style : null;
 const selectProp = docStyle && docStyle.userSelect !== undefined ? 'userSelect' : 'WebkitUserSelect';
 let userSelect;
 
 export function disableDrag() {
     if (docStyle && selectProp) {
+        // $FlowFixMe[incompatible-type]
         userSelect = docStyle[selectProp];
+        // $FlowFixMe[incompatible-type]
         docStyle[selectProp] = 'none';
     }
 }
 
 export function enableDrag() {
     if (docStyle && selectProp) {
+        // $FlowFixMe[incompatible-type]
         docStyle[selectProp] = userSelect;
     }
 }

@@ -1,6 +1,5 @@
 // @flow strict
 import assert from 'assert';
-import window from './window.js';
 import offscreenCanvasSupported from './offscreen_canvas_supported.js';
 import type {Cancelable} from '../types/cancelable.js';
 
@@ -24,7 +23,7 @@ const exported = {
         if (stubTime !== undefined) {
             return stubTime;
         }
-        return window.performance.now();
+        return performance.now();
     },
     setNow(time: number) {
         stubTime = time;
@@ -35,15 +34,15 @@ const exported = {
     },
 
     frame(fn: (paintStartTimestamp: number) => void): Cancelable {
-        const frame = window.requestAnimationFrame(fn);
-        return {cancel: () => window.cancelAnimationFrame(frame)};
+        const frame = requestAnimationFrame(fn);
+        return {cancel: () => cancelAnimationFrame(frame)};
     },
 
     getImageData(img: CanvasImageSource, padding?: number = 0): ImageData {
         const {width, height} = img;
 
         if (!canvas) {
-            canvas = window.document.createElement('canvas');
+            canvas = document.createElement('canvas');
         }
 
         const context = canvas.getContext('2d', {willReadFrequently: true});
@@ -62,7 +61,7 @@ const exported = {
     },
 
     resolveURL(path: string): string {
-        if (!linkEl) linkEl = window.document.createElement('a');
+        if (!linkEl) linkEl = document.createElement('a');
         linkEl.href = path;
         return linkEl.href;
     },
@@ -83,9 +82,10 @@ const exported = {
      */
     hasCanvasFingerprintNoise(): boolean {
         if (!offscreenCanvasSupported()) return false;
-        assert(window.OffscreenCanvas, 'OffscreenCanvas is not supported');
+        assert(self.OffscreenCanvas, 'OffscreenCanvas is not supported');
 
-        const offscreenCanvas = new window.OffscreenCanvas(255 / 3, 1);
+        const offscreenCanvas = new OffscreenCanvas(255 / 3, 1);
+        // $FlowFixMe[extra-arg] probably fixed in later versions of Flow
         const offscreenCanvasContext = offscreenCanvas.getContext('2d', {willReadFrequently: true});
         let inc = 0;
         // getImageData is lossy with premultiplied alpha.

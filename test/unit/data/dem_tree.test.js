@@ -1,4 +1,4 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import DEMData from '../../../src/data/dem_data.js';
 import DemMinMaxQuadTree, {buildDemMipmap, sampleElevation} from '../../../src/data/dem_tree.js';
 import {fixedNum} from '../../util/fixed.js';
@@ -41,7 +41,7 @@ function idx(x, y, size, padding) {
     return (y + 1) * (size + 2 * padding) + (x + 1);
 }
 
-test('DEM mip map generation', (t) => {
+describe('DEM mip map generation', () => {
     const leafCount = (mip) => {
         let count = 0;
         for (let i = 0; i < mip.leaves.length; i++)
@@ -49,7 +49,7 @@ test('DEM mip map generation', (t) => {
         return count;
     };
 
-    t.test('Flat DEM', (t) => {
+    test('Flat DEM', () => {
         const size = 256;
         const elevation = fillElevation(size, 1, 0);
         const dem = mockDEMfromElevation(size, 1, elevation);
@@ -59,33 +59,29 @@ test('DEM mip map generation', (t) => {
         const expectedSizes = [32, 16, 8, 4, 2, 1];
         const expectedLeaves = [1024, 256, 64, 16, 4, 1];
 
-        t.equal(demMips.length, 6);
+        expect(demMips.length).toEqual(6);
         for (let i = 0; i < 6; i++) {
-            t.equal(demMips[i].size, expectedSizes[i]);
-            t.equal(leafCount(demMips[i]), expectedLeaves[i]);
+            expect(demMips[i].size).toEqual(expectedSizes[i]);
+            expect(leafCount(demMips[i])).toEqual(expectedLeaves[i]);
         }
-
-        t.end();
     });
 
-    t.test('Small DEM', (t) => {
+    test('Small DEM', () => {
         const size = 4;
         const elevation = fillElevation(size, 1, 100);
         const dem = mockDEMfromElevation(size, 1, elevation);
         const demMips = buildDemMipmap(dem);
 
-        t.equal(demMips.length, 1);
-        t.equal(demMips[0].size, 1);
-        t.equal(demMips[0].maximums.length, 1);
-        t.equal(demMips[0].minimums.length, 1);
-        t.equal(demMips[0].maximums[0], 100);
-        t.equal(demMips[0].minimums[0], 100);
-        t.equal(demMips[0].leaves[0], 1);
-
-        t.end();
+        expect(demMips.length).toEqual(1);
+        expect(demMips[0].size).toEqual(1);
+        expect(demMips[0].maximums.length).toEqual(1);
+        expect(demMips[0].minimums.length).toEqual(1);
+        expect(demMips[0].maximums[0]).toEqual(100);
+        expect(demMips[0].minimums[0]).toEqual(100);
+        expect(demMips[0].leaves[0]).toEqual(1);
     });
 
-    t.test('Elevation sampling', (t) => {
+    test('Elevation sampling', () => {
         const size = 16;
         const padding = 1;
         const elevation = fillElevation(size, padding, 0);
@@ -102,22 +98,20 @@ test('DEM mip map generation', (t) => {
         const dem = mockDEMfromElevation(size, 1, elevation);
 
         // Check each 9 corners and expect to find interpolated values (except on borders)
-        t.equal(sampleElevation(0, 0, dem), 0);
-        t.equal(sampleElevation(0.5, 0, dem), 50);
-        t.equal(sampleElevation(1.0, 0, dem), 100);
+        expect(sampleElevation(0, 0, dem)).toEqual(0);
+        expect(sampleElevation(0.5, 0, dem)).toEqual(50);
+        expect(sampleElevation(1.0, 0, dem)).toEqual(100);
 
-        t.equal(sampleElevation(0, 0.5, dem), 50);
-        t.equal(sampleElevation(0.5, 0.5, dem), 100);
-        t.equal(sampleElevation(1.0, 0.5, dem), 150);
+        expect(sampleElevation(0, 0.5, dem)).toEqual(50);
+        expect(sampleElevation(0.5, 0.5, dem)).toEqual(100);
+        expect(sampleElevation(1.0, 0.5, dem)).toEqual(150);
 
-        t.equal(sampleElevation(0, 1.0, dem), 100);
-        t.equal(sampleElevation(0.5, 1.0, dem), 150);
-        t.equal(sampleElevation(1.0, 1.0, dem), 200);
-
-        t.end();
+        expect(sampleElevation(0, 1.0, dem)).toEqual(100);
+        expect(sampleElevation(0.5, 1.0, dem)).toEqual(150);
+        expect(sampleElevation(1.0, 1.0, dem)).toEqual(200);
     });
 
-    t.test('Merge nodes with little elevation difference', (t) => {
+    test('Merge nodes with little elevation difference', () => {
         const size = 32;
         const padding = 1;
         const elevation = fillElevation(size, padding, 0);
@@ -163,10 +157,10 @@ test('DEM mip map generation', (t) => {
             1, 1, 1, 1
         ];
 
-        t.equal(demMips.length, 3);
-        t.equal(demMips[0].size, 4);
-        t.deepEqual(demMips[0].maximums, expectedMaximums);
-        t.deepEqual(demMips[0].leaves, expectedLeaves);
+        expect(demMips.length).toEqual(3);
+        expect(demMips[0].size).toEqual(4);
+        expect(demMips[0].maximums).toEqual(expectedMaximums);
+        expect(demMips[0].leaves).toEqual(expectedLeaves);
 
         // mip 1
         expectedMaximums = [
@@ -179,40 +173,33 @@ test('DEM mip map generation', (t) => {
             0, 0
         ];
 
-        t.equal(demMips[1].size, 2);
-        t.deepEqual(demMips[1].maximums, expectedMaximums);
-        t.deepEqual(demMips[1].leaves, expectedLeaves);
+        expect(demMips[1].size).toEqual(2);
+        expect(demMips[1].maximums).toEqual(expectedMaximums);
+        expect(demMips[1].leaves).toEqual(expectedLeaves);
 
         // mip 2
-        t.equal(demMips[2].size, 1);
-        t.deepEqual(demMips[2].minimums, [0]);
-        t.deepEqual(demMips[2].maximums, [1000]);
-        t.deepEqual(demMips[2].leaves, [0]);
-
-        t.end();
+        expect(demMips[2].size).toEqual(1);
+        expect(demMips[2].minimums).toEqual([0]);
+        expect(demMips[2].maximums).toEqual([1000]);
+        expect(demMips[2].leaves).toEqual([0]);
     });
-
-    t.end();
 });
 
-test('DemMinMaxQuadTree', (t) => {
-    t.test('Construct', (t) => {
-        t.test('Flat DEM', (t) => {
+describe('DemMinMaxQuadTree', () => {
+    describe('Construct', () => {
+        test('Flat DEM', () => {
             const size = 256;
             const elevation = fillElevation(size, 1, 12345);
             const dem = mockDEMfromElevation(size, 1, elevation);
 
             // No elevation differences. 6 levels expected and all marked as leaves
             const tree = new DemMinMaxQuadTree(dem);
-            t.equal(tree.nodeCount, 1);
-            t.equal(tree.maximums[0], 12345);
-            t.equal(tree.minimums[0], 12345);
-            t.equal(tree.leaves[1]);
-
-            t.end();
+            expect(tree.nodeCount).toEqual(1);
+            expect(tree.maximums[0]).toEqual(12345);
+            expect(tree.minimums[0]).toEqual(12345);
         });
 
-        t.test('Sparse tree', (t) => {
+        test('Sparse tree', () => {
             const size = 32;
             const padding = 1;
             const elevation = fillElevation(size, padding, 0);
@@ -234,7 +221,7 @@ test('DemMinMaxQuadTree', (t) => {
             const dem = mockDEMfromElevation(size, 1, elevation);
             const tree = new DemMinMaxQuadTree(dem);
 
-            t.equal(tree.nodeCount, 17);
+            expect(tree.nodeCount).toEqual(17);
 
             const expectedMaximums = [
                 // Root
@@ -278,18 +265,14 @@ test('DemMinMaxQuadTree', (t) => {
                 1, 1, 1, 1
             ];
 
-            t.deepEqual(tree.maximums, expectedMaximums);
-            t.deepEqual(tree.minimums, expectedMinimums);
-            t.deepEqual(tree.leaves, expectedLeaves);
-
-            t.end();
+            expect(tree.maximums).toEqual(expectedMaximums);
+            expect(tree.minimums).toEqual(expectedMinimums);
+            expect(tree.leaves).toEqual(expectedLeaves);
         });
-
-        t.end();
     });
 
-    t.test('Raycasting', (t) => {
-        t.test('Flat plane', (t) => {
+    describe('Raycasting', () => {
+        test('Flat plane', () => {
             const size = 32;
             const padding = 1;
             const elevation = fillElevation(size, padding, 10);
@@ -302,24 +285,22 @@ test('DemMinMaxQuadTree', (t) => {
             const maxy = 1;
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 11], [0, 0, -1]);
-            t.ok(dist);
-            t.equal(dist, 1.0);
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(1.0);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [1.001, 0, 5], [0, 0, -1]);
-            t.notOk(dist);
+            expect(dist).toBeFalsy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [-1, 0, 11], [1, 0, 0]);
-            t.notOk(dist);
+            expect(dist).toBeFalsy();
 
             // Ray should not be allowed to pass the dem chunk below the surface
             dist = tree.raycast(minx, miny, maxx, maxy, [-2.5, 0, 1], [1, 0, 0]);
-            t.ok(dist);
-            t.equal(dist, 1.5);
-
-            t.end();
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(1.5);
         });
 
-        t.test('Gradient', (t) => {
+        test('Gradient', () => {
             const size = 32;
             const padding = 1;
             const elevation = fillElevation(size, padding, 0);
@@ -338,23 +319,21 @@ test('DemMinMaxQuadTree', (t) => {
             const maxy = 16;
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 50], [0, 0, -1]);
-            t.ok(dist);
-            t.equal(dist, 34.5);
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(34.5);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707]);
-            t.ok(dist);
-            t.equal(fixedNum(dist, 3), 34.3);
+            expect(dist).toBeTruthy();
+            expect(fixedNum(dist, 3)).toEqual(34.3);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 32.01], [-0.707, 0, -0.707]);
-            t.notOk(dist);
+            expect(dist).toBeFalsy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 31], [-0.707, 0, -0.707]);
-            t.equal(dist, 0);
-
-            t.end();
+            expect(dist).toEqual(0);
         });
 
-        t.test('Flat plane with exaggeration', (t) => {
+        test('Flat plane with exaggeration', () => {
             const size = 32;
             const padding = 1;
             const elevation = fillElevation(size, padding, 10);
@@ -367,17 +346,15 @@ test('DemMinMaxQuadTree', (t) => {
             const maxy = 1;
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 11], [0, 0, -1], 0.5);
-            t.ok(dist);
-            t.equal(dist, 6.0);
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(6.0);
 
             dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 11], [0, 0, -1], 0.1);
-            t.ok(dist);
-            t.equal(dist, 10.0);
-
-            t.end();
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(10.0);
         });
 
-        t.test('Gradient with 0.5 exaggeration', (t) => {
+        test('Gradient with 0.5 exaggeration', () => {
             const size = 32;
             const padding = 1;
             const elevation = fillElevation(size, padding, 0);
@@ -396,23 +373,19 @@ test('DemMinMaxQuadTree', (t) => {
             const maxy = 16;
 
             let dist = tree.raycast(minx, miny, maxx, maxy, [0, 0, 50], [0, 0, -1], 0.5);
-            t.ok(dist);
-            t.equal(dist, 42.25);
-            t.true(dist > tree.raycast(minx, miny, maxx, maxy,  [0, 0, 50], [0, 0, -1]), 1);
+            expect(dist).toBeTruthy();
+            expect(dist).toEqual(42.25);
+            expect(dist > tree.raycast(minx, miny, maxx, maxy,  [0, 0, 50], [0, 0, -1])).toBeTruthy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707], 0.5);
-            t.ok(dist);
-            t.equal(fixedNum(dist, 3), 37.954);
-            t.true(dist > tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707]), 1);
+            expect(dist).toBeTruthy();
+            expect(fixedNum(dist, 3)).toEqual(37.954);
+            expect(
+                dist > tree.raycast(minx, miny, maxx, maxy, [-32, 0, 32], [0.707, 0, -0.707])
+            ).toBeTruthy();
 
             dist = tree.raycast(minx, miny, maxx, maxy, [16, 0, 32.01], [-0.707, 0, -0.707], 0.5);
-            t.notOk(dist);
-
-            t.end();
+            expect(dist).toBeFalsy();
         });
-
-        t.end();
     });
-
-    t.end();
 });

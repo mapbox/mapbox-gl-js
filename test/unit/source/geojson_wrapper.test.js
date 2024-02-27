@@ -1,9 +1,8 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import Wrapper from '../../../src/source/geojson_wrapper.js';
 
-test('geojsonwrapper', (t) => {
-
-    t.test('linestring', (t) => {
+describe('geojsonwrapper', () => {
+    test('linestring', () => {
         const features = [{
             type: 2,
             geometry: [[[0, 0], [10, 10]]],
@@ -13,15 +12,13 @@ test('geojsonwrapper', (t) => {
         const wrap = new Wrapper(features);
         const feature = wrap.feature(0);
 
-        t.ok(feature, 'gets a feature');
-        t.deepEqual(feature.loadGeometry(), [[{x: 0, y: 0}, {x: 10, y: 10}]]);
-        t.equal(feature.type, 2, 'type');
-        t.deepEqual(feature.properties, {hello:'world'}, 'properties');
-
-        t.end();
+        expect(feature).toBeTruthy();
+        expect(feature.loadGeometry()).toEqual([[{x: 0, y: 0}, {x: 10, y: 10}]]);
+        expect(feature.type).toEqual(2);
+        expect(feature.properties).toEqual({hello:'world'});
     });
 
-    t.test('point', (t) => {
+    test('point', () => {
         const features = [{
             type: 1,
             geometry: [[0, 1]],
@@ -30,9 +27,6 @@ test('geojsonwrapper', (t) => {
 
         const wrap = new Wrapper(features);
         const feature = wrap.feature(0);
-        t.deepEqual(feature.loadGeometry(), [[{x: 0, y: 1}]]);
-        t.end();
+        expect(feature.loadGeometry()).toEqual([[{x: 0, y: 1}]]);
     });
-
-    t.end();
 });

@@ -1,7 +1,7 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import group from '../../../src/style-spec/group_by_layout.js';
 
-test('group layers whose ref properties are identical', (t) => {
+test('group layers whose ref properties are identical', () => {
     const a = {
         'id': 'parent',
         'type': 'line'
@@ -10,14 +10,13 @@ test('group layers whose ref properties are identical', (t) => {
         'id': 'child',
         'type': 'line'
     };
-    t.deepEqual(group([a, b], {}), [[a, b]]);
-    t.equal(group([a, b], {})[0][0], a);
-    t.equal(group([a, b], {})[0][1], b);
-    t.end();
+    expect(group([a, b], {})).toEqual([[a, b]]);
+    expect(group([a, b], {})[0][0]).toEqual(a);
+    expect(group([a, b], {})[0][1]).toEqual(b);
 });
 
-test('group does not group unrelated layers', (t) => {
-    t.deepEqual(group([
+test('group does not group unrelated layers', () => {
+    expect(group([
         {
             'id': 'parent',
             'type': 'line'
@@ -26,7 +25,7 @@ test('group does not group unrelated layers', (t) => {
             'id': 'child',
             'type': 'fill'
         }
-    ], {}), [
+    ], {})).toEqual([
         [{
             'id': 'parent',
             'type': 'line'
@@ -35,11 +34,10 @@ test('group does not group unrelated layers', (t) => {
             'type': 'fill'
         }]
     ]);
-    t.end();
 });
 
-test('group works even for differing layout key orders', (t) => {
-    t.deepEqual(group([
+test('group works even for differing layout key orders', () => {
+    expect(group([
         {
             'id': 'parent',
             'type': 'line',
@@ -50,7 +48,7 @@ test('group works even for differing layout key orders', (t) => {
             'type': 'line',
             'layout': {'b': 2, 'a': 1}
         }
-    ], {}), [[
+    ], {})).toEqual([[
         {
             'id': 'parent',
             'type': 'line',
@@ -62,5 +60,4 @@ test('group works even for differing layout key orders', (t) => {
             'layout': {'b': 2, 'a': 1}
         }
     ]]);
-    t.end();
 });

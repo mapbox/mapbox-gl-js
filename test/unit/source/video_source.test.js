@@ -1,7 +1,6 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import VideoSource from '../../../src/source/video_source.js';
 import {extend} from '../../../src/util/util.js';
-import window from '../../../src/util/window.js';
 
 function createSource(options) {
 
@@ -15,8 +14,7 @@ function createSource(options) {
     return source;
 }
 
-test('VideoSource', (t) => {
-
+describe('VideoSource', () => {
     const source = createSource({
         type: 'video',
         urls : [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
@@ -28,27 +26,22 @@ test('VideoSource', (t) => {
         ]
     });
 
-    t.test('constructor', (t) => {
-        t.equal(source.minzoom, 0);
-        t.equal(source.maxzoom, 22);
-        t.equal(source.tileSize, 512);
-        t.end();
+    test('constructor', () => {
+        expect(source.minzoom).toEqual(0);
+        expect(source.maxzoom).toEqual(22);
+        expect(source.tileSize).toEqual(512);
     });
 
-    t.test('sets coordinates', (t) => {
-
+    test('sets coordinates', () => {
         const newCoordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
         source.setCoordinates(newCoordinates);
         const serialized = source.serialize();
 
-        t.deepEqual(serialized.coordinates, newCoordinates);
-        t.end();
-
+        expect(serialized.coordinates).toEqual(newCoordinates);
     });
 
     //test video retrieval by first supplying the video element directly
-    t.test('gets video', (t) => {
-
+    test('gets video', () => {
         const el = window.document.createElement('video');
         const source = createSource({
             type: 'video',
@@ -62,9 +55,6 @@ test('VideoSource', (t) => {
             ]
         });
 
-        t.equal(source.getVideo(), el);
-        t.end();
+        expect(source.getVideo()).toEqual(el);
     });
-
-    t.end();
 });

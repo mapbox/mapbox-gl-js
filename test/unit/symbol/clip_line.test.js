@@ -1,9 +1,8 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import Point from '@mapbox/point-geometry';
 import clipLine from '../../../src/symbol/clip_line.js';
 
-test('clipLines', (t) => {
-
+describe('clipLines', () => {
     const minX = -300;
     const maxX = 300;
     const minY = -200;
@@ -13,7 +12,7 @@ test('clipLines', (t) => {
         return clipLine(lines, minX, minY, maxX, maxY);
     };
 
-    t.test('Single line fully inside', (t) => {
+    test('Single line fully inside', () => {
         const line = [
             new Point(-100, -100),
             new Point(-40, -100),
@@ -21,11 +20,10 @@ test('clipLines', (t) => {
             new Point(-80, 195)
         ];
 
-        t.deepEqual(clipLineTest([line]), [line]);
-        t.end();
+        expect(clipLineTest([line])).toEqual([line]);
     });
 
-    t.test('Multiline fully inside', (t) => {
+    test('Multiline fully inside', () => {
         const line0 = [
             new Point(-250, -150),
             new Point(-250, 150),
@@ -42,11 +40,10 @@ test('clipLines', (t) => {
 
         const lines = [line0, line1];
 
-        t.deepEqual(clipLineTest(lines), lines);
-        t.end();
+        expect(clipLineTest(lines)).toEqual(lines);
     });
 
-    t.test('Lines fully outside', (t) => {
+    test('Lines fully outside', () => {
         const line0 = [
             new Point(-400, -300),
             new Point(-350, 0),
@@ -58,11 +55,10 @@ test('clipLines', (t) => {
             new Point(10000, 500)
         ];
 
-        t.deepEqual(clipLineTest([line0, line1]), []);
-        t.end();
+        expect(clipLineTest([line0, line1])).toEqual([]);
     });
 
-    t.test('Intersect with single border', (t) => {
+    test('Intersect with single border', () => {
         const line0 = [
             new Point(-400, 0),
             new Point(0, 0)
@@ -83,11 +79,10 @@ test('clipLines', (t) => {
             new Point(maxX, 0)
         ];
 
-        t.deepEqual(clipLineTest([line0, line1]), [result0, result1]);
-        t.end();
+        expect(clipLineTest([line0, line1])).toEqual([result0, result1]);
     });
 
-    t.test('Intersect with multiple borders', (t) => {
+    test('Intersect with multiple borders', () => {
         const line0 = [
             new Point(-350, -100),
             new Point(-200, -250)
@@ -110,11 +105,10 @@ test('clipLines', (t) => {
             new Point(50, maxY)
         ];
 
-        t.deepEqual(clipLineTest([line0, line1]), [result0, result1]);
-        t.end();
+        expect(clipLineTest([line0, line1])).toEqual([result0, result1]);
     });
 
-    t.test('Single line can be split into multiple segments', (t) => {
+    test('Single line can be split into multiple segments', () => {
         const line = [
             new Point(-80, 150),
             new Point(-80, 350),
@@ -132,21 +126,19 @@ test('clipLines', (t) => {
             new Point(120, 0),
         ];
 
-        t.deepEqual(clipLineTest([line]), [result0, result1]);
-        t.end();
+        expect(clipLineTest([line])).toEqual([result0, result1]);
     });
 
-    t.test('Non-clipped points are bit exact', (t) => {
+    test('Non-clipped points are bit exact', () => {
         const line = [
             new Point(-500, -200),
             new Point(131.2356763, 0.956732)
         ];
 
-        t.deepEqual(clipLineTest([line])[1], line[0][1]);
-        t.end();
+        expect(clipLineTest([line])[1]).toEqual(line[0][1]);
     });
 
-    t.test('Clipped points are rounded to the nearest integer', (t) => {
+    test('Clipped points are rounded to the nearest integer', () => {
         const line = [
             new Point(310, 2.9),
             new Point(290, 2.5)
@@ -157,9 +149,6 @@ test('clipLines', (t) => {
             new Point(290, 2.5)
         ];
 
-        t.deepEqual(clipLineTest([line]), [result]);
-        t.end();
+        expect(clipLineTest([line])).toEqual([result]);
     });
-
-    t.end();
 });

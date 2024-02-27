@@ -1,8 +1,8 @@
-import {test} from '../../util/test.js';
+import {test, expect} from "../../util/vitest.js";
 import deref from '../../../src/style-spec/deref.js';
 
-test('derefs a ref layer which follows its parent', (t) => {
-    t.deepEqual(deref([
+test('derefs a ref layer which follows its parent', () => {
+    expect(deref([
         {
             'id': 'parent',
             'type': 'line'
@@ -11,7 +11,7 @@ test('derefs a ref layer which follows its parent', (t) => {
             'id': 'child',
             'ref': 'parent'
         }
-    ]), [
+    ])).toEqual([
         {
             'id': 'parent',
             'type': 'line'
@@ -21,11 +21,10 @@ test('derefs a ref layer which follows its parent', (t) => {
             'type': 'line'
         }
     ]);
-    t.end();
 });
 
-test('derefs a ref layer which precedes its parent', (t) => {
-    t.deepEqual(deref([
+test('derefs a ref layer which precedes its parent', () => {
+    expect(deref([
         {
             'id': 'child',
             'ref': 'parent'
@@ -34,7 +33,7 @@ test('derefs a ref layer which precedes its parent', (t) => {
             'id': 'parent',
             'type': 'line'
         }
-    ]), [
+    ])).toEqual([
         {
             'id': 'child',
             'type': 'line'
@@ -44,5 +43,4 @@ test('derefs a ref layer which precedes its parent', (t) => {
             'type': 'line'
         }
     ]);
-    t.end();
 });

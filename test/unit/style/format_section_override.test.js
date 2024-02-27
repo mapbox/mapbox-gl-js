@@ -1,13 +1,12 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {createExpression, ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import EvaluationContext from '../../../src/style-spec/expression/evaluation_context.js';
 import properties from '../../../src/style/style_layer/symbol_style_layer_properties.js';
 import {PossiblyEvaluatedPropertyValue} from '../../../src/style/properties.js';
 import FormatSectionOverride from '../../../src/style/format_section_override.js';
 
-test('evaluate', (t) => {
-
-    t.test('override constant', (t) => {
+describe('evaluate', () => {
+    test('override constant', () => {
         const defaultColor = {"r": 0, "g": 1, "b": 0, "a": 1};
         const overridenColor = {"r": 1, "g": 0, "b": 0, "a": 1};
         const overriden = new PossiblyEvaluatedPropertyValue(
@@ -20,15 +19,13 @@ test('evaluate', (t) => {
         const ctx = new EvaluationContext();
         ctx.feature = {};
         ctx.featureState = {};
-        t.deepEqual(override.evaluate(ctx), defaultColor);
+        expect(override.evaluate(ctx)).toEqual(defaultColor);
 
         ctx.formattedSection = {textColor: overridenColor};
-        t.deepEqual(override.evaluate(ctx), overridenColor);
-
-        t.end();
+        expect(override.evaluate(ctx)).toEqual(overridenColor);
     });
 
-    t.test('override expression', (t) => {
+    test('override expression', () => {
         const warn = console.warn;
         console.warn = (_) => {};
         const defaultColor = {"r": 0, "g": 0, "b": 0, "a": 1};
@@ -50,17 +47,14 @@ test('evaluate', (t) => {
         ctx.feature = {properties: {}};
         ctx.featureState = {};
 
-        t.deepEqual(override.evaluate(ctx), defaultColor);
+        expect(override.evaluate(ctx)).toEqual(defaultColor);
 
         ctx.feature.properties.color = "red";
-        t.deepEqual(override.evaluate(ctx), propertyColor);
+        expect(override.evaluate(ctx)).toEqual(propertyColor);
 
         ctx.formattedSection = {textColor: overridenColor};
-        t.deepEqual(override.evaluate(ctx), overridenColor);
+        expect(override.evaluate(ctx)).toEqual(overridenColor);
 
         console.warn = warn;
-        t.end();
     });
-
-    t.end();
 });

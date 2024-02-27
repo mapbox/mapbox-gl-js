@@ -207,11 +207,7 @@
       }
     }
   ],
-  "globals": {
-    "performance": true
-  },
   "env": {
-    "es6": true,
-    "browser": false
+    "es6": true
   }
 }

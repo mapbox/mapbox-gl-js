@@ -1,62 +1,61 @@
 
-import {test} from '../../../util/test.js';
-import {createMap} from '../../../util/index.js';
+import {test, expect, createMap} from "../../../util/vitest.js";
 import ScaleControl from '../../../../src/ui/control/scale_control.js';
 
-test('ScaleControl appears in bottom-left by default', (t) => {
-    const map = createMap(t);
+test('ScaleControl appears in bottom-left by default', () => {
+    const map = createMap();
     map.addControl(new ScaleControl());
     map._domRenderTaskQueue.run();
 
-    t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale').length, 1);
-    t.end();
+    expect(
+        map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale').length
+    ).toEqual(1);
 });
 
-test('ScaleControl appears in the position specified by the position option', (t) => {
-    const map = createMap(t);
+test('ScaleControl appears in the position specified by the position option', () => {
+    const map = createMap();
     map.addControl(new ScaleControl(), 'top-left');
     map._domRenderTaskQueue.run();
 
-    t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-scale').length, 1);
-    t.end();
+    expect(
+        map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-scale').length
+    ).toEqual(1);
 });
 
-test('ScaleControl should change unit of distance after calling setUnit', (t) => {
-    const map = createMap(t);
+test('ScaleControl should change unit of distance after calling setUnit', () => {
+    const map = createMap();
     const scale = new ScaleControl();
     const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
     map.addControl(scale);
     map._domRenderTaskQueue.run();
 
     let contents = map.getContainer().querySelector(selector).innerHTML;
-    t.match(contents, /km/);
+    expect(contents).toMatch(/km/);
 
     scale.setUnit('imperial');
     map._domRenderTaskQueue.run();
     contents = map.getContainer().querySelector(selector).innerHTML;
-    t.match(contents, /mi/);
-    t.end();
+    expect(contents).toMatch(/mi/);
 });
 
-test('ScaleControl should change language after calling map.setLanguage', (t) => {
-    const map = createMap(t);
+test('ScaleControl should change language after calling map.setLanguage', () => {
+    const map = createMap();
     const scale = new ScaleControl();
     const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
     map.addControl(scale);
     map._domRenderTaskQueue.run();
 
     let contents = map.getContainer().querySelector(selector).innerHTML;
-    t.match(contents, /km/);
+    expect(contents).toMatch(/km/);
 
     map.setLanguage('ru');
     map._domRenderTaskQueue.run();
     contents = map.getContainer().querySelector(selector).innerHTML;
-    t.match(contents, /км/);
-    t.end();
+    expect(contents).toMatch(/км/);
 });
 
-test('ScaleControl should respect the maxWidth regardless of the unit and actual scale', (t) => {
-    const map = createMap(t);
+test('ScaleControl should respect the maxWidth regardless of the unit and actual scale', () => {
+    const map = createMap();
     const maxWidth = 100;
     const scale = new ScaleControl({maxWidth, unit: 'nautical'});
     const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
@@ -65,12 +64,11 @@ test('ScaleControl should respect the maxWidth regardless of the unit and actual
     map._domRenderTaskQueue.run();
 
     const el = map.getContainer().querySelector(selector);
-    t.ok(parseFloat(el.style.width, 10) <= maxWidth, 'ScaleControl respects maxWidth');
-    t.end();
+    expect(parseFloat(el.style.width, 10) <= maxWidth).toBeTruthy();
 });
 
-test('ScaleControl should support different projections', (t) => {
-    const map = createMap(t, {
+test('ScaleControl should support different projections', () => {
+    const map = createMap({
         center: [-180, 0]
     });
 
@@ -81,7 +79,7 @@ test('ScaleControl should support different projections', (t) => {
 
     map._domRenderTaskQueue.run();
     let contents = map.getContainer().querySelector(selector).innerHTML;
-    t.notMatch(contents, /NaN|undefined/);
+    expect(contents).not.toMatch(/NaN|undefined/);
 
     const projections = [
         'albers',
@@ -98,13 +96,11 @@ test('ScaleControl should support different projections', (t) => {
         map.setProjection(projection);
         map._domRenderTaskQueue.run();
         contents = map.getContainer().querySelector(selector).innerHTML;
-        t.notMatch(contents, /NaN|undefined/, `ScaleControl supports ${projection}`);
+        expect(contents).not.toMatch(/NaN|undefined/);
     }
-
-    t.end();
 });
 
-test('ScaleControl should work in legacy safari', (t) => {
+test('ScaleControl should work in legacy safari', () => {
     const realNumberFormat = Intl.NumberFormat;
     Intl.NumberFormat = function(arg, options) {
         if (options && options.style === 'unit') {
@@ -113,17 +109,15 @@ test('ScaleControl should work in legacy safari', (t) => {
         return realNumberFormat.call(Intl, arg, options);
     };
     try {
-        const map = createMap(t);
+        const map = createMap();
         const scale = new ScaleControl();
         const selector = '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale';
         map.addControl(scale);
         map._domRenderTaskQueue.run();
 
         const contents = map.getContainer().querySelector(selector).innerHTML;
-        t.match(contents, /km/);
+        expect(contents).toMatch(/km/);
     } finally {
         Intl.NumberFormat = realNumberFormat;
     }
-    t.end();
-
 });

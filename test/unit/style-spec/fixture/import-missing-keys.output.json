@@ -1,30 +1,30 @@
 [
-    {
-        "message": "imports[0]: missing required property \"id\"",
-        "line": 4
-    },
-    {
-        "message": "imports[0]: missing required property \"url\"",
-        "line": 4
-    },
-    {
-        "message": "imports[0].config: object expected, string found",
-        "line": 5
-    },
-    {
-        "message": "imports[0]: unknown property \"debug\"",
-        "line": 6
-    },
-    {
-        "message": "imports[0].data: missing required property \"version\"",
-        "line": 7
-    },
-    {
-        "message": "imports[0].data: missing required property \"sources\"",
-        "line": 7
-    },
-    {
-        "message": "imports[0].data: missing required property \"layers\"",
-        "line": 7
-    }
+  {
+    "message": "imports[0]: missing required property \"id\"",
+    "line": 4
+  },
+  {
+    "message": "imports[0]: missing required property \"url\"",
+    "line": 4
+  },
+  {
+    "message": "imports[0].config: object expected, string found",
+    "line": 5
+  },
+  {
+    "message": "imports[0]: unknown property \"debug\"",
+    "line": 6
+  },
+  {
+    "message": "imports[0].data: missing required property \"version\"",
+    "line": 7
+  },
+  {
+    "message": "imports[0].data: missing required property \"sources\"",
+    "line": 7
+  },
+  {
+    "message": "imports[0].data: missing required property \"layers\"",
+    "line": 7
+  }
 ]

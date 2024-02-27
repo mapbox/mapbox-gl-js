@@ -25,6 +25,7 @@ import {Debug} from './util/debug.js';
 import {isSafari} from './util/util.js';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin.js';
 import WorkerPool from './util/worker_pool.js';
+import WorkerClass from './util/worker_class.js';
 import {prewarm, clearPrewarmedResources} from './util/global_worker_pool.js';
 import {clearTileCache} from './util/tile_request_cache.js';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils.js';
@@ -195,7 +196,13 @@ const exported = {
      * ...
      * </script>
      */
-    workerUrl: '',
+    get workerUrl(): string {
+        return WorkerClass.workerUrl;
+    },
+
+    set workerUrl(url: string) {
+        WorkerClass.workerUrl = url;
+    },
 
     /**
      * Provides an interface for external module bundlers such as Webpack or Rollup to package
@@ -211,7 +218,21 @@ const exported = {
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
-    workerClass: null,
+    get workerClass(): Object {
+        return WorkerClass.workerClass;
+    },
+
+    set workerClass(klass: Object) {
+        WorkerClass.workerClass = klass;
+    },
+
+    get workerParams(): Object {
+        return WorkerClass.workerParams;
+    },
+
+    set workerParams(params: Object) {
+        WorkerClass.workerParams = params;
+    },
 
     /**
      * Provides an interface for loading Draco decoding library (draco_decoder_gltf.wasm v1.5.6) from a self-hosted URL.

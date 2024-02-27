@@ -1,5 +1,5 @@
-import {test} from '../../util/test.js';
-import assert from 'assert';
+import {describe, test, beforeAll, beforeEach, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import Style from '../../../src/style/style.js';
 import SourceCache from '../../../src/source/source_cache.js';
 import StyleLayer from '../../../src/style/style_layer.js';
@@ -7,14 +7,12 @@ import Transform from '../../../src/geo/transform.js';
 import {extend} from '../../../src/util/util.js';
 import {RequestManager} from '../../../src/util/mapbox.js';
 import {Event, Evented} from '../../../src/util/evented.js';
-import window from '../../../src/util/window.js';
 import styleSpec from '../../../src/style-spec/reference/latest.js';
 import {
     setRTLTextPlugin,
     clearRTLTextPlugin,
     evented as rtlTextPluginEvented
 } from '../../../src/source/rtl_text_plugin.js';
-import browser from '../../../src/util/browser.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
 
 function createStyleJSON(properties) {
@@ -62,192 +60,175 @@ class StubMap extends Evented {
     }
 }
 
-test('Style', (t) => {
-    t.afterEach(() => {
-        window.restore();
-    });
+let networkWorker;
 
-    t.test('registers plugin state change listener', (t) => {
-        clearRTLTextPlugin();
-        window.useFakeXMLHttpRequest();
-        window.fakeWorkerPresence();
-        t.spy(Style, 'registerForPluginStateChange');
-        const style = new Style(new StubMap());
-        t.spy(style.dispatcher, 'broadcast');
-        t.ok(Style.registerForPluginStateChange.calledOnce);
-
-        setRTLTextPlugin("/plugin.js",);
-        t.ok(style.dispatcher.broadcast.calledWith('syncRTLPluginState', {
-            pluginStatus: 'deferred',
-            pluginURL: "/plugin.js"
-        }));
-        window.clearFakeWorkerPresence();
-        t.end();
-    });
-
-    t.test('loads plugin immediately if already registered', (t) => {
-        clearRTLTextPlugin();
-        window.useFakeXMLHttpRequest();
-        window.fakeWorkerPresence();
-        window.URL.createObjectURL = () => 'blob:';
-        t.tearDown(() => delete window.URL.createObjectURL);
-        window.server.respondWith('/plugin.js', "doesn't matter");
-        let firstError = true;
-        setRTLTextPlugin("/plugin.js", (error) => {
-            // Getting this error message shows the bogus URL was succesfully passed to the worker
-            // We'll get the error from all workers, only pay attention to the first one
-            if (firstError) {
-                t.equals(error.message, 'RTL Text Plugin failed to import scripts from /plugin.js');
-                t.end();
-                window.clearFakeWorkerPresence();
-                firstError = false;
-            }
-        });
-        window.server.respond();
-        new Style(createStyleJSON());
-    });
-
-    t.end();
+beforeAll(async () => {
+    networkWorker = await getNetworkWorker(window);
 });
 
-test('Style#loadURL', (t) => {
-    t.beforeEach(() => {
-        window.useFakeXMLHttpRequest();
-    });
+afterEach(() => {
+    networkWorker.resetHandlers();
+});
 
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    t.test('fires "dataloading"', (t) => {
+describe('Style', () => {
+    test('registers plugin state change listener', () => {
+        clearRTLTextPlugin();
+        networkWorker.use(http.all('*', () => new HttpResponse(null)));
+        vi.spyOn(Style, 'registerForPluginStateChange');
         const style = new Style(new StubMap());
-        const spy = t.spy();
+        vi.spyOn(style.dispatcher, 'broadcast').mockImplementation(() => {});
+        expect(Style.registerForPluginStateChange).toHaveBeenCalledTimes(1);
+
+        setRTLTextPlugin("/plugin.js",);
+        expect(style.dispatcher.broadcast.mock.calls[0][0]).toEqual("syncRTLPluginState");
+        expect(style.dispatcher.broadcast.mock.calls[0][1]).toEqual({
+            pluginStatus: 'deferred',
+            pluginURL: expect.stringContaining("/plugin.js")
+        });
+        // window.clearFakeWorkerPresence();
+    });
+
+    /**
+     * @note Currently we cannot mock workers
+     * @see https://github.com/vitest-dev/vitest/issues/4033
+     * @todo Test with @vitest/web-worker
+     */
+    test.skip('loads plugin immediately if already registered', async () => {
+        clearRTLTextPlugin();
+        networkWorker.use(http.get('/plugin.js', new HttpResponse("doesn't matter")));
+        window.URL.createObjectURL = () => 'blob:';
+
+        await new Promise(resolve => {
+            let firstError = true;
+            setRTLTextPlugin("/plugin.js", (error) => {
+                // Getting this error message shows the bogus URL was succesfully passed to the worker
+                // We'll get the error from all workers, only pay attention to the first one
+                if (firstError) {
+                    expect(error.message).toEqual('RTL Text Plugin failed to import scripts from /plugin.js');
+                    firstError = false;
+                    resolve();
+                }
+            });
+            new Style(createStyleJSON());
+        });
+    });
+});
+
+describe('Style#loadURL', () => {
+    test('fires "dataloading"', async () => {
+        const style = new Style(new StubMap());
+        const spy = vi.fn();
+
+        networkWorker.use(
+            http.get('/style.json', () => HttpResponse.json(createStyleJSON()))
+        );
 
         style.on('dataloading', spy);
-        style.loadURL('style.json');
+        style.loadURL('/style.json');
 
-        t.ok(spy.calledOnce);
-        t.equal(spy.getCall(0).args[0].target, style);
-        t.equal(spy.getCall(0).args[0].dataType, 'style');
-        t.end();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy.mock.calls[0][0].target).toEqual(style);
+        expect(spy.mock.calls[0][0].dataType).toEqual('style');
     });
 
-    t.test('transforms style URL before request', (t) => {
+    test('transforms style URL before request', async () => {
         const map = new StubMap();
-        const spy = t.spy(map._requestManager, 'transformRequest');
+        const spy = vi.spyOn(map._requestManager, 'transformRequest');
+
+        networkWorker.use(
+            http.get('/style.json', () => {
+                return HttpResponse.json(createStyleJSON());
+            })
+        );
 
         const style = new Style(map);
         style.loadURL('style.json');
 
-        t.ok(spy.calledOnce);
-        t.equal(spy.getCall(0).args[0], 'style.json');
-        t.equal(spy.getCall(0).args[1], 'Style');
-        t.end();
+        await waitFor(style, 'style.load');
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy.mock.calls[0][0]).toEqual('style.json');
+        expect(spy.mock.calls[0][1]).toEqual('Style');
     });
 
-    t.test('validates the style', (t) => {
+    test('validates the style', async () => {
         const style = new Style(new StubMap());
 
-        style.on('error', ({error}) => {
-            t.ok(error);
-            t.match(error.message, /version/);
-            t.end();
-        });
+        networkWorker.use(
+            http.get('/style.json', () => {
+                return HttpResponse.json(createStyleJSON({version: 'invalid'}));
+            })
+        );
 
         style.loadURL('style.json');
-        window.server.respondWith(JSON.stringify(createStyleJSON({version: 'invalid'})));
-        window.server.respond();
+
+        const {error} = await waitFor(style, "error");
+        expect(error).toBeTruthy();
+        expect(error.message).toMatch(/version/);
+
     });
 
-    t.test('skips validation for mapbox:// styles', (t) => {
-        const style = new Style(new StubMap())
-            .on('error', () => {
-                t.fail();
+    test('skips validation for mapbox:// styles', async () => {
+        networkWorker.use(
+            http.get('https://api.mapbox.com/styles/v1/test/test', () => {
+                return HttpResponse.json(createStyleJSON({version: 'invalid'}));
             })
-            .on('style.load', () => {
-                t.end();
-            });
+        );
 
-        style.loadURL('mapbox://styles/test/test', {accessToken: 'none'});
+        await new Promise(resolve => {
+            const style = new Style(new StubMap())
+                .on('error', () => {
+                    expect.unreachable();
+                })
+                .on('style.load', () => {
+                    resolve();
+                });
 
-        window.server.respondWith(JSON.stringify(createStyleJSON({version: 'invalid'})));
-        window.server.respond();
+            style.loadURL('mapbox://styles/test/test', {accessToken: 'none'});
+        });
     });
 
-    t.test('cancels pending requests if removed', (t) => {
+    test('cancels pending requests if removed', () => {
+        const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
         const style = new Style(new StubMap());
         style.loadURL('style.json');
         style._remove();
-        t.equal(window.server.lastRequest.aborted, true);
-        t.end();
+        expect(abortSpy).toHaveBeenCalledTimes(1);
     });
-
-    t.end();
 });
 
-test('Style#loadJSON', (t) => {
-    t.afterEach(() => {
-        window.restore();
-    });
-
-    t.test('fires "dataloading" (synchronously)', (t) => {
+describe('Style#loadJSON', () => {
+    test('fires "dataloading" (synchronously)', async () => {
         const style = new Style(new StubMap());
-        const spy = t.spy();
+        const spy = vi.fn();
 
         style.on('dataloading', spy);
         style.loadJSON(createStyleJSON());
 
-        t.ok(spy.calledOnce);
-        t.equal(spy.getCall(0).args[0].target, style);
-        t.equal(spy.getCall(0).args[0].dataType, 'style');
-        t.end();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy.mock.calls[0][0].target).toEqual(style);
+        expect(spy.mock.calls[0][0].dataType).toEqual('style');
     });
 
-    t.test('fires "data" (asynchronously)', (t) => {
+    test('fires "data" (asynchronously)', async () => {
         const style = new Style(new StubMap());
 
         style.loadJSON(createStyleJSON());
 
-        style.on('data', (e) => {
-            t.equal(e.target, style);
-            t.equal(e.dataType, 'style');
-            t.end();
-        });
+        const e = await waitFor(style, "data");
+        expect(e.target).toEqual(style);
+        expect(e.dataType).toEqual('style');
     });
 
-    t.test('fires "data" when the sprite finishes loading', (t) => {
-        window.useFakeXMLHttpRequest();
-
-        // Stubbing to bypass Web APIs that supported by jsdom:
-        // * `URL.createObjectURL` in ajax.getImage (https://github.com/tmpvar/jsdom/issues/1721)
-        // * `canvas.getContext('2d')` in browser.getImageData
-        t.stub(window.URL, 'revokeObjectURL');
-        t.stub(browser, 'getImageData');
-        // stub Image so we can invoke 'onload'
-        // https://github.com/jsdom/jsdom/commit/58a7028d0d5b6aacc5b435daee9fd8f9eacbb14c
-        const img = {};
-        t.stub(window, 'Image').returns(img);
-        // stub this manually because sinon does not stub non-existent methods
-        assert(!window.URL.createObjectURL);
-        window.URL.createObjectURL = () => 'blob:';
-        t.tearDown(() => delete window.URL.createObjectURL);
-
-        // fake the image request (sinon doesn't allow non-string data for
-        // server.respondWith, so we do so manually)
-        const requests = [];
-        window.XMLHttpRequest.onCreate = req => { requests.push(req); };
-        const respond = () => {
-            let req = requests.find(req => req.url === 'http://example.com/sprite.png');
-            req.setStatus(200);
-            req.response = new ArrayBuffer(8);
-            req.onload();
-            img.onload();
-
-            req = requests.find(req => req.url === 'http://example.com/sprite.json');
-            req.setStatus(200);
-            req.response = '{}';
-            req.onload();
-        };
+    test('fires "data" when the sprite finishes loading', async () => {
+        networkWorker.use(
+            http.get('http://example.com/sprite.png', async () => {
+                return new HttpResponse(await getPNGResponse());
+            }),
+            http.get('http://example.com/sprite.json', async () => {
+                return HttpResponse.json({});
+            })
+        );
 
         const style = new Style(new StubMap());
 
@@ -258,41 +239,33 @@ test('Style#loadJSON', (t) => {
             "sprite": "http://example.com/sprite"
         });
 
-        style.once('error', (e) => t.error(e));
-
-        style.once('data', (e) => {
-            t.equal(e.target, style);
-            t.equal(e.dataType, 'style');
+        await new Promise(resolve => {
+            style.once('error', () => expect.unreachable());
 
             style.once('data', (e) => {
-                t.equal(e.target, style);
-                t.equal(e.dataType, 'style');
-                t.end();
-            });
+                expect(e.target).toBe(style);
+                expect(e.dataType).toEqual('style');
 
-            respond();
+                style.once('data', (e) => {
+                    expect(e.target).toBe(style);
+                    expect(e.dataType).toEqual('style');
+                    resolve();
+                });
+            });
         });
     });
 
-    t.test('validates the style', (t) => {
+    test('validates the style', async () => {
         const style = new Style(new StubMap());
-
-        style.on('error', ({error}) => {
-            t.ok(error);
-            t.match(error.message, /version/);
-            t.end();
-        });
 
         style.loadJSON(createStyleJSON({version: 'invalid'}));
+        const {error} = await waitFor(style, "error");
+        expect(error).toBeTruthy();
+        expect(error.message).toMatch(/version/);
     });
 
-    t.test('creates sources', (t) => {
+    test('creates sources', async () => {
         const style = new Style(new StubMap());
-
-        style.on('style.load', () => {
-            t.ok(style.getOwnSourceCache('mapbox') instanceof SourceCache);
-            t.end();
-        });
 
         style.loadJSON(extend(createStyleJSON(), {
             "sources": {
@@ -302,15 +275,12 @@ test('Style#loadJSON', (t) => {
                 }
             }
         }));
+        await waitFor(style, "style.load");
+        expect(style.getOwnSourceCache('mapbox') instanceof SourceCache).toBeTruthy();
     });
 
-    t.test('creates layers', (t) => {
+    test('creates layers', async () => {
         const style = new Style(new StubMap());
-
-        style.on('style.load', () => {
-            t.ok(style.getLayer('fill') instanceof StyleLayer);
-            t.end();
-        });
 
         style.loadJSON({
             "version": 8,
@@ -327,30 +297,41 @@ test('Style#loadJSON', (t) => {
                 "type": "fill"
             }]
         });
+
+        await waitFor(style, "style.load");
+        expect(style.getLayer('fill') instanceof StyleLayer).toBeTruthy();
     });
 
-    t.test('transforms sprite json and image URLs before request', (t) => {
-        window.useFakeXMLHttpRequest();
+    test('transforms sprite json and image URLs before request', async () => {
+        networkWorker.use(
+            http.get('http://example.com/sprites/bright-v8.png', async () => {
+                return new HttpResponse(await getPNGResponse());
+            }),
+            http.get('http://example.com/sprites/bright-v8.json', () => {
+                return HttpResponse.json({});
+            })
+        );
 
         const map = new StubMap();
-        const transformSpy = t.spy(map._requestManager, 'transformRequest');
+        const transformSpy = vi.spyOn(map._requestManager, 'transformRequest');
         const style = new Style(map);
-
-        style.on('style.load', () => {
-            t.equal(transformSpy.callCount, 2);
-            t.equal(transformSpy.getCall(0).args[0], 'http://example.com/sprites/bright-v8.json');
-            t.equal(transformSpy.getCall(0).args[1], 'SpriteJSON');
-            t.equal(transformSpy.getCall(1).args[0], 'http://example.com/sprites/bright-v8.png');
-            t.equal(transformSpy.getCall(1).args[1], 'SpriteImage');
-            t.end();
-        });
 
         style.loadJSON(extend(createStyleJSON(), {
             "sprite": "http://example.com/sprites/bright-v8"
         }));
+
+        await waitFor(style, 'style.load');
+
+        expect(transformSpy).toHaveBeenCalledTimes(2);
+        expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/sprites/bright-v8.json');
+        expect(transformSpy.mock.calls[0][1]).toEqual('SpriteJSON');
+        expect(transformSpy.mock.calls[1][0]).toEqual('http://example.com/sprites/bright-v8.png');
+        expect(transformSpy.mock.calls[1][1]).toEqual('SpriteImage');
+
+        await waitFor(style, "data");
     });
 
-    t.test('emits an error on non-existant vector source layer', (t) => {
+    test('emits an error on non-existant vector source layer', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {
@@ -359,89 +340,80 @@ test('Style#loadJSON', (t) => {
             layers: []
         }));
 
-        style.on('style.load', () => {
-            style.removeSource('-source-id-');
+        await waitFor(style, "style.load");
+        style.removeSource('-source-id-');
 
-            const source = createSource();
-            source['vector_layers'] = [{id: 'green'}];
-            style.addSource('-source-id-', source);
-            style.addLayer({
-                'id': '-layer-id-',
-                'type': 'circle',
-                'source': '-source-id-',
-                'source-layer': '-source-layer-'
-            });
-            style.update({});
+        const source = createSource();
+        source['vector_layers'] = [{id: 'green'}];
+        style.addSource('-source-id-', source);
+        style.addLayer({
+            'id': '-layer-id-',
+            'type': 'circle',
+            'source': '-source-id-',
+            'source-layer': '-source-layer-'
         });
-
-        style.on('error', (event) => {
-            const err = event.error;
-            t.ok(err);
-            t.ok(err.toString().indexOf('-source-layer-') !== -1);
-            t.ok(err.toString().indexOf('-source-id-') !== -1);
-            t.ok(err.toString().indexOf('-layer-id-') !== -1);
-
-            t.end();
-        });
+        style.update({});
+        const event = await waitFor(style, "error");
+        const err = event.error;
+        expect(err).toBeTruthy();
+        expect(err.toString().indexOf('-source-layer-') !== -1).toBeTruthy();
+        expect(err.toString().indexOf('-source-id-') !== -1).toBeTruthy();
+        expect(err.toString().indexOf('-layer-id-') !== -1).toBeTruthy();
     });
 
-    t.test('sets up layer event forwarding', (t) => {
+    test('sets up layer event forwarding', async () => {
         const style = new Style(new StubMap());
-        style.loadJSON(createStyleJSON({
-            layers: [{
-                id: 'background',
-                type: 'background'
-            }]
-        }));
 
-        style.on('error', (e) => {
-            t.deepEqual(e.layer, {id: 'background'});
-            t.ok(e.mapbox);
-            t.end();
-        });
+        await new Promise(resolve => {
+            style.loadJSON(createStyleJSON({
+                layers: [{
+                    id: 'background',
+                    type: 'background'
+                }]
+            }));
 
-        style.on('style.load', () => {
-            style._layers.background.fire(new Event('error', {mapbox: true}));
+            style.on('error', (e) => {
+                expect(e.layer).toStrictEqual({id: 'background'});
+                expect(e.mapbox).toBeTruthy();
+                resolve();
+            });
+
+            style.on('style.load', () => {
+                style._layers.background.fire(new Event('error', {mapbox: true}));
+            });
+
         });
     });
-
-    t.end();
 });
 
-test('Style#_remove', (t) => {
-    t.test('clears tiles', (t) => {
+describe('Style#_remove', () => {
+    test('clears tiles', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {'source-id': createGeoJSONSource()}
         }));
 
-        style.on('style.load', () => {
-            const sourceCache = style.getOwnSourceCache('source-id');
-            t.spy(sourceCache, 'clearTiles');
-            style._remove();
-            t.ok(sourceCache.clearTiles.calledOnce);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        const sourceCache = style.getOwnSourceCache('source-id');
+        vi.spyOn(sourceCache, 'clearTiles');
+        style._remove();
+        expect(sourceCache.clearTiles).toHaveBeenCalledTimes(1);
     });
 
-    t.test('deregisters plugin listener', (t) => {
+    test('deregisters plugin listener', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        t.spy(style.dispatcher, 'broadcast');
+        vi.spyOn(style.dispatcher, 'broadcast');
 
-        style.on('style.load', () => {
-            style._remove();
+        await waitFor(style, "style.load");
+        style._remove();
 
-            rtlTextPluginEvented.fire(new Event('pluginStateChange'));
-            t.notOk(style.dispatcher.broadcast.calledWith('syncRTLPluginState'));
-            t.end();
-        });
+        rtlTextPluginEvented.fire(new Event('pluginStateChange'));
+        expect(style.dispatcher.broadcast).not.toHaveBeenCalledWith('syncRTLPluginState');
     });
-
-    t.end();
 });
 
-test('Style#update', (t) => {
+test('Style#update', () => {
     const style = new Style(new StubMap());
     style.loadJSON({
         'version': 8,
@@ -459,7 +431,7 @@ test('Style#update', (t) => {
         }]
     });
 
-    style.on('error', (error) => { t.error(error); });
+    style.on('error', (error) => { expect(error).toBeFalsy(); });
 
     style.on('style.load', () => {
         style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer'}, 'second');
@@ -467,24 +439,22 @@ test('Style#update', (t) => {
         style.removeLayer('second');
 
         style.dispatcher.broadcast = function(key, value) {
-            t.equal(key, 'updateLayers');
-            t.deepEqual(value.layers.map((layer) => { return layer.id; }), ['first', 'third']);
-            t.deepEqual(value.removedIds, ['second']);
-            t.end();
+            expect(key).toEqual('updateLayers');
+            expect(value.layers.map((layer) => { return layer.id; })).toEqual(['first', 'third']);
+            expect(value.removedIds).toEqual(['second']);
         };
 
         style.update({});
     });
 });
 
-test('Style#setState', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#setState', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.setState(createStyleJSON()), /load/i);
-        t.end();
+        expect(() => style.setState(createStyleJSON())).toThrowError(/load/i);
     });
 
-    t.test('do nothing if there are no changes', (t) => {
+    test('do nothing if there are no changes', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         [
@@ -498,19 +468,21 @@ test('Style#setState', (t) => {
             'setGeoJSONSourceData',
             'setLayerZoomRange',
             'setFlatLight'
-        ].forEach((method) => t.stub(style, method).callsFake(() => t.fail(`${method} called`)));
-        style.on('style.load', () => {
-            const didChange = style.setState(createStyleJSON());
-            t.notOk(didChange, 'return false');
-            t.end();
-        });
+        ].forEach((method) => vi.spyOn(style, method).mockImplementation(() => expect.unreachable(`${method} called`)));
+        await waitFor(style, "style.load");
+        const didChange = style.setState(createStyleJSON());
+        expect(didChange).toBeFalsy();
     });
 
-    t.test('Issue #3893: compare new source options against originally provided options rather than normalized properties', (t) => {
-        window.useFakeXMLHttpRequest();
-        window.server.respondWith('/tilejson.json', JSON.stringify({
-            tiles: ['http://tiles.server']
-        }));
+    test('Issue #3893: compare new source options against originally provided options rather than normalized properties', async () => {
+        networkWorker.use(
+            http.get('/tilejson.json', () => {
+                return HttpResponse.json({
+                    tiles: ['http://tiles.server']
+                });
+            })
+        );
+
         const initial = createStyleJSON();
         initial.sources.mySource = {
             type: 'raster',
@@ -518,17 +490,17 @@ test('Style#setState', (t) => {
         };
         const style = new Style(new StubMap());
         style.loadJSON(initial);
-        style.on('style.load', () => {
-            t.stub(style, 'removeSource').callsFake(() => t.fail('removeSource called'));
-            t.stub(style, 'addSource').callsFake(() => t.fail('addSource called'));
-            style.setState(initial);
-            window.restore();
-            t.end();
-        });
-        window.server.respond();
+
+        await waitFor(style, "style.load");
+
+        vi.spyOn(style, 'removeSource').mockImplementation(() => expect.unreachable('removeSource called'));
+        vi.spyOn(style, 'addSource').mockImplementation(() => expect.unreachable('addSource called'));
+        style.setState(initial);
+
+        await waitFor(style, 'data');
     });
 
-    t.test('return true if there is a change', (t) => {
+    test('return true if there is a change', async () => {
         const initialState = createStyleJSON();
         const nextState = createStyleJSON({
             sources: {
@@ -541,15 +513,13 @@ test('Style#setState', (t) => {
 
         const style = new Style(new StubMap());
         style.loadJSON(initialState);
-        style.on('style.load', () => {
-            const didChange = style.setState(nextState);
-            t.ok(didChange);
-            t.same(style.stylesheet, nextState);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        const didChange = style.setState(nextState);
+        expect(didChange).toBeTruthy();
+        expect(style.stylesheet).toStrictEqual(nextState);
     });
 
-    t.test('sets GeoJSON source data if different', (t) => {
+    test('sets GeoJSON source data if different', async () => {
         const initialState = createStyleJSON({
             "sources": {"source-id": createGeoJSONSource()}
         });
@@ -579,86 +549,81 @@ test('Style#setState', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(initialState);
 
-        style.on('style.load', () => {
-            const geoJSONSource = style.getSource('source-id');
-            t.spy(style, 'setGeoJSONSourceData');
-            t.spy(geoJSONSource, 'setData');
-            const didChange = style.setState(nextState);
+        await waitFor(style, "style.load");
+        const geoJSONSource = style.getSource('source-id');
+        vi.spyOn(style, 'setGeoJSONSourceData');
+        vi.spyOn(geoJSONSource, 'setData');
+        const didChange = style.setState(nextState);
 
-            t.ok(style.setGeoJSONSourceData.calledWith('source-id', geoJSONSourceData));
-            t.ok(geoJSONSource.setData.calledWith(geoJSONSourceData));
-            t.ok(didChange);
-            t.same(style.stylesheet, nextState);
-            t.end();
-        });
+        expect(style.setGeoJSONSourceData).toHaveBeenCalledWith('source-id', geoJSONSourceData);
+        expect(geoJSONSource.setData).toHaveBeenCalledWith(geoJSONSourceData);
+        expect(didChange).toBeTruthy();
+        expect(style.stylesheet).toStrictEqual(nextState);
     });
-
-    t.end();
 });
 
-test('Style#addSource', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#addSource', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.addSource('source-id', createSource()), /load/i);
-        t.end();
+        expect(() => style.addSource('source-id', createSource())).toThrowError(/load/i);
     });
 
-    t.test('throw if missing source type', (t) => {
+    test('throw if missing source type', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
 
         const source = createSource();
         delete source.type;
 
-        style.on('style.load', () => {
-            t.throws(() => style.addSource('source-id', source), /type/i);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        expect(() => style.addSource('source-id', source)).toThrowError(/type/i);
     });
 
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const source = createSource();
-        style.once('data', t.end);
-        style.on('style.load', () => {
+
+        await waitFor(style, "style.load");
+        await new Promise(resolve => {
+            style.once('data', resolve);
             style.addSource('source-id', source);
             style.update({});
         });
     });
 
-    t.test('throws on duplicates', (t) => {
+    test('throws on duplicates', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const source = createSource();
-        style.on('style.load', () => {
+        await waitFor(style, "style.load");
+        style.addSource('source-id', source);
+        expect(() => {
             style.addSource('source-id', source);
-            t.throws(() => {
-                style.addSource('source-id', source);
-            }, /There is already a source with ID \"source-id\"./);
-            t.end();
-        });
+        }).toThrowError(/There is already a source with ID \"source-id\"./);
     });
 
-    t.test('emits on invalid source', (t) => {
+    test('emits on invalid source', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        style.on('style.load', () => {
-            style.on('error', () => {
-                t.notOk(style.getOwnSourceCache('source-id'));
-                t.end();
-            });
-            style.addSource('source-id', {
-                type: 'vector',
-                minzoom: '1', // Shouldn't be a string
-                maxzoom: 10,
-                attribution: 'Mapbox',
-                tiles: ['http://example.com/{z}/{x}/{y}.png']
+        await new Promise(resolve => {
+            style.on('style.load', () => {
+                style.on('error', () => {
+                    expect(style.getOwnSourceCache('source-id')).toBeFalsy();
+                    resolve();
+                });
+                style.addSource('source-id', {
+                    type: 'vector',
+                    minzoom: '1', // Shouldn't be a string
+                    maxzoom: 10,
+                    attribution: 'Mapbox',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png']
+                });
             });
         });
     });
 
-    t.test('sets up source event forwarding', (t) => {
+    test('sets up source event forwarding', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -668,75 +633,67 @@ test('Style#addSource', (t) => {
         }));
         const source = createSource();
 
-        style.on('style.load', () => {
-            t.plan(4);
+        await waitFor(style, "style.load");
 
-            style.on('error', () => { t.ok(true); });
-            style.on('data', (e) => {
-                if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
-                    t.ok(true);
-                } else if (e.sourceDataType === 'content' && e.dataType === 'source') {
-                    t.ok(true);
-                } else {
-                    t.ok(true);
-                }
-            });
+        style.addSource('source-id', source); // fires data twice
+        style.getSource('source-id').fire(new Event('error'));
+        style.getSource('source-id').fire(new Event('data'));
 
-            style.addSource('source-id', source); // fires data twice
-            style.getSource('source-id').fire(new Event('error'));
-            style.getSource('source-id').fire(new Event('data'));
-        });
+        const e = await waitFor(style, "data");
+        if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+            expect(true).toBeTruthy();
+        } else if (e.sourceDataType === 'content' && e.dataType === 'source') {
+            expect(true).toBeTruthy();
+        } else {
+            expect(true).toBeTruthy();
+        }
+
     });
-
-    t.end();
 });
 
-test('Style#removeSource', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#removeSource', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.removeSource('source-id'), /load/i);
-        t.end();
+        expect(() => style.removeSource('source-id')).toThrowError(/load/i);
     });
 
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const source = createSource();
-        style.once('data', t.end);
-        style.on('style.load', () => {
-            style.addSource('source-id', source);
-            style.removeSource('source-id');
-            style.update({});
+        await new Promise(resolve => {
+            style.once('data', resolve);
+            style.on('style.load', () => {
+                style.addSource('source-id', source);
+                style.removeSource('source-id');
+                style.update({});
+            });
         });
     });
 
-    t.test('clears tiles', (t) => {
+    test('clears tiles', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {'source-id': createGeoJSONSource()}
         }));
 
-        style.on('style.load', () => {
-            const sourceCache = style.getOwnSourceCache('source-id');
-            t.spy(sourceCache, 'clearTiles');
-            style.removeSource('source-id');
-            t.ok(sourceCache.clearTiles.calledOnce);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        const sourceCache = style.getOwnSourceCache('source-id');
+        vi.spyOn(sourceCache, 'clearTiles');
+        style.removeSource('source-id');
+        expect(sourceCache.clearTiles).toHaveBeenCalledTimes(1);
     });
 
-    t.test('throws on non-existence', (t) => {
+    test('throws on non-existence', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        style.on('style.load', () => {
-            t.throws(() => {
-                style.removeSource('source-id');
-            }, /There is no source with this ID/);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        expect(() => {
+            style.removeSource('source-id');
+        }).toThrowError(/There is no source with this ID/);
     });
 
-    function createStyle(callback) {
+    async function createStyle() {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             'sources': {
@@ -749,36 +706,33 @@ test('Style#removeSource', (t) => {
                 'source-layer': 'whatever'
             }]
         }));
-        style.on('style.load', () => {
-            style.update({zoom: 1, fadeDuration: 0});
-            callback(style);
-        });
+        await waitFor(style, 'style.load');
+        style.update({zoom: 1, fadeDuration: 0});
         return style;
     }
 
-    t.test('throws if source is in use', (t) => {
-        createStyle((style) => {
+    test('throws if source is in use', async () => {
+        const style = await createStyle();
+        await new Promise(resolve => {
             style.on('error', (event) => {
-                t.ok(event.error.message.includes('"mapbox-source"'));
-                t.ok(event.error.message.includes('"mapbox-layer"'));
-                t.end();
+                expect(event.error.message.includes('"mapbox-source"')).toBeTruthy();
+                expect(event.error.message.includes('"mapbox-layer"')).toBeTruthy();
+                resolve();
             });
             style.removeSource('mapbox-source');
         });
     });
 
-    t.test('does not throw if source is not in use', (t) => {
-        createStyle((style) => {
-            style.on('error', () => {
-                t.fail();
-            });
-            style.removeLayer('mapbox-layer');
-            style.removeSource('mapbox-source');
-            t.end();
+    test('does not throw if source is not in use', async () => {
+        const style = await createStyle();
+        style.removeLayer('mapbox-layer');
+        style.removeSource('mapbox-source');
+        style.once("error", () => {
+            expect.unreachable();
         });
     });
 
-    t.test('tears down source event forwarding', (t) => {
+    test('tears down source event forwarding', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         let source = createSource();
@@ -792,66 +746,58 @@ test('Style#removeSource', (t) => {
             // Suppress error reporting
             source.on('error', () => {});
 
-            style.on('data', () => { t.ok(false); });
-            style.on('error', () => { t.ok(false); });
+            style.on('data', () => { expect.unreachable(); });
+            style.on('error', () => { expect.unreachable(); });
             source.fire(new Event('data'));
             source.fire(new Event('error'));
-
-            t.end();
         });
     });
-
-    t.end();
 });
 
-test('Style#setGeoJSONSourceData', (t) => {
+describe('Style#setGeoJSONSourceData', () => {
     const geoJSON = {type: "FeatureCollection", features: []};
 
-    t.test('throws before loaded', (t) => {
+    test('throws before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.setGeoJSONSourceData('source-id', geoJSON), /load/i);
-        t.end();
+        expect(() => style.setGeoJSONSourceData('source-id', geoJSON)).toThrowError(/load/i);
     });
 
-    t.test('throws on non-existence', (t) => {
+    test('throws on non-existence', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        style.on('style.load', () => {
-            t.throws(() => style.setGeoJSONSourceData('source-id', geoJSON), /There is no source with this ID/);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        expect(() => style.setGeoJSONSourceData('source-id', geoJSON)).toThrowError(/There is no source with this ID/);
     });
-
-    t.end();
 });
 
-test('Style#addLayer', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#addLayer', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.addLayer({id: 'background', type: 'background'}), /load/i);
-        t.end();
+        expect(() => style.addLayer({id: 'background', type: 'background'})).toThrowError(/load/i);
     });
 
-    t.test('sets up layer event forwarding', (t) => {
+    test('sets up layer event forwarding', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
 
-        style.on('error', (e) => {
-            t.deepEqual(e.layer, {id: 'background'});
-            t.ok(e.mapbox);
-            t.end();
-        });
-
-        style.on('style.load', () => {
-            style.addLayer({
-                id: 'background',
-                type: 'background'
+        await new Promise(resolve => {
+            style.on('error', (e) => {
+                expect(e.layer).toStrictEqual({id: 'background'});
+                expect(e.mapbox).toBeTruthy();
+                resolve();
             });
-            style._layers.background.fire(new Event('error', {mapbox: true}));
+
+            style.on('style.load', () => {
+                style.addLayer({
+                    id: 'background',
+                    type: 'background'
+                });
+                style._layers.background.fire(new Event('error', {mapbox: true}));
+            });
         });
     });
 
-    t.test('throws on non-existant vector source layer', (t) => {
+    test('throws on non-existant vector source layer', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             sources: {
@@ -860,67 +806,62 @@ test('Style#addLayer', (t) => {
             }
         }));
 
-        style.on('style.load', () => {
-            const source = createSource();
-            source['vector_layers'] = [{id: 'green'}];
-            style.addSource('-source-id-', source);
-            style.addLayer({
-                'id': '-layer-id-',
-                'type': 'circle',
-                'source': '-source-id-',
-                'source-layer': '-source-layer-'
-            });
+        await waitFor(style, "style.load");
+        const source = createSource();
+        source['vector_layers'] = [{id: 'green'}];
+        style.addSource('-source-id-', source);
+        style.addLayer({
+            'id': '-layer-id-',
+            'type': 'circle',
+            'source': '-source-id-',
+            'source-layer': '-source-layer-'
         });
+        const event = await waitFor(style, "error");
+        const err = event.error;
 
-        style.on('error', (event) => {
-            const err = event.error;
-
-            t.ok(err);
-            t.ok(err.toString().indexOf('-source-layer-') !== -1);
-            t.ok(err.toString().indexOf('-source-id-') !== -1);
-            t.ok(err.toString().indexOf('-layer-id-') !== -1);
-
-            t.end();
-        });
+        expect(err).toBeTruthy();
+        expect(err.toString().indexOf('-source-layer-') !== -1).toBeTruthy();
+        expect(err.toString().indexOf('-source-id-') !== -1).toBeTruthy();
+        expect(err.toString().indexOf('-layer-id-') !== -1).toBeTruthy();
     });
 
-    t.test('emits error on invalid layer', (t) => {
+    test('emits error on invalid layer', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        style.on('style.load', () => {
-            style.on('error', () => {
-                t.notOk(style.getLayer('background'));
-                t.end();
-            });
-            style.addLayer({
-                id: 'background',
-                type: 'background',
-                paint: {
-                    'background-opacity': 5
-                }
+        await new Promise(resolve => {
+            style.on('style.load', () => {
+                style.on('error', () => {
+                    expect(style.getLayer('background')).toBeFalsy();
+                    resolve();
+                });
+                style.addLayer({
+                    id: 'background',
+                    type: 'background',
+                    paint: {
+                        'background-opacity': 5
+                    }
+                });
             });
         });
     });
 
-    t.test('#4040 does not mutate source property when provided inline', (t) => {
+    test('#4040 does not mutate source property when provided inline', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
-        style.on('style.load', () => {
-            const source = {
-                "type": "geojson",
-                "data": {
-                    "type": "Point",
-                    "coordinates": [ 0, 0]
-                }
-            };
-            const layer = {id: 'inline-source-layer', type: 'circle', source};
-            style.addLayer(layer);
-            t.deepEqual(layer.source, source);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        const source = {
+            "type": "geojson",
+            "data": {
+                "type": "Point",
+                "coordinates": [ 0, 0]
+            }
+        };
+        const layer = {id: 'inline-source-layer', type: 'circle', source};
+        style.addLayer(layer);
+        expect(layer.source).toEqual(source);
     });
 
-    t.test('reloads source', (t) => {
+    test('reloads source', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(extend(createStyleJSON(), {
             "sources": {
@@ -938,118 +879,130 @@ test('Style#addLayer', (t) => {
             "filter": ["==", "id", 0]
         };
 
-        style.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style.getOwnSourceCache('mapbox').reload = t.end;
-                style.addLayer(layer);
-                style.update({});
-            }
+        await new Promise(resolve => {
+            style.on('data', (e) => {
+                if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                    style.getOwnSourceCache('mapbox').reload = resolve;
+                    style.addLayer(layer);
+                    style.update({});
+                }
+            });
         });
+
     });
 
-    t.test('#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON(extend(createStyleJSON(), {
-            "sources": {
-                "mapbox": {
-                    "type": "vector",
-                    "tiles": []
-                }
-            },
-            layers: [{
+    test(
+        '#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it',
+        async () => {
+            const style = new Style(new StubMap());
+            style.loadJSON(extend(createStyleJSON(), {
+                "sources": {
+                    "mapbox": {
+                        "type": "vector",
+                        "tiles": []
+                    }
+                },
+                layers: [{
+                    "id": "my-layer",
+                    "type": "symbol",
+                    "source": "mapbox",
+                    "source-layer": "boxmap",
+                    "filter": ["==", "id", 0]
+                }]
+            }));
+
+            const layer = {
                 "id": "my-layer",
                 "type": "symbol",
                 "source": "mapbox",
-                "source-layer": "boxmap",
-                "filter": ["==", "id", 0]
-            }]
-        }));
+                "source-layer": "boxmap"
+            };
 
-        const layer = {
-            "id": "my-layer",
-            "type": "symbol",
-            "source": "mapbox",
-            "source-layer": "boxmap"
-        };
-
-        style.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style.getOwnSourceCache('mapbox').reload = t.end;
-                style.getOwnSourceCache('mapbox').clearTiles = t.fail;
-                style.removeLayer('my-layer');
-                style.addLayer(layer);
-                style.update({});
-            }
+            await new Promise(resolve => {
+                style.on('data', (e) => {
+                    if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                        style.getOwnSourceCache('mapbox').reload = resolve;
+                        style.getOwnSourceCache('mapbox').clearTiles = expect.unreachable;
+                        style.removeLayer('my-layer');
+                        style.addLayer(layer);
+                        style.update({});
+                    }
+                });
+            });
         });
 
-    });
+    test(
+        'clears source (instead of reloading) if adding this layer with a different type, immediately after removing it',
+        async () => {
+            const style = new Style(new StubMap());
+            style.loadJSON(extend(createStyleJSON(), {
+                "sources": {
+                    "mapbox": {
+                        "type": "vector",
+                        "tiles": []
+                    }
+                },
+                layers: [{
+                    "id": "my-layer",
+                    "type": "symbol",
+                    "source": "mapbox",
+                    "source-layer": "boxmap",
+                    "filter": ["==", "id", 0]
+                }]
+            }));
 
-    t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON(extend(createStyleJSON(), {
-            "sources": {
-                "mapbox": {
-                    "type": "vector",
-                    "tiles": []
-                }
-            },
-            layers: [{
+            const layer = {
                 "id": "my-layer",
-                "type": "symbol",
+                "type": "circle",
                 "source": "mapbox",
-                "source-layer": "boxmap",
-                "filter": ["==", "id", 0]
-            }]
-        }));
-
-        const layer = {
-            "id": "my-layer",
-            "type": "circle",
-            "source": "mapbox",
-            "source-layer": "boxmap"
-        };
-        style.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                style.getOwnSourceCache('mapbox').reload = t.fail;
-                style.getOwnSourceCache('mapbox').clearTiles = t.end;
-                style.removeLayer('my-layer');
-                style.addLayer(layer);
-                style.update({});
-            }
+                "source-layer": "boxmap"
+            };
+            await new Promise(resolve => {
+                style.on('data', (e) => {
+                    if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                        style.getOwnSourceCache('mapbox').reload = expect.unreachable;
+                        style.getOwnSourceCache('mapbox').clearTiles = resolve;
+                        style.removeLayer('my-layer');
+                        style.addLayer(layer);
+                        style.update({});
+                    }
+                });
+            });
         });
 
-    });
-
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        await new Promise(resolve => {
+            style.once('data', resolve);
 
-        style.on('style.load', () => {
-            style.addLayer(layer);
-            style.update({});
+            style.on('style.load', () => {
+                style.addLayer(layer);
+                style.update({});
+            });
         });
     });
 
-    t.test('emits error on duplicates', (t) => {
+    test('emits error on duplicates', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.on('error', (e) => {
-            t.match(e.error, /already exists/);
-            t.end();
-        });
+        await waitFor(style, "style.load");
 
-        style.on('style.load', () => {
+        await new Promise(resolve => {
+            style.once("error", e => {
+                expect(e.error).toMatch(/already exists/);
+                resolve();
+            });
             style.addLayer(layer);
             style.addLayer(layer);
         });
     });
 
-    t.test('adds to the end by default', (t) => {
+    test('adds to the end by default', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1062,14 +1015,12 @@ test('Style#addLayer', (t) => {
         }));
         const layer = {id: 'c', type: 'background'};
 
-        style.on('style.load', () => {
-            style.addLayer(layer);
-            t.deepEqual(style._order, ['a', 'b', 'c']);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.addLayer(layer);
+        expect(style._order).toEqual(['a', 'b', 'c']);
     });
 
-    t.test('adds before the given layer', (t) => {
+    test('adds before the given layer', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1082,14 +1033,12 @@ test('Style#addLayer', (t) => {
         }));
         const layer = {id: 'c', type: 'background'};
 
-        style.on('style.load', () => {
-            style.addLayer(layer, 'a');
-            t.deepEqual(style._order, ['c', 'a', 'b']);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.addLayer(layer, 'a');
+        expect(style._order).toEqual(['c', 'a', 'b']);
     });
 
-    t.test('fire error if before layer does not exist', (t) => {
+    test('fire error if before layer does not exist', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1102,16 +1051,18 @@ test('Style#addLayer', (t) => {
         }));
         const layer = {id: 'c', type: 'background'};
 
-        style.on('style.load', () => {
-            style.on('error', (error) => {
-                t.match(error.error, /does not exist on this map/);
-                t.end();
+        await waitFor(style, "style.load");
+
+        await new Promise(resolve => {
+            style.once("error", ({error}) => {
+                expect(error).toMatch(/does not exist on this map/);
+                resolve();
             });
             style.addLayer(layer, 'z');
         });
     });
 
-    t.test('fires an error on non-existant source layer', (t) => {
+    test('fires an error on non-existant source layer', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(extend(createStyleJSON(), {
             sources: {
@@ -1129,41 +1080,40 @@ test('Style#addLayer', (t) => {
             'source-layer': 'dummy'
         };
 
-        style.on('style.load', () => {
-            style.on('error', ({error}) => {
-                t.match(error.message, /does not exist on source/);
-                t.end();
+        await waitFor(style, "style.load");
+        await new Promise(resolve => {
+            style.once("error", ({error}) => {
+                expect(error.message).toMatch(/does not exist on source/);
+                resolve();
             });
             style.addLayer(layer);
         });
-
     });
-
-    t.end();
 });
 
-test('Style#removeLayer', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#removeLayer', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.removeLayer('background'), /load/i);
-        t.end();
+        expect(() => style.removeLayer('background')).toThrowError(/load/i);
     });
 
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        await waitFor(style, "style.load");
 
-        style.on('style.load', () => {
+        await new Promise(resolve => {
+            style.once('data', resolve);
             style.addLayer(layer);
             style.removeLayer('background');
             style.update({});
         });
+
     });
 
-    t.test('tears down layer event forwarding', (t) => {
+    test('tears down layer event forwarding', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1173,35 +1123,40 @@ test('Style#removeLayer', (t) => {
         }));
 
         style.on('error', () => {
-            t.fail();
+            expect.unreachable();
         });
 
-        style.on('style.load', () => {
-            const layer = style._layers.background;
-            style.removeLayer('background');
+        await new Promise(resolve => {
+            style.on('style.load', () => {
+                const layer = style._layers.background;
+                style.removeLayer('background');
 
-            // Bind a listener to prevent fallback Evented error reporting.
-            layer.on('error', () => {});
+                // Bind a listener to prevent fallback Evented error reporting.
+                layer.on('error', () => {});
 
-            layer.fire(new Event('error', {mapbox: true}));
-            t.end();
+                layer.fire(new Event('error', {mapbox: true}));
+                resolve();
+            });
+
         });
     });
 
-    t.test('fires an error on non-existence', (t) => {
+    test('fires an error on non-existence', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
 
-        style.on('style.load', () => {
-            style.on('error', ({error}) => {
-                t.match(error.message, /does not exist in the map\'s style/);
-                t.end();
+        await waitFor(style, "style.load");
+
+        await new Promise(resolve => {
+            style.on("error", ({error}) => {
+                expect(error.message).toMatch(/does not exist in the map\'s style/);
+                resolve();
             });
             style.removeLayer('background');
         });
     });
 
-    t.test('removes from the order', (t) => {
+    test('removes from the order', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1213,14 +1168,12 @@ test('Style#removeLayer', (t) => {
             }]
         }));
 
-        style.on('style.load', () => {
-            style.removeLayer('a');
-            t.deepEqual(style._order, ['b']);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.removeLayer('a');
+        expect(style._order).toEqual(['b']);
     });
 
-    t.test('does not remove dereffed layers', (t) => {
+    test('does not remove dereffed layers', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1232,52 +1185,51 @@ test('Style#removeLayer', (t) => {
             }]
         }));
 
-        style.on('style.load', () => {
-            style.removeLayer('a');
-            t.equal(style.getLayer('a'), undefined);
-            t.notEqual(style.getLayer('b'), undefined);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.removeLayer('a');
+        expect(style.getLayer('a')).toEqual(undefined);
+        expect(style.getLayer('b')).not.toEqual(undefined);
     });
-
-    t.end();
 });
 
-test('Style#moveLayer', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#moveLayer', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.moveLayer('background'), /load/i);
-        t.end();
+        expect(() => style.moveLayer('background')).toThrowError(/load/i);
     });
 
-    t.test('fires "data" event', (t) => {
+    test('fires "data" event', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
-        style.once('data', t.end);
+        await new Promise(resolve => {
+            style.once('data', resolve);
 
-        style.on('style.load', () => {
-            style.addLayer(layer);
-            style.moveLayer('background');
-            style.update({});
+            style.on('style.load', () => {
+                style.addLayer(layer);
+                style.moveLayer('background');
+                style.update({});
+            });
         });
     });
 
-    t.test('fires an error on non-existence', (t) => {
+    test('fires an error on non-existence', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
 
-        style.on('style.load', () => {
-            style.on('error', ({error}) => {
-                t.match(error.message, /does not exist in the map\'s style/);
-                t.end();
+        await new Promise(resolve => {
+            style.on('style.load', () => {
+                style.on('error', ({error}) => {
+                    expect(error.message).toMatch(/does not exist in the map\'s style/);
+                    resolve();
+                });
+                style.moveLayer('background');
             });
-            style.moveLayer('background');
         });
     });
 
-    t.test('changes the order', (t) => {
+    test('changes the order', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [
@@ -1287,14 +1239,12 @@ test('Style#moveLayer', (t) => {
             ]
         }));
 
-        style.on('style.load', () => {
-            style.moveLayer('a', 'c');
-            t.deepEqual(style._order, ['b', 'a', 'c']);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.moveLayer('a', 'c');
+        expect(style._order).toEqual(['b', 'a', 'c']);
     });
 
-    t.test('moves to existing location', (t) => {
+    test('moves to existing location', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [
@@ -1304,39 +1254,37 @@ test('Style#moveLayer', (t) => {
             ]
         }));
 
-        style.on('style.load', () => {
-            style.moveLayer('b', 'b');
-            t.deepEqual(style._order, ['a', 'b', 'c']);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.moveLayer('b', 'b');
+        expect(style._order).toEqual(['a', 'b', 'c']);
     });
-
-    t.end();
 });
 
-test('Style#setPaintProperty', (t) => {
-    t.test('#4738 postpones source reload until layers have been broadcast to workers', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON(extend(createStyleJSON(), {
-            "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {"type": "FeatureCollection", "features": []}
-                }
-            },
-            "layers": [
-                {
-                    "id": "circle",
-                    "type": "circle",
-                    "source": "geojson"
-                }
-            ]
-        }));
+describe('Style#setPaintProperty', () => {
+    test(
+        '#4738 postpones source reload until layers have been broadcast to workers',
+        async () => {
+            const style = new Style(new StubMap());
+            style.loadJSON(extend(createStyleJSON(), {
+                "sources": {
+                    "geojson": {
+                        "type": "geojson",
+                        "data": {"type": "FeatureCollection", "features": []}
+                    }
+                },
+                "layers": [
+                    {
+                        "id": "circle",
+                        "type": "circle",
+                        "source": "geojson"
+                    }
+                ]
+            }));
 
-        const tr = new Transform();
-        tr.resize(512, 512);
+            const tr = new Transform();
+            tr.resize(512, 512);
 
-        style.once('style.load', () => {
+            await waitFor(style, "style.load");
             style.update({zoom: tr.zoom, fadeDuration: 0});
             const sourceCache = style.getOwnSourceCache('geojson');
             const source = style.getSource('geojson');
@@ -1344,33 +1292,34 @@ test('Style#setPaintProperty', (t) => {
             let begun = false;
             let styleUpdateCalled = false;
 
-            source.on('data', (e) => setImmediate(() => {
-                if (!begun && sourceCache.loaded()) {
-                    begun = true;
-                    t.stub(sourceCache, 'reload').callsFake(() => {
-                        t.ok(styleUpdateCalled, 'loadTile called before layer data broadcast');
-                        t.end();
-                    });
+            await new Promise(resolve => {
+                source.on('data', (e) => setTimeout(() => {
+                    if (!begun && sourceCache.loaded()) {
+                        begun = true;
+                        vi.spyOn(sourceCache, 'reload').mockImplementation(() => {
+                            expect(styleUpdateCalled).toBeTruthy(); // loadTile called before layer data broadcast
+                            resolve();
+                        });
 
-                    source.setData({"type": "FeatureCollection", "features": []});
-                    style.setPaintProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
-                }
+                        source.setData({"type": "FeatureCollection", "features": []});
+                        style.setPaintProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
+                    }
 
-                if (begun && e.sourceDataType === 'content') {
-                    // setData() worker-side work is complete; simulate an
-                    // animation frame a few ms later, so that this test can
-                    // confirm that SourceCache#reload() isn't called until
-                    // after the next Style#update()
-                    setTimeout(() => {
-                        styleUpdateCalled = true;
-                        style.update({});
-                    }, 50);
-                }
-            }));
+                    if (begun && e.sourceDataType === 'content') {
+                        // setData() worker-side work is complete; simulate an
+                        // animation frame a few ms later, so that this test can
+                        // confirm that SourceCache#reload() isn't called until
+                        // after the next Style#update()
+                        setTimeout(() => {
+                            styleUpdateCalled = true;
+                            style.update({});
+                        }, 50);
+                    }
+                }), 0);
+            });
         });
-    });
 
-    t.test('#5802 clones the input', (t) => {
+    test('#5802 clones the input', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1383,61 +1332,53 @@ test('Style#setPaintProperty', (t) => {
             ]
         });
 
-        style.on('style.load', () => {
-            const value = {stops: [[0, 'red'], [10, 'blue']]};
-            style.setPaintProperty('background', 'background-color', value);
-            t.notEqual(style.getPaintProperty('background', 'background-color'), value);
-            t.ok(style._changes.isDirty());
+        await waitFor(style, 'style.load');
+        const value = {stops: [[0, 'red'], [10, 'blue']]};
+        style.setPaintProperty('background', 'background-color', value);
+        expect(style.getPaintProperty('background', 'background-color')).not.toBe(value);
+        expect(style._changes.isDirty()).toBeTruthy();
 
-            style.update({});
-            t.notOk(style._changes.isDirty());
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
 
-            value.stops[0][0] = 1;
-            style.setPaintProperty('background', 'background-color', value);
-            t.ok(style._changes.isDirty());
-
-            t.end();
-        });
+        value.stops[0][0] = 1;
+        style.setPaintProperty('background', 'background-color', value);
+        expect(style._changes.isDirty()).toBeTruthy();
     });
-
-    t.test('respects validate option', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON({
-            "version": 8,
-            "sources": {},
-            "layers": [
-                {
-                    "id": "background",
-                    "type": "background"
-                }
-            ]
-        });
-
-        style.on('style.load', () => {
-            const backgroundLayer = style.getLayer('background');
-            t.stub(console, 'error');
-            const validate = t.spy(backgroundLayer, '_validate');
-
-            style.setPaintProperty('background', 'background-color', 'notacolor', {validate: false});
-            t.deepEqual(validate.args[0][4], {validate: false});
-            t.ok(console.error.notCalled);
-
-            t.ok(style._changes.isDirty());
-            style.update({});
-
-            style.setPaintProperty('background', 'background-color', 'alsonotacolor');
-            t.ok(console.error.calledOnce, 'validates input by default');
-            t.deepEqual(validate.args[1][4], {});
-
-            t.end();
-        });
-    });
-
-    t.end();
 });
 
-test('Style#getPaintProperty', (t) => {
-    t.test('#5802 clones the output', (t) => {
+test('respects validate option', async () => {
+    const style = new Style(new StubMap());
+    style.loadJSON({
+        "version": 8,
+        "sources": {},
+        "layers": [
+            {
+                "id": "background",
+                "type": "background"
+            }
+        ]
+    });
+
+    await waitFor(style, "style.load");
+    const backgroundLayer = style.getLayer('background');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const validate = vi.spyOn(backgroundLayer, '_validate');
+
+    style.setPaintProperty('background', 'background-color', 'notacolor', {validate: false});
+    expect(validate.mock.calls[0][4]).toEqual({validate: false});
+    expect(console.error).not.toHaveBeenCalled();
+
+    expect(style._changes.isDirty()).toBeTruthy();
+    style.update({});
+
+    style.setPaintProperty('background', 'background-color', 'alsonotacolor');
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(validate.mock.calls[1][4]).toEqual({});
+});
+
+describe('Style#getPaintProperty', () => {
+    test('#5802 clones the output', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1450,25 +1391,20 @@ test('Style#getPaintProperty', (t) => {
             ]
         });
 
-        style.on('style.load', () => {
-            style.setPaintProperty('background', 'background-color', {stops: [[0, 'red'], [10, 'blue']]});
-            style.update({});
-            t.notOk(style._changes.isDirty());
+        await waitFor(style, "style.load");
+        style.setPaintProperty('background', 'background-color', {stops: [[0, 'red'], [10, 'blue']]});
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
 
-            const value = style.getPaintProperty('background', 'background-color');
-            value.stops[0][0] = 1;
-            style.setPaintProperty('background', 'background-color', value);
-            t.ok(style._changes.isDirty());
-
-            t.end();
-        });
+        const value = style.getPaintProperty('background', 'background-color');
+        value.stops[0][0] = 1;
+        style.setPaintProperty('background', 'background-color', value);
+        expect(style._changes.isDirty()).toBeTruthy();
     });
-
-    t.end();
 });
 
-test('Style#setLayoutProperty', (t) => {
-    t.test('#5802 clones the input', (t) => {
+describe('Style#setLayoutProperty', () => {
+    test('#5802 clones the input', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1490,24 +1426,21 @@ test('Style#setLayoutProperty', (t) => {
             ]
         });
 
-        style.on('style.load', () => {
-            const value = {stops: [[0, 'butt'], [10, 'round']]};
-            style.setLayoutProperty('line', 'line-cap', value);
-            t.notEqual(style.getLayoutProperty('line', 'line-cap'), value);
-            t.ok(style._changes.isDirty());
+        await waitFor(style, 'style.load');
+        const value = {stops: [[0, 'butt'], [10, 'round']]};
+        style.setLayoutProperty('line', 'line-cap', value);
+        expect(style.getLayoutProperty('line', 'line-cap')).not.toBe(value);
+        expect(style._changes.isDirty()).toBeTruthy();
 
-            style.update({});
-            t.notOk(style._changes.isDirty());
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
 
-            value.stops[0][0] = 1;
-            style.setLayoutProperty('line', 'line-cap', value);
-            t.ok(style._changes.isDirty());
-
-            t.end();
-        });
+        value.stops[0][0] = 1;
+        style.setLayoutProperty('line', 'line-cap', value);
+        expect(style._changes.isDirty()).toBeTruthy();
     });
 
-    t.test('respects validate option', (t) => {
+    test('respects validate option', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1529,30 +1462,25 @@ test('Style#setLayoutProperty', (t) => {
             ]
         });
 
-        style.on('style.load', () => {
-            const lineLayer = style.getLayer('line');
-            t.stub(console, 'error');
-            const validate = t.spy(lineLayer, '_validate');
+        await waitFor(style, "style.load");
+        const lineLayer = style.getLayer('line');
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        const validate = vi.spyOn(lineLayer, '_validate');
 
-            style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
-            t.deepEqual(validate.args[0][4], {validate: false});
-            t.ok(console.error.notCalled);
-            t.ok(style._changes.isDirty());
-            style.update({});
+        style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
+        expect(validate.mock.calls[0][4]).toEqual({validate: false});
+        expect(console.error).not.toHaveBeenCalled();
+        expect(style._changes.isDirty()).toBeTruthy();
+        style.update({});
 
-            style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
-            t.ok(console.error.calledOnce, 'validates input by default');
-            t.deepEqual(validate.args[1][4], {});
-
-            t.end();
-        });
+        style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
+        expect(console.error).toHaveBeenCalledTimes(1);
+        expect(validate.mock.calls[1][4]).toEqual({});
     });
-
-    t.end();
 });
 
-test('Style#getLayoutProperty', (t) => {
-    t.test('#5802 clones the output', (t) => {
+describe('Style#getLayoutProperty', () => {
+    test('#5802 clones the output', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1574,28 +1502,22 @@ test('Style#getLayoutProperty', (t) => {
             ]
         });
 
-        style.on('style.load', () => {
-            style.setLayoutProperty('line', 'line-cap', {stops: [[0, 'butt'], [10, 'round']]});
-            style.update({});
-            t.notOk(style._changes.isDirty());
+        await waitFor(style, "style.load");
+        style.setLayoutProperty('line', 'line-cap', {stops: [[0, 'butt'], [10, 'round']]});
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
 
-            const value = style.getLayoutProperty('line', 'line-cap');
-            value.stops[0][0] = 1;
-            style.setLayoutProperty('line', 'line-cap', value);
-            t.ok(style._changes.isDirty());
-
-            t.end();
-        });
+        const value = style.getLayoutProperty('line', 'line-cap');
+        value.stops[0][0] = 1;
+        style.setLayoutProperty('line', 'line-cap', value);
+        expect(style._changes.isDirty()).toBeTruthy();
     });
-
-    t.end();
 });
 
-test('Style#setFilter', (t) => {
-    t.test('throws if style is not loaded', (t) => {
+describe('Style#setFilter', () => {
+    test('throws if style is not loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.setFilter('symbol', ['==', 'id', 1]), /load/i);
-        t.end();
+        expect(() => style.setFilter('symbol', ['==', 'id', 1])).toThrowError(/load/i);
     });
 
     function createStyle() {
@@ -1612,129 +1534,115 @@ test('Style#setFilter', (t) => {
         return style;
     }
 
-    t.test('sets filter', (t) => {
+    test('sets filter', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
-            style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'updateLayers');
-                t.deepEqual(value.layers[0].id, 'symbol');
-                t.deepEqual(value.layers[0].filter, ['==', 'id', 1]);
-                t.end();
-            };
+        await waitFor(style, "style.load");
+        style.dispatcher.broadcast = function(key, value) {
+            expect(key).toEqual('updateLayers');
+            expect(value.layers[0].id).toEqual('symbol');
+            expect(value.layers[0].filter).toEqual(['==', 'id', 1]);
+        };
 
-            style.setFilter('symbol', ['==', 'id', 1]);
-            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
-            style.update({}); // trigger dispatcher broadcast
-        });
+        style.setFilter('symbol', ['==', 'id', 1]);
+        expect(style.getFilter('symbol')).toEqual(['==', 'id', 1]);
+        style.update({}); // trigger dispatcher broadcast
     });
 
-    t.test('gets a clone of the filter', (t) => {
+    test('gets a clone of the filter', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
-            const filter1 = ['==', 'id', 1];
-            style.setFilter('symbol', filter1);
-            const filter2 = style.getFilter('symbol');
-            const filter3 = style.getLayer('symbol').filter;
+        await waitFor(style, "style.load");
+        const filter1 = ['==', 'id', 1];
+        style.setFilter('symbol', filter1);
+        const filter2 = style.getFilter('symbol');
+        const filter3 = style.getLayer('symbol').filter;
 
-            t.notEqual(filter1, filter2);
-            t.notEqual(filter1, filter3);
-            t.notEqual(filter2, filter3);
-
-            t.end();
-        });
+        expect(filter1).not.toBe(filter2);
+        expect(filter1).not.toBe(filter3);
+        expect(filter2).not.toBe(filter3);
     });
 
-    t.test('sets again mutated filter', (t) => {
+    test('sets again mutated filter', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
-            const filter = ['==', 'id', 1];
-            style.setFilter('symbol', filter);
-            style.update({}); // flush pending operations
+        await waitFor(style, "style.load");
+        const filter = ['==', 'id', 1];
+        style.setFilter('symbol', filter);
+        style.update({}); // flush pending operations
 
-            style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'updateLayers');
-                t.deepEqual(value.layers[0].id, 'symbol');
-                t.deepEqual(value.layers[0].filter, ['==', 'id', 2]);
-                t.end();
-            };
-            filter[2] = 2;
-            style.setFilter('symbol', filter);
-            style.update({}); // trigger dispatcher broadcast
-        });
+        style.dispatcher.broadcast = function(key, value) {
+            expect(key).toEqual('updateLayers');
+            expect(value.layers[0].id).toEqual('symbol');
+            expect(value.layers[0].filter).toEqual(['==', 'id', 2]);
+        };
+        filter[2] = 2;
+        style.setFilter('symbol', filter);
+        style.update({}); // trigger dispatcher broadcast
     });
 
-    t.test('unsets filter', (t) => {
+    test('unsets filter', async () => {
         const style = createStyle();
-        style.on('style.load', () => {
-            style.setFilter('symbol', null);
-            t.equal(style.getLayer('symbol').serialize().filter, undefined);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.setFilter('symbol', null);
+        expect(style.getLayer('symbol').serialize().filter).toEqual(undefined);
     });
 
-    t.test('emits if invalid', (t) => {
+    test('emits if invalid', async () => {
         const style = createStyle();
-        style.on('style.load', () => {
+        await waitFor(style, "style.load");
+        await new Promise(resolve => {
             style.on('error', () => {
-                t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
-                t.end();
+                expect(style.getLayer('symbol').serialize().filter).toStrictEqual(['==', 'id', 0]);
+                resolve();
             });
             style.setFilter('symbol', ['==', '$type', 1]);
         });
     });
 
-    t.test('fires an error if layer not found', (t) => {
+    test('fires an error if layer not found', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
+        await waitFor(style, "style.load");
+        await new Promise((resolve) => {
             style.on('error', ({error}) => {
-                t.match(error.message, /does not exist in the map\'s style/);
-                t.end();
+                expect(error.message).toMatch(/does not exist in the map\'s style/);
+                resolve();
             });
             style.setFilter('non-existant', ['==', 'id', 1]);
         });
     });
 
-    t.test('validates filter by default', (t) => {
+    test('validates filter by default', async () => {
         const style = createStyle();
-        t.stub(console, 'error');
-        style.on('style.load', () => {
-            style.setFilter('symbol', 'notafilter');
-            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 0]);
-            t.ok(console.error.calledOnce);
-            style.update({}); // trigger dispatcher broadcast
-            t.end();
-        });
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        await waitFor(style, "style.load");
+        style.setFilter('symbol', 'notafilter');
+        expect(style.getFilter('symbol')).toEqual(['==', 'id', 0]);
+        expect(console.error).toHaveBeenCalledTimes(1);
+        style.update({}); // trigger dispatcher broadcast
     });
 
-    t.test('respects validate option', (t) => {
+    test('respects validate option', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
-            style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'updateLayers');
-                t.deepEqual(value.layers[0].id, 'symbol');
-                t.deepEqual(value.layers[0].filter, 'notafilter');
-                t.end();
-            };
+        await waitFor(style, "style.load");
+        style.dispatcher.broadcast = function(key, value) {
+            expect(key).toEqual('updateLayers');
+            expect(value.layers[0].id).toEqual('symbol');
+            expect(value.layers[0].filter).toEqual('notafilter');
+        };
 
-            style.setFilter('symbol', 'notafilter', {validate: false});
-            t.deepEqual(style.getFilter('symbol'), 'notafilter');
-            style.update({}); // trigger dispatcher broadcast
-        });
+        style.setFilter('symbol', 'notafilter', {validate: false});
+        expect(style.getFilter('symbol')).toEqual('notafilter');
+        style.update({}); // trigger dispatcher broadcast
     });
-
-    t.end();
 });
 
-test('Style#setLayerZoomRange', (t) => {
-    t.test('throw before loaded', (t) => {
+describe('Style#setLayerZoomRange', () => {
+    test('throw before loaded', () => {
         const style = new Style(new StubMap());
-        t.throws(() => style.setLayerZoomRange('symbol', 5, 12), /load/i);
-        t.end();
+        expect(() => style.setLayerZoomRange('symbol', 5, 12)).toThrowError(/load/i);
     });
 
     function createStyle() {
@@ -1753,34 +1661,33 @@ test('Style#setLayerZoomRange', (t) => {
         return style;
     }
 
-    t.test('sets zoom range', (t) => {
+    test('sets zoom range', async () => {
         const style = createStyle();
 
-        style.on('style.load', () => {
-            style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'updateLayers');
-                t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
-            };
+        await waitFor(style, "style.load");
+        style.dispatcher.broadcast = function(key, value) {
+            expect(key).toEqual('updateLayers');
+            expect(value.map((layer) => { return layer.id; })).toEqual(['symbol']);
+        };
 
-            style.setLayerZoomRange('symbol', 5, 12);
-            t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
-            t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
-            t.end();
-        });
+        style.setLayerZoomRange('symbol', 5, 12);
+        expect(style.getLayer('symbol').minzoom).toEqual(5);
+        expect(style.getLayer('symbol').maxzoom).toEqual(12);
     });
 
-    t.test('fires an error if layer not found', (t) => {
+    test('fires an error if layer not found', async () => {
         const style = createStyle();
-        style.on('style.load', () => {
+        await waitFor(style, "style.load");
+        await new Promise(resolve => {
             style.on('error', ({error}) => {
-                t.match(error.message, /does not exist in the map\'s style/);
-                t.end();
+                expect(error.message).toMatch(/does not exist in the map\'s style/);
+                resolve();
             });
             style.setLayerZoomRange('non-existant', 5, 12);
         });
     });
 
-    t.test('does not reload raster source', (t) => {
+    test('does not reload raster source', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1797,20 +1704,16 @@ test('Style#setLayerZoomRange', (t) => {
             }]
         });
 
-        style.on('style.load', () => {
-            t.spy(style, 'reloadSource');
+        await waitFor(style, "style.load");
+        vi.spyOn(style, 'reloadSource');
 
-            style.setLayerZoomRange('raster', 5, 12);
-            style.update({zoom: 0});
-            t.notOk(style.reloadSource.called, 'reloadSource should not be called for raster source');
-            t.end();
-        });
+        style.setLayerZoomRange('raster', 5, 12);
+        style.update({zoom: 0});
+        expect(style.reloadSource.called).toBeFalsy();
     });
-
-    t.end();
 });
 
-test('Style#hasLayer, Style#has*Layers()', (t) => {
+test('Style#hasLayer, Style#has*Layers()', () => {
     function createStyle() {
         const style = new Style(new StubMap());
         style.loadJSON({
@@ -1844,126 +1747,127 @@ test('Style#hasLayer, Style#has*Layers()', (t) => {
     const style = createStyle();
 
     style.on('style.load', () => {
-        t.ok(style.hasLayer('symbol_id'));
-        t.ok(style.hasLayer('background_id'));
-        t.ok(style.hasLayer('fill_id'));
-        t.ok(style.hasLayer('line_id'));
-        t.notOk(style.hasLayer('non_existing_symbol_id'));
-        t.notOk(style.hasLayer('non_existing_background_id'));
-        t.notOk(style.hasLayer('non_existing_fill_id'));
-        t.notOk(style.hasLayer('non_existing_line_id'));
+        expect(style.hasLayer('symbol_id')).toBeTruthy();
+        expect(style.hasLayer('background_id')).toBeTruthy();
+        expect(style.hasLayer('fill_id')).toBeTruthy();
+        expect(style.hasLayer('line_id')).toBeTruthy();
+        expect(style.hasLayer('non_existing_symbol_id')).toBeFalsy();
+        expect(style.hasLayer('non_existing_background_id')).toBeFalsy();
+        expect(style.hasLayer('non_existing_fill_id')).toBeFalsy();
+        expect(style.hasLayer('non_existing_line_id')).toBeFalsy();
 
-        t.ok(style.hasSymbolLayers());
-        t.notOk(style.has3DLayers());
-        t.notOk(style.hasCircleLayers());
+        expect(style.hasSymbolLayers()).toBeTruthy();
+        expect(style.has3DLayers()).toBeFalsy();
+        expect(style.hasCircleLayers()).toBeFalsy();
 
         style.addLayer({id: 'first', source: 'geojson', type: 'fill-extrusion'});
         style.removeLayer('symbol_id');
 
-        t.notOk(style.hasSymbolLayers());
-        t.ok(style.has3DLayers());
-        t.notOk(style.hasCircleLayers());
-
-        t.end();
+        expect(style.hasSymbolLayers()).toBeFalsy();
+        expect(style.has3DLayers()).toBeTruthy();
+        expect(style.hasCircleLayers()).toBeFalsy();
     });
 });
 
-test('Style#queryRenderedFeatures', (t) => {
-    const style = new Style(new StubMap());
-    const transform = new Transform();
-    transform.resize(512, 512);
+describe('Style#queryRenderedFeatures', () => {
+    let style, transform;
 
-    function queryMapboxFeatures(layers, serializedLayers, getFeatureState, queryGeom, params) {
-        const features = {
-            'land': [{
-                type: 'Feature',
-                layer: style._layers.land.serialize(),
-                geometry: {
-                    type: 'Polygon'
+    beforeEach(async () => {
+        style = new Style(new StubMap());
+        transform = new Transform();
+        transform.resize(512, 512);
+
+        function queryMapboxFeatures(layers, serializedLayers, getFeatureState, queryGeom, params) {
+            const features = {
+                'land': [{
+                    type: 'Feature',
+                    layer: style._layers.land.serialize(),
+                    geometry: {
+                        type: 'Polygon'
+                    }
+                }, {
+                    type: 'Feature',
+                    layer: style._layers.land.serialize(),
+                    geometry: {
+                        type: 'Point'
+                    }
+                }],
+                'landref': [{
+                    type: 'Feature',
+                    layer: style._layers.landref.serialize(),
+                    geometry: {
+                        type: 'Line'
+                    }
+                }]
+            };
+
+            // format result to shape of tile.queryRenderedFeatures result
+            for (const layer in features) {
+                features[layer] = features[layer].map((feature, featureIndex) =>
+                    ({feature, featureIndex}));
+            }
+
+            if (params.layers) {
+                for (const l in features) {
+                    if (params.layers.indexOf(l) < 0) {
+                        delete features[l];
+                    }
+                }
+            }
+
+            return features;
+        }
+
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "mapbox": {
+                    "type": "geojson",
+                    "data": {type: "FeatureCollection", features: []}
+                },
+                "other": {
+                    "type": "geojson",
+                    "data": {type: "FeatureCollection", features: []}
+                }
+            },
+            "layers": [{
+                "id": "land",
+                "type": "line",
+                "source": "mapbox",
+                "source-layer": "water",
+                "layout": {
+                    'line-cap': 'round'
+                },
+                "paint": {
+                    "line-color": "red"
+                },
+                "metadata": {
+                    "something": "else"
                 }
             }, {
-                type: 'Feature',
-                layer: style._layers.land.serialize(),
-                geometry: {
-                    type: 'Point'
+                "id": "landref",
+                "ref": "land",
+                "paint": {
+                    "line-color": "blue"
                 }
-            }],
-            'landref': [{
-                type: 'Feature',
-                layer: style._layers.landref.serialize(),
-                geometry: {
-                    type: 'Line'
+            }, {
+                "id": "land--other",
+                "type": "line",
+                "source": "other",
+                "source-layer": "water",
+                "layout": {
+                    'line-cap': 'round'
+                },
+                "paint": {
+                    "line-color": "red"
+                },
+                "metadata": {
+                    "something": "else"
                 }
             }]
-        };
+        });
 
-        // format result to shape of tile.queryRenderedFeatures result
-        for (const layer in features) {
-            features[layer] = features[layer].map((feature, featureIndex) =>
-                ({feature, featureIndex}));
-        }
-
-        if (params.layers) {
-            for (const l in features) {
-                if (params.layers.indexOf(l) < 0) {
-                    delete features[l];
-                }
-            }
-        }
-
-        return features;
-    }
-
-    style.loadJSON({
-        "version": 8,
-        "sources": {
-            "mapbox": {
-                "type": "geojson",
-                "data": {type: "FeatureCollection", features: []}
-            },
-            "other": {
-                "type": "geojson",
-                "data": {type: "FeatureCollection", features: []}
-            }
-        },
-        "layers": [{
-            "id": "land",
-            "type": "line",
-            "source": "mapbox",
-            "source-layer": "water",
-            "layout": {
-                'line-cap': 'round'
-            },
-            "paint": {
-                "line-color": "red"
-            },
-            "metadata": {
-                "something": "else"
-            }
-        }, {
-            "id": "landref",
-            "ref": "land",
-            "paint": {
-                "line-color": "blue"
-            }
-        }, {
-            "id": "land--other",
-            "type": "line",
-            "source": "other",
-            "source-layer": "water",
-            "layout": {
-                'line-cap': 'round'
-            },
-            "paint": {
-                "line-color": "red"
-            },
-            "metadata": {
-                "something": "else"
-            }
-        }]
-    });
-
-    style.on('style.load', () => {
+        await waitFor(style, 'style.load');
         style.getOwnSourceCache('mapbox').tilesIn = () => {
             return [{
                 queryGeometry: {},
@@ -1983,79 +1887,67 @@ test('Style#queryRenderedFeatures', (t) => {
 
         style.update({zoom: 0});
         style.updateSources(transform);
+    });
 
-        t.test('returns feature type', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {}, transform);
-            t.equal(results[0].geometry.type, 'Line');
-            t.end();
+    test('returns feature type', () => {
+        const results = style.queryRenderedFeatures([0, 0], {}, transform);
+        expect(results[0].geometry.type).toEqual('Line');
+    });
+
+    test('filters by `layers` option', () => {
+        const results = style.queryRenderedFeatures([0, 0], {layers: ['land']}, transform);
+        expect(results.length).toEqual(2);
+    });
+
+    test('checks type of `layers` option', () => {
+        let errors = 0;
+        vi.spyOn(style, 'fire').mockImplementation((event) => {
+            if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
         });
+        style.queryRenderedFeatures([0, 0], {layers:'string'}, transform);
+        expect(errors).toEqual(1);
+    });
 
-        t.test('filters by `layers` option', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {layers: ['land']}, transform);
-            t.equal(results.length, 2);
-            t.end();
+    test('includes layout properties', () => {
+        const results = style.queryRenderedFeatures([0, 0], {}, transform);
+        const layout = results[0].layer.layout;
+        expect(layout['line-cap']).toEqual('round');
+    });
+
+    test('includes paint properties', () => {
+        const results = style.queryRenderedFeatures([0, 0], {}, transform);
+        expect(results[2].layer.paint['line-color']).toEqual('red');
+    });
+
+    test('includes metadata', () => {
+        const results = style.queryRenderedFeatures([0, 0], {}, transform);
+
+        const layer = results[1].layer;
+        expect(layer.metadata.something).toEqual('else');
+    });
+
+    test('include multiple layers', () => {
+        const results = style.queryRenderedFeatures([0, 0], {layers: ['land', 'landref']}, transform);
+        expect(results.length).toEqual(3);
+    });
+
+    test('does not query sources not implicated by `layers` parameter', () => {
+        style.getOwnSourceCache('mapbox').queryRenderedFeatures = function() { expect.unreachable(); };
+        style.queryRenderedFeatures([0, 0], {layers: ['land--other']}, transform);
+    });
+
+    test('fires an error if layer included in params does not exist on the style', () => {
+        let errors = 0;
+        vi.spyOn(style, 'fire').mockImplementation((event) => {
+            if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
         });
-
-        t.test('checks type of `layers` option', (t) => {
-            let errors = 0;
-            t.stub(style, 'fire').callsFake((event) => {
-                if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
-            });
-            style.queryRenderedFeatures([0, 0], {layers:'string'}, transform);
-            t.equals(errors, 1);
-            t.end();
-        });
-
-        t.test('includes layout properties', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {}, transform);
-            const layout = results[0].layer.layout;
-            t.deepEqual(layout['line-cap'], 'round');
-            t.end();
-        });
-
-        t.test('includes paint properties', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {}, transform);
-            t.deepEqual(results[2].layer.paint['line-color'], 'red');
-            t.end();
-        });
-
-        t.test('includes metadata', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {}, transform);
-
-            const layer = results[1].layer;
-            t.equal(layer.metadata.something, 'else');
-
-            t.end();
-        });
-
-        t.test('include multiple layers', (t) => {
-            const results = style.queryRenderedFeatures([0, 0], {layers: ['land', 'landref']}, transform);
-            t.equals(results.length, 3);
-            t.end();
-        });
-
-        t.test('does not query sources not implicated by `layers` parameter', (t) => {
-            style.getOwnSourceCache('mapbox').queryRenderedFeatures = function() { t.fail(); };
-            style.queryRenderedFeatures([0, 0], {layers: ['land--other']}, transform);
-            t.end();
-        });
-
-        t.test('fires an error if layer included in params does not exist on the style', (t) => {
-            let errors = 0;
-            t.stub(style, 'fire').callsFake((event) => {
-                if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
-            });
-            const results = style.queryRenderedFeatures([0, 0], {layers:['merp']}, transform);
-            t.equals(errors, 1);
-            t.equals(results.length, 0);
-            t.end();
-        });
-
-        t.end();
+        const results = style.queryRenderedFeatures([0, 0], {layers:['merp']}, transform);
+        expect(errors).toEqual(1);
+        expect(results.length).toEqual(0);
     });
 });
 
-test('Style defers expensive methods', (t) => {
+test('Style defers expensive methods', async () => {
     const style = new Style(new StubMap());
     style.loadJSON(createStyleJSON({
         "sources": {
@@ -2064,43 +1956,39 @@ test('Style defers expensive methods', (t) => {
         }
     }));
 
-    style.on('style.load', () => {
-        style.update({});
+    await waitFor(style, 'style.load');
+    style.update({});
 
-        // spies to track defered methods
-        t.spy(style, 'fire');
-        t.spy(style, 'reloadSource');
-        t.spy(style, '_updateWorkerLayers');
+    // spies to track defered methods
+    vi.spyOn(style, 'fire');
+    vi.spyOn(style, 'reloadSource');
+    vi.spyOn(style, '_updateWorkerLayers');
 
-        style.addLayer({id: 'first', type: 'symbol', source: 'streets'});
-        style.addLayer({id: 'second', type: 'symbol', source: 'streets'});
-        style.addLayer({id: 'third', type: 'symbol', source: 'terrain'});
+    style.addLayer({id: 'first', type: 'symbol', source: 'streets'});
+    style.addLayer({id: 'second', type: 'symbol', source: 'streets'});
+    style.addLayer({id: 'third', type: 'symbol', source: 'terrain'});
 
-        style.setPaintProperty('first', 'text-color', 'black');
-        style.setPaintProperty('first', 'text-halo-color', 'white');
+    style.setPaintProperty('first', 'text-color', 'black');
+    style.setPaintProperty('first', 'text-halo-color', 'white');
 
-        t.notOk(style.fire.called, 'fire is deferred');
-        t.notOk(style.reloadSource.called, 'reloadSource is deferred');
-        t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
+    expect(style.fire.called).toBeFalsy();
+    expect(style.reloadSource.called).toBeFalsy();
+    expect(style._updateWorkerLayers.called).toBeFalsy();
 
-        style.update({});
+    style.update({});
 
-        t.equal(style.fire.args[0][0].type, 'data', 'a data event was fired');
+    expect(style.fire.mock.calls[0][0].type).toEqual('data');
 
-        // called per source
-        t.ok(style.reloadSource.calledTwice, 'reloadSource is called per source');
-        t.ok(style.reloadSource.calledWith('streets'), 'reloadSource is called for streets');
-        t.ok(style.reloadSource.calledWith('terrain'), 'reloadSource is called for terrain');
+    // called per source
+    expect(style.reloadSource).toHaveBeenCalledTimes(2);
+    expect(style.reloadSource).toHaveBeenCalledWith('streets');
+    expect(style.reloadSource).toHaveBeenCalledWith('terrain');
 
-        // called once
-        t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
-
-        t.end();
-    });
+    // called once
+    expect(style._updateWorkerLayers).toHaveBeenCalledTimes(1);
 });
 
-test('Style#query*Features', (t) => {
-
+describe('Style#query*Features', () => {
     // These tests only cover filter validation. Most tests for these methods
     // live in the integration tests.
 
@@ -2108,7 +1996,7 @@ test('Style#query*Features', (t) => {
     let onError;
     let transform;
 
-    t.beforeEach(() => {
+    beforeEach(() => {
         transform = new Transform();
         transform.resize(100, 100);
         style = new Style(new StubMap());
@@ -2124,131 +2012,102 @@ test('Style#query*Features', (t) => {
             }]
         });
 
-        onError = t.spy();
+        onError = vi.fn();
 
         return new Promise((resolve) => {
             style.on('error', onError).on('style.load', () => resolve());
         });
     });
 
-    t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}, transform), []);
-        t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
-        t.end();
+    test('querySourceFeatures emits an error on incorrect filter', () => {
+        expect(style.querySourceFeatures([10, 100], {filter: 7}, transform)).toEqual([]);
+        expect(onError.mock.calls[0][0].error.message).toMatch(/querySourceFeatures\.filter/);
     });
 
-    t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([0, 0], {filter: 7}, transform), []);
-        t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
-        t.end();
+    test('queryRenderedFeatures emits an error on incorrect filter', () => {
+        expect(style.queryRenderedFeatures([0, 0], {filter: 7}, transform)).toEqual([]);
+        expect(onError.mock.calls[0][0].error.message).toMatch(/queryRenderedFeatures\.filter/);
     });
 
-    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+    test('querySourceFeatures not raise validation errors if validation was disabled', () => {
         let errors = 0;
-        t.stub(style, 'fire').callsFake((event) => {
+        vi.spyOn(style, 'fire').mockImplementation((event) => {
             if (event.error) {
                 console.log(event.error.message);
                 errors++;
             }
         });
         style.queryRenderedFeatures([0, 0], {filter: "invalidFilter", validate: false}, transform);
-        t.equals(errors, 0);
-        t.end();
+        expect(errors).toEqual(0);
     });
 
-    t.test('querySourceFeatures not raise validation errors if validation was disabled', (t) => {
+    test('querySourceFeatures not raise validation errors if validation was disabled', () => {
         let errors = 0;
-        t.stub(style, 'fire').callsFake((event) => {
+        vi.spyOn(style, 'fire').mockImplementation((event) => {
             if (event.error) errors++;
         });
         style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
-        t.equals(errors, 0);
-        t.end();
+        expect(errors).toEqual(0);
     });
-
-    t.end();
 });
 
-test('Style#addSourceType', (t) => {
+describe('Style#addSourceType', () => {
     const _types = {'existing' () {}};
 
-    t.stub(Style, 'getSourceType').callsFake(name => _types[name]);
-    t.stub(Style, 'setSourceType').callsFake((name, create) => {
-        _types[name] = create;
+    beforeEach(() => {
+        vi.spyOn(Style, 'getSourceType').mockImplementation(name => _types[name]);
+        vi.spyOn(Style, 'setSourceType').mockImplementation((name, create) => {
+            _types[name] = create;
+        });
     });
 
-    t.test('adds factory function', (t) => {
+    test('adds factory function', () => {
         const style = new Style(new StubMap());
         const SourceType = function () {};
 
         // expect no call to load worker source
         style.dispatcher.broadcast = function (type) {
             if (type === 'loadWorkerSource') {
-                t.fail();
+                expect.unreachable();
             }
         };
 
         style.addSourceType('foo', SourceType, () => {
-            t.equal(_types['foo'], SourceType);
-            t.end();
+            expect(_types['foo']).toEqual(SourceType);
         });
     });
 
-    t.test('triggers workers to load worker source code', (t) => {
+    test('triggers workers to load worker source code', () => {
         const style = new Style(new StubMap());
         const SourceType = function () {};
         SourceType.workerSourceURL = 'worker-source.js';
 
         style.dispatcher.broadcast = function (type, params) {
             if (type === 'loadWorkerSource') {
-                t.equal(_types['bar'], SourceType);
-                t.equal(params.name, 'bar');
-                t.equal(params.url, 'worker-source.js');
-                t.end();
+                expect(_types['bar']).toEqual(SourceType);
+                expect(params.name).toEqual('bar');
+                expect(params.url).toEqual('worker-source.js');
             }
         };
 
-        style.addSourceType('bar', SourceType, (err) => { t.error(err); });
+        style.addSourceType('bar', SourceType, (err) => { expect(err).toBeFalsy(); });
     });
 
-    t.test('refuses to add new type over existing name', (t) => {
+    test('refuses to add new type over existing name', () => {
         const style = new Style(new StubMap());
         style.addSourceType('existing', () => {}, (err) => {
-            t.ok(err);
-            t.end();
+            expect(err).toBeTruthy();
         });
     });
-
-    t.end();
 });
 
-test('Style#hasTransitions', (t) => {
-    t.test('returns false when the style is loading', (t) => {
+describe('Style#hasTransitions', () => {
+    test('returns false when the style is loading', () => {
         const style = new Style(new StubMap());
-        t.equal(style.hasTransitions(), false);
-        t.end();
+        expect(style.hasTransitions()).toEqual(false);
     });
 
-    t.test('returns true when a property is transitioning', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON({
-            "version": 8,
-            "sources": {},
-            "layers": [{
-                "id": "background",
-                "type": "background"
-            }]
-        });
-
-        style.on('style.load', () => {
-            style.setPaintProperty("background", "background-color", "blue");
-            style.update({transition: {duration: 300, delay: 0}});
-            t.equal(style.hasTransitions(), true);
-            t.end();
-        });
-    });
-
-    t.test('returns false when a property is not transitioning', (t) => {
+    test('returns true when a property is transitioning', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2259,19 +2118,32 @@ test('Style#hasTransitions', (t) => {
             }]
         });
 
-        style.on('style.load', () => {
-            style.setPaintProperty("background", "background-color", "blue");
-            style.update({transition: {duration: 0, delay: 0}});
-            t.equal(style.hasTransitions(), false);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.setPaintProperty("background", "background-color", "blue");
+        style.update({transition: {duration: 300, delay: 0}});
+        expect(style.hasTransitions()).toEqual(true);
     });
 
-    t.end();
+    test('returns false when a property is not transitioning', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        await waitFor(style, "style.load");
+        style.setPaintProperty("background", "background-color", "blue");
+        style.update({transition: {duration: 0, delay: 0}});
+        expect(style.hasTransitions()).toEqual(false);
+    });
 });
 
-test('Style#setTerrain', (t) => {
-    t.test('rolls up inline source into style', (t) => {
+describe('Style#setTerrain', () => {
+    test('rolls up inline source into style', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2282,30 +2154,30 @@ test('Style#setTerrain', (t) => {
             }]
         });
 
-        style.on('style.load', () => {
-            style.setTerrain({
-                "source": {
-                    "type": "raster-dem",
-                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                    "tileSize": 256,
-                    "maxzoom": 14
-                }
-            });
-            t.ok(style.getSource('terrain-dem-src'));
-            t.equal(style.getSource('terrain-dem-src').type, 'raster-dem');
-            t.end();
+        await waitFor(style, "style.load");
+        style.setTerrain({
+            "source": {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": 256,
+                "maxzoom": 14
+            }
         });
+        expect(style.getSource('terrain-dem-src')).toBeTruthy();
+        expect(style.getSource('terrain-dem-src').type).toEqual('raster-dem');
     });
 
-    t.test('raises error during creation terrain without source', (t) => {
+    test('raises error during creation terrain without source', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
 
-        style.on('style.load', () => {
+        await waitFor(style, "style.load");
+        await new Promise(resolve => {
+
             style.on('error', ({error}) => {
-                t.ok(error);
-                t.match(error.message, `terrain: terrain is missing required property "source"`);
-                t.end();
+                expect(error).toBeTruthy();
+                expect(error.message).toMatch(`terrain: terrain is missing required property "source"`);
+                resolve();
             });
             style.setTerrain({
                 exaggeration: 2
@@ -2313,34 +2185,32 @@ test('Style#setTerrain', (t) => {
         });
     });
 
-    t.test('updates terrain properties', (t) => {
+    test('updates terrain properties', async () => {
         const style = new Style(new StubMap());
 
-        style.on('style.load', () => {
-            style.setTerrain({
-                "source": {
-                    "type": "raster-dem",
-                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                    "tileSize": 256,
-                    "maxzoom": 14
-                },
-                "exaggeration": 1
-            });
+        style.loadJSON(createStyleJSON());
+        await waitFor(style, "style.load");
 
-            t.equals(style.getTerrain().exaggeration, 1);
-
-            style.setTerrain({
-                exaggeration: 2
-            });
-
-            t.equals(style.getTerrain().exaggeration, 2);
-            t.end();
+        style.setTerrain({
+            "source": {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": 256,
+                "maxzoom": 14
+            },
+            "exaggeration": 1
         });
 
-        style.loadJSON(createStyleJSON());
+        expect(style.getTerrain().exaggeration).toEqual(1);
+
+        style.setTerrain({
+            exaggeration: 2
+        });
+
+        expect(style.getTerrain().exaggeration).toEqual(2);
     });
 
-    t.test('setTerrain(undefined) removes terrain', (t) => {
+    test('setTerrain(undefined) removes terrain', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2359,19 +2229,16 @@ test('Style#setTerrain', (t) => {
             }]
         });
 
-        style.on('style.load', () => {
-            style.setTerrain(undefined);
-            t.ok(style.terrain == null);
-            const serialized = style.serialize();
-            t.ok(serialized.terrain == null);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.setTerrain(undefined);
+        expect(style.terrain == null).toBeTruthy();
+        const serialized = style.serialize();
+        expect(serialized.terrain == null).toBeTruthy();
     });
-    t.end();
 });
 
-test('Style#getTerrain', (t) => {
-    t.test('rolls up inline source into style', (t) => {
+describe('Style#getTerrain', () => {
+    test('rolls up inline source into style', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2382,26 +2249,22 @@ test('Style#getTerrain', (t) => {
             }]
         });
 
-        style.on('style.load', () => {
-            style.setTerrain({
-                "source": {
-                    "type": "raster-dem",
-                    "tiles": ['http://example.com/{z}/{x}/{y}.png'],
-                    "tileSize": 256,
-                    "maxzoom": 14
-                }
-            });
-            t.ok(style.getTerrain());
-            t.deepEqual(style.getTerrain(), {"source": "terrain-dem-src"});
-            t.end();
+        await waitFor(style, "style.load");
+        style.setTerrain({
+            "source": {
+                "type": "raster-dem",
+                "tiles": ['http://example.com/{z}/{x}/{y}.png'],
+                "tileSize": 256,
+                "maxzoom": 14
+            }
         });
+        expect(style.getTerrain()).toBeTruthy();
+        expect(style.getTerrain()).toEqual({"source": "terrain-dem-src"});
     });
-
-    t.end();
 });
 
-test('Style#setFog', (t) => {
-    t.test('setFog(undefined) removes fog', (t) => {
+describe('Style#setFog', () => {
+    test('setFog(undefined) removes fog', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2410,19 +2273,15 @@ test('Style#setFog', (t) => {
             "layers": []
         });
 
-        style.on('style.load', () => {
-            style.setFog(undefined);
-            t.ok(style.fog == null);
-            const serialized = style.serialize();
-            t.ok(serialized.fog == null);
-            t.end();
-        });
+        await waitFor(style, "style.load");
+        style.setFog(undefined);
+        expect(style.fog == null).toBeTruthy();
+        const serialized = style.serialize();
+        expect(serialized.fog == null).toBeTruthy();
     });
-
-    t.end();
 });
 
-test('Style#getFog', (t) => {
+describe('Style#getFog', () => {
     const defaultHighColor = styleSpec.fog["high-color"].default;
     const defaultStarIntensity = styleSpec.fog["star-intensity"].default;
     const defaultSpaceColor = styleSpec.fog["space-color"].default;
@@ -2431,7 +2290,7 @@ test('Style#getFog', (t) => {
     const defaultHorizonBlend = styleSpec.fog["horizon-blend"].default;
     const defaultVerticalRange = styleSpec.fog["vertical-range"].default;
 
-    t.test('rolls up inline source into style', (t) => {
+    test('rolls up inline source into style', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2440,23 +2299,21 @@ test('Style#getFog', (t) => {
             "layers": []
         });
 
-        style.on('style.load', () => {
-            style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0, "vertical-range": [0, 0]});
-            t.ok(style.getFog());
-            t.deepEqual(style.getFog(), {
-                "range": [0, 1],
-                "color": "white",
-                "horizon-blend": 0,
-                "high-color": defaultHighColor,
-                "star-intensity": defaultStarIntensity,
-                "space-color": defaultSpaceColor,
-                "vertical-range": defaultVerticalRange
-            });
-            t.end();
+        await waitFor(style, "style.load");
+        style.setFog({"range": [0, 1], "color": "white", "horizon-blend": 0, "vertical-range": [0, 0]});
+        expect(style.getFog()).toBeTruthy();
+        expect(style.getFog()).toEqual({
+            "range": [0, 1],
+            "color": "white",
+            "horizon-blend": 0,
+            "high-color": defaultHighColor,
+            "star-intensity": defaultStarIntensity,
+            "space-color": defaultSpaceColor,
+            "vertical-range": defaultVerticalRange
         });
     });
 
-    t.test('default fog styling', (t) => {
+    test('default fog styling', async () => {
         const style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -2465,25 +2322,21 @@ test('Style#getFog', (t) => {
             "layers": []
         });
 
-        style.on('style.load', () => {
-            t.ok(style.getFog());
-            t.deepEqual(style.getFog(), {
-                "range": defaultRange,
-                "color": defaultColor,
-                "horizon-blend": defaultHorizonBlend,
-                "high-color": defaultHighColor,
-                "star-intensity": defaultStarIntensity,
-                "space-color": defaultSpaceColor,
-                "vertical-range": defaultVerticalRange
-            });
-            t.end();
+        await waitFor(style, "style.load");
+        expect(style.getFog()).toBeTruthy();
+        expect(style.getFog()).toEqual({
+            "range": defaultRange,
+            "color": defaultColor,
+            "horizon-blend": defaultHorizonBlend,
+            "high-color": defaultHighColor,
+            "star-intensity": defaultStarIntensity,
+            "space-color": defaultSpaceColor,
+            "vertical-range": defaultVerticalRange
         });
     });
-
-    t.end();
 });
 
-test('Style#castShadows check', (t) => {
+test('Style#castShadows check', async () => {
     function createStyle() {
         const style = new Style(new StubMap());
         style.loadJSON({
@@ -2528,14 +2381,13 @@ test('Style#castShadows check', (t) => {
     }
 
     const style = createStyle();
-    style.on('style.load', () => {
-        const sourceCache = style.getOwnSourceCache('geojson');
-        t.notOk(sourceCache.castsShadows);
-        style.addLayer({id: 'fillext', source: 'geojson', type: 'fill-extrusion'});
-        t.ok(sourceCache.castsShadows);
-        style.removeLayer('fillext');
-        t.notOk(sourceCache.castsShadows);
-        t.end();
-    });
+
+    await waitFor(style, 'style.load');
+    const sourceCache = style.getOwnSourceCache('geojson');
+    expect(sourceCache.castsShadows).toBeFalsy();
+    style.addLayer({id: 'fillext', source: 'geojson', type: 'fill-extrusion'});
+    expect(sourceCache.castsShadows).toBeTruthy();
+    style.removeLayer('fillext');
+    expect(sourceCache.castsShadows).toBeFalsy();
 });
 

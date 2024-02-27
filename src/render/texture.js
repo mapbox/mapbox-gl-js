@@ -1,7 +1,5 @@
 // @flow
 
-import window from '../util/window.js';
-
 import type Context from '../gl/context.js';
 import type {RGBAImage, AlphaImage} from '../util/image.js';
 import {Float32Image} from '../util/image.js';
@@ -68,7 +66,6 @@ class Texture {
         const {width, height} = image;
         const {context} = this;
         const {gl} = context;
-        const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = window;
 
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 

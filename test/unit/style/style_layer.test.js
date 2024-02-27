@@ -1,22 +1,19 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import createStyleLayer from '../../../src/style/create_style_layer.js';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer.js';
 import {extend} from '../../../src/util/util.js';
 import Color from '../../../src/style-spec/util/color.js';
 
-test('StyleLayer', (t) => {
-    t.test('instantiates the correct subclass', (t) => {
+describe('StyleLayer', () => {
+    test('instantiates the correct subclass', () => {
         const layer = createStyleLayer({type: 'fill'});
 
-        t.ok(layer instanceof FillStyleLayer);
-        t.end();
+        expect(layer instanceof FillStyleLayer).toBeTruthy();
     });
-
-    t.end();
 });
 
-test('StyleLayer#setPaintProperty', (t) => {
-    t.test('sets new property value', (t) => {
+describe('StyleLayer#setPaintProperty', () => {
+    test('sets new property value', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background"
@@ -24,11 +21,10 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color', 'blue');
 
-        t.deepEqual(layer.getPaintProperty('background-color'), 'blue');
-        t.end();
+        expect(layer.getPaintProperty('background-color')).toEqual('blue');
     });
 
-    t.test('updates property value', (t) => {
+    test('updates property value', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background",
@@ -39,11 +35,10 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color', 'blue');
 
-        t.deepEqual(layer.getPaintProperty('background-color'), 'blue');
-        t.end();
+        expect(layer.getPaintProperty('background-color')).toEqual('blue');
     });
 
-    t.test('unsets value', (t) => {
+    test('unsets value', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background",
@@ -57,15 +52,13 @@ test('StyleLayer#setPaintProperty', (t) => {
         layer.updateTransitions({});
         layer.recalculate({zoom: 0});
 
-        t.deepEqual(layer.paint.get('background-color'), new Color(0, 0, 0, 1));
-        t.equal(layer.getPaintProperty('background-color'), undefined);
-        t.equal(layer.paint.get('background-opacity'), 1);
-        t.equal(layer.getPaintProperty('background-opacity'), 1);
-
-        t.end();
+        expect(layer.paint.get('background-color')).toEqual(new Color(0, 0, 0, 1));
+        expect(layer.getPaintProperty('background-color')).toEqual(undefined);
+        expect(layer.paint.get('background-opacity')).toEqual(1);
+        expect(layer.getPaintProperty('background-opacity')).toEqual(1);
     });
 
-    t.test('preserves existing transition', (t) => {
+    test('preserves existing transition', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background",
@@ -79,11 +72,10 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color', 'blue');
 
-        t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 600});
-        t.end();
+        expect(layer.getPaintProperty('background-color-transition')).toEqual({duration: 600});
     });
 
-    t.test('sets transition', (t) => {
+    test('sets transition', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background",
@@ -94,40 +86,43 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color-transition', {duration: 400});
 
-        t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 400});
-        t.end();
+        expect(layer.getPaintProperty('background-color-transition')).toEqual({duration: 400});
     });
 
-    t.test('emits on an invalid property value', (t) => {
+    test('emits on an invalid property value', async () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
 
-        layer.on('error', () => {
-            t.equal(layer.getPaintProperty('background-opacity'), undefined);
-            t.end();
-        });
+        await new Promise(resolve => {
+            layer.once('error', () => {
+                expect(layer.getPaintProperty('background-opacity')).toEqual(undefined);
+                resolve();
 
-        layer.setPaintProperty('background-opacity', 5);
+            });
+            layer.setPaintProperty('background-opacity', 5);
+        });
     });
 
-    t.test('emits on an invalid transition property value', (t) => {
+    test('emits on an invalid transition property value', async () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
 
-        layer.on('error', () => {
-            t.end();
-        });
+        await new Promise(resolve => {
+            layer.once('error', () => {
+                resolve();
+            });
 
-        layer.setPaintProperty('background-opacity-transition', {
-            duration: -10
+            layer.setPaintProperty('background-opacity-transition', {
+                duration: -10
+            });
         });
     });
 
-    t.test('can unset fill-outline-color #2886', (t) => {
+    test('can unset fill-outline-color #2886', () => {
         const layer = createStyleLayer({
             id: 'building',
             type: 'fill',
@@ -140,48 +135,47 @@ test('StyleLayer#setPaintProperty', (t) => {
         layer.setPaintProperty('fill-outline-color', '#f00');
         layer.updateTransitions({});
         layer.recalculate({zoom: 0});
-        t.deepEqual(layer.paint.get('fill-outline-color').value, {kind: 'constant', value: new Color(1, 0, 0, 1)});
+        expect(layer.paint.get('fill-outline-color').value).toEqual({kind: 'constant', value: new Color(1, 0, 0, 1)});
 
         layer.setPaintProperty('fill-outline-color', undefined);
         layer.updateTransitions({});
         layer.recalculate({zoom: 0});
-        t.deepEqual(layer.paint.get('fill-outline-color').value, {kind: 'constant', value: new Color(0, 0, 1, 1)});
-
-        t.end();
+        expect(layer.paint.get('fill-outline-color').value).toEqual({kind: 'constant', value: new Color(0, 0, 1, 1)});
     });
 
-    t.test('can transition fill-outline-color from undefined to a value #3657', (t) => {
-        const layer = createStyleLayer({
-            id: 'building',
-            type: 'fill',
-            source: 'streets',
-            paint: {
-                'fill-color': '#00f'
-            }
-        });
+    test(
+        'can transition fill-outline-color from undefined to a value #3657',
+        () => {
+            const layer = createStyleLayer({
+                id: 'building',
+                type: 'fill',
+                source: 'streets',
+                paint: {
+                    'fill-color': '#00f'
+                }
+            });
 
-        // setup: set and then unset fill-outline-color so that, when we then try
-        // to re-set it, StyleTransition#calculate() attempts interpolation
-        layer.setPaintProperty('fill-outline-color', '#f00');
-        layer.updateTransitions({});
-        layer.recalculate({zoom: 0});
+            // setup: set and then unset fill-outline-color so that, when we then try
+            // to re-set it, StyleTransition#calculate() attempts interpolation
+            layer.setPaintProperty('fill-outline-color', '#f00');
+            layer.updateTransitions({});
+            layer.recalculate({zoom: 0});
 
-        layer.setPaintProperty('fill-outline-color', undefined);
-        layer.updateTransitions({});
-        layer.recalculate({zoom: 0});
+            layer.setPaintProperty('fill-outline-color', undefined);
+            layer.updateTransitions({});
+            layer.recalculate({zoom: 0});
 
-        // re-set fill-outline-color and get its value, triggering the attempt
-        // to interpolate between undefined and #f00
-        layer.setPaintProperty('fill-outline-color', '#f00');
-        layer.updateTransitions({});
-        layer.recalculate({zoom: 0});
+            // re-set fill-outline-color and get its value, triggering the attempt
+            // to interpolate between undefined and #f00
+            layer.setPaintProperty('fill-outline-color', '#f00');
+            layer.updateTransitions({});
+            layer.recalculate({zoom: 0});
 
-        layer.paint.get('fill-outline-color');
+            layer.paint.get('fill-outline-color');
+        }
+    );
 
-        t.end();
-    });
-
-    t.test('sets null property value', (t) => {
+    test('sets null property value', () => {
         const layer = createStyleLayer({
             "id": "background",
             "type": "background"
@@ -189,15 +183,12 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('background-color-transition', null);
 
-        t.deepEqual(layer.getPaintProperty('background-color-transition'), null);
-        t.end();
+        expect(layer.getPaintProperty('background-color-transition')).toEqual(undefined);
     });
-
-    t.end();
 });
 
-test('StyleLayer#setLayoutProperty', (t) => {
-    t.test('sets new property value', (t) => {
+describe('StyleLayer#setLayoutProperty', () => {
+    test('sets new property value', () => {
         const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol"
@@ -205,24 +196,22 @@ test('StyleLayer#setLayoutProperty', (t) => {
 
         layer.setLayoutProperty('text-transform', 'lowercase');
 
-        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
-        t.end();
+        expect(layer.getLayoutProperty('text-transform')).toEqual('lowercase');
     });
 
-    t.test('emits on an invalid property value', (t) => {
+    test('emits on an invalid property value', async () => {
         const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol"
         });
 
-        layer.on('error', () => {
-            t.end();
+        await new Promise(resolve => {
+            layer.once('error', resolve);
+            layer.setLayoutProperty('text-transform', 'mapboxcase');
         });
-
-        layer.setLayoutProperty('text-transform', 'mapboxcase');
     });
 
-    t.test('updates property value', (t) => {
+    test('updates property value', () => {
         const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol",
@@ -233,11 +222,10 @@ test('StyleLayer#setLayoutProperty', (t) => {
 
         layer.setLayoutProperty('text-transform', 'lowercase');
 
-        t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
-        t.end();
+        expect(layer.getLayoutProperty('text-transform')).toEqual('lowercase');
     });
 
-    t.test('unsets property value', (t) => {
+    test('unsets property value', () => {
         const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol",
@@ -249,23 +237,18 @@ test('StyleLayer#setLayoutProperty', (t) => {
         layer.setLayoutProperty('text-transform', null);
         layer.recalculate({zoom: 0});
 
-        t.deepEqual(layer.layout.get('text-transform').value, {kind: 'constant', value: 'none'});
-        t.equal(layer.getLayoutProperty('text-transform'), undefined);
-        t.end();
+        expect(layer.layout.get('text-transform').value).toEqual({kind: 'constant', value: 'none'});
+        expect(layer.getLayoutProperty('text-transform')).toEqual(undefined);
     });
 
-    t.test('updates visibility for custom layer', (t) => {
+    test('updates visibility for custom layer', () => {
         const layer = createStyleLayer({type: 'custom'});
         layer.setLayoutProperty('visibility', 'none');
-        t.equal(layer.getLayoutProperty('visibility'), 'none');
-        t.end();
+        expect(layer.getLayoutProperty('visibility')).toEqual('none');
     });
-
-    t.end();
 });
 
-test('StyleLayer#serialize', (t) => {
-
+describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
         return extend({
             id: 'symbol',
@@ -279,15 +262,11 @@ test('StyleLayer#serialize', (t) => {
         }, layer);
     }
 
-    t.test('serializes layers', (t) => {
-        t.deepEqual(
-            createStyleLayer(createSymbolLayer()).serialize(),
-            createSymbolLayer()
-        );
-        t.end();
+    test('serializes layers', () => {
+        expect(createStyleLayer(createSymbolLayer()).serialize()).toEqual(createSymbolLayer());
     });
 
-    t.test('serializes functions', (t) => {
+    test('serializes functions', () => {
         const layerPaint = {
             'text-color': {
                 base: 2,
@@ -295,65 +274,48 @@ test('StyleLayer#serialize', (t) => {
             }
         };
 
-        t.deepEqual(
-            createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint,
-            layerPaint
-        );
-        t.end();
+        expect(createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint).toEqual(layerPaint);
     });
 
-    t.test('serializes added paint properties', (t) => {
+    test('serializes added paint properties', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
-        t.equal(layer.serialize().paint['text-halo-color'], 'orange');
-        t.equal(layer.serialize().paint['text-color'], 'blue');
-
-        t.end();
+        expect(layer.serialize().paint['text-halo-color']).toEqual('orange');
+        expect(layer.serialize().paint['text-color']).toEqual('blue');
     });
 
-    t.test('serializes added layout properties', (t) => {
+    test('serializes added layout properties', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
-        t.equal(layer.serialize().layout['text-transform'], 'uppercase');
-        t.equal(layer.serialize().layout['text-size'], 20);
-
-        t.end();
+        expect(layer.serialize().layout['text-transform']).toEqual('uppercase');
+        expect(layer.serialize().layout['text-size']).toEqual(20);
     });
 
-    t.test('serializes "visibility" of "visible"', (t) => {
+    test('serializes "visibility" of "visible"', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', 'visible');
 
-        t.equal(layer.serialize().layout['visibility'], 'visible');
-
-        t.end();
+        expect(layer.serialize().layout['visibility']).toEqual('visible');
     });
 
-    t.test('serializes "visibility" of "none"', (t) => {
+    test('serializes "visibility" of "none"', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', 'none');
 
-        t.equal(layer.serialize().layout['visibility'], 'none');
-
-        t.end();
+        expect(layer.serialize().layout['visibility']).toEqual('none');
     });
 
-    t.test('serializes "visibility" of undefined', (t) => {
+    test('serializes "visibility" of undefined', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', undefined);
 
-        t.equal(layer.serialize().layout['visibility'], undefined);
-
-        t.end();
+        expect(layer.serialize().layout['visibility']).toEqual(undefined);
     });
-
-    t.end();
 });
 
-test('StyleLayer#serialize', (t) => {
-
+describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
         return extend({
             id: 'symbol',
@@ -367,15 +329,11 @@ test('StyleLayer#serialize', (t) => {
         }, layer);
     }
 
-    t.test('serializes layers', (t) => {
-        t.deepEqual(
-            createStyleLayer(createSymbolLayer()).serialize(),
-            createSymbolLayer()
-        );
-        t.end();
+    test('serializes layers', () => {
+        expect(createStyleLayer(createSymbolLayer()).serialize()).toEqual(createSymbolLayer());
     });
 
-    t.test('serializes functions', (t) => {
+    test('serializes functions', () => {
         const layerPaint = {
             'text-color': {
                 base: 2,
@@ -383,39 +341,28 @@ test('StyleLayer#serialize', (t) => {
             }
         };
 
-        t.deepEqual(
-            createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint,
-            layerPaint
-        );
-        t.end();
+        expect(createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint).toEqual(layerPaint);
     });
 
-    t.test('serializes added paint properties', (t) => {
+    test('serializes added paint properties', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
-        t.equal(layer.serialize().paint['text-halo-color'], 'orange');
-        t.equal(layer.serialize().paint['text-color'], 'blue');
-
-        t.end();
+        expect(layer.serialize().paint['text-halo-color']).toEqual('orange');
+        expect(layer.serialize().paint['text-color']).toEqual('blue');
     });
 
-    t.test('serializes added layout properties', (t) => {
+    test('serializes added layout properties', () => {
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
-        t.equal(layer.serialize().layout['text-transform'], 'uppercase');
-        t.equal(layer.serialize().layout['text-size'], 20);
-
-        t.end();
+        expect(layer.serialize().layout['text-transform']).toEqual('uppercase');
+        expect(layer.serialize().layout['text-size']).toEqual(20);
     });
 
-    t.test('layer.paint is never undefined', (t) => {
+    test('layer.paint is never undefined', () => {
         const layer = createStyleLayer({type: 'fill'});
         // paint is never undefined
-        t.ok(layer.paint);
-        t.end();
+        expect(layer.paint).toBeTruthy();
     });
-
-    t.end();
 });

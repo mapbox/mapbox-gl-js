@@ -1,7 +1,6 @@
 // @flow
 
 import browser from '../util/browser.js';
-import window from '../util/window.js';
 
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache.js';
@@ -377,7 +376,7 @@ class Painter {
 
         const gl = this.context.gl;
         this.stencilClearMode = new StencilMode({func: gl.ALWAYS, mask: 0}, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
-        this.loadTimeStamps.push(window.performance.now());
+        this.loadTimeStamps.push(performance.now());
     }
 
     getMercatorTileBoundsBuffers(): TileBoundsBuffers {
@@ -994,7 +993,7 @@ class Painter {
         this.frameCounter = (this.frameCounter + 1) % Number.MAX_SAFE_INTEGER;
 
         if (this.tileLoaded && this.options.speedIndexTiming) {
-            this.loadTimeStamps.push(window.performance.now());
+            this.loadTimeStamps.push(performance.now());
             this.saveCanvasCopy();
         }
 
@@ -1285,7 +1284,7 @@ class Painter {
 
     initDebugOverlayCanvas() {
         if (this.debugOverlayCanvas == null) {
-            this.debugOverlayCanvas = window.document.createElement('canvas');
+            this.debugOverlayCanvas = document.createElement('canvas');
             this.debugOverlayCanvas.width = 512;
             this.debugOverlayCanvas.height = 512;
             const gl = this.context.gl;

@@ -1,11 +1,11 @@
-import {test} from '../../util/test.js';
+import {describe, test, expect} from "../../util/vitest.js";
 import {fixedNum} from '../../util/fixed.js';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform.js';
 import {projectPolygonCoveringPoles, unwrapQueryPolygon} from '../../../src/style/query_geometry.js';
 
-test('Query geometry', (t) => {
-    t.test('projectPolygonCoveringPoles', (t) => {
+describe('Query geometry', () => {
+    test('projectPolygonCoveringPoles', () => {
         const tr = new Transform();
         tr.setProjection({name: 'globe'});
         tr.resize(512, 512);
@@ -24,10 +24,10 @@ test('Query geometry', (t) => {
         // Project a screen rectangle that should cover the north pole.
         // The rightmost edge is intersecting with the antimeridian
         const projected = projectPolygonCoveringPoles(rect, tr);
-        t.ok(projected);
+        expect(projected).toBeTruthy();
 
         // No unwrapping involved => all coordinates inside the mercator range [0, 1]
-        t.false(projected.unwrapped);
+        expect(projected.unwrapped).toBeFalsy();
 
         const expected = [
             // begin top edge
@@ -64,12 +64,11 @@ test('Query geometry', (t) => {
 
         const actual = projected.polygon.map(p => { return {x: fixedNum(p.x, 5), y: fixedNum(p.y, 5)}; });
 
-        t.deepEqual(actual, expected);
-        t.end();
+        expect(actual).toEqual(expected);
     });
 
-    t.test('unwrapQueryPolygon', (t) => {
-        t.test('unwrap over right border', (t) => {
+    describe('unwrapQueryPolygon', () => {
+        test('unwrap over right border', () => {
             const tr = new Transform();
             tr.setProjection({name: 'globe'});
             tr.resize(512, 512);
@@ -86,8 +85,8 @@ test('Query geometry', (t) => {
             ];
 
             const projected = unwrapQueryPolygon(polygon, tr);
-            t.ok(projected);
-            t.true(projected.unwrapped);
+            expect(projected).toBeTruthy();
+            expect(projected.unwrapped).toBeTruthy();
 
             const expected = [
                 {x: 0.9, y: 0.4},
@@ -99,11 +98,10 @@ test('Query geometry', (t) => {
 
             const actual = projected.polygon.map(p => { return {x: fixedNum(p.x, 5), y: fixedNum(p.y, 5)}; });
 
-            t.deepEqual(actual, expected);
-            t.end();
+            expect(actual).toEqual(expected);
         });
 
-        t.test('unwrap over left border', (t) => {
+        test('unwrap over left border', () => {
             const tr = new Transform();
             tr.setProjection({name: 'globe'});
             tr.resize(512, 512);
@@ -120,8 +118,8 @@ test('Query geometry', (t) => {
             ];
 
             const projected = unwrapQueryPolygon(polygon, tr);
-            t.ok(projected);
-            t.true(projected.unwrapped);
+            expect(projected).toBeTruthy();
+            expect(projected.unwrapped).toBeTruthy();
 
             const expected = [
                 {x: -0.1, y: 0.4},
@@ -133,12 +131,7 @@ test('Query geometry', (t) => {
 
             const actual = projected.polygon.map(p => { return {x: fixedNum(p.x, 5), y: fixedNum(p.y, 5)}; });
 
-            t.deepEqual(actual, expected);
-            t.end();
+            expect(actual).toEqual(expected);
         });
-
-        t.end();
     });
-
-    t.end();
 });

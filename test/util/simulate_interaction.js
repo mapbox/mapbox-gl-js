@@ -1,4 +1,3 @@
-
 export function window(target) {
     if (target.ownerDocument) {
         return target.ownerDocument.defaultView;
@@ -68,10 +67,26 @@ events.dblclick = function (target, options) {
 // (rather than a trackpad)
 events.magicWheelZoomDelta = 4.000244140625;
 
+export function constructTouch(target, options) {
+    const global = window(target);
+    return new global.Touch({
+        identifier: Date.now(),
+        target,
+        radiusX: 2.5,
+        radiusY: 2.5,
+        rotationAngle: 10,
+        force: 0.5,
+        ...options
+    });
+}
+
 [ 'touchstart', 'touchend', 'touchmove', 'touchcancel' ].forEach((event) => {
     events[event] = function (target, options) {
-        // Should be using Touch constructor here, but https://github.com/jsdom/jsdom/issues/2152.
-        const defaultTouches = event.endsWith('end') || event.endsWith('cancel') ? [] : [{clientX: 0, clientY: 0}];
+        const touch = constructTouch(target, {
+            clientX: 0,
+            clientY: 0,
+        });
+        const defaultTouches = event.endsWith('end') || event.endsWith('cancel') ? [] : [touch];
         options = Object.assign({bubbles: true, touches: defaultTouches}, options);
         const TouchEvent = window(target).TouchEvent;
         target.dispatchEvent(new TouchEvent(event, options));
@@ -85,5 +100,19 @@ events.magicWheelZoomDelta = 4.000244140625;
         target.dispatchEvent(new FocusEvent(event, options));
     };
 });
+
+export function simulateDoubleTap(map, delay = 100) {
+    const canvas = map.getCanvas();
+    return new Promise(resolve => {
+        events.touchstart(canvas, {touches: [constructTouch(canvas, {target: canvas, clientX: 0, clientY: 0})]});
+        events.touchend(canvas);
+        setTimeout(() => {
+            events.touchstart(canvas, {touches: [constructTouch(canvas, {target: canvas, clientX: 0, clientY: 0})]});
+            events.touchend(canvas);
+            map._renderTaskQueue.run();
+            resolve();
+        }, delay);
+    });
+}
 
 export default events;

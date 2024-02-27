@@ -14,7 +14,6 @@ import browser from '../util/browser.js';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
 import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_util.js';
 import {mat3, vec3} from 'gl-matrix';
-import window from '../util/window.js';
 import LngLat from '../geo/lng_lat.js';
 
 import type {Source} from './source.js';
@@ -300,7 +299,6 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
-                const {HTMLImageElement} = window;
                 if (image instanceof HTMLImageElement) {
                     this.image = browser.getImageData(image);
                 } else {

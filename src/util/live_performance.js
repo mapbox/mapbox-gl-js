@@ -1,6 +1,5 @@
 // @flow
 
-import window from './window.js';
 import {version as sdkVersion} from '../../package.json';
 import {
     isMapboxHTTPStyleURL,
@@ -37,10 +36,10 @@ export const PerformanceMarkers = {
 
 export const LivePerformanceUtils = {
     mark(marker: $Keys<typeof PerformanceMarkers>) {
-        window.performance.mark(marker);
+        performance.mark(marker);
     },
     measure(name: string, begin?: string, end?: string) {
-        window.performance.measure(name, begin, end);
+        performance.measure(name, begin, end);
     }
 };
 
@@ -109,7 +108,7 @@ function getResourceCategory(entry: PerformanceResourceTiming): string {
     return 'other';
 }
 
-function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
+function getStyle(resourceTimers: Array<PerformanceResourceTiming>): ?string {
     if (resourceTimers) {
         for (const timer of resourceTimers) {
             const url = timer.name.split('?')[0];
@@ -124,12 +123,14 @@ function getStyle(resourceTimers: Array<PerformanceEntry>): ?string {
 }
 
 export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerformanceMetrics {
-    const resourceTimers = window.performance.getEntriesByType('resource');
-    const markerTimers = window.performance.getEntriesByType('mark');
+    const resourceTimers = ((performance.getEntriesByType('resource'): any): Array<PerformanceResourceTiming>);
+    const markerTimers = performance.getEntriesByType('mark');
     const resourcesByType = categorize(resourceTimers, getResourceCategory);
     const counters = getCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
-    const connection = window.navigator.connection || window.navigator.mozConnection || window.navigator.webkitConnection;
+    // $FlowFixMe[prop-missing] no connection types in Flow
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const effectiveType = connection ? (connection: any).effectiveType : undefined;
     const metrics: LivePerformanceMetrics = {counters: [], metadata: [], attributes: []};
 
     // Please read carefully before adding or modifying the following metrics:
@@ -165,8 +166,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     addMetric(metrics.attributes, "zoom", data.zoom);
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
-    addMetric(metrics.metadata, "connectionEffectiveType", connection ? connection.effectiveType : undefined);
-    addMetric(metrics.metadata, "navigatorUserAgent", window.navigator.userAgent);
+    addMetric(metrics.metadata, "connectionEffectiveType", effectiveType);
+    addMetric(metrics.metadata, "navigatorUserAgent", navigator.userAgent);
     addMetric(metrics.metadata, "screenWidth", window.screen.width);
     addMetric(metrics.metadata, "screenHeight", window.screen.height);
     addMetric(metrics.metadata, "windowWidth", window.innerWidth);

@@ -1,12 +1,11 @@
-import {test} from '../../../util/test.js';
+import {describe, test, expect, vi} from "../../../util/vitest.js";
 import browser from '../../../../src/util/browser.js';
-import window from '../../../../src/util/window.js';
 import Map from '../../../../src/ui/map.js';
 import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(t, proj = 'mercator') {
-    t.stub(Map.prototype, '_detectMissingCSS');
+    vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     const map = new Map({container: DOM.create('div', '', window.document.body), testMode: true});
     map.setProjection(proj);
     return map;
@@ -15,52 +14,48 @@ function createMap(t, proj = 'mercator') {
 // MouseEvent.buttons
 const buttons = 1;
 
-test('Map#isMoving returns false by default', (t) => {
-    const map = createMap(t);
-    t.equal(map.isMoving(), false);
+test('Map#isMoving returns false by default', () => {
+    const map = createMap();
+    expect(map.isMoving()).toEqual(false);
     map.remove();
-    t.end();
 });
 
-test('Map#isMoving with various projections', (t) => {
+describe('Map#isMoving with various projections', () => {
     const projections = ['globe', 'mercator'];
     for (const proj of projections) {
-        test('Map#isMoving returns true during a camera zoom animation', (t) => {
-            const map = createMap(t, proj);
+        test('Map#isMoving returns true during a camera zoom animation', () => {
+            const map = createMap(proj);
 
             map.on('zoomstart', () => {
-                t.equal(map.isMoving(), true);
+                expect(map.isMoving()).toEqual(true);
             });
 
             map.on('zoomend', () => {
-                t.equal(map.isMoving(), false);
+                expect(map.isMoving()).toEqual(false);
                 map.remove();
-                t.end();
             });
 
             map.zoomTo(5, {duration: 0});
         });
     }
-    t.end();
 });
 
-test('Map#isMoving returns true when drag panning', (t) => {
-    const map = createMap(t);
+test('Map#isMoving returns true when drag panning', () => {
+    const map = createMap();
 
     map.on('movestart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
     map.on('dragstart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
 
     map.on('dragend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
     });
     map.on('moveend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
         map.remove();
-        t.end();
     });
 
     simulate.mousedown(map.getCanvas());
@@ -73,26 +68,25 @@ test('Map#isMoving returns true when drag panning', (t) => {
     map._renderTaskQueue.run();
 });
 
-test('Map#isMoving returns true when drag rotating', (t) => {
-    const map = createMap(t);
+test('Map#isMoving returns true when drag rotating', () => {
+    const map = createMap();
 
     // Prevent inertial rotation.
-    t.stub(browser, 'now').returns(0);
+    vi.spyOn(browser, 'now').mockImplementation(() => 0);
 
     map.on('movestart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
     map.on('rotatestart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
 
     map.on('rotateend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
     });
     map.on('moveend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
         map.remove();
-        t.end();
     });
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
@@ -105,22 +99,20 @@ test('Map#isMoving returns true when drag rotating', (t) => {
     map._renderTaskQueue.run();
 });
 
-test('Map#isMoving returns true when scroll zooming', (t) => {
-    const map = createMap(t);
+test('Map#isMoving returns true when scroll zooming', () => {
+    const map = createMap();
 
     map.on('zoomstart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
 
     map.on('zoomend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
         map.remove();
-        t.end();
     });
 
-    const browserNow = t.stub(browser, 'now');
     let now = 0;
-    browserNow.callsFake(() => now);
+    vi.spyOn(browser, 'now').mockImplementation(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
@@ -131,19 +123,19 @@ test('Map#isMoving returns true when scroll zooming', (t) => {
     }, 400);
 });
 
-test('Map#isMoving returns true when drag panning and scroll zooming interleave', (t) => {
-    const map = createMap(t);
+test('Map#isMoving returns true when drag panning and scroll zooming interleave', () => {
+    const map = createMap();
 
     map.on('dragstart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
 
     map.on('zoomstart', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
     });
 
     map.on('zoomend', () => {
-        t.equal(map.isMoving(), true);
+        expect(map.isMoving()).toEqual(true);
         simulate.mouseup(map.getCanvas());
         setTimeout(() => {
             map._renderTaskQueue.run();
@@ -151,9 +143,8 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     });
 
     map.on('dragend', () => {
-        t.equal(map.isMoving(), false);
+        expect(map.isMoving()).toEqual(false);
         map.remove();
-        t.end();
     });
 
     // The following should trigger the above events, where a zoomstart/zoomend
@@ -165,9 +156,8 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
-    const browserNow = t.stub(browser, 'now');
     let now = 0;
-    browserNow.callsFake(() => now);
+    vi.spyOn(browser, 'now').mockImplementation(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();

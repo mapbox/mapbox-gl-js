@@ -1,7 +1,7 @@
-import {test} from '../../../util/test.js';
+import {test, expect} from "../../../util/vitest.js";
 import migrate from '../../../../src/style-spec/migrate/v9.js';
 
-test('deref layers', (t) => {
+test('deref layers', () => {
     const input = {
         version: 8,
         sources: {
@@ -18,7 +18,7 @@ test('deref layers', (t) => {
         }]
     };
 
-    t.deepEqual(migrate(input), {
+    expect(migrate(input)).toEqual({
         version: 9,
         sources: {
             a: {type: 'vector', tiles: [ 'http://dev/null' ]}
@@ -35,11 +35,9 @@ test('deref layers', (t) => {
             type: 'fill'
         }]
     });
-
-    t.end();
 });
 
-test('declass style', (t) => {
+test('declass style', () => {
     const input = {
         version: 8,
         sources: {
@@ -59,7 +57,7 @@ test('declass style', (t) => {
         }]
     };
 
-    t.deepEqual(migrate(input), {
+    expect(migrate(input)).toEqual({
         version: 9,
         sources: {
             a: {type: 'vector', tiles: [ 'http://dev/null' ]}
@@ -71,6 +69,4 @@ test('declass style', (t) => {
             paint: {}
         }]
     });
-
-    t.end();
 });

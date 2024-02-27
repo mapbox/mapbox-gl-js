@@ -1,13 +1,6 @@
 // @flow
 
-// This file is intended for use in the Mapbox GL JS test suite
-// It implements a MessageBus main thread interface for use in Node environments
-// In a browser environment, this file is replaced with ./src/util/browser/web_worker.js
-// when Rollup builds the main bundle.
-// See package.json#browser
-
-import Worker from '../source/worker.js';
-
+import WorkerClass from './worker_class.js';
 import type {WorkerSource} from '../source/worker_source.js';
 
 type MessageListener = ({data: Object}) => mixed;
@@ -28,64 +21,6 @@ export interface WorkerGlobalScopeInterface {
     registerRTLTextPlugin?: (_: any) => void
 }
 
-class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
-    addListeners: Array<MessageListener>;
-    postListeners: Array<MessageListener>;
-    target: MessageBus;
-    registerWorkerSource: any;
-    registerRTLTextPlugin: any;
-
-    constructor(addListeners: Array<MessageListener>, postListeners: Array<MessageListener>) {
-        this.addListeners = addListeners;
-        this.postListeners = postListeners;
-    }
-
-    addEventListener(event: 'message', callback: MessageListener) {
-        if (event === 'message') {
-            this.addListeners.push(callback);
-        }
-    }
-
-    removeEventListener(event: 'message', callback: MessageListener) {
-        const i = this.addListeners.indexOf(callback);
-        if (i >= 0) {
-            this.addListeners.splice(i, 1);
-        }
-    }
-
-    postMessage(data: Object) {
-        setTimeout(() => {
-            try {
-                for (const listener of this.postListeners) {
-                    listener({data, target: this.target});
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }, 0);
-    }
-
-    terminate() {
-        this.addListeners.splice(0, this.addListeners.length);
-        this.postListeners.splice(0, this.postListeners.length);
-    }
-
-    importScripts() {}
+export default function (): WorkerInterface {
+    return (WorkerClass.workerClass != null) ? new WorkerClass.workerClass() : (new self.Worker(WorkerClass.workerUrl, WorkerClass.workerParams): any); // eslint-disable-line new-cap
 }
-
-export default function WebWorker(): WorkerInterface {
-    const parentListeners = [],
-        workerListeners = [],
-        parentBus = new MessageBus(workerListeners, parentListeners),
-        workerBus = new MessageBus(parentListeners, workerListeners);
-
-    parentBus.target = workerBus;
-    workerBus.target = parentBus;
-
-    new WebWorker.Worker(workerBus);
-
-    return parentBus;
-}
-
-// expose to allow stubbing in unit tests
-WebWorker.Worker = Worker;

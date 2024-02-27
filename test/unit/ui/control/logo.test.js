@@ -1,8 +1,7 @@
-import {test} from '../../../util/test.js';
-import {createMap as globalCreateMap} from '../../../util/index.js';
+import {test, expect, createMap as globalCreateMap} from "../../../util/vitest.js";
 import VectorTileSource from '../../../../src/source/vector_tile_source.js';
 
-function createMap(t, logoPosition, logoRequired, deleteStyle) {
+function createMap(logoPosition, logoRequired, deleteStyle) {
     const options = {
         style: {
             version: 8,
@@ -23,7 +22,7 @@ function createMap(t, logoPosition, logoRequired, deleteStyle) {
     };
 
     if (deleteStyle) delete options.style;
-    return globalCreateMap(t, options);
+    return globalCreateMap(options);
 }
 
 function createSource(options, logoRequired) {
@@ -44,42 +43,42 @@ function createSource(options, logoRequired) {
     return source;
 }
 
-test('LogoControl appears in bottom-left by default', (t) => {
-    const map = createMap(t);
+test('LogoControl appears in bottom-left by default', () => {
+    const map = createMap();
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll(
+        expect(map.getContainer().querySelectorAll(
             '.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-logo'
-        ).length, 1);
-        t.end();
+        ).length).toEqual(1);
     });
 });
 
-test('LogoControl appears in the position specified by the position option', (t) => {
-    const map = createMap(t, 'top-left');
+test('LogoControl appears in the position specified by the position option', () => {
+    const map = createMap('top-left');
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll(
+        expect(map.getContainer().querySelectorAll(
             '.mapboxgl-ctrl-top-left .mapboxgl-ctrl-logo'
-        ).length, 1);
-        t.end();
+        ).length).toEqual(1);
     });
 });
 
-test('LogoControl is displayed when no style is supplied', (t) => {
-    const map = createMap(t, 'bottom-left', false, true, true);
-    t.equal(map.getContainer().querySelector('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl').style.display, 'block');
-    t.end();
+test('LogoControl is displayed when no style is supplied', () => {
+    const map = createMap('bottom-left', false, true, true);
+    expect(
+        map.getContainer().querySelector('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl').style.display
+    ).toEqual('block');
 });
 
-test('LogoControl is not displayed when the mapbox_logo property is false', (t) => {
-    const map = createMap(t, 'top-left', false);
+test('LogoControl is not displayed when the mapbox_logo property is false', () => {
+    const map = createMap('top-left', false);
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display, 'none');
-        t.end();
+        expect(
+            map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display
+        ).toEqual('none');
     });
 });
 
-test('LogoControl is not added more than once', (t) => {
-    const map = createMap(t);
+test('LogoControl is not added more than once', () => {
+    const map = createMap();
     const source = createSource({
         minzoom: 1,
         maxzoom: 10,
@@ -89,45 +88,42 @@ test('LogoControl is not added more than once', (t) => {
         ]
     });
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length, 1, 'first LogoControl');
+        expect(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length).toEqual(1);
         map.addSource('source2', source);
         map.on('sourcedata', (e) => {
             if (e.isSourceLoaded && e.sourceId === 'source2' && e.sourceDataType === 'metadata') {
-                t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length, 1, 'only one LogoControl is added with multiple sources');
-                t.end();
+                expect(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length).toEqual(1);
             }
         });
     });
 });
 
-test('LogoControl appears in compact mode if container is less then 250 pixel wide', (t) => {
-    const map = createMap(t);
+test('LogoControl appears in compact mode if container is less then 250 pixel wide', () => {
+    const map = createMap();
     const container = map.getContainer();
 
     Object.defineProperty(map.getContainer(), 'getBoundingClientRect', {value: () => ({height: 200, width: 255})});
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 255, configurable: true});
     map.resize();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo:not(.mapboxgl-compact)').length, 1);
+    expect(
+        container.querySelectorAll('.mapboxgl-ctrl-logo:not(.mapboxgl-compact)').length
+    ).toEqual(1);
 
     Object.defineProperty(map.getContainer(), 'getBoundingClientRect', {value: () => ({height: 200, width: 245})});
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 245, configurable: true});
     map.resize();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-logo.mapboxgl-compact').length, 1);
-
-    t.end();
+    expect(container.querySelectorAll('.mapboxgl-ctrl-logo.mapboxgl-compact').length).toEqual(1);
 });
 
-test('LogoControl has `rel` nooper and nofollow', (t) => {
-    const map = createMap(t);
+test('LogoControl has `rel` nooper and nofollow', () => {
+    const map = createMap();
 
     map.on('load', () => {
         const container = map.getContainer();
         const logo = container.querySelector('.mapboxgl-ctrl-logo');
 
-        t.equal(logo.rel, 'noopener nofollow');
-
-        t.end();
+        expect(logo.rel).toEqual('noopener nofollow');
     });
 });
