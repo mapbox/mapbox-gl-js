@@ -42,20 +42,24 @@ function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<Ve
 class StarsParams {
     starsCount: number;
     sizeMultiplier: number;
+    sizeRange: number;
+    intensityRange: number;
 
     constructor() {
         this.starsCount = 16000;
         this.sizeMultiplier = 0.15;
+        this.sizeRange = 100;
+        this.intensityRange = 200;
     }
 }
 class Atmosphere {
     atmosphereBuffer: ?AtmosphereBuffer;
-    allocatedStarsCount: number;
     starsVx: ?VertexBuffer;
     starsIdx: ?IndexBuffer;
     starsSegments: SegmentVector;
     colorModeAlphaBlendedWriteRGB: ColorMode;
     colorModeWriteAlpha: ColorMode;
+    updateNeeded: boolean;
 
     params: StarsParams;
 
@@ -64,25 +68,27 @@ class Atmosphere {
         this.colorModeWriteAlpha = new ColorMode([ONE, ZERO, ONE, ZERO], Color.transparent, [false, false, false, true]);
 
         this.params = new StarsParams();
-        this.allocatedStarsCount = 0;
+        this.updateNeeded = true;
 
-        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1});
+        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1}, () => { this.updateNeeded = true; });
         painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min:0.01, max: 2.0, step:0.01});
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
     }
 
     update(painter: Painter) {
         const context = painter.context;
 
-        if (!this.atmosphereBuffer || this.allocatedStarsCount !== this.params.starsCount) {
+        if (!this.atmosphereBuffer || this.updateNeeded) {
+            this.updateNeeded = false;
+
             this.atmosphereBuffer = new AtmosphereBuffer(context);
 
-            this.allocatedStarsCount = this.params.starsCount;
-
             // Part of internal stlye spec, not exposed to gl-js
-            const sizeRange = 100.0;
-            const intensityRange = 200.0;
+            const sizeRange = this.params.sizeRange;
+            const intensityRange = this.params.intensityRange;
 
-            const stars = generateUniformDistributedPointsOnSphere(this.allocatedStarsCount);
+            const stars = generateUniformDistributedPointsOnSphere(this.params.starsCount);
             const sRand = mulberry32(300);
 
             const vertices = new StarsVertexArray();
