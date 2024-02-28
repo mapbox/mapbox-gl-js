@@ -24,6 +24,11 @@ in vec4 v_pos_light_view_1;
 in float v_depth_shadows;
 #endif
 
+#ifdef OCCLUSION_TEXTURE_TRANSFORM
+// offset[0], offset[1], scale[0], scale[1]
+uniform vec4 u_occlusionTextureTransform;
+#endif
+
 #pragma mapbox: define-attribute highp vec3 normal_3f
 #pragma mapbox: define-attribute highp vec3 color_3f
 #pragma mapbox: define-attribute highp vec4 color_4f
@@ -445,7 +450,13 @@ vec4 finalColor;
     // Ambient Occlusion
     float ao = 1.0;
 #if defined (HAS_TEXTURE_u_occlusionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
-    ao = (texture(u_occlusionTexture, uv_2f).x - 1.0) * u_aoIntensity + 1.0;
+
+#ifdef OCCLUSION_TEXTURE_TRANSFORM
+    vec2 uv = uv_2f.xy * u_occlusionTextureTransform.zw + u_occlusionTextureTransform.xy;
+#else
+    vec2 uv = uv_2f;
+#endif
+    ao = (texture(u_occlusionTexture, uv).x - 1.0) * u_aoIntensity + 1.0;
     color *= ao;
 #endif
     // Emission

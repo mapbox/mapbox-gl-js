@@ -187,7 +187,11 @@ const skip = [
     "render-tests/model-layer/multiple-models-terrain",
 
     // The algorithm for raster colour gradient texels stretching needs an adjustment
-    "render-tests/raster-color/categorical"
+    "render-tests/raster-color/categorical",
+
+    // Only implemented in native for now
+    "render-tests/model-layer/landmark-mbx-meshopt",
+    "render-tests/model-layer/landmark-mbx-meshopt-colors"
 ];
 
 export default {todo, skip};
