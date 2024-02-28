@@ -1,22 +1,25 @@
-## 3.2.0-beta.1
+## 3.2.0
 
 ### Features and improvements ✨
 
-- Added imports support in `map.areTilesLoaded`.
-- Added support of rotation of elevated raster layers.
-- Added support of negative values for `fill-extrusion-flood-light-ground-radius` property.
-- Config options of one imported fragment can be used in another fragments.
-- Improved cutoff behavior of buildings.
+- Improve map loading performance.
+- Add a debug UI for the development build of GL JS, enabled with `devtools: true` in `Map` options.
+- Add imports support in `map.areTilesLoaded`.
+- Add support of rotation of elevated raster layers.
+- Add support of negative values for `fill-extrusion-flood-light-ground-radius` property.
+- Improve visual cutoff behavior of buildings when using `fill-extrusion-cutoff-fade-range` property.
 
 ### Bug fixes 🐞
 
 - Fix an issue where `map.flyTo` with `padding` option was setting and overriding map's padding.
 - Issue a warning instead of a validation error if `url` or `tiles` is missing from source, i.e. in MapTiler source.
 - Fix the moiré effects on patterns in tilted map views.
-- Removing role attribute for non-visible alerts. (h/t [@jakubmakielkowski](https://github.com/jakubmakielkowski)) [#13051](https://github.com/mapbox/mapbox-gl-js/pull/13051)
+- Remove role attribute for non-visible alerts. (h/t [@jakubmakielkowski](https://github.com/jakubmakielkowski)) [#13051](https://github.com/mapbox/mapbox-gl-js/pull/13051)
 - Fix an elevation of symbols above multiple fill extrusions, when some of them hidden or lowered.
-- Fix `config` expression chaining through nested styles.
-- Proper clean up of actor cancel callbacks. (h/t [@temas](https://github.com/temas)) [#13074](https://github.com/mapbox/mapbox-gl-js/pull/13074)
+- Fix `config` expression chaining through nested styles and other issues related to config scope.
+- Fix a small callback-related memory leak. (h/t [@temas](https://github.com/temas)) [#13074](https://github.com/mapbox/mapbox-gl-js/pull/13074)
+- Fix `config` and `format` expressions not working together.
+
 
 ## 3.1.2
 
