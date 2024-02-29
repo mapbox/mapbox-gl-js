@@ -10,6 +10,12 @@ import type {default as MapboxMap} from '../../../src/ui/map.js';
 if (!isWorker()) {
     const style = document.createElement('style');
     style.innerHTML = `
+        .tp-fldv_t {
+            white-space: pre;
+        }
+        .tp-lblv_l {
+            white-space: pre;
+        }
         .mapbox-devtools::-webkit-scrollbar {
             width: 10px;
             height: 10px;
@@ -142,11 +148,13 @@ class ParameterInfo {
     containerObject: Object;
     parameterName: string;
     defaultValue: any;
+    tpBinding: any;
 
-    constructor(object: Object, parameterName: string, defaultValue: any) {
+    constructor(object: Object, parameterName: string, defaultValue: any, tpBinding: any) {
         this.containerObject = object;
         this.parameterName = parameterName;
         this.defaultValue = defaultValue;
+        this.tpBinding = tpBinding;
     }
 }
 
@@ -196,10 +204,58 @@ export class TrackedParameters {
             elem.containerObject[elem.parameterName] = elem.defaultValue;
         });
 
+        this.checkDefaults();
         this._folders.forEach((folder) => {
             folder.expanded = true;
             folder.refresh();
         });
+    }
+
+    checkDefaults() {
+        const folderModCount = new Map<string, number>();
+
+        for (const key of this._folders.keys()) {
+            folderModCount.set(key, 0);
+        }
+
+        this._parametersInfo.forEach((parameterInfo, key) => {
+
+            const isDefault = JSON.stringify(parameterInfo.defaultValue) === JSON.stringify(parameterInfo.containerObject[parameterInfo.parameterName]);
+
+            parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + parameterInfo.parameterName;
+
+            const folderName = key.slice(0, key.lastIndexOf("|"));
+
+            let scopes = folderName.split("_");
+            scopes = scopes.slice(1, scopes.length);
+
+            let folderIterName = "";
+            for (const scope of scopes) {
+                folderIterName += `_${scope}`;
+                if (!isDefault) {
+                    const prevCount = folderModCount.get(folderIterName);
+                    if (prevCount !== undefined) {
+                        folderModCount.set(folderIterName, prevCount + 1);
+                    }
+                }
+            }
+        });
+
+        folderModCount.forEach((count, key) => {
+            const folder = this._folders.get(key);
+            if (folder) {
+                if (key === "_") {
+                    return;
+                }
+                const folderName = key.slice(key.lastIndexOf("_") + 1, key.length);
+                if (count === 0) {
+                    folder.title = `  ${folderName}`;
+                } else {
+                    folder.title = `* ${folderName}`;
+                }
+            }
+        });
+
     }
 
     saveParameters() {
@@ -265,6 +321,8 @@ export class TrackedParameters {
                     tpFolder.expanded = !folder.isFolded;
                 }
             });
+
+            this.checkDefaults();
 
             this._folders.forEach((folder) => {
                 folder.refresh();
@@ -337,7 +395,7 @@ export class TrackedParameters {
                 currentScope = this._folders.get(fullScopeName);
             } else {
                 const folder = currentScope.addFolder({
-                    title: scope[i],
+                    title: `  ${scope[i]}`,
                     expanded: true,
                 });
 
@@ -372,22 +430,29 @@ export class TrackedParameters {
         const fullParameterName = `${fullScopeName}|${name}`;
 
         if (!this._parametersInfo.has(fullParameterName)) {
-            this._parametersInfo.set(fullParameterName, new ParameterInfo(containerObject, name, cloneDeep(containerObject[name])));
-        }
+            const defaultValue = cloneDeep(containerObject[name]);
 
-        if (folderObj.current.hasOwnProperty(name)) {
-            containerObject[name] = cloneDeep(folderObj.current[name]);
+            if (folderObj.current.hasOwnProperty(name)) {
+                containerObject[name] = cloneDeep(folderObj.current[name]);
+            } else {
+                folderObj.current[name] = cloneDeep(containerObject[name]);
+            }
+
+            // Create binding to TweakPane UI
+            const binding = currentScope.addBinding(containerObject, name, description);
+            binding.on('change', (ev) => {
+                folderObj.current[name] = cloneDeep(ev.value);
+                this.dump();
+                this.checkDefaults();
+                if (changeValueCallback) { changeValueCallback(ev.value); }
+            });
+
+            this._parametersInfo.set(fullParameterName, new ParameterInfo(containerObject, name, defaultValue, binding));
         } else {
-            folderObj.current[name] = cloneDeep(containerObject[name]);
+            console.log(fullParameterName);
         }
 
-        // Create binding to TweakPane UI
-        const binding = currentScope.addBinding(containerObject, name, description);
-        binding.on('change', (ev) => {
-            folderObj.current[name] = cloneDeep(ev.value);
-            this.dump();
-            if (changeValueCallback) { changeValueCallback(ev.value); }
-        });
+        this.checkDefaults();
     }
 
     registerButton(scope: Array<string>, buttonTitle: string, onClick: Function) {
