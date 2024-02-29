@@ -15,7 +15,6 @@ import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
 import {clamp, warnOnce} from '../../src/util/util.js';
 import ModelBucket from '../data/bucket/model_bucket.js';
-import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation.js';
 import {OverscaledTileID} from '../../src/source/tile_id.js';
@@ -24,6 +23,7 @@ import {getCutoffParams} from '../../src/render/cutoff.js';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers.js';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index.js';
 
+import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import type Painter from '../../src/render/painter.js';
 import type {CreateProgramParams} from '../../src/render/painter.js';
 import type SourceCache from '../../src/source/source_cache.js';

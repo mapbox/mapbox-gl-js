@@ -1,14 +1,15 @@
 // @flow
 
-import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket.js';
 import StyleLayer from '../style/style_layer.js';
 import EXTENT from '../style-spec/data/extent.js';
-import type {Bucket} from '../data/bucket.js';
 import SymbolBucket from '../data/bucket/symbol_bucket.js';
-import {OverscaledTileID} from './tile_id.js';
 import FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer.js';
+import {OverscaledTileID} from './tile_id.js';
+
 import type Style from '../style/style.js';
+import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
+import type {Bucket} from '../data/bucket.js';
 
 class BuildingIndex {
     style: Style;

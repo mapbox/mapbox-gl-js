@@ -7,9 +7,12 @@ import browser from '../util/browser.js';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported.js';
 import {OverscaledTileID} from './tile_id.js';
 import RasterTileSource from './raster_tile_source.js';
-// ensure DEMData is registered for worker transfer on main thread:
-import DEMData from '../data/dem_data.js';
 
+// Import DEMData as a module with side effects to ensure
+// it's registered as a serializable class on the main thread
+import '../data/dem_data.js';
+
+import type DEMData from '../data/dem_data.js';
 import type {Source} from './source.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';

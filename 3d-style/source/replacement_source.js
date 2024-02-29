@@ -1,12 +1,13 @@
 // @flow
 
-import EXTENT from '../../src/style-spec/data/extent.js';
-import {UnwrappedTileID} from "../../src/source/tile_id.js";
-import {triangleIntersectsTriangle} from "../../src/util/intersection_tests.js";
 import Point from '@mapbox/point-geometry';
+import EXTENT from '../../src/style-spec/data/extent.js';
 import SourceCache from '../../src/source/source_cache.js';
-import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
-import type {Footprint} from "../data/model.js";
+import {UnwrappedTileID} from '../../src/source/tile_id.js';
+import {triangleIntersectsTriangle} from '../../src/util/intersection_tests.js';
+
+import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
+import type {Footprint} from '../data/model.js';
 
 type TileFootprint = {
     footprint: Footprint,

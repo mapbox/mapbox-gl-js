@@ -98,7 +98,7 @@ export type SerializedStructArray = {
  *
  * @private
  */
-class StructArray {
+class StructArray implements IStructArrayLayout {
     capacity: number;
     length: number;
     isTransferred: boolean;
@@ -114,8 +114,6 @@ class StructArray {
     // The following properties are defined on the prototype.
     members: Array<StructArrayMember>;
     bytesPerElement: number;
-    +emplaceBack: Function;
-    +emplace: Function;
 
     constructor() {
         this.isTransferred = false;
@@ -205,7 +203,15 @@ class StructArray {
      * Create TypedArray views for the current ArrayBuffer.
      */
     _refreshViews(): void {
-        throw new Error('_refreshViews() must be implemented by each concrete StructArray layout');
+        throw new Error('StructArray#_refreshViews() must be implemented by each concrete StructArray layout');
+    }
+
+    emplace(..._: number[]): number {
+        throw new Error('StructArray#emplace() must be implemented by each concrete StructArray layout');
+    }
+
+    emplaceBack(..._: number[]): number {
+        throw new Error('StructArray#emplaceBack() must be implemented by each concrete StructArray layout');
     }
 
     destroy() {

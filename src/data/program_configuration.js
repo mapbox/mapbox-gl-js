@@ -339,7 +339,7 @@ class PatternCompositeBinder implements AttributeBinder {
 
         const {tl, br, pixelRatio} = pos;
         for (let i = start; i < end; i++) {
-            this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
+            this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], ((pixelRatio: any): number));
         }
     }
 
