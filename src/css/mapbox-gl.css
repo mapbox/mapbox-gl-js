@@ -54,20 +54,18 @@
 .mapboxgl-ctrl-top-left,
 .mapboxgl-ctrl-top-right,
 .mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right { position: absolute; pointer-events: none; z-index: 2; }
-.mapboxgl-ctrl-top-left     { top: 0; left: 0; }
-.mapboxgl-ctrl-top-right    { top: 0; right: 0; }
-.mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
-.mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
-
-
+.mapboxgl-ctrl-bottom-right,
 .mapboxgl-ctrl-top-center,
 .mapboxgl-ctrl-right-center,
 .mapboxgl-ctrl-bottom-center,
 .mapboxgl-ctrl-left-center { position: absolute; pointer-events: none; z-index: 2; }
+.mapboxgl-ctrl-top-left     { top: 0; left: 0; }
 .mapboxgl-ctrl-top-center { top:0; left: 50%; transform: translateX(-50%); }
+.mapboxgl-ctrl-top-right    { top: 0; right: 0; }
 .mapboxgl-ctrl-right-center { top:50%; transform: translateY(-50%); right:0; }
+.mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
 .mapboxgl-ctrl-bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
+.mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
 .mapboxgl-ctrl-left-center { top: 50%; transform: translateY(-50%); left: 0 }
 
 .mapboxgl-ctrl {
