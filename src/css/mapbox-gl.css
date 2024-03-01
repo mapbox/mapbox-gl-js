@@ -75,10 +75,14 @@
     /* workaround for a Safari bug https://github.com/mapbox/mapbox-gl-js/issues/8185 */
     transform: translate(0, 0);
 }
-.mapboxgl-ctrl-top-left .mapboxgl-ctrl     { margin: 10px 0 0 10px; float: left; }
-.mapboxgl-ctrl-top-right .mapboxgl-ctrl    { margin: 10px 10px 0 0; float: right; }
-.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl  { margin: 0 0 10px 10px; float: left; }
-.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl { margin: 0 10px 10px 0; float: right; }
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl      { margin: 10px 0 0 10px; float: left; }
+.mapboxgl-ctrl-top-center .mapboxgl-ctrl    { margin: 10px 0 0; }
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl     { margin: 10px 10px 0 0; float: right; }
+.mapboxgl-ctrl-right-center .mapboxgl-ctrl  { margin: 0 10px 0 0; float: right; }
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl  { margin: 0 10px 10px 0; float: right; }
+.mapboxgl-ctrl-bottom-center .mapboxgl-ctrl { margin: 0 0 10px 0; }
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl   { margin: 0 0 10px 10px; float: left; }
+.mapboxgl-ctrl-left-center .mapboxgl-ctrl   { margin: 0 0 10px 10px; float: left;}
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
@@ -426,7 +430,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 
     .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
-    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
+    .mapboxgl-ctrl-left-center > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
         padding: 2px 8px 2px 28px;
         border-radius: 12px;
     }
@@ -452,7 +457,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 
     .mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib-button,
-    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button {
+    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button,
+    .mapboxgl-ctrl-center-left .mapboxgl-ctrl-attrib-button  {
         left: 0;
     }
 
@@ -470,8 +476,16 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         right: 0;
     }
 
+    .mapboxgl-ctrl-center-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        right: 0;
+    }
+
     .mapboxgl-ctrl-top-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         top: 0;
+        right: 0;
+    }
+
+    .mapboxgl-ctrl-right-center > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         right: 0;
     }
 
@@ -482,6 +496,10 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
     .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         bottom: 0;
+        left: 0;
+    }
+
+    .mapboxgl-ctrl-center-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         left: 0;
     }
 }
