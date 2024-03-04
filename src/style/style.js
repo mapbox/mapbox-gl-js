@@ -1705,6 +1705,10 @@ class Style extends Evented {
             this.directionalLight.updateConfig(this.options);
         }
 
+        if (this.fog) {
+            this.fog.updateConfig(this.options);
+        }
+
         this._changes.setDirty();
     }
 
@@ -2473,7 +2477,7 @@ class Style extends Evented {
     }
 
     _createFog(fogOptions: FogSpecification) {
-        const fog = this.fog = new Fog(fogOptions, this.map.transform);
+        const fog = this.fog = new Fog(fogOptions, this.map.transform, this.scope, this.options);
         this.stylesheet.fog = fog.get();
         const parameters = this._getTransitionParameters({duration: 0});
         fog.updateTransitions(parameters);
@@ -2512,7 +2516,7 @@ class Style extends Evented {
             // Updating fog
             const fog = this.fog;
             if (!deepEqual(fog.get(), fogOptions)) {
-                fog.set(fogOptions);
+                fog.set(fogOptions, this.options);
                 this.stylesheet.fog = fog.get();
                 const parameters = this._getTransitionParameters({duration: 0});
                 fog.updateTransitions(parameters);

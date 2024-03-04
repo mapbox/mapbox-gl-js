@@ -1,0 +1,51 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "zoom": 2.0,
+  "pitch": 84.0,
+  "imports": [
+    {
+      "id": "baseconfig",
+      "url": "mapbox://styles/mapbox/baseconfig",
+      "config": {
+        "bgColor": "#001155",
+        "fogColor": "green"
+      },
+      "data": {
+        "version": 8,
+        "name": "baseconfig",
+        "schema": {
+          "bgColor": {
+            "default": "orange",
+            "type": "string"
+          },
+          "fogColor": {
+            "default": "green",
+            "type": "string"
+          }
+        },
+        "sources": {},
+        "layers": []
+      }
+    }
+  ],
+  "fog": {
+    "star-intensity": 0.0,
+    "color": ["config", "fogColor", "baseconfig"]
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "paint": {
+        "background-color": ["config", "bgColor", "baseconfig"]
+      }
+    }
+  ]
+}

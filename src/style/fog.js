@@ -15,7 +15,7 @@ import EXTENT from '../style-spec/data/extent.js';
 
 import type {FogSpecification} from '../style-spec/types.js';
 import type EvaluationParameters from './evaluation_parameters.js';
-import type {TransitionParameters} from './properties.js';
+import type {TransitionParameters, ConfigOptions} from './properties.js';
 import type LngLat from '../geo/lng_lat.js';
 import type Transform from '../geo/transform.js';
 import type {StyleSetterOptions} from '../style/style.js';
@@ -46,15 +46,16 @@ class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
+    _options: FogSpecification;
 
     // Alternate projections do not yet support fog.
     // Hold on to transform so that we know whether a projection is set.
     _transform: Transform;
 
-    constructor(fogOptions?: FogSpecification, transform: Transform) {
+    constructor(fogOptions?: FogSpecification, transform: Transform, scope: string, configOptions?: ?ConfigOptions) {
         super();
-        this._transitionable = new Transitionable(fogProperties);
-        this.set(fogOptions);
+        this._transitionable = new Transitionable(fogProperties, scope, new Map(configOptions));
+        this.set(fogOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this._transform = transform;
     }
@@ -79,7 +80,7 @@ class Fog extends Evented {
         return (this._transitionable.serialize(): any);
     }
 
-    set(fog?: FogSpecification, options: StyleSetterOptions = {}) {
+    set(fog?: FogSpecification, configOptions?: ?ConfigOptions, options: StyleSetterOptions = {}) {
         if (this._validate(validateFog, fog, options)) {
             return;
         }
@@ -92,7 +93,8 @@ class Fog extends Evented {
             }
         }
 
-        this._transitionable.setTransitionOrValue<FogSpecification>(properties);
+        this._options = properties;
+        this._transitionable.setTransitionOrValue<FogSpecification>(this._options, configOptions);
     }
 
     getOpacity(pitch: number): number {
@@ -155,6 +157,10 @@ class Fog extends Evented {
         }
 
         return false;
+    }
+
+    updateConfig(configOptions?: ?ConfigOptions) {
+        this._transitionable.setTransitionOrValue<FogSpecification>(this._options, new Map(configOptions));
     }
 
     updateTransitions(parameters: TransitionParameters) {

@@ -926,7 +926,7 @@ describe('Map', () => {
                 const fog = new Fog({});
                 const fogSpy = vi.spyOn(fog, '_validate');
 
-                fog.set({color: 444}, {validate: false});
+                fog.set({color: 444}, null, {validate: false});
                 fog.updateTransitions({transition: false}, {});
                 fog.recalculate({zoom: 16, now: 10});
 
