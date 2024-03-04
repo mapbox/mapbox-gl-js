@@ -458,7 +458,7 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
     .mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib-button,
     .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button,
-    .mapboxgl-ctrl-center-left .mapboxgl-ctrl-attrib-button  {
+    .mapboxgl-ctrl-center-left .mapboxgl-ctrl-attrib-button {
         left: 0;
     }
 
