@@ -19,8 +19,10 @@ import {
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import Transform from '../../src/geo/transform.js';
 import assert from 'assert';
-
+import {Aabb} from '../../src/util/primitives.js';
+import {polygonIntersectsPolygon} from '../../src/util/intersection_tests.js';
 import type {Mat4, Vec3, Quat} from 'gl-matrix';
+import Point from '@mapbox/point-geometry';
 
 export function rotationScaleYZFlipMatrix(out: Mat4, rotation: Vec3, scale: Vec3) {
     mat4.identity(out);
@@ -202,4 +204,46 @@ export function convertModelMatrixForGlobe(matrix: Mat4, transform: Transform, s
         return affineMatrixLerp(modelMatrix, mercatorMatrix, t);
     }
     return modelMatrix;
+}
+
+// In case of intersection, returns depth of the closest corner. Otherwise, returns false.
+export function queryGeometryIntersectsProjectedAabb(queryGeometry: Point[], transform: Transform, worldViewProjection: Mat4, aabb: Aabb): ?number {
+    // Collision checks are performed in screen space. Corners are in ndc space.
+    const corners = Aabb.projectAabbCorners(aabb, worldViewProjection);
+    // convert to screen points
+    let minDepth = Number.MAX_VALUE;
+    let closestCornerIndex = -1;
+    for (let c = 0; c < corners.length; ++c) {
+        const corner = corners[c];
+        corner[0] = (0.5 * corner[0] + 0.5) * transform.width;
+        corner[1] = (0.5 - 0.5 * corner[1]) * transform.height;
+        if (corner[2] < minDepth) {
+            closestCornerIndex = c;
+            minDepth = corner[2]; // This is a rough aabb intersection check for now and no need to interpolate over aabb sides.
+        }
+    }
+    const p = (i: number): Point => new Point(corners[i][0], corners[i][1]);
+
+    let convexPolygon;
+    switch (closestCornerIndex) {
+    case 0:
+    case 6:
+        convexPolygon = [p(1), p(5), p(4), p(7), p(3), p(2), p(1)];
+        break;
+    case 1:
+    case 7:
+        convexPolygon = [p(0), p(4), p(5), p(6), p(2), p(3), p(0)];
+        break;
+    case 3:
+    case 5:
+        convexPolygon = [p(1), p(0), p(4), p(7), p(6), p(2), p(1)];
+        break;
+    default:
+        convexPolygon = [p(1), p(5), p(6), p(7), p(3), p(0), p(1)];
+        break;
+    }
+
+    if (polygonIntersectsPolygon(queryGeometry, convexPolygon)) {
+        return minDepth;
+    }
 }

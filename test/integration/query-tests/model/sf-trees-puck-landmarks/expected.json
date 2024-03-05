@@ -1,0 +1,36 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -122.39425867795944,
+        37.79469032195823
+      ],
+      "type": "Point"
+    },
+    "id": 1421566096244788,
+    "properties": {
+      "tree_type": "palm"
+    },
+    "source": "trees",
+    "sourceLayer": "trees",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -122.3943230509758,
+        37.79462885604886
+      ],
+      "type": "Point"
+    },
+    "id": 1006595184285602,
+    "properties": {
+      "tree_type": "palm"
+    },
+    "source": "trees",
+    "sourceLayer": "trees",
+    "state": {},
+    "type": "Feature"
+  }
+]

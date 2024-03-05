@@ -518,6 +518,7 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     const mercCameraPos = (tr.getFreeCameraOptions().position: any);
     if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
+    layer.modelManager = modelManager;
     const shadowRenderer = painter.shadowRenderer;
     if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) return;
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];

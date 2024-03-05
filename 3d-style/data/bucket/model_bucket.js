@@ -155,7 +155,11 @@ class ModelBucket implements Bucket {
             const modelId = this.addFeature(bucketFeature, bucketFeature.geometry, evaluationFeature);
 
             if (modelId) {
-                options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId].instancedDataArray.length);
+                // Since 3D model geometry extends over footprint or point geometry, it is important
+                // to add some padding to envelope calculated for grid index lookup, in order to
+                // prevent false negatives in FeatureIndex's coarse check.
+                // Envelope padding is a half of featureIndex.grid cell size.
+                options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId].instancedDataArray.length, EXTENT / 32);
             }
         }
         this.lookup = null;

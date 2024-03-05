@@ -79,7 +79,7 @@ class FeatureIndex {
         this.promoteId = promoteId;
     }
 
-    insert(feature: IVectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0) {
+    insert(feature: IVectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0, envelopePadding: number = 0) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex, layoutVertexArrayOffset);
 
@@ -95,6 +95,13 @@ class FeatureIndex {
                 bbox[1] = Math.min(bbox[1], p.y);
                 bbox[2] = Math.max(bbox[2], p.x);
                 bbox[3] = Math.max(bbox[3], p.y);
+            }
+
+            if (envelopePadding !== 0) {
+                bbox[0] -= envelopePadding;
+                bbox[1] -= envelopePadding;
+                bbox[2] += envelopePadding;
+                bbox[3] += envelopePadding;
             }
 
             if (bbox[0] < EXTENT &&
