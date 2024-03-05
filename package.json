@@ -52,7 +52,7 @@
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^0.4.4",
     "@vitest/browser": "^1.2.1",
-    "address": "^1.2.0",
+    "address": "^2.0.2",
     "browserify": "^17.0.0",
     "chalk": "^5.0.1",
     "chokidar": "^3.6.0",
