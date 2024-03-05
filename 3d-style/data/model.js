@@ -36,6 +36,7 @@ export type ModelTexture = {
     sampler: Sampler;
     gfxTexture?: Texture;
     uploaded: boolean;
+    offsetScale?: [number, number, number, number];
 }
 
 export type PbrMetallicRoughness = {
@@ -72,7 +73,7 @@ export type Mesh = {
     texcoordBuffer: VertexBuffer;
     colorArray: StructArray;
     colorBuffer: VertexBuffer;
-    featureData: Uint32Array;
+    featureData: $TypedArray;
     featureArray: FeatureVertexArray;
     pbrBuffer: VertexBuffer;
     material: Material;
@@ -114,7 +115,8 @@ export type Node = {
 export const ModelTraits = {
     CoordinateSpaceTile : 1,
     CoordinateSpaceYUp : 2, // not used yet.
-    HasMapboxMeshFeatures : 1 << 2
+    HasMapboxMeshFeatures : 1 << 2,
+    HasMeshoptCompression: 1 << 3
 };
 
 export const DefaultModelScale = [1, 1, 1];

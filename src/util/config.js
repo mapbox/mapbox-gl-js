@@ -17,6 +17,8 @@ type Config = {|
   ACCESS_TOKEN: ?string,
   MAX_PARALLEL_IMAGE_REQUESTS: number,
   DRACO_URL: string,
+  MESHOPT_URL: string,
+  MESHOPT_SIMD_URL: string,
   DEFAULT_STYLE: string,
   GLYPHS_URL: string,
 |};
@@ -80,6 +82,8 @@ const config: Config = {
     DEFAULT_STYLE: 'mapbox://styles/mapbox/standard',
     MAX_PARALLEL_IMAGE_REQUESTS: 16,
     DRACO_URL: 'https://api.mapbox.com/mapbox-gl-js/draco_decoder_gltf_v1.5.6.wasm',
+    MESHOPT_URL: 'https://api.mapbox.com/mapbox-gl-js/meshopt_base_v0.20.wasm',
+    MESHOPT_SIMD_URL: 'https://api.mapbox.com/mapbox-gl-js/meshopt_simd_v0.20.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
 };
 

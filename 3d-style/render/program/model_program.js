@@ -41,7 +41,8 @@ export type ModelUniformsType = {
     'u_emissionTexture': Uniform1i,
     'u_color_mix': Uniform4f,
     'u_aoIntensity': Uniform1f,
-    'u_emissive_strength': Uniform1f
+    'u_emissive_strength': Uniform1f,
+    'u_occlusionTextureTransform': Uniform4f
 };
 
 const modelUniforms = (context: Context): ModelUniformsType => ({
@@ -67,7 +68,8 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_emissionTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
     'u_aoIntensity': new Uniform1f(context),
-    'u_emissive_strength' : new Uniform1f(context)
+    'u_emissive_strength' : new Uniform1f(context),
+    'u_occlusionTextureTransform': new Uniform4f(context)
 
 });
 
@@ -84,7 +86,8 @@ const modelUniformValues = (
     material: Material,
     emissiveStrength: number,
     layer: ModelStyleLayer,
-    cameraPos: [number, number, number] = [0, 0, 0]
+    cameraPos: [number, number, number] = [0, 0, 0],
+    occlusionTextureTransform: ?[number, number, number, number]
 ): UniformValues<ModelUniformsType> => {
 
     const light = painter.style.light;
@@ -128,7 +131,8 @@ const modelUniformValues = (
         'u_emissionTexture': TextureSlots.Emission,
         'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity],
         'u_aoIntensity': aoIntensity,
-        'u_emissive_strength': emissiveStrength
+        'u_emissive_strength': emissiveStrength,
+        'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0]
     };
 
     return uniformValues;

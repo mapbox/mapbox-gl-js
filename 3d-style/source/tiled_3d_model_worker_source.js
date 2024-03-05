@@ -62,14 +62,16 @@ class Tiled3dWorkerTile {
             .then(gltf => {
                 if (!gltf) return callback(new Error('Could not parse tile'));
                 const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
-                const hasMapboxMeshFeatures = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features');
+                const hasMapboxMeshFeatures = (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
+                                            (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
+                const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
+
                 const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
                 for (const sourceLayerId in layerFamilies) {
                     for (const family of layerFamilies[sourceLayerId]) {
                         const layer = family[0];
-                        const extensions = gltf.json.extensionsUsed;
                         layer.recalculate(parameters, []);
-                        const bucket = new Tiled3dModelBucket(nodes, tileID, extensions && extensions.includes("MAPBOX_mesh_features"), this.brightness);
+                        const bucket = new Tiled3dModelBucket(nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                         buckets[layer.fqid] = bucket;

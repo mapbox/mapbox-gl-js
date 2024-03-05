@@ -155,7 +155,7 @@
         },
         "3dbuildings": {
             "type": "batched-model",
-            "url": "mapbox://mapbox.mapbox-3dbuildings-v1-beta"
+            "url": "mapbox://mapbox.mbx-3dbuildings-v2-stg"
         }
     },
     "sprite": "mapbox://sprites/mapbox-map-design/clhrnvstg01yh01pn02ty6w7p/82qb27u5bmlfnboenyglbwsa3",

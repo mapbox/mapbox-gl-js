@@ -101,7 +101,7 @@ class Tiled3dModelBucket implements Bucket {
     brightness: ?number;
     needsUpload: boolean;
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
-    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, brightness: ?number) {
+    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, hasMeshoptCompression: boolean, brightness: ?number) {
         this.nodes = nodes;
         this.id = id;
         this.modelTraits |= ModelTraits.CoordinateSpaceTile;
@@ -109,6 +109,9 @@ class Tiled3dModelBucket implements Bucket {
         this.hasPattern = false;
         if (hasMbxMeshFeatures) {
             this.modelTraits |= ModelTraits.HasMapboxMeshFeatures;
+        }
+        if (hasMeshoptCompression) {
+            this.modelTraits |= ModelTraits.HasMeshoptCompression;
         }
         this.zoom = -1;
         this.terrainExaggeration = 1;
@@ -221,7 +224,7 @@ class Tiled3dModelBucket implements Bucket {
                 delete evaluationFeature.properties['part'];
                 const doorLightChanged = previousDoorColor !== nodeInfo.evaluatedColor[PartIndices.door] ||
                                          previousDoorRMEA !== nodeInfo.evaluatedRMEA[PartIndices.door];
-                updateNodeFeatureVertices(nodeInfo, doorLightChanged);
+                updateNodeFeatureVertices(nodeInfo, doorLightChanged, this.modelTraits);
             } else {
                 nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
             }
@@ -562,9 +565,10 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     }
 }
 
-function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChanged: boolean) {
+function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChanged: boolean, modelTraits: number) {
     const node = nodeInfo.node;
     let i = 0;
+    const isV2Tile = modelTraits & ModelTraits.HasMeshoptCompression;
     for (const mesh of node.meshes) {
         if (node.lights && node.lightMeshIndex === i) continue;
         if (!mesh.featureData) continue;
@@ -573,13 +577,19 @@ function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChang
         mesh.featureArray.reserve(mesh.featureData.length);
         let pendingDoorLightUpdate = doorLightChanged;
         for (const feature of mesh.featureData) {
-            let lightsFeatureArray;
-            const id = feature & 0xFFFF;
+            // V1 and V2 tiles have a different bit structure
+            // In V2, meshopt compression forces to use values less than 2^24 to not lose any information
+            // That's why colors are in the least significant bits and use the following LSB to encode
+            // part ids.
+            const featureColor = isV2Tile ? feature & 0xffff : (feature >> 16) & 0xffff;
+            const id = isV2Tile ? (feature >> 16) & 0xffff : feature & 0xffff;
             const partId = (id & 0xf) < 8 ? (id & 0xf) : 0;
-            const featureColor = (feature >> 16) & 0xFFFF;
+
             const rmea = nodeInfo.evaluatedRMEA[partId];
             const evaluatedColor = nodeInfo.evaluatedColor[partId];
             const emissionParams = nodeInfo.emissionHeightBasedParams[partId];
+
+            let lightsFeatureArray;
             if (pendingDoorLightUpdate && partId === PartIndices.door && node.lights) {
                 lightsFeatureArray = new FeatureVertexArray();
                 lightsFeatureArray.resize(node.lights.length * 10);

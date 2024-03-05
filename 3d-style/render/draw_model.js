@@ -806,6 +806,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         }
                     }
 
+                    const material = mesh.material;
+                    let occlusionTextureTransform;
+                    // Handle Texture transform
+                    if (material.occlusionTexture && material.occlusionTexture.offsetScale) {
+                        occlusionTextureTransform = material.occlusionTexture.offsetScale;
+                        (programOptions.defines: any).push('OCCLUSION_TEXTURE_TRANSFORM');
+                    }
+
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
@@ -815,7 +823,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                     painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), fogMatrixArray);
 
-                    const material = mesh.material;
                     const pbr = material.pbrMetallicRoughness;
                     // These values were taken from the tilesets used for testing
                     pbr.metallicFactor = 0.9;
@@ -834,7 +841,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             pbr.roughnessFactor,
                             material,
                             emissiveStrength,
-                            layer
+                            layer,
+                            [0, 0, 0],
+                            occlusionTextureTransform
                     );
 
                     const meshNeedsBlending = isLight || layerOpacity < 1.0 || nodeInfo.hasTranslucentParts;

@@ -30,7 +30,7 @@ import {prewarm, clearPrewarmedResources} from './util/global_worker_pool.js';
 import {clearTileCache} from './util/tile_request_cache.js';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils.js';
 import {FreeCameraOptions} from './ui/free_camera.js';
-import {getDracoUrl, setDracoUrl} from '../3d-style/util/loaders.js';
+import {getDracoUrl, setDracoUrl, setMeshoptUrl, getMeshoptUrl} from '../3d-style/util/loaders.js';
 import browser from './util/browser.js';
 
 const exported = {
@@ -257,6 +257,14 @@ const exported = {
 
     set dracoUrl(url: string) {
         setDracoUrl(url);
+    },
+
+    get meshoptUrl(): string {
+        return getMeshoptUrl();
+    },
+
+    set meshoptUrl(url: string) {
+        setMeshoptUrl(url);
     },
 
     /**

@@ -156,7 +156,7 @@ window.dynamic = {
         },
         "3dbuildings": {
             "type": "batched-model",
-            "url": "mapbox://mapbox.mapbox-3dbuildings-v1-beta"
+            "url": "mapbox://mapbox.mbx-3dbuildings-v2-stg"
         },
         "mapbox-dem": {
             "type": "raster-dem",
