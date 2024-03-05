@@ -7920,10 +7920,10 @@ vite-node@1.2.1:
     picocolors "^1.0.0"
     vite "^5.0.0"
 
-vite-plugin-arraybuffer@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/vite-plugin-arraybuffer/-/vite-plugin-arraybuffer-0.0.2.tgz#3094b3691ecadfd2b12bb210d9a06e69c1056577"
-  integrity sha512-ibjyFobimOplfrKZFG7ecdLSp0L0eo6YOat9Nm5AQ95edq5bMt/hN0dx4oJifczdyQECSqg7R+j5IM2hsC9lvQ==
+vite-plugin-arraybuffer@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/vite-plugin-arraybuffer/-/vite-plugin-arraybuffer-0.0.6.tgz#2a5db12690671469e69678ae368b1b5ffcb34c07"
+  integrity sha512-2TXAUuHREy29seo6qgm/lGjUpYxJjzsIGHi7cOScMALK6GHIpV2/3KHZ6uaLVAUGwbYQ8rDhNqYgnPkFLxZgnQ==
 
 vite-plugin-node-polyfills@^0.19.0:
   version "0.19.0"
