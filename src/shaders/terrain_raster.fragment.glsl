@@ -12,7 +12,6 @@ in float v_fog_opacity;
 #ifdef RENDER_SHADOWS
 in vec4 v_pos_light_view_0;
 in vec4 v_pos_light_view_1;
-in float v_depth;
 #endif
 
 uniform vec3 u_ground_shadow_factor;
@@ -27,7 +26,7 @@ void main() {
 #ifdef RENDER_SHADOWS
     float cutoffOpacity = 1.0;
 #ifdef RENDER_CUTOFF
-    cutoffOpacity = cutoff_opacity(u_cutoff_params, v_depth);
+    cutoffOpacity = cutoff_opacity(u_cutoff_params, 1.0 / gl_FragCoord.w);
 #endif // RENDER_CUTOFF
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
     // Drape texture also contains the flood light color already
@@ -37,7 +36,7 @@ void main() {
     vec3 unlit_base = image_color.rgb * (1.0 - image_color.a);
     vec3 emissive_base = image_color.rgb * image_color.a;
     float ndotl = u_shadow_direction.z;
-    float occlusion = ndotl < 0.0 ? 1.0 : shadow_occlusion(v_pos_light_view_0, v_pos_light_view_1, v_depth, 0.0);
+    float occlusion = ndotl < 0.0 ? 1.0 : shadow_occlusion(v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w, 0.0);
     ndotl = max(0.0, ndotl);
     // "lit" uses pretty much "shadowed_light_factor_normal_unbiased" as the directional component.
     vec3 lit = apply_lighting(unlit_base, normal, mix(1.0, (1.0 - (u_shadow_intensity * occlusion)) * ndotl, cutoffOpacity));
@@ -45,7 +44,7 @@ void main() {
     color.rgb = lit + emissive;
     color.a = 1.0;
 #else // LIGHTING_3D_ALPHA_EMISSIVENESS
-    float lighting_factor = shadowed_light_factor_normal_unbiased(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    float lighting_factor = shadowed_light_factor_normal_unbiased(normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
     color = apply_lighting(image_color, normal, mix(1.0, lighting_factor, cutoffOpacity));
 #endif // !LIGHTING_3D_ALPHA_EMISSIVENESS
 #else // RENDER_SHADOWS

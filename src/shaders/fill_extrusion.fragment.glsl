@@ -8,7 +8,6 @@ in vec4 v_flat;
 #ifdef RENDER_SHADOWS
 in highp vec4 v_pos_light_view_0;
 in highp vec4 v_pos_light_view_1;
-in float v_depth;
 #endif
 
 uniform lowp float u_opacity;
@@ -94,7 +93,7 @@ float flood_radiance = 0.0;
 #ifdef FLOOD_LIGHT
     float ndotl_unclamped = dot(normal, u_shadow_direction);
     float ndotl = max(0.0, ndotl_unclamped);
-    float occlusion = ndotl_unclamped < 0.0 ? 1.0 : shadow_occlusion(ndotl, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    float occlusion = ndotl_unclamped < 0.0 ? 1.0 : shadow_occlusion(ndotl, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
 
     // Compute both FE and flood lights separately and interpolate between the two.
     // "litColor" uses pretty much "shadowed_light_factor_normal" as the directional component.
@@ -103,7 +102,7 @@ float flood_radiance = 0.0;
 
     color.rgb = mix(litColor, floodLitColor, flood_radiance);
 #else // FLOOD_LIGHT
-    float shadowed_lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    float shadowed_lighting_factor = shadowed_light_factor_normal(normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
     color.rgb = apply_lighting(color.rgb, normal, shadowed_lighting_factor);
 #endif // !FLOOD_LIGHT 
 #else // RENDER_SHADOWS

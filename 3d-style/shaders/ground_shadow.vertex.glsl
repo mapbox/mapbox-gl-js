@@ -8,7 +8,6 @@ in vec2 a_pos;
 
 out vec4 v_pos_light_view_0;
 out vec4 v_pos_light_view_1;
-out float v_depth;
 
 #ifdef FOG
 out float v_fog_opacity;
@@ -19,8 +18,6 @@ void main() {
 
     v_pos_light_view_0 = u_light_matrix_0 * vec4(a_pos, 0.0, 1.0);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(a_pos, 0.0, 1.0);
-
-    v_depth = gl_Position.w;
 
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);

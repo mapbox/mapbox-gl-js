@@ -40,6 +40,5 @@ void main() {
     vec3 pos = vec3(decodedPos, elevation);
     v_pos_light_view_0 = u_light_matrix_0 * vec4(pos, 1.);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(pos, 1.);
-    v_depth = gl_Position.w;
 #endif
 }
