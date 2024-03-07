@@ -18,6 +18,7 @@ in vec2 a_pos; // .xy - grid coords, .z - 1 - skirt, 0 - grid
 #endif
 
 out vec2 v_pos0;
+out float v_depth;
 
 void main() {
 #ifdef GLOBE_POLES
@@ -83,6 +84,7 @@ void main() {
 #endif
 
     gl_Position = u_proj_matrix * interpolated_pos;
+    v_depth = gl_Position.w;
 
 #ifdef FOG
     v_fog_pos = fog_position((u_normalize_matrix * vec4(globe_pos, 1.0)).xyz);
