@@ -10,15 +10,7 @@
   "bearing": -16.8,
   "longitude": 38.175,
   "latitude": 19.955,
-  "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
-    }
-  },
+  "sources": {},
   "projection": {
     "name": "globe"
   },
@@ -29,15 +21,6 @@
       "type": "background",
       "paint": {
         "background-color": "purple"
-      }
-    },
-    {
-      "id": "land",
-      "type": "fill",
-      "source": "mapbox",
-      "source-layer": "water",
-      "paint": {
-        "fill-color": "blue"
       }
     }
   ]
