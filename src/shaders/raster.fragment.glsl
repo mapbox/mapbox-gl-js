@@ -5,10 +5,12 @@
 uniform float u_fade_t;
 uniform float u_opacity;
 uniform highp float u_raster_elevation;
+uniform highp float u_zoom_transition;
 
 in vec2 v_pos0;
 in vec2 v_pos1;
 in float v_depth;
+in float v_split_fade;
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -81,6 +83,9 @@ void main() {
 #endif
 
     color.a *= u_opacity;
+#ifdef GLOBE_POLES
+    color.a *= 1.0 - smoothstep(0.0, 0.05, u_zoom_transition);
+#endif
     vec3 rgb = color.rgb;
 
     // spin
@@ -113,6 +118,7 @@ void main() {
 #endif
 
     glFragColor = vec4(out_color * color.a, color.a);
+    glFragColor *= mix(1.0, 1.0 - smoothstep(0.0, 0.05, u_zoom_transition), smoothstep(0.8, 0.9, v_split_fade));
 
 #ifdef RENDER_CUTOFF
     glFragColor = glFragColor * cutoff_opacity(u_cutoff_params, v_depth);

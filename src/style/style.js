@@ -1143,6 +1143,7 @@ class Style extends Evented {
             const sourceCache = this._mergedSourceCaches[sourceId];
             sourcesUsedBefore[sourceId] = sourceCache.used;
             sourceCache.used = false;
+            sourceCache.tileCoverLift = 0.0;
         }
 
         for (const layerId of this._mergedOrder) {
@@ -1150,7 +1151,11 @@ class Style extends Evented {
             layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
                 const sourceCache = this.getLayerSourceCache(layer);
-                if (sourceCache) sourceCache.used = true;
+                if (sourceCache) {
+                    sourceCache.used = true;
+                    // Select the highest elevation across all layers that are rendered with this source
+                    sourceCache.tileCoverLift = Math.max(sourceCache.tileCoverLift, layer.tileCoverLift());
+                }
             }
 
             if (!this._precompileDone && this._shouldPrecompile) {

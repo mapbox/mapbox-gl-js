@@ -69,6 +69,7 @@ const presets = {
 function GUIParams () {
     this.preset = "Satellite";
     this.opacity = 1;
+    this.elevation = 0;
     Object.assign(this, presets[this.preset]);
 }
 
@@ -200,7 +201,8 @@ function setStyle (tileset) {
             "source": "raster",
             "id": "raster",
             "paint": {
-                "raster-opacity": guiParams.opacity
+                "raster-opacity": guiParams.opacity,
+                "raster-elevation": guiParams.elevation
             }
         }]
     });
@@ -211,6 +213,7 @@ var map = window.map = new mapboxgl.Map({
     devtools: true,
     style: {version: 8, layers: [], sources: {}},
     hash: true,
+    projection: 'globe',
     transformRequest (url, type) {
         if (type !== "Tile") return;
         const preset = presets[guiParams.preset];
@@ -230,6 +233,7 @@ map.once("load", function () {
     const mix = gui.add(guiParams, "rasterColorMix", Object.keys(mixes));
     const range = gui.add(guiParams, "rasterColorRange", Object.keys(ranges));
     const opacity = gui.add(guiParams, "opacity", 0, 1);
+    const elevation = gui.add(guiParams, "elevation", 0, 10000000);
 
     function setColorScale(scale) {
         const range = ranges[guiParams.rasterColorRange];
@@ -280,7 +284,12 @@ map.once("load", function () {
         document.getElementById("gradient").style.opacity = opac;
     });
 
+    elevation.onChange(opac => {
+        map.setPaintProperty("raster", "raster-elevation", opac);
+    });
+
     setTileset(guiParams.tileset);
+    map.setFog({});
 });
 
 </script>

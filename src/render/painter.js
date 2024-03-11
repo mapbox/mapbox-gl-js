@@ -201,6 +201,7 @@ class Painter {
     minCutoffZoom: number;
     renderDefaultNorthPole: boolean;
     renderDefaultSouthPole: boolean;
+    renderElevatedRasterBackface: boolean;
     _fogVisible: boolean;
     _cachedTileFogOpacities: {[number]: [number, number]};
 
@@ -876,6 +877,37 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
+        function coordsForTranslucentLayer(layer: StyleLayer, sourceCache?: SourceCache) {
+            // For symbol layers in the translucent pass, we add extra tiles to the renderable set
+            // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
+            // separate clipping masks
+            let coords: ?Array<OverscaledTileID>;
+
+            if (sourceCache) {
+                const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
+                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
+
+                coords = coordsSet[sourceCache.id];
+            }
+            return coords;
+        }
+
+        // Render elevated raster layers behind the globe
+        const isGlobe = this.transform.projection.name === 'globe';
+        if (isGlobe) {
+            this.renderElevatedRasterBackface = true;
+            this.currentLayer = 0;
+            while (this.currentLayer < layerIds.length) {
+                const layer = orderedLayers[this.currentLayer];
+                if (layer.type === "raster") {
+                    const sourceCache = style.getLayerSourceCache(layer);
+                    this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
+                }
+                ++this.currentLayer;
+            }
+            this.renderElevatedRasterBackface = false;
+        }
+
         this.currentLayer = 0;
         this.firstLightBeamLayer = Number.MAX_SAFE_INTEGER;
 
@@ -909,20 +941,8 @@ class Painter {
                 continue;
             }
 
-            // For symbol layers in the translucent pass, we add extra tiles to the renderable set
-            // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
-            // separate clipping masks
-            let coords: ?Array<OverscaledTileID>;
-
-            if (sourceCache) {
-                const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
-                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
-
-                coords = coordsSet[sourceCache.id];
-            }
-
             this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
-            this.renderLayer(this, sourceCache, layer, coords);
+            this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
 
             // Render ground shadows after the last shadow caster layer
             if (!terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {

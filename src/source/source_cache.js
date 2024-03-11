@@ -55,6 +55,7 @@ class SourceCache extends Evented {
     used: boolean;
     usedForTerrain: boolean;
     castsShadows: boolean;
+    tileCoverLift: number;
     _state: SourceFeatureState;
     _loadedParentTiles: {[_: number | string]: ?Tile};
     _onlySymbols: ?boolean;
@@ -98,6 +99,7 @@ class SourceCache extends Evented {
         this._maxTileCacheSize = source.maxTileCacheSize;
         this._loadedParentTiles = {};
         this.castsShadows = false;
+        this.tileCoverLift = 0.0;
 
         this._coveredTiles = {};
         this._shadowCasterTiles = {};
@@ -534,6 +536,26 @@ class SourceCache extends Evented {
         } else if (this._source.tileID) {
             idealTileIDs = transform.getVisibleUnwrappedCoordinates(this._source.tileID)
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
+        } else if (this.tileCoverLift !== 0.0) {
+            // Extended tile cover to load elevated tiles
+            const modifiedTransform = transform.clone();
+            modifiedTransform.tileCoverLift = this.tileCoverLift;
+            idealTileIDs = modifiedTransform.coveringTiles({
+                tileSize: tileSize || this._source.tileSize,
+                minzoom: this._source.minzoom,
+                maxzoom: this._source.maxzoom,
+                roundZoom: this._source.roundZoom && !updateForTerrain,
+                reparseOverscaled: this._source.reparseOverscaled,
+                isTerrainDEM: this.usedForTerrain
+            });
+
+            // Add zoom level 1 tiles to cover area behind globe
+            if (this._source.minzoom <= 1.0 && transform.projection.name === 'globe') {
+                idealTileIDs.push(new OverscaledTileID(1, 0, 1, 0, 0));
+                idealTileIDs.push(new OverscaledTileID(1, 0, 1, 1, 0));
+                idealTileIDs.push(new OverscaledTileID(1, 0, 1, 0, 1));
+                idealTileIDs.push(new OverscaledTileID(1, 0, 1, 1, 1));
+            }
         } else {
             idealTileIDs = transform.coveringTiles({
                 tileSize: tileSize || this._source.tileSize,

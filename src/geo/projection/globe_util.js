@@ -266,7 +266,7 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
     // It is enough to extend the aabb to contain only the edge that's closest to the center point.
     const bounds = tileCornersToBounds(tileId, extendToPoles);
 
-    const corners = boundsToECEF(bounds);
+    const corners = boundsToECEF(bounds, GLOBE_RADIUS + globeMetersToEcef(tr._tileCoverLift));
 
     // Transform the corners to world space
     transformPoints(corners, m, scale);
@@ -289,6 +289,15 @@ export function aabbForTileOnGlobe(tr: Transform, numTiles: number, tileId: Cano
         vec3.min(cornerMin, cornerMin, center);
         vec3.max(cornerMax, cornerMax, center);
 
+        return new Aabb(cornerMin, cornerMax);
+    }
+
+    if (tr._tileCoverLift > 0.0) {
+        // Early return for elevated globe tiles, where the tile cover optimization is ignored
+        for (const corner of corners) {
+            vec3.min(cornerMin, cornerMin, corner);
+            vec3.max(cornerMax, cornerMax, corner);
+        }
         return new Aabb(cornerMin, cornerMax);
     }
 
@@ -405,7 +414,7 @@ function mercatorTileCornersInCameraSpace({x, y, z}: CanonicalTileID, numTiles: 
         [w, n, 0]];
 }
 
-function boundsToECEF(bounds: LngLatBounds): Array<Vec3> {
+function boundsToECEF(bounds: LngLatBounds, radius: number = GLOBE_RADIUS): Array<Vec3> {
     const ny = degToRad(bounds.getNorth());
     const sy = degToRad(bounds.getSouth());
     const cosN = Math.cos(ny);
@@ -415,10 +424,10 @@ function boundsToECEF(bounds: LngLatBounds): Array<Vec3> {
     const w = bounds.getWest();
     const e = bounds.getEast();
     return [
-        csLatLngToECEF(cosS, sinS, w),
-        csLatLngToECEF(cosS, sinS, e),
-        csLatLngToECEF(cosN, sinN, e),
-        csLatLngToECEF(cosN, sinN, w)
+        csLatLngToECEF(cosS, sinS, w, radius),
+        csLatLngToECEF(cosS, sinS, e, radius),
+        csLatLngToECEF(cosN, sinN, e, radius),
+        csLatLngToECEF(cosN, sinN, w, radius)
     ];
 }
 

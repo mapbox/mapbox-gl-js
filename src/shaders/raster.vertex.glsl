@@ -26,6 +26,7 @@ in vec2 a_texture_pos;
 out vec2 v_pos0;
 out vec2 v_pos1;
 out float v_depth;
+out float v_split_fade;
 
 void main() {
     vec2 uv;
@@ -52,14 +53,31 @@ void main() {
     globe_pos += normalize(globe_pos) * u_raster_elevation * GLOBE_UPSCALE;
     vec4 globe_world_pos = u_globe_matrix * vec4(globe_pos, 1.0);
     vec4 merc_world_pos = vec4(0.0);
+    float mercatorY = mercatorYfromLat(latLng[0]);
+    float mercatorX = mercatorXfromLng(latLng[1]);    
+    v_split_fade = 0.0;
     if (u_zoom_transition > 0.0) {
-        float mercatorY = mercatorYfromLat(latLng[0]);
-        float mercatorX = mercatorXfromLng(latLng[1]);
         vec2 merc_pos = vec2(mercatorX, mercatorY);
         merc_world_pos = vec4(merc_pos, u_raster_elevation, 1.0);
         merc_world_pos.xy -= u_merc_center;
         merc_world_pos.x = wrap(merc_world_pos.x, -0.5, 0.5);
         merc_world_pos = u_merc_matrix * merc_world_pos;
+
+        float opposite_merc_center = mod(u_merc_center.x + 0.5, 1.0);
+        float dist_from_poles = (abs(mercatorY - 0.5) * 2.0);
+        float range = 0.1;
+        v_split_fade = abs(opposite_merc_center - mercatorX);
+        v_split_fade = clamp(1.0 - v_split_fade, 0.0, 1.0);
+        v_split_fade = max(smoothstep(1.0 - range, 1.0, dist_from_poles), max(smoothstep(1.0 - range, 1.0, v_split_fade), smoothstep(1.0 - range, 1.0, 1.0 - v_split_fade)));
+    }
+
+    float tiles = u_grid_matrix[0][2];
+    if (tiles > 0.0) {
+        float idx = u_grid_matrix[1][2];
+        float idy = u_grid_matrix[2][2];
+        float uvY = mercatorY * tiles - idy;
+        float uvX = mercatorX * tiles - idx;
+        uv = vec2(uvX, uvY);
     }
 
     vec4 interpolated_pos = vec4(mix(globe_world_pos.xyz, merc_world_pos.xyz, u_zoom_transition) * w, w);

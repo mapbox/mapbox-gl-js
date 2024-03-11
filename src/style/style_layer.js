@@ -335,6 +335,10 @@ class StyleLayer extends Evented {
         return 0.0;
     }
 
+    tileCoverLift(): number {
+        return 0.0;
+    }
+
     resize() {
         // noop
     }

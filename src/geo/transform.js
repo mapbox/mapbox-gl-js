@@ -10,7 +10,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../style-spec/data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, FrustumCorners, Ray} from '../util/primitives.js';
+import {Frustum, FrustumCorners, Ray, Aabb} from '../util/primitives.js';
 import EdgeInsets from './edge_insets.js';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera.js';
 import assert from 'assert';
@@ -23,8 +23,7 @@ import {
     aabbForTileOnGlobe,
     GLOBE_ZOOM_THRESHOLD_MIN,
     GLOBE_ZOOM_THRESHOLD_MAX,
-    GLOBE_SCALE_MATCH_LATITUDE
-} from '../geo/projection/globe_util.js';
+    GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';
@@ -34,7 +33,6 @@ import type Tile from '../source/tile.js';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {FeatureDistanceData} from '../style-spec/feature_filter/index.js';
 import type {Mat4, Vec3, Vec4, Quat} from 'gl-matrix';
-import type {Aabb} from '../util/primitives';
 
 const NUM_WORLD_COPIES = 3;
 export const DEFAULT_MIN_ZOOM = 0;
@@ -156,6 +154,7 @@ class Transform {
 
     cameraFrustum: Frustum;
     frustumCorners: FrustumCorners;
+    _tileCoverLift: number;
 
     freezeTileCoverage: boolean;
     cameraElevationReference: ElevationReference;
@@ -231,6 +230,7 @@ class Transform {
         this._pixelsPerMercatorPixel = 1.0;
         this.globeRadius = 0;
         this.globeCenterInViewSpace = [0, 0, 0];
+        this._tileCoverLift = 0;
 
         // Move the horizon closer to the center. 0 would not shift the horizon. 1 would put the horizon at the center.
         this._horizonShift = 0.1;
@@ -500,6 +500,12 @@ class Transform {
         this.scale = this.zoomScale(z);
         this.tileZoom = Math.floor(z);
         this.zoomFraction = z - this.tileZoom;
+    }
+
+    get tileCoverLift(): number { return this._tileCoverLift; }
+    set tileCoverLift(lift: number) {
+        if (this._tileCoverLift === lift) return;
+        this._tileCoverLift = lift;
     }
 
     _updateCameraOnTerrain() {

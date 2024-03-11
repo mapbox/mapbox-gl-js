@@ -7601,7 +7601,7 @@
     },
     "raster-elevation": {
       "type": "number",
-      "doc": "Specifies an uniform elevation from the ground, in meters. Only supported with image sources.",
+      "doc": "Specifies an uniform elevation from the ground, in meters.",
       "default": 0,
       "minimum": 0,
       "transition": true,

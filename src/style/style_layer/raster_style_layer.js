@@ -38,6 +38,10 @@ class RasterStyleLayer extends StyleLayer {
         return !!expr.value;
     }
 
+    tileCoverLift(): number {
+        return this.paint.get('raster-elevation');
+    }
+
     // $FlowFixMe[method-unbinding]
     isLayerDraped(sourceCache: ?SourceCache): boolean {
         // Special handling for raster, where the drapeability depends on the source
@@ -46,9 +50,8 @@ class RasterStyleLayer extends StyleLayer {
             if (sourceCache._source.onNorthPole || sourceCache._source.onSouthPole) {
                 return false;
             }
-            return this.paint.get('raster-elevation') === 0.0;
         }
-        return true;
+        return this.paint.get('raster-elevation') === 0.0;
     }
 
     _handleSpecialPaintPropertyUpdate(name: string) {
