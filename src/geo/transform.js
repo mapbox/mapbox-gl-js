@@ -2390,7 +2390,7 @@ class Transform {
         // drape raster overscale artifacts or cut terrain (see under it) as it gets clipped on
         // near plane. Returned value is in mercator coordinates.
         const MAX_DRAPE_OVERZOOM = 4;
-        const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom) + MAX_DRAPE_OVERZOOM, this._maxZoom);
+        const zoom = Math.min((this._seaLevelZoom != null ? this._seaLevelZoom : this._zoom), this._maxZoom) + MAX_DRAPE_OVERZOOM;
         return this._mercatorZfromZoom(zoom);
     }
 

@@ -165,6 +165,32 @@ describe('ScrollZoomHandler', () => {
             map.remove();
         });
 
+        test('Should keep maxZoom level during pitch', async () => {
+            vi.useFakeTimers();
+
+            const map = createMap({
+                interactive: true,
+                maxZoom: 12,
+                zoom: 11,
+                pitch: 60,
+            });
+
+            await waitFor(map, "style.load");
+
+            setMockElevationTerrain(map, zeroElevationDem, tileSize);
+
+            await waitFor(map, "render");
+
+            for (let i = 0; i < 10; i++) {
+                simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
+                map._renderTaskQueue.run();
+            }
+
+            equalWithPrecision(map.transform.zoom, 12, 0.001);
+
+            map.remove();
+        });
+
         test('Consistent deltas if elevation changes', async () => {
             const map = createMap({
                 interactive: true
