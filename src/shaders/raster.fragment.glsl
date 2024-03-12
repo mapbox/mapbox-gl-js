@@ -10,7 +10,9 @@ uniform highp float u_zoom_transition;
 in vec2 v_pos0;
 in vec2 v_pos1;
 in float v_depth;
+#ifdef PROJECTION_GLOBE_VIEW
 in float v_split_fade;
+#endif
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -118,7 +120,9 @@ void main() {
 #endif
 
     glFragColor = vec4(out_color * color.a, color.a);
+#ifdef PROJECTION_GLOBE_VIEW
     glFragColor *= mix(1.0, 1.0 - smoothstep(0.0, 0.05, u_zoom_transition), smoothstep(0.8, 0.9, v_split_fade));
+#endif
 
 #ifdef RENDER_CUTOFF
     glFragColor = glFragColor * cutoff_opacity(u_cutoff_params, v_depth);

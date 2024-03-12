@@ -26,7 +26,9 @@ in vec2 a_texture_pos;
 out vec2 v_pos0;
 out vec2 v_pos1;
 out float v_depth;
+#ifdef PROJECTION_GLOBE_VIEW
 out float v_split_fade;
+#endif
 
 void main() {
     vec2 uv;
