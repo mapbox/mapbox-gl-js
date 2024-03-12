@@ -44,13 +44,13 @@
     "line": 53
   },
   {
-    "message": "sources[0].type: Expected one of [vector, raster, raster-dem, model, batched-model]"
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]"
   },
   {
     "message": "sources[0].url: Expected a valid Mapbox tileset url"
   },
   {
-    "message": "sources[1].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[1].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 7
   },
   {
@@ -81,7 +81,7 @@
     "line": 22
   },
   {
-    "message": "sources[4].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[4].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 20
   },
   {
@@ -92,7 +92,7 @@
     "line": 28
   },
   {
-    "message": "sources[5].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[5].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 27
   },
   {
@@ -107,7 +107,7 @@
     "line": 33
   },
   {
-    "message": "sources[6].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[6].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 31
   },
   {
@@ -122,7 +122,7 @@
     "line": 40
   },
   {
-    "message": "sources[7].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[7].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 38
   },
   {
@@ -141,7 +141,7 @@
     "line": 48
   },
   {
-    "message": "sources[8].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[8].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 45
   },
   {

@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["wait"],
+        [
+          "setPaintProperty",
+          "precipitations",
+          "raster-array-band",
+          "1708362000"
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    138.7275,
+    35.360833
+  ],
+  "zoom": 10,
+  "pitch": 85,
+  "bearing": 0,
+  "transition": {"duration": 0},
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 1.5
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "precipitations": {
+      "type": "raster-array",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mrt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "precipitations",
+      "source": "precipitations",
+      "source-layer": "Total Precip",
+      "type": "raster",
+      "slot": "top",
+      "layout": {},
+      "paint": {
+        "raster-opacity": 0.75,
+        "raster-resampling": "linear",
+        "raster-fade-duration": 0,
+        "raster-color-range": [0, 1],
+        "raster-color-range-transition": {"duration": 0},
+        "raster-color": [
+          "interpolate",
+          ["linear"],
+          ["raster-value"],
+          0, "rgba(255,0,0,1)",
+          0.5, "rgba(0,255,0,1)",
+          1, "rgba(0,0,255,1)"
+        ]
+      }
+    }
+  ]
+}

@@ -76,7 +76,7 @@
     "line": 14
   },
   {
-    "message": "sources[2].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[2].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 13
   },
   {
@@ -91,7 +91,7 @@
     "line": 19
   },
   {
-    "message": "sources[3].type: Expected one of [vector, raster, raster-dem, model, batched-model]",
+    "message": "sources[3].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
     "line": 17
   },
   {

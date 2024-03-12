@@ -52,6 +52,13 @@ export type WorkerDEMTileParameters = TileParameters & {
     convertToFloat: boolean
 };
 
+export type WorkerRasterArrayTileParameters = TileParameters & {
+    coord: { z: number, x: number, y: number, w: number },
+    buffer: ArrayBuffer,
+    uid: any,
+    task: any,
+};
+
 export type WorkerTileResult = {
     buckets: Array<Bucket>,
     imageAtlas: ImageAtlas,
@@ -70,6 +77,7 @@ export type WorkerTileResult = {
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult) => void;
 export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
+export type WorkerRasterArrayTileCallback = (err: ?Error, result: ?any) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

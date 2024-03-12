@@ -46,7 +46,7 @@ export type RasterUniformsType = {|
     'u_emissive_strength': Uniform1f
 |};
 
-export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF';
+export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR';
 
 const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -194,41 +194,39 @@ function saturationFactor(saturation: number) {
         -saturation;
 }
 
-function computeRasterColorMix([mr, mg, mb, ma]: [number, number, number, number], [min, max]: [number, number]): [number, number, number, number] {
+function computeRasterColorMix([mixR, mixG, mixB, mixA]: [number, number, number, number], [min, max]: [number, number]): [number, number, number, number] {
     if (min === max) return [0, 0, 0, 0];
 
-    // The following computes a mix which, together with the offset, transforms a
-    // normalized pixel value in the range (0, 1) to a texture lookup position. It
-    // combines the following mappings:
+    // Together with the `offset`, the mix vector transforms the encoded integer
+    // input into a numeric value. To minimize work, we modify this vector to
+    // perform extra steps on the CPU, before rendering.
     //
-    //   1. value = offset + scale * (256 * 256 * 256 * R + 256 * 256 * G + 256 * B + A)
-    //   2. normalized = (value - min) / (max - min)
-    //   3. stretched = -1/(N+1) + (N+3)/(N+1) * normalized
+    // To a first cut, we map `min` to the texture coordinate 0, and `max` to texture
+    // coordinate 1. However, this would align the samples with the *edges* of
+    // tabulated texels rather than the centers. This  makes it difficult to precisely
+    // position values relative to the tabulated colors.
     //
-    // The first mapping reconstructs the numerical value. The second normalizes
-    // the value to the range [0, 1] by way of the selected raster-color-range.
+    // Therefore given color map resolution N, we actually map `min` to 1 / 2N and
+    // `max` to 1 - 1 / 2N. When you work out a few lines of algebra, the scale factor
+    // below is the result.
     //
-    // The third requires some explanation. Since tabulated color map values are
-    // defined at the *center* of each texel, we actually stretch the range [0, 1]
-    // just slightly so that the *center* of the texels are at 0 and 1, respectively.
-
-    const factor = (COLOR_RAMP_RES + 3) / (COLOR_RAMP_RES + 1) / (max - min);
+    // Similarly, computerRasterColorOffset contains the counterpart of this equation
+    // by which the constant offset is adjusted.
+    const factor = 255 * (COLOR_RAMP_RES - 1) / (COLOR_RAMP_RES * (max - min));
 
     return [
-        mr * factor,
-        mg * factor,
-        mb * factor,
-        ma * factor
+        mixR * factor,
+        mixG * factor,
+        mixB * factor,
+        mixA * factor
     ];
 }
 
 function computeRasterColorOffset(offset: number, [min, max]: [number, number]): number {
     if (min === max) return 0;
 
-    // See above for an explanation. This separately captures the constant-offset
-    // component of the mapping.
-    return ((offset - min) / (max - min) * (COLOR_RAMP_RES + 3) - 1) / (COLOR_RAMP_RES + 1);
-
+    // See above for an explanation.
+    return 0.5 / COLOR_RAMP_RES + (offset - min) * (COLOR_RAMP_RES - 1) / (COLOR_RAMP_RES * (max - min));
 }
 
 export {rasterUniforms, rasterUniformValues, rasterPoleUniformValues};

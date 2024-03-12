@@ -912,6 +912,17 @@
       "type": "*",
       "doc": "Contains the description of the raster data layers and the bands contained within the tiles."
     },
+    "volatile": {
+      "type": "boolean",
+      "default": false,
+      "doc": "A setting to determine whether a source's tiles are cached locally.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "9.3.0",
+          "ios": "5.10.0"
+        }
+      }
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -7578,7 +7589,7 @@
         ]
       },
       "property-type": "data-constant"
-   },
+    },
     "raster-array-band": {
       "type": "string",
       "required": false,

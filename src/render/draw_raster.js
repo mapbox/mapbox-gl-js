@@ -1,5 +1,6 @@
 // @flow
 
+import assert from 'assert';
 import ImageSource from '../source/image_source.js';
 import StencilMode from '../gl/stencil_mode.js';
 import DepthMode from '../gl/depth_mode.js';
@@ -7,10 +8,6 @@ import CullFaceMode from '../gl/cull_face_mode.js';
 import Texture from './texture.js';
 import {rasterPoleUniformValues, rasterUniformValues} from './program/raster_program.js';
 
-import type Context from '../gl/context.js';
-import type Painter from './painter.js';
-import type SourceCache from '../source/source_cache.js';
-import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
 import {OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import rasterFade from './raster_fade.js';
 import {
@@ -26,11 +23,39 @@ import {
 import {mat4} from "gl-matrix";
 import {mercatorXfromLng, mercatorYfromLat} from "../geo/mercator_coordinate.js";
 import Transform from '../geo/transform.js';
-import assert from 'assert';
+import {COLOR_MIX_FACTOR} from '../style/style_layer/raster_style_layer.js';
+
+import type Tile from '../source/tile.js';
+import type Context from '../gl/context.js';
+import type Painter from './painter.js';
+import type SourceCache from '../source/source_cache.js';
+import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
+import type {Source} from '../source/source.js';
+import type {RasterArrayTextureDescriptor} from '../source/tile.js';
+import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
 
 export default drawRaster;
 
 const RASTER_COLOR_TEXTURE_UNIT = 2;
+
+type RasterConfig = {
+    defines: DynamicDefinesType[];
+    mix: [number, number, number, number];
+    range: [number, number];
+    offset: number;
+    resampling: number;
+};
+
+function adjustColorMix(colorMix: [number, number, number, number]): [number, number, number, number] {
+    // Adjust colorMix by the color mix factor to get the proper values for the `computeRasterColorMix` function
+    // For more details refer to `computeRasterColorMix` in src/style/style_layer/raster_style_layer.js
+    return [
+        colorMix[0] * COLOR_MIX_FACTOR,
+        colorMix[1] * COLOR_MIX_FACTOR,
+        colorMix[2] * COLOR_MIX_FACTOR,
+        0
+    ];
+}
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
@@ -46,7 +71,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const rasterConfig = configureRaster(layer, context, gl);
+    const rasterConfig = configureRaster(source, layer, context, gl);
 
     if (source instanceof ImageSource && !tileIDs.length) {
         if (!isGlobeProjection) {
@@ -93,7 +118,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             const unwrappedTileID = coord.toUnwrapped();
             const tile = sourceCache.getTile(coord);
             if (renderingToTexture && !(tile && tile.hasData())) continue;
-            if (!tile.texture) continue;
+
+            context.activeTexture.set(gl.TEXTURE0);
+            const textureDescriptor = getTexture(tile, source, layer, rasterConfig);
+            if (!textureDescriptor) continue;
+
+            const {texture, mix: rasterColorMix, offset: rasterColorOffset, tileSize, buffer} = textureDescriptor;
+            if (!texture) continue;
 
             let depthMode;
             let projMatrix;
@@ -125,9 +156,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             let parentScaleBy, parentTL;
 
             context.activeTexture.set(gl.TEXTURE0);
-            if (tile.texture) {
-                tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
-            }
+            texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
 
             context.activeTexture.set(gl.TEXTURE1);
 
@@ -138,13 +167,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
                 parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
-            } else if (tile.texture) {
-                tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            } else {
+                texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
             }
 
             // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
             // to prevent it from compromising image crispness on flat or low tilted maps.
-            if (tile.texture && tile.texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
+            if (texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
                 gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
             }
 
@@ -200,11 +229,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 perspectiveTransform,
                 renderingWithElevation ? layer.paint.get('raster-elevation') : 0.0,
                 RASTER_COLOR_TEXTURE_UNIT,
-                rasterConfig.mix,
-                rasterConfig.offset,
+                rasterColorMix,
+                rasterColorOffset,
                 rasterConfig.range,
-                1,
-                0,
+                tileSize,
+                buffer,
                 emissiveStrength
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
@@ -342,7 +371,8 @@ function drawPole(isNorth: boolean, coord: ?OverscaledTileID, painter: Painter, 
         vertexBuffer = southPoleBuffer;
         painter.renderDefaultSouthPole = elevation !== 0.0;
     }
-    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterConfig.mix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
+    const rasterColorMix = adjustColorMix(rasterConfig.mix);
+    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
     const program = painter.getOrCreateProgram('raster', {defines});
 
     painter.uploadCommonUniforms(context, program, null);
@@ -364,10 +394,44 @@ function cutoffParamsForElevation(tr: Transform): [number, number, number, numbe
     return [near, far, relativeCutoffFadeDistance, relativeCutoffDistance];
 }
 
-function configureRaster(layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext) {
-    const isRasterColor = layer.paint.get('raster-color');
+function getTexture(tile: ?Tile, source: Source, layer: RasterStyleLayer, rasterConfig: RasterConfig): ?RasterArrayTextureDescriptor {
+    // $FlowFixMe[prop-missing]
+    if (!tile) return {texture: null};
 
-    const defines = [];
+    if (source.type !== 'raster-array') {
+        // $FlowFixMe[prop-missing]
+        return {
+            // $FlowFixMe[incompatible-return]
+            texture: tile.texture,
+            mix: adjustColorMix(rasterConfig.mix),
+            offset: rasterConfig.offset,
+            buffer: 0,
+            tileSize: 1,
+        };
+    }
+
+    let raLayer = layer.sourceLayer;
+    let raBand: string | number | void = layer.paint.get('raster-array-band');
+    if (!raLayer && source.rasterLayerIds && source.rasterLayerIds.length) {
+        raLayer = source.rasterLayerIds[0];
+    }
+
+    if (!raBand && source.rasterLayers) {
+        const rasterLayers = source.rasterLayers.find(({id}) => id === raLayer);
+        const fields = rasterLayers && rasterLayers.fields;
+        const bands = fields && fields.bands && fields.bands;
+        raBand = bands && bands.length && bands[0];
+    }
+
+    // $FlowFixMe[not-a-function]
+    return tile.getTexture(raLayer, raBand);
+}
+
+function configureRaster(source: Source, layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext): RasterConfig {
+    const isRasterColor = layer.paint.get('raster-color');
+    const isRasterArray = source.type === 'raster-array';
+
+    const defines: DynamicDefinesType[] = [];
     const inputResampling = layer.paint.get('raster-resampling');
     const inputMix = layer.paint.get('raster-color-mix');
     const range = layer.paint.get('raster-color-range');
@@ -376,9 +440,10 @@ function configureRaster(layer: RasterStyleLayer, context: Context, gl: WebGL2Re
     const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
     const offset = inputMix[3];
 
-    const resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
+    let resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
 
     if (isRasterColor) defines.push('RASTER_COLOR');
+    if (isRasterArray) defines.push('RASTER_ARRAY');
 
     if (isRasterColor) {
         // Allocate a texture if not allocated
@@ -387,5 +452,19 @@ function configureRaster(layer: RasterStyleLayer, context: Context, gl: WebGL2Re
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
-    return {mix, range, offset, defines, resampling};
+
+    if (isRasterArray) {
+        // Raster-array sources require in-shader linear interpolation in order to decode without
+        // artifacts, so force nearest filtering.
+        if (inputResampling === 'linear') defines.push('RASTER_ARRAY_LINEAR');
+        resampling = gl.NEAREST;
+    }
+
+    return {
+        mix,
+        range,
+        offset,
+        defines,
+        resampling
+    };
 }

@@ -36,7 +36,7 @@ function getAllowedKeyErrors(obj: Object, keys: Array<*>, path: ?string): Array<
     return errors;
 }
 
-const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem", "model", "batched-model"]);
+const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem", "raster-array", "model", "batched-model"]);
 function getSourceErrors(source: Object, i: number): Array<ValidationError> {
     const errors = [];
 
@@ -48,7 +48,7 @@ function getSourceErrors(source: Object, i: number): Array<ValidationError> {
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*
-     * "type" is required and must be one of "vector", "raster", "raster-dem"
+     * "type" is required and must be one of "vector", "raster", "raster-dem", "raster-array"
      */
     if (!acceptedSourceTypes.has(String(source.type))) {
         errors.push(new ValidationError(`sources[${i}].type`, source.type, `Expected one of [${Array.from(acceptedSourceTypes).join(", ")}]`));

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+        #pane {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <div id='pane'></div>
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
+    <script type='module'>
+        /* globals d3 */
+        import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
+
+        const PARAMS = {
+            band: 0,
+            colorScale: 'Spectral',
+        };
+
+        const pane = new Pane({title: 'Parameters', container: document.querySelector('#pane')});
+
+        const colorScales = {
+            'Spectral': x => d3.interpolateSpectral(1 - x),
+            'Turbo': d3.interpolateTurbo,
+            'Magma': d3.interpolateMagma,
+            'Plasma': d3.interpolatePlasma,
+            'Inferno': d3.interpolateInferno,
+            'Greys': x => d3.interpolateGreys(1 - x),
+            'Viridis': d3.interpolateViridis,
+            'Cividis': d3.interpolateCividis,
+            'Warm': d3.interpolateWarm,
+            'Cool': d3.interpolateCool,
+            'Cubehelix': d3.interpolateCubehelixDefault,
+        };
+
+        function getRasterColor(colorScale) {
+            const steps = 256;
+            const colorRange = [0, 1];
+            const colorScaleValues = d3.quantize(colorScales[colorScale], steps)
+                .map((c, i) => [(i / steps), c])
+                .map(([x, c]) => [colorRange[0] + (colorRange[1] - colorRange[0]) * x, c])
+                .flat();
+
+            return ['interpolate', ['linear'], ['raster-value'], ...colorScaleValues];
+        }
+
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            center: [135.0053045734985, 36.00653610439714],
+            zoom: 1,
+            hash: true,
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        map.on('style.load', () => {
+            map.addSource('precipitations', {
+                type: 'raster-array',
+                url: [`https://api.mapbox.com/v4/mapboxsatellite.msm-precip-demo.json?access_token=${mapboxgl.accessToken}`],
+            });
+
+            map.on('sourcedata', (e) => {
+                if (e.sourceId !== 'precipitations' || e.sourceDataType !== 'metadata') return;
+                const bands = map.getSource('precipitations').rasterLayers[0].fields.bands || [];
+
+                pane.addBinding(PARAMS, 'band', {
+                    label: 'Band',
+                    step: 1,
+                    min: 0,
+                    max: bands.length - 1,
+                    format: (value) => bands[value]
+                }).on('change', (e) => {
+                    map.setPaintProperty('precipitations', 'raster-array-band', bands[e.value]);
+                });
+            });
+
+            map.addLayer({
+                'id': 'precipitations',
+                'source': 'precipitations',
+                'source-layer': "Total Precip",
+                'type': 'raster',
+                'slot': 'top',
+                'layout': {},
+                'paint': {
+                    'raster-opacity': 0.75,
+                    'raster-color-range': [0, 1],
+                    'raster-color': getRasterColor(PARAMS.colorScale),
+                    'raster-resampling': 'linear',
+                    'raster-color-range-transition': {duration: 0},
+                    'raster-fade-duration': 0,
+                }
+            });
+
+            const colorScaleOptions = Object.keys(colorScales).reduce((acc, item) => ({...acc, [item]: item}), {});
+            pane.addBinding(PARAMS, 'colorScale', {label: 'Color scale', options: colorScaleOptions})
+                .on('change', (e) => map.setPaintProperty('precipitations', 'raster-color', getRasterColor(e.value)));
+        });
+
+    </script>
+</body>
+
+</html>

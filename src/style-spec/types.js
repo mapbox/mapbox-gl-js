@@ -190,7 +190,7 @@ export type RasterDEMSourceSpecification = {
     [_: string]: mixed
 }
 
-export type Raster_arraySourceSpecification = {
+export type RasterArraySourceSpecification = {
     "type": "raster-array",
     "url"?: string,
     "tiles"?: Array<string>,
@@ -200,6 +200,7 @@ export type Raster_arraySourceSpecification = {
     "tileSize"?: number,
     "attribution"?: string,
     "rasterLayers"?: mixed,
+    "volatile"?: boolean,
     [_: string]: mixed
 }
 
@@ -244,7 +245,7 @@ export type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
     | RasterDEMSourceSpecification
-    | Raster_arraySourceSpecification
+    | RasterArraySourceSpecification
     | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification

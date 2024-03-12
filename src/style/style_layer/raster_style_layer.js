@@ -14,7 +14,8 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
 import type {ConfigOptions} from '../properties.js';
 
-const COLOR_RAMP_RES = 256;
+export const COLOR_RAMP_RES = 256;
+export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
 
 class RasterStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -77,5 +78,4 @@ class RasterStyleLayer extends StyleLayer {
     }
 }
 
-export {COLOR_RAMP_RES};
 export default RasterStyleLayer;

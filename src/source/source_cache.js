@@ -107,6 +107,7 @@ class SourceCache extends Evented {
         this._isRaster =
             this._source.type === 'raster' ||
             this._source.type === 'raster-dem' ||
+            this._source.type === 'raster-array' ||
             // $FlowFixMe[prop-missing]
             (this._source.type === 'custom' && this._source._dataType === 'raster');
     }

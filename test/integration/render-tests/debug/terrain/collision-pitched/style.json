@@ -8,7 +8,7 @@
       "allowed": 0.005,
       "description": "Tiles in front get elevation (TODO use exaggeration later) of >700km (defined by 1-0-0.terrain.512.png). This pushes terrain and symbols over tiles in back.",
       "operations": [
-        ["sleep", 1500]
+        ["sleep", 500]
       ]
     }
   },

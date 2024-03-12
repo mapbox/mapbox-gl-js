@@ -86,6 +86,17 @@ const BOUNDS_FEATURE = (() => {
     };
 })();
 
+export type RasterArrayTextureDescriptor = {
+    texture: ?Texture,
+    layer: string,
+    band: string | number,
+    format: 'uint8' | 'uint16' | 'uint32',
+    tileSize: number,
+    buffer: number,
+    mix: [number, number, number, number],
+    offset: number
+};
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -132,6 +143,7 @@ class Tile {
     texture: ?Texture | ?UserManagedTexture;
     hillshadeFBO: ?Framebuffer;
     demTexture: ?Texture;
+    rasterArrayTextureDescriptor: ?RasterArrayTextureDescriptor;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
@@ -158,6 +170,28 @@ class Tile {
     _tileDebugTextIndexBuffer: IndexBuffer;
     _globeTileDebugTextBuffer: ?VertexBuffer;
     _lastUpdatedBrightness: ?number;
+
+    _workQueue: Array<any>;
+    _fetchQueue: Array<any>;
+
+    fbo: ?any;
+    rasterArrayTextures: ?any;
+
+    mrt: ?{
+        x: number;
+        y: number;
+        z: number;
+        _cacheSize: number;
+        layers: {[_: string]: {
+            dataIndex: Array<any>
+        }};
+        getLayer(string): any;
+        parseHeader(any): any;
+        getHeaderLength(any): any;
+        createDecodingTask(any): any;
+    };
+
+    getTexture: ?(layerName: ?string, band: string | number | void, filtering: ?string) => ?RasterArrayTextureDescriptor;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -188,6 +222,9 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
+
+        this._workQueue = [];
+        this._fetchQueue = [];
 
         if (painter && painter.transform) {
             this.projection = painter.transform.projection;

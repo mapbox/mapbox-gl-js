@@ -28,7 +28,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     const type = unbundle(value.type);
     let errors = [];
 
-    if (['vector', 'raster', 'raster-dem'].includes(type)) {
+    if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
         if (!value.url && !value.tiles) {
             errors.push(new ValidationWarning(key, value, 'Either "url" or "tiles" is required.'));
         }
@@ -38,6 +38,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     case 'vector':
     case 'raster':
     case 'raster-dem':
+    case 'raster-array':
         errors = errors.concat(validateObject({
             key,
             value,
