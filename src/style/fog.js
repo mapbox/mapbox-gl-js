@@ -58,6 +58,7 @@ class Fog extends Evented {
         this.set(fogOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this._transform = transform;
+        this.properties = new PossiblyEvaluated(fogProperties);
     }
 
     get state(): FogState {
