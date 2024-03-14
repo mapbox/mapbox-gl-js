@@ -675,7 +675,6 @@ export const mapSessionAPI: MapSessionAPI = new MapSessionAPI();
 export const getMapSessionAPI: (number, string, ?string, EventCallback) => void = mapSessionAPI.getSessionAPI.bind(mapSessionAPI);
 
 const authenticatedMaps = new Set();
-
 export function storeAuthState(gl: WebGL2RenderingContext, state: boolean) {
     if (state) {
         authenticatedMaps.add(gl);
