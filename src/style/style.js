@@ -3037,6 +3037,9 @@ class Style extends Evented {
 
     destroy() {
         this._clearWorkerCaches();
+        this.fragments.forEach(fragment => {
+            fragment.style._remove();
+        });
         if (this.terrainSetForDrapingOnly()) {
             delete this.terrain;
             delete this.stylesheet.terrain;
