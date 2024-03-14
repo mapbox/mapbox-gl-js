@@ -8,13 +8,13 @@ import {getImage, getJSON, ResourceType} from '../util/ajax.js';
 import {
     RequestManager,
     mapSessionAPI,
+    mapLoadEvent,
     getMapSessionAPI,
     postPerformanceEvent,
     postMapLoadEvent,
     AUTH_ERR_MSG,
     storeAuthState,
-    removeAuthState,
-    mapLoadEvent_
+    removeAuthState
 } from '../util/mapbox.js';
 import Style from '../style/style.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
@@ -3901,6 +3901,7 @@ class Map extends Camera {
                 }
             }
         });
+
         postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, () => {});
     }
 
@@ -4024,7 +4025,7 @@ class Map extends Camera {
         removeAuthState(this.painter.context.gl);
 
         mapSessionAPI.remove();
-        mapLoadEvent_.remove();
+        mapLoadEvent.remove();
 
         this._removed = true;
         this.fire(new Event('remove'));

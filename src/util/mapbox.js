@@ -662,9 +662,9 @@ const turnstileEvent_ = new TurnstileEvent();
 // $FlowFixMe[method-unbinding]
 export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
-export const mapLoadEvent_ = new MapLoadEvent();
+export const mapLoadEvent = new MapLoadEvent();
 // $FlowFixMe[method-unbinding]
-export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent.postMapLoadEvent.bind(mapLoadEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 // $FlowFixMe[method-unbinding]
