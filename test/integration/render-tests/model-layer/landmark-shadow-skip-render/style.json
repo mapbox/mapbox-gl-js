@@ -1,0 +1,118 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "allowed": 0.001,
+      "description": "With the same expectation as `landmark-shadow`, this test verifies frustum culling and shadow re-render.", 
+      "operations": [
+        ["wait"],
+        [
+          "check",
+          "renderedVerticesCount",
+          "landmark",
+          6728,
+          "This check verifies that frustum culling works for landmarks (before frustum culling: 38339, now 6728)."
+        ],
+        [
+          "check",
+          "shadowPassVerticesCount",
+          "landmark",
+          15216,
+          "This check verifies that frustum culling works for landmarks and shadow map frustum. Additionally, second cascade is not visible at all and hence skipped."
+        ],
+        ["wait"],
+        ["wait"],
+        [
+          "check",
+          "renderedVerticesCount",
+          "landmark",
+          6728,
+          "No change is expected here."
+        ],
+        [
+          "check",
+          "shadowPassVerticesCount",
+          "landmark",
+          0,
+          "This check verifies that lazy rendering to shadow map works."
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.8,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "pitch": 25,
+  "bearing": 5,
+  "zoom": 16.5,
+  "center": [
+    -122.398558,
+    37.794192
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark"
+    }
+  ]
+}

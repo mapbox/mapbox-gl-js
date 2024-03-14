@@ -36,6 +36,7 @@ import type {DEMSampler} from '../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../render/painter.js";
 import type SourceCache from '../source/source_cache.js';
+import type Painter from '../render/painter.js';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -381,10 +382,13 @@ class StyleLayer extends Evented {
         return this._stats;
     }
 
-    resetLayerRenderingStats() {
+    resetLayerRenderingStats(painter: Painter) {
         if (this._stats) {
-            this._stats.numRenderedVerticesInShadowPass = 0;
-            this._stats.numRenderedVerticesInTransparentPass = 0;
+            if (painter.renderPass === 'shadow') {
+                this._stats.numRenderedVerticesInShadowPass = 0;
+            } else {
+                this._stats.numRenderedVerticesInTransparentPass = 0;
+            }
         }
     }
 }

@@ -35,6 +35,7 @@ class ModelStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
+        this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }
 
     createBucket(parameters: BucketParameters<ModelStyleLayer>): ModelBucket {

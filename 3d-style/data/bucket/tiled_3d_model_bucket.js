@@ -12,6 +12,7 @@ import {number as interpolate} from '../../../src/style-spec/util/interpolate.js
 import {clamp} from '../../../src/util/util.js';
 import {DEMSampler} from '../../../src/terrain/elevation.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
+import {Aabb} from '../../../src/util/primitives.js';
 
 import type {ReplacementSource} from '../../source/replacement_source.js';
 import type {Bucket} from '../../../src/data/bucket.js';
@@ -61,6 +62,7 @@ export class Tiled3dModelFeature {
     hiddenByReplacement: boolean;
     hasTranslucentParts: boolean;
     node: Node;
+    aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
     constructor(node: Node) {
         this.node = node;
@@ -77,6 +79,23 @@ export class Tiled3dModelFeature {
         this.emissionHeightBasedParams = [];
         // Needs to calculate geometry
         this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
+    }
+    getLocalBounds(): Aabb {
+        if (!this.node.meshes) {
+            return new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
+        }
+        if (!this.aabb) {
+            let i = 0;
+            const aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
+            for (const mesh of this.node.meshes) {
+                if (this.node.lightMeshIndex !== i) {
+                    aabb.encapsulate(mesh.aabb);
+                }
+                i++;
+            }
+            this.aabb = aabb;
+        }
+        return this.aabb;
     }
 }
 

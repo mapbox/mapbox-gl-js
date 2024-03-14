@@ -243,7 +243,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 }
 
 function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {
-    layer.resetLayerRenderingStats();
+    layer.resetLayerRenderingStats(painter);
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;

@@ -270,7 +270,7 @@ function drawShadowCaster(mesh: Mesh, matrix: Mat4, painter: Painter, layer: Mod
     const colorMode = shadowRenderer.getShadowPassColorMode();
     const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
-    const definesValues = ['DEPTH_TEXTURE'];
+    const definesValues = (painter._shadowMapDebug) ? [] : ['DEPTH_TEXTURE'];
     const program = painter.getOrCreateProgram('modelDepth', {defines: ((definesValues: any): DynamicDefinesType[])});
     const context = painter.context;
     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
@@ -690,6 +690,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
 }
 
 function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
+    layer.resetLayerRenderingStats(painter);
     const context = painter.context;
     const tr = painter.transform;
     const fog = painter.style.fog;
@@ -713,6 +714,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const depthModeRW = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     const depthModeRO = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
+    const aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
+    const isShadowPass = painter.renderPass === 'shadow';
+    const frustum = isShadowPass && shadowRenderer ? shadowRenderer.getCurrentCascadeFrustum() : tr.getFrustum(tr.scaleZoom(tr.worldSize));
+
+    const stats = layer.getLayerRenderingStats();
     const drawTiles = function(enableColor: boolean, depthWrite: boolean) {
         for (const coord of coords) {
             const tile = source.getTile(coord);
@@ -730,22 +736,42 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 if (nodeInfo.hiddenByReplacement) continue;
                 if (!nodeInfo.node.meshes) continue;
 
-                const node = nodeInfo.node;
-                const isLightBeamPass = painter.renderPass === 'light-beam';
-
-                const modelMatrix = [...tileMatrix];
                 const scale = nodeInfo.evaluatedScale;
+                const node = nodeInfo.node;
                 let elevation = 0;
                 if (painter.terrain && node.elevation) {
                     elevation = node.elevation * painter.terrain.exaggeration();
                 }
+
+                const nodeAabb = () => {
+                    const localBounds = nodeInfo.getLocalBounds();
+                    aabb.min = [...localBounds.min];
+                    aabb.max = [...localBounds.max];
+                    aabb.min[2] += elevation;
+                    aabb.max[2] += elevation;
+                    vec3.transformMat4(aabb.min, aabb.min, tileMatrix);
+                    vec3.transformMat4(aabb.max, aabb.max, tileMatrix);
+                    return aabb;
+                };
+
+                if (scale[0] <= 1 && scale[1] <= 1 && scale[2] <= 1 && nodeAabb().intersects(frustum) === 0) {
+                    // While it is possible to use arbitrary scale for landmarks, it is highly unlikely
+                    // and frustum culling optimization could be skipped in that case.
+                    continue;
+                }
+
+                const isLightBeamPass = painter.renderPass === 'light-beam';
+
+                const modelMatrix = [...tileMatrix];
+
                 const anchorX = node.anchor ? node.anchor[0] : 0;
                 const anchorY = node.anchor ? node.anchor[1] : 0;
 
                 mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
                     anchorY * (scale[1] - 1),
                     elevation]);
-                if (scale !== DefaultModelScale) {
+                /* $FlowIgnore[incompatible-call] scale should always be an array */
+                if (!vec3.exactEquals(scale, DefaultModelScale)) {
                     /* $FlowIgnore[incompatible-call] scale should always be an array */
                     mat4.scale(modelMatrix, modelMatrix, scale);
                 }
@@ -788,7 +814,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         (programOptions.defines: any).push('SHADOWS_SINGLE_CASCADE');
                     }
 
-                    const isShadowPass = painter.renderPass === 'shadow';
+                    if (stats) {
+                        if (!isShadowPass) {
+                            stats.numRenderedVerticesInTransparentPass += mesh.vertexArray.length;
+                        } else {
+                            stats.numRenderedVerticesInShadowPass += mesh.vertexArray.length;
+                        }
+                    }
+
                     if (isShadowPass) {
                         drawShadowCaster(mesh, modelMatrix, painter, layer);
                         continue;
@@ -815,10 +848,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         (programOptions.defines: any).push('OCCLUSION_TEXTURE_TRANSFORM');
                     }
 
+                    if (!isShadowPass && shadowRenderer) {
+                        // Set normal offset before program creation, as it adds/remove necessary defines under the hood
+                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
+                    }
+
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
-                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                         shadowRenderer.setupShadowsFromMatrix(modelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 

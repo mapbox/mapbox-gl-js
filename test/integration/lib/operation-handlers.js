@@ -185,11 +185,11 @@ export const operationHandlers = {
 
     },
     check(map, params, doneCb) {
-
+        // We still don't handle params[0] === "shadowPassVerticesCount" as lazy shadow map rendering is not implemented
         if (params[0] === "renderedVerticesCount") {
             const layer = map.getLayer(params[1]);
             const layerStats = layer.getLayerRenderingStats();
-            const renderedVertices = layerStats.numRenderedVerticesInShadowPass + layerStats.numRenderedVerticesInTransparentPass;
+            const renderedVertices = params[0] === "renderedVerticesCount" ? layerStats.numRenderedVerticesInTransparentPass : layerStats.numRenderedVerticesInShadowPass;
             if (renderedVertices !== params[2]) {
                 throw new Error(params[3]);
             }
