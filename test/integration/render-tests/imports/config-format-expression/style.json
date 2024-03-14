@@ -28,7 +28,13 @@
                         "default": [
                             "format",
                             "abc",
-                            {}
+                            {
+                                "text-color": "red",
+                                "text-font": [
+                                    "Open Sans Semibold",
+                                    "Arial Unicode MS Bold"
+                                ]
+                            }
                         ]
                     }
                 },
@@ -69,10 +75,6 @@
                             "text-field": [
                                 "config",
                                 "lightPreset"
-                            ],
-                            "text-font": [
-                                "Open Sans Semibold",
-                                "Arial Unicode MS Bold"
                             ]
                         },
                         "paint": {

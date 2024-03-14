@@ -11,6 +11,7 @@ import CompoundExpression from './compound_expression.js';
 import CollatorExpression from './definitions/collator.js';
 import Within from './definitions/within.js';
 import Distance from './definitions/distance.js';
+import Config from './definitions/config.js';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant.js';
 import Var from './definitions/var.js';
 
@@ -202,16 +203,16 @@ function isConstant(expression: Expression) {
         return isConstant(expression.boundExpression);
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {
         return false;
-    } else if (expression instanceof CompoundExpression && expression.name === 'config') {
-        return false;
     } else if (expression instanceof CollatorExpression) {
         // Although the results of a Collator expression with fixed arguments
         // generally shouldn't change between executions, we can't serialize them
         // as constant expressions because results change based on environment.
         return false;
-    }  else if (expression instanceof Within) {
+    } else if (expression instanceof Within) {
         return false;
     } else if (expression instanceof Distance) {
+        return false;
+    } else if (expression instanceof Config) {
         return false;
     }
 

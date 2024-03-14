@@ -3,6 +3,7 @@
 import CompoundExpression from './compound_expression.js';
 import Within from './definitions/within.js';
 import Distance from './definitions/distance.js';
+import Config from './definitions/config.js';
 import type {Expression} from './expression.js';
 
 function isFeatureConstant(e: Expression): boolean {
@@ -53,11 +54,10 @@ function isStateConstant(e: Expression): boolean {
 }
 
 function isConfigConstant(e: Expression): boolean {
-    if (e instanceof CompoundExpression) {
-        if (e.name === 'config') {
-            return false;
-        }
+    if (e instanceof Config) {
+        return false;
     }
+
     let result = true;
     e.eachChild(arg => {
         if (result && !isConfigConstant(arg)) { result = false; }

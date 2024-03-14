@@ -45,6 +45,7 @@ import FormatExpression from './format.js';
 import ImageExpression from './image.js';
 import Length from './length.js';
 import Within from './within.js';
+import Config from './config.js';
 import Distance from './distance.js';
 import {mulberry32} from '../../util/random.js';
 
@@ -110,7 +111,9 @@ const expressions: ExpressionRegistry = {
     // $FlowFixMe[method-unbinding]
     'within': Within,
     // $FlowFixMe[method-unbinding]
-    'distance': Distance
+    'distance': Distance,
+    // $FlowFixMe[method-unbinding]
+    'config': Config
 };
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Array<Expression>) {
@@ -143,70 +146,6 @@ function has(key: string, obj: {[string]: any}): boolean {
 function get(key: string, obj: {[string]: any}) {
     const v = obj[key];
     return typeof v === 'undefined' ? null : v;
-}
-
-function coerceValue(type: 'string' | 'number' | 'boolean' | 'color', value: any): any {
-    switch (type) {
-    case 'string': return String(value);
-    case 'number': return +value;
-    case 'boolean': return !!value;
-    case 'color': return Color.parse(value);
-    }
-    return value;
-}
-
-function clampToAllowedNumber(value: number, min: number | void, max: number | void, step: number | void): number {
-    if (step !== undefined) {
-        value = step * Math.round(value / step);
-    }
-    if (min !== undefined && value < min) {
-        value = min;
-    }
-    if (max !== undefined && value > max) {
-        value = max;
-    }
-    return value;
-}
-
-const FQIDSeparator = '\u001F';
-
-function getConfig(ctx: EvaluationContext, key: string, scope: ?string) {
-    // Create a fully qualified key from the requested scope
-    // and the scope from the current evaluation context
-    key = [key, scope, ctx.scope].filter(Boolean).join(FQIDSeparator);
-
-    const config = ctx.getConfig(key);
-    if (!config) return null;
-
-    const {type, value, values, minValue, maxValue, stepValue} = config;
-
-    const defaultValue = config.default.evaluate(ctx);
-
-    let result = defaultValue;
-    if (value) {
-        // temporarily override scope to parent to evaluate config expressions passed from the parent
-        const originalScope = ctx.scope;
-        ctx.scope = (originalScope || '').split(FQIDSeparator).slice(1).join(FQIDSeparator);
-        result = value.evaluate(ctx);
-        ctx.scope = originalScope;
-    }
-
-    if (type) result = coerceValue(type, result);
-
-    if (value !== undefined && result !== undefined && values && !values.includes(result)) {
-        result = defaultValue;
-        if (type) result = coerceValue(type, result);
-    }
-
-    if (result !== undefined && (minValue !== undefined || maxValue !== undefined || stepValue !== undefined)) {
-        if (typeof result === 'number') {
-            result = clampToAllowedNumber(result, minValue, maxValue, stepValue);
-        } else if (Array.isArray(result)) {
-            result = result.map((item) => typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item);
-        }
-    }
-
-    return result;
 }
 
 function binarySearch(v: any, a: {[number]: any}, i: number, j: number) {
@@ -298,18 +237,6 @@ CompoundExpression.register(expressions, {
             ], [
                 [StringType, ObjectType],
                 (ctx, [key, obj]) => get(key.evaluate(ctx), obj.evaluate(ctx))
-            ]
-        ]
-    },
-    'config': {
-        type: ValueType,
-        overloads: [
-            [
-                [StringType],
-                (ctx, [key]) => getConfig(ctx, key.evaluate(ctx))
-            ], [
-                [StringType, StringType],
-                (ctx, [key, scope]) => getConfig(ctx, key.evaluate(ctx), scope.evaluate(ctx))
             ]
         ]
     },
