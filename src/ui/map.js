@@ -221,6 +221,7 @@ const defaultOptions = {
 class DebugParams {
     showOverdrawInspector: boolean;
     showTileBoundaries: boolean;
+    showParseStatus: boolean;
     continuousRedraw: boolean;
 
     showTerrainWireframe: boolean;
@@ -230,6 +231,7 @@ class DebugParams {
     constructor() {
         this.showOverdrawInspector = false;
         this.showTileBoundaries = false;
+        this.showParseStatus = false;
 
         this.continuousRedraw = false;
 
@@ -391,6 +393,7 @@ class Map extends Camera {
     _controlPositions: {[_: string]: HTMLElement};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
+    _showParseStatus: ?boolean;
 
     _showTerrainWireframe: ?boolean;
     _showLayers2DWireframe: ?boolean;
@@ -571,6 +574,7 @@ class Map extends Camera {
         this._performanceMetricsCollection = options.performanceMetricsCollection;
         this._containerWidth = 0;
         this._containerHeight = 0;
+        this._showParseStatus = true;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -629,6 +633,7 @@ class Map extends Camera {
         }
         this._tp.registerParameter(this._debugParams, ["Debug"], "showOverdrawInspector", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug"], "showTileBoundaries", undefined, () => { this._update(); });
+        this._tp.registerParameter(this._debugParams, ["Debug"], "showParseStatus", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug"], "continuousRedraw", undefined, (value) => { this.repaint = value; });
         this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showTerrainWireframe", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showLayers2DWireframe", undefined, () => { this._update(); });
@@ -3655,6 +3660,7 @@ class Map extends Camera {
         if (this.style) {
             this.painter.render(this.style, {
                 showTileBoundaries: this.showTileBoundaries || this._debugParams.showTileBoundaries,
+                showParseStatus: this.showParseStatus || this._debugParams.showParseStatus,
                 wireframe: {
                     terrain: this.showTerrainWireframe || this._debugParams.showTerrainWireframe,
                     layers2D: this.showLayers2DWireframe || this._debugParams.showLayers2DWireframe,
@@ -4097,11 +4103,7 @@ class Map extends Camera {
 
     /**
      * Gets and sets a Boolean indicating whether the map will render an outline
-     * around each tile and the tile ID. These tile boundaries are useful for
-     * debugging.
-     *
-     * The uncompressed file size of the first vector source is drawn in the top left
-     * corner of each tile, next to the tile ID.
+     * around each tile. These tile boundaries are useful for debugging.
      *
      * @name showTileBoundaries
      * @type {boolean}
@@ -4114,6 +4116,27 @@ class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
+        this._update();
+    }
+
+    /**
+     * Gets and sets a Boolean indicating whether the map will render the tile ID
+     * and the status of the tile in their corner when `showTileBoundaries` is on.
+     *
+     * The uncompressed file size of the first vector source is drawn in the top left
+     * corner of each tile, next to the tile ID.
+     *
+     * @name showParseStatus
+     * @type {boolean}
+     * @instance
+     * @memberof Map
+     * @example
+     * map.showParseStatus = true;
+     */
+    get showParseStatus(): boolean { return !!this._showParseStatus; }
+    set showParseStatus(value: boolean) {
+        if (this._showParseStatus === value) return;
+        this._showParseStatus = value;
         this._update();
     }
 

@@ -20,19 +20,19 @@ const leftColor = new Color(0, 0, 1, 1);
 const rightColor = new Color(1, 0, 1, 1);
 const centerColor = new Color(0, 1, 1, 1);
 
-export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>, color: Color, silhouette: boolean) {
+export default function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>, color: Color, silhouette: boolean, showParseStatus: boolean) {
     for (let i = 0; i < coords.length; i++) {
         if (silhouette) {
             const radius = 1;
             const darkenFactor = 0.8;
             const colorMiddle = new Color(color.r * darkenFactor, color.g * darkenFactor, color.b * darkenFactor, 1.0);
-            drawDebugTile(painter, sourceCache, coords[i], color, -radius, -radius);
-            drawDebugTile(painter, sourceCache, coords[i], color, -radius, radius);
-            drawDebugTile(painter, sourceCache, coords[i], color, radius, radius);
-            drawDebugTile(painter, sourceCache, coords[i], color, radius, -radius);
-            drawDebugTile(painter, sourceCache, coords[i], colorMiddle, 0, 0);
+            drawDebugTile(painter, sourceCache, coords[i], color, -radius, -radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i], color, -radius, radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i], color, radius, radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i], color, radius, -radius, showParseStatus);
+            drawDebugTile(painter, sourceCache, coords[i], colorMiddle, 0, 0, showParseStatus);
         } else {
-            drawDebugTile(painter, sourceCache, coords[i], color, 0, 0);
+            drawDebugTile(painter, sourceCache, coords[i], color, 0, 0, showParseStatus);
         }
     }
 }
@@ -59,7 +59,7 @@ export function drawDebugQueryGeometry(painter: Painter, sourceCache: SourceCach
     }
 }
 
-function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID, color: Color, offsetX: number, offsetY: number) {
+function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID, color: Color, offsetX: number, offsetY: number, showParseStatus: boolean) {
     const context = painter.context;
     const tr = painter.transform;
     const gl = context.gl;
@@ -114,18 +114,21 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         debugBuffer, debugIndexBuffer, debugSegments,
         null, null, null, [tile._globeTileDebugBorderBuffer]);
 
-    const tileRawData = tile.latestRawTileData;
-    const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
-    const tileSizeKb = Math.floor(tileByteLength / 1024);
+    if (showParseStatus) {
+        const tileRawData = tile.latestRawTileData;
+        const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
+        const tileSizeKb = Math.floor(tileByteLength / 1024);
+        let tileLabel = coord.canonical.toString();
+        if (coord.overscaledZ !== coord.canonical.z) {
+            tileLabel += ` => ${coord.overscaledZ}`;
+        }
+        tileLabel += ` ${tile.state}`;
+        tileLabel += ` ${tileSizeKb}kb`;
+        drawTextToOverlay(painter, tileLabel);
+    }
+
     const tileSize = sourceCache.getTile(coord).tileSize;
     const scaleRatio = (512 / Math.min(tileSize, 512) * (coord.overscaledZ / tr.zoom)) * 0.5;
-    let tileLabel = coord.canonical.toString();
-    if (coord.overscaledZ !== coord.canonical.z) {
-        tileLabel += ` => ${coord.overscaledZ}`;
-    }
-    tileLabel += ` ${tileSizeKb}kb`;
-    drawTextToOverlay(painter, tileLabel);
-
     const debugTextBuffer = tile._tileDebugTextBuffer || painter.debugBuffer;
     const debugTextIndexBuffer = tile._tileDebugTextIndexBuffer || painter.quadTriangleIndexBuffer;
     const debugTextSegments = tile._tileDebugTextSegments || painter.debugSegments;

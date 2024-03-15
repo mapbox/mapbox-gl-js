@@ -114,6 +114,7 @@ type WireframeOptions = {
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    showParseStatus: boolean,
     showQueryGeometry: boolean,
     showTileAABBs: boolean,
     showPadding: boolean,
@@ -984,7 +985,7 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
-                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false);
+                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
                 }
 
                 Debug.run(() => {
@@ -1000,7 +1001,7 @@ class Painter {
         }
 
         if (this.terrain && this._debugParams.showTerrainProxyTiles) {
-            draw.debug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true);
+            draw.debug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
         }
 
         if (this.options.showPadding) {

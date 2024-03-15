@@ -221,7 +221,10 @@ async function renderMap(style, options) {
     window._renderTestNow = 0;
     mapboxgl.setNow(window._renderTestNow);
 
-    if (options.debug) map.showTileBoundaries = true;
+    if (options.debug) {
+        map.showTileBoundaries = true;
+        map.showParseStatus = false;
+    }
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
     if (options.showTerrainWireframe) map.showTerrainWireframe = true;
     if (options.showLayers2DWireframe) map.showLayers2DWireframe = true;
