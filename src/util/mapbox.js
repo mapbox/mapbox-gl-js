@@ -514,6 +514,11 @@ export class MapLoadEvent extends TelemetryEvent {
 
         }, customAccessToken);
     }
+
+    remove() {
+        // $FlowFixMe[incompatible-type]
+        this.errorCb = null;
+    }
 }
 
 export class MapSessionAPI extends TelemetryEvent {
@@ -657,9 +662,9 @@ const turnstileEvent_ = new TurnstileEvent();
 // $FlowFixMe[method-unbinding]
 export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?string) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
-const mapLoadEvent_ = new MapLoadEvent();
+export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
 // $FlowFixMe[method-unbinding]
-export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent_.postMapLoadEvent.bind(mapLoadEvent_);
+export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent.postMapLoadEvent.bind(mapLoadEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 // $FlowFixMe[method-unbinding]
