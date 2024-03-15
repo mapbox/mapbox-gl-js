@@ -202,6 +202,10 @@
           {
             "selector": "ClassProperty[value]",
             "message": "ClassProperty values are not allowed."
+          },
+          {
+            "selector": "LogicalExpression[operator='??']",
+            "message": "Nullish coalescing is not allowed."
           }
         ]
       }

@@ -269,7 +269,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     assert(buffer);
                     assert(indexBuffer);
                     assert(segments);
-                    program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode ?? stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
+                    program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }
             } else {
                 const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
@@ -285,10 +285,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 const topCap = coord.canonical.y === 0;
                 const bottomCap = coord.canonical.y === (1 << coord.canonical.z) - 1;
                 if (topCap) {
-                    drawPole(true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode ?? StencilMode.disabled);
+                    drawPole(true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode || StencilMode.disabled);
                 }
                 if (bottomCap) {
-                    drawPole(false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode ?? StencilMode.disabled);
+                    drawPole(false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode || StencilMode.disabled);
                 }
             }
         }
