@@ -61,7 +61,7 @@ vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass
     color = vec4(1.0);
 #endif
     glFragColor = color;
-    HANDLE_WIREFRAME_DEBUG;
 #endif // !SDF_SUBPASS
+HANDLE_WIREFRAME_DEBUG;
 #endif // !CLEAR_SUBPASS
 }
