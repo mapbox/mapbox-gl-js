@@ -92,7 +92,7 @@ import type {ContextOptions} from '../gl/context.js';
 
 import * as TP from '../tracked-parameters/tracked_parameters.js';
 
-export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type ControlPosition = 'top-left' | 'top-center' | 'top-right' | 'right-center' | 'bottom-right' | 'bottom-center' | 'bottom-left' | 'left-center';
 /* eslint-disable no-use-before-define */
 interface IControl {
     +onAdd: (map: Map) => HTMLElement;
@@ -3405,7 +3405,7 @@ class Map extends Camera {
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+        ['top-left', 'top-center', 'top-right', 'right-center', 'bottom-right', 'bottom-center', 'bottom-left', 'left-center'].forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
 
