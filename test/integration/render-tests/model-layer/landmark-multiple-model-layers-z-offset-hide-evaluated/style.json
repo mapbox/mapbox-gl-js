@@ -1,0 +1,359 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "width": 1024,
+      "allowed": 0.004,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["setZoom", 15.68],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
+      ]
+    },
+    "landmark-mbx": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "pitch": 29,
+  "zoom": 15.5,
+  "bearing": 4,
+  "center": [
+    -122.4031,
+    37.7938
+  ],
+  "transition": {
+    "duration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "3d-buildings",
+      "source": "mapbox",
+      "paint": {
+        "fill-extrusion-opacity": [
+            "interpolate",
+            [
+                "cubic-bezier",
+                0.9,
+                0.01,
+                0.9,
+                0.01
+            ],
+            [
+                "zoom"
+            ],
+            0,
+            1,
+            15.5,
+            1,
+            15.67,
+            0
+        ],
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "number",
+            [
+              "get",
+              "height"
+            ]
+          ],
+          0.0,
+          [
+            "rgba",
+            22.0,
+            14.000000953674317,
+            35.0,
+            1.0
+          ],
+          50.0,
+          [
+            "rgba",
+            0.0,
+            97.00000762939453,
+            95.0,
+            1.0
+          ],
+          100.0,
+          [
+            "rgba",
+            85.0,
+            233.00001525878907,
+            255.0,
+            1.0
+          ]
+        ],
+        "fill-extrusion-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "fill-extrusion-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source-layer": "building",
+      "type": "fill-extrusion"
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark"
+    },
+    {
+      "id": "landmark-mbx",
+      "type": "model",
+      "source": "landmark-mbx",
+      "paint": {
+          "model-color": "red",
+          "model-color-mix-intensity": 1.0,
+          "model-opacity": [
+            "interpolate",
+            [
+                "cubic-bezier",
+                0.9,
+                0.01,
+                0.9,
+                0.01
+            ],
+            [
+                "zoom"
+            ],
+            0,
+            1,
+            15.5,
+            1,
+            15.67,
+            0
+          ]
+      }
+    },
+    {
+      "id": "poi-label",
+      "type": "symbol",
+      "metadata": {
+          "mapbox:group": "Point of interest labels, poi-labels"
+      },
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "minzoom": 6,
+      "layout": {
+          "symbol-z-elevate": true,
+          "text-size": [
+              "step",
+              [ "zoom" ],
+              [ "step", [ "number", [ "get", "sizerank" ] ], 18, 5, 12 ],
+              17,
+              [ "step", [ "number", [ "get", "sizerank" ] ], 18, 13, 12 ]
+          ],
+          "text-font": [ "NotoCJK" ],
+          "text-padding": 4,
+          "icon-image": "building-12",
+          "text-offset": [
+              "step",
+              [ "zoom" ],
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  [ "literal", [ 0, 0 ] ],
+                  5,
+                  [ "literal", [ 0, 1 ] ]
+              ],
+              17,
+              [
+                  "step",
+                  [ "number", [ "get", "sizerank" ] ],
+                  [ "literal", [ 0, 0 ] ],
+                  13,
+                  [ "literal", [ 0, 1 ] ]
+              ]
+          ],
+          "text-anchor": "top"
+      },
+      "paint": {
+          "icon-image-cross-fade": [
+              "interpolate",
+              [ "linear" ],
+              [ "measure-light", "brightness" ],
+              0.25,
+              0.0,
+              0.3,
+              1.0
+          ],
+          "icon-opacity": 1,
+          "text-halo-width": 1,
+          "text-halo-blur": 0,
+          "text-halo-color": [
+              "interpolate",
+              [ "linear" ],
+              [ "measure-light", "brightness" ],
+              0.25,
+              "hsl(0, 0%, 10%)",
+              0.3,
+              "hsl(0, 0%, 100%)"
+          ],
+          "text-color": [
+              "match",
+              [ "get", "class" ],
+              "food_and_drink",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(40, 95%, 70%)",
+                  0.3,
+                  "hsl(30, 100%, 48%)"
+              ],
+              "park_like",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(110, 55%, 65%)",
+                  0.3,
+                  "hsl(110, 70%, 28%)"
+              ],
+              "education",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(30, 50%, 70%)",
+                  0.3,
+                  "hsl(30, 50%, 38%)"
+              ],
+              "medical",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(0, 70%, 70%)",
+                  0.3,
+                  "hsl(0, 90%, 60%)"
+              ],
+              "sport_and_leisure",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(190, 60%, 70%)",
+                  0.3,
+                  "hsl(190, 75%, 38%)"
+              ],
+              [ "store_like", "food_and_drink_stores" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(210, 70%, 75%)",
+                  0.3,
+                  "hsl(210, 75%, 53%)"
+              ],
+              [ "commercial_services", "motorist", "lodging" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(260, 70%, 75%)",
+                  0.3,
+                  "hsl(250, 75%, 60%)"
+              ],
+              [ "arts_and_entertainment", "historic", "landmark" ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(320, 70%, 75%)",
+                  0.3,
+                  "hsl(320, 85%, 60%)"
+              ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.25,
+                  "hsl(210, 20%, 70%)",
+                  0.3,
+                  "hsl(210, 20%, 43%)"
+              ]
+          ]
+      }
+    }
+  ]
+}

@@ -10,6 +10,8 @@
         ["setTerrain", {
           "source": "mapbox-dem"
         }],
+        ["setLayoutProperty", "poi-label", "symbol-z-elevate", true],
+        ["wait"],
         ["wait"]
       ]
     }
@@ -783,7 +785,6 @@
           ]
       ],
       "layout": {
-          "symbol-z-elevate": true,
           "text-size": [
               "step",
               [ "zoom" ],

@@ -10,43 +10,62 @@ import {OverscaledTileID} from './tile_id.js';
 import type Style from '../style/style.js';
 import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
 import type {Bucket} from '../data/bucket.js';
+import ModelStyleLayer from '../../3d-style/style/style_layer/model_style_layer.js';
 
 class BuildingIndex {
     style: Style;
-    layers: Array<StyleLayer>;
+    layers: Array<{layer: StyleLayer, visible: boolean}>;
     currentBuildingBuckets: Array<{bucket: ?Bucket, tileID: OverscaledTileID, verticalScale: number}>;
+    layersGotHidden: boolean; // when layer're hidden since the last frame, don't keep previous elevation, while loading tiles.
 
     constructor(style: Style) {
         this.style = style;
+        this.layersGotHidden = false;
+        this.layers = [];
     }
 
     processLayersChanged() {
         this.layers = [];
+        const visible = false, visibilityChanged = false;
         for (const layerId in this.style._mergedLayers) {
             const layer = this.style._mergedLayers[layerId];
             if (layer.type === 'fill-extrusion') {
-                this.layers.push(layer);
+                this.layers.push({layer, visible, visibilityChanged});
             } else if (layer.type === 'model') {
                 const source = this.style.getLayerSource(layer);
                 if (source && source.type === 'batched-model') {
-                    this.layers.push(layer);
+                    this.layers.push({layer, visible, visibilityChanged});
                 }
             }
+        }
+    }
+
+    // Check if some of the building layers are disabled or with opacity evaluated to 0.
+    onNewFrame(zoom: number) {
+        this.layersGotHidden = false;
+        for (const l of this.layers) {
+            const layer = l.layer;
+            let visible = false;
+            if (layer.type === 'fill-extrusion') {
+                visible = !layer.isHidden(zoom) && ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-opacity') > 0.0;
+            } else if (layer.type === 'model') {
+                visible = !layer.isHidden(zoom) && ((layer: any): ModelStyleLayer).paint.get('model-opacity') > 0.0;
+            }
+            this.layersGotHidden = this.layersGotHidden || (!visible && l.visible);
+            l.visible = visible;
         }
     }
 
     updateZOffset(symbolBucket: SymbolBucket, tileID: OverscaledTileID) {
         // prepare lookup from bucket to overlapping buckets of all building layers.
         this.currentBuildingBuckets = [];
-        for (let i = 0; i < this.layers.length; ++i) {
-            const layer = this.layers[i];
+        for (const l of this.layers) {
+            const layer = l.layer;
             const sourceCache = this.style.getLayerSourceCache(layer);
 
             let verticalScale = 1;
             if (layer.type === 'fill-extrusion') {
-                // See https://mapbox.atlassian.net/browse/MAPS3D-1159 for more details on why we should take opacity into account.
-                const opacity = ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-opacity');
-                verticalScale = opacity > 0.0 ? ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-vertical-scale') : 0;
+                verticalScale = l.visible ? ((layer: any): FillExtrusionStyleLayer).paint.get('fill-extrusion-vertical-scale') : 0;
             }
 
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;
@@ -69,7 +88,8 @@ class BuildingIndex {
             const currentZOffset = symbolInstance.zOffset;
             const newZOffset = this._getHeightAtTileOffset(tileID, symbolInstance.tileAnchorX, symbolInstance.tileAnchorY);
 
-            symbolInstance.zOffset = newZOffset !== -1 ? newZOffset : currentZOffset;
+            // When zooming over integer zooms, keep the elevation while loading building buckets.
+            symbolInstance.zOffset = newZOffset !== Number.NEGATIVE_INFINITY ? newZOffset : currentZOffset;
 
             if (!dataChanged && currentZOffset !== symbolInstance.zOffset) {
                 dataChanged = true;
@@ -100,10 +120,11 @@ class BuildingIndex {
     _getHeightAtTileOffset(tid: OverscaledTileID, x: number, y: number): number {
         let availableHeight;
         let maxFillExtrusionHeight;
-        // use FE data when landmark height is not available. Instead of asuming order, process
+        // use FE data when landmark height is not available. Instead of assuming order, process
         // fill extrusions before landmarks
         for (let i = 0; i < this.layers.length; ++i) {
-            const layer = this.layers[i];
+            const l = this.layers[i];
+            const layer = l.layer;
             if (layer.type !== 'fill-extrusion') continue;
             const {bucket, tileID, verticalScale} = this.currentBuildingBuckets[i];
             if (!bucket) continue;
@@ -124,8 +145,9 @@ class BuildingIndex {
         }
 
         for (let i = 0; i < this.layers.length; ++i) {
-            const layer = this.layers[i];
-            if (layer.type !== 'model') continue;
+            const l = this.layers[i];
+            const layer = l.layer;
+            if (layer.type !== 'model' || !l.visible) continue;
             const {bucket, tileID} = this.currentBuildingBuckets[i];
             if (!bucket) continue;
 
@@ -137,8 +159,8 @@ class BuildingIndex {
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
             return (heightData.height || 0) * heightData.verticalScale;
         }
-        // We couldn't find a bucket
-        return -1;
+        // If we couldn't find a bucket, return Number.NEGATIVE_INFINITY. If a layer got hidden since previous frame, place symbols on ground.
+        return this.layersGotHidden ? 0 : Number.NEGATIVE_INFINITY;
     }
 }
 

@@ -2759,6 +2759,7 @@ class Style extends Evented {
         }
 
         if (placementCommitted || symbolBucketsChanged) {
+            this._buildingIndex.onNewFrame(transform.zoom);
             for (const layerId of this._mergedOrder) {
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
