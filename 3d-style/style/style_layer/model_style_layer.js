@@ -10,13 +10,14 @@ import {mat4} from 'gl-matrix';
 
 import type {LayerSpecification} from '../../../src/style-spec/types.js';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties.js';
-import type {BucketParameters} from '../../../src/data/bucket.js';
+import type {BucketParameters, Bucket} from '../../../src/data/bucket.js';
 import type {ConfigOptions} from '../../../src/style/properties.js';
 import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry.js';
 import type {FeatureState} from '../../../src/style-spec/expression/index.js';
 import type Transform from '../../../src/geo/transform.js';
 import ModelManager from '../../render/model_manager.js';
 import {calculateModelMatrix} from '../../data/model.js';
+import type {Node} from '../../data/model.js';
 import LngLat from '../../../src/geo/lng_lat.js';
 import type {Mat4} from 'gl-matrix';
 
@@ -25,6 +26,11 @@ import EXTENT from '../../../src/style-spec/data/extent.js';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util.js';
 import Map from '../../../src/ui/map.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
+import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket.js';
+import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index.js';
+import type {QueryFeature} from '../../../src/util/vectortile_to_geojson.js';
+import {CanonicalTileID} from '../../../src/source/tile_id.js';
+import EvaluationParameters from '../../../src/style/evaluation_parameters.js';
 
 class ModelStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -67,8 +73,8 @@ class ModelStyleLayer extends StyleLayer {
     }
 
     // $FlowFixMe[method-unbinding]
-    queryRadius(): number {
-        return 0;
+    queryRadius(bucket: Bucket): number {
+        return (bucket instanceof Tiled3dModelBucket) ? EXTENT - 1 : 0;
     }
 
     onRemove: ?(map: Map) => void;
@@ -106,9 +112,7 @@ class ModelStyleLayer extends StyleLayer {
                     const pointX = va[offset];
                     const pointY = va[offset + 1] | 0; // point.y stored in integer part
 
-                    const tileCount = 1 << id.z;
-                    position.lat = latFromMercatorY((pointY / EXTENT + id.y) / tileCount);
-                    position.lng = lngFromMercatorX((pointX / EXTENT + id.x) / tileCount);
+                    tileToLngLat(id, position, pointX, pointY);
 
                     calculateModelMatrix(matrix,
                                          model,
@@ -162,6 +166,97 @@ class ModelStyleLayer extends StyleLayer {
             this._isPropertyZoomDependent('model-rotation') ||
             this._isPropertyZoomDependent('model-translation');
     }
+
+    // $FlowFixMe[method-unbinding]
+    queryIntersectsMatchingFeature(
+        queryGeometry: TilespaceQueryGeometry,
+        featureIndex: number,
+        filter: FeatureFilter,
+        transform: Transform): {queryFeature: ?QueryFeature, intersectionZ: number} {
+
+        const tile = queryGeometry.tile;
+        const b = tile.getBucket(this);
+        let queryFeature = null;
+        let intersectionZ = Number.MAX_VALUE;
+        if (!b || !(b instanceof Tiled3dModelBucket)) return {queryFeature, intersectionZ};
+        const bucket: Tiled3dModelBucket = (b: any);
+
+        const nodeInfo = bucket.getNodesInfo()[featureIndex];
+
+        if (nodeInfo.hiddenByReplacement ||
+            !nodeInfo.node.meshes ||
+            // $FlowFixMe[method-unbinding]
+            !filter.filter(new EvaluationParameters(tile.tileID.overscaledZ), nodeInfo.feature, tile.tileID.canonical)) {
+            return {queryFeature, intersectionZ};
+        }
+
+        // AABB check
+        const node = nodeInfo.node;
+        const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped(), transform.worldSize);
+        const modelMatrix = tileMatrix;
+        const scale = nodeInfo.evaluatedScale;
+        let elevation = 0;
+        if (transform.elevation && node.elevation) {
+            elevation = node.elevation * transform.elevation.exaggeration();
+        }
+        const anchorX = node.anchor ? node.anchor[0] : 0;
+        const anchorY = node.anchor ? node.anchor[1] : 0;
+
+        mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
+            anchorY * (scale[1] - 1),
+            elevation]);
+        /* $FlowIgnore[incompatible-call] scale should always be an array */
+        mat4.scale(modelMatrix, modelMatrix, scale);
+
+        mat4.multiply(modelMatrix, modelMatrix, node.matrix);
+
+        // Collision checks are performed in screen space. Corners are in ndc space.
+        const screenQuery = queryGeometry.queryGeometry;
+        const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
+
+        const checkNode = function(n: Node) {
+            const nodeModelMatrix = mat4.multiply([], modelMatrix, n.matrix);
+            const worldViewProjection = mat4.multiply(nodeModelMatrix, transform.expandedFarZProjMatrix, nodeModelMatrix);
+            for (let i = 0; i < n.meshes.length; ++i) {
+                const mesh = n.meshes[i];
+                if (i === n.lightMeshIndex) {
+                    continue;
+                }
+                const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjection, mesh.aabb);
+                if (depth != null) {
+                    intersectionZ = Math.min(depth, intersectionZ);
+                }
+            }
+            if (n.children) {
+                for (const child of n.children) {
+                    checkNode(child);
+                }
+            }
+        };
+
+        checkNode(node);
+        if (intersectionZ === Number.MAX_VALUE) {
+            return {queryFeature, intersectionZ};
+        }
+
+        const position = new LngLat(0, 0);
+        tileToLngLat(tile.tileID.canonical, position, nodeInfo.node.anchor[0], nodeInfo.node.anchor[1]);
+        queryFeature = {
+            type: 'Feature',
+            geometry: {type: "Point", coordinates: [position.lng, position.lat]},
+            properties: nodeInfo.feature.properties,
+            id: nodeInfo.feature.id,
+            state: {}, // append later
+            layer: this.serialize()
+        };
+        return {queryFeature, intersectionZ};
+    }
 }
 
 export default ModelStyleLayer;
+
+function tileToLngLat(id: CanonicalTileID, position: LngLat, pointX: number, pointY: number) {
+    const tileCount = 1 << id.z;
+    position.lat = latFromMercatorY((pointY / EXTENT + id.y) / tileCount);
+    position.lng = lngFromMercatorX((pointX / EXTENT + id.x) / tileCount);
+}

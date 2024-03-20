@@ -493,7 +493,7 @@ class Tile {
             }
         });
 
-        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
+        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile))
             return {};
 
         return this.latestFeatureIndex.query({

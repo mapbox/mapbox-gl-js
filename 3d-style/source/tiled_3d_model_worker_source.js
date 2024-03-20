@@ -57,6 +57,7 @@ class Tiled3dWorkerTile {
         const layerFamilies = layerIndex.familiesBySource[params.source];
         const featureIndex = new FeatureIndex(tileID, params.promoteId);
         featureIndex.bucketLayerIDs = [];
+        featureIndex.is3DTile = true;
 
         return load3DTile(data)
             .then(gltf => {
@@ -70,8 +71,9 @@ class Tiled3dWorkerTile {
                 for (const sourceLayerId in layerFamilies) {
                     for (const family of layerFamilies[sourceLayerId]) {
                         const layer = family[0];
+                        featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
                         layer.recalculate(parameters, []);
-                        const bucket = new Tiled3dModelBucket(nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness);
+                        const bucket = new Tiled3dModelBucket(nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                         buckets[layer.fqid] = bucket;

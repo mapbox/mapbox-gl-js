@@ -2209,7 +2209,7 @@ class Style extends Evented {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].type === 'fill-extrusion';
+        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].type === 'fill-extrusion' ||  this._mergedLayers[layerId].type === 'model';
 
         const order = this.order;
 

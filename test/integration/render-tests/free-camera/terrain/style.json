@@ -4,6 +4,7 @@
     "test": {
       "height": 512,
       "width": 512,
+      "allowed": 0.0007,
       "operations": [
         ["wait"],
         ["lookAtPoint", [-113.336142, 35.937623]],

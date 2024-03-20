@@ -206,7 +206,7 @@ export function convertModelMatrixForGlobe(matrix: Mat4, transform: Transform, s
     return modelMatrix;
 }
 
-// In case of intersection, returns depth of the closest corner. Otherwise, returns false.
+// In case of intersection, returns depth of the closest corner. Otherwise, returns undefined.
 export function queryGeometryIntersectsProjectedAabb(queryGeometry: Point[], transform: Transform, worldViewProjection: Mat4, aabb: Aabb): ?number {
     // Collision checks are performed in screen space. Corners are in ndc space.
     const corners = Aabb.projectAabbCorners(aabb, worldViewProjection);

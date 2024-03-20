@@ -37,6 +37,7 @@ import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../render/painter.js";
 import type SourceCache from '../source/source_cache.js';
 import type Painter from '../render/painter.js';
+import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -83,6 +84,10 @@ class StyleLayer extends Evented {
                               pixelPosMatrix: Float32Array,
                               elevationHelper: ?DEMSampler,
                               layoutVertexArrayOffset: number) => boolean | number;
+    +queryIntersectsMatchingFeature: (queryGeometry: TilespaceQueryGeometry,
+                                      featureIndex: number,
+                                      filter: FeatureFilter,
+                                      transform: Transform) => {queryFeature: ?QueryFeature, intersectionZ: number};
 
     +onAdd: ?(map: MapboxMap) => void;
     +onRemove: ?(map: MapboxMap) => void;

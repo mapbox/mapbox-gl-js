@@ -109,7 +109,7 @@ export type Node = {
     lights: Array<AreaLight>;
     lightMeshIndex: number;
     elevation: ?number;
-    anchor: ?Vec2;
+    anchor: Vec2;
 }
 
 export const ModelTraits = {

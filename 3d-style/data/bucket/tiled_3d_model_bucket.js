@@ -24,6 +24,8 @@ import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Vec4} from 'gl-matrix';
 import type {Terrain} from '../../../src/terrain/terrain.js';
+import Grid from 'grid-index';
+import FeatureIndex from '../../../src/data/feature_index.js';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -41,6 +43,20 @@ function getNodeHeight(node: Node): number {
         }
     }
     return height;
+}
+
+function addAABBsToGridIndex(node: Node, key: number, grid: Grid) {
+    if (node.meshes) {
+        for (const mesh of node.meshes) {
+            if (mesh.aabb.min[0] === Infinity) continue;
+            grid.insert(key, mesh.aabb.min[0], mesh.aabb.min[1], mesh.aabb.max[0], mesh.aabb.max[1]);
+        }
+    }
+    if (node.children) {
+        for (const child of node.children) {
+            addAABBsToGridIndex(child, key, grid);
+        }
+    }
 }
 
 export const PartIndices = {
@@ -100,7 +116,6 @@ export class Tiled3dModelFeature {
 }
 
 class Tiled3dModelBucket implements Bucket {
-    nodes: Array<Node>;
     id: OverscaledTileID;
     uploaded: boolean;
     modelTraits: number;
@@ -120,8 +135,7 @@ class Tiled3dModelBucket implements Bucket {
     brightness: ?number;
     needsUpload: boolean;
     /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
-    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, hasMeshoptCompression: boolean, brightness: ?number) {
-        this.nodes = nodes;
+    constructor(nodes: Array<Node>, id: OverscaledTileID, hasMbxMeshFeatures: boolean, hasMeshoptCompression: boolean, brightness: ?number, featureIndex: FeatureIndex) {
         this.id = id;
         this.modelTraits |= ModelTraits.CoordinateSpaceTile;
         this.uploaded = false;
@@ -140,7 +154,15 @@ class Tiled3dModelBucket implements Bucket {
         this.brightness = brightness;
         this.dirty = true;
         this.needsUpload = false;
+
+        this.nodesInfo = [];
+        for (const node of nodes) {
+            this.nodesInfo.push(new Tiled3dModelFeature(node));
+            addAABBsToGridIndex(node, featureIndex.featureIndexArray.length, featureIndex.grid);
+            featureIndex.featureIndexArray.emplaceBack(this.nodesInfo.length - 1, 0 /*sourceLayerIndex*/, featureIndex.bucketLayerIDs.length - 1, 0);
+        }
     }
+
     update() {
         console.log("Update 3D model bucket");
     }
@@ -447,27 +469,10 @@ class Tiled3dModelBucket implements Bucket {
     }
 
     getNodesInfo(): Array<Tiled3dModelFeature> {
-        if (!this.nodesInfo) {
-            this.nodesInfo = [];
-            for (const node of this.nodes) {
-                this.nodesInfo.push(new Tiled3dModelFeature(node));
-            }
-            this.freeNodes();
-        }
         return this.nodesInfo;
     }
 
-    freeNodes() {
-        if (this.nodes) {
-            for (const node of this.nodes) {
-                destroyBuffers(node);
-            }
-            this.nodes.splice(0, this.nodes.length);
-        }
-    }
-
     destroy() {
-        this.freeNodes();
         const nodesInfo = this.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
             destroyNodeArrays(nodeInfo.node);
@@ -476,7 +481,7 @@ class Tiled3dModelBucket implements Bucket {
     }
 
     isEmpty(): boolean {
-        return !this.nodes.length;
+        return !this.nodesInfo.length;
     }
 
     updateReplacement(coord: OverscaledTileID, source: ReplacementSource) {
