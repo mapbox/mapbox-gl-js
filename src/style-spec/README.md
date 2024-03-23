@@ -9,6 +9,8 @@ package so that they can be installed without the bulk of GL JS.
 
     npm install @mapbox/mapbox-gl-style-spec
 
+In addition to ESM and CJS bundles, the package also provides separate modules. The difference between the bundles and the modules is that the modules use a minified version of the `latest` style refererence, which does not contain any `doc` and `example` fields. See the `exports` section of `package.json` for available modules.
+
 ## CLI Tools
 
 If you install this package globally, you will have access to several CLI tools.

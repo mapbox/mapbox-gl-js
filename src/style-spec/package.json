@@ -17,15 +17,53 @@
       "require": "./dist/index.cjs",
       "import": "./dist/index.es.js"
     },
+    "./v8": "./src/reference/v8.json",
+    "./v8.min": "./dist/reference/v8.json",
+    "./latest": "./dist/reference/latest.js",
+    "./format": "./dist/format.js",
+    "./migrate": "./dist/migrate.js",
+    "./composite": "./dist/composite.js",
+    "./derefLayers": "./dist/deref.js",
+    "./diff": "./dist/diff.js",
+    "./ValidationError": "./dist/error/validation_error.js",
+    "./ParsingError": "./dist/error/parsing_error.js",
+    "./expression": "./dist/expression/index.js",
+    "./featureFilter": "./dist/feature_filter/index.js",
+    "./convertFilter": "./dist/feature_filter/convert.js",
+    "./Color": "./dist/util/color.js",
+    "./function": "./dist/function/index.js",
+    "./validate": "./dist/validate_style.js",
+    "./validateMapboxApiSupported": "./dist/validate_mapbox_api_supported.js",
+    "./visit": "./dist/visit.js",
     "./": {
       "import": "./"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "latest": ["dist/reference/latest.js"],
+      "format": ["dist/format.js"],
+      "migrate": ["dist/migrate.js"],
+      "composite": ["dist/composite.js"],
+      "derefLayers": ["dist/deref.js"],
+      "diff": ["dist/diff.js"],
+      "ValidationError": ["dist/error/validation_error.js"],
+      "ParsingError": ["dist/error/parsing_error.js"],
+      "expression": ["dist/expression/index.js"],
+      "featureFilter": ["dist/feature_filter/index.js"],
+      "convertFilter": ["dist/feature_filter/convert.js"],
+      "Color": ["dist/util/color.js"],
+      "function": ["dist/function/index.js"],
+      "validate": ["dist/validate_style.js"],
+      "validateMapboxApiSupported": ["dist/validate_mapbox_api_supported.js"],
+      "visit": ["dist/visit.js"]
     }
   },
   "scripts": {
     "pretest": "npm run build",
     "test": "node ./test.js",
     "copy-flow-typed": "cp -R ../../flow-typed .",
-    "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
+    "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm && node prepare_modules.js",
     "prepublishOnly": "npm run copy-flow-typed && npm run build",
     "postpublish": "rm -r flow-typed dist/index.cjs"
   },
