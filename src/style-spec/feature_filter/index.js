@@ -3,7 +3,7 @@
 import {createExpression} from '../expression/index.js';
 import {isFeatureConstant} from '../expression/is_constant.js';
 import {deepUnbundle} from '../util/unbundle_jsonlint.js';
-import latest from '../reference/latest.js';
+import {min as latest} from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type Point from '@mapbox/point-geometry';
