@@ -705,6 +705,8 @@ class Camera extends Evented {
 
         aabb = Aabb.applyTransform(aabb, mat4.multiply([], worldToCamera, aabbOrientation));
 
+        aabb = this._extendAABBWithPaddings(aabb, eOptions, tr, bearing);
+
         vec3.transformMat4(center, center, worldToCamera);
 
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
@@ -740,6 +742,42 @@ class Camera extends Evented {
         return {center: tr.center, zoom, bearing, pitch};
     }
 
+    _extendAABBWithPaddings(aabb: Aabb, eOptions: FullCameraOptions, tr: Transform, bearing: number): Aabb {
+        const size = vec3.sub([], aabb.max, aabb.min);
+
+        const screenPadL = tr.padding.left || 0;
+        const screenPadR = tr.padding.right || 0;
+        const screenPadB = tr.padding.bottom || 0;
+        const screenPadT = tr.padding.top || 0;
+
+        const {left: padL, right: padR, top: padT, bottom: padB} = eOptions.padding;
+
+        const halfScreenPadX = (screenPadL + screenPadR) * 0.5;
+        const halfScreenPadY = (screenPadT + screenPadB) * 0.5;
+
+        const scaleX = (tr.width - (screenPadL + screenPadR + padL + padR)) / size[0];
+        const scaleY = (tr.height - (screenPadB + screenPadT + padB + padT)) / size[1];
+
+        const zoomRef = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
+
+        const scaleRatio = tr.scale / tr.zoomScale(zoomRef);
+
+        aabb = new Aabb(
+            [aabb.min[0] - (padL + halfScreenPadX) * scaleRatio, aabb.min[1] - (padB + halfScreenPadY) * scaleRatio, aabb.min[2]],
+            [aabb.max[0] + (padR + halfScreenPadX) * scaleRatio, aabb.max[1] + (padT + halfScreenPadY) * scaleRatio, aabb.max[2]]);
+
+        const centerOffset = (typeof eOptions.offset.x === 'number' && typeof eOptions.offset.y === 'number') ?
+            new Point(eOptions.offset.x, eOptions.offset.y) :
+            Point.convert(eOptions.offset);
+
+        const rotatedOffset = centerOffset.rotate(-degToRad(bearing));
+
+        aabb.center[0] -= rotatedOffset.x * scaleRatio;
+        aabb.center[1] += rotatedOffset.y * scaleRatio;
+
+        return aabb;
+    }
+
     /** @section {Querying features} */
 
     /**
@@ -773,6 +811,7 @@ class Camera extends Evented {
      * the highest zoom level up to and including `Map#getMaxZoom()` that fits
      * the points in the viewport at the specified bearing.
      * @memberof Map#
+     * @param transform The current transform
      * @param {LngLatLike} p0 First point
      * @param {LngLatLike} p1 Second point
      * @param {number} bearing Desired map bearing at end of animation, in degrees
@@ -799,7 +838,6 @@ class Camera extends Evented {
 
         const tr = transform.clone();
         const eOptions = this._extendCameraOptions(options);
-        const edgePadding = tr.padding;
 
         tr.bearing = bearing;
         tr.pitch = pitch;
@@ -829,29 +867,9 @@ class Camera extends Evented {
 
         aabb = Aabb.applyTransform(aabb, worldToCamera);
 
+        aabb = this._extendAABBWithPaddings(aabb, eOptions, tr, bearing);
+
         const size = vec3.sub([], aabb.max, aabb.min);
-
-        const screenPadL = edgePadding.left || 0;
-        const screenPadR = edgePadding.right || 0;
-        const screenPadB = edgePadding.bottom || 0;
-        const screenPadT = edgePadding.top || 0;
-
-        const {left: padL, right: padR, top: padT, bottom: padB} = eOptions.padding;
-
-        const halfScreenPadX = (screenPadL + screenPadR) * 0.5;
-        const halfScreenPadY = (screenPadT + screenPadB) * 0.5;
-
-        const scaleX = (tr.width - (screenPadL + screenPadR + padL + padR)) / size[0];
-        const scaleY = (tr.height - (screenPadB + screenPadT + padB + padT)) / size[1];
-
-        const zoomRef = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), eOptions.maxZoom);
-
-        const scaleRatio = tr.scale / tr.zoomScale(zoomRef);
-
-        aabb = new Aabb(
-            [aabb.min[0] - (padL + halfScreenPadX) * scaleRatio, aabb.min[1] - (padB + halfScreenPadY) * scaleRatio, aabb.min[2]],
-            [aabb.max[0] + (padR + halfScreenPadX) * scaleRatio, aabb.max[1] + (padT + halfScreenPadY) * scaleRatio, aabb.max[2]]);
-
         const aabbHalfExtentZ = size[2] * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
@@ -862,15 +880,6 @@ class Camera extends Evented {
 
         const offset = vec3.scale([], normalZ, frustumDistance + aabbHalfExtentZ);
         const cameraPosition = vec3.add([], aabb.center, offset);
-
-        const centerOffset = (typeof eOptions.offset.x === 'number' && typeof eOptions.offset.y === 'number') ?
-            new Point(eOptions.offset.x, eOptions.offset.y) :
-            Point.convert(eOptions.offset);
-
-        const rotatedOffset = centerOffset.rotate(-degToRad(bearing));
-
-        aabb.center[0] -= rotatedOffset.x * scaleRatio;
-        aabb.center[1] += rotatedOffset.y * scaleRatio;
 
         vec3.transformMat4(aabb.center, aabb.center, cameraToWorld);
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
