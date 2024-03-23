@@ -59,13 +59,14 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: {[_: string]: {glyphs: {[id: number]: StyleGlyph | null}, ascender: ?number, descender: ?number}};
+    enableFallbackGlyph: ?boolean
     urls: {[scope: string]: ?string};
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily: ?string) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily: ?string, enableFallbackGlyph: ?boolean) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
@@ -78,6 +79,7 @@ class GlyphManager {
             '500': {},
             '900': {}
         };
+        this.enableFallbackGlyph = enableFallbackGlyph;
     }
 
     setURL(url: ?string, scope: string) {
@@ -91,8 +93,13 @@ class GlyphManager {
         const url = this.urls[scope] || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
+            let doesCharSupportFallbackGlyphRange = false;
             for (const id of glyphs[stack]) {
                 all.push({stack, id});
+                if (this.localGlyphMode !== LocalGlyphMode.all && !!this.enableFallbackGlyph && id >= 0 && id <= 255) doesCharSupportFallbackGlyphRange = true;
+            }
+            if (this.localGlyphMode !== LocalGlyphMode.all && !!this.enableFallbackGlyph && !doesCharSupportFallbackGlyphRange) {
+                all.push({stack, id: 63});
             }
         }
 
@@ -171,15 +178,29 @@ class GlyphManager {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
                     if (result[stack] === undefined) result[stack] = {};
                     if (result[stack].glyphs === undefined) result[stack].glyphs = {};
-                    result[stack].glyphs[id] = glyph && {
-                        id: glyph.id,
-                        bitmap: glyph.bitmap.clone(),
-                        metrics: glyph.metrics
-                    };
+                    if (glyph) {
+                        result[stack].glyphs[id] = {
+                            id: glyph.id,
+                            bitmap: glyph.bitmap.clone(),
+                            metrics: glyph.metrics,
+                        };
+                    } else if (this.enableFallbackGlyph) {
+                        const fallbackGlyph = this.entries[stack].glyphs[63];
+                        if (fallbackGlyph) {
+                            result[stack].glyphs[id] = {
+                                id,
+                                bitmap: fallbackGlyph.bitmap.clone(),
+                                metrics: fallbackGlyph.metrics,
+                            };
+                        } else {
+                            result[stack].glyphs[id] = null;
+                        }
+                    } else {
+                        result[stack].glyphs[id] = null;
+                    }
                     result[stack].ascender = this.entries[stack].ascender;
                     result[stack].descender = this.entries[stack].descender;
                 }
-
                 callback(null, result);
             }
         });
