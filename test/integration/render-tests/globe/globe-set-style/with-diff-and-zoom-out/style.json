@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "allowed": 0.0008,
+      "operations": [
+        ["setZoom", 0],
+        ["idle"],
+        ["setStyle", {
+          "version": 8,
+          "zoom": 0,
+          "center": [-180, 0],
+          "projection": {
+            "name": "globe"
+          },
+          "sources": {},
+          "layers": [
+            {
+              "id": "land",
+              "type": "background",
+              "paint": {
+                "background-color": "#000"
+              }
+            }
+          ]
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 22,
+  "center": [-180, 0],
+  "projection": {
+    "name": "globe"
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "paint": {
+        "background-color": "#000"
+      }
+    }
+  ]
+}

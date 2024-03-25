@@ -878,7 +878,7 @@ class Style extends Evented {
                 this.setTerrainForDraping();
             }
         } else if (this.terrainSetForDrapingOnly()) {
-            this.setTerrain(null);
+            this.setTerrain(null, DrapeRenderMode.deferred);
         }
     }
 
@@ -2406,7 +2406,10 @@ class Style extends Evented {
 
         // Disabling
         if (!terrainOptions) {
-            delete this.terrain;
+            // This check prevents removing draping terrain not from #applyProjectionUpdate
+            if (!this.terrainSetForDrapingOnly() || drapeRenderMode === DrapeRenderMode.deferred) {
+                delete this.terrain;
+            }
 
             if (terrainOptions === null) {
                 this.stylesheet.terrain = null;
