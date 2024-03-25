@@ -13,7 +13,7 @@ uniform float u_raster_elevation;
 uniform float u_zoom_transition;
 uniform vec2 u_merc_center;
 
-#define GLOBE_UPSCALE GLOBE_RADIUS / 6371008.8;
+#define GLOBE_UPSCALE GLOBE_RADIUS / 6371008.8
 
 #ifdef GLOBE_POLES
 in vec3 a_globe_pos;
