@@ -64,15 +64,19 @@ class FolderState {
 class PaneState {
     isMainPaneShown: boolean;
     folders: Map<string, FolderState>;
+    scrollTopRatio: number;
 
     constructor() {
+        this.scrollTopRatio = 0;
         this.isMainPaneShown = false;
         this.folders = new Map <string, FolderState>();
     }
 }
 
 function mergePaneParams(dest: PaneState, src: PaneState) {
-    dest.isMainPaneShown = src.isMainPaneShown;
+    if (src.isMainPaneShown !== undefined) {
+        dest.isMainPaneShown = src.isMainPaneShown;
+    }
 
     const mergedFolderKeys = [...new Set([...src.folders.keys(), ...dest.folders.keys()])];
 
@@ -83,8 +87,6 @@ function mergePaneParams(dest: PaneState, src: PaneState) {
             for (const parameterKey of Object.keys(srcFolder.current)) {
                 destFolder.current[parameterKey] = cloneDeep(srcFolder.current[parameterKey]);
             }
-
-            destFolder.isFolded = srcFolder.isFolded;
         } else if (srcFolder) {
             dest.folders.set(key, srcFolder);
         }
@@ -107,6 +109,11 @@ function deSerializePaneParams(input: ?string): PaneState {
     if ('isMainPaneShown' in obj) {
         p.isMainPaneShown = obj.isMainPaneShown;
     }
+
+    if ('scrollTopRatio' in obj) {
+        p.scrollTopRatio = obj.scrollTopRatio;
+    }
+
     if ('folders' in obj) {
         if (obj.folders instanceof Map) {
             obj.folders.forEach((it, key) => {
@@ -175,6 +182,8 @@ export class TrackedParameters {
 
     _storageName: string;
 
+    _scrollUnblocked: boolean;
+
     constructor(map: MapboxMap) {
         this._map = map;
         this._folders = new Map <string, any>();
@@ -184,6 +193,8 @@ export class TrackedParameters {
         this._storageName = `TP_${id}_${url}`;
 
         this._parametersInfo = new Map<string, ParameterInfo>();
+
+        this._scrollUnblocked = false;
 
         this.initPane();
 
@@ -195,20 +206,51 @@ export class TrackedParameters {
 
     // Serialize pane state and write it to local storage
     dump() {
+        if (this._scrollUnblocked) {
+            const scrollTop = this._container.scrollTop;
+            this._paneState.scrollTopRatio = scrollTop / this._container.scrollHeight;
+        }
+
         const serialized = serialize(this._paneState);
         localStorage.setItem(this._storageName, serialized);
     }
 
-    resetToDefaults() {
-        this._parametersInfo.forEach((elem) => {
-            elem.containerObject[elem.parameterName] = elem.defaultValue;
+    unfold() {
+        this._paneState.folders.forEach((folderState) => {
+            folderState.isFolded = false;
         });
 
-        this.checkDefaults();
         this._folders.forEach((folder) => {
             folder.expanded = true;
             folder.refresh();
         });
+
+        this.dump();
+    }
+
+    resetToDefaults() {
+        const doReset = () => {
+            this._parametersInfo.forEach((elem, key) => {
+                elem.containerObject[elem.parameterName] = cloneDeep(elem.defaultValue);
+
+                // Update serializable state as well
+                const folderName = key.slice(0, key.lastIndexOf("|"));
+                const folder = this._paneState.folders.get(folderName);
+                if (folder) {
+                    folder.current[elem.parameterName] = cloneDeep(elem.defaultValue);
+                }
+            });
+            this.checkDefaults();
+            this._folders.forEach((folder) => {
+                folder.refresh();
+            });
+        };
+
+        // Workaround for tweakpane bug (int vs float color storage)
+        doReset();
+        doReset();
+
+        this.dump();
     }
 
     checkDefaults() {
@@ -219,7 +261,6 @@ export class TrackedParameters {
         }
 
         this._parametersInfo.forEach((parameterInfo, key) => {
-
             const isDefault = JSON.stringify(parameterInfo.defaultValue) === JSON.stringify(parameterInfo.containerObject[parameterInfo.parameterName]);
 
             parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + parameterInfo.parameterName;
@@ -341,6 +382,28 @@ export class TrackedParameters {
         this._container = window.document.createElement('div');
         this._container.className = 'mapboxgl-ctrl mapbox-devtools';
 
+        this._container.onwheel = () => {
+            this._scrollUnblocked = true;
+            this.dump();
+        };
+
+        this._container.onclick = () => {
+            this._scrollUnblocked = true;
+            this.dump();
+        };
+
+        this._container.onscroll = () => {
+            if (this._scrollUnblocked) {
+                this.dump();
+            }
+        };
+
+        this._container.onscrollend = () => {
+            if (this._scrollUnblocked) {
+                this.dump();
+            }
+        };
+
         const positionContainer = this._map._controlPositions['top-right'];
         positionContainer.appendChild(this._container);
 
@@ -355,27 +418,27 @@ export class TrackedParameters {
             this.dump();
         });
 
-        const resetToDefaultsButton = pane.addButton({
+        pane.addButton({
             title: 'Reset To Defaults'
-        });
-
-        resetToDefaultsButton.on('click', () => {
+        }).on('click', () => {
             this.resetToDefaults();
         });
 
-        const saveButton = pane.addButton({
-            title: 'Save'
+        pane.addButton({
+            title: 'Unfold'
+        }).on('click', () => {
+            this.unfold();
         });
 
-        saveButton.on('click', () => {
+        pane.addButton({
+            title: 'Save'
+        }).on('click', () => {
             this.saveParameters();
         });
 
-        const loadButton = pane.addButton({
+        pane.addButton({
             title: 'Load'
-        });
-
-        loadButton.on('click', () => {
+        }).on('click', () => {
             this.loadParameters();
         });
 
@@ -453,6 +516,10 @@ export class TrackedParameters {
         }
 
         this.checkDefaults();
+
+        if (!this._scrollUnblocked) {
+            this._container.scrollTop = this._paneState.scrollTopRatio * this._container.scrollHeight;
+        }
     }
 
     registerButton(scope: Array<string>, buttonTitle: string, onClick: Function) {
