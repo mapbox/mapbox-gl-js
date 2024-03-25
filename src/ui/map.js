@@ -224,6 +224,9 @@ class DebugParams {
     showParseStatus: boolean;
     continuousRedraw: boolean;
 
+    showTileAABBs: boolean;
+    showPadding: boolean;
+
     showTerrainWireframe: boolean;
     showLayers2DWireframe: boolean;
     showLayers3DWireframe: boolean;
@@ -234,6 +237,9 @@ class DebugParams {
         this.showParseStatus = false;
 
         this.continuousRedraw = false;
+
+        this.showTileAABBs = false;
+        this.showPadding = false;
 
         this.showTerrainWireframe = false;
         this.showLayers2DWireframe = false;
@@ -635,6 +641,8 @@ class Map extends Camera {
         this._tp.registerParameter(this._debugParams, ["Debug"], "showTileBoundaries", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug"], "showParseStatus", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug"], "continuousRedraw", undefined, (value) => { this.repaint = value; });
+        this._tp.registerParameter(this._debugParams, ["Debug"], "showTileAABBs", undefined, (value) => { this.showTileAABBs = value; });
+        this._tp.registerParameter(this._debugParams, ["Debug"], "showPadding", undefined, (value) => { this.showPadding = value; });
         this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showTerrainWireframe", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showLayers2DWireframe", undefined, () => { this._update(); });
         this._tp.registerParameter(this._debugParams, ["Debug", "Wireframe"], "showLayers3DWireframe", undefined, () => { this._update(); });
@@ -3668,13 +3676,13 @@ class Map extends Camera {
                 },
                 showOverdrawInspector: this._showOverdrawInspector || this._debugParams.showOverdrawInspector,
                 showQueryGeometry: !!this._showQueryGeometry,
-                showTileAABBs: this.showTileAABBs,
+                showTileAABBs: this.showTileAABBs || this._debugParams.showTileAABBs,
                 rotating: this.isRotating(),
                 zooming: this.isZooming(),
                 moving: this.isMoving(),
                 fadeDuration,
                 isInitialLoad: this._isInitialLoad,
-                showPadding: this.showPadding,
+                showPadding: this.showPadding || this._debugParams.showPadding,
                 gpuTiming: !!this.listens('gpu-timing-layer'),
                 gpuTimingDeferredRender: !!this.listens('gpu-timing-deferred-render'),
                 speedIndexTiming: this.speedIndexTiming,
