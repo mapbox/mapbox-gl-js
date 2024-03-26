@@ -7,10 +7,10 @@
       "operations": [
         ["setFog", {"color": "red"}],
         ["wait"],
-        ["setFog", {}]
+        ["setFog", {}],
+        ["wait"]
       ]
     }
-
   },
   "pitch": 80,
   "zoom": 12,

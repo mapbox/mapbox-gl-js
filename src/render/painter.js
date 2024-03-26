@@ -32,7 +32,7 @@ import line from './draw_line.js';
 import fill from './draw_fill.js';
 import fillExtrusion from './draw_fill_extrusion.js';
 import hillshade from './draw_hillshade.js';
-import raster from './draw_raster.js';
+import raster, {prepare as prepareRaster} from './draw_raster.js';
 import background from './draw_background.js';
 import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug.js';
 import custom from './draw_custom.js';
@@ -48,34 +48,11 @@ import type {Source} from '../source/source.js';
 import type {CutoffParams} from '../render/cutoff.js';
 
 // 3D-style related
-import model, {upload as modelUpload} from '../../3d-style/render/draw_model.js';
+import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model.js';
 import {lightsUniformValues} from '../../3d-style/render/lights.js';
-
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer.js';
-
 import {WireframeDebugCache} from "./wireframe_cache.js";
-
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters.js';
-
-const draw = {
-    symbol,
-    circle,
-    heatmap,
-    line,
-    fill,
-    'fill-extrusion': fillExtrusion,
-    hillshade,
-    raster,
-    background,
-    sky,
-    debug,
-    custom,
-    model
-};
-
-const upload = {
-    modelUpload
-};
 
 import type Transform from '../geo/transform.js';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
@@ -136,6 +113,27 @@ type TileBoundsBuffers = {|
 |};
 
 type GPUTimers = {[layerId: string]: any};
+
+const draw = {
+    symbol,
+    circle,
+    heatmap,
+    line,
+    fill,
+    'fill-extrusion': fillExtrusion,
+    hillshade,
+    raster,
+    background,
+    sky,
+    debug,
+    custom,
+    model
+};
+
+const prepare = {
+    model: modelPrepare,
+    raster: prepareRaster
+};
 
 /**
  * Initialize a new painter object.
@@ -607,6 +605,11 @@ class Painter {
             }
         }
 
+        for (const layer of orderedLayers) {
+            if (layer.isHidden(this.transform.zoom)) continue;
+            this.prepareLayer(layer);
+        }
+
         const coordsAscending: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsDescending: {[_: string]: Array<OverscaledTileID>} = {};
         const coordsDescendingSymbol: {[_: string]: Array<OverscaledTileID>} = {};
@@ -624,11 +627,10 @@ class Painter {
 
         const getLayerSource = (layer: StyleLayer) => {
             const cache = this.style.getLayerSourceCache(layer);
-            if (!cache || !cache.used) {
-                return null;
-            }
+            if (!cache || !cache.used) return null;
             return cache.getSource();
         };
+
         if (conflationSourcesInStyle) {
             const conflationLayersInStyle = [];
 
@@ -742,13 +744,6 @@ class Painter {
 
         if (this.transform.projection.name === 'globe' && !this.globeSharedBuffers) {
             this.globeSharedBuffers = new GlobeSharedBuffers(this.context);
-        }
-
-        // upload pass
-        for (const layer of orderedLayers) {
-            if (layer.isHidden(this.transform.zoom)) continue;
-            const sourceCache = style.getLayerSourceCache(layer);
-            this.uploadLayer(this, layer, sourceCache);
         }
 
         if (this.style.fog && this.transform.projection.supportsFog) {
@@ -973,7 +968,7 @@ class Painter {
         }
 
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
-            //Use source with highest maxzoom
+            // Use source with highest maxzoom
             let selectedSource = null;
             orderedLayers.forEach((layer) => {
                 const sourceCache = style.getLayerSourceCache(layer);
@@ -1023,20 +1018,25 @@ class Painter {
         }
     }
 
-    uploadLayer(painter: Painter, layer: StyleLayer, sourceCache?: SourceCache) {
+    prepareLayer(layer: StyleLayer) {
         this.gpuTimingStart(layer);
-        if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.type === 'custom')) {
-            if (upload[`${layer.type}Upload`]) {
-                upload[`${layer.type}Upload`](painter, sourceCache, layer.scope);
-            }
+
+        const {unsupportedLayers} = this.transform.projection;
+        const isLayerSupported = unsupportedLayers ? !unsupportedLayers.includes(layer.type) : true;
+        const isCustomLayerWithTerrain = this.terrain && layer.type === 'custom';
+
+        if (prepare[layer.type] && (isLayerSupported || isCustomLayerWithTerrain)) {
+            const sourceCache = this.style.getLayerSourceCache(layer);
+            prepare[layer.type](layer, sourceCache, this);
         }
+
         this.gpuTimingEnd();
     }
 
     renderLayer(painter: Painter, sourceCache?: SourceCache, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && layer.type !== 'raster' && !(coords && coords.length)) return;
+
         this.id = layer.id;
 
         this.gpuTimingStart(layer);

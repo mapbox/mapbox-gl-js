@@ -63,6 +63,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+    | 'empty'     // Tile data has been loaded but has no content for rendering.
     | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
     | 'unloaded'  // Tile data has been deleted.
     | 'errored'   // Tile data was not loaded because of an error.
@@ -85,17 +86,6 @@ const BOUNDS_FEATURE = (() => {
         }
     };
 })();
-
-export type RasterArrayTextureDescriptor = {
-    texture: ?Texture,
-    layer: string,
-    band: string | number,
-    format: 'uint8' | 'uint16' | 'uint32',
-    tileSize: number,
-    buffer: number,
-    mix: [number, number, number, number],
-    offset: number
-};
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -143,7 +133,6 @@ class Tile {
     texture: ?Texture | ?UserManagedTexture;
     hillshadeFBO: ?Framebuffer;
     demTexture: ?Texture;
-    rasterArrayTextureDescriptor: ?RasterArrayTextureDescriptor;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
@@ -171,34 +160,12 @@ class Tile {
     _globeTileDebugTextBuffer: ?VertexBuffer;
     _lastUpdatedBrightness: ?number;
 
-    _workQueue: Array<any>;
-    _fetchQueue: Array<any>;
-
-    fbo: ?any;
-    rasterArrayTextures: ?any;
-
-    mrt: ?{
-        x: number;
-        y: number;
-        z: number;
-        _cacheSize: number;
-        layers: {[_: string]: {
-            dataIndex: Array<any>
-        }};
-        getLayer(string): any;
-        parseHeader(any): any;
-        getHeaderLength(any): any;
-        createDecodingTask(any): any;
-    };
-
-    getTexture: ?(layerName: ?string, band: string | number | void, filtering: ?string) => ?RasterArrayTextureDescriptor;
-
     /**
      * @param {OverscaledTileID} tileID
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: any, isRaster?: boolean) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter: ?Painter, isRaster?: boolean) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -222,9 +189,6 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
-
-        this._workQueue = [];
-        this._fetchQueue = [];
 
         if (painter && painter.transform) {
             this.projection = painter.transform.projection;

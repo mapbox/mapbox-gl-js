@@ -36,7 +36,7 @@
         import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
 
         const PARAMS = {
-            band: 0,
+            bandIndex: 0,
             colorScale: 'Spectral',
         };
 
@@ -87,14 +87,36 @@
                 if (e.sourceId !== 'precipitations' || e.sourceDataType !== 'metadata') return;
                 const bands = map.getSource('precipitations').rasterLayers[0].fields.bands || [];
 
-                pane.addBinding(PARAMS, 'band', {
+                const bandBinding = pane.addBinding(PARAMS, 'bandIndex', {
                     label: 'Band',
                     step: 1,
                     min: 0,
                     max: bands.length - 1,
-                    format: (value) => bands[value]
+                    format: (index) => bands[index]
                 }).on('change', (e) => {
-                    map.setPaintProperty('precipitations', 'raster-array-band', bands[e.value]);
+                    const index = e.value;
+                    map.setPaintProperty('precipitations', 'raster-array-band', bands[index]);
+                });
+
+                let intervalId = null;
+                function play() {
+                    PARAMS.bandIndex = (PARAMS.bandIndex + 1) % bands.length;
+                    bandBinding.refresh();
+                    map.setPaintProperty('precipitations', 'raster-array-band', bands[PARAMS.bandIndex]);
+                }
+
+                const toggleButton = pane.addButton({
+                    title: 'Play',
+                    label: 'Animation',
+                }).on('click', (e) => {
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                        toggleButton.title = 'Play';
+                        intervalId = null;
+                    } else {
+                        intervalId = setInterval(play, 300);
+                        toggleButton.title = 'Pause';
+                    }
                 });
             });
 

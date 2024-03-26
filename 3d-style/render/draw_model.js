@@ -209,7 +209,8 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
             undefined, dynamicBuffers);
 }
 
-export function upload(painter: Painter, sourceCache: SourceCache, scope: string) {
+export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painter: Painter) {
+    const scope = layer.scope;
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {

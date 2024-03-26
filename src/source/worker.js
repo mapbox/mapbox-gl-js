@@ -44,7 +44,7 @@ export default class Worker {
     workerSourceTypes: {[_: string]: Class<WorkerSource> };
     workerSources: {[mapId: string]: {[scope: string]: {[sourceType: string]: {[sourceId: string]: WorkerSource}}}};
     demWorkerSources: {[mapId: string]: {[scope: string]: {[sourceId: string]: RasterDEMTileWorkerSource }}};
-    rasterArrayWorkerSources: {[mapId: string]: {[scope: string]: {[sourceId: string]: RasterArrayTileWorkerSource }}};
+    rasterArrayWorkerSource: ?RasterArrayTileWorkerSource;
     projections: {[_: string]: Projection };
     defaultProjection: Projection;
     isSpriteLoaded: {[mapId: string]: {[scope: string]: boolean}};
@@ -73,7 +73,6 @@ export default class Worker {
         // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
         this.demWorkerSources = {};
-        this.rasterArrayWorkerSources = {};
 
         this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
             if (this.workerSourceTypes[name]) {
@@ -98,7 +97,7 @@ export default class Worker {
         delete this.availableImages[mapId];
         delete this.workerSources[mapId];
         delete this.demWorkerSources[mapId];
-        delete this.rasterArrayWorkerSources[mapId];
+        delete this.rasterArrayWorkerSource;
         callback();
     }
 
@@ -184,7 +183,7 @@ export default class Worker {
     }
 
     decodeRasterArray(mapId: string, params: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
-        this.getRasterArrayWorkerSource(mapId, params.source, params.scope).decodeRasterArray(params, callback);
+        this.getRasterArrayWorkerSource().decodeRasterArray(params, callback);
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
@@ -337,18 +336,12 @@ export default class Worker {
         return this.demWorkerSources[mapId][scope][source];
     }
 
-    getRasterArrayWorkerSource(mapId: string, source: string, scope: string): RasterArrayTileWorkerSource {
-        if (!this.rasterArrayWorkerSources[mapId])
-            this.rasterArrayWorkerSources[mapId] = {};
-
-        if (!this.rasterArrayWorkerSources[mapId][scope])
-            this.rasterArrayWorkerSources[mapId][scope] = {};
-
-        if (!this.rasterArrayWorkerSources[mapId][scope][source]) {
-            this.rasterArrayWorkerSources[mapId][scope][source] = new RasterArrayTileWorkerSource();
+    getRasterArrayWorkerSource(): RasterArrayTileWorkerSource {
+        if (!this.rasterArrayWorkerSource) {
+            this.rasterArrayWorkerSource = new RasterArrayTileWorkerSource();
         }
 
-        return this.rasterArrayWorkerSources[mapId][scope][source];
+        return this.rasterArrayWorkerSource;
     }
 
     enforceCacheSizeLimit(mapId: string, limit: number) {

@@ -1,6 +1,7 @@
 // @flow
 
 import Tile from './tile.js';
+import RasterArrayTile from './raster_array_tile.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import TileCache from './tile_cache.js';
 import {asyncAll, keysDifference, values, clamp} from '../util/util.js';
@@ -831,7 +832,13 @@ class SourceCache extends Evented {
         const cached = Boolean(tile);
         if (!cached) {
             const painter = this.map ? this.map.painter : null;
-            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), this.transform.tileZoom, painter, this._isRaster);
+            const size = this._source.tileSize * tileID.overscaleFactor();
+            const isRasterArray = this._source.type === 'raster-array';
+
+            tile = isRasterArray ?
+                new RasterArrayTile(tileID, size, this.transform.tileZoom, painter, this._isRaster) :
+                new Tile(tileID, size, this.transform.tileZoom, painter, this._isRaster);
+
             // $FlowFixMe[method-unbinding]
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
@@ -880,7 +887,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        if (tile.hasData() && tile.state !== 'reloading') {
+        if ((tile.hasData() && tile.state !== 'reloading') || tile.state === 'empty') {
             this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;

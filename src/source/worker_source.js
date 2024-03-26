@@ -52,10 +52,8 @@ export type WorkerDEMTileParameters = TileParameters & {
     convertToFloat: boolean
 };
 
-export type WorkerRasterArrayTileParameters = TileParameters & {
-    coord: { z: number, x: number, y: number, w: number },
+export type WorkerRasterArrayTileParameters = {
     buffer: ArrayBuffer,
-    uid: any,
     task: any,
 };
 

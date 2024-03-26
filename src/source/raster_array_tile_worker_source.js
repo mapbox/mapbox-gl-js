@@ -9,9 +9,7 @@ import type {WorkerRasterArrayTileParameters, WorkerRasterArrayTileCallback} fro
 class RasterArrayTileWorkerSource {
     actor: Actor;
 
-    decodeRasterArray(params: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
-        const {task, buffer} = params;
-
+    decodeRasterArray({task, buffer}: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
         MapboxRasterTile.performDecoding(buffer, task)
             .then(result => {
                 callback(null, result);

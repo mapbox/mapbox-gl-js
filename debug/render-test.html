@@ -51,13 +51,16 @@
     });
 
     map.removeControl(map._logoControl);
-
     if (debug) map.showTileBoundaries = true;
 
     map.repaint = true;
     await map.once('load');
 
     await applyOperations(map, style.metadata.test);
+
+    map.repaint = true;
+    await new Promise(resolve => requestAnimationFrame(map._requestDomTask.bind(map, resolve)));
+
 </script>
 </body>
 </html>

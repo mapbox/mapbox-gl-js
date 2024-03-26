@@ -244,9 +244,9 @@ async function renderMap(style, options) {
     // 3. Run the operations on the map
     await applyOperations(map, options);
 
-    // 4. Wait until the map is idle
+    // 4. Wait until the map is idle and ensure that call stack is empty
     map.repaint = true;
-    await new Promise(resolve => map._requestDomTask(resolve));
+    await new Promise(resolve => requestAnimationFrame(map._requestDomTask.bind(map, resolve)));
 
     return map;
 }

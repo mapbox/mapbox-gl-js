@@ -24,6 +24,8 @@ import {mat4} from "gl-matrix";
 import {mercatorXfromLng, mercatorYfromLat} from "../geo/mercator_coordinate.js";
 import Transform from '../geo/transform.js';
 import {COLOR_MIX_FACTOR} from '../style/style_layer/raster_style_layer.js';
+import RasterArrayTile from '../source/raster_array_tile.js';
+import RasterArrayTileSource from '../source/raster_array_tile_source.js';
 
 import type Tile from '../source/tile.js';
 import type Context from '../gl/context.js';
@@ -31,7 +33,7 @@ import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
 import type {Source} from '../source/source.js';
-import type {RasterArrayTextureDescriptor} from '../source/tile.js';
+import type {UserManagedTexture} from './texture.js';
 import type {DynamicDefinesType} from '../render/program/program_uniforms.js';
 
 export default drawRaster;
@@ -120,11 +122,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             if (renderingToTexture && !(tile && tile.hasData())) continue;
 
             context.activeTexture.set(gl.TEXTURE0);
-            const textureDescriptor = getTexture(tile, source, layer, rasterConfig);
-            if (!textureDescriptor) continue;
-
+            const textureDescriptor = getTextureDescriptor(tile, source, layer, rasterConfig);
+            if (!textureDescriptor || !textureDescriptor.texture) continue;
             const {texture, mix: rasterColorMix, offset: rasterColorOffset, tileSize, buffer} = textureDescriptor;
-            if (!texture) continue;
 
             let depthMode;
             let projMatrix;
@@ -394,37 +394,47 @@ function cutoffParamsForElevation(tr: Transform): [number, number, number, numbe
     return [near, far, relativeCutoffFadeDistance, relativeCutoffDistance];
 }
 
-function getTexture(tile: ?Tile, source: Source, layer: RasterStyleLayer, rasterConfig: RasterConfig): ?RasterArrayTextureDescriptor {
-    // $FlowFixMe[prop-missing]
-    if (!tile) return {texture: null};
+export function prepare(layer: RasterStyleLayer, sourceCache: SourceCache, _: Painter): void {
+    const source = sourceCache.getSource();
+    if (!(source instanceof RasterArrayTileSource) || !source.loaded()) return;
 
-    if (source.type !== 'raster-array') {
-        // $FlowFixMe[prop-missing]
-        return {
-            // $FlowFixMe[incompatible-return]
-            texture: tile.texture,
-            mix: adjustColorMix(rasterConfig.mix),
-            offset: rasterConfig.offset,
-            buffer: 0,
-            tileSize: 1,
-        };
+    const sourceLayer = layer.sourceLayer || (source.rasterLayerIds && source.rasterLayerIds[0]);
+    if (!sourceLayer) return;
+
+    const band = layer.paint.get('raster-array-band') || source.getInitialBand(sourceLayer);
+    if (band == null) return;
+
+    // $FlowFixMe[incompatible-type]
+    const tiles: Array<RasterArrayTile> = sourceCache.getIds().map(id => sourceCache.getTileByID(id));
+    for (const tile of tiles) {
+        if (tile.updateNeeded(sourceLayer, band)) {
+            source.prepareTile(tile, sourceLayer, band);
+        }
+    }
+}
+
+export type TextureDescriptor = {
+    texture: ?Texture | ?UserManagedTexture,
+    mix: [number, number, number, number],
+    offset: number,
+    buffer: number,
+    tileSize: number,
+};
+
+function getTextureDescriptor(tile: ?Tile | ?RasterArrayTile, source: Source | RasterArrayTileSource, layer: RasterStyleLayer, rasterConfig: RasterConfig): TextureDescriptor | void {
+    if (!tile) return;
+
+    if (source instanceof RasterArrayTileSource && tile instanceof RasterArrayTile) {
+        return ((source.getTextureDescriptor(tile, layer, true): any): TextureDescriptor);
     }
 
-    let raLayer = layer.sourceLayer;
-    let raBand: string | number | void = layer.paint.get('raster-array-band');
-    if (!raLayer && source.rasterLayerIds && source.rasterLayerIds.length) {
-        raLayer = source.rasterLayerIds[0];
-    }
-
-    if (!raBand && source.rasterLayers) {
-        const rasterLayers = source.rasterLayers.find(({id}) => id === raLayer);
-        const fields = rasterLayers && rasterLayers.fields;
-        const bands = fields && fields.bands && fields.bands;
-        raBand = bands && bands.length && bands[0];
-    }
-
-    // $FlowFixMe[not-a-function]
-    return tile.getTexture(raLayer, raBand);
+    return {
+        texture: tile.texture,
+        mix: adjustColorMix(rasterConfig.mix),
+        offset: rasterConfig.offset,
+        buffer: 0,
+        tileSize: 1,
+    };
 }
 
 function configureRaster(source: Source, layer: RasterStyleLayer, context: Context, gl: WebGL2RenderingContext): RasterConfig {
