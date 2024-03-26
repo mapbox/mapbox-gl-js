@@ -10,6 +10,7 @@ import {
     UniformMatrix4f
 } from '../uniform_binding.js';
 
+import {computeRasterColorMix, computeRasterColorOffset} from '../raster.js';
 import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer.js';
 
 import type Context from '../../gl/context.js';
@@ -122,8 +123,8 @@ const rasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercatorCenter,
     'u_cutoff_params': cutoffParams,
-    'u_colorization_mix': computeRasterColorMix(colorMix, colorRange),
-    'u_colorization_offset': computeRasterColorOffset(colorOffset, colorRange),
+    'u_colorization_mix': computeRasterColorMix(COLOR_RAMP_RES, colorMix, colorRange),
+    'u_colorization_offset': computeRasterColorOffset(COLOR_RAMP_RES, colorOffset, colorRange),
     'u_color_ramp': colorRampUnit,
     'u_texture_offset': [
         buffer / (tileSize + 2 * buffer),
@@ -192,41 +193,6 @@ function saturationFactor(saturation: number) {
     return saturation > 0 ?
         1 - 1 / (1.001 - saturation) :
         -saturation;
-}
-
-function computeRasterColorMix([mixR, mixG, mixB, mixA]: [number, number, number, number], [min, max]: [number, number]): [number, number, number, number] {
-    if (min === max) return [0, 0, 0, 0];
-
-    // Together with the `offset`, the mix vector transforms the encoded integer
-    // input into a numeric value. To minimize work, we modify this vector to
-    // perform extra steps on the CPU, before rendering.
-    //
-    // To a first cut, we map `min` to the texture coordinate 0, and `max` to texture
-    // coordinate 1. However, this would align the samples with the *edges* of
-    // tabulated texels rather than the centers. This  makes it difficult to precisely
-    // position values relative to the tabulated colors.
-    //
-    // Therefore given color map resolution N, we actually map `min` to 1 / 2N and
-    // `max` to 1 - 1 / 2N. When you work out a few lines of algebra, the scale factor
-    // below is the result.
-    //
-    // Similarly, computerRasterColorOffset contains the counterpart of this equation
-    // by which the constant offset is adjusted.
-    const factor = 255 * (COLOR_RAMP_RES - 1) / (COLOR_RAMP_RES * (max - min));
-
-    return [
-        mixR * factor,
-        mixG * factor,
-        mixB * factor,
-        mixA * factor
-    ];
-}
-
-function computeRasterColorOffset(offset: number, [min, max]: [number, number]): number {
-    if (min === max) return 0;
-
-    // See above for an explanation.
-    return 0.5 / COLOR_RAMP_RES + (offset - min) * (COLOR_RAMP_RES - 1) / (COLOR_RAMP_RES * (max - min));
 }
 
 export {rasterUniforms, rasterUniformValues, rasterPoleUniformValues};

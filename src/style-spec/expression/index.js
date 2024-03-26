@@ -51,6 +51,7 @@ export interface GlobalProperties {
     heatmapDensity?: number,
     lineProgress?: number,
     rasterValue?: number,
+    rasterParticleSpeed?: number,
     skyRadialProgress?: number,
     +isSupportedScript?: (_: string) => boolean,
     accumulated?: Value,

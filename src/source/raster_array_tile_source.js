@@ -5,6 +5,8 @@ import RasterTileSource from './raster_tile_source.js';
 import {extend} from '../util/util.js';
 import {ResourceType} from '../util/ajax.js';
 import {Evented, ErrorEvent} from '../util/evented.js';
+import RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
+import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer.js';
 
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -13,7 +15,6 @@ import '../data/mrt_data.js';
 import type Map from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type RasterArrayTile from './raster_array_tile.js';
-import type RasterStyleLayer from '../style/style_layer/raster_style_layer.js';
 import type {Callback} from '../types/callback.js';
 import type {TextureDescriptor} from './raster_array_tile.js';
 import type {Source, SourceRasterLayer} from './source.js';
@@ -156,13 +157,19 @@ class RasterArrayTileSource extends RasterTileSource implements Source {
      * @param {boolean} fallbackToPrevious If true, return previous texture even if update is needed
      * @returns {TextureDescriptor} Texture descriptor with texture if available
      */
-    getTextureDescriptor(tile: RasterArrayTile, layer: RasterStyleLayer, fallbackToPrevious: boolean): TextureDescriptor & {texture: ?Texture} | void {
+    getTextureDescriptor(tile: RasterArrayTile, layer: RasterStyleLayer | RasterParticleStyleLayer, fallbackToPrevious: boolean): TextureDescriptor & {texture: ?Texture} | void {
         if (!tile) return;
 
         const sourceLayer = layer.sourceLayer || (this.rasterLayerIds && this.rasterLayerIds[0]);
         if (!sourceLayer) return;
 
-        const band = layer.paint.get('raster-array-band') || this.getInitialBand(sourceLayer);
+        let layerBand = null;
+        if (layer instanceof RasterStyleLayer) {
+            layerBand = layer.paint.get('raster-array-band');
+        } else if (layer instanceof RasterParticleStyleLayer) {
+            layerBand = layer.paint.get('raster-particle-array-band');
+        }
+        const band = layerBand || this.getInitialBand(sourceLayer);
         if (band == null) return;
 
         if (!tile.textureDescriptor) {

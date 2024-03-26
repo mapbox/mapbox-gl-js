@@ -114,6 +114,7 @@ function camelize (str: string) {
 
 global.camelize = camelize;
 
+import particleAttributes from '../src/data/particle_attributes.js';
 import posAttributes, {posAttributesGlobeExt} from '../src/data/pos_attributes.js';
 import boundsAttributes from '../src/data/bounds_attributes.js';
 
@@ -236,6 +237,10 @@ createStructArrayType(`texcoord_layout`, texcoordAttributes);
 createStructArrayType(`normal_layout`, normalAttributes);
 createStructArrayType(`instance_vertex`, instanceAttributes);
 createStructArrayType(`feature_vertex`, featureAttributes);
+
+// particle vertex attribute
+
+createStructArrayType('particle_vertex_layout', particleAttributes);
 
 // paint vertex arrays
 

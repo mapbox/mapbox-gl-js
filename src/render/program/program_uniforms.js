@@ -2,6 +2,7 @@
 
 import type {CircleDefinesType} from './circle_program.js';
 import type {RasterDefinesType} from './raster_program.js';
+import type {RasterParticleDefinesType} from './raster_particle_program.js';
 import type {SymbolDefinesType} from './symbol_program.js';
 import type {LineDefinesType} from './line_program.js';
 import type {HillshadeDefinesType} from "./hillshade_program.js";
@@ -15,6 +16,7 @@ import {heatmapUniforms, heatmapTextureUniforms} from './heatmap_program.js';
 import {hillshadeUniforms, hillshadePrepareUniforms} from './hillshade_program.js';
 import {lineUniforms, linePatternUniforms} from './line_program.js';
 import {rasterUniforms} from './raster_program.js';
+import {rasterParticleUniforms, rasterParticleTextureUniforms, rasterParticleDrawUniforms, rasterParticleUpdateUniforms} from './raster_particle_program.js';
 import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program.js';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program.js';
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program.js';
@@ -30,7 +32,7 @@ import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shad
 import {starsUniforms} from '../../terrain/stars_program.js';
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType | FogDefinesType | HillshadeDefinesType;
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType | RasterParticleDefinesType | FogDefinesType | HillshadeDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
@@ -53,6 +55,10 @@ export const programUniforms = {
     line: lineUniforms,
     linePattern: linePatternUniforms,
     raster: rasterUniforms,
+    rasterParticle: rasterParticleUniforms,
+    rasterParticleTexture: rasterParticleTextureUniforms,
+    rasterParticleDraw: rasterParticleDrawUniforms,
+    rasterParticleUpdate: rasterParticleUpdateUniforms,
     symbolIcon: symbolIconUniforms,
     symbolSDF: symbolSDFUniforms,
     symbolTextAndIcon: symbolTextAndIconUniforms,

@@ -553,6 +553,30 @@ export type RasterLayerSpecification = {|
     |}
 |}
 
+export type RasterParticleLayerSpecification = {|
+    "id": string,
+    "type": "raster-particle",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "slot"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "visibility"?: ExpressionSpecification
+    |},
+    "paint"?: {|
+        "raster-particle-array-band"?: string,
+        "raster-particle-count"?: number,
+        "raster-particle-color"?: ExpressionSpecification,
+        "raster-particle-max-speed"?: number,
+        "raster-particle-speed-factor"?: PropertyValueSpecification<number>,
+        "raster-particle-fade-opacity-factor"?: PropertyValueSpecification<number>,
+        "raster-particle-reset-rate-factor"?: number
+    |}
+|}
+
 export type HillshadeLayerSpecification = {|
     "id": string,
     "type": "hillshade",
@@ -665,6 +689,7 @@ export type LayerSpecification =
     | HeatmapLayerSpecification
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
+    | RasterParticleLayerSpecification
     | HillshadeLayerSpecification
     | ModelLayerSpecification
     | BackgroundLayerSpecification

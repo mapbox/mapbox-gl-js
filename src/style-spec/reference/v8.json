@@ -1174,6 +1174,17 @@
             }
           }
         },
+        "raster-particle": {
+          "doc": "Particle animation driven by textures such as wind maps.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
         "hillshade": {
           "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB and Mapzen Terrarium tiles.",
           "sdk-support": {
@@ -1284,6 +1295,7 @@
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
+    "layout_raster-particle",
     "layout_hillshade",
     "layout_background",
     "layout_sky",
@@ -3202,6 +3214,37 @@
       "property-type": "constant"
     }
   },
+  "layout_raster-particle": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0"
+        },
+        "expressions support": {
+          "js": "3.0.0",
+          "android": "11.0.0",
+          "ios": "11.0.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "constant"
+    }
+  },
   "layout_hillshade": {
     "visibility": {
       "type": "enum",
@@ -4491,6 +4534,17 @@
             "js": "3.0.0",
             "android": "11.0.0",
             "ios": "11.0.0"
+          }
+        }
+      },
+      "raster-particle-speed": {
+        "doc": "Returns the length of the particle velocity vector. Can only be used in the `raster-particle-color` property.",
+        "group": "Raster Particle Animation",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.3.0",
+            "android": "",
+            "ios": ""
           }
         }
       },
@@ -7628,6 +7682,133 @@
         "parameters": [
           "zoom"
         ]
+      },
+      "property-type": "data-constant"
+    }
+  },
+  "paint_raster-particle": {
+    "raster-particle-array-band": {
+      "type": "string",
+      "required": false,
+      "property-type": "data-constant",
+      "transition": false,
+      "doc": "Displayed band of raster array source layer",
+      "example": "band-name",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      }
+    },
+    "raster-particle-count": {
+      "type": "number",
+      "doc": "Defines the amount of particles per tile.",
+      "default": 512,
+      "minimum": 1,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "raster-particle-color": {
+      "type": "color",
+      "doc": "Defines a color map by which to colorize a raster particle layer, parameterized by the `[\"raster-particle-speed\"]` expression and evaluated at 256 uniformly spaced steps over the range specified by `raster-particle-max-speed`.",
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "raster-particle-speed"
+        ]
+      },
+      "property-type": "color-ramp"
+    },
+    "raster-particle-max-speed": {
+      "type": "number",
+      "doc": "Defines the maximum speed for particles. Velocities with magnitudes equal to or exceeding this value are clamped to the max value.",
+      "default": 1,
+      "minimum": 1,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "raster-particle-speed-factor": {
+      "type": "number",
+      "doc": "Defines a coefficient for the speed of particles’ motion.",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "raster-particle-fade-opacity-factor": {
+      "type": "number",
+      "doc": "Defines defines the opacity coefficient applied to the faded particles in each frame. In practice, this property controls the length of the particle tail.",
+      "default": 0.98,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "raster-particle-reset-rate-factor": {
+      "type": "number",
+      "doc": "Defines a coefficient for a time period at which particles will restart at a random position, to avoid degeneration (empty areas without particles).",
+      "default": 0.8,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "",
+          "android": "",
+          "ios": ""
+        }
       },
       "property-type": "data-constant"
     }

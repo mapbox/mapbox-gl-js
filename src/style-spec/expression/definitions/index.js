@@ -295,6 +295,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.rasterValue || 0
     ],
+    'raster-particle-speed': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.rasterParticleSpeed || 0
+    ],
     'sky-radial-progress': [
         NumberType,
         [],

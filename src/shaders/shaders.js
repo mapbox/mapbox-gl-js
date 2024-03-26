@@ -46,6 +46,14 @@ import linePatternFrag from './line_pattern.fragment.glsl';
 import linePatternVert from './line_pattern.vertex.glsl';
 import rasterFrag from './raster.fragment.glsl';
 import rasterVert from './raster.vertex.glsl';
+import rasterParticleFrag from './raster_particle.fragment.glsl';
+import rasterParticleVert from './raster_particle.vertex.glsl';
+import rasterParticleDrawFrag from './raster_particle_draw.fragment.glsl';
+import rasterParticleDrawVert from './raster_particle_draw.vertex.glsl';
+import rasterParticleTextureFrag from './raster_particle_texture.fragment.glsl';
+import rasterParticleTextureVert from './raster_particle_texture.vertex.glsl';
+import rasterParticleUpdateFrag from './raster_particle_update.fragment.glsl';
+import rasterParticleUpdateVert from './raster_particle_update.vertex.glsl';
 import symbolIconFrag from './symbol_icon.fragment.glsl';
 import symbolIconVert from './symbol_icon.vertex.glsl';
 import symbolSDFFrag from './symbol_sdf.fragment.glsl';
@@ -64,6 +72,7 @@ import preludeFogVert from './_prelude_fog.vertex.glsl';
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
 import preludeLighting from './_prelude_lighting.glsl';
 import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
+import preludeRasterParticleFrag from './_prelude_raster_particle.glsl';
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
 import globeFrag from './globe_raster.fragment.glsl';
@@ -89,6 +98,7 @@ export let preludeTerrain = {};
 export let preludeFog = {};
 export let preludeShadow = {};
 export let preludeRasterArray = {};
+export let preludeRasterParticle = {};
 
 const commonDefines = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
@@ -101,7 +111,8 @@ export const includeMap = {
     "_prelude_fog.fragment.glsl": preludeFogFrag,
     "_prelude_shadow.fragment.glsl": preludeShadowFrag,
     "_prelude_lighting.glsl": preludeLighting,
-    "_prelude_raster_array.glsl": preludeRasterArrayFrag
+    "_prelude_raster_array.glsl": preludeRasterArrayFrag,
+    "_prelude_raster_particle.glsl": preludeRasterParticleFrag
 };
 // Populated during precompilation
 const defineMap = {};
@@ -110,6 +121,7 @@ preludeTerrain = compile('', preludeTerrainVert);
 preludeFog = compile(preludeFogFrag, preludeFogVert);
 preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
 preludeRasterArray = compile(preludeRasterArrayFrag, '');
+preludeRasterParticle = compile(preludeRasterParticleFrag, '');
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
@@ -142,6 +154,10 @@ export default {
     line: compile(lineFrag, lineVert),
     linePattern: compile(linePatternFrag, linePatternVert),
     raster: compile(rasterFrag, rasterVert),
+    rasterParticle: compile(rasterParticleFrag, rasterParticleVert),
+    rasterParticleDraw: compile(rasterParticleDrawFrag, rasterParticleDrawVert),
+    rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
+    rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
     symbolIcon: compile(symbolIconFrag, symbolIconVert),
     symbolSDF: compile(symbolSDFFrag, symbolSDFVert),
     symbolTextAndIcon: compile(symbolTextAndIconFrag, symbolTextAndIconVert),

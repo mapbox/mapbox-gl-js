@@ -27,6 +27,7 @@ import boundsAttributes from '../data/bounds_attributes.js';
 import posAttributes, {posAttributesGlobeExt} from '../data/pos_attributes.js';
 import EXTENT from '../style-spec/data/extent.js';
 import Point from '@mapbox/point-geometry';
+import RasterParticleState from '../render/raster_particle_state.js';
 import SegmentVector from '../data/segment.js';
 import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMercatorTransition, interpolateVec3} from '../geo/projection/globe_util.js';
 import {vec3, mat4} from 'gl-matrix';
@@ -137,6 +138,7 @@ class Tile {
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
     queryPadding: number;
+    rasterParticleState: ?RasterParticleState;
 
     symbolFadeHoldUntil: ?number;
     hasSymbolBuckets: boolean;
@@ -969,6 +971,11 @@ class Tile {
         if (this.demTexture) {
             this.demTexture.destroy();
             delete this.demTexture;
+        }
+
+        if (this.rasterParticleState) {
+            this.rasterParticleState.destroy();
+            delete this.rasterParticleState;
         }
 
         Debug.run(() => {

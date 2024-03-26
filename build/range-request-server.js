@@ -10,7 +10,7 @@ function formatLog (req, res) {
     return `[${res.statusCode} ${res.statusMessage}] ${req.method.toUpperCase()} ${req.url}`;
 }
 
-const port = process.env.PORT || 9966;
+const port = process.env.PORT || 9967;
 const host = process.env.HOST || '0.0.0.0';
 
 // This script implements a basic dev server roughly equivalent in behavior to
@@ -19,6 +19,7 @@ const host = process.env.HOST || '0.0.0.0';
 // should be consider a bug and should be fixed.
 
 http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     // Normalize the request URL and remove any trailing ../ which would allow
     // it to read contents outside the GL JS directory
     const unsafeUrl = normalize(req.url).replace(/^(\.\.(\/|\\|$))+/, '');
@@ -108,5 +109,5 @@ http.createServer((req, res) => {
         }
     });
 }).listen(port, host, () => {
-    console.log(`Listening on http://${host}:${port}`);
+    console.log(`Listening on http://${host}:${port} `);
 })

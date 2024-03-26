@@ -56,7 +56,7 @@
     "line": 83
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, model, background, sky, slot], \"invalid\" found",
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, raster-particle, hillshade, model, background, sky, slot], \"invalid\" found",
     "line": 90
   },
   {

@@ -1457,6 +1457,7 @@ export {
     StructArrayLayout3f12 as NormalLayoutArray,
     StructArrayLayout16f64 as InstanceVertexArray,
     StructArrayLayout4ui3f20 as FeatureVertexArray,
+    StructArrayLayout3f12 as ParticleVertexLayoutArray,
     StructArrayLayout1ub1 as FillExtrusionHiddenByLandmarkArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

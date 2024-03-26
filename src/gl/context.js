@@ -78,6 +78,7 @@ class Context {
     extTimerQuery: any;
     extTextureFloatLinear: any;
     options: ContextOptions;
+    maxPointSize: number;
 
     constructor(gl: WebGL2RenderingContext, options?: ContextOptions) {
         this.gl = gl;
@@ -139,6 +140,7 @@ class Context {
 
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        this.maxPointSize = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1];
     }
 
     setDefault() {

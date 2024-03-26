@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+    <title>Raster particle layer</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0 }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+        .dg.a {
+            float: left !important;
+        }
+
+        #elevationDebug {
+            position: absolute;
+            top:30px;
+            right:30px;
+            padding:5px;
+            z-index: 99;
+        }
+
+        #config {
+            position: absolute;
+            top:15px;
+            left:15px;
+            max-height: 95%;
+            overflow-y:auto;
+            z-index: 100;
+        }
+        #config::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #config::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb {
+            background: rgba(110, 110, 110);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(90, 90, 90);
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div id='config'></div>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
+
+<script>
+const SPEED_FACTOR_DEFAULT = 0.6;
+const RESET_RATE_FACTOR_DEFAULT = 0.4;
+const PARTICLE_COUNT_DEFAULT = 1024;
+
+const PARAMS = {
+    projection: 'globe',
+    showTileBoundaries: false,
+    fadeOpacityFactor: 0.98,
+    speedFactor: SPEED_FACTOR_DEFAULT,
+    maxSpeed: 70,
+    resetRateFactor: RESET_RATE_FACTOR_DEFAULT,
+    particleCount: PARTICLE_COUNT_DEFAULT,
+};
+
+window.onload = function() {
+    const gui = new Tweakpane.Pane({  // eslint-disable-line
+        container: document.querySelector('#config'),
+        title: 'Particle animation settings'
+    });
+
+    const fillOptions = (styles) => {
+        const options = {};
+
+        for (const style of styles) {
+            options[style] = style;
+        }
+
+        return options;
+    };
+    const projectionDropdown = gui.addInput(PARAMS, 'projection',
+        {options: fillOptions([
+            'mercator',
+            'globe',
+        ])}
+    );
+    projectionDropdown.on('change', (ev) => {
+        map.setProjection(ev.value);
+    });
+
+    const showTileBoundaries = gui.addInput(PARAMS, 'showTileBoundaries');
+    showTileBoundaries.on('change', (ev) => {
+        map.showTileBoundaries = ev.value;
+    });
+
+    const opacitySlider = gui.addInput(PARAMS, 'fadeOpacityFactor', {min: 0.0, max: 1.0});
+    opacitySlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-fade-opacity-factor', ev.value);
+    });
+
+    const speedFactorSlider = gui.addInput(PARAMS, 'speedFactor', {min: 0.0, max: 1.0});
+    speedFactorSlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-speed-factor', ev.value);
+    });
+
+    const maxSpeedSlider = gui.addInput(PARAMS, 'maxSpeed', {min: 1.0, max: 140.0});
+    maxSpeedSlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-max-speed', ev.value);
+    });
+
+    const dropRateSlider = gui.addInput(PARAMS, 'resetRateFactor', {min: 0.0, max: 1.0});
+    dropRateSlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-reset-rate-factor', ev.value);
+    });
+
+    const particleCountSlider = gui.addInput(PARAMS, 'particleCount', {min: 64, max: 2048});
+    particleCountSlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-count', ev.value);
+    });
+};
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    maxZoom: 8,
+    minZoom: 2,
+    zoom: 3,
+    center: [138, 36],
+    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+    style: 'mapbox://styles/mapbox/dark-v11'
+});
+
+const tileSize = 512;
+const colors = ['red', 'green', 'blue'];
+const currentColor = colors[0];
+
+map.on('load', () => {
+    map.addSource('raster-array-source', {
+        'type': 'raster-array',
+        'url' : 'http://localhost:9967/debug/wind-512-mrt/tile.json'
+    });
+
+    map.addLayer({
+        'id': 'wind-layer',
+        'type': 'raster-particle',
+        'source': 'raster-array-source',
+        'source-layer': 'wind',
+        'paint': {
+            'raster-particle-speed-factor': SPEED_FACTOR_DEFAULT,
+            'raster-particle-reset-rate-factor': RESET_RATE_FACTOR_DEFAULT,
+            'raster-particle-count': PARTICLE_COUNT_DEFAULT,
+            'raster-particle-max-speed': 70,
+            'raster-particle-color': [
+                "interpolate",
+                ["linear"],
+                ["raster-particle-speed"],
+                1.5, "rgba(134,163,171,256)",
+                2.5, "rgba(126,152,188,256)",
+                4.12, "rgba(110,143,208,256)",
+                4.63, "rgba(110,143,208,256)",
+                6.17, "rgba(15,147,167,256)",
+                7.72, "rgba(15,147,167,256)",
+                9.26, "rgba(57,163,57,256)",
+                10.29, "rgba(57,163,57,256)",
+                11.83, "rgba(194,134,62,256)",
+                13.37, "rgba(194,134,63,256)",
+                14.92, "rgba(200,66,13,256)",
+                16.46, "rgba(200,66,13,256)",
+                18.00, "rgba(210,0,50,256)",
+                20.06, "rgba(215,0,50,256)",
+                21.60, "rgba(175,80,136,256)",
+                23.66, "rgba(175,80,136,256)",
+                25.21, "rgba(117,74,147,256)",
+                27.78, "rgba(117,74,147,256)",
+                29.32, "rgba(68,105,141,256)",
+                31.89, "rgba(68,105,141,256)",
+                33.44, "rgba(194,251,119,256)",
+                42.18, "rgba(194,251,119,256)",
+                43.72, "rgba(241,255,109,256)",
+                48.87, "rgba(241,255,109,256)",
+                50.41, "rgba(256,256,256,256)",
+                57.61, "rgba(256,256,256,256)",
+                59.16, "rgba(0,256,256,256)",
+                68.93, "rgba(0,256,256,256)",
+                69.44, "rgba(256,37,256,256)"
+            ]
+        }
+    });
+});
+</script>
+
+</body>
+</html>
