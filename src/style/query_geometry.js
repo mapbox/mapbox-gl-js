@@ -14,7 +14,7 @@ import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.j
 import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
-import {GLOBE_RADIUS} from '../geo/projection/globe_util.js';
+import {GLOBE_RADIUS} from '../geo/projection/globe_constants.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 
 type CachedPolygon = {

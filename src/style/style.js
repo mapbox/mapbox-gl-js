@@ -14,7 +14,7 @@ import Terrain, {DrapeRenderMode} from './terrain.js';
 import Fog from './fog.js';
 import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
-import {isMapboxURL} from '../util/mapbox.js';
+import {isMapboxURL} from '../util/mapbox_url.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
 import Lights from '../../3d-style/style/lights.js';

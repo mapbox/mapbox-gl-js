@@ -1,7 +1,6 @@
 // @flow
 
-import LngLat from './lng_lat.js';
-import LngLatBounds from './lng_lat_bounds.js';
+import LngLat, {LngLatBounds} from './lng_lat.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE, circumferenceAtLatitude} from './mercator_coordinate.js';
 import {getProjection} from './projection/index.js';
 import {tileAABB} from '../geo/projection/tile_transform.js';
@@ -18,12 +17,15 @@ import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjus
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units.js';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import {
+    GLOBE_ZOOM_THRESHOLD_MIN,
+    GLOBE_ZOOM_THRESHOLD_MAX,
+    GLOBE_SCALE_MATCH_LATITUDE
+} from '../geo/projection/globe_constants.js';
+import {
     calculateGlobeMatrix,
     polesInViewport,
     aabbForTileOnGlobe,
-    GLOBE_ZOOM_THRESHOLD_MIN,
-    GLOBE_ZOOM_THRESHOLD_MAX,
-    GLOBE_SCALE_MATCH_LATITUDE} from '../geo/projection/globe_util.js';
+} from '../geo/projection/globe_util.js';
 import {projectClamped} from '../symbol/projection.js';
 
 import type Projection from '../geo/projection/projection.js';

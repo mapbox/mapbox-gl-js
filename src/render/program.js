@@ -31,7 +31,7 @@ import ColorMode from '../gl/color_mode.js';
 import type CullFaceMode from '../gl/cull_face_mode.js';
 import type {UniformBindings, UniformValues} from './uniform_binding.js';
 import type {BinderUniform} from '../data/program_configuration.js';
-import Painter from './painter.js';
+import type Painter from './painter.js';
 import type {Segment} from "../data/segment";
 import Color from '../style-spec/util/color.js';
 

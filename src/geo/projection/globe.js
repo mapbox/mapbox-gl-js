@@ -1,7 +1,7 @@
 // @flow
 import {mat4, vec3} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent.js';
-import LngLat from '../lng_lat.js';
+import LngLat, {latLngToECEF} from '../lng_lat.js';
 import {degToRad} from '../../util/util.js';
 import MercatorCoordinate, {
     mercatorZfromAltitude,
@@ -11,8 +11,6 @@ import Point from '@mapbox/point-geometry';
 import {farthestPixelDistanceOnPlane, farthestPixelDistanceOnSphere} from './far_z.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import {
-    GLOBE_SCALE_MATCH_LATITUDE,
-    latLngToECEF,
     globeTileBounds,
     globeNormalizeECEF,
     globeDenormalizeECEF,
@@ -22,6 +20,7 @@ import {
     tileCoordToECEF,
     globeMetersToEcef
 } from './globe_util.js';
+import {GLOBE_SCALE_MATCH_LATITUDE} from './globe_constants.js';
 
 import type Transform from '../transform.js';
 import type {ElevationScale} from './projection.js';

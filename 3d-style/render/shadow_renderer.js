@@ -8,12 +8,9 @@ import StencilMode from '../../src/gl/stencil_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
 import Transform from '../../src/geo/transform.js';
 import {Frustum, Aabb} from '../../src/util/primitives.js';
-import Style from '../../src/style/style.js';
 import Color from '../../src/style-spec/util/color.js';
 import {FreeCamera} from '../../src/ui/free_camera.js';
 import {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id.js';
-import Painter from '../../src/render/painter.js';
-import Program from '../../src/render/program.js';
 import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate.js';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util.js';
 
@@ -28,6 +25,9 @@ import {groundShadowUniformValues} from './program/ground_shadow_program.js';
 import EXTENT from '../../src/style-spec/data/extent.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
 
+import type Painter from '../../src/render/painter.js';
+import type Program from '../../src/render/program.js';
+import type Style from '../../src/style/style.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
 import type {LightProps as Directional} from '../style/directional_light_properties.js';
 import type {LightProps as Ambient} from '../style/ambient_light_properties.js';

@@ -1,7 +1,7 @@
 // @flow
 
 import {extend, warnOnce, isWorker} from './util.js';
-import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox.js';
+import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url.js';
 import config from './config.js';
 import assert from 'assert';
 import {cacheGet, cachePut} from './tile_request_cache.js';

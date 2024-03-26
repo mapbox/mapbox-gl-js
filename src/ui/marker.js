@@ -12,7 +12,8 @@ import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';
 import type {PointLike} from '@mapbox/point-geometry';
-import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe, GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_util.js';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants.js';
+import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 import assert from 'assert';
 
 type Options = {

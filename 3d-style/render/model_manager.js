@@ -8,11 +8,11 @@ import convertModel from '../source/model_loader.js';
 
 import {RequestManager} from '../../src/util/mapbox.js';
 import {ResourceType} from '../../src/util/ajax.js';
-import Painter from '../../src/render/painter.js';
 
 import {loadGLTF} from '../util/loaders.js';
 
 import type {ModelsSpecification} from '../../src/style-spec/types.js';
+import type Painter from '../../src/render/painter.js';
 
 class ModelManager extends Evented {
     models: {[scope: string]: {[id: string]: Model}};

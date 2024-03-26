@@ -12,8 +12,12 @@ import {
 } from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import browser from '../util/browser.js';
-import LngLat, {earthRadius} from '../geo/lng_lat.js';
-import LngLatBounds from '../geo/lng_lat_bounds.js';
+import LngLat, {earthRadius, latLngToECEF, ecefToLatLng, LngLatBounds} from '../geo/lng_lat.js';
+import {
+    GLOBE_RADIUS,
+    GLOBE_ZOOM_THRESHOLD_MAX,
+    GLOBE_ZOOM_THRESHOLD_MIN
+} from '../geo/projection/globe_constants.js';
 import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented.js';
 import assert from 'assert';
@@ -25,18 +29,10 @@ import MercatorCoordinate, {
     latFromMercatorY,
     lngFromMercatorX
 } from '../geo/mercator_coordinate.js';
-import {
-    latLngToECEF,
-    ecefToLatLng,
-    GLOBE_RADIUS,
-    GLOBE_ZOOM_THRESHOLD_MAX,
-    GLOBE_ZOOM_THRESHOLD_MIN
-} from '../geo/projection/globe_util.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import type {FreeCameraOptions} from './free_camera.js';
 import type Transform from '../geo/transform.js';
-import type {LngLatLike} from '../geo/lng_lat.js';
-import type {LngLatBoundsLike} from '../geo/lng_lat_bounds.js';
+import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
 import type {TaskID} from '../util/task_queue.js';
 import type {Callback} from '../types/callback.js';

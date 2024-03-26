@@ -1,13 +1,12 @@
 import {describe, test, expect} from "../../util/vitest.js";
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform.js';
-import LngLat from '../../../src/geo/lng_lat.js';
+import LngLat, {LngLatBounds} from '../../../src/geo/lng_lat.js';
 import {OverscaledTileID, CanonicalTileID} from '../../../src/source/tile_id.js';
 import {fixedNum, fixedLngLat, fixedCoord, fixedPoint, fixedVec3, fixedVec4} from '../../util/fixed.js';
 import {FreeCameraOptions} from '../../../src/ui/free_camera.js';
 import MercatorCoordinate, {mercatorZfromAltitude, altitudeFromMercatorZ, MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate.js';
 import {vec3, quat} from 'gl-matrix';
-import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
 import {degToRad, radToDeg} from '../../../src/util/util.js';
 
 describe('transform', () => {

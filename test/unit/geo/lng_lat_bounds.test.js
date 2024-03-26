@@ -1,6 +1,5 @@
 import {describe, test, expect} from "../../util/vitest.js";
-import LngLat from '../../../src/geo/lng_lat.js';
-import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
+import LngLat, {LngLatBounds} from '../../../src/geo/lng_lat.js';
 
 describe('LngLatBounds', () => {
     test('#constructor', () => {

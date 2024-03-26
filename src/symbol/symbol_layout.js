@@ -14,13 +14,13 @@ import {
 import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility.js';
 import classifyRings from '../util/classify_rings.js';
 import EXTENT from '../style-spec/data/extent.js';
-import SymbolBucket from '../data/bucket/symbol_bucket.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import {SIZE_PACK_FACTOR} from './symbol_size.js';
 import ONE_EM from './one_em.js';
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type {Shaping, PositionedIcon, TextJustify} from './shaping.js';
 import type {CollisionBoxArray} from '../data/array_types.js';
@@ -66,6 +66,16 @@ export type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-l
 const baselineOffset = 7;
 const INVALID_TEXT_OFFSET = Number.POSITIVE_INFINITY;
 const sqrt2 = Math.sqrt(2);
+
+export const SymbolBucketConstants = {
+    // this constant is based on the size of StructArray indexes used in a symbol
+    // bucket--namely, glyphOffsetArrayStart
+    // eg the max valid UInt16 is 65,535
+    // See https://github.com/mapbox/mapbox-gl-js/issues/2907 for motivation
+    // lineStartIndex and textBoxStartIndex could potentially be concerns
+    // but we expect there to be many fewer boxes/lines than glyphs
+    MAX_GLYPHS: 65535
+};
 
 export function evaluateVariableOffset(anchor: TextAnchor, [offsetX, offsetY]: [number, number]): [number, number] {
     let x = 0, y = 0;
@@ -862,7 +872,7 @@ function addSymbol(bucket: SymbolBucket,
     collisionCircleDiameter = getCollisionCircleHeight(verticalIconCircle, collisionCircleDiameter);
     const useRuntimeCollisionCircles = (collisionCircleDiameter > -1) ? 1 : 0;
 
-    if (bucket.glyphOffsetArray.length >= SymbolBucket.MAX_GLYPHS) warnOnce(
+    if (bucket.glyphOffsetArray.length >= SymbolBucketConstants.MAX_GLYPHS) warnOnce(
         "Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907"
     );
 

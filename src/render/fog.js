@@ -1,12 +1,13 @@
 // @flow
 
 import Context from '../gl/context.js';
-import type {UniformValues} from './uniform_binding.js';
-import type {UnwrappedTileID} from '../source/tile_id.js';
-import Painter from './painter.js';
 import Fog from '../style/fog.js';
 import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding.js';
 import {globeToMercatorTransition} from '../geo/projection/globe_util.js';
+
+import type {UniformValues} from './uniform_binding.js';
+import type {UnwrappedTileID} from '../source/tile_id.js';
+import type Painter from './painter.js';
 
 export type FogUniformsType = {|
     'u_fog_matrix': UniformMatrix4f,

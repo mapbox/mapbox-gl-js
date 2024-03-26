@@ -7,8 +7,7 @@ import TaskQueue from '../../../src/util/task_queue.js';
 import browser from '../../../src/util/browser.js';
 import {fixedLngLat, fixedNum, fixedVec3} from '../../util/fixed.js';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate.js';
-import LngLat from '../../../src/geo/lng_lat.js';
-import LngLatBounds from '../../../src/geo/lng_lat_bounds.js';
+import LngLat, {LngLatBounds} from '../../../src/geo/lng_lat.js';
 
 describe('camera', () => {
     function attachSimulateFrame(camera) {

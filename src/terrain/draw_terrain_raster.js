@@ -4,7 +4,6 @@ import DepthMode from '../gl/depth_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import {terrainRasterUniformValues} from './terrain_raster_program.js';
 import {globeRasterUniformValues} from './globe_raster_program.js';
-import {Terrain} from './terrain.js';
 import Tile from '../source/tile.js';
 import assert from 'assert';
 import {easeCubicInOut} from '../util/util.js';
@@ -30,6 +29,7 @@ import {
 import extend from '../style-spec/util/extend.js';
 import type Program from '../render/program.js';
 import type VertexBuffer from "../gl/vertex_buffer.js";
+import type {Terrain} from './terrain.js';
 import {calculateGroundShadowFactor} from "../../3d-style/render/shadow_renderer.js";
 import {getCutoffParams} from '../render/cutoff.js';
 

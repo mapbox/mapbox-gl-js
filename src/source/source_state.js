@@ -1,7 +1,7 @@
 // @flow
 
 import {extend} from '../util/util.js';
-import Tile from './tile.js';
+import type Tile from './tile.js';
 import type {FeatureState} from '../style-spec/expression/index.js';
 import type Painter from '../render/painter.js';
 

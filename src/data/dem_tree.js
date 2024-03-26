@@ -1,10 +1,10 @@
 // @flow
 
-import DEMData from "./dem_data.js";
 import {vec3} from 'gl-matrix';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import {clamp} from '../util/util.js';
 
+import type DEMData from "./dem_data.js";
 import type {Vec3} from 'gl-matrix';
 
 class MipLevel {

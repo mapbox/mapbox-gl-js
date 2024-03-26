@@ -2,10 +2,11 @@
 
 import Context from '../gl/context.js';
 import type {UniformValues} from './uniform_binding.js';
-import Painter from './painter.js';
 import {Uniform4f} from './uniform_binding.js';
 import {smoothstep, warnOnce} from '../util/util.js';
 import {MIN_LOD_PITCH} from '../geo/transform.js';
+
+import type Painter from './painter.js';
 
 export type CutoffUniformsType = {|
     'u_cutoff_params': Uniform4f,

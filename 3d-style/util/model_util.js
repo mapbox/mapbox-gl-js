@@ -13,9 +13,9 @@ import {
     interpolateVec3,
     globeToMercatorTransition,
     globeECEFUnitsToPixelScale,
-    latLngToECEF,
-    GLOBE_RADIUS
 } from '../../src/geo/projection/globe_util.js';
+import {latLngToECEF} from '../../src/geo/lng_lat.js';
+import {GLOBE_RADIUS} from '../../src/geo/projection/globe_constants.js';
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import Transform from '../../src/geo/transform.js';
 import assert from 'assert';

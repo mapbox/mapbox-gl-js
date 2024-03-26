@@ -13,8 +13,11 @@
 * and the Mapbox Terms of Service are available at https://www.mapbox.com/tos/
 ******************************************************************************/
 
+import assert from 'assert';
+
 import config from './config.js';
 import webpSupported from './webp_supported.js';
+import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url.js';
 import {createSkuToken, SKU_ID} from './sku_token.js';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util.js';
@@ -24,7 +27,6 @@ import type {LivePerformanceData} from '../util/live_performance.js';
 import type {RequestParameters} from './ajax.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {TileJSON} from '../types/tilejson.js';
-import assert from 'assert';
 
 type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
@@ -227,38 +229,6 @@ export class RequestManager {
         urlObject.params.push(`access_token=${accessToken || ''}`);
         return formatUrl(urlObject);
     }
-}
-
-export function isMapboxURL(url: string): boolean {
-    return url.indexOf('mapbox:') === 0;
-}
-
-export function isMapboxHTTPURL(url: string): boolean {
-    return config.API_URL_REGEX.test(url);
-}
-
-export function isMapboxHTTPCDNURL(url: string): boolean {
-    return config.API_CDN_URL_REGEX.test(url);
-}
-
-export function isMapboxHTTPStyleURL(url: string): boolean {
-    return config.API_STYLE_REGEX.test(url) && !isMapboxHTTPSpriteURL(url);
-}
-
-export function isMapboxHTTPTileJSONURL(url: string): boolean {
-    return config.API_TILEJSON_REGEX.test(url);
-}
-
-export function isMapboxHTTPSpriteURL(url: string): boolean {
-    return config.API_SPRITE_REGEX.test(url);
-}
-
-export function isMapboxHTTPFontsURL(url: string): boolean {
-    return config.API_FONTS_REGEX.test(url);
-}
-
-export function hasCacheDefeatingSku(url: string): boolean {
-    return url.indexOf('sku=') > 0 && isMapboxHTTPURL(url);
 }
 
 function getAccessToken(params: Array<string>): string | null {

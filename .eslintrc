@@ -143,7 +143,6 @@
         "src/ui/control/**",
         "src/ui/handler/**",
         "src/geo/lng_lat.js",
-        "src/geo/lng_lat_bounds.js",
         "src/geo/mercator_coordinate.js",
         "src/source/**",
       ],

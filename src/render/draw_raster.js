@@ -19,7 +19,8 @@ import {
     globeToMercatorTransition,
     getLatitudinalLod,
     tileCornersToBounds,
-    GLOBE_ZOOM_THRESHOLD_MIN} from "../geo/projection/globe_util.js";
+} from "../geo/projection/globe_util.js";
+import {GLOBE_ZOOM_THRESHOLD_MIN} from '../geo/projection/globe_constants.js';
 import {mat4} from "gl-matrix";
 import {mercatorXfromLng, mercatorYfromLat} from "../geo/mercator_coordinate.js";
 import Transform from '../geo/transform.js';

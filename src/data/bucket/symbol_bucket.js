@@ -53,7 +53,7 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util.js';
 import {getProjection} from '../../geo/projection/index.js';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
-import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
+import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
 
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
@@ -381,7 +381,6 @@ register(CollisionBuffers, 'CollisionBuffers');
  * @private
  */
 class SymbolBucket implements Bucket {
-    static MAX_GLYPHS: number;
     static addDynamicAttributes: typeof addDynamicAttributes;
 
     collisionBoxArray: CollisionBoxArray;
@@ -1221,14 +1220,6 @@ class SymbolBucket implements Bucket {
 register(SymbolBucket, 'SymbolBucket', {
     omit: ['layers', 'collisionBoxArray', 'features', 'compareText']
 });
-
-// this constant is based on the size of StructArray indexes used in a symbol
-// bucket--namely, glyphOffsetArrayStart
-// eg the max valid UInt16 is 65,535
-// See https://github.com/mapbox/mapbox-gl-js/issues/2907 for motivation
-// lineStartIndex and textBoxStartIndex could potentially be concerns
-// but we expect there to be many fewer boxes/lines than glyphs
-SymbolBucket.MAX_GLYPHS = 65535;
 
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 

@@ -9,7 +9,7 @@ import {Event} from '../../../../src/util/evented.js';
 import Fog from '../../../../src/style/fog.js';
 import Color from '../../../../src/style-spec/util/color.js';
 import RasterTileSource from '../../../../src/source/raster_tile_source.js';
-import LngLatBounds from '../../../../src/geo/lng_lat_bounds.js';
+import {LngLatBounds} from '../../../../src/geo/lng_lat.js';
 
 describe('Map#setStyle', () => {
     test('returns self', () => {

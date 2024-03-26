@@ -10,11 +10,11 @@ import {vec3} from 'gl-matrix';
 import {InstanceVertexArray} from '../../../src/data/array_types.js';
 import assert from 'assert';
 import {warnOnce} from '../../../src/util/util.js';
-import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util.js';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
 import {instanceAttributes} from '../model_attributes.js';
 
+import type ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import type {Mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';

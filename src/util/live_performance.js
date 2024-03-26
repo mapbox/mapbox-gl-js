@@ -2,12 +2,12 @@
 
 import {version as sdkVersion} from '../../package.json';
 import {
-    isMapboxHTTPStyleURL,
+    isMapboxHTTPFontsURL,
     isMapboxHTTPTileJSONURL,
     isMapboxHTTPSpriteURL,
-    isMapboxHTTPFontsURL,
+    isMapboxHTTPStyleURL,
     isMapboxHTTPCDNURL
-} from './mapbox.js';
+} from './mapbox_url.js';
 
 type LivePerformanceMetrics = {
     counters: Array<Object>,

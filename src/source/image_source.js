@@ -12,7 +12,7 @@ import Texture, {UserManagedTexture} from '../render/texture.js';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../geo/mercator_coordinate.js';
 import browser from '../util/browser.js';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform.js';
-import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_util.js';
+import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants.js';
 import {mat3, vec3} from 'gl-matrix';
 import LngLat from '../geo/lng_lat.js';
 
