@@ -29,7 +29,7 @@ function getQueryVariable(variable) {
 Testem.handleConsoleMessage = function(msg) {
     // Send output over ws to testem server
     Testem.emit('tap', msg);
-    // Return true and log output only when not in CI mode. (yarn run watch-render).
+    // Return true and log output only when not in CI mode. (npm run watch-render).
     return !process.env.CI;
 };
 

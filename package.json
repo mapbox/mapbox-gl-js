@@ -41,7 +41,7 @@
     "vt-pbf": "^3.1.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
+    "@babel/core": "^7.24.3",
     "@babel/eslint-parser": "^7.24.1",
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
@@ -53,7 +53,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^0.4.4",
-    "@vitest/browser": "^1.2.1",
+    "@vitest/browser": "1.2.2",
     "address": "^2.0.2",
     "browserify": "^17.0.0",
     "chalk": "^5.0.1",
@@ -80,7 +80,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "minimist": "^1.2.6",
     "mock-geolocation": "^1.0.11",
-    "msw": "^2.2.3",
+    "msw": "^2.2.11",
     "node-notifier": "^10.0.1",
     "npm-font-open-sans": "^1.1.0",
     "npm-run-all": "^4.1.5",
@@ -90,7 +90,7 @@
     "postcss-cli": "^11.0.0",
     "postcss-inline-svg": "^6.0.0",
     "pretty-bytes": "^6.0.0",
-    "puppeteer-core": "^22.5.0",
+    "puppeteer-core": "^22.6.1",
     "qrcode-terminal": "^0.12.0",
     "rollup": "3.29.4",
     "rollup-plugin-sourcemaps": "^0.6.3",
@@ -104,8 +104,8 @@
     "tape-filter": "^1.0.4",
     "testem": "^3.12.0",
     "vite-plugin-arraybuffer": "^0.0.6",
-    "vite-plugin-node-polyfills": "^0.19.0",
-    "vitest": "^1.2.1"
+    "vite-plugin-node-polyfills": "^0.21.0",
+    "vitest": "1.2.2"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
@@ -131,7 +131,8 @@
     "test-suite": "run-s test-render test-query test-expressions",
     "test-suite-clean": "find test/integration/{render,query, expressions}-tests -mindepth 2 -type d -exec test -e \"{}/actual.png\" \\; -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
     "pretest-unit": "playwright install chromium",
-    "test-unit": "vitest --config vitest.config.unit.js",
+    "watch-unit": "vitest --config vitest.config.unit.js",
+    "test-unit": "vitest --config vitest.config.unit.js --run",
     "test-build": "tape test/build/**/*.test.js",
     "watch-render": "cross-env SUITE_NAME=render testem -f test/integration/testem/testem.js",
     "watch-query": "SUITE_NAME=query testem -f test/integration/testem/testem.js",
@@ -158,5 +159,10 @@
     "src/",
     ".flowconfig",
     "LICENSE.txt"
-  ]
+  ],
+  "msw": {
+    "workerDirectory": [
+      "test/util"
+    ]
+  }
 }

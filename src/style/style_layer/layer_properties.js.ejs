@@ -5,7 +5,7 @@
   const srcDir = locals.srcDir;
   const styleDir =  locals.styleDir;
 -%>
-// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
+// This file is generated. Edit build/generate-style-code.js, then run `npm run codegen`.
 // @flow
 /* eslint-disable */
 
@@ -23,7 +23,7 @@ import type Color from '<%= srcDir -%>/style-spec/util/color.js';
 import type Formatted from '<%= srcDir %>/style-spec/expression/types/formatted.js';
 
 import type ResolvedImage from '<%= srcDir -%>/style-spec/expression/types/resolved_image.js';
-<% 
+<%
 const overridables = paintProperties.filter(p => p.overridable)
 if (overridables.length) { -%>
 

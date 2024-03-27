@@ -1326,6 +1326,6 @@ test('Disallow usage of FQID separator in the public APIs', async () => {
     for (let i = 2; i <= callCount - 1; i++) {
         const event = spy.mock.calls[i][0];
         expect(event).toBeTruthy();
-        expect(event.error).toMatch(/can't contain special symbols/);
+        expect(event.error.message).toMatch(/can't contain special symbols/);
     }
 });

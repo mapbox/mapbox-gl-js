@@ -1,4 +1,4 @@
-import {describe, beforeAll, beforeEach, afterEach, test, expect, vi, waitFor} from "../../util/vitest.js";
+import {describe, beforeAll, beforeEach, afterEach, afterAll, test, expect, vi, waitFor} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import ImageSource from '../../../src/source/image_source.js';
 import {Evented} from '../../../src/util/evented.js';
@@ -41,6 +41,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('ImageSource', () => {

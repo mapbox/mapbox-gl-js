@@ -1,4 +1,4 @@
-import {describe, test, beforeAll, beforeEach, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {describe, test, beforeAll, beforeEach, afterEach, afterAll, expect, waitFor, vi} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -14,7 +14,7 @@ function createSource(options, transformCallback) {
     });
 
     source.on('error', (e) => {
-        throw e.error;
+        expect.unreachable(e.error.message);
     });
 
     return source;
@@ -28,6 +28,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('RasterTileSource', () => {

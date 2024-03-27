@@ -6,7 +6,7 @@
 *.js.map
 *.cjs.map
 node_modules
-package-lock.json
+yarn.lock
 .vscode/
 *.sublime-*
 coverage

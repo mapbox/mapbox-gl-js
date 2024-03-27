@@ -78,6 +78,14 @@ function fixAssertUtil(regexp = /node_modules\/assert/) {
 }
 
 export default defineConfig({
+    pool: 'threads',
+    poolOptions: {
+        threads: {
+            isolate: false,
+            useAtomics: true,
+            singleThread: true
+        }
+    },
     test: {
         testTimeout: 5_000,
         browser: {
@@ -85,7 +93,8 @@ export default defineConfig({
             provider: 'playwright',
             enabled: true,
             headless: true,
-            slowHijackESM: false
+            slowHijackESM: false,
+            fileParallelism: false,
         },
         restoreMocks: true,
         unstubGlobals: true

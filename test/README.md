@@ -7,15 +7,15 @@ First you must configure your development environment per [`../CONTRIBUTING.md`]
 
 There are two test suites associated with Mapbox GL JS
 
- - `yarn test` runs quick unit tests
- - `yarn run test-suite` runs slower integration tests
+ - `npm test` runs quick unit tests
+ - `npm run test-suite` runs slower integration tests
 
  To run individual tests:
 
- - Unit tests: `yarn test-unit path/to/file.test.js`
-   - e.g. `yarn test-unit test/unit/ui/handler/scroll_zoom.test.js`
- - Render tests: `yarn test-render tests=render-test-name` where the render test name can be any substring in the `test/integration/render-tests/` subdirectories
-   - e.g. `yarn test-render tests=background-color/default` or `yarn test-render tests=line`
+ - Unit tests: `npm run test-unit path/to/file.test.js`
+   - e.g. `npm run test-unit test/unit/ui/handler/scroll_zoom.test.js`
+ - Render tests: `npm run test-render tests=render-test-name` where the render test name can be any substring in the `test/integration/render-tests/` subdirectories
+   - e.g. `npm run test-render tests=background-color/default` or `npm run test-render tests=line`
 
 See [`test/integration/README.md#running-specific-tests`](./integration/README.md#running-specific-tests).
 
@@ -42,6 +42,10 @@ afterEach(() => {
     networkWorker.resetHandlers();
 });
 
+afterAll(() => {
+    networkWorker.stop();
+});
+
 test('should tests something', () => {
     networkWorker.use(
         http.get('/notfound.png', async () => {
@@ -59,7 +63,7 @@ test('should tests something', () => {
 
 If you want to debug your unit tests you can open UI for that with the following command:
 ```
-yarn test-unit --no-browser.headless
+npm run test-unit --no-browser.headless
 ```
 
 ## Spies, Stubs, and Mocks

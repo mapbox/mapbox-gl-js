@@ -1,4 +1,4 @@
-import {describe, test, beforeAll, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse} from '../../util/network.js';
 import VectorTileSource from '../../../src/source/vector_tile_source.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -47,6 +47,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('VectorTileSource', () => {

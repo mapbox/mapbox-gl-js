@@ -1,4 +1,4 @@
-import {describe, test, beforeAll, afterEach, expect, waitFor, vi} from "../../util/vitest.js";
+import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse} from '../../util/network.js';
 import Tile from '../../../src/source/tile.js';
 import Style from '../../../src/style/style.js';
@@ -46,6 +46,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('Style#loadURL', () => {
@@ -785,8 +789,8 @@ describe('Style#addLayer', () => {
         });
 
         await new Promise(resolve => {
-            map.on('error', (error) => {
-                expect(error.error).toMatch(/does not exist on this map/);
+            map.on('error', ({error}) => {
+                expect(error.message).toMatch(/does not exist on this map/);
                 resolve();
             });
 
@@ -832,8 +836,8 @@ describe('Style#removeLayer', () => {
         });
 
         await new Promise(resolve => {
-            map.on('error', (error) => {
-                expect(error.error).toMatch(/does not exist in the map\'s style/);
+            map.on('error', ({error}) => {
+                expect(error.message).toMatch(/does not exist in the map\'s style/);
                 resolve();
             });
 
@@ -2013,7 +2017,7 @@ test('Style#setFeatureState', async () => {
         style.on('style.load', () => {
             style.setFeatureState({source: makeFQID('mapbox', 'streets'), id: 12345}, {'hover': true});
             expect(spy).toHaveBeenCalledTimes(1);
-            expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+            expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
             resolve();
         });
     });
@@ -2039,7 +2043,7 @@ test('Style#getFeatureState', () => {
     style.on('style.load', () => {
         expect(style.getFeatureState({source: makeFQID('mapbox', 'streets'), id: 12345})).toBeFalsy();
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
     });
 });
 
@@ -2063,7 +2067,7 @@ test('Style#removeFeatureState', () => {
     style.on('style.load', () => {
         style.removeFeatureState({source: makeFQID('mapbox', 'streets'), id: 12345}, 'hover');
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
     });
 });
 
@@ -2086,10 +2090,10 @@ test('Style#setLayoutProperty', () => {
 
     style.on('style.load', () => {
         style.setLayoutProperty(makeFQID('land', 'streets'), 'visibility', 'none');
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(style.getLayoutProperty(makeFQID('land', 'streets'), 'visibility')).toBeFalsy();
-        expect(spy.mock.calls[1][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[1][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(
             style.getLayer(makeFQID('land', 'streets')).serialize().layout['visibility']
@@ -2117,10 +2121,10 @@ test('Style#setPaintProperty', () => {
 
     style.on('style.load', () => {
         style.setPaintProperty(makeFQID('land', 'streets'), 'background-color', 'red');
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(style.getPaintProperty(makeFQID('land', 'streets'), 'background-color')).toBeFalsy();
-        expect(spy.mock.calls[1][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[1][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(
             style.getLayer(makeFQID('land', 'streets')).serialize().paint['background-color']
@@ -2147,7 +2151,7 @@ test('Style#setLayerZoomRange', () => {
 
     style.on('style.load', () => {
         style.setLayerZoomRange(makeFQID('symbol', 'streets'), 5, 12);
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(style.getLayer(makeFQID('symbol', 'streets')).minzoom).toEqual(0);
         expect(style.getLayer(makeFQID('symbol', 'streets')).maxzoom).toEqual(22);
@@ -2173,10 +2177,10 @@ test('Style#setFilter', () => {
 
     style.on('style.load', () => {
         style.setFilter(makeFQID('symbol', 'streets'), ['==', 'id', 1]);
-        expect(spy.mock.calls[0][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[0][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(style.getFilter(makeFQID('symbol', 'streets'))).toBeFalsy();
-        expect(spy.mock.calls[1][0].error).toMatch(/does not exist in the map's style/);
+        expect(spy.mock.calls[1][0].error.message).toMatch(/does not exist in the map's style/);
 
         expect(style.getLayer(makeFQID('symbol', 'streets')).filter).toEqual(['==', 'id', 0]);
     });

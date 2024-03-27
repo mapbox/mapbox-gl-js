@@ -277,7 +277,7 @@ createStructArrayType('circle_globe_ext', circleGlobeAttributesExt);
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
 fs.writeFileSync('src/data/array_types.js',
-    `// This file is generated. Edit build/generate-struct-arrays.js, then run \`yarn run codegen\`.
+    `// This file is generated. Edit build/generate-struct-arrays.js, then run \`npm run codegen\`.
 /* eslint-disable camelcase */
 // @flow
 

@@ -1,4 +1,4 @@
-import {describe, test, beforeAll, afterEach, expect} from "../../util/vitest.js";
+import {describe, test, beforeAll, afterEach, afterAll, expect} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse} from '../../util/network.js';
 import Style from '../../../src/style/style.js';
 import Transform from '../../../src/geo/transform.js';
@@ -29,6 +29,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('ModelLayer#loadStyleExpressionConstraint', () => {
@@ -144,7 +148,7 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                 }
             });
 
-            style.loadURL('style.json');
+            style.loadURL('/style.json');
         });
     });
 });

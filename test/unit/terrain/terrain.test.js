@@ -1,4 +1,4 @@
-import {describe, test, beforeAll, beforeEach, afterEach, expect, waitFor, vi, createMap} from "../../util/vitest.js";
+import {describe, test, beforeAll, beforeEach, afterEach, afterAll, expect, waitFor, vi, createMap} from "../../util/vitest.js";
 import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network.js';
 import {extend} from '../../../src/util/util.js';
 import DEMData from '../../../src/data/dem_data.js';
@@ -93,6 +93,10 @@ beforeAll(async () => {
 
 afterEach(() => {
     networkWorker.resetHandlers();
+});
+
+afterAll(() => {
+    networkWorker.stop();
 });
 
 describe('Elevation', () => {
