@@ -234,7 +234,7 @@ class RasterArrayTile extends Tile {
 
         if (mrtLayer.hasDataForBand(band)) {
             this.updateTextureDescriptor(sourceLayer, band);
-            callback(null, this.textureDescriptor?.img);
+            callback(null, this.textureDescriptor ? this.textureDescriptor.img : null);
             return;
         }
 

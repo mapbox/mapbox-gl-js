@@ -205,6 +205,10 @@
           {
             "selector": "LogicalExpression[operator='??']",
             "message": "Nullish coalescing is not allowed."
+          },
+          {
+            "selector": "ChainExpression",
+            "message": "Optional chaining is now allowed."
           }
         ]
       }
