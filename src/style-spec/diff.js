@@ -148,20 +148,10 @@ export const operations: {[_: string]: string} = {
      */
     removeImport: 'removeImport',
 
-    /*
-     *  { command: 'setImportUrl', args: [importId, styleUrl] }
+    /**
+     * { command: 'updateImport', args: [importId, importSpecification | styleUrl] }
      */
-    setImportUrl: 'setImportUrl',
-
-    /*
-     *  { command: 'setImportData', args: [importId, stylesheet] }
-     */
-    setImportData: 'setImportData',
-
-    /*
-     *  { command: 'setImportConfig', args: [importId, config] }
-     */
-    setImportConfig: 'setImportConfig'
+    updateImport: 'updateImport'
 };
 
 function addSource(sourceId: string, after: Sources, commands: Array<Command>) {
@@ -424,20 +414,7 @@ export function diffImports(before: Array<ImportSpecification> = [], after: Arra
         const beforeImport = beforeIndex[afterImport.id];
         if (!beforeImport || isEqual(beforeImport, afterImport)) continue;
 
-        if (!isEqual(beforeImport.config, afterImport.config)) {
-            commands.push({command: operations.setImportConfig, args: [afterImport.id, afterImport.config]});
-        }
-
-        if (!isEqual(beforeImport.url, afterImport.url)) {
-            commands.push({command: operations.setImportUrl, args: [afterImport.id, afterImport.url]});
-        }
-
-        const beforeData = beforeImport && beforeImport.data;
-        const afterData = afterImport.data;
-
-        if (!isEqual(beforeData, afterData)) {
-            commands.push({command: operations.setImportData, args: [afterImport.id, afterData]});
-        }
+        commands.push({command: operations.updateImport, args: [afterImport.id, afterImport]});
     }
 }
 

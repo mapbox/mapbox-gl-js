@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 24,
+      "height": 24,
+      "operations": [
+        [
+          "moveImport",
+          "basemap-yellow",
+          "basemap-red"
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "imports": [
+    {
+      "id": "basemap-red",
+      "url": "mapbox://styles/mapbox/basemap",
+      "data": {
+        "version": 8,
+        "sources": {
+          "red": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [-87.6946445, 41.8703965]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "bottom",
+            "source": "red",
+            "type": "circle",
+            "paint": {
+              "circle-color": "#ff0000"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "basemap-yellow",
+      "url": "mapbox://styles/mapbox/basemap",
+      "data": {
+        "version": 8,
+        "sources": {
+          "yellow": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [-87.6942445, 41.8703965]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "top",
+            "source": "yellow",
+            "type": "circle",
+            "paint": {
+              "circle-color": "#ffff00"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": [],
+  "center": [-87.6942445, 41.8703965],
+  "zoom": 13
+}

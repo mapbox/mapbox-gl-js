@@ -490,8 +490,8 @@ test('diff', () => {
             'url': 'after'
         }]
     })).toEqual([{
-        command: 'setImportUrl',
-        args: ['basemap', 'after']
+        command: 'updateImport',
+        args: ['basemap', {id: 'basemap', url: 'after'}]
     }]);
 
     expect(diffStyles({
@@ -511,9 +511,13 @@ test('diff', () => {
             }
         }]
     })).toEqual([{
-        command: 'setImportData',
+        command: 'updateImport',
         args: ['basemap', {
-            'version': 9
+            id: 'basemap',
+            url: '',
+            data: {
+                'version': 9
+            }
         }]
     }]);
 
@@ -556,14 +560,18 @@ test('diff', () => {
             },
         }]
     })).toEqual([{
-        command: 'setImportData',
+        command: 'updateImport',
         args: ['basemap', {
-            'version': 8,
-            'layers': [
-                {'id': 'below-water', 'type': 'slot'},
-                {'id': 'water', 'type': 'background', 'layout': {}, 'paint': {'background-color': 'pink'}},
-                {'id': 'above-water', 'type': 'slot'}
-            ]
+            id: 'basemap',
+            url: '',
+            data: {
+                'version': 8,
+                'layers': [
+                    {'id': 'below-water', 'type': 'slot'},
+                    {'id': 'water', 'type': 'background', 'layout': {}, 'paint': {'background-color': 'pink'}},
+                    {'id': 'above-water', 'type': 'slot'}
+                ]
+            }
         }]
     }, {
         command: 'setPaintProperty',

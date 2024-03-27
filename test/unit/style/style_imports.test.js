@@ -615,6 +615,189 @@ describe('Style#loadJSON', () => {
     });
 });
 
+describe('Style#addImport', () => {
+    test('to the end', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
+                sources: {mapbox: {type: 'vector', tiles: []}}
+            })}],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        style.addImport({
+            id: 'land', url: '/land.json', data: createStyleJSON({
+                sources: {land: {type: 'vector', tiles: []}}
+            })
+        });
+
+        expect(style.stylesheet.imports.map(({id}) => id)).toStrictEqual([
+            'streets',
+            'land'
+        ]);
+    });
+
+    test('before another import', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [
+                {id: 'streets', url: '/style.json', data: createStyleJSON({
+                    sources: {mapbox: {type: 'vector', tiles: []}}
+                })},
+                {id: 'streets-v2', url: '/style.json', data: createStyleJSON({
+                    sources: {mapbox: {type: 'vector', tiles: []}}
+                })}
+            ],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        style.addImport({
+            id: 'land', url: '/land.json', data: createStyleJSON({
+                sources: {land: {type: 'vector', tiles: []}}
+            })
+        }, 'streets-v2');
+
+        style.addImport({
+            id: 'land-v2', url: '/land.json', data: createStyleJSON({
+                sources: {land: {type: 'vector', tiles: []}}
+            })
+        }, 'land');
+
+        expect(style.stylesheet.imports.map(({id}) => id)).toStrictEqual([
+            'streets',
+            'land-v2',
+            'land',
+            'streets-v2'
+        ]);
+    });
+});
+
+describe('Style#updateImport', () => {
+    test('updates import with provided json', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
+                sources: {mapbox: {type: 'vector', tiles: []}},
+                schema: {
+                    lightPreset: {
+                        type: 'string',
+                        default: 'day'
+                    }
+                }
+            })}],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        style.updateImport('streets', {
+            id: 'streets',
+            data: createStyleJSON({
+                sources: {'mapbox-v12': {type: 'vector', tiles: []}}
+            }),
+            config: {
+                lightPreset: 'night'
+            }
+        });
+
+        expect(style.stylesheet.imports[style.getImportIndex('streets')].config).toStrictEqual({
+            lightPreset: 'night'
+        });
+        expect(style.fragments[0].style.stylesheet).toStrictEqual(createStyleJSON({
+            sources: {'mapbox-v12': {type: 'vector', tiles: []}}
+        }));
+    });
+
+    test('fetch style with URL after clean of data', async () => {
+        const spy = vi.fn();
+        const map = new StubMap();
+        const style = new Style(map);
+
+        networkWorker.use(
+            http.get('/style.json', ({request}) => {
+                spy(request);
+                return HttpResponse.json(initialStyle);
+            }),
+        );
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
+                sources: {mapbox: {type: 'vector', tiles: []}},
+                schema: {
+                    lightPreset: {
+                        type: 'string',
+                        default: 'day'
+                    }
+                }
+            })}],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        expect(spy).not.toHaveBeenCalled();
+
+        await new Promise(resolve => {
+            map.on('style.import.load', () => {
+                expect(spy).toHaveBeenCalledTimes(1);
+                resolve();
+            });
+            style.updateImport('streets', {
+                id: 'streets',
+                url: '/style.json'
+            });
+        });
+    });
+
+    test('update URL and fetch style from new one', async () => {
+        const spy = vi.fn();
+        const map = new StubMap();
+        const style = new Style(map);
+
+        networkWorker.use(
+            http.get('/style.json', () => {
+                return HttpResponse.json(initialStyle);
+            }),
+            http.get('/style2.json', ({request}) => {
+                spy(request);
+                return HttpResponse.json(initialStyle);
+            }),
+        );
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'streets', url: '/style.json'}],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        expect(spy).not.toHaveBeenCalled();
+
+        await new Promise(resolve => {
+            map.on('style.import.load', () => {
+                expect(spy).toHaveBeenCalledTimes(1);
+                resolve();
+            });
+            style.updateImport('streets', {
+                id: 'streets',
+                url: '/style2.json'
+            });
+        });
+    });
+});
+
 describe('Style#addSource', () => {
     test('same id in different scopes', async () => {
         const style = new Style(new StubMap());

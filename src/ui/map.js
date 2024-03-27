@@ -79,7 +79,8 @@ import type {
     ProjectionSpecification,
     PropertyValueSpecification,
     TransitionSpecification,
-    CameraSpecification
+    CameraSpecification,
+    ImportSpecification
 } from '../style-spec/types.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {Source} from '../source/source.js';
@@ -2719,6 +2720,164 @@ class Map extends Camera {
 
         this._lazyInitEmptyStyle();
         this.style.addLayer(layer, beforeId);
+        return this._update(true);
+    }
+
+    /**
+     * Returns current slot of the layer.
+     *
+     * @param {string} layerId Identifier of the layer to retrieve its current slot.
+     * @returns {string | null} The slot identifier or `null` if layer doesn't have it.
+     *
+     * @example
+     * map.getSlot('roads');
+     */
+    getSlot(layerId: string): ?string {
+        const layer = this.getLayer(layerId);
+
+        if (!layer) {
+            return null;
+        }
+
+        return layer.slot || null;
+    }
+
+    /**
+     * Sets or removes [a slot](https://docs.mapbox.com/style-spec/reference/slots/) of style layer.
+     *
+     * @param {string} layerId Identifier of style layer.
+     * @param {string} slot Identifier of slot. If `null` or `undefined` is provided, the method removes slot.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Sets new slot for style layer
+     * map.setSlot("heatmap", "top");
+     */
+    setSlot(layerId: string, slot: ?string): this {
+        this.style.setSlot(layerId, slot);
+        this.style.mergeLayers();
+        return this._update(true);
+    }
+
+    /**
+     * Adds new [import](https://docs.mapbox.com/style-spec/reference/imports/) to current style.
+     *
+     * @param {ImportSpecification} importSpecification Specification of import.
+     * @param {string} beforeId (optional) Identifier of an existing import to insert the new import before.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Add streets style to empty map
+     * new Map({style: {version: 8, sources: {}, layers: []}})
+     *     .addImport({id: 'basemap', url: 'mapbox://styles/mapbox/streets-v12'});
+     *
+     * @example
+     * // Add new style before already added
+     * const map = new Map({
+     *     imports: [
+     *         {
+     *             id: 'basemap',
+     *             url: 'mapbox://styles/mapbox/standard'
+     *         }
+     *     ],
+     *     style: {
+     *         version: 8,
+     *         sources: {},
+     *         layers: []
+     *     }
+     * });
+     *
+     * map.addImport({
+     *     id: 'lakes',
+     *     url: 'https://styles/mapbox/streets-v12'
+     * }, 'basemap');
+     */
+    addImport(importSpecification: ImportSpecification, beforeId: ?string): this {
+        this.style.addImport(importSpecification, beforeId);
+        return this;
+    }
+
+    /**
+     * Updates already added to style import.
+     *
+     * @param {string} importId Identifier of import to update.
+     * @param {ImportSpecification | string} importSpecification Import specification or URL of style.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Update import with new data
+     * map.updateImport('basemap', {
+     *     data: {
+     *         version: 8,
+     *         sources: {},
+     *         layers: [
+     *             {
+     *                 id: 'background',
+     *                 type: 'background',
+     *                 paint: {
+     *                     'background-color': '#eee'
+     *                 }
+     *             }
+     *         ]
+     *     }
+     * });
+     *
+     * @example
+     * // Change URL of imported style
+     * map.updateImport('basemap', 'mapbox://styles/mapbox/other-standard');
+     */
+    updateImport(importId: string, importSpecification: ImportSpecification | string): this {
+        if (typeof importSpecification !== 'string' && importSpecification.id !== importId) {
+            this.removeImport(importId);
+            return this.addImport(importSpecification);
+        }
+
+        this.style.updateImport(importId, importSpecification);
+        return this._update(true);
+    }
+
+    /**
+     * Removes added to style import.
+     *
+     * @param {string} importId Identifier of import to remove.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * // Removes imported style
+     * map.removeImport('basemap');
+     */
+    removeImport(importId: string): this {
+        this.style.removeImport(importId);
+        return this;
+    }
+
+    /**
+     * Moves import to position before another import, specified with `beforeId`. Order of imported styles corresponds to order of their layers.
+     *
+     * @param {string} importId Identifier of import to move.
+     * @param {string} beforeId The identifier of an existing import to move the new import before.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * const map = new Map({
+     *     style: {
+     *         imports: [
+     *             {
+     *                 id: 'basemap',
+     *                 url: 'mapbox://styles/mapbox/standard'
+     *             },
+     *             {
+     *                 id: 'streets-v12',
+     *                 url: 'mapbox://styles/mapbox/streets-v12'
+     *             }
+     *         ]
+     *     }
+     * });
+     * // Place `streets-v12` import before `basemap`
+     * map.moveImport('streets-v12', 'basemap');
+     */
+    moveImport(importId: string, beforeId: string): this {
+        this.style.moveImport(importId, beforeId);
         return this._update(true);
     }
 

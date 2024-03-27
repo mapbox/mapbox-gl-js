@@ -8,6 +8,15 @@ export function waitFor(evented, event) {
     });
 }
 
+export function createStyleJSON(options) {
+    return {
+        version: 8,
+        sources: {},
+        layers: [],
+        ...options
+    };
+}
+
 export function createMap(options, callback) {
     const container = window.document.createElement('div');
     const defaultOptions = {

@@ -128,9 +128,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'setCamera',
     'addImport',
     'removeImport',
-    'setImportUrl',
-    'setImportData',
-    'setImportConfig',
+    'updateImport'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -418,7 +416,7 @@ class Style extends Evented {
         this._load(empty, false);
     }
 
-    _loadImports(imports: Array<ImportSpecification>, validate: boolean): Promise<any> {
+    _loadImports(imports: Array<ImportSpecification>, validate: boolean, beforeId: ?string): Promise<any> {
         // We take the root style into account when calculating the import depth.
         if (this.importDepth >= MAX_IMPORT_DEPTH - 1) {
             warnOnce(`Style doesn't support nesting deeper than ${MAX_IMPORT_DEPTH}`);
@@ -460,7 +458,19 @@ class Style extends Evented {
                 config: importSpec.config
             };
 
-            this.fragments.push(fragment);
+            if (beforeId) {
+                const beforeIndex = this.fragments.findIndex(({id}) => id === beforeId);
+
+                assert(beforeIndex !== -1, `Import with id "${beforeId}" does not exist on this map`);
+
+                this.fragments = this.fragments
+                    .slice(0, beforeIndex)
+                    .concat(fragment)
+                    .concat(this.fragments.slice(beforeIndex));
+            } else {
+                this.fragments.push(fragment);
+            }
+
         }
 
         // $FlowFixMe[method-unbinding]
@@ -2783,7 +2793,7 @@ class Style extends Evented {
 
     // Fragments and merging
 
-    addImport(importSpec: ImportSpecification): Style {
+    addImport(importSpec: ImportSpecification, beforeId: ?string): Style {
         this._checkLoaded();
 
         const imports = this.stylesheet.imports = this.stylesheet.imports || [];
@@ -2793,8 +2803,83 @@ class Style extends Evented {
             return this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
         }
 
-        imports.push(importSpec);
-        this._loadImports([importSpec], true);
+        if (!beforeId) {
+            imports.push(importSpec);
+            this._loadImports([importSpec], true);
+            return this;
+        }
+
+        const beforeIndex = imports.findIndex(({id}) => id === beforeId);
+
+        if (beforeIndex === -1) {
+            return this.fire(new ErrorEvent(new Error(`Import with id "${beforeId}" does not exist on this map.`)));
+        }
+
+        this.stylesheet.imports = imports
+            .slice(0, beforeIndex)
+            .concat(importSpec)
+            .concat(imports.slice(beforeIndex));
+
+        this._loadImports([importSpec], true, beforeId);
+        return this;
+    }
+
+    updateImport(importId: string, importSpecification: ImportSpecification | string): Style {
+        this._checkLoaded();
+
+        const imports = this.stylesheet.imports || [];
+        const index = this.getImportIndex(importId);
+        if (index === -1) return this;
+
+        if (typeof importSpecification === 'string') {
+            this.setImportUrl(importId, importSpecification);
+            return this;
+        }
+
+        if (importSpecification.url && importSpecification.url !== imports[index].url) {
+            this.setImportUrl(importId, importSpecification.url);
+        }
+
+        if (!deepEqual(importSpecification.config, imports[index].config)) {
+            this.setImportConfig(importId, importSpecification.config);
+        }
+
+        if (!deepEqual(importSpecification.data, imports[index].data)) {
+            this.setImportData(importId, importSpecification.data);
+        }
+
+        return this;
+    }
+
+    moveImport(importId: string, beforeId: string): Style {
+        this._checkLoaded();
+
+        let imports = this.stylesheet.imports || [];
+
+        const index = this.getImportIndex(importId);
+        if (index === -1) return this;
+
+        const beforeIndex = this.getImportIndex(beforeId);
+        if (beforeIndex === -1) return this;
+
+        const importSpec = imports[index];
+        const fragment = this.fragments[index];
+
+        imports = imports.filter(({id}) => id !== importId);
+
+        this.fragments = this.fragments.filter(({id}) => id !== importId);
+
+        this.stylesheet.imports = imports
+            .slice(0, beforeIndex)
+            .concat(importSpec)
+            .concat(imports.slice(beforeIndex));
+
+        this.fragments = this.fragments
+            .slice(0, beforeIndex)
+            .concat(fragment)
+            .concat(this.fragments.slice(beforeIndex));
+
+        this.mergeLayers();
         return this;
     }
 
