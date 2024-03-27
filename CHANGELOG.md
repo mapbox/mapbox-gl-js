@@ -1,3 +1,26 @@
+## 3.3.0-beta.1
+
+### Features and improvements ✨
+
+- Add raster particles layer.
+- Add raster-array source.
+- Add `addImport`, `moveImport`, `updateImport`, and `removeImport` API methods.
+- Add `getSlot`, and `setSlot` API methods to control layers' slots.
+- Add landmarks and models support in `queryRenderedFeatures`.
+- Add `raster-elevation` support for tiled raster sources.
+- Add `config` expression support in fog.
+- Improve map loading performance.
+
+### Bug fixes 🐞
+
+- Fix zooming with the pitched camera and `maxZoom`.
+- Fix memory leak after removing the map. (h/t [@kamil-sienkiewicz-asi](https://github.com/kamil-sienkiewicz-asi)) [#13110](https://github.com/mapbox/mapbox-gl-js/pull/13110), [#13116](https://github.com/mapbox/mapbox-gl-js/pull/13116)
+- Fix broken horizon line for some camera values.
+- Fix broken globe draping after updating style with `setStyle`.
+- Fix the `z` offset when the opacity is evaluated at 0 on the zoom change.
+- Fix the `format` expression in the `config` expression.
+- Fix adding a marker to the map that is not loaded when fog is enabled.
+
 ## 3.2.0
 
 ### Features and improvements ✨
