@@ -462,7 +462,12 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
         resampling = gl.NEAREST;
 
         if (!range) {
-            range = source.rasterLayers?.find(({id}) => id === layer.sourceLayer)?.fields?.range;
+            if (source.rasterLayers) {
+                const foundLayer = source.rasterLayers.find(({id}) => id === layer.sourceLayer);
+                if (foundLayer && foundLayer.fields) {
+                    range = foundLayer.fields.range;
+                }
+            }
         }
     }
 
@@ -480,7 +485,10 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
         layer.updateColorRamp(range);
 
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) {
+            tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+            layer.colorRampTexture.range = layer._curRampRange;
+        }
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
