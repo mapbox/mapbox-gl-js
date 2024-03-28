@@ -10,6 +10,12 @@
 
 in vec2 a_pos_normal;
 in vec4 a_data;
+// Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
+// to reduce attribute count on older devices.
+// Only line-trim-offset will requires a_packed info.
+#ifdef RENDER_LINE_TRIM_OFFSET
+in highp vec4 a_packed;
+#endif
 in float a_linesofar;
 
 uniform mat4 u_matrix;
@@ -22,6 +28,9 @@ out vec2 v_width2;
 out float v_linesofar;
 out float v_gamma_scale;
 out float v_width;
+#ifdef RENDER_LINE_TRIM_OFFSET
+out highp vec4 v_uv;
+#endif
 
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
@@ -90,6 +99,14 @@ void main() {
 #else
     v_gamma_scale = 1.0;
 #endif
+
+#ifdef RENDER_LINE_TRIM_OFFSET
+    float a_uv_x = a_packed[0];
+    highp float a_clip_start = a_packed[2];
+    highp float a_clip_end = a_packed[3];
+    v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
+#endif
+
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
     v_width = floorwidth;

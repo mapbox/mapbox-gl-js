@@ -39,7 +39,8 @@ export type LinePatternUniformsType = {|
     'u_units_to_pixels': Uniform2f,
     'u_image': Uniform1i,
     'u_tile_units_to_pixels': Uniform1f,
-    'u_alpha_discard_threshold': Uniform1f
+    'u_alpha_discard_threshold': Uniform1f,
+    'u_trim_offset': Uniform2f,
 |};
 
 export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER';
@@ -67,7 +68,8 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_image': new Uniform1i(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
-    'u_alpha_discard_threshold': new Uniform1f(context)
+    'u_alpha_discard_threshold': new Uniform1f(context),
+    'u_trim_offset': new Uniform2f(context),
 });
 
 const lineUniformValues = (
@@ -105,7 +107,8 @@ const linePatternUniformValues = (
     tile: Tile,
     layer: LineStyleLayer,
     matrix: ?Float32Array,
-    pixelRatio: number
+    pixelRatio: number,
+    trimOffset: [number, number],
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     return {
@@ -120,7 +123,8 @@ const linePatternUniformValues = (
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
         ],
-        'u_alpha_discard_threshold': 0.0
+        'u_alpha_discard_threshold': 0.0,
+        'u_trim_offset': trimOffset
     };
 };
 
