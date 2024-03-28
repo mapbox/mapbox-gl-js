@@ -6,6 +6,7 @@ import serialize from 'serialize-to-js';
 import assert from 'assert';
 import {isWorker} from '../../../src/util/util.js';
 import type {default as MapboxMap} from '../../../src/ui/map.js';
+import type {Description} from './tracked_parameters_mock.js';
 
 if (!isWorker()) {
     const style = document.createElement('style');
@@ -134,7 +135,7 @@ function deSerializePaneParams(input: ?string): PaneState {
 // For fast prototyping in case of only one map present
 let global: ?TrackedParameters;
 
-export function registerParameter(object: Object, scope: Array<string>, name: string, description: Object, onChange: Function) {
+export function registerParameter(object: Object, scope: Array<string>, name: string, description: ?Description, onChange: Function) {
     if (global) {
         global.registerParameter(object, scope, name, description, onChange);
 
@@ -155,12 +156,14 @@ class ParameterInfo {
     containerObject: Object;
     parameterName: string;
     defaultValue: any;
+    noSave: boolean;
     tpBinding: any;
 
-    constructor(object: Object, parameterName: string, defaultValue: any, tpBinding: any) {
+    constructor(object: Object, parameterName: string, defaultValue: any, noSave: boolean, tpBinding: any) {
         this.containerObject = object;
         this.parameterName = parameterName;
         this.defaultValue = defaultValue;
+        this.noSave = noSave;
         this.tpBinding = tpBinding;
     }
 }
@@ -263,7 +266,8 @@ export class TrackedParameters {
         this._parametersInfo.forEach((parameterInfo, key) => {
             const isDefault = JSON.stringify(parameterInfo.defaultValue) === JSON.stringify(parameterInfo.containerObject[parameterInfo.parameterName]);
 
-            parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + parameterInfo.parameterName;
+            const noSaveIndicator = parameterInfo.noSave ? "❗💾 " : "";
+            parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + noSaveIndicator + parameterInfo.parameterName;
 
             const folderName = key.slice(0, key.lastIndexOf("|"));
 
@@ -352,7 +356,7 @@ export class TrackedParameters {
                 for (const [parameterKey, value] of Object.entries(folder.current)) {
                     const fullParameterName = `${folderKey}|${parameterKey}`;
                     const paramInfo = this._parametersInfo.get(fullParameterName);
-                    if (paramInfo) {
+                    if (paramInfo && !paramInfo.noSave) {
                         paramInfo.containerObject[parameterKey] = cloneDeep(value);
                     }
                 }
@@ -484,10 +488,10 @@ export class TrackedParameters {
         return {currentScope, fullScopeName};
     }
 
-    registerParameter(containerObject: Object, scope: Array<string>, name: string, description: ?Object, changeValueCallback: ?Function) {
+    registerParameter(containerObject: Object, scope: Array<string>, name: string, description: ?Description, changeValueCallback: ?Function) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
-        const folderObj: FolderState = (this._paneState.folders.get(fullScopeName): any);
+        const folderStateObj: FolderState = (this._paneState.folders.get(fullScopeName): any);
 
         // Full parameter name with scope prefix
         const fullParameterName = `${fullScopeName}|${name}`;
@@ -495,24 +499,27 @@ export class TrackedParameters {
         if (!this._parametersInfo.has(fullParameterName)) {
             const defaultValue = cloneDeep(containerObject[name]);
 
-            if (folderObj.current.hasOwnProperty(name)) {
-                containerObject[name] = cloneDeep(folderObj.current[name]);
+            // Check if parameter should ignore (de)serialization
+            const noSave = !!(description && description.noSave);
+
+            if (!noSave && folderStateObj.current.hasOwnProperty(name)) {
+                containerObject[name] = cloneDeep(folderStateObj.current[name]);
             } else {
-                folderObj.current[name] = cloneDeep(containerObject[name]);
+                folderStateObj.current[name] = cloneDeep(containerObject[name]);
             }
 
             // Create binding to TweakPane UI
             const binding = currentScope.addBinding(containerObject, name, description);
             binding.on('change', (ev) => {
-                folderObj.current[name] = cloneDeep(ev.value);
+                folderStateObj.current[name] = cloneDeep(ev.value);
                 this.dump();
                 this.checkDefaults();
                 if (changeValueCallback) { changeValueCallback(ev.value); }
             });
 
-            this._parametersInfo.set(fullParameterName, new ParameterInfo(containerObject, name, defaultValue, binding));
+            this._parametersInfo.set(fullParameterName, new ParameterInfo(containerObject, name, defaultValue, noSave, binding));
         } else {
-            console.log(fullParameterName);
+            console.log(`Parameter "${fullParameterName}" already registered`);
         }
 
         this.checkDefaults();
