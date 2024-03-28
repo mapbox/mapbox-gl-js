@@ -27,7 +27,14 @@ class RasterStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
-        this._updateColorRamp();
+
+        // Cache the currently-computed range so that we can call updateColorRamp
+        // during raster color rendering, at which point we can make use of the
+        // source's data range in case raster-color-range is not explicitly specified
+        // in the style. This allows us to call multiple times and only update if
+        // it's changed.
+        this._currentRange = [NaN, NaN];
+        this.updateColorRamp();
     }
 
     getProgramIds(): Array<string> {
@@ -57,15 +64,18 @@ class RasterStyleLayer extends StyleLayer {
 
     _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'raster-color' || name === 'raster-color-range') {
-            this._updateColorRamp();
+            this.updateColorRamp();
         }
     }
 
-    _updateColorRamp() {
+    updateColorRamp(overrideRange: ?Array<number>) {
         if (!this.hasColorMap()) return;
 
         const expression = this._transitionablePaint._values['raster-color'].value.expression;
-        const [start, end] = this._transitionablePaint._values['raster-color-range'].value.expression.evaluate({zoom: 0});
+        const [start, end] = overrideRange || this._transitionablePaint._values['raster-color-range'].value.expression.evaluate({zoom: 0}) || [NaN, NaN];
+
+        if (isNaN(start) && isNaN(end)) return;
+        if (start === this._currentRange[0] && end === this._currentRange[1]) return;
 
         this.colorRamp = renderColorRamp({
             expression,
@@ -75,6 +85,8 @@ class RasterStyleLayer extends StyleLayer {
             resolution: COLOR_RAMP_RES,
         });
         this.colorRampTexture = null;
+        this._currentRange[0] = start;
+        this._currentRange[1] = end;
     }
 }
 

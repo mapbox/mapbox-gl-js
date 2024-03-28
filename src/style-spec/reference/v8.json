@@ -7429,10 +7429,6 @@
     },
     "raster-color-range": {
       "type": "array",
-      "default": [
-        0,
-        1
-      ],
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -7446,7 +7442,7 @@
           "zoom"
         ]
       },
-      "doc": "When `raster-color` is active, specifies the range over which `raster-color` is tabulated. Units correspond to the computed raster value via `raster-color-mix`.",
+      "doc": "When `raster-color` is active, specifies the range over which `raster-color` is tabulated. Units correspond to the computed raster value via `raster-color-mix`. For `rasterarray` sources, if `raster-color-range` is unspecified, the source's stated data range is used.",
       "example": [
         0.5,
         10

@@ -445,7 +445,7 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
     const defines: DynamicDefinesType[] = [];
     const inputResampling = layer.paint.get('raster-resampling');
     const inputMix = layer.paint.get('raster-color-mix');
-    const range = layer.paint.get('raster-color-range');
+    let range = layer.paint.get('raster-color-range');
 
     // Unpack the offset for use in a separate uniform
     const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
@@ -453,22 +453,35 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
 
     let resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
 
-    if (isRasterColor) defines.push('RASTER_COLOR');
-    if (isRasterArray) defines.push('RASTER_ARRAY');
-
-    if (isRasterColor) {
-        // Allocate a texture if not allocated
-        context.activeTexture.set(gl.TEXTURE2);
-        let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
-        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-    }
-
     if (isRasterArray) {
+        defines.push('RASTER_ARRAY');
+
         // Raster-array sources require in-shader linear interpolation in order to decode without
         // artifacts, so force nearest filtering.
         if (inputResampling === 'linear') defines.push('RASTER_ARRAY_LINEAR');
         resampling = gl.NEAREST;
+
+        if (!range) {
+            range = source.rasterLayers?.find(({id}) => id === layer.sourceLayer)?.fields?.range;
+        }
+    }
+
+    // In all cases, having checked for a preferred color ramp, we now supply a default,
+    // to be used in case nothing else has been specified.
+    range = range || [0, 1];
+
+    if (isRasterColor) {
+        defines.push('RASTER_COLOR');
+        // Allocate a texture if not allocated
+        context.activeTexture.set(gl.TEXTURE2);
+
+        // Update the color ramp defensively. Duplicate calls with the same bounds
+        // will not trigger recomputation.
+        layer.updateColorRamp(range);
+
+        let tex = layer.colorRampTexture;
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
     return {
