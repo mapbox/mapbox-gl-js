@@ -72,7 +72,39 @@ const PARAMS = {
     maxSpeed: 70,
     resetRateFactor: RESET_RATE_FACTOR_DEFAULT,
     particleCount: PARTICLE_COUNT_DEFAULT,
+    bandIndex: 0,
 };
+
+// These are contained in debug/wind-512-mrt/tile.json.
+const BANDS = [
+    "1708300800",
+    "1708311600",
+    "1708322400",
+    "1708333200",
+    "1708344000",
+    "1708354800",
+    "1708365600",
+    "1708376400",
+    "1708387200",
+    "1708398000",
+    "1708408800",
+    "1708419600",
+    "1708430400",
+    "1708441200",
+    "1708452000",
+    "1708462800",
+    "1708473600",
+    "1708484400",
+    "1708495200",
+    "1708506000",
+    "1708516800",
+    "1708527600",
+    "1708538400",
+    "1708549200",
+    "1708560000",
+    "1708570800",
+    "1708581600"
+];
 
 window.onload = function() {
     const gui = new Tweakpane.Pane({  // eslint-disable-line
@@ -128,6 +160,12 @@ window.onload = function() {
     particleCountSlider.on('change', (ev) => {
         map.setPaintProperty('wind-layer', 'raster-particle-count', ev.value);
     });
+
+    const bandSlider = gui.addInput(PARAMS, 'bandIndex', {min: 0, max: BANDS.length - 1, step: 1});
+    bandSlider.on('change', (ev) => {
+        const band = BANDS[ev.value];
+        map.setPaintProperty('wind-layer', 'raster-particle-array-band', band);
+    });
 };
 
 const map = new mapboxgl.Map({
@@ -139,10 +177,6 @@ const map = new mapboxgl.Map({
     // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
     style: 'mapbox://styles/mapbox/dark-v11'
 });
-
-const tileSize = 512;
-const colors = ['red', 'green', 'blue'];
-const currentColor = colors[0];
 
 map.on('load', () => {
     map.addSource('raster-array-source', {
