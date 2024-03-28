@@ -1,9 +1,10 @@
 /* eslint-disable flowtype/require-valid-file-annotation */
 import fs from 'fs';
-import sourcemaps from 'rollup-plugin-sourcemaps';
+import {fileURLToPath} from 'url';
+import {readFile} from 'node:fs/promises';
+
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
-import {fileURLToPath} from 'url';
 
 const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
@@ -66,3 +67,22 @@ export default [{
         sourcemaps()
     ],
 }];
+
+function sourcemaps() {
+    const base64SourceMapRegExp = /\/\/# sourceMappingURL=data:[^,]+,([^ ]+)/;
+
+    return {
+        name: 'sourcemaps',
+        async load(id) {
+            const code = await readFile(id, {encoding: 'utf8'});
+            const match = base64SourceMapRegExp.exec(code);
+            if (!match) return;
+
+            const base64EncodedSourceMap = match[1];
+            const decodedSourceMap = Buffer.from(base64EncodedSourceMap, 'base64').toString('utf-8');
+            const map = JSON.parse(decodedSourceMap);
+
+            return {code, map};
+        }
+    };
+}
