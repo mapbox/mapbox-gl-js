@@ -44,6 +44,7 @@ export default [{
         chunkFileNames: 'shared.js',
         minifyInternalExports: production
     },
+    onwarn: production ? onwarn : false,
     treeshake: production,
     plugins: plugins({minified, production, bench})
 }, {
@@ -85,4 +86,13 @@ function sourcemaps() {
             return {code, map};
         }
     };
+}
+
+function onwarn(warning) {
+    if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        // Ignore circular dependencies in style-spec and throw on all others
+        if (!warning.ids[0].includes('/src/style-spec')) throw new Error(warning.message);
+    } else {
+        console.error(`(!) ${warning.message}`);
+    }
 }

@@ -3,7 +3,6 @@
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import browser from '../../../src/util/browser.js';
-import ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import {register} from '../../../src/util/web_worker_transfer.js';
 import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model.js';
 import {OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -14,6 +13,7 @@ import {DEMSampler} from '../../../src/terrain/elevation.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import {Aabb} from '../../../src/util/primitives.js';
 
+import type ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import type {ReplacementSource} from '../../source/replacement_source.js';
 import type {Bucket} from '../../../src/data/bucket.js';
 import type {Node} from '../model.js';
