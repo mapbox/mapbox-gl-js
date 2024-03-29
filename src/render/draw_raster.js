@@ -464,7 +464,7 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
         if (!range) {
             if (source.rasterLayers) {
                 const foundLayer = source.rasterLayers.find(({id}) => id === layer.sourceLayer);
-                if (foundLayer && foundLayer.fields) {
+                if (foundLayer && foundLayer.fields && foundLayer.fields.range) {
                     range = foundLayer.fields.range;
                 }
             }
@@ -485,10 +485,7 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
         layer.updateColorRamp(range);
 
         let tex = layer.colorRampTexture;
-        if (!tex) {
-            tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
-            layer.colorRampTexture.range = layer._curRampRange;
-        }
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 

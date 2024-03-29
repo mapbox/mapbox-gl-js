@@ -30,7 +30,7 @@ class RasterStyleLayer extends StyleLayer {
     // source's data range in case raster-color-range is not explicitly specified
     // in the style. This allows us to call multiple times and only update if
     // it's changed.
-    _curRampRange: Array<number>;
+    _curRampRange: [number, number];
 
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
@@ -72,7 +72,7 @@ class RasterStyleLayer extends StyleLayer {
         }
     }
 
-    updateColorRamp(overrideRange: ?Array<number>) {
+    updateColorRamp(overrideRange: ?[number, number]) {
         if (!this.hasColorMap()) return;
         if (!this._curRampRange) return;
 

@@ -17,6 +17,7 @@ export type SourceRasterLayer = {
     minzoom?: number;
     fields?: {
         bands?: Array<string | number>;
+        range?: [number, number];
     };
 };
 
