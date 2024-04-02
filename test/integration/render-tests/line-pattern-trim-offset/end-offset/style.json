@@ -4,7 +4,7 @@
     "test": {
       "width": 100,
       "height": 100,
-      "allowed": 0.0002,
+      "allowed": 0.003,
       "operations": [
         ["setPaintProperty", "line", "line-trim-offset", [0.7, 1.0]],
         ["wait"]

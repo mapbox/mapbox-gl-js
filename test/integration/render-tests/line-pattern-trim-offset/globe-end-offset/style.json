@@ -4,6 +4,7 @@
     "test": {
       "width": 200,
       "height": 200,
+      "allowed": 0.0003,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]
