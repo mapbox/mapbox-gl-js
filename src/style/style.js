@@ -883,7 +883,7 @@ class Style extends Evented {
         this.dispatcher.broadcast('setProjection', this.map.transform.projectionOptions);
 
         if (this.map.transform.projection.requiresDraping) {
-            const hasTerrain = this.getTerrain() || this.stylesheet.terrain;
+            const hasTerrain = (this.getTerrain() || this.stylesheet.terrain) && !this.disableElevatedTerrain;
             if (!hasTerrain) {
                 this.setTerrainForDraping();
             }

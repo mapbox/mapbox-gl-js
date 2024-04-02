@@ -11,6 +11,8 @@ let stubTime: number | void;
 
 let canvas;
 
+let hasCanvasFingerprintNoise;
+
 /**
  * @private
  */
@@ -81,7 +83,15 @@ const exported = {
      * adds noise to Canvas2D operations used for image decoding to prevent fingerprinting.
      */
     hasCanvasFingerprintNoise(): boolean {
-        if (!offscreenCanvasSupported()) return false;
+        if (hasCanvasFingerprintNoise !== undefined) {
+            return hasCanvasFingerprintNoise;
+        }
+
+        if (!offscreenCanvasSupported()) {
+            hasCanvasFingerprintNoise = false;
+            return false;
+        }
+
         assert(self.OffscreenCanvas, 'OffscreenCanvas is not supported');
 
         const offscreenCanvas = new OffscreenCanvas(255 / 3, 1);
@@ -97,9 +107,11 @@ const exported = {
         inc = 0;
         for (let i = 0; i < readData.data.length; ++i) {
             if (i % 4 !== 3 && inc++ !== readData.data[i]) {
+                hasCanvasFingerprintNoise = true;
                 return true;
             }
         }
+        hasCanvasFingerprintNoise = false;
         return false;
     }
 };
