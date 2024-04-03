@@ -7,7 +7,7 @@
       "allowed": 0.0008,
       "operations": [
         ["setZoom", 0],
-        ["idle"],
+        ["wait"],
         ["setStyle", {
           "version": 8,
           "zoom": 0,

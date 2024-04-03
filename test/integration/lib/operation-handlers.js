@@ -27,9 +27,6 @@ export const operationHandlers = {
 
         waitForRender(map, () => map.loaded(), doneCb);
     },
-    idle(map, params, doneCb) {
-        waitForRender(map, () => !map.isMoving(), doneCb);
-    },
     sleep(map, params, doneCb) {
         setTimeout(doneCb, params[0]);
     },
