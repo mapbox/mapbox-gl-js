@@ -2,12 +2,14 @@
 
 import browser from '../util/browser.js';
 import Context from '../gl/context.js';
+import {mulberry32} from '../style-spec/util/random.js';
 import {ParticleVertexLayoutArray} from '../data/array_types.js';
 import particleAttributes from '../data/particle_attributes.js';
 import SegmentVector from '../data/segment.js';
 import Texture from './texture.js';
 import assert from 'assert';
 
+import type {OverscaledTileID} from "../source/tile_id";
 import type {TextureImage} from './texture.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 
@@ -21,7 +23,7 @@ class RasterParticleState {
     numParticles: number;
     lastInvalidatedAt: number;
 
-    constructor(context: Context, textureSize: [number, number], numParticles: number): void {
+    constructor(context: Context, id: OverscaledTileID, textureSize: [number, number], numParticles: number): void {
         const emptyImage: TextureImage = {
             width: textureSize[0],
             height: textureSize[1],
@@ -32,11 +34,11 @@ class RasterParticleState {
         this.backgroundColorTexture = new Texture(context, emptyImage, gl.RGBA, {useMipmap: false});
         this.context = context;
 
-        this.setNumParticles(numParticles);
+        this.setNumParticles(id, numParticles);
         this.lastInvalidatedAt = 0;
     }
 
-    setNumParticles(numParticles: number) {
+    setNumParticles(id: OverscaledTileID, numParticles: number) {
         if (this.numParticles === numParticles) {
             return;
         }
@@ -50,8 +52,9 @@ class RasterParticleState {
 
         const particles = new ParticleVertexLayoutArray();
         particles.reserve(Math.round(numParticles));
+        const srand = mulberry32(id.key);
         for (let i = 0; i < numParticles; i++) {
-            particles.emplaceBack(Math.random(), Math.random(), Math.random());
+            particles.emplaceBack(srand(), srand(), srand());
         }
         this.particleVertices0 = this.context.createVertexBuffer(particles, particleAttributes.members, true);
         this.particleVertices1 = this.context.createVertexBuffer(particles, particleAttributes.members, true);

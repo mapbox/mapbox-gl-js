@@ -35,7 +35,6 @@ import assert from 'assert';
 export default drawRasterParticle;
 
 const RASTER_COLOR_TEXTURE_UNIT = 2;
-const LIFETIME_MAX_FRAMES = 250;
 const SPEED_MAX_VALUE = 0.3;
 
 function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: any, isInitialLoad: boolean) {
@@ -82,13 +81,13 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         let state = tile.rasterParticleState;
         const layerParticleCount = layer.paint.get('raster-particle-count');
         if (!state) {
-            state = tile.rasterParticleState = new RasterParticleState(context, textureSize, layerParticleCount);
+            state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, layerParticleCount);
         }
 
         const renderBackground = state.update(layer.lastInvalidatedAt);
 
         if (state.numParticles !== layerParticleCount) {
-            state.setNumParticles(layerParticleCount);
+            state.setNumParticles(id, layerParticleCount);
         }
 
         const t = state.targetColorTexture;
@@ -226,6 +225,14 @@ function fadeOpacityCurve(fadeOpacityFactor: number): number {
     return (1.0 + a) * x / (x + a);
 }
 
+function resetRateCurve(resetRate: number): number {
+    // Even small reset rates (close to zero) result in fast reset period. Values at >0.4 visually appear to
+    // respawn very fast. Applying a power curve (x^n) to the reset rate ensures that we can linearly increase
+    // the reset rate from 0 to 1 and see a more gradual increase in the reset rate.
+
+    return Math.pow(resetRate, 6.0);
+}
+
 function renderParticles(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tiles: Array<[OverscaledTileID, TileData, RasterParticleState, boolean]>) {
     const context = painter.context;
     const gl = context.gl;
@@ -298,12 +305,9 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
     gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, layer.transformFeedbackObject);
 
     const velocityTextureUnit = 0;
-    const resetFactor = layer.paint.get('raster-particle-reset-rate-factor');
-    const layerLifetime = (1.0 - resetFactor) * LIFETIME_MAX_FRAMES;
-    let lifetimeDelta = 1.0 / layerLifetime;
-    lifetimeDelta = isNaN(lifetimeDelta) ? 1.0 : Math.min(lifetimeDelta, 1.0);
     const maxSpeed = layer.paint.get('raster-particle-max-speed');
     const speedFactor = frameDeltaSeconds * layer.paint.get('raster-particle-speed-factor') * SPEED_MAX_VALUE;
+    const lifetimeDelta = resetRateCurve(layer.paint.get('raster-particle-reset-rate-factor'));
     for (const tile of tiles) {
         const [, data, state, ] = tile;
 
