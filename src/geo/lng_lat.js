@@ -205,7 +205,9 @@ export default LngLat;
 
 /**
  * A `LngLatBounds` object represents a geographical bounding box,
- * defined by its southwest and northeast points in longitude and latitude.
+ * defined by its southwest and northeast points in [`longitude`](https://docs.mapbox.com/help/glossary/lat-lon/) and [`latitude`](https://docs.mapbox.com/help/glossary/lat-lon/).
+ * `Longitude` values are typically set between `-180` to `180`, but can exceed this range if necessary. 
+ * `Latitude` values must be within `-90` to `90`.
  *
  * If no arguments are provided to the constructor, a `null` bounding box is created.
  *
