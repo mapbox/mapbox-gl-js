@@ -240,6 +240,12 @@ jobs:
       - run: npm run build-flow-types
       - run: npm run test-build
       - run: while read l; do cp debug/$l test/release/$l; done < test/release/local_release_page_list.txt
+      - run:
+          name: Create mapbox-gl.tar.gz
+          command: |
+            TAR_PATH=mapbox-gl-${CIRCLE_TAG:-${CIRCLE_SHA1:0:6}}.tar.gz
+            tar -czvf $TAR_PATH test/release dist
+            mv $TAR_PATH test/release
       - store_artifacts:
           path: "dist"
       - store_artifacts:
