@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    135.0053045734985,
+    36.00653610439714
+  ],
+  "zoom": 2,
+  "transition": {"duration": 0},
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "precipitations": {
+      "type": "raster-array",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mrt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "satellite",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "precipitations",
+      "source": "precipitations",
+      "source-layer": "Total Precip",
+      "type": "raster",
+      "slot": "top",
+      "layout": {},
+      "paint": {}
+    }
+  ]
+}

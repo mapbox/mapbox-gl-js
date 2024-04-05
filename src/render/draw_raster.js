@@ -456,6 +456,9 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
     if (isRasterArray) {
         defines.push('RASTER_ARRAY');
 
+        // Raster-array sources require RASTER_COLOR for raster array data decoding and binary 0/1 mask interpolation
+        if (!isRasterColor) defines.push('RASTER_COLOR');
+
         // Raster-array sources require in-shader linear interpolation in order to decode without
         // artifacts, so force nearest filtering.
         if (inputResampling === 'linear') defines.push('RASTER_ARRAY_LINEAR');
