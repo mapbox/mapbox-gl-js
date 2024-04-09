@@ -1,6 +1,5 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
-#include "_prelude_raster_array.glsl"
 
 uniform float u_fade_t;
 uniform float u_opacity;
@@ -9,8 +8,6 @@ uniform highp float u_raster_elevation;
 in vec2 v_pos0;
 in vec2 v_pos1;
 
-// Since samplers cannot be used as function parameters, they must be hard-coded. These
-// are therefore instead moved to the raster_array prelude when raster arrays are active.
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 
