@@ -80,7 +80,7 @@
         map.on('style.load', () => {
             map.addSource('precipitations', {
                 type: 'raster-array',
-                url: [`https://api.mapbox.com/v4/mapboxsatellite.msm-precip-demo.json?access_token=${mapboxgl.accessToken}`],
+                url: 'mapbox://mapboxsatellite.msm-precip-demo'
             });
 
             map.on('sourcedata', (e) => {

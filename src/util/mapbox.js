@@ -142,6 +142,8 @@ export class RequestManager {
 
         if (urlObject.authority === 'raster') {
             urlObject.path = `/${config.RASTER_URL_PREFIX}${urlObject.path}`;
+        } else if (urlObject.authority === 'rasterarrays') {
+            urlObject.path = `/${config.RASTERARRAYS_URL_PREFIX}${urlObject.path}`;
         } else {
             const tileURLAPIPrefixRe = /^.+\/v4\//;
             urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
@@ -162,8 +164,8 @@ export class RequestManager {
 
         const urlObject = parseUrl(url);
         // Make sure that we are dealing with a valid Mapbox tile URL.
-        // Has to begin with /v4/ or /raster/v1, with a valid filename + extension
-        if (!urlObject.path.match(/^(\/v4\/|\/raster\/v1\/)/) || !urlObject.path.match(extensionRe)) {
+        // Has to begin with /v4/, /raster/v1 or /rasterarrays/v1 with a valid filename + extension
+        if (!urlObject.path.match(/^(\/v4\/|\/(raster|rasterarrays)\/v1\/)/) || !urlObject.path.match(extensionRe)) {
             // Not a proper Mapbox tile URL.
             return url;
         }
@@ -173,6 +175,10 @@ export class RequestManager {
             // If the tile url has /raster/v1/, make the final URL mapbox://raster/....
             const rasterPrefix = `/${config.RASTER_URL_PREFIX}/`;
             result += `raster/${urlObject.path.replace(rasterPrefix, '')}`;
+        } else if (urlObject.path.match(/^\/rasterarrays\/v1\//)) {
+            // If the tile url has /rasterarrays/v1/, make the final URL mapbox://rasterarrays/....
+            const rasterPrefix = `/${config.RASTERARRAYS_URL_PREFIX}/`;
+            result += `rasterarrays/${urlObject.path.replace(rasterPrefix, '')}`;
         } else {
             const tilesPrefix = `/${config.TILE_URL_VERSION}/`;
             result += `tiles/${urlObject.path.replace(tilesPrefix, '')}`;

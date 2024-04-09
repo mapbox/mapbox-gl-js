@@ -104,6 +104,9 @@ class RasterArrayTileSource extends RasterTileSource implements Source {
             delete tile.fbo;
         }
 
+        delete tile.request;
+        delete tile.requestParams;
+
         delete tile.neighboringTiles;
         tile.state = 'unloaded';
     }

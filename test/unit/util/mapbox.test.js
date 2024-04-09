@@ -365,6 +365,9 @@ describe("mapbox", () => {
             expect(
                 manager.canonicalizeTileURL("http://api.mapbox.com/raster/v1/a.b/{z}/{x}/{y}.png?access_token=key", tileJSONURL)
             ).toEqual("mapbox://raster/a.b/{z}/{x}/{y}.png");
+            expect(
+                manager.canonicalizeTileURL("http://api.mapbox.com/rasterarrays/v1/a.b/{z}/{x}/{y}.mrt?access_token=key", tileJSONURL)
+            ).toEqual("mapbox://rasterarrays/a.b/{z}/{x}/{y}.mrt");
 
             // We don't ever expect to see these inputs, but be safe anyway.
             expect(manager.canonicalizeTileURL("http://path")).toEqual("http://path");
@@ -469,6 +472,9 @@ describe("mapbox", () => {
                 );
                 expect(manager.normalizeTileURL("mapbox://raster/a.b/0/0/0.png")).toEqual(
                     `https://api.mapbox.com/raster/v1/a.b/0/0/0.png?sku=${manager._skuToken}&access_token=key`
+                );
+                expect(manager.normalizeTileURL("mapbox://rasterarrays/a.b/0/0/0.mrt")).toEqual(
+                    `https://api.mapbox.com/rasterarrays/v1/a.b/0/0/0.mrt?sku=${manager._skuToken}&access_token=key`
                 );
 
                 config.API_URL = 'https://api.example.com/';
