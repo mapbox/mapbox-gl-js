@@ -1,5 +1,9 @@
 // @flow
 
+// Import FeatureIndex as a module with side effects to ensure
+// it's registered as a serializable class on the main thread
+import './feature_index.js';
+
 import type {CollisionBoxArray} from './array_types.js';
 import type Style from '../style/style.js';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer.js';

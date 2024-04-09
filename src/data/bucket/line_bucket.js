@@ -15,7 +15,10 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features.js';
 import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
-import '../../render/line_atlas.js'; // make sure LineAtlas is registered for deserialization
+
+// Import LineAtlas as a module with side effects to ensure
+// it's registered as a serializable class on the main thread
+import '../../render/line_atlas.js';
 
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
