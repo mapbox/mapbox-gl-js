@@ -76,9 +76,6 @@ const skip = [
     "render-tests/text-variable-anchor/left-top-right-bottom-offset-tile-map-mode",
     "render-tests/tile-mode/streets-v11",
 
-    // Text drawn over icons
-    "render-tests/symbol-sort-key/text-ignore-placement",
-
     // Non-deterministiic when rendered in browser
     "render-tests/text-variable-anchor/pitched-rotated-debug",
     "render-tests/text-variable-anchor/pitched-with-map",

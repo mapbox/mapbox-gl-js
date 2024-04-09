@@ -58,7 +58,7 @@ type SymbolTileRenderState = {
         hasHalo: boolean,
         tile: Tile,
         labelPlaneMatrixInv: ?Float32Array
-    }
+    } | null
 };
 
 type Alignment = 'auto' | 'map' | 'viewport';
@@ -81,28 +81,21 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
         );
     }
 
-    if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
-        drawLayerSymbols(painter, sourceCache, layer, coords, false,
-            layer.paint.get('icon-translate'),
-            layer.paint.get('icon-translate-anchor'),
-            layer.layout.get('icon-rotation-alignment'),
-            layer.layout.get('icon-pitch-alignment'),
-            layer.layout.get('icon-keep-upright'),
-            layer.paint.get('icon-color-saturation'),
-            stencilMode, colorMode
-        );
-    }
+    const areIconsVisible = layer.paint.get('icon-opacity').constantOr(1) !== 0;
+    const areTextsVisible = layer.paint.get('text-opacity').constantOr(1) !== 0;
 
-    if (layer.paint.get('text-opacity').constantOr(1) !== 0) {
-        drawLayerSymbols(painter, sourceCache, layer, coords, true,
-            layer.paint.get('text-translate'),
-            layer.paint.get('text-translate-anchor'),
-            layer.layout.get('text-rotation-alignment'),
-            layer.layout.get('text-pitch-alignment'),
-            layer.layout.get('text-keep-upright'),
-            layer.paint.get('icon-color-saturation'),
-            stencilMode, colorMode
-        );
+    // Support of ordering of symbols and texts comes with possible sacrificing of performance
+    // because of switching of shader program for every render state from icon to SDF.
+    // To address this problem, let's use one-phase rendering only when sort key provided
+    if (layer.layout.get('symbol-sort-key').constantOr(1) !== undefined && (areIconsVisible || areTextsVisible)) {
+        drawLayerSymbols(painter, sourceCache, layer, coords, stencilMode, colorMode);
+    } else {
+        if (areIconsVisible) {
+            drawLayerSymbols(painter, sourceCache, layer, coords, stencilMode, colorMode, {onlyIcons: true});
+        }
+        if (areTextsVisible) {
+            drawLayerSymbols(painter, sourceCache, layer, coords, stencilMode, colorMode, {onlyText: true});
+        }
     }
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -261,29 +254,40 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
     bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicTextLayoutVertexArray);
 }
 
-function getSymbolProgramName(isSDF: boolean, isText: boolean, bucket: SymbolBucket) {
-    if (bucket.iconsInText && isText) {
-        return 'symbolTextAndIcon';
-    } else if (isSDF) {
-        return 'symbolSDF';
-    } else {
-        return 'symbolIcon';
-    }
+type DrawLayerSymbolsOptions = {
+    onlyIcons?: boolean;
+    onlyText?: boolean;
 }
 
-function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, isText: boolean, translate: [number, number], translateAnchor: 'map' | 'viewport', rotationAlignment: Alignment, pitchAlignment: Alignment, keepUpright: boolean, iconSaturation: number, stencilMode: StencilMode, colorMode: ColorMode) {
+function drawLayerSymbols(
+    painter: Painter,
+    sourceCache: SourceCache,
+    layer: SymbolStyleLayer,
+    coords: Array<OverscaledTileID>,
+    stencilMode: StencilMode,
+    colorMode: ColorMode,
+    options: DrawLayerSymbolsOptions = {}
+) {
+    const iconTranslate = layer.paint.get('icon-translate');
+    const textTranslate = layer.paint.get('text-translate');
+    const iconTranslateAnchor = layer.paint.get('icon-translate-anchor');
+    const textTranslateAnchor = layer.paint.get('text-translate-anchor');
+    const iconRotationAlignment = layer.layout.get('icon-rotation-alignment');
+    const textRotationAlignment = layer.layout.get('text-rotation-alignment');
+    const iconPitchAlignment = layer.layout.get('icon-pitch-alignment');
+    const textPitchAlignment = layer.layout.get('text-pitch-alignment');
+    const iconKeepUpright = layer.layout.get('icon-keep-upright');
+    const textKeepUpright = layer.layout.get('text-keep-upright');
+    const colorSaturation = layer.paint.get('icon-color-saturation');
+
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
 
-    const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap = pitchAlignment === 'map';
-    const alongLine = rotateWithMap && layer.layout.get('symbol-placement') !== 'point';
-
-    // Line label rotation happens in `updateLineLabels`
-    // Pitched point labels are automatically rotated by the labelPlaneMatrix projection
-    // Unpitched point labels need to have their rotation applied after projection
-    const rotateInShader = rotateWithMap && !pitchWithMap && !alongLine;
+    const iconRotateWithMap = iconRotationAlignment === 'map';
+    const textRotateWithMap = textRotationAlignment === 'map';
+    const iconPitchWithMap = iconPitchAlignment === 'map';
+    const textPitchWithMap = textPitchAlignment === 'map';
 
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
@@ -299,15 +303,6 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 
     const mercatorCameraUp = [0, -1, 0];
 
-    let globeCameraUp: [number, number, number] = mercatorCameraUp;
-    if ((isGlobeProjection || tr.mercatorFromTransition) && !rotateWithMap) {
-        // Each symbol rotating with the viewport requires per-instance information about
-        // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
-        // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
-        // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
-        globeCameraUp = computeGlobeCameraUp(tr);
-    }
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
@@ -317,141 +312,257 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
         if (bucket.projection.name === 'mercator' && isGlobeProjection) {
             continue;
         }
-        const buffers = isText ? bucket.text : bucket.icon;
-        if (!buffers || bucket.fullyClipped || !buffers.segments.get().length) continue;
-        const programConfiguration = buffers.programConfigurations.get(layer.id);
 
-        const isSDF = isText || bucket.sdfIcons;
-
-        const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-        const transformed = pitchWithMap || tr.pitch !== 0;
-
-        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
-
-        let texSize: [number, number];
-        let texSizeIcon: [number, number] = [0, 0];
-        let atlasTexture: Texture | null;
-        let atlasInterpolation;
-        let atlasTextureIcon: Texture | null = null;
-        let atlasInterpolationIcon;
-        if (isText) {
-            atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
-            atlasInterpolation = gl.LINEAR;
-            texSize = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
-            if (bucket.iconsInText) {
-                texSizeIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
-                atlasTextureIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
-                const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
-                atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
-            }
-        } else {
-            const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
-            atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
-            atlasInterpolation = isSDF || painter.options.rotating || painter.options.zooming || iconScaled || transformed ?
-                gl.LINEAR :
-                gl.NEAREST;
-            texSize = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
-        }
+        if (bucket.fullyClipped) continue;
 
         const bucketIsGlobeProjection = bucket.projection.name === 'globe';
-        const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
         const globeToMercator =  bucketIsGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
         const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), tr);
 
         const s = tr.calculatePixelsToTileUnitsMatrix(tile);
-        const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucket.getProjection(), s);
-        // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
-        const labelPlaneMatrixInv = painter.terrain && pitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
-        const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucket.getProjection(), s);
 
         const hasVariableAnchors = variablePlacement && bucket.hasTextData();
         const updateTextFitIcon = bucket.hasIconTextFit() &&
             hasVariableAnchors &&
             bucket.hasIconData();
 
-        if (alongLine) {
-            const elevation = tr.elevation;
-            const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
-            const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, pitchWithMap, rotateWithMap, tr, bucket.getProjection(), s);
-
-            symbolProjection.updateLineLabels(bucket, tileMatrix, painter, isText, labelPlaneMatrixPlacement, glCoordMatrix, pitchWithMap, keepUpright, getElevation, coord);
-        }
-
-        const projectedPosOnLabelSpace = alongLine || (isText && variablePlacement) || updateTextFitIcon;
-        const matrix = painter.translatePosMatrix(tileMatrix, tile, translate, translateAnchor);
-        const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
-        const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true);
         const invMatrix = bucket.getProjection().createInversionMatrix(tr, coord.canonical);
-        const transitionProgress = layer.paint.get('icon-image-cross-fade').constantOr(0.0);
 
-        const baseDefines = ([]: any);
-        if (painter.terrainRenderModeElevated() && pitchWithMap) {
-            baseDefines.push('PITCH_WITH_MAP_TERRAIN');
-        }
-        if (bucketIsGlobeProjection) {
-            baseDefines.push('PROJECTION_GLOBE_VIEW');
-            if (projectedPosOnLabelSpace) {
-                baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+        const getIconState = () => {
+            const alongLine = iconRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
+
+            const baseDefines = ([]: any);
+            const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
+            const transitionProgress = layer.paint.get('icon-image-cross-fade').constantOr(0.0);
+            if (painter.terrainRenderModeElevated() && iconPitchWithMap) {
+                baseDefines.push('PITCH_WITH_MAP_TERRAIN');
             }
-        }
-        if (transitionProgress > 0.0) {
-            baseDefines.push('ICON_TRANSITION');
-        }
-        if (buffers.zOffsetVertexBuffer) {
-            baseDefines.push('Z_OFFSET');
-        }
-
-        const hasHalo = isSDF && layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
-
-        let uniformValues;
-        if (isSDF) {
-            if (!bucket.iconsInText) {
-                uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
-            } else {
-                uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+            if (bucketIsGlobeProjection) {
+                baseDefines.push('PROJECTION_GLOBE_VIEW');
+                if (projectedPosOnLabelSpace) {
+                    baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+                }
             }
-        } else {
-            if (iconSaturation < 1) {
+            if (transitionProgress > 0.0) {
+                baseDefines.push('ICON_TRANSITION');
+            }
+            if (bucket.icon.zOffsetVertexBuffer) {
+                baseDefines.push('Z_OFFSET');
+            }
+
+            if (colorSaturation < 1) {
                 baseDefines.push('SATURATION');
             }
-            uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, pitchWithMap, painter, matrix,
-                uLabelPlaneMatrix, uglCoordMatrix, isText, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconSaturation, transitionProgress);
-        }
 
-        const program = painter.getOrCreateProgram(getSymbolProgramName(isSDF, isText, bucket), {config: programConfiguration, defines: baseDefines});
+            const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
+            const program = painter.getOrCreateProgram(bucket.sdfIcons ? 'symbolSDF' : 'symbolIcon', {config: programConfiguration, defines: baseDefines});
 
-        const state = {
-            program,
-            buffers,
-            uniformValues,
-            atlasTexture,
-            atlasTextureIcon,
-            atlasInterpolation,
-            atlasInterpolationIcon,
-            isSDF,
-            hasHalo,
-            tile,
-            labelPlaneMatrixInv
+            let uniformValues;
+            const texSize = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+            const sizeData = bucket.iconSizeData;
+            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+            const transformed = iconPitchWithMap || tr.pitch !== 0;
+
+            const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
+            // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
+            const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
+            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, iconTranslate, iconTranslateAnchor, true);
+            const matrix = painter.translatePosMatrix(tileMatrix, tile, iconTranslate, iconTranslateAnchor);
+            const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
+            const rotateInShader = iconRotateWithMap && !iconPitchWithMap && !alongLine;
+
+            let globeCameraUp: [number, number, number] = mercatorCameraUp;
+            if ((isGlobeProjection || tr.mercatorFromTransition) && !iconRotateWithMap) {
+                // Each symbol rotating with the viewport requires per-instance information about
+                // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
+                // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
+                // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
+                globeCameraUp = computeGlobeCameraUp(tr);
+            }
+
+            const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
+
+            if (bucket.sdfIcons && !bucket.iconsInText) {
+                uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+            } else {
+                uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter, matrix,
+                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorSaturation, transitionProgress);
+            }
+
+            const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
+            const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
+            const atlasInterpolation = bucket.sdfIcons || painter.options.rotating || painter.options.zooming || iconScaled || transformed ? gl.LINEAR : gl.NEAREST;
+            const hasHalo = bucket.sdfIcons && layer.paint.get('icon-halo-width').constantOr(1) !== 0;
+            const labelPlaneMatrixInv = painter.terrain && iconPitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
+
+            // Line label rotation happens in `updateLineLabels`
+            // Pitched point labels are automatically rotated by the labelPlaneMatrix projection
+            // Unpitched point labels need to have their rotation applied after projection
+
+            if (alongLine && bucket.icon) {
+                const elevation = tr.elevation;
+                const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
+                const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
+
+                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, false, labelPlaneMatrixPlacement, glCoordMatrix, iconPitchWithMap, iconKeepUpright, getElevation, coord);
+            }
+
+            return {
+                program,
+                buffers: bucket.icon,
+                uniformValues,
+                atlasTexture,
+                atlasTextureIcon: null,
+                atlasInterpolation,
+                atlasInterpolationIcon: null,
+                isSDF: bucket.sdfIcons,
+                hasHalo,
+                tile,
+                labelPlaneMatrixInv,
+            };
         };
+
+        const getTextState = () => {
+            const alongLine = textRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
+            const baseDefines = ([]: any);
+            const projectedPosOnLabelSpace = alongLine || variablePlacement || updateTextFitIcon;
+            if (painter.terrainRenderModeElevated() && textPitchWithMap) {
+                baseDefines.push('PITCH_WITH_MAP_TERRAIN');
+            }
+            if (bucketIsGlobeProjection) {
+                baseDefines.push('PROJECTION_GLOBE_VIEW');
+                if (projectedPosOnLabelSpace) {
+                    baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
+                }
+            }
+            if (bucket.text.zOffsetVertexBuffer) {
+                baseDefines.push('Z_OFFSET');
+            }
+
+            const programConfiguration = bucket.text.programConfigurations.get(layer.id);
+            const program = painter.getOrCreateProgram(bucket.iconsInText ? 'symbolTextAndIcon' : 'symbolSDF', {config: programConfiguration, defines: baseDefines});
+
+            let texSizeIcon: [number, number] = [0, 0];
+            let atlasTextureIcon: Texture | null = null;
+            let atlasInterpolationIcon;
+
+            const sizeData = bucket.textSizeData;
+
+            if (bucket.iconsInText) {
+                texSizeIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+                atlasTextureIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
+                const transformed = textPitchWithMap || tr.pitch !== 0;
+                const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
+                atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
+            }
+
+            const texSize = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
+            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+            const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
+            // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
+            const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
+            const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, textTranslate, textTranslateAnchor, true);
+            const matrix = painter.translatePosMatrix(tileMatrix, tile, textTranslate, textTranslateAnchor);
+            const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
+
+            // Line label rotation happens in `updateLineLabels`
+            // Pitched point labels are automatically rotated by the labelPlaneMatrix projection
+            // Unpitched point labels need to have their rotation applied after projection
+            const rotateInShader = textRotateWithMap && !textPitchWithMap && !alongLine;
+
+            let globeCameraUp: [number, number, number] = mercatorCameraUp;
+            if ((isGlobeProjection || tr.mercatorFromTransition) && !textRotateWithMap) {
+                // Each symbol rotating with the viewport requires per-instance information about
+                // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
+                // hence embedded in the label plane matrix but in globe view this needs to be computed at runtime.
+                // Camera up vector together with surface normals can be used to find the correct orientation for each symbol.
+                globeCameraUp = computeGlobeCameraUp(tr);
+            }
+
+            const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
+
+            let uniformValues;
+
+            if (!bucket.iconsInText) {
+                uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+            } else {
+                uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+            }
+
+            const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
+            const atlasInterpolation = gl.LINEAR;
+            const hasHalo = layer.paint.get('text-halo-width').constantOr(1) !== 0;
+            const labelPlaneMatrixInv = painter.terrain && textPitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
+
+            if (alongLine && bucket.text) {
+                const elevation = tr.elevation;
+                const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
+                const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
+
+                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, true, labelPlaneMatrixPlacement, glCoordMatrix, textPitchWithMap, textKeepUpright, getElevation, coord);
+            }
+
+            return {
+                program,
+                buffers: bucket.text,
+                uniformValues,
+                atlasTexture,
+                atlasTextureIcon,
+                atlasInterpolation,
+                atlasInterpolationIcon,
+                isSDF: true,
+                hasHalo,
+                tile,
+                labelPlaneMatrixInv,
+            };
+        };
+
+        const iconSegmentsLength = bucket.icon.segments.get().length;
+        const textSegmentsLength = bucket.text.segments.get().length;
+        const iconState = iconSegmentsLength && !options.onlyText ? getIconState() : null;
+        const textState = textSegmentsLength && !options.onlyIcons ? getTextState() : null;
+        const iconOpacity = layer.paint.get('icon-opacity').constantOr(1.0);
+        const textOpacity = layer.paint.get('text-opacity').constantOr(1.0);
 
         if (hasSortKey && bucket.canOverlap) {
             sortFeaturesByKey = true;
-            const oldSegments = buffers.segments.get();
-            for (const segment of oldSegments) {
+            const oldIconSegments = iconOpacity && !options.onlyText ? bucket.icon.segments.get() : [];
+            const oldTextSegments = textOpacity && !options.onlyIcons ? bucket.text.segments.get() : [];
+
+            for (const segment of oldIconSegments) {
                 tileRenderState.push({
                     segments: new SegmentVector([segment]),
                     sortKey: ((segment.sortKey: any): number),
-                    state
+                    state: iconState
+                });
+            }
+
+            for (const segment of oldTextSegments) {
+                tileRenderState.push({
+                    segments: new SegmentVector([segment]),
+                    sortKey: ((segment.sortKey: any): number),
+                    state: textState
                 });
             }
         } else {
-            tileRenderState.push({
-                segments: buffers.segments,
-                sortKey: 0,
-                state
-            });
+            if (!options.onlyText) {
+                tileRenderState.push({
+                    segments: iconOpacity ? bucket.icon.segments : new SegmentVector([]),
+                    sortKey: 0,
+                    state: iconState
+                });
+            }
+
+            if (!options.onlyIcons) {
+                tileRenderState.push({
+                    segments: textOpacity ? bucket.text.segments : new SegmentVector([]),
+                    sortKey: 0,
+                    state: textState
+                });
+            }
         }
     }
 
@@ -461,6 +572,11 @@ function drawLayerSymbols(painter: Painter, sourceCache: SourceCache, layer: Sym
 
     for (const segmentState of tileRenderState) {
         const state = segmentState.state;
+
+        if (!state) {
+            continue;
+        }
+
         if (painter.terrain) {
             const options = {
                 useDepthForOcclusion: tr.depthOcclusionForSymbolsAndCircles,
