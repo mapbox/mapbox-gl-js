@@ -4,9 +4,10 @@ import StyleLayer from '../style_layer.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
 import type Map from '../../ui/map.js';
 import assert from 'assert';
+
 import type {ValidationErrors} from '../validate_style.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
-import SourceCache from '../../source/source_cache.js';
+import type SourceCache from '../../source/source_cache.js';
 
 type CustomRenderMethod = (gl: WebGL2RenderingContext, matrix: Array<number>, projection: ?ProjectionSpecification, projectionToMercatorMatrix: ?Array<number>, projectionToMercatorTransition: ?number, centerInMercator: ?Array<number>, pixelsPerMeterRatio: ?number) => void;
 

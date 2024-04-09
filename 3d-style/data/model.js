@@ -12,7 +12,6 @@ import SegmentVector from '../../src/data/segment.js';
 import {globeToMercatorTransition} from '../../src/geo/projection/globe_util.js';
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import MercatorCoordinate, {getMetersPerPixelAtLatitude, getLatitudeScale, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
-import Transform from '../../src/geo/transform.js';
 import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convertModelMatrixForGlobe} from '../util/model_util.js';
 
 import type Point from '@mapbox/point-geometry';
@@ -23,6 +22,7 @@ import type Painter from '../../src/render/painter.js';
 import type TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import type {TextureImage, TextureWrap, TextureFilter} from '../../src/render/texture.js';
+import type Transform from '../../src/geo/transform.js';
 
 export type Sampler = {
     minFilter: TextureFilter;

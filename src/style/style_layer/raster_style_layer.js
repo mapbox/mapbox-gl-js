@@ -7,12 +7,12 @@ import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties.js
 import {renderColorRamp} from '../../util/color_ramp.js';
 import {RGBAImage} from '../../util/image.js';
 import ImageSource from '../../source/image_source.js';
-import SourceCache from '../../source/source_cache.js';
 
 import type {PaintProps} from './raster_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
 import type {ConfigOptions} from '../properties.js';
+import type SourceCache from '../../source/source_cache.js';
 
 export const COLOR_RAMP_RES = 256;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));

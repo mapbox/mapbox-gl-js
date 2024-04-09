@@ -21,7 +21,7 @@ import type {
 import type Actor from '../util/actor.js';
 import type StyleLayerIndex from '../style/style_layer_index.js';
 
-import type {LoadVectorDataCallback} from './vector_tile_worker_source.js';
+import type {LoadVectorDataCallback} from './load_vector_tile.js';
 import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
 import type {Callback} from '../types/callback.js';
 import type {GeoJSONFeature} from '@mapbox/geojson-types';

@@ -17,12 +17,13 @@ import {
 import {latLngToECEF} from '../../src/geo/lng_lat.js';
 import {GLOBE_RADIUS} from '../../src/geo/projection/globe_constants.js';
 import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
-import Transform from '../../src/geo/transform.js';
 import assert from 'assert';
 import {Aabb} from '../../src/util/primitives.js';
 import {polygonIntersectsPolygon} from '../../src/util/intersection_tests.js';
-import type {Mat4, Vec3, Quat} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
+
+import type {Mat4, Vec3, Quat} from 'gl-matrix';
+import type Transform from '../../src/geo/transform.js';
 
 export function rotationScaleYZFlipMatrix(out: Mat4, rotation: Vec3, scale: Vec3) {
     mat4.identity(out);

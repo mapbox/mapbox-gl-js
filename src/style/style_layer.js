@@ -2,13 +2,6 @@
 
 import {endsWith, filterObject} from '../util/util.js';
 
-import styleSpec from '../style-spec/reference/latest.js';
-import {
-    validateStyle,
-    validateLayoutProperty,
-    validatePaintProperty,
-    emitValidationErrors
-} from './validate_style.js';
 import {Evented} from '../util/evented.js';
 import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties.js';
 import {supportsPropertyExpression} from '../style-spec/util/properties.js';
@@ -30,7 +23,6 @@ import type {
 } from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type MapboxMap from '../ui/map.js';
-import type {StyleSetterOptions} from './style.js';
 import type {TilespaceQueryGeometry} from './query_geometry.js';
 import type {DEMSampler} from '../terrain/elevation.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
@@ -131,10 +123,10 @@ class StyleLayer extends Evented {
             this._transitionablePaint = new Transitionable(properties.paint, this.scope, options);
 
             for (const property in layer.paint) {
-                this.setPaintProperty(property, layer.paint[property], {validate: false});
+                this.setPaintProperty(property, layer.paint[property]);
             }
             for (const property in layer.layout) {
-                this.setLayoutProperty(property, layer.layout[property], {validate: false});
+                this.setLayoutProperty(property, layer.layout[property]);
             }
             this.isConfigDependent = this.isConfigDependent || this._transitionablePaint.isConfigDependent;
 
@@ -152,14 +144,7 @@ class StyleLayer extends Evented {
         return this._unevaluatedLayout.getValue(name);
     }
 
-    setLayoutProperty(name: string, value: any, options: StyleSetterOptions = {}) {
-        if (value !== null && value !== undefined) {
-            const key = `layers.${this.id}.layout.${name}`;
-            if (this._validate(validateLayoutProperty, key, name, value, options)) {
-                return;
-            }
-        }
-
+    setLayoutProperty(name: string, value: any) {
         if (this.type === 'custom' && name === 'visibility') {
             this.visibility = value;
             return;
@@ -189,14 +174,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    setPaintProperty(name: string, value: mixed, options: StyleSetterOptions = {}): boolean {
-        if (value !== null && value !== undefined) {
-            const key = `layers.${this.id}.paint.${name}`;
-            if (this._validate(validatePaintProperty, key, name, value, options)) {
-                return false;
-            }
-        }
-
+    setPaintProperty(name: string, value: mixed): boolean {
         const paint = this._transitionablePaint;
         const specProps = paint._properties.properties;
 
@@ -292,21 +270,6 @@ class StyleLayer extends Evented {
                 !(key === 'layout' && !Object.keys(value).length) &&
                 !(key === 'paint' && !Object.keys(value).length);
         });
-    }
-
-    _validate(validate: Function, key: string, name: string, value: mixed, options: StyleSetterOptions = {}): boolean {
-        if (options && options.validate === false) {
-            return false;
-        }
-        return emitValidationErrors(this, validate.call(validateStyle, {
-            key,
-            layerType: this.type,
-            objectKey: name,
-            value,
-            styleSpec,
-            // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
-            style: {glyphs: true, sprite: true}
-        }));
     }
 
     is3D(): boolean {

@@ -9,7 +9,7 @@ import TileBounds from './tile_bounds.js';
 import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
-import {DedupedRequest, loadVectorTile} from './vector_tile_worker_source.js';
+import {DedupedRequest, loadVectorTile} from './load_vector_tile.js';
 import {makeFQID} from '../util/fqid.js';
 
 import type {Source} from './source.js';
@@ -21,7 +21,7 @@ import type {Callback} from '../types/callback.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
 import type Actor from '../util/actor.js';
-import type {LoadVectorTileResult} from './vector_tile_worker_source.js';
+import type {LoadVectorTileResult} from './load_vector_tile.js';
 import type {WorkerTileResult} from './worker_source.js';
 
 /**

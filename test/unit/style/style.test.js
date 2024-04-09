@@ -1365,12 +1365,9 @@ test('respects validate option', async () => {
     });
 
     await waitFor(style, "style.load");
-    const backgroundLayer = style.getLayer('background');
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const validate = vi.spyOn(backgroundLayer, '_validate');
 
     style.setPaintProperty('background', 'background-color', 'notacolor', {validate: false});
-    expect(validate.mock.calls[0][4]).toEqual({validate: false});
     expect(console.error).not.toHaveBeenCalled();
 
     expect(style._changes.isDirty()).toBeTruthy();
@@ -1378,7 +1375,6 @@ test('respects validate option', async () => {
 
     style.setPaintProperty('background', 'background-color', 'alsonotacolor');
     expect(console.error).toHaveBeenCalledTimes(1);
-    expect(validate.mock.calls[1][4]).toEqual({});
 });
 
 describe('Style#getPaintProperty', () => {
@@ -1467,19 +1463,15 @@ describe('Style#setLayoutProperty', () => {
         });
 
         await waitFor(style, "style.load");
-        const lineLayer = style.getLayer('line');
         vi.spyOn(console, 'error').mockImplementation(() => {});
-        const validate = vi.spyOn(lineLayer, '_validate');
 
         style.setLayoutProperty('line', 'line-cap', 'invalidcap', {validate: false});
-        expect(validate.mock.calls[0][4]).toEqual({validate: false});
         expect(console.error).not.toHaveBeenCalled();
         expect(style._changes.isDirty()).toBeTruthy();
         style.update({});
 
         style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
         expect(console.error).toHaveBeenCalledTimes(1);
-        expect(validate.mock.calls[1][4]).toEqual({});
     });
 });
 

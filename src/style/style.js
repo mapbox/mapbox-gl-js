@@ -24,6 +24,8 @@ import {createExpression} from '../style-spec/expression/index.js';
 
 import {
     validateStyle,
+    validateLayoutProperty,
+    validatePaintProperty,
     validateSource,
     validateLayer,
     validateFilter,
@@ -2021,7 +2023,7 @@ class Style extends Evented {
         return clone(layer.filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any,  options: StyleSetterOptions = {}) {
+    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
@@ -2029,7 +2031,23 @@ class Style extends Evented {
 
         if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
-        layer.setLayoutProperty(name, value, options);
+        if (value !== null && value !== undefined && !(options && options.validate === false)) {
+            const key = `layers.${layerId}.layout.${name}`;
+            const errors = emitValidationErrors(layer, validateLayoutProperty.call(validateStyle, {
+                key,
+                layerType: layer.type,
+                objectKey: name,
+                value,
+                styleSpec,
+                // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
+                style: {glyphs: true, sprite: true}
+            }));
+            if (errors) {
+                return;
+            }
+        }
+
+        layer.setLayoutProperty(name, value);
         if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
@@ -2054,7 +2072,21 @@ class Style extends Evented {
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const requiresRelayout = layer.setPaintProperty(name, value, options);
+        if (value !== null && value !== undefined && !(options && options.validate === false)) {
+            const key = `layers.${layerId}.paint.${name}`;
+            const errors = emitValidationErrors(layer, validatePaintProperty.call(validateStyle, {
+                key,
+                layerType: layer.type,
+                objectKey: name,
+                value,
+                styleSpec
+            }));
+            if (errors) {
+                return;
+            }
+        }
+
+        const requiresRelayout = layer.setPaintProperty(name, value);
         if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
