@@ -112,9 +112,9 @@ const pages = [
         "url": "./scroll_zoom_blocker.html"
     },
     {
-        "key": "preload-tiles",
-        "title": "Preload tiles",
-        "url": "./preload-tiles.html"
+        "key": "raster-array",
+        "title": "Raster Array",
+        "url": "./raster-array.html"
     },
     {
         "key": "custom-source",

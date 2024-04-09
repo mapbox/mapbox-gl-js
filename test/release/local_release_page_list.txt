@@ -14,3 +14,4 @@ animate-point-along-route.html
 filter-features-with-globe.html
 globe-with-video.html
 standard-style.html
+raster-array.html
