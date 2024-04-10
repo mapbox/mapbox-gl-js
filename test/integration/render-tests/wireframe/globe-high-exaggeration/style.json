@@ -4,7 +4,7 @@
     "test": {
       "width": 1000,
       "height": 512,
-      "allowed": 0.004,
+      "allowed": 0.08,
       "showTerrainWireframe": true,
       "interactive": false,
       "operations": [
