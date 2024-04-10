@@ -1,9 +1,9 @@
-## 3.3.0-beta.1
+## 3.3.0
 
 ### Features and improvements ✨
 
-- Add raster particles layer.
-- Add raster-array source.
+- Add a new `raster-array` source type, representing a new experimental Mapbox Raster Tile format which encodes series of tiled raster data (such as weather time series).
+- Add a new `raster-particle` layer which animates particles of different speed and color based on underlying `raster-array` data.
 - Add `addImport`, `moveImport`, `updateImport`, and `removeImport` API methods.
 - Add `getSlot`, and `setSlot` API methods to control layers' slots.
 - Add landmarks and models support in `queryRenderedFeatures`.
@@ -20,6 +20,7 @@
 - Fix the `z` offset when the opacity is evaluated at 0 on the zoom change.
 - Fix the `format` expression in the `config` expression.
 - Fix adding a marker to the map that is not loaded when fog is enabled.
+- Fix symbol and icon rendering order when using `symbol-sort-key` property.
 
 ## 3.2.0
 
