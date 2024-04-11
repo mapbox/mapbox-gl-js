@@ -4240,8 +4240,8 @@ class Map extends Camera {
      */
     // $FlowFixMe[method-unbinding]
     _preloadTiles(transform: Transform | Array<Transform>): this {
-        const sources: Array<SourceCache> = this.style ? (Object.values(this.style._sourceCaches): any) : [];
-        asyncAll(sources, (source, done) => source._preloadTiles(transform, done), () => {
+        const sourceCaches: Array<SourceCache> = this.style ? this.style.getSourceCaches() : [];
+        asyncAll(sourceCaches, (sourceCache, done) => sourceCache._preloadTiles(transform, done), () => {
             this.triggerRepaint();
         });
 

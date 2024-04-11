@@ -3054,7 +3054,17 @@ class Style extends Evented {
             this._mergedOtherSourceCaches[fqid];
     }
 
-    getSourceCaches(fqid: string): Array<SourceCache> {
+    /**
+     * Returns all source caches for a given style FQID.
+     * If no FQID is provided, returns all source caches,
+     * including source caches in imported styles.
+     * @param {string} fqid Style FQID.
+     * @returns {Array<SourceCache>} List of source caches.
+     */
+    getSourceCaches(fqid: ?string): Array<SourceCache> {
+        // $FlowFixMe[incompatible-return] - Flow can't infer result of Object.values()
+        if (fqid == null) return Object.values(this._mergedSourceCaches);
+
         const sourceCaches = [];
         if (this._mergedOtherSourceCaches[fqid]) {
             sourceCaches.push(this._mergedOtherSourceCaches[fqid]);
