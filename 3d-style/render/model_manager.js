@@ -1,7 +1,6 @@
 // @flow
 
 import {Event, ErrorEvent, Evented} from '../../src/util/evented.js';
-import assert from 'assert';
 
 import Model from '../data/model.js';
 import convertModel from '../source/model_loader.js';
@@ -14,8 +13,15 @@ import {loadGLTF} from '../util/loaders.js';
 import type {ModelsSpecification} from '../../src/style-spec/types.js';
 import type Painter from '../../src/render/painter.js';
 
+// Keep the number of references to each model
+// to avoid deleting models in use
+type ReferencedModel = {
+    model: Model;
+    numReferences: number;
+};
+
 class ModelManager extends Evented {
-    models: {[scope: string]: {[id: string]: Model}};
+    models: {[scope: string]: {[id: string]: ReferencedModel }};
     numModelsLoading: {[scope: string]: number};
     requestManager: RequestManager;
 
@@ -56,7 +62,9 @@ class ModelManager extends Evented {
             .then(results => {
                 for (let i = 0; i < results.length; i++) {
                     const {status, value} = results[i];
-                    if (status === 'fulfilled' && value) this.models[scope][modelIds[i]] = value;
+                    if (status === 'fulfilled' && value) {
+                        this.models[scope][modelIds[i]] = {model: value, numReferences : 1};
+                    }
                 }
                 this.numModelsLoading[scope] -= modelIds.length;
                 this.fire(new Event('data', {dataType: 'style'}));
@@ -79,14 +87,14 @@ class ModelManager extends Evented {
 
     getModel(id: string, scope: string): ?Model {
         if (!this.models[scope]) this.models[scope] = {};
-        return this.models[scope][id];
+        return this.models[scope][id] ? this.models[scope][id].model : undefined;
     }
 
     addModel(id: string, url: string, scope: string) {
         if (!this.models[scope]) this.models[scope] = {};
-        // Destroy model if it exists
+        // update num references if the model exists
         if (this.hasModel(id, scope)) {
-            this.removeModel(id, scope);
+            this.models[scope][id].numReferences++;
         }
         this.load({[id]: this.requestManager.normalizeModelURL(url)}, scope);
     }
@@ -94,19 +102,35 @@ class ModelManager extends Evented {
     addModels(models: ModelsSpecification, scope: string) {
         const modelUris = {};
         for (const modelId in models) {
+            // Add a void object so we mark this model as requested
+            this.models[scope][modelId] = {};
             modelUris[modelId] = this.requestManager.normalizeModelURL(models[modelId]);
         }
-
         this.load(modelUris, scope);
     }
 
-    removeModel(id: string, scope: string) {
-        if (!this.models[scope]) this.models[scope] = {};
-        assert(this.models[scope][id]);
+    addModelsFromBucket(modelUris: Array<string>, scope: string) {
+        const modelsRequests = {};
+        for (const modelUri of modelUris) {
+            if (this.hasModel(modelUri, scope)) {
+                this.models[scope][modelUri].numReferences++;
+            } else {
+                modelsRequests[modelUri] = this.requestManager.normalizeModelURL(modelUri);
+            }
+        }
+        this.load(modelsRequests, scope);
+    }
 
-        const model = this.models[scope][id];
-        delete this.models[scope][id];
-        model.destroy();
+    removeModel(id: string, scope: string) {
+        if (!this.models[scope][id]) {
+            return;
+        }
+        this.models[scope][id].numReferences--;
+        if (this.models[scope][id].numReferences === 0) {
+            const model = this.models[scope][id].model;
+            delete this.models[scope][id];
+            model.destroy();
+        }
     }
 
     listModels(scope: string): Array<string> {
@@ -117,7 +141,9 @@ class ModelManager extends Evented {
     upload(painter: Painter, scope: string) {
         if (!this.models[scope]) this.models[scope] = {};
         for (const modelId in this.models[scope]) {
-            this.models[scope][modelId].upload(painter.context);
+            if (this.models[scope][modelId].model) {
+                this.models[scope][modelId].model.upload(painter.context);
+            }
         }
     }
 }

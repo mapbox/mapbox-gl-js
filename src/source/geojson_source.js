@@ -115,6 +115,7 @@ class GeoJSONSource extends Evented implements Source {
         this._collectResourceTiming = options.collectResourceTiming;
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
+        if (options.minzoom !== undefined) this.minzoom = options.minzoom;
         if (options.type) this.type = options.type;
         if (options.attribution) this.attribution = options.attribution;
         this.promoteId = options.promoteId;

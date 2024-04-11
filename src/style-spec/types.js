@@ -208,6 +208,7 @@ export type GeoJSONSourceSpecification = {|
     "type": "geojson",
     "data"?: mixed,
     "maxzoom"?: number,
+    "minzoom"?: number,
     "attribution"?: string,
     "buffer"?: number,
     "filter"?: mixed,

@@ -327,7 +327,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     }
 
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
-        drawInstancedModels(painter, sourceCache, layer, coords);
+        drawVectorLayerModels(painter, sourceCache, layer, coords);
         cleanup();
         return;
     }
@@ -509,7 +509,7 @@ function calculateTileZoom(id: OverscaledTileID, tr: Transform): number {
     return tr._zoomFromMercatorZ(Math.sqrt(distx * distx + disty * disty + distz * distz));
 }
 
-function drawInstancedModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
+function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
     const tr = painter.transform;
     if (tr.projection.name !== 'mercator') {
         warnOnce(`Drawing 3D models for ${tr.projection.name} projection is not yet implemented`);
@@ -517,11 +517,13 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
     }
 
     const mercCameraPos = (tr.getFreeCameraOptions().position: any);
-    if (!painter.modelManager) return;
+    if (!painter.modelManager || !painter.style.loaded()) return;
     const modelManager = painter.modelManager;
     layer.modelManager = modelManager;
     const shadowRenderer = painter.shadowRenderer;
-    if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) return;
+
+    if (!layer._unevaluatedLayout._values.hasOwnProperty('model-id')) { return; }
+
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
     const evaluationParameters = {...layer.layout.get("model-id").parameters};
 
@@ -529,6 +531,14 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
         const tile = source.getTile(coord);
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
+        const modelUris = bucket.getModelUris();
+
+        if (modelUris && !bucket.modelsRequested) {
+            // Add models to root scope to avoid loading several instances of the same model
+            modelManager.addModelsFromBucket(modelUris, "");
+            bucket.modelsRequested = true;
+        }
+
         const tileZoom = calculateTileZoom(coord, tr);
         evaluationParameters.zoom = tileZoom;
         const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
@@ -574,8 +584,6 @@ function drawInstancedModels(painter: Painter, source: SourceCache, layer: Model
 const minimumInstanceCount = 20;
 
 function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
-
-    // console.log(`LAYER: ${JSON.stringify(layer.paint.get('model-scale'))}`);
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;

@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "model-uri": "./models/tree.glb",
+        "scale": [100, 100, 100]
+      },
+      "geometry": {
+         "coordinates": [
+          -122.405269,
+          37.783816
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id" : "duck",
+        "model-uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF/Duck.gltf",
+        "scale": [200, 200, 200],
+        "rotation": [0,0,45]
+      },
+      "geometry": {
+        "coordinates": [
+          -122.407629,
+          37.784613
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id" : "maple-tree",
+        "model-uri": "http://localhost:7357/models/maple.glb",
+        "scale": [20, 20, 20]
+      },
+      "geometry": {
+        "coordinates": [
+          -122.402887,
+          37.783570
+        ],
+        "type": "Point"
+      }
+    }
+  ]
+}

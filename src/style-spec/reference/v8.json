@@ -948,6 +948,11 @@
       "default": 18,
       "doc": "Maximum zoom level at which to create vector tiles (higher means greater detail at high zoom levels)."
     },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level at which to create vector tiles"
+    },
     "attribution": {
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
@@ -1391,7 +1396,7 @@
     "model-id": {
       "type": "string",
       "default": "",
-      "doc": "Model to render.",
+      "doc": "Model to render. It can be either a string referencing an element to the models root property or an internal or external URI",
       "property-type": "data-driven",
       "expression": {
         "interpolated": false,
