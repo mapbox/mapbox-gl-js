@@ -1,5 +1,7 @@
 // @flow
 
+export type Class<T> = Class<T>;
+
 export type NullTypeT = { kind: 'null' };
 export type NumberTypeT = { kind: 'number' };
 export type StringTypeT = { kind: 'string' };

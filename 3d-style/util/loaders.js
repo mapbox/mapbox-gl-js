@@ -11,6 +11,8 @@ import assert from 'assert';
 import {DracoDecoderModule} from './draco_decoder_gltf.js';
 import {MeshoptDecoder} from './meshopt_decoder.js';
 
+import type {Class} from '../../src/types/class.js';
+
 let dispatcher = null;
 
 let dracoLoading: Promise<any> | void;

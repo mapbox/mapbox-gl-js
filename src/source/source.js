@@ -11,6 +11,8 @@ import type {Callback} from '../types/callback.js';
 import type {MapEvent} from '../ui/events.js';
 import {CanonicalTileID} from './tile_id.js';
 
+import type {Class} from '../types/class.js';
+
 export type SourceRasterLayer = {
     id: string;
     maxzoom?: number;

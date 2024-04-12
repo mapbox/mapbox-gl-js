@@ -8,6 +8,7 @@ import config from '../util/config.js';
 import {asyncAll} from '../util/util.js';
 import {AlphaImage} from '../util/image.js';
 
+import type {Class} from '../types/class.js';
 import type {StyleGlyph} from '../style/style_glyph.js';
 import type {RequestManager} from '../util/mapbox.js';
 import type {Callback} from '../types/callback.js';

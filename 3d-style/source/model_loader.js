@@ -20,6 +20,7 @@ import {base64DecToArr} from '../../src/util/util.js';
 import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 
+import type {Class} from '../../src/types/class.js';
 import type {Vec2, Vec3} from 'gl-matrix';
 import type {TextureImage} from '../../src/render/texture.js';
 

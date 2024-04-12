@@ -15,6 +15,8 @@ import {PerformanceUtils} from '../util/performance.js';
 import {Event} from '../util/evented.js';
 import {getProjection} from '../geo/projection/index.js';
 
+import type {Class} from '../types/class.js';
+
 import type {
     WorkerSource,
     WorkerTileParameters,

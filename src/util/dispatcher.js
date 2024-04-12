@@ -5,6 +5,7 @@ import Actor from './actor.js';
 import assert from 'assert';
 
 import type WorkerPool from './worker_pool.js';
+import type {Class} from '../types/class.js';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated

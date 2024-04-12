@@ -12,7 +12,7 @@ import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 
 import type Map from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
-import type {PointLike} from '@mapbox/point-geometry';
+import type {PointLike} from '../types/point-like.js';
 import type Marker from './marker.js';
 
 const defaultOptions = {

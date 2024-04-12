@@ -19,6 +19,7 @@ import {
 } from '../render/uniform_binding.js';
 import assert from 'assert';
 
+import type {Class} from '../../src/types/class.js';
 import type {CanonicalTileID} from '../source/tile_id.js';
 import type Context from '../gl/context.js';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer.js';

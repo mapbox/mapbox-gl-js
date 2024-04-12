@@ -10,6 +10,7 @@ import expressions from '../style-spec/expression/definitions/index.js';
 import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import {AJAXError} from './ajax.js';
 
+import type {Class} from '../types/class.js';
 import type {Transferable} from '../types/transferable.js';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted.js';
 

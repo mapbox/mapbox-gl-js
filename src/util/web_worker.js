@@ -1,6 +1,7 @@
 // @flow
 
 import WorkerClass from './worker_class.js';
+import type {Class} from '../types/class.js';
 import type {WorkerSource} from '../source/worker_source.js';
 
 type MessageListener = ({data: Object}) => mixed;

@@ -36,7 +36,7 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat.js';
 import type {ElevationQueryOptions} from '../terrain/elevation.js';
 import type {TaskID} from '../util/task_queue.js';
 import type {Callback} from '../types/callback.js';
-import type {PointLike} from '@mapbox/point-geometry';
+import type {PointLike} from '../types/point-like.js';
 import {Aabb} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
 import type {MapEvent} from './events.js';

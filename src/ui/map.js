@@ -46,7 +46,7 @@ import config from '../util/config.js';
 import {isFQID} from '../util/fqid.js';
 
 import type {Listener} from '../util/evented.js';
-import type {PointLike} from '@mapbox/point-geometry';
+import type {PointLike} from '../types/point-like.js';
 import type {RequestTransformFunction} from '../util/mapbox.js';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat.js';
 import type {StyleOptions, StyleSetterOptions} from '../style/style.js';

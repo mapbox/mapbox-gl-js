@@ -4,18 +4,19 @@ import Point from '@mapbox/point-geometry';
 import {getBounds, clamp, polygonizeBounds, bufferConvexPolygon} from '../util/util.js';
 import {polygonIntersectsBox, polygonContainsPoint} from '../util/intersection_tests.js';
 import EXTENT from '../style-spec/data/extent.js';
-import type {PointLike} from '@mapbox/point-geometry';
-import type Transform from '../geo/transform.js';
-import type Tile from '../source/tile.js';
 import pixelsToTileUnits from '../source/pixels_to_tile_units.js';
 import {vec3, vec4, mat4} from 'gl-matrix';
 import {Ray} from '../util/primitives.js';
 import MercatorCoordinate, {mercatorXfromLng} from '../geo/mercator_coordinate.js';
-import type {OverscaledTileID} from '../source/tile_id.js';
 import {getTilePoint, getTileVec3} from '../geo/projection/tile_transform.js';
 import resample from '../geo/projection/resample.js';
 import {GLOBE_RADIUS} from '../geo/projection/globe_constants.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
+
+import type Transform from '../geo/transform.js';
+import type Tile from '../source/tile.js';
+import type {PointLike} from '../types/point-like.js';
+import type {OverscaledTileID} from '../source/tile_id.js';
 
 type CachedPolygon = {
     // Query rectangle projected on the map plane

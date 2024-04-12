@@ -105,7 +105,7 @@ import type {OverscaledTileID} from '../source/tile_id.js';
 import type {QueryResult} from '../data/feature_index.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
 import type {FeatureStates} from '../source/source_state.js';
-import type {PointLike} from '@mapbox/point-geometry';
+import type {PointLike} from '../types/point-like.js';
 import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters, ConfigOptions} from './properties.js';
 import type {QueryRenderedFeaturesParams} from '../source/query_features.js';

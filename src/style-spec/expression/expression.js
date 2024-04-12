@@ -1,6 +1,6 @@
 // @flow
 
-import type {Type} from './types.js';
+import type {Type, Class} from './types.js';
 import type ParsingContext from './parsing_context.js';
 import type EvaluationContext from './evaluation_context.js';
 

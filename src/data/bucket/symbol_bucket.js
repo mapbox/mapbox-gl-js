@@ -55,6 +55,7 @@ import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
 
+import type {Class} from '../../types/class.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
 import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
