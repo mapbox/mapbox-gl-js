@@ -20,7 +20,9 @@ import type {
     SymbolGlobeExtArray,
     PlacedSymbol
 } from '../data/array_types.js';
+
 import type {Mat4, Vec3, Vec4} from 'gl-matrix';
+import type {VecType} from '../types/vec-type.js';
 
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
 

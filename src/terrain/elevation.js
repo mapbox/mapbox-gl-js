@@ -8,10 +8,11 @@ import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 
+import type {Vec3} from 'gl-matrix';
 import type SourceCache from '../source/source_cache.js';
 import type Projection from '../geo/projection/projection.js';
 import type Tile from '../source/tile.js';
-import type {Vec3} from 'gl-matrix';
+import type {VecType} from '../types/vec-type.js';
 
 /**
  * Options common to {@link Map#queryTerrainElevation} and {@link Map#unproject3d}, used to control how elevation

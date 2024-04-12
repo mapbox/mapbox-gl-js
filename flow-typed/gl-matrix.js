@@ -114,6 +114,6 @@ declare module "gl-matrix" {
         rotateX<T: Quat>(T, Quat, number): T,
         rotateY<T: Quat>(T, Quat, number): T,
         rotateZ<T: Quat>(T, Quat, number): T,
-        rotationTo<T:Quat>(T, Quat, Quat): T 
+        rotationTo<T:Quat>(T, Quat, Quat): T
     }
 }
