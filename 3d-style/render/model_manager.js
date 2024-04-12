@@ -10,8 +10,8 @@ import {ResourceType} from '../../src/util/ajax.js';
 
 import {loadGLTF} from '../util/loaders.js';
 
-import type {ModelsSpecification} from '../../src/style-spec/types.js';
 import type Painter from '../../src/render/painter.js';
+import type {ModelsSpecification} from '../../src/style-spec/types.js';
 
 // Keep the number of references to each model
 // to avoid deleting models in use
@@ -100,6 +100,8 @@ class ModelManager extends Evented {
     }
 
     addModels(models: ModelsSpecification, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
+
         const modelUris = {};
         for (const modelId in models) {
             // Add a void object so we mark this model as requested
@@ -110,6 +112,8 @@ class ModelManager extends Evented {
     }
 
     addModelsFromBucket(modelUris: Array<string>, scope: string) {
+        if (!this.models[scope]) this.models[scope] = {};
+
         const modelsRequests = {};
         for (const modelUri of modelUris) {
             if (this.hasModel(modelUri, scope)) {
@@ -122,9 +126,7 @@ class ModelManager extends Evented {
     }
 
     removeModel(id: string, scope: string) {
-        if (!this.models[scope][id]) {
-            return;
-        }
+        if (!this.models[scope] || !this.models[scope][id]) return;
         this.models[scope][id].numReferences--;
         if (this.models[scope][id].numReferences === 0) {
             const model = this.models[scope][id].model;
