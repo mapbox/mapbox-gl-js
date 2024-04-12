@@ -26,9 +26,10 @@ import type {TextAnchor} from './symbol_layout.js';
 import type {FogState} from '../style/fog_helpers.js';
 import type {Mat4} from 'gl-matrix';
 import type {PlacedCollisionBox} from './collision_index.js';
+import type {ObjMap} from '../types/obj-map.js';
 
 // PlacedCollisionBox with all fields optional
-type PartialPlacedCollisionBox = $ObjMap<PlacedCollisionBox, <V>() => ?V>;
+type PartialPlacedCollisionBox = ObjMap<PlacedCollisionBox, <V>() => ?V>;
 
 class OpacityState {
     opacity: number;

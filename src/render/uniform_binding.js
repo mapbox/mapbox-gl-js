@@ -2,9 +2,10 @@
 
 import Color from '../style-spec/util/color.js';
 import type Context from '../gl/context.js';
+import type {ObjMap} from '../types/obj-map.js';
 
 export type UniformValues<Us: Object>
-    = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
+    = $Exact<ObjMap<Us, <V>(u: Uniform<V>) => V>>;
 
 class Uniform<T> {
     gl: WebGL2RenderingContext;

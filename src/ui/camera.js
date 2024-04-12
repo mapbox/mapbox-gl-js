@@ -40,11 +40,12 @@ import type {PointLike} from '../types/point-like.js';
 import {Aabb} from '../util/primitives.js';
 import type {PaddingOptions} from '../geo/edge_insets.js';
 import type {MapEvent} from './events.js';
+import type {ObjMap} from '../types/obj-map.js';
 
 /**
  * A helper type: converts all Object type values to non-maybe types.
  */
-type Required<T> = $ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
+type Required<T> = ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,

@@ -24,6 +24,7 @@ import type {
     CompositeExpression
 } from '../style-spec/expression/index.js';
 import type {Expression} from '../style-spec/expression/expression.js';
+import type {ObjMap} from '../types/obj-map.js';
 
 type TimePoint = number;
 
@@ -164,7 +165,7 @@ class TransitionablePropertyValue<T, R> {
  * @private
  */
 type TransitionablePropertyValues<Props: Object>
-    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => TransitionablePropertyValue<T, R>>>
+    = $Exact<ObjMap<Props, <T, R>(p: Property<T, R>) => TransitionablePropertyValue<T, R>>>
 
 /**
  * `Transitionable` stores a map of all (property name, `TransitionablePropertyValue`) pairs for paint properties of a
@@ -335,7 +336,7 @@ class TransitioningPropertyValue<T, R> {
  * @private
  */
 type TransitioningPropertyValues<Props: Object>
-    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => TransitioningPropertyValue<T, R>>>
+    = $Exact<ObjMap<Props, <T, R>(p: Property<T, R>) => TransitioningPropertyValue<T, R>>>
 
 /**
  * `Transitioning` stores a map of all (property name, `TransitioningPropertyValue`) pairs for paint properties of a
@@ -380,7 +381,7 @@ export class Transitioning<Props: Object> {
  * @private
  */
 type PropertyValues<Props: Object>
-    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValue<T, R>>>
+    = $Exact<ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValue<T, R>>>
 
 /**
  * A helper type: given an object type `Properties` whose values are each of type `Property<T, R>`, it calculates
@@ -389,7 +390,7 @@ type PropertyValues<Props: Object>
  * @private
  */
 type PropertyValueSpecifications<Props: Object>
-    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValueSpecification<T>>>
+    = $Exact<ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValueSpecification<T>>>
 
 /**
  * Because layout properties are not transitionable, they have a simpler representation and evaluation chain than
@@ -526,7 +527,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Props: Object>
-    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => R>>
+    = $Exact<ObjMap<Props, <T, R>(p: Property<T, R>) => R>>
 
 /**
  * `PossiblyEvaluated` stores a map of all (property name, `R`) pairs for paint or layout properties of a
