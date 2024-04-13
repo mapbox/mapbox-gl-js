@@ -492,7 +492,7 @@ export default class Marker extends Evented {
     }
 
     _updateDOM() {
-        const pos = this._pos;
+        const pos = this._pos || new Point(0, 0);
         const map = this._map;
         if (!pos || !map) { return; }
 
