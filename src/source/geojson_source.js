@@ -8,7 +8,7 @@ import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 
 import type {Source} from './source.js';
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type Actor from '../util/actor.js';

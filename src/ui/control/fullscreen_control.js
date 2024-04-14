@@ -4,7 +4,7 @@ import * as DOM from '../../util/dom.js';
 
 import {bindAll, warnOnce} from '../../util/util.js';
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 
 type Options = {
     container?: HTMLElement

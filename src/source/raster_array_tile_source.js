@@ -12,7 +12,7 @@ import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data.js';
 
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type RasterArrayTile from './raster_array_tile.js';
 import type {Callback} from '../types/callback.js';

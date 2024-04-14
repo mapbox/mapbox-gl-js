@@ -2,7 +2,7 @@
 
 import {RGBAImage} from '../util/image.js';
 
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 
 export type StyleImageData = {
     data: RGBAImage,

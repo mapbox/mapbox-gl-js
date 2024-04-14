@@ -3,7 +3,7 @@
 import {extend} from '../../util/util.js';
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events.js';
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type Point from '@mapbox/point-geometry';
 import type {Handler, HandlerResult} from '../handler.js';
 

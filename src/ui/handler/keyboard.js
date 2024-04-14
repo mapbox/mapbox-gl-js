@@ -1,6 +1,6 @@
 // @flow
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type {Handler, HandlerResult} from '../handler.js';
 
 const defaultOptions = {

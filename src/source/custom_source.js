@@ -7,7 +7,7 @@ import {extend, pick} from '../util/util.js';
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import {makeFQID} from '../util/fqid.js';
 
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type {Source} from './source.js';
 import type {Callback} from '../types/callback.js';

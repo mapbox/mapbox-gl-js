@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
-import Map from '../../src/ui/map.js';
+import {Map} from '../../src/ui/map.js';
 import {extend} from '../../src/util/util.js';
 
 export function waitFor(evented, event) {

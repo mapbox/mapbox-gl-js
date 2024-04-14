@@ -7,7 +7,7 @@ import Texture from '../render/texture.js';
 import {ErrorEvent} from '../util/evented.js';
 import ValidationError from '../style-spec/error/validation_error.js';
 
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type {Evented} from '../util/evented.js';
 import type {VideoSourceSpecification} from '../style-spec/types.js';

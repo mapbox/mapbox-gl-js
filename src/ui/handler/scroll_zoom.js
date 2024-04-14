@@ -8,7 +8,7 @@ import browser from '../../util/browser.js';
 import {number as interpolate} from '../../style-spec/util/interpolate.js';
 import Point from '@mapbox/point-geometry';
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type HandlerManager from '../handler_manager.js';
 import type {Handler, HandlerResult} from '../handler.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';

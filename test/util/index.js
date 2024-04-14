@@ -1,4 +1,4 @@
-import Map from '../../src/ui/map.js';
+import {Map} from '../../src/ui/map.js';
 import {extend} from '../../src/util/util.js';
 
 export function createMap(t, options, callback) {

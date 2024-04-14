@@ -2,7 +2,7 @@
 
 import Point from '@mapbox/point-geometry';
 import * as DOM from '../../util/dom.js';
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type {Handler, HandlerResult} from '../handler.js';
 import {isFullscreen} from '../../util/util.js';
 

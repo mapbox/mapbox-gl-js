@@ -1,6 +1,6 @@
 // @flow
 
-import type Map from './map.js';
+import type {Map} from './map.js';
 import type Point from '@mapbox/point-geometry';
 import type MercatorCoordinate from '../geo/mercator_coordinate.js';
 

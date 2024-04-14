@@ -5,7 +5,7 @@ import cloneDeep from 'lodash.clonedeep';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
 import {isWorker} from '../../../src/util/util.js';
-import type {default as MapboxMap} from '../../../src/ui/map.js';
+import type {Map as MapboxMap} from '../../../src/ui/map.js';
 import type {Description} from './tracked_parameters_mock.js';
 
 if (!isWorker()) {

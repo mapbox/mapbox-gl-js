@@ -23,7 +23,7 @@ import assert from 'assert';
 import {vec3} from 'gl-matrix';
 import MercatorCoordinate, {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate.js';
 
-import type Map from './map.js';
+import type {Map} from './map.js';
 import type {Vec3} from 'gl-matrix';
 import type {Handler, HandlerResult} from './handler.js';
 

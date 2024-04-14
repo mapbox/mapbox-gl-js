@@ -4,7 +4,7 @@ import * as DOM from '../../util/dom.js';
 
 import {Event} from '../../util/evented.js';
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type Point from '@mapbox/point-geometry';
 import type {Handler, HandlerResult} from '../handler.js';
 

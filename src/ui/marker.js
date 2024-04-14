@@ -7,7 +7,7 @@ import smartWrap from '../util/smart_wrap.js';
 import {bindAll, extend, radToDeg, smoothstep} from '../util/util.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {Event, Evented} from '../util/evented.js';
-import type Map from './map.js';
+import type {Map} from './map.js';
 import type Popup from './popup.js';
 import type {LngLatLike} from "../geo/lng_lat.js";
 import type {MapMouseEvent, MapTouchEvent} from './events.js';

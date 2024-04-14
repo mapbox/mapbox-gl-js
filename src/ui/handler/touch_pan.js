@@ -1,7 +1,7 @@
 // @flow
 
 import Point from '@mapbox/point-geometry';
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import {indexTouches} from './handler_util.js';
 import {bindAll, isFullscreen} from '../../util/util.js';
 import * as DOM from '../../util/dom.js';

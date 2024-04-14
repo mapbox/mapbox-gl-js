@@ -2,7 +2,7 @@
 
 import {TapRecognizer} from './tap_recognizer.js';
 import type Point from '@mapbox/point-geometry';
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type {Handler, HandlerResult} from '../handler.js';
 
 export default class TapZoomHandler implements Handler {

@@ -8,7 +8,7 @@ import {renderColorRamp} from '../../util/color_ramp.js';
 import {RGBAImage} from '../../util/image.js';
 
 import type {ConfigOptions} from "../properties";
-import type MapboxMap from '../../ui/map.js';
+import type {Map as MapboxMap} from '../../ui/map.js';
 import type {PaintProps} from './raster_particle_style_layer_properties.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';

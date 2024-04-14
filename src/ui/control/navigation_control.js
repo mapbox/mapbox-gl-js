@@ -4,7 +4,7 @@ import * as DOM from '../../util/dom.js';
 import {extend, bindAll} from '../../util/util.js';
 import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse.js';
 
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type Point from '@mapbox/point-geometry';
 
 type Options = {

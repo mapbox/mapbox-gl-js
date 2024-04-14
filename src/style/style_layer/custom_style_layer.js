@@ -2,7 +2,7 @@
 
 import StyleLayer from '../style_layer.js';
 import MercatorCoordinate from '../../geo/mercator_coordinate.js';
-import type Map from '../../ui/map.js';
+import type {Map} from '../../ui/map.js';
 import assert from 'assert';
 
 import type {ValidationErrors} from '../validate_style.js';

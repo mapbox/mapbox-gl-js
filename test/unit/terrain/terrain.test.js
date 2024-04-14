@@ -17,7 +17,7 @@ import Popup from '../../../src/ui/popup.js';
 import simulate from '../../util/simulate_interaction.js';
 import browser from '../../../src/util/browser.js';
 import * as DOM from '../../../src/util/dom.js';
-import Map, {AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
+import {Map, AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock.js';
 // eslint-disable-next-line import/no-unresolved
 import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';

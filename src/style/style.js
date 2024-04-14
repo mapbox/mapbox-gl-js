@@ -71,7 +71,7 @@ const emitValidationErrors = (evented: Evented, errors: ?ValidationErrors) =>
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties.js';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties.js';
 import type {Vec3} from 'gl-matrix';
-import type {default as MapboxMap} from '../ui/map.js';
+import type {Map as MapboxMap} from '../ui/map.js';
 import type Transform from '../geo/transform.js';
 import type {StyleImage} from './style_image.js';
 import type {StyleGlyph} from './style_glyph.js';

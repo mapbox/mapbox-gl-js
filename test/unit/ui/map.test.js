@@ -4,7 +4,7 @@ import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap} f
 import {createStyle, createStyleSource} from './map/util.js';
 import {getPNGResponse, getRequestBody} from '../../util/network.js';
 import {extend} from '../../../src/util/util.js';
-import Map from '../../../src/ui/map.js';
+import {Map} from '../../../src/ui/map.js';
 import Actor from '../../../src/util/actor.js';
 import LngLat from '../../../src/geo/lng_lat.js';
 import Tile from '../../../src/source/tile.js';

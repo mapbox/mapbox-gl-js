@@ -15,7 +15,7 @@ import {mercatorXfromLng} from '../geo/mercator_coordinate.js';
 
 import type {Source} from './source.js';
 import type {SourceSpecification} from '../style-spec/types.js';
-import type {default as MapboxMap} from '../ui/map.js';
+import type {Map as MapboxMap} from '../ui/map.js';
 import type Transform from '../geo/transform.js';
 import type {TileState} from './tile.js';
 import type {Callback} from '../types/callback.js';

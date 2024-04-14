@@ -18,7 +18,7 @@ import type {Callback} from '../../src/types/callback.js';
 import type {Cancelable} from '../../src/types/cancelable.js';
 import type Dispatcher from '../../src/util/dispatcher.js';
 import type {ModelSourceSpecification} from '../../src/style-spec/types.js';
-import type Map from '../../src/ui/map.js';
+import type {Map} from '../../src/ui/map.js';
 import type {OverscaledTileID} from '../../src/source/tile_id.js';
 
 class Tiled3DModelSource extends Evented implements Source {

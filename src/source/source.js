@@ -4,7 +4,7 @@ import {bindAll} from '../util/util.js';
 
 import type Dispatcher from '../util/dispatcher.js';
 import type {Event, Evented} from '../util/evented.js';
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Tile from './tile.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Callback} from '../types/callback.js';

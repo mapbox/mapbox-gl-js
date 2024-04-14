@@ -1,6 +1,6 @@
 import {describe, test, expect, vi} from "../../../util/vitest.js";
 import browser from '../../../../src/util/browser.js';
-import Map from '../../../../src/ui/map.js';
+import {Map} from '../../../../src/ui/map.js';
 import * as DOM from '../../../../src/util/dom.js';
 import simulate from '../../../util/simulate_interaction.js';
 

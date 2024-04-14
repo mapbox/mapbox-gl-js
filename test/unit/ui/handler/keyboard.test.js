@@ -1,5 +1,5 @@
 import {test, expect, vi, createMap as globalCreateMap} from "../../../util/vitest.js";
-import Map from '../../../../src/ui/map.js';
+import {Map} from '../../../../src/ui/map.js';
 import simulate from '../../../util/simulate_interaction.js';
 
 function createMap(options) {

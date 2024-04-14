@@ -6,7 +6,7 @@ import * as DOM from '../util/dom.js';
 import Point from '@mapbox/point-geometry';
 import {extend} from '../util/util.js';
 
-import type Map from './map.js';
+import type {Map} from './map.js';
 import type LngLat from '../geo/lng_lat.js';
 
 /**

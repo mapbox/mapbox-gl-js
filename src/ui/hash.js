@@ -3,7 +3,7 @@
 import {bindAll} from '../util/util.js';
 import throttle from '../util/throttle.js';
 
-import type Map from './map.js';
+import type {Map} from './map.js';
 
 /*
  * Adds the map's position to its page's location hash.

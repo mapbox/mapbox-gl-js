@@ -10,7 +10,7 @@ import smartWrap from '../util/smart_wrap.js';
 import {type Anchor, anchorTranslate} from './anchor.js';
 import {isLngLatBehindGlobe} from '../geo/projection/globe_util.js';
 
-import type Map from './map.js';
+import type {Map} from './map.js';
 import type {LngLatLike} from '../geo/lng_lat.js';
 import type {PointLike} from '../types/point-like.js';
 import type Marker from './marker.js';

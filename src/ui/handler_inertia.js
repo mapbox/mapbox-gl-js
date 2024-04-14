@@ -1,7 +1,7 @@
 // @flow
 
 import browser from '../util/browser.js';
-import type Map from './map.js';
+import type {Map} from './map.js';
 import {bezier, clamp, extend} from '../util/util.js';
 import Point from '@mapbox/point-geometry';
 

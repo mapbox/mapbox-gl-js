@@ -1,7 +1,7 @@
 // @flow
 
 import type Point from '@mapbox/point-geometry';
-import type Map from '../map.js';
+import type {Map} from '../map.js';
 import type {Handler, HandlerResult} from '../handler.js';
 
 export default class ClickZoomHandler implements Handler {

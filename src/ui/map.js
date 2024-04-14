@@ -386,7 +386,7 @@ class DebugParams {
  * @see [Example: Display a map with a custom style](https://docs.mapbox.com/mapbox-gl-js/example/custom-style-id/)
  * @see [Example: Check if Mapbox GL JS is supported](https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
-class Map extends Camera {
+export class Map extends Camera {
     style: Style;
     painter: Painter;
     handlers: ?HandlerManager;
@@ -4493,8 +4493,6 @@ class Map extends Camera {
 
     get version(): string { return version; }
 }
-
-export default Map;
 
 /**
  * Interface for interactive controls added to the map. This is a

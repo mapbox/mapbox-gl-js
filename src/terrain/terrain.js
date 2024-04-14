@@ -44,7 +44,7 @@ import {globeMetersToEcef} from '../geo/projection/globe_util.js';
 import {ZoomDependentExpression} from '../style-spec/expression/index.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 
-import type Map from '../ui/map.js';
+import type {Map} from '../ui/map.js';
 import type Painter from '../render/painter.js';
 import type Style from '../style/style.js';
 import type StyleLayer from '../style/style_layer.js';
