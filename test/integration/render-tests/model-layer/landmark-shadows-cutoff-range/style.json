@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00045,
+      "standardDerivatives": true,
+      "height": 512,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.8,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "pitch": 80,
+  "bearing": 7,
+  "zoom": 16,
+  "center": [
+    -122.4012,
+    37.78
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark",
+      "minzoom": 14,
+      "paint": {
+        "model-opacity": 1,
+        "model-cutoff-fade-range": 1
+      }
+    }
+  ]
+}

@@ -31,7 +31,11 @@ const todo = [
     "render-tests/model-layer/landmark-conflation-buckingham",
 
     // https://mapbox.atlassian.net/browse/MAPS3D-987
-    "render-tests/model-layer/landmark-shadows-terrain"
+    "render-tests/model-layer/landmark-shadows-terrain",
+
+    // Needs port from Native
+    // https://mapbox.atlassian.net/browse/MAPS3D-1331
+    "render-tests/model-layer/landmark-shadows-cutoff-range"
 ];
 
 const skip = [
