@@ -12,7 +12,6 @@ import dashAttributes from './bucket/dash_attributes.js';
 import EvaluationParameters from '../style/evaluation_parameters.js';
 import FeaturePositionMap from './feature_position_map.js';
 import {
-    Uniform,
     Uniform1f,
     UniformColor,
     Uniform4f
@@ -37,11 +36,12 @@ import type {PossiblyEvaluated} from '../style/properties.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {FormattedSection} from '../style-spec/expression/types/formatted.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {IUniform} from '../render/uniform_binding.js';
 
 export type BinderUniform = {
     name: string,
     property: string,
-    binding: Uniform<any>
+    binding: IUniform<any>
 };
 
 function packColor(color: Color): [number, number] {
@@ -88,8 +88,8 @@ interface AttributeBinder {
 
 interface UniformBinder {
     uniformNames: Array<string>;
-    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
-    getBinding(context: Context, name: string): $Shape<Uniform<*>>;
+    setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
+    getBinding(context: Context, name: string): $Shape<IUniform<any>>;
 }
 
 class ConstantBinder implements UniformBinder {
@@ -103,12 +103,12 @@ class ConstantBinder implements UniformBinder {
         this.type = type;
     }
 
-    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string): void {
+    setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string): void {
         uniform.set(program, uniformName, currentValue.constantOr(this.value));
     }
 
     // $FlowFixMe[method-unbinding]
-    getBinding(context: Context, _: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, _: string): $Shape<IUniform<any>> {
         // $FlowFixMe[method-unbinding]
         return (this.type === 'color') ?
             new UniformColor(context) :
@@ -132,7 +132,7 @@ class PatternConstantBinder implements UniformBinder {
         this.pattern = posTo.tl.concat(posTo.br);
     }
 
-    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
+    setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string) {
         const pos =
             uniformName === 'u_pattern' || uniformName === 'u_dash' ? this.pattern :
             uniformName === 'u_pixel_ratio' ? this.pixelRatio : null;
@@ -140,7 +140,7 @@ class PatternConstantBinder implements UniformBinder {
     }
 
     // $FlowFixMe[method-unbinding]
-    getBinding(context: Context, name: string): $Shape<Uniform<any>> {
+    getBinding(context: Context, name: string): $Shape<IUniform<any>> {
         // $FlowFixMe[method-unbinding]
         return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
@@ -290,7 +290,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         }
     }
 
-    setUniform(program: WebGLProgram, uniform: Uniform<*>, globals: GlobalProperties, _: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void {
+    setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, _: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void {
         const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
         const factor = clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
         uniform.set(program, uniformName, factor);

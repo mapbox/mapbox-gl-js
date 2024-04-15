@@ -68,7 +68,6 @@ export interface Source {
     mapbox_logo?: boolean,
     tileID?: CanonicalTileID;
     reparseOverscaled?: boolean,
-    vectorLayerIds?: Array<string>,
     minTileCacheSize?: ?number;
     maxTileCacheSize?: ?number;
     language?: ?string;

@@ -206,7 +206,7 @@ class FreeCamera {
         return [col[0], col[1], col[2]];
     }
 
-    set position(value: ?Vec3) {
+    set position(value: Vec3 | null | void) {
         if (value) {
             updateTransformPosition(this._transform, value);
         }
@@ -216,7 +216,7 @@ class FreeCamera {
         return this._orientation;
     }
 
-    set orientation(value: ?Quat) {
+    set orientation(value: Quat | null | void) {
         this._orientation = value || quat.identity([]);
         if (value) {
             updateTransformOrientation(this._transform, this._orientation);

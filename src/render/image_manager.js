@@ -12,12 +12,12 @@ import {warnOnce} from '../util/util.js';
 
 import type {StyleImage} from '../style/style_image.js';
 import type Context from '../gl/context.js';
-import type {Bin} from 'potpack';
+import type {Bin as PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback.js';
 import type {Size} from '../util/image.js';
 
 type Pattern = {
-    bin: Bin,
+    bin: PotpackBox,
     position: ImagePosition
 };
 
