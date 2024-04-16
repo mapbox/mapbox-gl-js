@@ -100,7 +100,7 @@
     "stylelint-config-standard": "^36.0.0",
     "tape": "^5.7.5",
     "tape-filter": "^1.0.4",
-    "testem": "^3.12.0",
+    "testem": "^3.13.0",
     "vite-plugin-arraybuffer": "^0.0.6",
     "vite-plugin-node-polyfills": "^0.21.0",
     "vitest": "1.2.2"
