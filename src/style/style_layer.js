@@ -38,6 +38,9 @@ type LayerRenderingStats = {
     numRenderedVerticesInShadowPass: number;
 };
 
+// Symbols are draped only on native and for certain cases only
+const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster']);
+
 class StyleLayer extends Evented {
     id: string;
     fqid: string;
@@ -65,10 +68,6 @@ class StyleLayer extends Evented {
 
     options: ?ConfigOptions;
     _stats: ?LayerRenderingStats;
-
-    +onAdd: ?(map: MapboxMap) => void;
-    +onRemove: ?(map: MapboxMap) => void;
-    +isLayerDraped: ?(sourceCache: ?SourceCache) => boolean;
 
     constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, scope: string, options?: ?ConfigOptions) {
         super();
@@ -119,6 +118,16 @@ class StyleLayer extends Evented {
             //$FlowFixMe
             this.paint = new PossiblyEvaluated(properties.paint);
         }
+    }
+
+    // No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
+    onAdd(_map: MapboxMap): void {}
+
+    // No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
+    onRemove(_map: MapboxMap): void {}
+
+    isDraped(_sourceCache?: SourceCache | void): boolean {
+        return drapedLayers.has(this.type);
     }
 
     getLayoutProperty(name: string): PropertyValueSpecification<mixed> {

@@ -6,10 +6,12 @@ import type FillExtrusionStyleLayer from './fill_extrusion_style_layer.js';
 import type HeatmapStyleLayer from './heatmap_style_layer.js';
 import type LineStyleLayer from './line_style_layer.js';
 import type SymbolStyleLayer from './symbol_style_layer.js';
+import type ModelStyleLayer from '../../../3d-style/style/style_layer/model_style_layer.js';
 
 export type TypedStyleLayer = CircleStyleLayer |
     FillStyleLayer |
     FillExtrusionStyleLayer |
     HeatmapStyleLayer |
     LineStyleLayer |
-    SymbolStyleLayer;
+    SymbolStyleLayer |
+    ModelStyleLayer;

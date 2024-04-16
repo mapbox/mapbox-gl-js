@@ -33,24 +33,23 @@ class RasterParticleStyleLayer extends StyleLayer {
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
         this._updateColorRamp();
-
-        this.onRemove = (map: MapboxMap): void => {
-            if (this.colorRampTexture) {
-                this.colorRampTexture.destroy();
-            }
-
-            if (this.transformFeedbackObject) {
-                const gl = map.painter.context.gl;
-                // $FlowFixMe[prop-missing]
-                gl.deleteTransformFeedback(this.transformFeedbackObject);
-            }
-
-            if (this.tileFramebuffer) {
-                this.tileFramebuffer.destroy();
-            }
-        };
-
         this.lastInvalidatedAt = browser.now();
+    }
+
+    onRemove(map: MapboxMap): void {
+        if (this.colorRampTexture) {
+            this.colorRampTexture.destroy();
+        }
+
+        if (this.transformFeedbackObject) {
+            const gl = map.painter.context.gl;
+            // $FlowFixMe[prop-missing]
+            gl.deleteTransformFeedback(this.transformFeedbackObject);
+        }
+
+        if (this.tileFramebuffer) {
+            this.tileFramebuffer.destroy();
+        }
     }
 
     hasColorMap(): boolean {
@@ -66,8 +65,7 @@ class RasterParticleStyleLayer extends StyleLayer {
         return this.visibility !== 'none';
     }
 
-    // $FlowFixMe[method-unbinding]
-    isLayerDraped(_: ?SourceCache): boolean {
+    isDraped(_: ?SourceCache): boolean {
         return false;
     }
 

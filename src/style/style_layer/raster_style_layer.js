@@ -51,8 +51,7 @@ class RasterStyleLayer extends StyleLayer {
         return this.paint.get('raster-elevation');
     }
 
-    // $FlowFixMe[method-unbinding]
-    isLayerDraped(sourceCache: ?SourceCache): boolean {
+    isDraped(sourceCache: ?SourceCache): boolean {
         // Special handling for raster, where the drapeability depends on the source
         if (sourceCache && sourceCache._source instanceof ImageSource) {
             // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)

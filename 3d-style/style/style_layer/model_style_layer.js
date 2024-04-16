@@ -24,7 +24,6 @@ import type {Mat4} from 'gl-matrix';
 import {latFromMercatorY, lngFromMercatorX} from '../../../src/geo/mercator_coordinate.js';
 import EXTENT from '../../../src/style-spec/data/extent.js';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util.js';
-import type {Map} from '../../../src/ui/map.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket.js';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index.js';
@@ -76,8 +75,6 @@ class ModelStyleLayer extends StyleLayer {
     queryRadius(bucket: Bucket): number {
         return (bucket instanceof Tiled3dModelBucket) ? EXTENT - 1 : 0;
     }
-
-    onRemove: ?(map: Map) => void;
 
     // $FlowFixMe[method-unbinding]
     queryIntersectsFeature(queryGeometry: TilespaceQueryGeometry,

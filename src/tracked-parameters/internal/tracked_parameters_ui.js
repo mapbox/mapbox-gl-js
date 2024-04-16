@@ -7,6 +7,7 @@ import assert from 'assert';
 import {isWorker} from '../../../src/util/util.js';
 import type {Map as MapboxMap} from '../../../src/ui/map.js';
 import type {Description} from './tracked_parameters_mock.js';
+import type {ITrackedParameters} from '../../types/tracked-parameters.js';
 
 if (!isWorker()) {
     const style = document.createElement('style');
@@ -169,7 +170,7 @@ class ParameterInfo {
 }
 
 // Tracked parameters container
-export class TrackedParameters {
+export class TrackedParameters implements ITrackedParameters {
     _map: MapboxMap;
     _container: HTMLElement;
 

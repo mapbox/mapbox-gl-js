@@ -20,7 +20,7 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
     const implementation = layer.implementation;
 
     if (painter.transform.projection.unsupportedLayers && painter.transform.projection.unsupportedLayers.includes("custom") &&
-        !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isLayerDraped(sourceCache))) {
+        !(painter.terrain && (painter.terrain.renderingToTexture || painter.renderPass === 'offscreen') && layer.isDraped(sourceCache))) {
         warnOnce('Custom layers are not yet supported with this projection. Use mercator or globe to enable usage of custom layers.');
         return;
     }

@@ -44,6 +44,7 @@ import {setCacheLimits} from '../util/tile_request_cache.js';
 import {Debug} from '../util/debug.js';
 import config from '../util/config.js';
 import {isFQID} from '../util/fqid.js';
+import * as TP from '../tracked-parameters/tracked_parameters.js';
 
 import type {Listener} from '../util/evented.js';
 import type {PointLike} from '../types/point-like.js';
@@ -89,7 +90,7 @@ import type {QueryResult} from '../data/feature_index.js';
 import type {EasingOptions} from './camera.js';
 import type {ContextOptions} from '../gl/context.js';
 
-import * as TP from '../tracked-parameters/tracked_parameters.js';
+import type {ITrackedParameters} from '../types/tracked-parameters.js';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -516,7 +517,7 @@ export class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
-    _tp: TP.TrackedParametersMock;
+    _tp: ITrackedParameters;
     _debugParams: DebugParams;
 
     constructor(options: MapOptions) {

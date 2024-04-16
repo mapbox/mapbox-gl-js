@@ -105,7 +105,6 @@ class ModelBucket implements Bucket {
     modelUris: Array<string>;
     modelsRequested: boolean;
 
-    /* $FlowIgnore[incompatible-type-arg] Doesn't need to know about all the implementations */
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;

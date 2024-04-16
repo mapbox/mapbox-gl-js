@@ -210,8 +210,7 @@ class CustomStyleLayer extends StyleLayer {
         return this.implementation.prerender !== undefined;
     }
 
-    // $FlowFixMe[method-unbinding]
-    isLayerDraped(_: ?SourceCache): boolean {
+    isDraped(_: ?SourceCache): boolean {
         return this.implementation.renderToTile !== undefined;
     }
 
@@ -225,8 +224,7 @@ class CustomStyleLayer extends StyleLayer {
         return false;
     }
 
-    // $FlowFixMe[incompatible-extend] - CustomStyleLayer is not serializable
-    serialize() {
+    serialize(): any {
         assert(false, "Custom layers cannot be serialized");
     }
 

@@ -178,9 +178,6 @@ export type Fragment = {|
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
 
-// Symbols are draped only on native and for certain cases only
-const drapedLayers = new Set(['fill', 'line', 'background', 'hillshade', 'raster']);
-
 /**
  * @private
  */
@@ -1063,8 +1060,7 @@ class Style extends Evented {
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
-        if (typeof layer.isLayerDraped === 'function') return layer.isLayerDraped(this.getLayerSourceCache(layer));
-        return drapedLayers.has(layer.type);
+        return layer.isDraped(this.getLayerSourceCache(layer));
     }
 
     _checkLoaded(): void {
@@ -1914,6 +1910,7 @@ class Style extends Evented {
             sourceCache.castsShadows = shadowCastersLeft;
         }
 
+        // $FlowFixMe[method-unbinding]
         if (layer.onRemove) {
             layer.onRemove(this.map);
         }
