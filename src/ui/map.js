@@ -516,7 +516,7 @@ export class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
-    _tp: TP.TrackedParameters | TP.TrackedParametersMock;
+    _tp: TP.TrackedParametersMock;
     _debugParams: DebugParams;
 
     constructor(options: MapOptions) {

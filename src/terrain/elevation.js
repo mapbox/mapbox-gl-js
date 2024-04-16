@@ -8,7 +8,7 @@ import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id.js';
 
-import type {Vec3} from 'gl-matrix';
+import type {Vec4, Vec3} from 'gl-matrix';
 import type SourceCache from '../source/source_cache.js';
 import type Projection from '../geo/projection/projection.js';
 import type Tile from '../source/tile.js';
@@ -204,7 +204,7 @@ export class Elevation {
      * @param {vec3} dir The ray direction.
      * @param {number} exaggeration The terrain exaggeration.
     */
-    raycast(position: Vec3, dir: Vec3, exaggeration: number): ?number {
+    raycast(_position: Vec3, _dir: Vec3, _exaggeration: number): ?number {
         throw new Error('Pure virtual method called.');
     }
 
@@ -213,10 +213,11 @@ export class Elevation {
      * Helper function that wraps `raycast`.
      *
      * @param {Point} screenPoint Screen point in pixels in top-left origin coordinate system.
-     * @returns {vec3} If there is intersection with terrain, returns 3D MercatorCoordinate's of
-     * intersection, as vec3(x, y, z), otherwise null.
-     */ /* eslint no-unused-vars: ["error", { "args": "none" }] */
-    pointCoordinate(screenPoint: Point): ?Vec3 {
+     * @returns {vec4} If there is intersection with terrain, returns vec4(x, y, z, e), a
+     * 3D MercatorCoordinate's of intersection in its first 3 components, and elevation in meter in its 4th coordinate.
+     * Otherwise returns null.
+     */
+    pointCoordinate(_screenPoint: Point): ?Vec4 {
         throw new Error('Pure virtual method called.');
     }
 

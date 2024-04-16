@@ -11,6 +11,7 @@ import ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import {AJAXError} from './ajax.js';
 
 import type {Class} from '../types/class.js';
+import type {GridIndex} from '../types/grid-index.js';
 import type {Transferable} from '../types/transferable.js';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted.js';
 
@@ -70,7 +71,7 @@ register(Object, 'Object');
 
 type SerializedGrid = { buffer: ArrayBuffer };
 
-(Grid: any).serialize = function serialize(grid: Grid, transferables?: Set<Transferable>): SerializedGrid {
+Grid.serialize = function serialize(grid: GridIndex, transferables?: Set<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
     if (transferables) {
         transferables.add(buffer);
@@ -78,7 +79,7 @@ type SerializedGrid = { buffer: ArrayBuffer };
     return {buffer};
 };
 
-(Grid: any).deserialize = function deserialize(serialized: SerializedGrid): Grid {
+Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
     return new Grid(serialized.buffer);
 };
 

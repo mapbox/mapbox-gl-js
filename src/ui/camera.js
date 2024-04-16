@@ -193,11 +193,6 @@ class Camera extends Evented {
     _onEaseEnd: ?(easeId?: string) => void;
     _easeFrameId: ?TaskID;
 
-    +_requestRenderFrame: (() => void) => TaskID;
-    +_cancelRenderFrame: (_: TaskID) => void;
-
-    +_preloadTiles: (transform: Transform | Array<Transform>, callback?: Callback<any>) => any;
-
     constructor(transform: Transform, options: {bearingSnap: number, respectPrefersReducedMotion?: boolean}) {
         super();
         this._moving = false;
@@ -1694,6 +1689,12 @@ class Camera extends Evented {
         return this._stop();
     }
 
+    // $FlowFixMe[incompatible-return] - No-op in the Camera class, implemented by the Map class
+    _requestRenderFrame(_callback: () => void): TaskID {}
+
+    // No-op in the Camera class, implemented by the Map class
+    _cancelRenderFrame(_: TaskID): void {}
+
     _stop(allowGestures?: boolean, easeId?: string): this {
         if (this._easeFrameId) {
             this._cancelRenderFrame(this._easeFrameId);
@@ -1788,6 +1789,9 @@ class Camera extends Evented {
 
         return transforms;
     }
+
+    // No-op in the Camera class, implemented by the Map class
+    _preloadTiles(_transform: Transform | Array<Transform>, _callback?: Callback<any>): any {}
 }
 
 // In debug builds, check that camera change events are fired in the correct order.

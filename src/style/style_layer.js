@@ -66,21 +66,6 @@ class StyleLayer extends Evented {
     options: ?ConfigOptions;
     _stats: ?LayerRenderingStats;
 
-    +queryRadius: (bucket: Bucket) => number;
-    +queryIntersectsFeature: (queryGeometry: TilespaceQueryGeometry,
-                              feature: IVectorTileFeature,
-                              featureState: FeatureState,
-                              geometry: Array<Array<Point>>,
-                              zoom: number,
-                              transform: Transform,
-                              pixelPosMatrix: Float32Array,
-                              elevationHelper: ?DEMSampler,
-                              layoutVertexArrayOffset: number) => boolean | number;
-    +queryIntersectsMatchingFeature: (queryGeometry: TilespaceQueryGeometry,
-                                      featureIndex: number,
-                                      filter: FeatureFilter,
-                                      transform: Transform) => {queryFeature: ?QueryFeature, intersectionZ: number};
-
     +onAdd: ?(map: MapboxMap) => void;
     +onRemove: ?(map: MapboxMap) => void;
     +isLayerDraped: ?(sourceCache: ?SourceCache) => boolean;
@@ -359,6 +344,30 @@ class StyleLayer extends Evented {
             }
         }
     }
+
+    // $FlowFixMe[incompatible-return] - No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
+    queryRadius(_bucket: Bucket): number {}
+
+    queryIntersectsFeature(
+        _queryGeometry: TilespaceQueryGeometry,
+        _feature: IVectorTileFeature,
+        _featureState: FeatureState,
+        _geometry: Array<Array<Point>>,
+        _zoom: number,
+        _transform: Transform,
+        _pixelPosMatrix: Float32Array,
+        _elevationHelper: ?DEMSampler,
+        _layoutVertexArrayOffset: number
+    // $FlowFixMe[incompatible-return] - No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
+    ): boolean | number {}
+
+    queryIntersectsMatchingFeature(
+        _queryGeometry: TilespaceQueryGeometry,
+        _featureIndex: number,
+        _filter: FeatureFilter,
+        _transform: Transform
+    // $FlowFixMe[incompatible-return] - No-op in the StyleLayer class, must be implemented by each concrete StyleLayer
+    ): {queryFeature: ?QueryFeature, intersectionZ: number} {}
 }
 
 export default StyleLayer;

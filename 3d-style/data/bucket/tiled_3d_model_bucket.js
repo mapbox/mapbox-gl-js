@@ -24,8 +24,8 @@ import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Vec4} from 'gl-matrix';
 import type {Terrain} from '../../../src/terrain/terrain.js';
-import Grid from 'grid-index';
 import FeatureIndex from '../../../src/data/feature_index.js';
+import type {GridIndex} from '../../../src/types/grid-index.js';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -45,7 +45,7 @@ function getNodeHeight(node: Node): number {
     return height;
 }
 
-function addAABBsToGridIndex(node: Node, key: number, grid: Grid) {
+function addAABBsToGridIndex(node: Node, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;

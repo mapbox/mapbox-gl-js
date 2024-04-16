@@ -31,6 +31,7 @@ import type {TilespaceQueryGeometry} from '../style/query_geometry.js';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {IVectorTileLayer, IVectorTileFeature} from '@mapbox/vector-tile';
+import type {GridIndex} from '../types/grid-index.js';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array,
@@ -58,7 +59,7 @@ class FeatureIndex {
     x: number;
     y: number;
     z: number;
-    grid: Grid;
+    grid: GridIndex;
     featureIndexArray: FeatureIndexArray;
     promoteId: ?PromoteIdSpecification;
 
