@@ -1,7 +1,7 @@
 #include "_prelude_raster_array.glsl"
 #include "_prelude_raster_particle.glsl"
 
-in vec3 a_pos;
+in vec3 a_pos_3f;
 
 uniform float u_speed_factor;
 uniform float u_lifetime_delta;
@@ -17,9 +17,9 @@ float rand(const vec2 co) {
 }
 
 void main() {
-    float lifetime = a_pos.z;
+    float lifetime = a_pos_3f.z;
 
-    vec2 pos = a_pos.xy;
+    vec2 pos = a_pos_3f.xy;
     vec2 uv = clamp(pos, vec2(0.0), vec2(1.0));
     vec2 velocity = lookup_velocity(uv);
 
