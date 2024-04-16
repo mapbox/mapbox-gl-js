@@ -54,8 +54,7 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                             "type": "model",
                             "id": "trees",
                             "layout": {
-                                "model-id": "id",
-                                "model-uri": ["get", "model-uri"]
+                                "model-id": "id"
                             },
                             "paint": {
                                 "model-scale": [
