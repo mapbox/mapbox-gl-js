@@ -210,13 +210,13 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 }
 
 export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painter: Painter) {
-    const scope = layer.scope;
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         if (painter.modelManager) {
             // Do it here, to prevent modelManager handling in Painter.
-            painter.modelManager.upload(painter, scope);
+            // geojson models are always set in the root scope to avoid model duplication
+            painter.modelManager.upload(painter, "");
         }
         return;
     }
@@ -572,7 +572,10 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             if (modelInstances.features.length > 0) {
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
-            const model = modelManager.getModel(modelId, layer.scope);
+
+            const modelSource = source.getSource();
+            const scope = (modelSource.type === 'vector' || modelSource.type === 'geojson') ? "" : layer.scope;
+            const model = modelManager.getModel(modelId, scope);
             if (!model || !model.uploaded) continue;
             for (const node of model.nodes) {
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);

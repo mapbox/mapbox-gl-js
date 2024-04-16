@@ -1,0 +1,101 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "allowed": 0.00025
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "pitch": 60,
+  "bearing": 0,
+  "zoom": 15,
+  "center": [
+    -122.40484,
+    37.78432
+  ],
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "sources": {
+          "mapbox": {
+            "type": "vector",
+            "maxzoom": 15,
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.vector.pbf"
+            ]
+          },
+          "models-source": {
+            "type": "geojson",
+            "data": "local://data/external-models.geojson"
+          }
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "id": "test_ambient",
+            "properties": {
+              "color": "rgba(255, 255, 255, 1)",
+              "intensity": 0.5
+            }
+          },
+          {
+            "type": "directional",
+            "id": "test_directional",
+            "properties": {
+              "color": "rgba(255, 255, 255, 1)",
+              "intensity": 0.5
+            }
+          }
+        ],
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "#aaaaaa"
+            }
+          },
+          {
+            "id": "land",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+              "fill-color": "lightblue"
+            }
+          },
+          {
+            "id": "road",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "lightyellow",
+                "line-width": 10
+            }
+          },
+          {
+            "id": "model-layer",
+            "type": "model",
+            "source": "models-source",
+            "layout": {
+              "model-id": ["get", "model-uri"]
+            },
+            "paint": {
+                "model-scale": ["get", "scale"],
+                "model-rotation": ["match", ["get", "id"],
+                                   "duck", ["get", "rotation"],
+                                   "maple-tree", [0 , 0, 90],
+                                    ["literal", [ 0, 0, 0]]]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
