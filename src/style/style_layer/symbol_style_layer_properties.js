@@ -132,6 +132,9 @@ export type PaintProps = {|
     "text-translate": DataConstantProperty<[number, number]>,
     "text-translate-anchor": DataConstantProperty<"map" | "viewport">,
     "icon-color-saturation": DataConstantProperty<number>,
+    "icon-color-contrast": DataConstantProperty<number>,
+    "icon-color-brightness-min": DataConstantProperty<number>,
+    "icon-color-brightness-max": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -153,6 +156,9 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate"]),
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
     "icon-color-saturation": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-saturation"]),
+    "icon-color-contrast": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-contrast"]),
+    "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
+    "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

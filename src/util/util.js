@@ -1,5 +1,7 @@
 // @flow
 
+import {mat4} from 'gl-matrix';
+
 import UnitBezier from '@mapbox/unitbezier';
 
 import Point from '@mapbox/point-geometry';
@@ -804,4 +806,79 @@ export function upperBound(array: number[], startIndex: number, finishIndex: num
     }
 
     return startIndex;
+}
+
+export function contrastFactor(contrast: number): number {
+    return contrast > 0 ?
+        1 / (1.001 - contrast) :
+        1 + contrast;
+}
+
+export function saturationFactor(saturation: number): number {
+    return saturation > 0 ?
+        1 - 1 / (1.001 - saturation) :
+        -saturation;
+}
+
+/**
+ * Given the inputs creates a matrix that when applied to a color can
+ * change its saturation, contrast and brightness levels.
+ * This results in the same behaviour that happens in raster.fragment.glsl
+ *
+ * @param saturation Saturation level ranging from -1 to 1.
+ * @param contrast Contrast level ranging from -1 to 1.
+ * @param brightnessMin Minimum brightness ranging from 0 to 1.
+ * @param brightnessMax Maximum brightness ranging from 0 to 1.
+ * @returns Matrix that adjusts saturation, contrast and brightness of a color.
+ * @private
+ */
+export function computeColorAdjustmentMatrix(saturation: number, contrast: number, brightnessMin: number, brightnessMax: number): Float32Array {
+    saturation = saturationFactor(saturation);
+    contrast = contrastFactor(contrast);
+
+    const m = mat4.create();
+
+    /*hueAngle *= Math.PI / 180;
+    const s = Math.sin(hueAngle);
+    const c = Math.cos(hueAngle);
+    const x = (2 * c + 1) / 3;
+    const y = (-c - Math.sqrt(3) * s + 1) / 3;
+    const z = (-c + Math.sqrt(3) * s + 1) / 3;
+    const hueMatrix = [
+        x, z, y, 0,
+        y, x, z, 0,
+        z, y, x, 0,
+        0, 0, 0, 1
+    ];*/
+
+    const sa = saturation / 3.0;
+    const sb = 1.0 - 2.0 * sa;
+    const saturationMatrix = [
+        sb,  sa,  sa,  0.0,
+        sa,  sb,  sa,  0.0,
+        sa,  sa,  sb,  0.0,
+        0.0, 0.0, 0.0, 1.0
+    ];
+
+    const cs = 0.5 - 0.5 * contrast;
+    const contrastMatrix = [
+        contrast, 0.0,      0.0,      0.0,
+        0.0,      contrast, 0.0,      0.0,
+        0.0,      0.0,      contrast, 0.0,
+        cs,       cs,       cs,       1.0
+    ];
+
+    const hl = brightnessMax - brightnessMin;
+    const brightnessMatrix = [
+        hl,            0.0,           0.0,           0.0,
+        0.0,           hl,            0.0,           0.0,
+        0.0,           0.0,           hl,            0.0,
+        brightnessMin, brightnessMin, brightnessMin, 1.0
+    ];
+
+    mat4.multiply(m, brightnessMatrix, contrastMatrix);
+    mat4.multiply(m, m, saturationMatrix);
+    // mat4.multiply(m, m, hueMatrix);
+
+    return m;
 }

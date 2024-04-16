@@ -427,7 +427,10 @@ export type SymbolLayerSpecification = {|
         "text-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
         "text-translate"?: PropertyValueSpecification<[number, number]>,
         "text-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
-        "icon-color-saturation"?: ExpressionSpecification
+        "icon-color-saturation"?: ExpressionSpecification,
+        "icon-color-contrast"?: ExpressionSpecification,
+        "icon-color-brightness-min"?: ExpressionSpecification,
+        "icon-color-brightness-max"?: ExpressionSpecification
     |}
 |}
 

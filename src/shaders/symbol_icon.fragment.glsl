@@ -11,7 +11,9 @@ in vec2 v_tex_a;
 in vec2 v_tex_b;
 #endif
 
-uniform mediump float u_icon_saturation;
+#ifdef COLOR_ADJUSTMENT
+uniform mat4 u_color_adj_mat;
+#endif
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float emissive_strength
@@ -26,14 +28,17 @@ void main() {
 #ifdef ICON_TRANSITION
     vec4 a = texture(u_texture, v_tex_a) * (1.0 - u_icon_transition);
     vec4 b = texture(u_texture, v_tex_b) * u_icon_transition;
-    out_color = (a + b) * alpha;
+    out_color = (a + b);
 #else
-    out_color = texture(u_texture, v_tex_a) * alpha;
+    out_color = texture(u_texture, v_tex_a);
 #endif
-#ifdef SATURATION
-    vec3 luma = vec3(dot(out_color.rgb, vec3(0.2126, 0.7152, 0.0722)));
-    out_color.rgb = mix(luma, out_color.rgb, u_icon_saturation);
+
+#ifdef COLOR_ADJUSTMENT
+    out_color = u_color_adj_mat * out_color;
 #endif
+
+    out_color *= alpha;
+
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #endif

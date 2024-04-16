@@ -44,7 +44,7 @@ export type SymbolIconUniformsType = {|
     'u_ecef_origin': Uniform3f,
     'u_texture': Uniform1i,
     'u_icon_transition': Uniform1f,
-    'u_icon_saturation': Uniform1f
+    'u_color_adj_mat': UniformMatrix4f,
 |};
 
 export type SymbolSDFUniformsType = {|
@@ -126,7 +126,7 @@ const symbolIconUniforms = (context: Context): SymbolIconUniformsType => ({
     'u_ecef_origin': new Uniform3f(context),
     'u_texture': new Uniform1i(context),
     'u_icon_transition': new Uniform1f(context),
-    'u_icon_saturation': new Uniform1f(context)
+    'u_color_adj_mat': new UniformMatrix4f(context)
 });
 
 const symbolSDFUniforms = (context: Context): SymbolSDFUniformsType => ({
@@ -200,7 +200,7 @@ const symbolIconUniformValues = (
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection,
-    iconSaturation: number,
+    colorAdjustmentMatrix: ?Float32Array,
     transition: ?number,
 ): UniformValues<SymbolIconUniformsType> => {
     const transform = painter.transform;
@@ -229,8 +229,8 @@ const symbolIconUniformValues = (
         'u_ecef_origin': [0, 0, 0],
         'u_tile_matrix': identityMatrix,
         'u_up_vector': [0, -1, 0],
-        'u_icon_transition': transition ? transition : 0.0,
-        'u_icon_saturation': iconSaturation
+        'u_color_adj_mat': colorAdjustmentMatrix,
+        'u_icon_transition': transition ? transition : 0.0
     };
 
     if (projection.name === 'globe') {
@@ -244,6 +244,7 @@ const symbolIconUniformValues = (
         values['u_up_vector'] = upVector;
     }
 
+    /* $FlowFixMe[incompatible-return] */
     return values;
 };
 
@@ -268,7 +269,7 @@ const symbolSDFUniformValues = (
 ): UniformValues<SymbolSDFUniformsType> => {
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection, 1), {
+        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo,

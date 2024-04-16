@@ -12,6 +12,7 @@ import {
 
 import {computeRasterColorMix, computeRasterColorOffset} from '../raster.js';
 import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer.js';
+import {contrastFactor, saturationFactor} from '../../util/util.js';
 
 import type Context from '../../gl/context.js';
 import type {UniformValues} from '../uniform_binding.js';
@@ -181,18 +182,6 @@ function spinWeights(angle: number) {
         (-Math.sqrt(3) * s - c + 1) / 3,
         (Math.sqrt(3) * s - c + 1) / 3
     ];
-}
-
-function contrastFactor(contrast: number) {
-    return contrast > 0 ?
-        1 / (1 - contrast) :
-        1 + contrast;
-}
-
-function saturationFactor(saturation: number) {
-    return saturation > 0 ?
-        1 - 1 / (1.001 - saturation) :
-        -saturation;
 }
 
 export {rasterUniforms, rasterUniformValues, rasterPoleUniformValues};

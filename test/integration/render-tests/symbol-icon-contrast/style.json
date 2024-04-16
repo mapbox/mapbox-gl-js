@@ -4,7 +4,7 @@
     "test": {
       "height": 128,
       "width": 128,
-      "allowed": 0.019,
+      "allowed": 0.02,
       "diff-calculation-threshold": 0.06
     }
   },
@@ -38,7 +38,7 @@
       "source-layer": "poi_label",
       "filter": ["has", "maki"],
       "paint": {
-        "icon-color-saturation": -1
+        "icon-color-contrast": 0.9
       },
       "layout": {
         "icon-image": "{maki}-12",

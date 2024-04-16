@@ -1,11 +1,14 @@
 // @flow
 
+import {mat4} from 'gl-matrix';
+
 import StyleLayer from '../style_layer.js';
 
 import assert from 'assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket.js';
 import resolveTokens from '../../util/resolve_tokens.js';
 import properties from './symbol_style_layer_properties.js';
+import {computeColorAdjustmentMatrix} from '../../util/util.js';
 
 import type {FormattedSection} from '../../style-spec/expression/types/formatted.js';
 import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format.js';
@@ -51,8 +54,16 @@ class SymbolStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
+    _colorAdjustmentMatrix: Float32Array;
+    _saturation: number;
+    _contrast: number;
+    _brightnessMin: number;
+    _brightnessMax: number;
+
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
+        // $FlowFixMe[incompatible-type]
+        this._colorAdjustmentMatrix = mat4.identity([]);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
@@ -99,6 +110,22 @@ class SymbolStyleLayer extends StyleLayer {
         }
 
         this._setPaintOverrides();
+    }
+
+    getColorAdjustmentMatrix(saturation: number, contrast: number, brightnessMin: number, brightnessMax: number): Float32Array {
+        if (this._saturation !== saturation ||
+            this._contrast !== contrast ||
+            this._brightnessMin !== brightnessMin ||
+            this._brightnessMax !== brightnessMax) {
+
+            this._colorAdjustmentMatrix = computeColorAdjustmentMatrix(saturation, contrast, brightnessMin, brightnessMax);
+
+            this._saturation = saturation;
+            this._contrast = contrast;
+            this._brightnessMin = brightnessMin;
+            this._brightnessMax = brightnessMax;
+        }
+        return this._colorAdjustmentMatrix;
     }
 
     getValueAndResolveTokens(name: any, feature: Feature, canonical: CanonicalTileID, availableImages: Array<string>): string {

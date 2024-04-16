@@ -278,7 +278,10 @@ function drawLayerSymbols(
     const textPitchAlignment = layer.layout.get('text-pitch-alignment');
     const iconKeepUpright = layer.layout.get('icon-keep-upright');
     const textKeepUpright = layer.layout.get('text-keep-upright');
-    const colorSaturation = layer.paint.get('icon-color-saturation');
+    const iconSaturation = layer.paint.get('icon-color-saturation');
+    const iconContrast = layer.paint.get('icon-color-contrast');
+    const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
+    const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
 
     const context = painter.context;
     const gl = context.gl;
@@ -350,8 +353,8 @@ function drawLayerSymbols(
                 baseDefines.push('Z_OFFSET');
             }
 
-            if (colorSaturation < 1) {
-                baseDefines.push('SATURATION');
+            if (iconSaturation !== 0 || iconContrast !== 0 || iconBrightnessMin !== 0 || iconBrightnessMax !== 1) {
+                baseDefines.push('COLOR_ADJUSTMENT');
             }
 
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
@@ -386,8 +389,9 @@ function drawLayerSymbols(
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                     matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
             } else {
+                const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
                 uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter, matrix,
-                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorSaturation, transitionProgress);
+                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
             }
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;

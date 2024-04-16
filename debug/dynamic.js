@@ -7722,6 +7722,10 @@ window.dynamic = {
                 ]
             },
             "paint": {
+                "icon-color-saturation": ["config", "icon-color-saturation"],
+                "icon-color-contrast": ["config", "icon-color-contrast"],
+                "icon-color-brightness-min": ["config", "icon-color-brightness-min"],
+                "icon-color-brightness-max": ["config", "icon-color-brightness-max"],
                 "icon-image-cross-fade": [
                     "interpolate",
                     [ "linear" ],
@@ -8970,6 +8974,36 @@ window.dynamic = {
                 0
             ]
         ]
+    },
+    "schema": {
+        "icon-color-saturation": {
+            "default": 0,
+            "type": "number",
+            "metadata": {
+                "mapbox:title": "Icon Saturation"
+            }
+        },
+        "icon-color-contrast": {
+            "default": 0,
+            "type": "number",
+            "metadata": {
+                "mapbox:title": "Icon Contrast"
+            }
+        },
+        "icon-color-brightness-min": {
+            "default": 0,
+            "type": "number",
+            "metadata": {
+                "mapbox:title": "Icon Minimum Brightness"
+            }
+        },
+        "icon-color-brightness-max": {
+            "default": 1,
+            "type": "number",
+            "metadata": {
+                "mapbox:title": "Icon Maximum Brightness"
+            }
+        }
     },
     "lights": [
         {
