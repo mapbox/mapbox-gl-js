@@ -25,10 +25,11 @@ void main() {
 
     float next_lifetime = lifetime - u_lifetime_delta;
     float t = step(0.0, next_lifetime);
+    vec2 dp;
 #ifdef DATA_FORMAT_UINT32
-    vec2 dp = vec2(0);
+    dp = vec2(0);
 #else
-    vec2 dp = velocity == INVALID_VELOCITY ? vec2(0) : velocity * u_speed_factor;
+    dp = velocity == INVALID_VELOCITY ? vec2(0) : velocity * u_speed_factor;
 #endif
     vec2 seed = pos * u_rand_seed;
 
@@ -38,4 +39,5 @@ void main() {
         vec2(mix(random_pos, next_pos, t)),
         mix(1.0, next_lifetime, t)
     );
+    gl_Position = vec4(v_new_particle.xy, 0.0, 1.0);
 }

@@ -21,6 +21,7 @@ out vec2 v_pos1;
 
 void main() {
     float w = 1.0;
+    vec2 uv;
 #ifdef PROJECTION_GLOBE_VIEW
     vec3 decomposed_pos_and_skirt = decomposeToPosAndSkirt(a_pos);
     vec3 latLng = u_grid_matrix * vec3(decomposed_pos_and_skirt.xy, 1.0);
@@ -34,7 +35,7 @@ void main() {
     float idy = u_grid_matrix[2][2];
     float uvX = mercatorX * tiles - idx;
     float uvY = mercatorY * tiles - idy;
-    vec2 uv = vec2(uvX, uvY);
+    uv = vec2(uvX, uvY);
 
     vec3 globe_pos = latLngToECEF(latLng.xy);
     globe_pos += normalize(globe_pos) * u_raster_elevation * GLOBE_UPSCALE;
@@ -60,7 +61,7 @@ void main() {
     // as an arbitrarily high number to preserve adequate precision when rendering.
     // This is also the same value as the EXTENT we are using for our tile buffer pos coordinates,
     // so math for modifying either is consistent.
-    vec2 uv = a_texture_pos / 8192.0;
+    uv = a_texture_pos / 8192.0;
     gl_Position = u_matrix * vec4(a_pos * w, u_raster_elevation * w, w);
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);
