@@ -1183,10 +1183,9 @@
           "doc": "Particle animation driven by textures such as wind maps.",
           "sdk-support": {
             "basic functionality": {
-              "js": "0.10.0",
-              "android": "2.0.1",
-              "ios": "2.0.0",
-              "macos": "0.1.0"
+              "js": "3.3.0",
+              "android": "11.4.0",
+              "ios": "11.4.0"
             }
           }
         },
@@ -3234,14 +3233,14 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.10.0",
-          "android": "2.0.1",
-          "ios": "2.0.0"
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         },
         "expressions support": {
-          "js": "3.0.0",
-          "android": "11.0.0",
-          "ios": "11.0.0"
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "expression": {
@@ -4548,8 +4547,8 @@
         "sdk-support": {
           "basic functionality": {
             "js": "3.3.0",
-            "android": "",
-            "ios": ""
+            "android": "11.4.0",
+            "ios": "11.4.0"
           }
         }
       },
@@ -7750,12 +7749,12 @@
       "property-type": "data-constant",
       "transition": false,
       "doc": "Displayed band of raster array source layer",
-      "example": "band-name",
+      "example": "\"1713348000\"",
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       }
     },
@@ -7767,9 +7766,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "property-type": "data-constant"
@@ -7780,9 +7779,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         },
         "data-driven styling": {}
       },
@@ -7802,9 +7801,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "property-type": "data-constant"
@@ -7818,9 +7817,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "expression": {
@@ -7840,9 +7839,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "expression": {
@@ -7862,9 +7861,9 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "",
-          "android": "",
-          "ios": ""
+          "js": "3.3.0",
+          "android": "11.4.0",
+          "ios": "11.4.0"
         }
       },
       "property-type": "data-constant"
