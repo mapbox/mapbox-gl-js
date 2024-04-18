@@ -289,22 +289,11 @@ function convertFootprint(mesh: FootprintMesh): ?Footprint {
         return null;
     }
 
-    const [min, max] = [mesh.vertices[0].clone(), mesh.vertices[0].clone()];
-
-    for (let i = 1; i < mesh.vertices.length; ++i) {
-        const v = mesh.vertices[i];
-        min.x = Math.min(min.x, v.x);
-        min.y = Math.min(min.y, v.y);
-        max.x = Math.max(max.x, v.x);
-        max.y = Math.max(max.y, v.y);
-    }
-
     // Use a fixed size triangle grid (8x8 cells) for acceleration intersection queries
     // with an exception that the cell size should never be larger than 256 tile units
     // (equals to 32x32 subdivision).
-    const optimalCellCount = Math.ceil(Math.max(max.x - min.x, max.y - min.y) / 256);
-    const cellCount = Math.max(8, optimalCellCount);
-    const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, cellCount);
+    const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 8, 256);
+    const [min, max] = [grid.min.clone(), grid.max.clone()];
 
     return {
         vertices: mesh.vertices,

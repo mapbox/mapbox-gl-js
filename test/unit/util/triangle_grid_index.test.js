@@ -37,6 +37,16 @@ describe('TriangleGridIndex', () => {
         expect(result).toStrictEqual([]);
     });
 
+    test('Optimal cell count', () => {
+        const mesh = createMesh([new Point(0, 0), new Point(1, 0), new Point(1, 1)]);
+        const grid = new TriangleGridIndex(mesh.vertices, mesh.indices, 0, 1);
+
+        const result = [];
+        grid.query(new Point(0, 0), new Point(1, 1), result);
+
+        expect(result).toStrictEqual([0]);
+    });
+
     describe('Query', () => {
         const mesh = createMesh([
             new Point(0, 0), new Point(2, 0), new Point(0, 2),

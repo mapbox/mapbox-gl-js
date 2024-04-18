@@ -28,7 +28,7 @@ class TriangleGridIndex {
     payload: Array<number>
     lookup: ?Uint8Array;
 
-    constructor(vertices: Array<Point>, indices: Array<number>, cellCount: number) {
+    constructor(vertices: Array<Point>, indices: Array<number>, cellCount: number, maxCellSize: ?number) {
         this.triangleCount = indices.length / 3;
         this.min = new Point(0, 0);
         this.max = new Point(0, 0);
@@ -39,16 +39,32 @@ class TriangleGridIndex {
         this.cells = [];
         this.payload = [];
 
-        if (this.triangleCount === 0 || vertices.length === 0 || cellCount === 0) {
+        if (this.triangleCount === 0 || vertices.length === 0) {
             return;
         }
 
         // Compute cell size from the input
-        const xCoords = vertices.map(v => v.x);
-        const yCoords = vertices.map(v => v.y);
 
-        this.min = new Point(Math.min(...xCoords), Math.min(...yCoords));
-        this.max = new Point(Math.max(...xCoords), Math.max(...yCoords));
+        const [min, max] = [vertices[0].clone(), vertices[0].clone()];
+        for (let i = 1; i < vertices.length; ++i) {
+            const v = vertices[i];
+            min.x = Math.min(min.x, v.x);
+            min.y = Math.min(min.y, v.y);
+            max.x = Math.max(max.x, v.x);
+            max.y = Math.max(max.y, v.y);
+        }
+
+        if (maxCellSize) {
+            const optimalCellCount = Math.ceil(Math.max(max.x - min.x, max.y - min.y) / maxCellSize);
+            cellCount = Math.max(cellCount, optimalCellCount);
+        }
+
+        if (cellCount === 0) {
+            return;
+        }
+
+        this.min = min;
+        this.max = max;
 
         const size = this.max.sub(this.min);
         size.x = Math.max(size.x, 1);
