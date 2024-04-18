@@ -54,7 +54,6 @@ import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model.j
 import {lightsUniformValues} from '../../3d-style/render/lights.js';
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer.js';
 import {WireframeDebugCache} from "./wireframe_cache.js";
-import {TrackedParameters} from '../tracked-parameters/tracked_parameters.js';
 
 import type Transform from '../geo/transform.js';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id.js';
@@ -70,6 +69,7 @@ import type ResolvedImage from '../style-spec/expression/types/resolved_image.js
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers.js';
 import type {ContextOptions} from '../gl/context.js';
+import type {ITrackedParameters} from 'tracked_parameters_proxy';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type CanvasCopyInstances = {
@@ -213,13 +213,13 @@ class Painter {
 
     _wireframeDebugCache: WireframeDebugCache;
 
-    tp: TrackedParameters;
+    tp: ITrackedParameters;
 
     _debugParams: {
         showTerrainProxyTiles: boolean;
     }
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: TrackedParameters) {
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
         this.transform = transform;
         this._tileTextures = {};

@@ -1,6 +1,6 @@
 // @flow
 
-import type {ITrackedParameters} from '../../types/tracked-parameters.js';
+import type {ITrackedParameters} from 'tracked_parameters_proxy';
 
 // Parameter description
 // * Description from TweakPane

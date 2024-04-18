@@ -90,7 +90,7 @@ import type {QueryResult} from '../data/feature_index.js';
 import type {EasingOptions} from './camera.js';
 import type {ContextOptions} from '../gl/context.js';
 
-import type {ITrackedParameters} from '../types/tracked-parameters.js';
+import type {ITrackedParameters} from 'tracked_parameters_proxy';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
