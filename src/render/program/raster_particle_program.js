@@ -105,7 +105,7 @@ export type RasterParticleDrawUniformsType = {|
     'u_color_ramp': Uniform1i,
     'u_velocity_res': Uniform2f,
     'u_max_speed': Uniform1f,
-    'u_texture_offset': Uniform2f,
+    'u_uv_offset': Uniform2f,
     'u_data_scale': Uniform4f,
     'u_data_offset': Uniform1f
 |};
@@ -116,7 +116,7 @@ const rasterParticleDrawUniforms = (context: Context): RasterParticleDrawUniform
     'u_color_ramp': new Uniform1i(context),
     'u_velocity_res': new Uniform2f(context),
     'u_max_speed': new Uniform1f(context),
-    'u_texture_offset': new Uniform2f(context),
+    'u_uv_offset': new Uniform2f(context),
     'u_data_scale': new Uniform4f(context),
     'u_data_offset': new Uniform1f(context)
 });
@@ -127,7 +127,7 @@ const rasterParticleDrawUniformValues = (tileOffset: [number, number], velocityT
     'u_color_ramp': colorRampUnit,
     'u_velocity_res': velocityTextureSize,
     'u_max_speed': maxSpeed,
-    'u_texture_offset': textureOffset,
+    'u_uv_offset': textureOffset,
     'u_data_scale': dataScale,
     'u_data_offset': dataOffset
 });
@@ -139,7 +139,7 @@ export type RasterParticleUpdateUniformsType = {|
     'u_speed_factor': Uniform1f,
     'u_lifetime_delta': Uniform1f,
     'u_rand_seed': Uniform1f,
-    'u_texture_offset': Uniform2f,
+    'u_uv_offset': Uniform2f,
     'u_data_scale': Uniform4f,
     'u_data_offset': Uniform1f
 |};
@@ -151,7 +151,7 @@ const rasterParticleUpdateUniforms = (context: Context): RasterParticleUpdateUni
     'u_speed_factor': new Uniform1f(context),
     'u_lifetime_delta': new Uniform1f(context),
     'u_rand_seed': new Uniform1f(context),
-    'u_texture_offset': new Uniform2f(context),
+    'u_uv_offset': new Uniform2f(context),
     'u_data_scale': new Uniform4f(context),
     'u_data_offset': new Uniform1f(context)
 });
@@ -163,7 +163,7 @@ const rasterParticleUpdateUniformValues = (velocityTextureUnit: number, velocity
     'u_speed_factor': speedFactor,
     'u_lifetime_delta': lifetimeDelta,
     'u_rand_seed': Math.random(),
-    'u_texture_offset': textureOffset,
+    'u_uv_offset': textureOffset,
     'u_data_scale': dataScale,
     'u_data_offset': dataOffset
 });

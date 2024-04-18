@@ -5,12 +5,12 @@ uniform float u_max_speed;
 
 const vec2 INVALID_VELOCITY = vec2(-1);
 
-uniform vec2 u_texture_offset;
+uniform vec2 u_uv_offset;
 uniform float u_data_offset;
 uniform vec4 u_data_scale;
 
 vec2 lookup_velocity(vec2 uv) {
-    uv = u_texture_offset.x + u_texture_offset.y * uv;
+    uv = u_uv_offset.x + u_uv_offset.y * uv;
     vec2 fxy;
     ivec4 c = _raTexLinearCoord(uv, u_velocity_res, fxy);
     vec4 tl = texelFetch(u_velocity, c.yz, 0);
