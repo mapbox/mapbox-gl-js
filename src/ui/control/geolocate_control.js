@@ -108,7 +108,7 @@ class GeolocateControl extends Evented {
     _noTimeout: boolean;
     _supportsGeolocation: boolean;
 
-    constructor(options: $Shape<Options>) {
+    constructor(options?: $Shape<Options>) {
         super();
         const geolocation = navigator.geolocation;
         this.options = extend({geolocation}, defaultOptions, options);

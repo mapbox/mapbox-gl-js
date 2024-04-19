@@ -1,0 +1,32 @@
+{
+  "name": "mapbox-gl-bundling",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "typecheck": "tsc --project tsconfig.json",
+    "start": "webpack serve",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "mapbox-gl": "file:../../../"
+  },
+  "devDependencies": {
+    "html-loader": "^5.0.0",
+    "html-webpack-plugin": "^5.6.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  },
+  "browserslist": {
+    "development": [
+      ">0.2%",
+      "not dead",
+      "not ie 11",
+      "not chrome < 51",
+      "not safari < 10"
+    ]
+  }
+}

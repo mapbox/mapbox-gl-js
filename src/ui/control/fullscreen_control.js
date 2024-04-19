@@ -31,7 +31,7 @@ class FullscreenControl {
     _fullscreenButton: HTMLElement;
     _container: HTMLElement;
 
-    constructor(options: Options) {
+    constructor(options?: Options) {
         this._fullscreen = false;
         if (options && options.container) {
             if (options.container instanceof HTMLElement) {

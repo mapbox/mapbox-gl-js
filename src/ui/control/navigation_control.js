@@ -49,7 +49,7 @@ class NavigationControl {
     _compassIcon: HTMLElement;
     _handler: ?MouseRotateWrapper;
 
-    constructor(options: Options) {
+    constructor(options?: Options) {
         this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');

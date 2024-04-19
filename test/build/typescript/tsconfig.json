@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "./dist/",
+    "target": "es2021",
+    "noImplicitAny": true
+  }
+}

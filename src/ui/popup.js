@@ -114,7 +114,7 @@ export default class Popup extends Evented {
     _classList: Set<string>;
     _marker: ?Marker;
 
-    constructor(options: PopupOptions) {
+    constructor(options?: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);

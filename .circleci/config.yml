@@ -66,6 +66,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-typescript:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - test-webpack:
           requires:
             - build
@@ -298,6 +304,21 @@ jobs:
           path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
+
+  test-typescript:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Build TypeScript
+          command: |
+            cd ./test/build/typescript &&
+            npm ci &&
+            npm run build &&
+            rm -rf node_modules
+      - store_artifacts:
+          path: "test/build/typescript"
 
   test-webpack:
     <<: *linux-defaults

@@ -49,7 +49,7 @@ class ScaleControl {
     _isNumberFormatSupported: boolean;
     options: Options;
 
-    constructor(options: Options) {
+    constructor(options?: Options) {
         this.options = extend({}, defaultOptions, options);
 
         // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style in NumberFormat.
