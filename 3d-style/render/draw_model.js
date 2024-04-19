@@ -213,10 +213,11 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
+        const scope = modelSource.type === 'vector' ? layer.scope : "";
         if (painter.modelManager) {
             // Do it here, to prevent modelManager handling in Painter.
             // geojson models are always set in the root scope to avoid model duplication
-            painter.modelManager.upload(painter, "");
+            painter.modelManager.upload(painter, scope);
         }
         return;
     }
@@ -327,7 +328,8 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     }
 
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
-        drawVectorLayerModels(painter, sourceCache, layer, coords);
+        const scope = modelSource.type === 'vector' ? layer.scope : "";
+        drawVectorLayerModels(painter, sourceCache, layer, coords, scope);
         cleanup();
         return;
     }
@@ -509,7 +511,7 @@ function calculateTileZoom(id: OverscaledTileID, tr: Transform): number {
     return tr._zoomFromMercatorZ(Math.sqrt(distx * distx + disty * disty + distz * distz));
 }
 
-function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>) {
+function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: ModelStyleLayer, coords: Array<OverscaledTileID>, scope: string) {
     const tr = painter.transform;
     if (tr.projection.name !== 'mercator') {
         warnOnce(`Drawing 3D models for ${tr.projection.name} projection is not yet implemented`);
@@ -517,7 +519,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
     }
 
     const mercCameraPos = (tr.getFreeCameraOptions().position: any);
-    if (!painter.modelManager || !painter.style.loaded()) return;
+    if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
     layer.modelManager = modelManager;
     const shadowRenderer = painter.shadowRenderer;
@@ -532,10 +534,9 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
         const modelUris = bucket.getModelUris();
-
         if (modelUris && !bucket.modelsRequested) {
-            // Add models to root scope to avoid loading several instances of the same model
-            modelManager.addModelsFromBucket(modelUris, "");
+            // geojson models are always set in the root scope to avoid model duplication
+            modelManager.addModelsFromBucket(modelUris, scope);
             bucket.modelsRequested = true;
         }
 
@@ -573,10 +574,9 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
 
-            const modelSource = source.getSource();
-            const scope = (modelSource.type === 'vector' || modelSource.type === 'geojson') ? "" : layer.scope;
             const model = modelManager.getModel(modelId, scope);
             if (!model || !model.uploaded) continue;
+
             for (const node of model.nodes) {
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
             }

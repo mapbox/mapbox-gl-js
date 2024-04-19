@@ -1395,7 +1395,7 @@
     "model-id": {
       "type": "string",
       "default": "",
-      "doc": "Model to render. It can be either a string referencing an element to the models root property or an internal or external URI",
+      "doc": "Model to render. It can be either a string referencing an element to the models root property or an internal or external URL",
       "property-type": "data-driven",
       "expression": {
         "interpolated": false,

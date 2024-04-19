@@ -15,6 +15,7 @@ import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
 import {instanceAttributes} from '../model_attributes.js';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
+import {isValidUrl} from '../../../src/style-spec/validate/validate_model.js';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import type {Mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
@@ -271,11 +272,14 @@ class ModelBucket implements Bucket {
             warnOnce(`modelId is not evaluated for layer ${layer.id} and it is not going to get rendered.`);
             return modelId;
         }
-
-        if (!this.modelUris.includes(modelId)) {
-            this.modelUris.push(modelId);
+        // check if it's a valid model (absolute) URL
+        // otherwise is considered as an style defined model, and hence we don't need to
+        // load it here.
+        if (isValidUrl(modelId, false)) {
+            if (!this.modelUris.includes(modelId)) {
+                this.modelUris.push(modelId);
+            }
         }
-
         if (!this.instancesPerModel[modelId]) {
             this.instancesPerModel[modelId] = new PerModelAttributes();
         }

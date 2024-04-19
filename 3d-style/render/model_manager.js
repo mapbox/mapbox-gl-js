@@ -43,6 +43,10 @@ class ModelManager extends Evented {
                 return model;
             })
             .catch((err) => {
+                // $FlowFixMe[prop-missing] - generic Error type doesn't have status
+                if (err && err.status === 404) {
+                    return null;
+                }
                 this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}: ${err.message}`)));
             });
     }

@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {
-        "model-uri": "./models/tree.glb",
+        "model-uri": "http://localhost:7357/models/tree.glb",
         "scale": [100, 100, 100]
       },
       "geometry": {
