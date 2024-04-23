@@ -2299,6 +2299,15 @@ describe('camera', () => {
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: 180, lat: 80});
             expect(fixedNum(transform.zoom, 3)).toEqual(1.072);
         });
+
+        test('entire longitude range: -180 to 180 with asymmetrical padding', () => {
+            const camera = createCamera({projection: {name: 'globe'}});
+            const bb = [[-180, 10], [180, 50]];
+
+            const transform = camera.cameraForBounds(bb, {padding:{top: 10, right: 75, bottom: 50, left: 25}});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: 180, lat: 80});
+            expect(fixedNum(transform.zoom, 3)).toEqual(0.892);
+        });
     });
 
     describe('#fitBounds', () => {
