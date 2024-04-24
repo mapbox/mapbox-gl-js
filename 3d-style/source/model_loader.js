@@ -21,7 +21,7 @@ import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 
 import type {Class} from '../../src/types/class.js';
-import type {Vec2, Vec3} from 'gl-matrix';
+import type {Vec2, Vec3, Mat4} from 'gl-matrix';
 import type {TextureImage} from '../../src/render/texture.js';
 
 function convertTextures(gltf: Object, images: Array<TextureImage>): Array<ModelTexture> {
@@ -371,12 +371,13 @@ function parseLegacyFootprintMesh(gltfNode: Object): ?FootprintMesh {
     return {vertices, indices};
 }
 
-function parseNodeFootprintMesh(meshes: Array<Mesh>): ?FootprintMesh {
+function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: Mat4): ?FootprintMesh {
     const vertices: Array<Point> = [];
     const indices: Array<number> = [];
 
     let baseVertex = 0;
 
+    const tempVertex = [];
     for (const mesh of meshes) {
         baseVertex = vertices.length;
 
@@ -384,7 +385,11 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>): ?FootprintMesh {
         const iArray = mesh.indexArray.uint16;
 
         for (let i = 0; i < mesh.vertexArray.length; i++) {
-            vertices.push(new Point(vArray[i * 3 + 0], vArray[i * 3 + 1]));
+            tempVertex[0] = vArray[i * 3 + 0];
+            tempVertex[1] = vArray[i * 3 + 1];
+            tempVertex[2] = vArray[i * 3 + 2];
+            vec3.transformMat4(tempVertex, tempVertex, matrix);
+            vertices.push(new Point(tempVertex[0], tempVertex[1]));
         }
 
         for (let i = 0; i < mesh.indexArray.length * 3; i++) {
@@ -463,7 +468,7 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
         let fpMesh: ?FootprintMesh = null;
 
         if (node.id in nodeFootprintLookup) {
-            fpMesh = parseNodeFootprintMesh(convertedNodes[nodeFootprintLookup[node.id]].meshes);
+            fpMesh = parseNodeFootprintMesh(convertedNodes[nodeFootprintLookup[node.id]].meshes, node.matrix);
         }
 
         if (!fpMesh) {
@@ -604,7 +609,7 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         mesh.vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
         mesh.vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
         mesh.vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
-        // Light doesnt include light coordinates - instead it incldues offet to light area segment. Distances are
+        // Light doesnt include light coordinates - instead it includes offset to light area segment. Distances are
         // normalized by dividing by fallOff. Normalized lighting coordinate system is used where center of
         // coord system is on half of door and +Y is direction of extrusion.
         // z includes half width - this is used to calculate distance to segment.

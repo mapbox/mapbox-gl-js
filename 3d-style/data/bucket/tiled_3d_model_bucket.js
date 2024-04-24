@@ -109,7 +109,7 @@ export class Tiled3dModelFeature {
                 }
                 i++;
             }
-            this.aabb = aabb;
+            this.aabb = Aabb.applyTransform(aabb, this.node.matrix);
         }
         return this.aabb;
     }

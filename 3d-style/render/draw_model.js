@@ -772,36 +772,39 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     continue;
                 }
 
-                const isLightBeamPass = painter.renderPass === 'light-beam';
-
-                const modelMatrix = [...tileMatrix];
+                const tileModelMatrix = [...tileMatrix];
 
                 const anchorX = node.anchor ? node.anchor[0] : 0;
                 const anchorY = node.anchor ? node.anchor[1] : 0;
 
-                mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
+                mat4.translate(tileModelMatrix, tileModelMatrix, [anchorX * (scale[0] - 1),
                     anchorY * (scale[1] - 1),
                     elevation]);
                 /* $FlowIgnore[incompatible-call] scale should always be an array */
                 if (!vec3.exactEquals(scale, DefaultModelScale)) {
                     /* $FlowIgnore[incompatible-call] scale should always be an array */
-                    mat4.scale(modelMatrix, modelMatrix, scale);
+                    mat4.scale(tileModelMatrix, tileModelMatrix, scale);
                 }
+                // keep model and nodemodel matrices separate for rendering door lights
+                const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.matrix);
 
-                mat4.multiply(modelMatrix, modelMatrix, node.matrix);
-
-                const lightingMatrix = mat4.multiply([], zScaleMatrix, modelMatrix);
+                const lightingMatrix = mat4.multiply([], zScaleMatrix, nodeModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
                 const normalMatrix = mat4.invert([], lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
                 mat4.scale(normalMatrix, normalMatrix, normalScale);
 
-                const worldViewProjection = mat4.multiply([], tr.expandedFarZProjMatrix, modelMatrix);
+                const isLightBeamPass = painter.renderPass === 'light-beam';
+                const wpvForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
+                // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
+                const wpvForTile = mat4.multiply([], tr.expandedFarZProjMatrix, tileModelMatrix);
                 const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
+
                 for (let i = 0; i < node.meshes.length; ++i) {
                     const mesh = node.meshes[i];
                     const isLight = i === node.lightMeshIndex;
+                    let worldViewProjection = wpvForNode;
                     if (isLight) {
                         if (!isLightBeamPass && !painter.terrain && painter.shadowRenderer) {
                             if (painter.currentLayer < painter.firstLightBeamLayer) {
@@ -809,6 +812,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             }
                             continue;
                         }
+                        // Lights come in tilespace
+                        worldViewProjection = wpvForTile;
                     } else if (isLightBeamPass) {
                         continue;
                     }
@@ -835,13 +840,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
 
                     if (isShadowPass) {
-                        drawShadowCaster(mesh, modelMatrix, painter, layer);
+                        drawShadowCaster(mesh, nodeModelMatrix, painter, layer);
                         continue;
                     }
 
                     let fogMatrixArray = null;
                     if (fog) {
-                        const fogMatrix = fogMatrixForModel(modelMatrix, painter.transform);
+                        const fogMatrix = fogMatrixForModel(nodeModelMatrix, painter.transform);
                         fogMatrixArray = new Float32Array(fogMatrix);
 
                         if (tr.projection.name !== 'globe') {
@@ -868,10 +873,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
-                        shadowRenderer.setupShadowsFromMatrix(modelMatrix, program, shadowRenderer.useNormalOffset);
+                        shadowRenderer.setupShadowsFromMatrix(nodeModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
-                    painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), fogMatrixArray);
+                    painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
 
                     const pbr = material.pbrMetallicRoughness;
                     // These values were taken from the tilesets used for testing
