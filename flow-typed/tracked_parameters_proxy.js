@@ -17,6 +17,13 @@ declare module 'tracked_parameters_proxy' {
         onClick: any
     ): void;
 
+    declare function registerBinding(
+        containerObject: any,
+        scope: Array<string>,
+        name: string,
+        description?: Object,
+    ): void;
+
     declare interface ITrackedParameters {
         constructor(map: any): void;
 
@@ -32,6 +39,13 @@ declare module 'tracked_parameters_proxy' {
             scope: Array<string>,
             buttonTitle: string,
             onClick: any
+        ): void;
+
+        registerBinding(
+            containerObject: any,
+            scope: Array<string>,
+            name: string,
+            description?: Object,
         ): void;
     }
 
@@ -50,6 +64,13 @@ declare module 'tracked_parameters_proxy' {
             scope: Array<string>,
             buttonTitle: string,
             onClick: any
+        ): void;
+
+        registerBinding(
+            containerObject: any,
+            scope: Array<string>,
+            name: string,
+            description?: Object,
         ): void;
     }
 }

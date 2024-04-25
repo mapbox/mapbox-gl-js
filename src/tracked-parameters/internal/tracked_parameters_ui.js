@@ -152,6 +152,14 @@ export function registerButton(scope: Array<string>, buttonTitle: string, onClic
     }
 }
 
+export function registerBinding(containerObject: Object, scope: Array<string>, name: string, description: ?Object) {
+    if (global) {
+        global.registerBinding(containerObject, scope, name, description);
+
+        console.warn(`Dev only "registerBinding" call. For production consider replacing with tracked parameters container method.`);
+    }
+}
+
 // Reference to actual object and default values
 class ParameterInfo {
     containerObject: Object;
@@ -538,5 +546,24 @@ export class TrackedParameters implements ITrackedParameters {
         button.on('click', () => {
             onClick();
         });
+    }
+
+    registerBinding(containerObject: Object, scope: Array<string>, name: string, description: ?Object) {
+        const {currentScope} = this.createFoldersChainAndSelectScope(scope);
+
+        const modifiedLabel = `  ${(() => {
+            if (!description) {
+                return "";
+            }
+
+            if ("label" in description) {
+                return description.label;
+            }
+
+            return name;
+        })()}`;
+
+        // Add button to TweakPane UI
+        currentScope.addBinding(containerObject, name, {...description, label: modifiedLabel});
     }
 }

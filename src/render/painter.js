@@ -217,7 +217,14 @@ class Painter {
 
     _debugParams: {
         showTerrainProxyTiles: boolean;
+        fpsWindow: number;
+        continousRedraw: boolean;
     }
+
+    _timeStamp: number;
+    _averageFPS: number;
+
+    _fpsHistory: Array<number>;
 
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
@@ -226,13 +233,35 @@ class Painter {
         this.frameCopies = [];
         this.loadTimeStamps = [];
         this.tp = tp;
+        this._timeStamp = new Date().getTime();
+        this._averageFPS = 0;
+        this._fpsHistory = [];
 
         this._debugParams = {
-            showTerrainProxyTiles: false
+            showTerrainProxyTiles: false,
+            fpsWindow: 30,
+            continousRedraw:false,
         };
 
         tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
             this.style.map.triggerRepaint();
+        });
+
+        tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
+        tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
+            readonly:true,
+            label: "continuous redraw"
+        });
+        tp.registerBinding(this, ["FPS"], '_averageFPS', {
+            readonly:true,
+            label: "value"
+        });
+        tp.registerBinding(this, ["FPS"], '_averageFPS', {
+            readonly:true,
+            label: "graph",
+            view:'graph',
+            min: 0,
+            max: 200
         });
 
         this.setup();
@@ -577,10 +606,28 @@ class Painter {
         return this.currentLayer < this.opaquePassCutoff;
     }
 
+    updateAverageFPS() {
+        const curTime = new Date().getTime();
+        const dt = curTime - this._timeStamp;
+        this._timeStamp = curTime;
+
+        const fps = dt === 0 ? 0 : 1000.0 / dt;
+
+        this._fpsHistory.push(fps);
+        if (this._fpsHistory.length > this._debugParams.fpsWindow) {
+            this._fpsHistory.splice(0, this._fpsHistory.length - this._debugParams.fpsWindow);
+        }
+
+        this._averageFPS = Math.round(this._fpsHistory.reduce((accum: number, current: number) => { return accum + current / this._fpsHistory.length; }, 0));
+    }
+
     render(style: Style, options: PainterOptions) {
+        Debug.run(() => { this.updateAverageFPS(); });
+
         // Update debug cache, i.e. clear all unused buffers
         this._wireframeDebugCache.update(this.frameCounter);
 
+        this._debugParams.continousRedraw = style.map.repaint;
         this.style = style;
         this.options = options;
 
