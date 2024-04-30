@@ -53,7 +53,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^0.4.4",
-    "@vitest/browser": "1.2.2",
+    "@vitest/browser": "^1.5.2",
     "address": "^2.0.2",
     "browserify": "^17.0.0",
     "chalk": "^5.0.1",
@@ -103,7 +103,7 @@
     "testem": "^3.13.0",
     "vite-plugin-arraybuffer": "^0.0.7",
     "vite-plugin-node-polyfills": "^0.21.0",
-    "vitest": "1.2.2"
+    "vitest": "^1.5.2"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
@@ -128,7 +128,6 @@
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s test-render test-query test-expressions",
     "test-suite-clean": "find test/integration/{render,query, expressions}-tests -mindepth 2 -type d -exec test -e \"{}/actual.png\" \\; -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "pretest-unit": "playwright install chromium",
     "watch-unit": "vitest --config vitest.config.unit.js",
     "test-unit": "vitest --config vitest.config.unit.js --run",
     "test-build": "tape test/build/**/*.test.js",

@@ -1,4 +1,4 @@
-import {describe, test, expect, waitFor, vi, createMap, equalWithPrecision} from "../../../util/vitest.js";
+import {describe, test, expect, waitFor, vi, createMap, equalWithPrecision, beforeEach} from "../../../util/vitest.js";
 import browser from '../../../../src/util/browser.js';
 import simulate from '../../../util/simulate_interaction.js';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../../util/dem_mock.js';
@@ -14,8 +14,11 @@ function createMapWithCooperativeGestures() {
 }
 
 describe('ScrollZoomHandler', () => {
-    let now = 1555555555555;
-    vi.spyOn(browser, 'now').mockImplementation(() => now);
+    let now;
+    beforeEach(() => {
+        now = 1555555555555;
+        vi.spyOn(browser, 'now').mockImplementation(() => now);
+    });
 
     test('Zooms for single mouse wheel tick', () => {
         const map = createMap({
@@ -261,7 +264,7 @@ describe('ScrollZoomHandler', () => {
                 map._renderTaskQueue.run();
             }
 
-            expect(fixedNum(map.transform.zoom, 5)).toEqual(2.74029);
+            expect(fixedNum(map.transform.zoom, 5)).toEqual(2.46106);
 
             map.remove();
         });

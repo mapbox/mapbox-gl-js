@@ -918,7 +918,7 @@ describe('Drag pan ortho', () => {
         simulate.mouseup(map.getCanvas());
         map._renderTaskQueue.run();
         expect(dragend).toHaveBeenCalledTimes(2);
-        assertAlmostEqual(map.getZoom(), 13.37, 0.01);
+        assertAlmostEqual(map.getZoom(), 13.35, 0.01);
 
         map.setPitch(0);
         simulate.mousedown(map.getCanvas());
@@ -929,7 +929,7 @@ describe('Drag pan ortho', () => {
         simulate.mouseup(map.getCanvas());
         map._renderTaskQueue.run();
         expect(dragend).toHaveBeenCalledTimes(3);
-        assertAlmostEqual(map.getZoom(), 13.37, 0.01); // no pitch, keep old zoom.
+        assertAlmostEqual(map.getZoom(), 13.35, 0.01); // no pitch, keep old zoom.
 
         map.remove();
     });

@@ -10,8 +10,12 @@ There are two test suites associated with Mapbox GL JS
  - `npm test` runs quick unit tests
  - `npm run test-suite` runs slower integration tests
 
- To run individual tests:
+To run unit tests you need install required Playwright browsers before with the command:
+```
+npx playwright install chromium
+```
 
+To run individual tests:
  - Unit tests: `npm run test-unit path/to/file.test.js`
    - e.g. `npm run test-unit test/unit/ui/handler/scroll_zoom.test.js`
  - Render tests: `npm run test-render tests=render-test-name` where the render test name can be any substring in the `test/integration/render-tests/` subdirectories
@@ -63,7 +67,7 @@ test('should tests something', () => {
 
 If you want to debug your unit tests you can open UI for that with the following command:
 ```
-npm run test-unit --no-browser.headless
+npm run test-unit -- --no-browser.headless
 ```
 
 ## Spies, Stubs, and Mocks
