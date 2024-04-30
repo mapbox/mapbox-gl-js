@@ -788,7 +788,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 // keep model and nodemodel matrices separate for rendering door lights
                 const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.matrix);
 
-                const lightingMatrix = mat4.multiply([], zScaleMatrix, nodeModelMatrix);
+                const lightingMatrix = mat4.multiply([], zScaleMatrix, tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
                 const normalMatrix = mat4.invert([], lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
@@ -873,7 +873,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
-                        shadowRenderer.setupShadowsFromMatrix(nodeModelMatrix, program, shadowRenderer.useNormalOffset);
+                        shadowRenderer.setupShadowsFromMatrix(tileModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
                     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
