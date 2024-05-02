@@ -1,0 +1,135 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 128
+    }
+  },
+  "zoom": 1,
+  "sprite": "local://sprites/emerald",
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -36,
+                  16
+                ],
+                [
+                  -36,
+                  0
+                ],
+                [
+                  -20,
+                  -16
+                ],
+                [
+                  -20,
+                  16
+                ],
+                [
+                  -28,
+                  16
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "path"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -8,
+                  16
+                ],
+                [
+                  -8,
+                  0
+                ],
+                [
+                  8,
+                  -16
+                ],
+                [
+                  8,
+                  16
+                ],
+                [
+                  0,
+                  16
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  20,
+                  16
+                ],
+                [
+                  20,
+                  0
+                ],
+                [
+                  36,
+                  -16
+                ],
+                [
+                  36,
+                  16
+                ],
+                [
+                  28,
+                  16
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "a",
+      "layout": {
+        "line-join": "none"
+      },
+      "paint": {
+        "line-width": 16,
+        "line-pattern": ["case", ["==", ["get", "class"], "street"], "generic_icon", "generic_metro" ]
+      }
+    }
+  ]
+}

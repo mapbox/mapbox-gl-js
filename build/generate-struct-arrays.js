@@ -126,6 +126,7 @@ import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/cir
 import fillAttributes from '../src/data/bucket/fill_attributes.js';
 import lineAttributes from '../src/data/bucket/line_attributes.js';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext.js';
+import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern.js';
 import patternAttributes from '../src/data/bucket/pattern_attributes.js';
 import dashAttributes from '../src/data/bucket/dash_attributes.js';
 import skyboxAttributes from '../src/render/skybox_attributes.js';
@@ -141,6 +142,7 @@ const layoutAttributes = {
     heatmap: circleAttributes,
     line: lineAttributes,
     lineExt: lineAttributesExt,
+    linePattern: lineAttributesPattern,
     pattern: patternAttributes,
     dash: dashAttributes
 };

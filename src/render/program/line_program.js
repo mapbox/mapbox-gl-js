@@ -43,7 +43,7 @@ export type LinePatternUniformsType = {|
     'u_trim_offset': Uniform2f,
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -153,6 +153,13 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 
     const hasBorder = layer.paint.get('line-border-width').constantOr(1.0) !== 0.0;
     if (hasBorder) values.push('RENDER_LINE_BORDER');
+
+    const hasJoinNone = layer.layout.get('line-join').constantOr('miter') === 'none';
+    const hasPattern = !!layer.paint.get('line-pattern').constantOr((1: any));
+    if (hasJoinNone && hasPattern) {
+        values.push('LINE_JOIN_NONE');
+    }
+
     return values;
 };
 

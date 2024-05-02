@@ -220,6 +220,38 @@ register(StructArrayLayout4f16, 'StructArrayLayout4f16');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Float32[2]
+ *
+ * @private
+ */
+class StructArrayLayout2f8 extends StructArray implements IStructArrayLayout {
+    uint8: Uint8Array;
+    float32: Float32Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1);
+    }
+
+    emplace(i: number, v0: number, v1: number): number {
+        const o4 = i * 2;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        return i;
+    }
+}
+
+StructArrayLayout2f8.prototype.bytesPerElement = 8;
+register(StructArrayLayout2f8, 'StructArrayLayout2f8');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint16[4]
  * [8]: Float32[1]
  *
@@ -1028,38 +1060,6 @@ register(StructArrayLayout3f12, 'StructArrayLayout3f12');
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Float32[2]
- *
- * @private
- */
-class StructArrayLayout2f8 extends StructArray implements IStructArrayLayout {
-    uint8: Uint8Array;
-    float32: Float32Array;
-
-    _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
-    }
-
-    emplaceBack(v0: number, v1: number): number {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1);
-    }
-
-    emplace(i: number, v0: number, v1: number): number {
-        const o4 = i * 2;
-        this.float32[o4 + 0] = v0;
-        this.float32[o4 + 1] = v1;
-        return i;
-    }
-}
-
-StructArrayLayout2f8.prototype.bytesPerElement = 8;
-register(StructArrayLayout2f8, 'StructArrayLayout2f8');
-
-/**
- * Implementation of the StructArray layout:
  * [0]: Float32[16]
  *
  * @private
@@ -1425,6 +1425,7 @@ export {
     StructArrayLayout5i10,
     StructArrayLayout2i4ub1f12,
     StructArrayLayout4f16,
+    StructArrayLayout2f8,
     StructArrayLayout4ui1f12,
     StructArrayLayout4ui8,
     StructArrayLayout6i12,
@@ -1445,7 +1446,6 @@ export {
     StructArrayLayout1ul3ui12,
     StructArrayLayout1ui2,
     StructArrayLayout3f12,
-    StructArrayLayout2f8,
     StructArrayLayout16f64,
     StructArrayLayout4ui3f20,
     StructArrayLayout1i2,
@@ -1460,6 +1460,7 @@ export {
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout4f16 as LineExtLayoutArray,
+    StructArrayLayout2f8 as LinePatternLayoutArray,
     StructArrayLayout4ui1f12 as PatternLayoutArray,
     StructArrayLayout4ui8 as DashLayoutArray,
     StructArrayLayout6i12 as FillExtrusionExtArray,

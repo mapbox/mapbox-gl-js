@@ -1668,6 +1668,9 @@
         },
         "miter": {
           "doc": "A join with a sharp, angled corner which is drawn with the outer sides beyond the endpoint of the path until they meet."
+        },
+        "none": {
+          "doc": "Line segments are not joined together, each one creates a separate line. Useful in combination with line-pattern. Line-cap property is not respected. Can't be used with data-driven styling."
         }
       },
       "default": "miter",
@@ -1682,6 +1685,11 @@
           "js": "0.40.0",
           "android": "5.2.0",
           "ios": "3.7.0"
+        },
+        "`none` value": {
+          "js": "3.4.0",
+          "android": "11.5.0",
+          "ios": "11.5.0"
         }
       },
       "expression": {
