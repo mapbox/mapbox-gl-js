@@ -34,6 +34,8 @@ import assert from 'assert';
 
 export default drawRasterParticle;
 
+const VELOCITY_TEXTURE_UNIT = 0;
+const RASTER_PARTICLE_TEXTURE_UNIT = 1;
 const RASTER_COLOR_TEXTURE_UNIT = 2;
 const SPEED_MAX_VALUE = 0.3;
 
@@ -58,6 +60,18 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
     const source = sourceCache.getSource();
     if (!(source instanceof RasterArrayTileSource)) return;
 
+    // update layer resources
+
+    const particleTextureDimension = Math.ceil(Math.sqrt(layer.paint.get('raster-particle-count')));
+    let particleFramebuffer = layer.particleFramebuffer;
+    if (!particleFramebuffer) {
+        particleFramebuffer = layer.particleFramebuffer = context.createFramebuffer(particleTextureDimension, particleTextureDimension, true, null);
+    } else if (particleFramebuffer.width !== particleTextureDimension) {
+        assert(particleFramebuffer.width === particleFramebuffer.height);
+        particleFramebuffer.destroy();
+        particleFramebuffer = layer.particleFramebuffer = context.createFramebuffer(particleTextureDimension, particleTextureDimension, true, null);
+    }
+
     // acquire and update tiles
 
     const tiles: Array<[OverscaledTileID, TileData, RasterParticleState, boolean]> = [];
@@ -70,33 +84,32 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         assert(data.texture);
 
         const textureSize = [data.tileSize, data.tileSize];
-        let framebuffer = layer.tileFramebuffer;
-        if (!framebuffer) {
+        let tileFramebuffer = layer.tileFramebuffer;
+        if (!tileFramebuffer) {
             const fbWidth = textureSize[0];
             const fbHeight = textureSize[1];
-            framebuffer = layer.tileFramebuffer = context.createFramebuffer(fbWidth, fbHeight, true, null);
+            tileFramebuffer = layer.tileFramebuffer = context.createFramebuffer(fbWidth, fbHeight, true, null);
         }
-        assert(framebuffer.width === textureSize[0] && framebuffer.height === textureSize[1]);
+        assert(tileFramebuffer.width === textureSize[0] && tileFramebuffer.height === textureSize[1]);
 
         let state = tile.rasterParticleState;
-        const layerParticleCount = layer.paint.get('raster-particle-count');
         if (!state) {
-            state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, layerParticleCount);
+            state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particleTextureDimension);
         }
 
         const renderBackground = state.update(layer.lastInvalidatedAt);
 
-        if (state.numParticles !== layerParticleCount) {
-            state.setNumParticles(id, layerParticleCount);
+        if (state.particleTextureDimension !== particleTextureDimension) {
+            state.setParticleTextureDimension(id, particleTextureDimension);
         }
 
         const t = state.targetColorTexture;
         state.targetColorTexture = state.backgroundColorTexture;
         state.backgroundColorTexture = t;
 
-        const p = state.particleVertices0;
-        state.particleVertices0 = state.particleVertices1;
-        state.particleVertices1 = p;
+        const p = state.particleTexture0;
+        state.particleTexture0 = state.particleTexture1;
+        state.particleTexture1 = p;
 
         tiles.push([id, data, state, renderBackground]);
     }
@@ -119,12 +132,10 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
 
     // render and update the particle state
 
-    const framebuffer = layer.tileFramebuffer;
-    context.bindFramebuffer.set(framebuffer.framebuffer);
-    context.activeTexture.set(gl.TEXTURE0);
-
+    context.bindFramebuffer.set(layer.tileFramebuffer.framebuffer);
     renderBackground(painter, layer, tiles);
     renderParticles(painter, sourceCache, layer, tiles);
+    context.bindFramebuffer.set(layer.particleFramebuffer.framebuffer);
     updateParticles(painter, layer, tiles, frameDeltaSeconds);
 }
 
@@ -243,11 +254,13 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
     for (const targetTile of tiles) {
         const [targetTileID, targetTileData, targetTileState, ] = targetTile;
 
+        context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         framebuffer.colorAttachment.set(targetTileState.targetColorTexture.texture);
         const defines = targetTileData.defines;
         const program = painter.getOrCreateProgram('rasterParticleDraw', {defines, overrideFog: false});
 
+        context.activeTexture.set(gl.TEXTURE0 + RASTER_PARTICLE_TEXTURE_UNIT);
         const tileIDs = targetTileData.scalarData ? [] : [0, 1, 2, 3].map(idx => neighborCoord[idx](targetTileID));
         tileIDs.push(targetTileID);
         const x = targetTileID.canonical.x;
@@ -257,17 +270,23 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
             if (!tile) continue;
             const state = tile.rasterParticleState;
             if (!state) continue;
+
             // NOTE: tiles adjacent to the antimeridian need their x coordinates shifted by (2^z) in order for (nx - x)
             // to be contained in [-1, 1].
             const wrapDelta = tileID.wrap - targetTileID.wrap;
             const nx = tileID.canonical.x + (1 << tileID.canonical.z) * wrapDelta;
             const ny = tileID.canonical.y;
 
+            state.particleTexture0.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            const rasterParticleTextureRes = state.particleTexture0.size;
+            assert(rasterParticleTextureRes[0] === rasterParticleTextureRes[1]);
+            const rasterParticleTextureSideLen = rasterParticleTextureRes[0];
             const tileOffset = [nx - x, ny - y];
-            const velocityTextureUnit = 0;
             const uniforms = rasterParticleDrawUniformValues(
+                RASTER_PARTICLE_TEXTURE_UNIT,
+                rasterParticleTextureSideLen,
                 tileOffset,
-                velocityTextureUnit,
+                VELOCITY_TEXTURE_UNIT,
                 targetTileData.texture.size,
                 RASTER_COLOR_TEXTURE_UNIT,
                 maxSpeed,
@@ -284,7 +303,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
                 CullFaceMode.disabled,
                 uniforms,
                 layer.id,
-                state.particleVertices0,
+                state.particleIndexBuffer,
                 undefined,
                 state.particleSegment
             );
@@ -296,59 +315,49 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
     const context = painter.context;
     const gl = context.gl;
 
-    let transformFeedbackObject = layer.transformFeedbackObject;
-    if (!transformFeedbackObject) {
-        // $FlowFixMe[prop-missing]
-        transformFeedbackObject = layer.transformFeedbackObject = gl.createTransformFeedback();
-    }
-    // $FlowFixMe[prop-missing]
-    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, layer.transformFeedbackObject);
-
-    const velocityTextureUnit = 0;
     const maxSpeed = layer.paint.get('raster-particle-max-speed');
     const speedFactor = frameDeltaSeconds * layer.paint.get('raster-particle-speed-factor') * SPEED_MAX_VALUE;
-    const lifetimeDelta = resetRateCurve(layer.paint.get('raster-particle-reset-rate-factor'));
+    const resetRateFactor = layer.paint.get('raster-particle-reset-rate-factor');
+    const resetRate = resetRateCurve(0.01 + resetRateFactor * 1.0);
+    const particleFramebuffer = layer.particleFramebuffer;
+    context.viewport.set([0, 0, particleFramebuffer.width, particleFramebuffer.height]);
+
     for (const tile of tiles) {
         const [, data, state, ] = tile;
 
+        context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         data.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        context.activeTexture.set(gl.TEXTURE0 + RASTER_PARTICLE_TEXTURE_UNIT);
+        const particleTexture = state.particleTexture0;
+        particleTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         const uniforms = rasterParticleUpdateUniformValues(
-            velocityTextureUnit,
+            RASTER_PARTICLE_TEXTURE_UNIT,
+            particleTexture.size[0],
+            VELOCITY_TEXTURE_UNIT,
             data.texture.size,
             maxSpeed,
             speedFactor,
-            lifetimeDelta,
+            resetRate,
             data.textureOffset,
             data.scale,
             data.offset
         );
-        const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines, transformFeedback: {bufferMode: gl.SEPARATE_ATTRIBS, shaderVaryings: ['v_new_particle']}});
+        particleFramebuffer.colorAttachment.set(state.particleTexture1.texture);
+        context.clear({color: Color.transparent});
+        const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines});
         updateProgram.draw(
             painter,
-            gl.POINTS,
+            gl.TRIANGLES,
             DepthMode.disabled,
             StencilMode.disabled,
-            ColorMode.disabled,
+            ColorMode.unblended,
             CullFaceMode.disabled,
             uniforms,
             layer.id,
-            state.particleVertices0,
-            undefined,
-            state.particleSegment,
-            {},
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            [{
-                buffer: state.particleVertices1,
-                targetIndex: 0
-            }]
-        );
+            painter.viewportBuffer,
+            painter.quadTriangleIndexBuffer,
+            painter.viewportSegments);
     }
-
-    // $FlowFixMe[prop-missing]
-    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
 }
 
 function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: boolean) {

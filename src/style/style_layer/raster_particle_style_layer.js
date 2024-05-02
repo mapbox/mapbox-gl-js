@@ -24,8 +24,8 @@ class RasterParticleStyleLayer extends StyleLayer {
 
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
-    transformFeedbackObject: any;
     tileFramebuffer: Framebuffer;
+    particleFramebuffer: Framebuffer;
 
     previousDrawTimestamp: ?number;
     lastInvalidatedAt: number;
@@ -36,19 +36,17 @@ class RasterParticleStyleLayer extends StyleLayer {
         this.lastInvalidatedAt = browser.now();
     }
 
-    onRemove(map: MapboxMap): void {
+    onRemove(_: MapboxMap): void {
         if (this.colorRampTexture) {
             this.colorRampTexture.destroy();
         }
 
-        if (this.transformFeedbackObject) {
-            const gl = map.painter.context.gl;
-            // $FlowFixMe[prop-missing]
-            gl.deleteTransformFeedback(this.transformFeedbackObject);
-        }
-
         if (this.tileFramebuffer) {
             this.tileFramebuffer.destroy();
+        }
+
+        if (this.particleFramebuffer) {
+            this.particleFramebuffer.destroy();
         }
     }
 

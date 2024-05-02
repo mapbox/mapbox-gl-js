@@ -240,7 +240,7 @@ createStructArrayType(`feature_vertex`, featureAttributes);
 
 // particle vertex attribute
 
-createStructArrayType('particle_vertex_layout', particleAttributes);
+createStructArrayType('particle_index_layout', particleAttributes);
 
 // paint vertex arrays
 

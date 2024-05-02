@@ -1147,6 +1147,37 @@ register(StructArrayLayout4ui3f20, 'StructArrayLayout4ui3f20');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int16[1]
+ *
+ * @private
+ */
+class StructArrayLayout1i2 extends StructArray implements IStructArrayLayout {
+    uint8: Uint8Array;
+    int16: Int16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0);
+    }
+
+    emplace(i: number, v0: number): number {
+        const o2 = i * 1;
+        this.int16[o2 + 0] = v0;
+        return i;
+    }
+}
+
+StructArrayLayout1i2.prototype.bytesPerElement = 2;
+register(StructArrayLayout1i2, 'StructArrayLayout1i2');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint8[1]
  *
  * @private
@@ -1417,6 +1448,7 @@ export {
     StructArrayLayout2f8,
     StructArrayLayout16f64,
     StructArrayLayout4ui3f20,
+    StructArrayLayout1i2,
     StructArrayLayout1ub1,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout3i6 as PosGlobeExtArray,
@@ -1457,7 +1489,7 @@ export {
     StructArrayLayout3f12 as NormalLayoutArray,
     StructArrayLayout16f64 as InstanceVertexArray,
     StructArrayLayout4ui3f20 as FeatureVertexArray,
-    StructArrayLayout3f12 as ParticleVertexLayoutArray,
+    StructArrayLayout1i2 as ParticleIndexLayoutArray,
     StructArrayLayout1ub1 as FillExtrusionHiddenByLandmarkArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

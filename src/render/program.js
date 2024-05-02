@@ -10,7 +10,6 @@ import {
 import assert from 'assert';
 import ProgramConfiguration from '../data/program_configuration.js';
 import VertexArrayObject from './vertex_array_object.js';
-import type {TransformFeedbackBuffer, TransformFeedbackConfiguration} from '../gl/transform_feedback.js';
 import Context from '../gl/context.js';
 import {terrainUniforms, globeUniforms} from '../terrain/terrain.js';
 import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain.js';
@@ -97,8 +96,7 @@ class Program<Us: UniformBindings> {
                 source: ShaderSource,
                 configuration: ?ProgramConfiguration,
                 fixedUniforms: (Context) => Us,
-                fixedDefines: string[],
-                transformFeedback: ?TransformFeedbackConfiguration) {
+                fixedDefines: string[]) {
         const gl = context.gl;
         this.program = ((gl.createProgram(): any): WebGLProgram);
 
@@ -162,11 +160,6 @@ class Program<Us: UniformBindings> {
                 gl.bindAttribLocation(this.program, i, attributeName);
                 this.attributes[attributeName] = i;
             }
-        }
-
-        if (transformFeedback && transformFeedback.shaderVaryings.length > 0) {
-            // $FlowFixMe[prop-missing]
-            gl.transformFeedbackVaryings(this.program, transformFeedback.shaderVaryings, transformFeedback.bufferMode);
         }
 
         gl.linkProgram(this.program);
@@ -401,8 +394,7 @@ class Program<Us: UniformBindings> {
          zoom: ?number,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffers: ?Array<?VertexBuffer>,
-         instanceCount: ?number,
-         transformFeedbackBuffers: ?Array<TransformFeedbackBuffer>) {
+         instanceCount: ?number) {
 
         const context = painter.context;
         const gl = context.gl;
@@ -429,19 +421,6 @@ class Program<Us: UniformBindings> {
             [gl.TRIANGLES]: 3,
             [gl.LINE_STRIP]: 1
         }[drawMode];
-
-        const enableTransformFeedback = transformFeedbackBuffers && transformFeedbackBuffers.length > 0;
-        if (enableTransformFeedback) {
-            // $FlowFixMe[incompatible-type]
-            for (const tf of transformFeedbackBuffers) {
-                const buffer = tf.buffer.buffer;
-                const targetIdx = tf.targetIndex;
-                // $FlowFixMe[prop-missing]
-                gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, targetIdx, buffer);
-            }
-            // $FlowFixMe[prop-missing]
-            gl.beginTransformFeedback(drawMode);
-        }
 
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {
@@ -480,11 +459,6 @@ class Program<Us: UniformBindings> {
                 this._drawDebugWireframe(painter, depthMode, stencilMode, colorMode, indexBuffer, segment,
                     currentProperties, zoom, configuration, instanceCount);
             }
-        }
-
-        if (enableTransformFeedback) {
-            // $FlowFixMe[prop-missing]
-            gl.endTransformFeedback();
         }
     }
 }

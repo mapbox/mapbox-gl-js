@@ -47,7 +47,6 @@ import {RGBAImage} from '../util/image.js';
 import {ReplacementSource} from '../../3d-style/source/replacement_source.js';
 import type {Source} from '../source/source.js';
 import type {CutoffParams} from '../render/cutoff.js';
-import type {TransformFeedbackConfiguration} from '../gl/transform_feedback.js';
 
 // 3D-style related
 import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model.js';
@@ -80,7 +79,6 @@ export type CanvasCopyInstances = {
 export type CreateProgramParams = {
     config?: ProgramConfiguration,
     defines?: DynamicDefinesType[],
-    transformFeedback?: TransformFeedbackConfiguration,
     overrideFog?: boolean,
     overrideRtt?: boolean
 }
@@ -1311,7 +1309,6 @@ class Painter {
         this.cache = this.cache || {};
         const defines = ((((options && options.defines) || []): any): string[]);
         const config = options && options.config;
-        const transformFeedback = options && options.transformFeedback;
         const overrideFog = options && options.overrideFog;
         const overrideRtt = options && options.overrideRtt;
 
@@ -1320,7 +1317,7 @@ class Painter {
         const key = Program.cacheKey(shaders[name], name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines, transformFeedback);
+            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines);
         }
         return this.cache[key];
     }

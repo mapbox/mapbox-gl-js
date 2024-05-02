@@ -1,43 +1,8 @@
-#include "_prelude_raster_array.glsl"
-#include "_prelude_raster_particle.glsl"
+in vec2 a_pos;
 
-in vec3 a_pos_3f;
-
-uniform float u_speed_factor;
-uniform float u_lifetime_delta;
-uniform float u_rand_seed;
-
-out vec3 v_new_particle;
-
-// pseudo-random generator
-const vec3 rand_constants = vec3(12.9898, 78.233, 4375.85453);
-float rand(const vec2 co) {
-    float t = dot(rand_constants.xy, co);
-    return fract(sin(t) * (rand_constants.z + t));
-}
+out vec2 v_tex_coord;
 
 void main() {
-    float lifetime = a_pos_3f.z;
-
-    vec2 pos = a_pos_3f.xy;
-    vec2 uv = clamp(pos, vec2(0.0), vec2(1.0));
-    vec2 velocity = lookup_velocity(uv);
-
-    float next_lifetime = lifetime - u_lifetime_delta;
-    float t = step(0.0, next_lifetime);
-    vec2 dp;
-#ifdef DATA_FORMAT_UINT32
-    dp = vec2(0);
-#else
-    dp = velocity == INVALID_VELOCITY ? vec2(0) : velocity * u_speed_factor;
-#endif
-    vec2 seed = pos * u_rand_seed;
-
-    vec2 next_pos = pos + dp;
-    vec2 random_pos = vec2(rand(seed + 1.3), rand(seed + 2.1));
-    v_new_particle = vec3(
-        vec2(mix(random_pos, next_pos, t)),
-        mix(1.0, next_lifetime, t)
-    );
-    gl_Position = vec4(v_new_particle.xy, 0.0, 1.0);
+    v_tex_coord = 0.5 * (a_pos + vec2(1.0));
+    gl_Position = vec4(a_pos, 0.0, 1.0);
 }
