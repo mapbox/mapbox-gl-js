@@ -1,5 +1,3 @@
-precision highp float;
-
 #include "_prelude_raster_particle.glsl"
 
 in float a_index;

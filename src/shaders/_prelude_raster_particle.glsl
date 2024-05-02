@@ -52,11 +52,11 @@ vec2 lookup_velocity(vec2 uv) {
 }
 #endif
 
-uniform float u_particle_pos_scale;
-uniform vec2 u_particle_pos_offset;
+uniform highp float u_particle_pos_scale;
+uniform highp vec2 u_particle_pos_offset;
 
 vec2 decode_pos(vec4 pixel) {
-    vec2 p = vec2(
+    highp vec2 p = vec2(
         pixel.r / 255.0 + pixel.b,
         pixel.g / 255.0 + pixel.a);
 
@@ -64,7 +64,7 @@ vec2 decode_pos(vec4 pixel) {
 }
 
 vec4 encode_pos(vec2 pos) {
-    vec2 p = (pos + u_particle_pos_offset) / u_particle_pos_scale;
+    highp vec2 p = (pos + u_particle_pos_offset) / u_particle_pos_scale;
     return vec4(
         fract(p * 255.0),
         floor(p * 255.0) / 255.0);
