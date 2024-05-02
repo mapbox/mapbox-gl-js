@@ -873,7 +873,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
-                        shadowRenderer.setupShadowsFromMatrix(tileModelMatrix, program, shadowRenderer.useNormalOffset);
+                        shadowRenderer.setupShadowsFromMatrix(nodeModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
                     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);

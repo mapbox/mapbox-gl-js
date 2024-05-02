@@ -1,0 +1,274 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00025,
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.5
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.5
+      }
+    }
+  ],
+  "sources": {
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx-meshopt/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "pitch": 32,
+  "zoom": 19,
+  "bearing": 0,
+  "center": [
+    -122.1987794,
+    37.4230764
+  ],
+
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      },
+      "id": "land"
+    },
+    {
+      "id": "building-models",
+      "minzoom": 14.0,
+      "paint": {
+          "model-ambient-occlusion-intensity": 0.75,
+          "model-color": [
+              "match",
+              [
+                  "get",
+                  "part"
+              ],
+              "roof",
+              [
+                  "hsl",
+                  22,
+                  82,
+                  90
+              ],
+              "wall",
+              [
+                  "hsl",
+                  0,
+                  0,
+                  100
+              ],
+              "window",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0,
+                  [
+                      "hsl",
+                      [
+                          "random",
+                          0.0,
+                          90.0,
+                          [
+                              "id"
+                          ]
+                      ],
+                      [
+                          "random",
+                          20.0,
+                          100.0,
+                          [
+                              "id"
+                          ]
+                      ],
+                      87
+                  ],
+                  0.15,
+                  [
+                      "hsl",
+                      [
+                          "random",
+                          200.0,
+                          215.0,
+                          [
+                              "id"
+                          ]
+                      ],
+                      100,
+                      [
+                          "random",
+                          70.0,
+                          80.0,
+                          [
+                              "id"
+                          ]
+                      ]
+                  ]
+              ],
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.16,
+                  [
+                      "hsla",
+                      [
+                          "random",
+                          10.0,
+                          70.0,
+                          [
+                              "id"
+                          ]
+                      ],
+                      55
+                      ,
+                      [
+                          "random",
+                          80.0,
+                          90.0,
+                          [
+                              "id"
+                          ]
+                      ],
+                      1.0
+                  ],
+                  0.4,
+                  "hsl(0, 100%, 100%)"
+              ]
+          ],
+          "model-color-mix-intensity": [
+              "match",
+              [
+                  "get",
+                  "part"
+              ],
+              "logo",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.2,
+                  0,
+                  0.4,
+                  0.3
+              ],
+              1.0
+          ],
+          "model-emissive-strength": [
+              "match",
+              [
+                  "get",
+                  "part"
+              ],
+              "door",
+              [
+                  "interpolate",
+                  [ "linear" ],
+                  [ "measure-light", "brightness" ],
+                  0.2,
+                  1.5,
+                  0.4,
+                  2.5
+              ],
+              "logo",
+              0.6,
+              "window",
+              [
+                  "random",
+                  0.5,
+                  0.8,
+                  [
+                      "id"
+                  ]
+              ],
+              0.0
+          ],
+          "model-height-based-emissive-strength-multiplier": [
+              "match",
+              [
+                  "get",
+                  "part"
+              ],
+              "window",
+              [
+                  "literal",
+                  [
+                      0.0,
+                      0.9,
+                      0,
+                      1,
+                      0.5
+                  ]
+              ],
+              [
+                  "literal",
+                  [
+                      1.0,
+                      1.0,
+                      1.0,
+                      1.0,
+                      1.0
+                  ]
+              ]
+          ],
+          "model-opacity": [
+              "interpolate",
+              [ "linear" ],
+              [ "zoom" ],
+              14.2,
+              0.0,
+              14.5,
+              1.0
+          ],
+          "model-roughness": [
+              "match",
+              [
+                  "get",
+                  "part"
+              ],
+              "window",
+              0.0,
+              1.0
+          ],
+          "model-scale": [
+              "interpolate",
+              [ "linear" ],
+              [ "zoom" ],
+              14.2,
+              [
+                  1.0,
+                  1.0,
+                  0.0
+              ],
+              14.5,
+              [
+                  1.0,
+                  1.0,
+                  1.0
+              ]
+          ],
+          "model-type": "common-3d"
+      },
+      "source": "file-system-tiles",
+      "type": "model"
+    }
+  ]
+}
