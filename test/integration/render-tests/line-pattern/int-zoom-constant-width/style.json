@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    49.857,
+    16.594
+  ],
+  "zoom": 7.3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/pattern-line.geojson",
+      "lineMetrics": true
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#FFF"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-pattern": "dot",
+        "line-width": {
+          "type": "exponential",
+          "base": 2,
+          "stops": [
+              [0, 14],
+              [1, 28],
+              [1, 14],
+              [2, 28],
+              [2, 14],
+              [3, 28],
+              [3, 14],
+              [4, 28],
+              [4, 14],
+              [5, 28],
+              [5, 14],
+              [6, 28],
+              [6, 14],
+              [7, 28],
+              [7, 14],
+              [8, 28],
+              [8, 14],
+              [9, 28],
+              [9, 14],
+              [10, 28],
+              [10, 14],
+              [11, 28],
+              [11, 14],
+              [12, 28],
+              [12, 14],
+              [13, 28],
+              [13, 14],
+              [14, 28],
+              [14, 14],
+              [15, 28],
+              [15, 14],
+              [16, 28],
+              [16, 14],
+              [17, 28],
+              [17, 14],
+              [18, 28],
+              [18, 14],
+              [19, 28],
+              [19, 14],
+              [20, 28],
+              [20, 14],
+              [21, 28],
+              [21, 14],
+              [22, 28]
+          ]
+      }
+      },
+      "layout": {
+        "line-join": "none"
+      }
+    }
+  ]
+}

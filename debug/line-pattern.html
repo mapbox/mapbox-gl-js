@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Display a line string with pattern</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    #config { position: absolute; top:15px; left:15px; max-height: 95%; overflow-y:auto; z-index: 100; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id='config'></div>
+<script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='access_token_generated.js'></script>
+<script>
+
+const lineBaseWidth = 16;
+const zoomConstExpression = {
+    "type": "exponential",
+    "base": 2,
+    "stops": [
+        [0, lineBaseWidth * 1],
+        [1, lineBaseWidth * 2],
+        [1, lineBaseWidth * 1],
+        [2, lineBaseWidth * 2],
+        [2, lineBaseWidth * 1],
+        [3, lineBaseWidth * 2],
+        [3, lineBaseWidth * 1],
+        [4, lineBaseWidth * 2],
+        [4, lineBaseWidth * 1],
+        [5, lineBaseWidth * 2],
+        [5, lineBaseWidth * 1],
+        [6, lineBaseWidth * 2],
+        [6, lineBaseWidth * 1],
+        [7, lineBaseWidth * 2],
+        [7, lineBaseWidth * 1],
+        [8, lineBaseWidth * 2],
+        [8, lineBaseWidth * 1],
+        [9, lineBaseWidth * 2],
+        [9, lineBaseWidth * 1],
+        [10, lineBaseWidth * 2],
+        [10, lineBaseWidth * 1],
+        [11, lineBaseWidth * 2],
+        [11, lineBaseWidth * 1],
+        [12, lineBaseWidth * 2],
+        [12, lineBaseWidth * 1],
+        [13, lineBaseWidth * 2],
+        [13, lineBaseWidth * 1],
+        [14, lineBaseWidth * 2],
+        [14, lineBaseWidth * 1],
+        [15, lineBaseWidth * 2],
+        [15, lineBaseWidth * 1],
+        [16, lineBaseWidth * 2],
+        [16, lineBaseWidth * 1],
+        [17, lineBaseWidth * 2],
+        [17, lineBaseWidth * 1],
+        [18, lineBaseWidth * 2],
+        [18, lineBaseWidth * 1],
+        [19, lineBaseWidth * 2],
+        [19, lineBaseWidth * 1],
+        [20, lineBaseWidth * 2],
+        [20, lineBaseWidth * 1],
+        [21, lineBaseWidth * 2],
+        [21, lineBaseWidth * 1],
+        [22, lineBaseWidth * 2]
+    ]
+};
+
+const PatternDemo = function() {
+    this.useZoomLevelConstantWidth = true;
+};
+
+const patternDemo = new PatternDemo();
+
+window.onload = function() {
+    const gui = new Tweakpane.Pane({  // eslint-disable-line
+        container: document.querySelector('#config'),
+        title: 'Parameters',
+    });
+
+    gui.addInput(patternDemo, 'useZoomLevelConstantWidth').on('change', (ev) => {
+        if (patternDemo.useZoomLevelConstantWidth) {
+            map.setPaintProperty('route', 'line-width', zoomConstExpression);
+        } else {
+            map.setPaintProperty('route', 'line-width', lineBaseWidth);
+        }
+    });
+};
+
+const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    style: 'mapbox://styles/mapbox/streets-v11',
+    hash: true,
+    center: [2.3406, 48.8542],
+    zoom: 16
+});
+
+const route = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    [2.334249, 48.858044], [2.335224, 48.857798], [2.336232, 48.857873], [2.336069, 48.857606],
+                    [2.336378, 48.857488], [2.336492, 48.857285], [2.336524, 48.857061], [2.336719, 48.855681],
+                    [2.334201, 48.855938], [2.333941, 48.855510], [2.336118, 48.854773], [2.335484, 48.854045],
+                    [2.335923, 48.853971], [2.335322, 48.853308], [2.336979, 48.852912], [2.336931, 48.853842],
+                    [2.337337, 48.853842], [2.338361, 48.853682], [2.337743, 48.855275], [2.339953, 48.856419],
+                    [2.340441, 48.856098], [2.339856, 48.855371], [2.340928, 48.854644], [2.340717, 48.854398],
+                    [2.340555, 48.854217], [2.340148, 48.853457], [2.342099, 48.853329], [2.342700, 48.853276],
+                    [2.343236, 48.853190], [2.343285, 48.853104], [2.343224, 48.852862], [2.342905, 48.852395],
+                    [2.342626, 48.852088], [2.342014, 48.851686], [2.345523, 48.850850], [2.345935, 48.850962],
+                    [2.346245, 48.851090], [2.347629, 48.851658], [2.347862, 48.851806], [2.348203, 48.852287],
+                    [2.348103, 48.852309], [2.348060, 48.852311], [2.348049, 48.852212], [2.347870, 48.851980],
+                    [2.347767, 48.852019], [2.347665, 48.851941], [2.347364, 48.852139], [2.347298, 48.852107],
+                    [2.347011, 48.852190], [2.346923, 48.852195], [2.347571, 48.852569], [2.347528, 48.852588],
+                    [2.347693, 48.852680], [2.346974, 48.853039], [2.347011, 48.853065], [2.346954, 48.853103],
+                    [2.346761, 48.853189], [2.346789, 48.853213], [2.346948, 48.853498], [2.347170, 48.853446],
+                    [2.347153, 48.853425], [2.347181, 48.853399], [2.348236, 48.852909], [2.348370, 48.852849],
+                    [2.348469, 48.852810], [2.348469, 48.852776], [2.348225, 48.852461], [2.348304, 48.852415],
+                    [2.348279, 48.852387], [2.348573, 48.852270], [2.349232, 48.851974], [2.349301, 48.851946],
+                    [2.349229, 48.851854], [2.349164, 48.851860]
+                ],
+                "type": "LineString"
+            }
+        }
+    ]
+};
+
+map.on('load', () => {
+    map.setFog({
+        'horizon-blend': 0.0
+    });
+
+    map.addSource('route', {
+        'type': 'geojson',
+        'data': route,
+        'lineMetrics': true,
+        'maxzoom': 19,
+    });
+
+    map.addLayer({
+        'id': 'route',
+        'source': 'route',
+        'type': 'line',
+        'layout': {
+            'line-join': 'none'
+        },
+        'paint': {
+            'line-pattern': 'dot-11',
+            'line-width': zoomConstExpression
+        }
+    });
+});
+</script>
+
+</body>
+</html>
