@@ -1,10 +1,9 @@
 // @flow
 
-import {LineLayoutArray, LineExtLayoutArray, LinePatternLayoutArray} from '../array_types.js';
+import {LineLayoutArray, LineExtLayoutArray} from '../array_types.js';
 
 import {members as layoutAttributes} from './line_attributes.js';
 import {members as layoutAttributesExt} from './line_attributes_ext.js';
-import {members as layoutAttributesPattern} from './line_attributes_pattern.js';
 import SegmentVector from '../segment.js';
 import {ProgramConfigurationSet} from '../program_configuration.js';
 import {TriangleIndexArray} from '../index_array_type.js';
@@ -65,13 +64,6 @@ const EXTRUDE_SCALE = 63;
 const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
 const SHARP_CORNER_OFFSET = 15;
 
-/*
- * Straight corners are used to reduce vertex count for line-join: none lines.
- * If corner angle is less than COS_STRAIGHT_CORNER, we use a miter joint,
- * instead of creating a new line segment. The default is 5 degrees.
- */
-const COS_STRAIGHT_CORNER = Math.cos(5 * (Math.PI / 180));
-
 // Angle per triangle for approximating round line joins.
 const DEG_PER_TRIANGLE = 20;
 
@@ -100,10 +92,6 @@ class LineBucket implements Bucket {
     e1: number;
     e2: number;
 
-    patternJoinNone: boolean;
-    segmentStart: number;
-    segmentPoints: Array<number>;
-
     index: number;
     zoom: number;
     overscaling: number;
@@ -119,8 +107,6 @@ class LineBucket implements Bucket {
     layoutVertexBuffer: VertexBuffer;
     layoutVertexArray2: LineExtLayoutArray;
     layoutVertexBuffer2: VertexBuffer;
-    patternVertexArray: LinePatternLayoutArray;
-    patternVertexBuffer: VertexBuffer;
 
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
@@ -148,7 +134,6 @@ class LineBucket implements Bucket {
 
         this.layoutVertexArray = new LineLayoutArray();
         this.layoutVertexArray2 = new LineExtLayoutArray();
-        this.patternVertexArray = new LinePatternLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.segments = new SegmentVector();
@@ -301,9 +286,6 @@ class LineBucket implements Bucket {
             if (this.layoutVertexArray2.length !== 0) {
                 this.layoutVertexBuffer2 = context.createVertexBuffer(this.layoutVertexArray2, layoutAttributesExt);
             }
-            if (this.patternVertexArray.length !== 0) {
-                this.patternVertexBuffer = context.createVertexBuffer(this.patternVertexArray, layoutAttributesPattern);
-            }
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
@@ -347,11 +329,6 @@ class LineBucket implements Bucket {
         this.scaledDistance = 0;
         this.totalDistance = 0;
         this.lineSoFar = 0;
-
-        const joinNone = join === 'none';
-        this.patternJoinNone = this.hasPattern && joinNone;
-        this.segmentStart = 0;
-        this.segmentPoints = [];
 
         if (this.lineClips) {
             this.lineClipsArray.push(this.lineClips);
@@ -424,58 +401,6 @@ class LineBucket implements Bucket {
             // non-closed line, so we're doing a straight "join".
             prevNormal = prevNormal || nextNormal;
 
-            // The join if a middle vertex, otherwise the cap.
-            const middleVertex = prevVertex && nextVertex;
-            let currentJoin = middleVertex ? join : (isPolygon || joinNone) ? 'butt' : cap;
-
-            // calculate cosines of the angle (and its half) using dot product
-            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
-
-            if (joinNone) {
-                const endLineSegment = function (bucket: LineBucket) {
-                    if (bucket.patternJoinNone) {
-                        const pointCount = bucket.segmentPoints.length / 2;
-                        const segmentLength = bucket.lineSoFar - bucket.segmentStart;
-                        for (let idx = 0; idx < pointCount; ++idx) {
-                            const pos = bucket.segmentPoints[idx * 2];
-                            const offsetSign = bucket.segmentPoints[idx * 2 + 1];
-                            // Integer part contains position in tile units
-                            // Fractional part has offset sign 0.25 = -1, 0.5 = 0, 0.75 = 1
-                            const posAndOffset = Math.round(pos) + 0.5 + offsetSign * 0.25;
-                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength);
-                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength);
-                        }
-
-                        // Reset line segment
-                        bucket.segmentPoints = [];
-                        bucket.segmentStart = bucket.lineSoFar;
-                    }
-
-                    bucket.e1 = bucket.e2 = -1;
-                };
-
-                if (middleVertex && cosAngle < COS_STRAIGHT_CORNER) { // Not straight corner, create separate line segment
-                    this.updateDistance(prevVertex, currentVertex);
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment);
-                    endLineSegment(this);
-
-                    // Start new segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment);
-
-                    continue; // Don't apply other geometry generation logic
-                } else if (prevVertex) {
-                    if (!nextVertex) { // End line string
-                        this.updateDistance(prevVertex, currentVertex);
-                        this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment);
-                        endLineSegment(this);
-
-                        continue; // Don't apply other geometry generation logic
-                    } else {
-                        currentJoin = 'miter';
-                    }
-                }
-            }
-
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
             // In the case of 180° angles, the prev and next normals cancel each other out:
@@ -496,6 +421,8 @@ class LineBucket implements Bucket {
              *
              */
 
+            // calculate cosines of the angle (and its half) using dot product
+            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
 
             // Calculate the length of the miter (the ratio of the miter to the width)
@@ -517,6 +444,10 @@ class LineBucket implements Bucket {
                     prevVertex = newPrevVertex;
                 }
             }
+
+            // The join if a middle vertex, otherwise the cap.
+            const middleVertex = prevVertex && nextVertex;
+            let currentJoin = middleVertex ? join : isPolygon ? 'butt' : cap;
 
             if (middleVertex && currentJoin === 'round') {
                 if (miterLength < roundLimit) {
@@ -602,16 +533,19 @@ class LineBucket implements Bucket {
 
             } else if (currentJoin === 'butt') {
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment); // butt cap
+
             } else if (currentJoin === 'square') {
+                const offset = prevVertex ? 1 : -1; // closing or starting square cap
+
                 if (!prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, -1, -1, segment);
+                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
                 }
 
                 // make the cap it's own quad to avoid the cap affecting the line distance
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
 
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, 1, 1, segment);
+                    this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
                 }
 
             } else if (currentJoin === 'round') {
@@ -664,11 +598,6 @@ class LineBucket implements Bucket {
 
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
-
-        if (this.patternJoinNone) {
-            // Real data is inserted after each line segment is finished
-            this.segmentPoints.push(this.lineSoFar - this.segmentStart, endLeft);
-        }
     }
 
     addHalfVertex({x, y}: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment) {

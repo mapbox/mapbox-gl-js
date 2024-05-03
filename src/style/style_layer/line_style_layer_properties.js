@@ -19,7 +19,7 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 
 export type LayoutProps = {|
     "line-cap": DataDrivenProperty<"butt" | "round" | "square">,
-    "line-join": DataDrivenProperty<"bevel" | "round" | "miter" | "none">,
+    "line-join": DataDrivenProperty<"bevel" | "round" | "miter">,
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
     "line-sort-key": DataDrivenProperty<number>,
