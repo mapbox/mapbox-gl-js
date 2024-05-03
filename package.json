@@ -11,7 +11,6 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
-    "@mapbox/geojson-rewind": "^0.5.2",
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^3.0.0",
     "@mapbox/point-geometry": "^0.1.0",
