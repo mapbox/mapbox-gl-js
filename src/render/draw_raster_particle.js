@@ -83,7 +83,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         if (!data) continue;
         assert(data.texture);
 
-        const textureSize = [data.tileSize, data.tileSize];
+        const textureSize = [tile.tileSize, tile.tileSize];
         let tileFramebuffer = layer.tileFramebuffer;
         if (!tileFramebuffer) {
             const fbWidth = textureSize[0];
