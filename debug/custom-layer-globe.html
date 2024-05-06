@@ -22,7 +22,6 @@
 <div id='checkboxes'>
     <label><input id='immediate-checkbox' type='checkbox' checked> add a custom layer with immediate rendering</label><br />
     <label><input id='draped-checkbox' type='checkbox'> add a custom layer with draped rendering</label><br />
-    <label><input id='repaint-checkbox' type='checkbox'> repaint. FPS: </label><label id='fps'>0</label><br />
 </div>
 
 <script src="//unpkg.com/satellite.js/dist/satellite.min.js"></script>
@@ -84,20 +83,6 @@ document.getElementById('immediate-checkbox').onclick = function() {
 
 document.getElementById('draped-checkbox').onclick = function() {
     map.setLayoutProperty('coloredEarth', 'visibility', this.checked ? 'visible' : 'none');
-};
-
-document.getElementById('repaint-checkbox').onclick = function() {
-    map.repaint = !!this.checked;
-    if (this.checked) {
-        this['frameCounter'] = map.painter.frameCounter;
-        this['fpsTimer'] = window.setInterval(() => {
-            document.getElementById('fps').innerHTML = `${(map.painter.frameCounter - this.frameCounter) / 2}`;
-            this.frameCounter = map.painter.frameCounter;
-        }, 2000);
-    } else {
-        window.clearInterval(this.fpsTimer);
-        document.getElementById('fps').innerHTML = `0`;
-    }
 };
 
 </script>

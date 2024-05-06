@@ -164,6 +164,7 @@ export class ShadowRenderer {
 
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "cascadeCount", {min: 1, max: 2, step: 1});
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "shadowMapResolution", {min: 32, max: 2048, step: 32});
+        painter.tp.registerBinding(this, ["Shadows"], "_numCascadesToRender", {readonly: true, label: 'numCascadesToRender'});
     }
 
     destroy() {

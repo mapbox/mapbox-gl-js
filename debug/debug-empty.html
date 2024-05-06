@@ -48,10 +48,10 @@ var map = window.map = new mapboxgl.Map({
     center: [0, 0],
     pitch: 0,
     bearing: 0,
-    zoom: 0
+    zoom: 0,
+    repaint: true
 });
 
-map.repaint = true;
 map.on('load', function () {
     map.addSource('geojson', {
         "type": "geojson",

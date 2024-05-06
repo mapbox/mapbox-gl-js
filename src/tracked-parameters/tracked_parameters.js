@@ -7,7 +7,7 @@
 
 /* eslint-disable import/no-unresolved */
 /* $FlowFixMe[cannot-resolve-module] */
-import {TrackedParameters, registerParameter, registerButton, registerBinding} from 'tracked_parameters_proxy';
+import {TrackedParameters, registerParameter, registerButton, registerBinding, refreshUI} from 'tracked_parameters_proxy';
 import {TrackedParameters as TrackedParametersMock} from './internal/tracked_parameters_mock.js';
 
-export {TrackedParameters, TrackedParametersMock, registerParameter, registerButton, registerBinding};
+export {TrackedParameters, TrackedParametersMock, registerParameter, registerButton, registerBinding, refreshUI};

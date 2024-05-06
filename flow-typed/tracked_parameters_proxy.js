@@ -24,6 +24,8 @@ declare module 'tracked_parameters_proxy' {
         description?: Object,
     ): void;
 
+    declare function refreshUI(): void;
+
     declare interface ITrackedParameters {
         constructor(map: any): void;
 
@@ -47,6 +49,8 @@ declare module 'tracked_parameters_proxy' {
             name: string,
             description?: Object,
         ): void;
+
+        refreshUI(): void;
     }
 
     declare class TrackedParameters implements ITrackedParameters {
@@ -72,5 +76,7 @@ declare module 'tracked_parameters_proxy' {
             name: string,
             description?: Object,
         ): void;
+
+        refreshUI(): void;
     }
 }

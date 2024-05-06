@@ -110,11 +110,6 @@ const Demo3D = function() {
     this.directionalLightShadowIntensity = 1.0;
     this.edgeRadius = 0.3;
     this.roundedRoof = true;
-    this.fps = 0;
-    this.continuousRedraw = true;
-
-    this.fpsTimer = 0;
-    this.frameCounter = 0;
 
     this.mapProjection = 'globe';
     this.orthographicProjectionAtLowPitch = false;
@@ -122,16 +117,6 @@ const Demo3D = function() {
     this.enableBuildings = true;
 
     this.debug = {
-        showTiles: false,
-        showCollisions: false,
-        showOverdraw: false,
-        wireframe: {
-            terrain: false,
-            layers2D: false,
-            layers3D: false,
-        },
-        tileAABBDebug: false,
-        freezeTileCoverage: false
     };
 
     // Terrain debug widget
@@ -144,8 +129,6 @@ const Demo3D = function() {
     this.debug.unexaggerated = 0;
     this.terrainElevationDebugWidget.addMonitor(this.debug, 'exaggerated');
     this.terrainElevationDebugWidget.addMonitor(this.debug, 'unexaggerated');
-
-    this.debug.numShadowCascadesRendered = 2; // Default value until view is moved
 };
 
 const demo3d = new Demo3D();
@@ -237,63 +220,6 @@ window.onload = function() {
         }
         map.setStyle('mapbox://styles/' + value);
     });
-
-    // FPS
-
-    // Update FPS every second
-    demo3d.fpsTimer = window.setInterval(() => {
-        demo3d.fps = map.painter.frameCounter - demo3d.frameCounter;
-        demo3d.frameCounter = map.painter.frameCounter;
-    }, 1000);
-
-    map.repaint = demo3d.continuousRedraw;
-    const fps = gui.addFolder({title:'FPS', expanded: true});
-    const continuousRedraw = fps.addInput(demo3d, 'continuousRedraw');
-    continuousRedraw.on('change', (ev) => {
-        map.repaint = demo3d.continuousRedraw;
-    });
-
-    fps.addMonitor(demo3d, 'fps');
-    fps.addMonitor(demo3d, 'fps', {
-        label:'graph',
-        view: 'graph',
-        min: 0,
-        max: 140,
-    });
-
-    {
-        const debug = gui.addFolder({title:'Debug', expanded: false});
-
-        debug.addInput(demo3d.debug, 'showTiles').on('change', (ev) => {
-            map.showTileBoundaries = demo3d.debug.showTiles;
-        });
-        debug.addInput(demo3d.debug, 'showCollisions').on('change', (ev) => {
-            map.showCollisionBoxes = demo3d.debug.showCollisions;
-        });
-        debug.addInput(demo3d.debug, 'showOverdraw').on('change', (ev) => {
-            map.showOverdrawInspector = demo3d.debug.showOverdraw;
-        });
-
-        const wireframePane = debug.addFolder({title:'Wireframe', expanded: true});
-        wireframePane.addInput(demo3d.debug.wireframe, 'terrain');
-        wireframePane.addInput(demo3d.debug.wireframe, 'layers2D');
-        wireframePane.addInput(demo3d.debug.wireframe, 'layers3D');
-        wireframePane.on('change', (ev) => {
-            map.showTerrainWireframe = demo3d.debug.wireframe.terrain;
-            map.showLayers2DWireframe = demo3d.debug.wireframe.layers2D;
-            map.showLayers3DWireframe = demo3d.debug.wireframe.layers3D;
-        });
-
-        debug.addInput(demo3d.debug, 'tileAABBDebug').on('change', (ev) => {
-            map.showTileAABBs = demo3d.debug.tileAABBDebug;
-        });
-        debug.addInput(demo3d.debug, 'freezeTileCoverage').on('change', (ev) => {
-            map.transform.freezeTileCoverage = demo3d.debug.freezeTileCoverage;
-            map._update();
-        });
-
-        debug.addMonitor(demo3d.debug, 'numShadowCascadesRendered');
-    }
 
     // Lights
     const lights = gui.addFolder({title:'Lighting', expanded: true});
@@ -443,7 +369,8 @@ var map = window.map = new mapboxgl.Map({
     style: window.dynamic,
     hash: true,
     projection: 'globe',
-    devtools: true
+    devtools: true,
+    repaint: true
 });
 
 const r = 255 * 0.75;
@@ -454,7 +381,6 @@ let skyAnimationTime = 0.0;
 let first = true;
 
 map.on('style.load', function() {
-    // map.showOverdrawInspector =  true;
     updateLights(demo3d.enable3dLights, true);
     if (!map.getSource('mapbox-dem')) {
         map.addSource('mapbox-dem', {
@@ -559,13 +485,6 @@ map.on('style.load', function() {
         demo3d.debug.unexaggerated = map.queryTerrainElevation(map.unproject(e.point), {exaggerated: false});
 
         demo3d.terrainElevationDebugWidget.refresh();
-    });
-    map.on('move', (e) => {
-        demo3d.debug.numShadowCascadesRendered = 0;
-        const shadowRenderer = map.painter.shadowRenderer;
-        if (shadowRenderer) {
-            demo3d.debug.numShadowCascadesRendered = shadowRenderer._numCascadesToRender;
-        }
     });
 
     const lerp = (a, b, t) => {
