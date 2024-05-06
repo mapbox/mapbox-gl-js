@@ -13,7 +13,7 @@ workflows:
               only: /.*/
       - install-mbx-ci:
           requires:
-              - prepare-linux
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -48,9 +48,22 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-unit:
+      - setup-playwright:
           requires:
             - prepare-linux
+          filters:
+            tags:
+              only: /.*/
+      - test-unit:
+          requires:
+            - setup-playwright
+          filters:
+            tags:
+              only: /.*/
+      - test-csp:
+          requires:
+            - setup-playwright
+            - build
           filters:
             tags:
               only: /.*/
@@ -261,6 +274,17 @@ jobs:
           paths:
             - mapbox-gl-js/dist
 
+  setup-playwright:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: npx playwright install chromium
+      - save_cache:
+          key: v0-playwright
+          paths:
+           - ~/.cache
+
   check-bundle-size:
     <<: *linux-defaults
     steps:
@@ -288,10 +312,6 @@ jobs:
       - run:
           command: npm run test-unit
           no_output_timeout: 5m
-      - save_cache:
-          key: v0-playwright
-          paths:
-           - ~/.cache
 
   test-query:
     <<: *linux-defaults
@@ -319,6 +339,18 @@ jobs:
             rm -rf node_modules
       - store_artifacts:
           path: "test/build/typescript"
+
+  test-csp:
+    <<:  *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v0-playwright
+      - run:
+          command: npm run test-csp
+          no_output_timeout: 5m
 
   test-webpack:
     <<: *linux-defaults

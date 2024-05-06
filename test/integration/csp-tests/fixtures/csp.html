@@ -1,0 +1,25 @@
+<!doctype html>
+<head>
+    <!-- https://docs.mapbox.com/mapbox-gl-js/guides/browsers-and-testing/#csp-directives -->
+    <title>CSP rules</title>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="/dist/mapbox-gl.js"></script>
+    <script src="/debug/access_token.js"></script>
+    <script>
+
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'load') {
+                const map = new mapboxgl.Map({
+                    container: 'map',
+                    style: e.data.payload
+                });
+
+                map.once('load', () => {
+                    window.parent.postMessage({type: "map.load"});
+                });
+            }
+        });
+    </script>
+</body>

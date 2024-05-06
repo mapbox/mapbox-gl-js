@@ -17,6 +17,34 @@ export function createStyleJSON(options) {
     };
 }
 
+export function doneAsync() {
+    const doneRef = {
+        reject: null,
+        resolve: null
+    };
+
+    const wait = new Promise((resolve, reject) => {
+        doneRef.resolve = resolve;
+        doneRef.reject = reject;
+    });
+
+    const withAsync = (fn) => {
+        return async (...args) => {
+            try {
+                await fn(...args, doneRef);
+            } catch (err) {
+                doneRef.reject(err);
+            }
+        };
+    };
+
+    return {
+        wait,
+        doneRef,
+        withAsync
+    };
+}
+
 export function createMap(options, callback) {
     const container = window.document.createElement('div');
     const defaultOptions = {
