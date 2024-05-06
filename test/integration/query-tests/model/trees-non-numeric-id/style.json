@@ -3,8 +3,10 @@
   "metadata": {
     "test": {
       "height": 512,
-      "allowed": 0.0015,
+      "width": 512,
       "operations": [
+        ["wait"],
+        ["wait"],
         ["wait"],
         [
           "setFeatureState",
@@ -25,7 +27,13 @@
           {
             "hover": true
           }
-        ]
+        ],
+        ["wait"],
+        ["wait"]
+      ],
+      "queryGeometry": [
+          313,
+          225
       ]
     }
   },
@@ -99,16 +107,6 @@
       }
     },
     {
-      "id": "road",
-      "type": "line",
-      "source": "mapbox",
-      "source-layer": "road",
-      "paint": {
-          "line-color": "lightyellow",
-          "line-width": 10
-      }
-    },
-    {
       "id": "tree-layer",
       "type": "model",
       "source": "trees",
@@ -120,14 +118,14 @@
         [
           "case",
           ["boolean", ["feature-state", "hover"], false],
-          ["literal", [ 16, 16, 16 ]],
+          ["literal", [ 10, 10, 10 ]],
           [
             "match",
             ["%", ["get", "id"], 5 ],
             0,
-            ["literal", [ 8, 8, 8 ]],
+            ["literal", [ 3, 3, 3 ]],
             1,
-            ["literal", [ 8, 8, 8 ]],
+            ["literal", [ 3, 3, 3 ]],
             2,
             ["literal", [ 6, 6, 6 ]],
             3,
@@ -141,38 +139,6 @@
           2, ["literal", [10.0, 0.0, 180.0]],
           ["literal", [0.0, -3.0, -90]]]
       }
-    },
-    {
-      "id": "3d-buildings",
-      "source": "mapbox",
-      "paint": {
-        "fill-extrusion-opacity": 1.0,
-        "fill-extrusion-color": "white",
-        "fill-extrusion-height": [
-          "number",
-          [
-            "get",
-            "height"
-          ]
-        ],
-        "fill-extrusion-base": [
-          "number",
-          [
-            "get",
-            "min_height"
-          ]
-        ]
-      },
-      "filter": [
-        "==",
-        [
-          "get",
-          "extrude"
-        ],
-        "true"
-      ],
-      "source-layer": "building",
-      "type": "fill-extrusion"
     }
   ]
 }

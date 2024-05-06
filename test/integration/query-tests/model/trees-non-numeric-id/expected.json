@@ -1,0 +1,17 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -122.40655660629272,
+        37.78533419819912
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "id": "3a"
+    },
+    "source": "trees",
+    "state": {},
+    "type": "Feature"
+  }
+]

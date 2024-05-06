@@ -142,13 +142,16 @@ class ModelBucket implements Bucket {
         this.lookup = new Uint8Array(this.lookupDim * this.lookupDim);
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
+            // use non numeric id, if in properties, too.
+            const featureId = (id != null) ? id :
+                (feature.properties && feature.properties.hasOwnProperty("id")) ? feature.properties["id"] : undefined;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
             // $FlowFixMe[method-unbinding]
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical)) continue;
 
             const bucketFeature: BucketFeature = {
-                id,
+                id: featureId,
                 sourceLayerIndex,
                 index,
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
@@ -179,6 +182,7 @@ class ModelBucket implements Bucket {
                 if (instances.idToFeaturesIndex.hasOwnProperty(id)) {
                     const feature = instances.features[instances.idToFeaturesIndex[id]];
                     this.evaluate(feature, states[id], instances, true);
+                    this.uploaded = false;
                 }
             }
         }

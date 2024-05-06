@@ -36,7 +36,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"id": 3},
+      "properties": {"id": "3a"},
       "geometry": {
         "type": "Point",
         "coordinates": [
