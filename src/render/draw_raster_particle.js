@@ -378,6 +378,8 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         defines.push("PROJECTION_GLOBE_VIEW");
     }
 
+    const stencilMode = painter.stencilModeFor3D();
+
     for (const coord of coords) {
         const unwrappedTileID = coord.toUnwrapped();
         const tile = sourceCache.getTile(coord);
@@ -461,7 +463,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
                 assert(buffer);
                 assert(indexBuffer);
                 assert(segments);
-                program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.alphaBlended, CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
+                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
             }
         } else {
             const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
