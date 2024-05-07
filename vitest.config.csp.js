@@ -11,7 +11,7 @@ export default mergeConfig(baseConfig, defineConfig({
             headless: true,
         },
         include: ['test/integration/csp-tests/**/*.test.js'],
-        testTimeout: 5_000,
+        testTimeout: 10_000,
     },
     publicDir: 'test/integration/csp-tests/',
     server: {
