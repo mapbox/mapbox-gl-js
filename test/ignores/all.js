@@ -175,6 +175,7 @@ const skip = [
     "render-tests/model-layer/landmark-conflation-multiple-sources",
     "render-tests/model-layer/landmark-shadow-skip-render",
     "render-tests/model-layer/landmark-multiple-model-layers-z-offset-hide-evaluated",
+    "render-tests/model-layer/landmark-shadows-opacity-cutoff-range",
 
     // Not implemented in gl-js
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-0",
