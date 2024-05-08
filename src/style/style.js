@@ -1,6 +1,7 @@
 // @flow
 
 import assert from 'assert';
+import murmur3 from 'murmurhash-js';
 
 import {Event, ErrorEvent, Evented} from '../util/evented.js';
 import StyleLayer from './style_layer.js';
@@ -15,6 +16,7 @@ import Fog from './fog.js';
 import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util.js';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax.js';
 import {isMapboxURL} from '../util/mapbox_url.js';
+import {stripQueryParameters} from '../util/url.js';
 import browser from '../util/browser.js';
 import Dispatcher from '../util/dispatcher.js';
 import Lights from '../../3d-style/style/lights.js';
@@ -198,6 +200,9 @@ class Style extends Evented {
     transition: TransitionSpecification;
     projection: ProjectionSpecification;
 
+    // Serializable identifier of style, which we use for telemetry
+    globalId: string | null;
+
     scope: string;
     fragments: Array<Fragment>;
     importDepth: number;
@@ -260,6 +265,8 @@ class Style extends Evented {
 
         // Empty string indicates the root Style scope.
         this.scope = options.scope || '';
+
+        this.globalId = null;
 
         this.fragments = [];
         this.importDepth = options.importDepth || 0;
@@ -375,6 +382,72 @@ class Style extends Evented {
         });
     }
 
+    load(style: StyleSpecification | string | null): Style {
+        if (!style) {
+            return this;
+        }
+
+        if (typeof style === 'string') {
+            this.loadURL(style);
+        } else {
+            this.loadJSON(style);
+        }
+
+        return this;
+    }
+
+    _getGlobalId(loadedStyle?: StyleSpecification | string | null): string | null {
+        if (!loadedStyle) {
+            return null;
+        }
+
+        if (typeof loadedStyle === 'string') {
+            if (isMapboxURL(loadedStyle)) {
+                return loadedStyle;
+            }
+
+            const url = stripQueryParameters(loadedStyle);
+
+            if (!url.startsWith('http')) {
+                try {
+                    return new URL(url, location.href).toString();
+                } catch (_e) {
+                    return url;
+                }
+            }
+
+            return url;
+        }
+
+        return `json://${murmur3(JSON.stringify(loadedStyle))}`;
+    }
+
+    _diffStyle(style: StyleSpecification | string, onStarted: (err: Error | null, isUpdateNeeded: boolean) => void, onFinished?: () => void) {
+        this.globalId = this._getGlobalId(style);
+
+        const handleStyle = (json: StyleSpecification, callback: (err: Error | null, isUpdateNeeded: boolean) => void) => {
+            try {
+                callback(null, this.setState(json, onFinished));
+            } catch (e) {
+                callback(e, false);
+            }
+        };
+
+        if (typeof style === 'string') {
+            const url = this.map._requestManager.normalizeStyleURL(style);
+            const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
+            getJSON(request, (error: ?Error, json: ?Object) => {
+                if (error) {
+                    this.fire(new ErrorEvent(error));
+                } else if (json) {
+                    handleStyle(json, onStarted);
+                }
+            });
+        } else if (typeof style === 'object') {
+            handleStyle(style, onStarted);
+        }
+    }
+
     loadURL(url: string, options: {
         validate?: boolean,
         accessToken?: string
@@ -384,6 +457,7 @@ class Style extends Evented {
         const validate = typeof options.validate === 'boolean' ?
             options.validate : !isMapboxURL(url);
 
+        this.globalId = this._getGlobalId(url);
         url = this.map._requestManager.normalizeStyleURL(url, options.accessToken);
         this.resolvedImports.add(url);
 
@@ -404,6 +478,8 @@ class Style extends Evented {
 
     loadJSON(json: StyleSpecification, options: StyleSetterOptions = {}): void {
         this.fire(new Event('dataloading', {dataType: 'style'}));
+
+        this.globalId = this._getGlobalId(json);
         this._request = browser.frame(() => {
             this._request = null;
             this._load(json, options.validate !== false);
@@ -445,6 +521,13 @@ class Style extends Evented {
             const json = importSpec.data || this.importsCache.get(importSpec.url);
             if (json) {
                 style.loadJSON(json, {validate});
+
+                // Don't expose global ID for internal style to ensure
+                // that we don't send in telemetry Standard style as import
+                // because we already use it directly
+                if (this._isInternalStyle(json)) {
+                    style.globalId = null;
+                }
             } else if (importSpec.url) {
                 style.loadURL(importSpec.url, {validate});
             } else {
@@ -474,6 +557,17 @@ class Style extends Evented {
 
         // $FlowFixMe[method-unbinding]
         return Promise.allSettled(waitForStyles);
+    }
+
+    getImportGlobalIds(style: Style = this, ids: Set<string> = new Set()): string[] {
+        for (const fragment of style.fragments) {
+            if (fragment.style.globalId) {
+                ids.add(fragment.style.globalId);
+            }
+            this.getImportGlobalIds(fragment.style, ids);
+        }
+
+        return [...ids.values()];
     }
 
     _createFragmentStyle(importSpec: ImportSpecification): Style {
@@ -514,9 +608,11 @@ class Style extends Evented {
             options: this.options
         });
 
-        const isRootStyle = this.isRootStyle();
-        this._shouldPrecompile = isRootStyle;
-        this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+        this._shouldPrecompile = this.isRootStyle();
+    }
+
+    _isInternalStyle(json: StyleSpecification): boolean {
+        return this.isRootStyle() && (json.fragment || (!!json.schema && json.fragment !== false));
     }
 
     _load(json: StyleSpecification, validate: boolean) {
@@ -524,7 +620,7 @@ class Style extends Evented {
 
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
-        if (this.isRootStyle() && (json.fragment || (schema && json.fragment !== false))) {
+        if (this._isInternalStyle(json)) {
             const basemap = {id: 'basemap', data: json, url: ''};
             const style = extend({}, empty, {imports: [basemap]});
             this._load(style, validate);
@@ -618,10 +714,16 @@ class Style extends Evented {
 
         this.fire(new Event('data', {dataType: 'style'}));
 
+        const isRootStyle = this.isRootStyle();
+
         if (json.imports) {
-            this._loadImports(json.imports, validate).then(() => this._reloadImports());
+            this._loadImports(json.imports, validate).then(() => {
+                this._reloadImports();
+                this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+            });
         } else {
             this._reloadImports();
+            this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
         }
     }
 
@@ -1266,7 +1368,7 @@ class Style extends Evented {
      * @returns {boolean} true if any changes were made; false otherwise
      * @private
      */
-    setState(nextState: StyleSpecification): boolean {
+    setState(nextState: StyleSpecification, onFinish?: () => void): boolean {
         this._checkLoaded();
 
         if (emitValidationErrors(this, validateStyle(nextState))) return false;
@@ -1286,9 +1388,15 @@ class Style extends Evented {
             throw new Error(`Unimplemented: ${unimplementedOps.map(op => op.command).join(', ')}.`);
         }
 
+        const changesPromises = [];
+
         changes.forEach((op) => {
-            (this: any)[op.command].apply(this, op.args);
+            changesPromises.push((this: any)[op.command].apply(this, op.args));
         });
+
+        if (onFinish) {
+            Promise.all(changesPromises).then(onFinish);
+        }
 
         this.stylesheet = nextState;
         this.mergeAll();
@@ -2822,26 +2930,26 @@ class Style extends Evented {
 
     // Fragments and merging
 
-    addImport(importSpec: ImportSpecification, beforeId: ?string): Style {
+    addImport(importSpec: ImportSpecification, beforeId: ?string): Promise<any> | void {
         this._checkLoaded();
 
         const imports = this.stylesheet.imports = this.stylesheet.imports || [];
 
         const index = imports.findIndex(({id}) => id === importSpec.id);
         if (index !== -1) {
-            return this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
+            this.fire(new ErrorEvent(new Error(`Import with id '${importSpec.id}' already exists in the map's style.`)));
+            return;
         }
 
         if (!beforeId) {
             imports.push(importSpec);
-            this._loadImports([importSpec], true);
-            return this;
+            return this._loadImports([importSpec], true);
         }
 
         const beforeIndex = imports.findIndex(({id}) => id === beforeId);
 
         if (beforeIndex === -1) {
-            return this.fire(new ErrorEvent(new Error(`Import with id "${beforeId}" does not exist on this map.`)));
+            this.fire(new ErrorEvent(new Error(`Import with id "${beforeId}" does not exist on this map.`)));
         }
 
         this.stylesheet.imports = imports
@@ -2849,8 +2957,7 @@ class Style extends Evented {
             .concat(importSpec)
             .concat(imports.slice(beforeIndex));
 
-        this._loadImports([importSpec], true, beforeId);
-        return this;
+        return this._loadImports([importSpec], true, beforeId);
     }
 
     updateImport(importId: string, importSpecification: ImportSpecification | string): Style {
@@ -2977,12 +3084,12 @@ class Style extends Evented {
         return this;
     }
 
-    removeImport(importId: string): Style {
+    removeImport(importId: string): void {
         this._checkLoaded();
 
         const imports = this.stylesheet.imports || [];
         const index = this.getImportIndex(importId);
-        if (index === -1) return this;
+        if (index === -1) return;
 
         imports.splice(index, 1);
 
@@ -2992,7 +3099,6 @@ class Style extends Evented {
         this.fragments.splice(index, 1);
 
         this._reloadImports();
-        return this;
     }
 
     getImportIndex(importId: string): number {

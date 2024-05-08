@@ -1,8 +1,6 @@
-import assert from 'assert';
-
 import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap} from '../../util/vitest.js';
 import {createStyle, createStyleSource} from './map/util.js';
-import {getPNGResponse, getRequestBody} from '../../util/network.js';
+import {getPNGResponse} from '../../util/network.js';
 import {extend} from '../../../src/util/util.js';
 import {Map} from '../../../src/ui/map.js';
 import Actor from '../../../src/util/actor.js';
@@ -12,7 +10,6 @@ import {OverscaledTileID} from '../../../src/source/tile_id.js';
 import {ErrorEvent} from '../../../src/util/evented.js';
 import simulate, {constructTouch} from '../../util/simulate_interaction.js';
 import {fixedNum} from '../../util/fixed.js';
-import {performanceEvent_} from '../../../src/util/mapbox.js';
 import {makeFQID} from '../../../src/util/fqid.js';
 
 // Mock implementation of elevation
@@ -69,60 +66,6 @@ describe('Map', () => {
 
         expect(stub).toHaveBeenCalledTimes(1);
         expect(stub.mock.calls[0][0]).toEqual('mapbox://styles/mapbox/standard');
-    });
-
-    test('disablePerformanceMetricsCollection', async () => {
-        const fetchSpy = vi.spyOn(window, 'fetch');
-        const map = createMap({performanceMetricsCollection: false});
-        await waitFor(map, "idle");
-        map.triggerRepaint();
-        await waitFor(map, "idle");
-        expect(map._fullyLoaded).toBeTruthy();
-        expect(map._loaded).toBeTruthy();
-        expect(fetchSpy).not.toHaveBeenCalled();
-    });
-
-    test('default performance metrics collection', async () => {
-        const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('{}');
-        });
-        const map = createMap({performanceMetricsCollection: true});
-        map._requestManager._customAccessToken = 'access-token';
-        await waitFor(map, "idle");
-        map.triggerRepaint();
-        await waitFor(map, "idle");
-        expect(map._fullyLoaded).toBeTruthy();
-        expect(map._loaded).toBeTruthy();
-        const reqBody = await getRequestBody(fetchSpy.mock.calls[0][0]);
-        const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
-        expect(performanceEvent.event).toEqual('gljs.performance');
-        performanceEvent_.pendingRequest = null;
-    });
-
-    test('performance metrics event stores explicit projection', async () => {
-        const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation(async () => {
-            return new window.Response('{}');
-        });
-        const map = createMap({performanceMetricsCollection: true, projection: 'globe', zoom: 20});
-        map._requestManager._customAccessToken = 'access-token';
-        await waitFor(map, "idle");
-        map.triggerRepaint();
-        await waitFor(map, "idle");
-        expect(map._fullyLoaded).toBeTruthy();
-        expect(map._loaded).toBeTruthy();
-        const reqBody = await getRequestBody(fetchSpy.mock.calls[0][0]);
-        const performanceEvent = JSON.parse(reqBody.slice(1, reqBody.length - 1));
-        const checkMetric = (data, metricName, metricValue) => {
-            for (const metric of data) {
-                if (metric.name === metricName) {
-                    expect(metric.value).toEqual(metricValue);
-                    return;
-                }
-            }
-            assert(false);
-        };
-        checkMetric(performanceEvent.attributes, 'projection', 'globe');
-        performanceEvent_.pendingRequest = null;
     });
 
     test('warns when map container is not empty', () => {

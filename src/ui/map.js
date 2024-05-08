@@ -4,7 +4,7 @@ import {version} from '../../package.json';
 import {asyncAll, extend, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util.js';
 import browser from '../util/browser.js';
 import * as DOM from '../util/dom.js';
-import {getImage, getJSON, ResourceType} from '../util/ajax.js';
+import {getImage, ResourceType} from '../util/ajax.js';
 import {
     RequestManager,
     mapSessionAPI,
@@ -12,6 +12,7 @@ import {
     getMapSessionAPI,
     postPerformanceEvent,
     postMapLoadEvent,
+    postStyleLoadEvent,
     AUTH_ERR_MSG,
     storeAuthState,
     removeAuthState
@@ -697,6 +698,7 @@ export class Map extends Camera {
             if (this.transform.unmodified) {
                 this.jumpTo((this.style.stylesheet: any));
             }
+            this._postStyleLoadEvent();
         });
         this.on('data', (event: MapDataEvent) => {
             this._update(event.dataType === 'style');
@@ -1983,7 +1985,21 @@ export class Map extends Camera {
         if ((options.diff !== false &&
             options.localIdeographFontFamily === this._localIdeographFontFamily &&
             options.localFontFamily === this._localFontFamily) && this.style && style) {
-            this._diffStyle(style, options);
+            this.style._diffStyle(
+                style,
+                (e: any, isUpdateNeeded) => {
+                    if (e) {
+                        warnOnce(
+                            `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
+                        );
+                        this._updateStyle(style, options);
+                    } else if (isUpdateNeeded) {
+                        this._update(true);
+                    }
+                },
+                () => {
+                    this._postStyleLoadEvent();
+                });
             return this;
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
@@ -2009,15 +2025,11 @@ export class Map extends Camera {
         }
 
         if (style) {
-            this.style = new Style(this, options || {});
-            this.style.setEventedParent(this, {style: this.style});
-
-            if (typeof style === 'string') {
-                this.style.loadURL(style);
-            } else {
-                this.style.loadJSON(style);
-            }
+            this.style = new Style(this, options)
+                .setEventedParent(this, {style: this.style})
+                .load(style);
         }
+
         this._updateTerrain();
         return this;
     }
@@ -2027,35 +2039,6 @@ export class Map extends Camera {
             this.style = new Style(this, {});
             this.style.setEventedParent(this, {style: this.style});
             this.style.loadEmpty();
-        }
-    }
-
-    _diffStyle(style: StyleSpecification | string,  options?: {diff?: boolean} & StyleOptions) {
-        if (typeof style === 'string') {
-            const url = this._requestManager.normalizeStyleURL(style);
-            const request = this._requestManager.transformRequest(url, ResourceType.Style);
-            getJSON(request, (error: ?Error, json: ?Object) => {
-                if (error) {
-                    this.fire(new ErrorEvent(error));
-                } else if (json) {
-                    this._updateDiff(json, options);
-                }
-            });
-        } else if (typeof style === 'object') {
-            this._updateDiff(style, options);
-        }
-    }
-
-    _updateDiff(style: StyleSpecification,  options?: {diff?: boolean} & StyleOptions) {
-        try {
-            if (this.style.setState(style)) {
-                this._update(true);
-            }
-        } catch (e) {
-            warnOnce(
-                `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
-            );
-            this._updateStyle(style, options);
         }
     }
 
@@ -4053,6 +4036,19 @@ export class Map extends Camera {
 
     /***** END WARNING - REMOVAL OR MODIFICATION OF THE
     PRECEDING CODE VIOLATES THE MAPBOX TERMS OF SERVICE  ******/
+
+    _postStyleLoadEvent() {
+        if (!this.style.globalId) {
+            return;
+        }
+
+        postStyleLoadEvent(this._requestManager._customAccessToken, {
+            map: this,
+            skuToken: this._requestManager._skuToken,
+            style: this.style.globalId,
+            importedStyles: this.style.getImportGlobalIds()
+        });
+    }
 
     _updateTerrain() {
         // Recalculate if enabled/disabled and calculate elevation cover. As camera is using elevation tiles before

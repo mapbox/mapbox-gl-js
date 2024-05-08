@@ -1,6 +1,7 @@
 // @flow
 
 import {warnOnce, parseCacheControl} from './util.js';
+import {stripQueryParameters, setQueryParameters} from './url.js';
 
 import type Dispatcher from './dispatcher.js';
 
@@ -88,7 +89,8 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     const timeUntilExpiry = new Date(expires).getTime() - requestTime;
     if (timeUntilExpiry < MIN_TIME_UNTIL_EXPIRY) return;
 
-    let strippedURL = stripQueryParameters(request.url);
+    // preserve `language` and `worldview` params if any
+    let strippedURL = stripQueryParameters(request.url, {persistentParams: ['language', 'worldview']});
 
     // Handle partial responses by keeping the range header in the query string
     if (response.status === 206) {
@@ -111,42 +113,14 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     });
 }
 
-function stripQueryParameters(url: string): string {
-    const paramStart = url.indexOf('?');
-    if (paramStart < 0) return url;
-
-    // preserve `language` and `worldview` params if any
-    const persistentParams = ['language', 'worldview'];
-
-    const nextParams = new URLSearchParams();
-    const searchParams = new URLSearchParams(url.slice(paramStart));
-    for (const param of persistentParams) {
-        const value = searchParams.get(param);
-        if (value) nextParams.set(param, value);
-    }
-
-    return `${url.slice(0, paramStart)}?${nextParams.toString()}`;
-}
-
-function setQueryParameters(url: string, params: {[string]: string}): string {
-    const paramStart = url.indexOf('?');
-    if (paramStart < 0) return `${url}?${new URLSearchParams(params).toString()}`;
-
-    const searchParams = new URLSearchParams(url.slice(paramStart));
-    for (const key in params) {
-        searchParams.set(key, params[key]);
-    }
-
-    return `${url.slice(0, paramStart)}?${searchParams.toString()}`;
-}
-
 export function cacheGet(request: Request, callback: (error: ?any, response: ?Response, fresh: ?boolean) => void): void {
     cacheOpen();
     if (!sharedCache) return callback(null);
 
     sharedCache
         .then(cache => {
-            let strippedURL = stripQueryParameters(request.url);
+            // preserve `language` and `worldview` params if any
+            let strippedURL = stripQueryParameters(request.url, {persistentParams: ['language', 'worldview']});
 
             const range = request.headers.get('Range');
             if (range) strippedURL = setQueryParameters(strippedURL, {range});

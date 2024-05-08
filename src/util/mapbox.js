@@ -14,7 +14,6 @@
 ******************************************************************************/
 
 import assert from 'assert';
-
 import config from './config.js';
 import webpSupported from './webp_supported.js';
 import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url.js';
@@ -23,10 +22,12 @@ import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util.js';
 import {postData, ResourceType, getData} from './ajax.js';
 import {getLivePerformanceMetrics} from '../util/live_performance.js';
+
 import type {LivePerformanceData} from '../util/live_performance.js';
 import type {RequestParameters} from './ajax.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {TileJSON} from '../types/tilejson.js';
+import type {Map as MapboxMap} from "../ui/map";
 
 type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
@@ -287,7 +288,7 @@ function parseAccessToken(accessToken: ?string) {
     }
 }
 
-type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance';
+type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load';
 
 class TelemetryEvent {
     eventData: any;
@@ -497,6 +498,85 @@ export class MapLoadEvent extends TelemetryEvent {
     }
 }
 
+type StyleLoadEventInput = {
+    map: MapboxMap;
+    style: string;
+    importedStyles: string[];
+}
+
+type StyleLoadEventPayload = {
+    mapInstanceId: string;
+    eventId: number;
+    style: string;
+    importedStyles?: string[];
+}
+
+export class StyleLoadEvent extends TelemetryEvent {
+    eventIdPerMapInstanceMap: Map<string, number>;
+    mapInstanceIdMap: WeakMap<MapboxMap, string>;
+
+    constructor() {
+        super('style.load');
+        this.eventIdPerMapInstanceMap = new Map();
+        this.mapInstanceIdMap = new WeakMap();
+    }
+
+    getMapInstanceId(map: MapboxMap): string {
+        let instanceId = this.mapInstanceIdMap.get(map);
+
+        if (!instanceId) {
+            instanceId = uuid();
+            this.mapInstanceIdMap.set(map, instanceId);
+        }
+
+        return instanceId;
+    }
+
+    getEventId(mapInstanceId: string): number {
+        const eventId = this.eventIdPerMapInstanceMap.get(mapInstanceId) || 0;
+        this.eventIdPerMapInstanceMap.set(mapInstanceId, eventId + 1);
+        return eventId;
+    }
+
+    postStyleLoadEvent(customAccessToken: ?string, input: StyleLoadEventInput) {
+        const {
+            map,
+            style,
+            importedStyles,
+        } = input;
+
+        if (!config.EVENTS_URL || !(customAccessToken || config.ACCESS_TOKEN)) {
+            return;
+        }
+
+        const mapInstanceId = this.getMapInstanceId(map);
+        const payload: StyleLoadEventPayload = {
+            mapInstanceId,
+            eventId: this.getEventId(mapInstanceId),
+            style,
+        };
+
+        if (importedStyles.length) {
+            payload.importedStyles = importedStyles;
+        }
+
+        this.queueRequest({
+            timestamp: Date.now(),
+            payload
+        }, customAccessToken);
+    }
+
+    processRequests(customAccessToken?: ?string) {
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
+
+        const {timestamp, payload} = this.queue.shift();
+
+        this.postEvent(timestamp, payload, () => {}, customAccessToken);
+    }
+}
+
 export class MapSessionAPI extends TelemetryEvent {
     +success: {[_: number]: boolean};
     skuToken: string;
@@ -641,6 +721,10 @@ export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: ?
 export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
 // $FlowFixMe[method-unbinding]
 export const postMapLoadEvent: (number, string, ?string, EventCallback) => void = mapLoadEvent.postMapLoadEvent.bind(mapLoadEvent);
+
+export const styleLoadEvent: StyleLoadEvent = new StyleLoadEvent();
+// $FlowFixMe[method-unbinding]
+export const postStyleLoadEvent: (?string, StyleLoadEventInput) => void = styleLoadEvent.postStyleLoadEvent.bind(styleLoadEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 // $FlowFixMe[method-unbinding]
