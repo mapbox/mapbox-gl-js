@@ -1,3 +1,18 @@
+## 3.4.0-beta.1
+
+### Features and improvements ✨
+- Add `icon-color-saturation`, `icon-color-contrast`, `icon-color-brightness-min` and `icon-color-brightness-max` to control symbol layer appearance.
+- Introduce a new `line-join` mode: `none` to improve line pattern distortions around joins.
+- Extend `model-id` property to support URIs (in addition to style-defined model references).
+
+### Bug fixes 🐞
+- Respect padding in `cameraForBounds` on globe view. (h/t [@jonasnoki](https://github.com/jonasnoki)) [#13126](https://github.com/mapbox/mapbox-gl-js/pull/13126)
+- Fix `preloadOnly` not preloading tiles from style imports.
+- Fix `queryRenderedFeatures` for non-integer ID in non-tiled model sources
+- Fix `model-scale` property for large number of 3D models.
+- Fix flickering of `raster-particle` layer on globe view.
+- Improve rendering of low-resolution `raster-array` data.
+
 ## 3.3.0
 
 ### Features and improvements ✨
