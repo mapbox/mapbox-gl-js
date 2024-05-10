@@ -788,11 +788,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 // keep model and nodemodel matrices separate for rendering door lights
                 const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.matrix);
 
-                const lightingMatrix = mat4.multiply([], zScaleMatrix, tileModelMatrix);
+                let lightingMatrix = mat4.multiply([], zScaleMatrix, tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
                 const normalMatrix = mat4.invert([], lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
                 mat4.scale(normalMatrix, normalMatrix, normalScale);
+
+                // lighting matrix should take node.matrix into account
+                lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.matrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
                 const wpvForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
