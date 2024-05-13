@@ -775,7 +775,7 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -96.5558, lat: 32.0833});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
         });
 
         test('bearing and asymmetrical padding', () => {
@@ -783,7 +783,7 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -103.3761, lat: 31.7099});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
         });
 
         test(
@@ -794,7 +794,7 @@ describe('camera', () => {
                 const bb = [[-133, 16], [-68, 50]];
 
                 const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
-                expect(fixedLngLat(transform.center, 4)).toEqual({lng: -104.1932, lat: 30.837});
+                expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.7171});
             }
         );
 
@@ -819,7 +819,7 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100]});
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -96.5558, lat: 44.4189});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 46.6292});
         });
 
         test('bearing, asymmetrical padding, and offset', () => {
@@ -827,7 +827,19 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             const transform = camera.cameraForBounds(bb, {bearing: 90, padding: {top: 10, right: 75, bottom: 50, left: 25}, offset: [0, 100], duration: 0});
-            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -103.3761, lat: 43.0929});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 45.6619});
+        });
+
+        test('unable to fit', () => {
+            const camera = createCamera();
+            const bb = [[-180, 10], [180, 50]];
+
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const transform = camera.cameraForBounds(bb, {padding: 1000});
+            expect(transform).toEqual(undefined);
+
+            expect(console.warn).toHaveBeenCalledTimes(1);
+            expect(console.warn.mock.calls[0][0]).toMatch(/Map cannot fit/);
         });
     });
 
@@ -954,7 +966,7 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
-            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -96.5558, lat: 32.0833});
+            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
         });
 
         test('padding object with pitch', () => {
@@ -962,28 +974,16 @@ describe('camera', () => {
             const bb = [[-133, 16], [-68, 50]];
 
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0, pitch: 30});
-            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -96.5558, lat: 32.4408});
+            expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
             expect(camera.getPitch()).toEqual(30);
         });
 
-        test('padding does not get propagated to transform.padding', () => {
+        test('padding is propagated to the transform.padding', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
-            expect(camera.transform.padding).toEqual({
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-            });
-            camera.flyTo({center: [0, 0], zoom: 10, padding: {top: 10, right: 75, bottom: 50, left: 25}, animate: false});
-            expect(camera.transform.padding).toStrictEqual({
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-            });
+            expect(camera.transform.padding).toEqual({top: 10, right: 75, bottom: 50, left: 25});
         });
 
         test('#12450', () => {
