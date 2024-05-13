@@ -279,11 +279,21 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - restore_cache:
+          keys:
+            - v0-playwright-{{ checksum "package-lock.json" }}
+      - run:
+          name: Playwright version
+          command: npx playwright --version
       - run: npx playwright install chromium
       - save_cache:
-          key: v0-playwright
+          key: v0-playwright-{{ checksum "package-lock.json" }}
           paths:
            - ~/.cache
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - .cache
 
   check-bundle-size:
     <<: *linux-defaults
@@ -306,9 +316,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys:
-            - v0-playwright
       - run:
           command: npm run test-unit
           no_output_timeout: 5m
@@ -345,9 +352,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys:
-            - v0-playwright
       - run:
           command: npm run test-csp
           no_output_timeout: 5m
