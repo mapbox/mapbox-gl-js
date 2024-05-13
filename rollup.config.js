@@ -10,7 +10,7 @@ const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const bench = BUILD === 'bench';
 const production = BUILD === 'production' || bench;
-
+import {normalize} from "path";
 function buildType(build, minified) {
     switch (build) {
     case 'production':
@@ -91,7 +91,7 @@ function sourcemaps() {
 function onwarn(warning) {
     if (warning.code === 'CIRCULAR_DEPENDENCY') {
         // Ignore circular dependencies in style-spec and throw on all others
-        if (!warning.ids[0].includes('/src/style-spec')) throw new Error(warning.message);
+        if (!warning.ids[0].includes(normalize('/src/style-spec'))) throw new Error(warning.message);
     } else {
         console.error(`(!) ${warning.message}`);
     }
