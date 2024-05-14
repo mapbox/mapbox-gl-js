@@ -1,0 +1,119 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "center": [0, 0],
+  "zoom": 5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 1,
+              "color": "red"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -0.2,
+                -0.6
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 2,
+              "color": "orange"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.2,
+                -0.4
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 3,
+              "color": "yellow"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -0.2,
+                -0.2
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 4,
+              "color": "green"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.2,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 5,
+              "color": "blue"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -0.2,
+                0.2
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "sort-key": 6,
+              "color": "violet"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0.2,
+                0.4
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 16,
+        "circle-color": ["get", "color"]
+      },
+      "layout": {
+        "circle-sort-key": ["get", "sort-key"]
+      }
+    }
+  ]
+}
