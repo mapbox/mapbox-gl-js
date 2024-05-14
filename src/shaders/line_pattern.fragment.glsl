@@ -38,30 +38,29 @@ void main() {
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
+    vec2 pattern_size = vec2(display_size.x / u_tile_units_to_pixels, display_size.y);
+
     float aspect = display_size.y / v_width;
-    float pattern_size_x = display_size.x / (u_tile_units_to_pixels * aspect);
 
     // Calculate the distance of the pixel from the line in pixels.
-    float dist = length(v_normal) * v_width2.x;
+    float dist = length(v_normal) * v_width2.s;
 
     // Calculate the antialiasing fade factor. This is either when fading in
-    // the line in case of an offset line (v_width2.y) or when fading out
-    // (v_width2.x)
+    // the line in case of an offset line (v_width2.t) or when fading out
+    // (v_width2.s)
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
-    float alpha = clamp(min(dist - (v_width2.y - blur2), v_width2.x - dist) / blur2, 0.0, 1.0);
+    float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
-    float pattern_x = v_linesofar / pattern_size_x;
+    float pattern_x = v_linesofar / pattern_size.x * aspect;
+    float x = mod(pattern_x, 1.0);
 
-    float x = fract(pattern_x);
     float y = 0.5 * v_normal.y + 0.5;
 
     vec2 texel_size = 1.0 / u_texsize;
 
-    vec2 tl = pattern_tl * texel_size - texel_size;
-    vec2 br = pattern_br * texel_size + texel_size;
-    vec2 pos = mix(tl, br, vec2(x, y));
-    float lod_pos_x = mix(tl.x, br.x, pattern_x);
-    vec4 color = textureLodCustom(u_image, pos, vec2(lod_pos_x, pos.y));
+    vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
+    vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
+    vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef RENDER_LINE_TRIM_OFFSET
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
@@ -91,11 +90,12 @@ void main() {
     // negative). v_pattern_data.y is not modified because we can't access overlap info for other end of the segment.
     // All units are tile units.
     // Distance from segment start point to start of first pattern instance
-    float segment_phase = pattern_size_x - mod((v_linesofar - v_pattern_data.x), pattern_size_x);
+    float pattern_len = pattern_size.x / aspect;
+    float segment_phase = pattern_len - mod((v_linesofar - v_pattern_data.x), pattern_len);
     // Step is used to check if we can fit an extra pattern cycle when considering the segment overlap at the corner
-    float visible_start = segment_phase - step(pattern_size_x * 0.5, segment_phase) * pattern_size_x;
-    float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_size_x) * pattern_size_x + segment_phase;
-    visible_end += step(pattern_size_x * 0.5, v_pattern_data.y - visible_end) * pattern_size_x;
+    float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
+    float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;
+    visible_end += step(pattern_len * 0.5, v_pattern_data.y - visible_end) * pattern_len;
 
     if (v_pattern_data.x < visible_start || v_pattern_data.x >= visible_end) {
         color = vec4(0.0);

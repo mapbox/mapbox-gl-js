@@ -59,10 +59,9 @@ void main() {
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
-    float ANTIALIASING = 0.5 / u_device_pixel_ratio;
+    float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
 
-    // Scale the extrusion vector down to 1<=length<=2 scale
-    vec2 extrude = (a_data.xy - 128.0) * scale;
+    vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 
     vec2 pos = floor(a_pos_normal * 0.5);
@@ -76,13 +75,16 @@ void main() {
 
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
-    gapwidth = gapwidth * 0.5;
+    gapwidth = gapwidth / 2.0;
+    float halfwidth = width / 2.0;
+    offset = -1.0 * offset;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + width * (gapwidth > 0.0 ? 1.0 : 0.5) + (width == 0.0 ? 0.0 : ANTIALIASING);
+    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
 
-    // Scale the extrusion vector up by the line width of this vertex
-    mediump vec2 dist = outset * extrude;
+    // Scale the extrusion vector down to a normal and then up by the line width
+    // of this vertex.
+    mediump vec2 dist = outset * a_extrude * scale;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -90,7 +92,7 @@ void main() {
     // extrude vector points in another direction.
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = -offset * extrude * normal.y * mat2(t, -u, u, t);
+    mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
