@@ -128,7 +128,12 @@ export const preludeCommonSource = preludeCommon;
 export const preludeLightingSource = preludeLighting;
 
 export const preludeVertPrecisionQualifiers = `precision highp float;`;
-export const preludeFragPrecisionQualifiers = `precision mediump float;`;
+export const preludeFragPrecisionQualifiers =
+`#ifdef USE_DEFAULT_HIGHP_FRAGMENT
+precision highp float;
+#else
+precision mediump float;
+#endif`;
 
 export default {
     background: compile(backgroundFrag, backgroundVert),
