@@ -221,7 +221,7 @@ class LngLatBounds {
      * Returns the bounding box represented as an array.
      *
      * @returns {Array<Array<number>>} The bounding box represented as an array, consisting of the
-     *     southwest and northeast coordinates of the bounding represented as arrays of numbers.
+     * southwest and northeast coordinates of the bounding represented as arrays of numbers.
      * @example
      * const llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
@@ -234,7 +234,7 @@ class LngLatBounds {
      * Return the bounding box represented as a string.
      *
      * @returns {string} The bounding box represents as a string of the format
-     *     `'LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))'`.
+     * `'LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))'`.
      * @example
      * const llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
