@@ -1,5 +1,6 @@
 /* eslint-disable flowtype/require-valid-file-annotation */
 import fs from 'fs';
+import path from 'path';
 import {fileURLToPath} from 'url';
 import {readFile} from 'node:fs/promises';
 
@@ -89,9 +90,10 @@ function sourcemaps() {
 }
 
 function onwarn(warning) {
+    const styleSpecPath = path.resolve('src', 'style-spec');
     if (warning.code === 'CIRCULAR_DEPENDENCY') {
         // Ignore circular dependencies in style-spec and throw on all others
-        if (!warning.ids[0].includes('/src/style-spec')) throw new Error(warning.message);
+        if (!warning.ids[0].startsWith(styleSpecPath)) throw new Error(warning.message);
     } else {
         console.error(`(!) ${warning.message}`);
     }
