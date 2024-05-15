@@ -102,7 +102,6 @@
     "tape-filter": "^1.0.4",
     "testem": "^3.13.0",
     "vite-plugin-arraybuffer": "^0.0.7",
-    "vite-plugin-node-polyfills": "^0.21.0",
     "vitest": "^1.6.0"
   },
   "scripts": {
