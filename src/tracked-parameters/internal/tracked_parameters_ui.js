@@ -175,6 +175,7 @@ class ParameterInfo {
     defaultValue: any;
     noSave: boolean;
     tpBinding: any;
+    label: string;
 
     constructor(object: Object, parameterName: string, defaultValue: any, noSave: boolean, tpBinding: any) {
         this.containerObject = object;
@@ -182,6 +183,7 @@ class ParameterInfo {
         this.defaultValue = defaultValue;
         this.noSave = noSave;
         this.tpBinding = tpBinding;
+        this.label = tpBinding.label ? tpBinding.label : parameterName;
     }
 }
 
@@ -284,7 +286,7 @@ export class TrackedParameters implements ITrackedParameters {
             const isDefault = JSON.stringify(parameterInfo.defaultValue) === JSON.stringify(parameterInfo.containerObject[parameterInfo.parameterName]);
 
             const noSaveIndicator = parameterInfo.noSave ? "❗💾 " : "";
-            parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + noSaveIndicator + parameterInfo.parameterName;
+            parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + noSaveIndicator + parameterInfo.label;
 
             const folderName = key.slice(0, key.lastIndexOf("|"));
 

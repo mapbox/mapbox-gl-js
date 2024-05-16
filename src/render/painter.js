@@ -217,6 +217,7 @@ class Painter {
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
+        enabledLayers: any;
     }
 
     _timeStamp: number;
@@ -239,7 +240,15 @@ class Painter {
             showTerrainProxyTiles: false,
             fpsWindow: 30,
             continousRedraw:false,
+            enabledLayers: {
+            }
         };
+
+        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
+
+        for (const layerType of layerTypes) {
+            this._debugParams.enabledLayers[layerType] = true;
+        }
 
         tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
             this.style.map.triggerRepaint();
@@ -261,6 +270,10 @@ class Painter {
             min: 0,
             max: 200
         });
+        // Layers
+        for (const layerType of layerTypes) {
+            tp.registerParameter(this._debugParams.enabledLayers, ["Debug", "Layers"], layerType);
+        }
 
         this.setup();
 
@@ -630,7 +643,17 @@ class Painter {
         this.options = options;
 
         const layers = this.style._mergedLayers;
-        const layerIds = this.style.order;
+
+        const layerIds = this.style.order.filter((id) => {
+            const layer = layers[id];
+
+            if (layer.type in this._debugParams.enabledLayers) {
+                return this._debugParams.enabledLayers[layer.type];
+            }
+
+            return true;
+        });
+
         const orderedLayers = layerIds.map(id => layers[id]);
         const sourceCaches = this.style._mergedSourceCaches;
 

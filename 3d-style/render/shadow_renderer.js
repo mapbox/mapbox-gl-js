@@ -149,6 +149,8 @@ export class ShadowRenderer {
     shadowDirection: Vec3;
     useNormalOffset: boolean;
 
+    _forceDisable: boolean;
+
     constructor(painter: Painter) {
         this.painter = painter;
         this._enabled = false;
@@ -159,9 +161,11 @@ export class ShadowRenderer {
         this._receivers = new ShadowReceivers();
         this._depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]);
         this._uniformValues = defaultShadowUniformValues();
+        this._forceDisable = false;
 
         this.useNormalOffset = false;
 
+        painter.tp.registerParameter(this, ["Shadows"], "_forceDisable", {label: "forceDisable"}, () => { this.painter.style.map.triggerRepaint(); });
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "cascadeCount", {min: 1, max: 2, step: 1});
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "shadowMapResolution", {min: 32, max: 2048, step: 32});
         painter.tp.registerBinding(this, ["Shadows"], "_numCascadesToRender", {readonly: true, label: 'numCascadesToRender'});
@@ -201,7 +205,7 @@ export class ShadowRenderer {
 
         this._enabled = this._shadowLayerCount > 0;
 
-        if (!this._enabled) {
+        if (!this.enabled) {
             return;
         }
 
@@ -309,7 +313,7 @@ export class ShadowRenderer {
     }
 
     get enabled(): boolean {
-        return this._enabled;
+        return this._enabled && !this._forceDisable;
     }
 
     set enabled(enabled: boolean) {
@@ -318,7 +322,7 @@ export class ShadowRenderer {
     }
 
     drawShadowPass(style: Style, sourceCoords: {[_: string]: Array<OverscaledTileID>}) {
-        if (!this._enabled) {
+        if (!this.enabled) {
             return;
         }
 
@@ -356,7 +360,7 @@ export class ShadowRenderer {
     }
 
     drawGroundShadows() {
-        if (!this._enabled) {
+        if (!this.enabled) {
             return;
         }
 
@@ -425,7 +429,7 @@ export class ShadowRenderer {
     }
 
     setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<*>, normalOffsetMode: ?ShadowNormalOffsetMode, tileOverscaledZ: number = 0) {
-        if (!this._enabled) {
+        if (!this.enabled) {
             return;
         }
 
@@ -467,7 +471,7 @@ export class ShadowRenderer {
     }
 
     setupShadowsFromMatrix(worldMatrix: Mat4, program: Program<*>, normalOffset: boolean = false) {
-        if (!this._enabled) {
+        if (!this.enabled) {
             return;
         }
 
