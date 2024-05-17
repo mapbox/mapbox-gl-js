@@ -207,7 +207,7 @@ class ReplacementSource {
                         const active = this._activeRegions[idx];
 
                         // Go through each footprint in the current priority level
-                        // and check whether they're been occluded by any other regions
+                        // and check whether they've been occluded by any other regions
                         // with higher priority
                         active.hiddenByOverlap = false;
 
@@ -359,9 +359,8 @@ function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint,
         const zDiff = Math.pow(2.0, dstId.z - srcId.z);
 
         queryVertices = a.vertices.map(v => {
-            const x = (v.x * srcId.x * EXTENT) * zDiff - dstId.x * EXTENT;
-            const y = (v.y * srcId.y * EXTENT) * zDiff - dstId.y * EXTENT;
-
+            const x = (v.x + srcId.x * EXTENT) * zDiff - dstId.x * EXTENT;
+            const y = (v.y + srcId.y * EXTENT) * zDiff - dstId.y * EXTENT;
             return new Point(x, y);
         });
     }

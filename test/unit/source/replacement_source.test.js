@@ -70,6 +70,41 @@ describe('ReplacementSource', () => {
         };
     };
 
+    const createMockSourceFromSingleTriangle = (id, tileId, vertices) => {
+        const indices = [0, 1, 2];
+
+        const minx = Math.min(vertices[0].x, vertices[1].x, vertices[2].x);
+        const miny = Math.min(vertices[0].y, vertices[1].y, vertices[2].y);
+        const min = new Point(minx, miny);
+        const maxx = Math.max(vertices[0].x, vertices[1].x, vertices[2].x);
+        const maxy = Math.max(vertices[0].y, vertices[1].y, vertices[2].y);
+        const max = new Point(maxx, maxy);
+
+        const grid = new TriangleGridIndex(vertices, indices, 6);
+        const footprint = {footprint: {
+            vertices,
+            indices,
+            grid,
+            min,
+            max
+        }, id: tileId};
+
+        const footprints = [footprint];
+        return {
+            id,
+            tileId,
+            footprints,
+
+            getSourceId: () => {
+                return id;
+            },
+
+            getFootprints: () => {
+                return footprints;
+            }
+        };
+    };
+
     const createId = (z, x, y) => {
         return new UnwrappedTileID(0, new CanonicalTileID(z, x, y));
     };
@@ -230,6 +265,31 @@ describe('ReplacementSource', () => {
         expect(regions[0].max).toStrictEqual(new Point(2345.0, 4567.0));
         expect(regions[0].sourceId).toEqual("sourceC");
         expect(regions[0].footprintTileId).toStrictEqual(createId(1, 0, 0));
+    });
+
+    test('remove source coverted region', () => {
+        const replacementSource = new ReplacementSource();
+        const preUpdateTime = replacementSource.updateTime;
+
+        const triangleA = [new Point(0, 8192), new Point(8192, 0), new Point(8192, 8192)];
+        const triangleB = [new Point(-100, -100), new Point(8192, -100), new Point(-100, 8192)];
+
+        replacementSource._setSources([
+            createMockSourceFromSingleTriangle("sourceA", createId(2, 2, 2), triangleA),
+            createMockSourceFromSingleTriangle("sourceB", createId(2, 3, 3), triangleB)
+        ]);
+        const postUpdateTime = replacementSource.updateTime;
+
+        expect(postUpdateTime > preUpdateTime).toBeTruthy();
+
+        // Change sources and expect to find regions from the existing one only
+        const regions = replacementSource.getReplacementRegionsForTile(createId(2, 3, 3));
+
+        expect(regions.length).toEqual(1);
+        expect(regions[0].min).toStrictEqual(new Point(-100.0, -100.0));
+        expect(regions[0].max).toStrictEqual(new Point(8192.0, 8192.0));
+        expect(regions[0].sourceId).toEqual("sourceB");
+        expect(regions[0].footprintTileId).toStrictEqual(createId(2, 3, 3));
     });
 
     describe('no unnecessary updates', () => {
