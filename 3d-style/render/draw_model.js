@@ -148,11 +148,12 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     mat4.transpose(normalMatrix, normalMatrix);
 
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
-
     const uniformValues = modelUniformValues(
         new Float32Array(sortedMesh.worldViewProjection),
         new Float32Array(lightingMatrix),
         new Float32Array(normalMatrix),
+        /* $FlowIgnore[incompatible-call] we can safely pass null for node.matrix as it is handled in the modelUniformValues constructor */
+        null,
         painter,
         opacity,
         pbr.baseColorFactor,
@@ -621,11 +622,12 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 const layerOpacity = layer.paint.get('model-opacity');
 
                 const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
-
                 uniformValues = modelUniformValues(
                     coord.expandedProjMatrix,
                     Float32Array.from(node.matrix),
                     new Float32Array(16),
+                    /* $FlowIgnore[incompatible-call] we can safely pass null for node.matrix as it is handled in the modelUniformValues constructor */
+                    null,
                     painter,
                     layerOpacity,
                     pbr.baseColorFactor,
@@ -876,7 +878,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const program = painter.getOrCreateProgram('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
-                        shadowRenderer.setupShadowsFromMatrix(nodeModelMatrix, program, shadowRenderer.useNormalOffset);
+                        // The shadow matrix does not need to include node transforms,
+                        // as shadow_pos will be performing that transform in the shader
+                        shadowRenderer.setupShadowsFromMatrix(tileModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
                     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
@@ -891,6 +895,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             new Float32Array(worldViewProjection),
                             new Float32Array(lightingMatrix),
                             new Float32Array(normalMatrix),
+                            new Float32Array(node.matrix),
                             painter,
                             layerOpacity,
                             pbr.baseColorFactor,

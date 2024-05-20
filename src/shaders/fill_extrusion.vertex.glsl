@@ -37,7 +37,7 @@ uniform mat4 u_light_matrix_1;
 
 out highp vec4 v_pos_light_view_0;
 out highp vec4 v_pos_light_view_1;
-out float v_depth;
+
 #endif
 
 #if defined(ZERO_ROOF_RADIUS) && !defined(LIGHTING_3D_MODE)

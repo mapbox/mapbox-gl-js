@@ -22,6 +22,7 @@ in vec3 a_pos_3f;
 // interpolatedHeight = pow(pos_z * .x + .y, .z)
 
 uniform mat4 u_matrix;
+uniform mat4 u_node_matrix;
 uniform mat4 u_lighting_matrix;
 uniform vec3 u_camera_pos;
 uniform vec4 u_color_mix;
@@ -170,22 +171,22 @@ void main() {
 #endif
 
 #ifdef RENDER_SHADOWS
-    vec3 shadow_pos = local_pos;
+    vec4 shadow_pos = u_node_matrix * vec4(local_pos, 1.0);
 #ifdef NORMAL_OFFSET
 #ifdef HAS_ATTRIBUTE_a_normal_3f
 #ifdef MODEL_POSITION_ON_GPU
-     // flip the xy to bring it to the same, wrong, fill extrusion normal orientation toward inside.
-     // See the explanation in shadow_normal_offset.
-     vec3 offset = shadow_normal_offset(vec3(-normal_3f.xy, normal_3f.z));
-     shadow_pos += offset * shadow_normal_offset_multiplier0();
+    // flip the xy to bring it to the same, wrong, fill extrusion normal orientation toward inside.
+    // See the explanation in shadow_normal_offset.
+    vec3 offset = shadow_normal_offset(vec3(-normal_3f.xy, normal_3f.z));
+    shadow_pos.xyz += offset * shadow_normal_offset_multiplier0();
 #else
     vec3 offset = shadow_normal_offset_model(normalize(normal_3f));
-    shadow_pos += offset * shadow_normal_offset_multiplier0();
+    shadow_pos.xyz += offset * shadow_normal_offset_multiplier0();
 #endif
 #endif // HAS_ATTRIBUTE_a_normal_3f
 #endif // NORMAL_OFFSET
-    v_pos_light_view_0 = u_light_matrix_0 * vec4(shadow_pos, 1);
-    v_pos_light_view_1 = u_light_matrix_1 * vec4(shadow_pos, 1);
+    v_pos_light_view_0 = u_light_matrix_0 * shadow_pos;
+    v_pos_light_view_1 = u_light_matrix_1 * shadow_pos;
     v_depth_shadows = gl_Position.w;
 #endif // RENDER_SHADOWS
 }
