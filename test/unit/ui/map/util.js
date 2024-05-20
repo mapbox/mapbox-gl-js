@@ -1,4 +1,4 @@
-export function createStyle() {
+export function createStyle(options = {}) {
     return {
         version: 8,
         center: [-73.9749, 40.7736],
@@ -6,7 +6,8 @@ export function createStyle() {
         bearing: 29,
         pitch: 50,
         sources: {},
-        layers: []
+        layers: [],
+        ...options
     };
 }
 

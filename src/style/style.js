@@ -627,7 +627,7 @@ class Style extends Evented {
             return;
         }
 
-        this.setConfig(this._config, schema);
+        this.updateConfig(this._config, schema);
 
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -1737,7 +1737,7 @@ class Style extends Evented {
         }
     }
 
-    getConfigProperty(fragmentId: string, key: string): ?any {
+    getConfigProperty(fragmentId: string, key: string): mixed {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
         const fqid = makeFQID(key, fragmentStyle.scope);
@@ -1746,7 +1746,13 @@ class Style extends Evented {
         return expression ? expression.serialize() : null;
     }
 
-    setConfigProperty(fragmentId: string, key: string, value: any) {
+    setConfigProperty(fragmentId: string, key: string, value: mixed) {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return;
+
+        const schema = fragmentStyle.stylesheet.schema;
+        if (!schema || !schema[key]) return;
+
         const expressionParsed = createExpression(value);
         if (expressionParsed.result !== 'success') {
             emitValidationErrors(this, expressionParsed.value);
@@ -1755,18 +1761,77 @@ class Style extends Evented {
 
         const expression = expressionParsed.value.expression;
 
-        const fragmentStyle = this.getFragmentStyle(fragmentId);
-        if (!fragmentStyle) return;
-
         const fqid = makeFQID(key, fragmentStyle.scope);
         const expressions = fragmentStyle.options.get(fqid);
         if (!expressions) return;
 
-        this.options.set(fqid, {...expressions, value: expression});
+        let defaultExpression;
+        const {minValue, maxValue, stepValue, type, values} = schema[key];
+        const defaultExpressionParsed = createExpression(schema[key].default);
+        if (defaultExpressionParsed.result === 'success') {
+            defaultExpression = defaultExpressionParsed.value.expression;
+        }
+
+        if (!defaultExpression) {
+            this.fire(new ErrorEvent(new Error(`No schema defined for the config option "${key}" in the "${fragmentId}" fragment.`)));
+            return;
+        }
+
+        this.options.set(fqid, {
+            ...expressions,
+            value: expression,
+            default: defaultExpression,
+            minValue, maxValue, stepValue, type, values
+        });
+
         this.updateConfigDependencies();
     }
 
-    setConfig(config: ?ConfigSpecification, schema: ?SchemaSpecification) {
+    getConfig(fragmentId: string): ?ConfigSpecification {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return null;
+
+        const schema = fragmentStyle.stylesheet.schema;
+        if (!schema) return null;
+
+        const config = {};
+        for (const key in schema) {
+            const fqid = makeFQID(key, fragmentStyle.scope);
+            const expressions = fragmentStyle.options.get(fqid);
+            const expression = expressions ? expressions.value || expressions.default : null;
+            config[key] = expression ? expression.serialize() : null;
+        }
+
+        return config;
+    }
+
+    setConfig(fragmentId: string, config: ?ConfigSpecification) {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return;
+
+        const schema = fragmentStyle.stylesheet.schema;
+        fragmentStyle.updateConfig(config, schema);
+
+        this.updateConfigDependencies();
+    }
+
+    getSchema(fragmentId: string): ?SchemaSpecification {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return null;
+        return fragmentStyle.stylesheet.schema;
+    }
+
+    setSchema(fragmentId: string, schema: SchemaSpecification) {
+        const fragmentStyle = this.getFragmentStyle(fragmentId);
+        if (!fragmentStyle) return;
+
+        fragmentStyle.stylesheet.schema = schema;
+        fragmentStyle.updateConfig(fragmentStyle._config, schema);
+
+        this.updateConfigDependencies();
+    }
+
+    updateConfig(config: ?ConfigSpecification, schema: ?SchemaSpecification) {
         this._config = config;
 
         if (!config && !schema) return;
@@ -3077,7 +3142,7 @@ class Style extends Evented {
         const schema = fragment.style.stylesheet && fragment.style.stylesheet.schema;
 
         fragment.config = config;
-        fragment.style.setConfig(config, schema);
+        fragment.style.updateConfig(config, schema);
 
         this.updateConfigDependencies();
 

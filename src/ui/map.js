@@ -82,7 +82,9 @@ import type {
     PropertyValueSpecification,
     TransitionSpecification,
     CameraSpecification,
-    ImportSpecification
+    ImportSpecification,
+    ConfigSpecification,
+    SchemaSpecification
 } from '../style-spec/types.js';
 import type StyleLayer from '../style/style_layer.js';
 import type {Source} from '../source/source.js';
@@ -3085,9 +3087,65 @@ export class Map extends Camera {
     /** @section {Style properties} */
 
     /**
+     * Returns the imported style schema.
+     *
+     * @param {string} importId The name of the imported style (e.g. `basemap`).
+     * @returns {*} Returns the imported style schema.
+     * @private
+     *
+     * @example
+     * map.getSchema('basemap');
+     */
+    getSchema(importId: string): ?SchemaSpecification {
+        return this.style.getSchema(importId);
+    }
+
+    /**
+     * Sets the imported style schema value.
+     *
+     * @param {string} importId The name of the imported style (e.g. `basemap`).
+     * @param {SchemaSpecification} schema The imported style schema.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @private
+     *
+     * @example
+     * map.setSchema('basemap', {lightPreset: {type: 'string', default: 'night', values: ['day', 'night']}});
+     */
+    setSchema(importId: string, schema: SchemaSpecification): this {
+        this.style.setSchema(importId, schema);
+        return this._update(true);
+    }
+
+    /**
+     * Returns the imported style configuration.
+     *
+     * @param {string} importId The name of the imported style (e.g. `basemap`).
+     * @returns {*} Returns the imported style configuration.
+     * @example
+     * map.getConfig('basemap');
+     */
+    getConfig(importId: string): ?ConfigSpecification {
+        return this.style.getConfig(importId);
+    }
+
+    /**
+     * Sets the imported style configuration value.
+     *
+     * @param {string} importId The name of the imported style (e.g. `basemap`).
+     * @param {ConfigSpecification} config The imported style configuration value.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setConfig('basemap', {lightPreset: 'night', showPointOfInterestLabels: false});
+     */
+    setConfig(importId: string, config: ConfigSpecification): this {
+        this.style.setConfig(importId, config);
+        return this._update(true);
+    }
+
+    /**
      * Returns the value of a configuration property in the imported style.
      *
-     * @param {string} importId The name of the imported style to set the config for (e.g. `basemap`).
+     * @param {string} importId The name of the imported style (e.g. `basemap`).
      * @param {string} configName The name of the configuration property from the style.
      * @returns {*} Returns the value of the configuration property.
      * @example
