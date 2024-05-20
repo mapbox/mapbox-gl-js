@@ -35,12 +35,12 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*', 'performance.mark']
     }) : false,
     production || bench ? unassert() : false,
-    replace({
-        'process.env.ROLLUP_WATCH': JSON.stringify(process.env.ROLLUP_WATCH),
-    }),
     test ? replace({
-        'process.env.CI': JSON.stringify(process.env.CI),
-        'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
+        preventAssignment: true,
+        values: {
+            'process.env.CI': JSON.stringify(process.env.CI),
+            'process.env.UPDATE': JSON.stringify(process.env.UPDATE)
+        }
     }) : false,
     glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl'], production),
     minified ? terser({

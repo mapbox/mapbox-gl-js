@@ -44,6 +44,7 @@ const config = [{
         replace({
             include: /\/jsonlint-lines-primitives\/lib\/jsonlint.js/,
             delimiters: ['', ''],
+            preventAssignment: true,
             values: {
                 '_token_stack:': ''
             }
