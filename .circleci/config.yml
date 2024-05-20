@@ -258,7 +258,7 @@ jobs:
       - run: npm run build-style-spec
       - run: npm run build-flow-types
       - run: npm run test-build
-      - run: while read l; do cp debug/$l test/release/$l; done < test/release/local_release_page_list.txt
+      - run: npm run prepare-release-pages
       - run:
           name: Create mapbox-gl.tar.gz
           command: |
