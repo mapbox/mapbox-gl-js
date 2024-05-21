@@ -181,7 +181,13 @@ const map = new mapboxgl.Map({
 map.on('load', () => {
     map.addSource('raster-array-source', {
         'type': 'raster-array',
-        'url' : 'http://localhost:9967/debug/wind-512-mrt/tile.json'
+        'url' : 'http://localhost:9967/debug/wind-512-mrt/tile.json',
+        'bounds': [
+            119.96875,
+            22.375,
+            150.03125,
+            47.62499999999999
+        ]
     });
 
     map.addLayer({
