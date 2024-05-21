@@ -18,7 +18,7 @@ highp float rand(const highp vec2 co) {
 void main() {
     ivec2 pixel_coord = ivec2(v_tex_coord * u_particle_texture_side_len);
     highp vec4 pixel = texelFetch(u_particle_texture, pixel_coord, 0);
-    highp vec2 pos = decode_pos(pixel);
+    highp vec2 pos = unpack_pos_from_rgba(pixel);
     highp vec2 velocity = lookup_velocity(clamp(pos, 0.0, 1.0));
     highp vec2 dp = velocity == INVALID_VELOCITY ? vec2(0) : velocity * u_speed_factor;
     pos = pos + dp;
@@ -35,5 +35,5 @@ void main() {
     highp float drop = step(1.0 - drop_rate, rand(seed));
     highp vec2 next_pos = mix(pos, random_pos, drop);
 
-    glFragColor = encode_pos(next_pos);
+    glFragColor = pack_pos_to_rgba(next_pos);
 }

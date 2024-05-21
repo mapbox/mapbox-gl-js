@@ -50,17 +50,15 @@ highp vec2 lookup_velocity(highp vec2 uv) {
 uniform highp float u_particle_pos_scale;
 uniform highp vec2 u_particle_pos_offset;
 
-highp vec2 decode_pos(highp vec4 pixel) {
-    highp vec2 p = vec2(
-        pixel.r / 255.0 + pixel.b,
-        pixel.g / 255.0 + pixel.a);
-
-    return u_particle_pos_scale * p - u_particle_pos_offset;
+// Fixed packing code from: https://github.com/mrdoob/three.js/pull/17935
+highp vec4 pack_pos_to_rgba(highp vec2 p) {
+    highp vec2 v = (p + u_particle_pos_offset) / u_particle_pos_scale;
+	highp vec4 r = vec4(v.x, fract(v.x * 255.0), v.y, fract(v.y * 255.0));
+	return vec4(r.x - r.y / 255.0, r.y, r.z - r.w / 255.0, r.w);
 }
 
-highp vec4 encode_pos(highp vec2 pos) {
-    highp vec2 p = (pos + u_particle_pos_offset) / u_particle_pos_scale;
-    return vec4(
-        fract(p * 255.0),
-        floor(p * 255.0) / 255.0);
+highp vec2 unpack_pos_from_rgba(highp vec4 v) {
+	v = floor(v * 255.0 + 0.5) / 255.0;
+	highp vec2 p = vec2(v.x + (v.y / 255.0), v.z + (v.w / 255.0));
+    return u_particle_pos_scale * p - u_particle_pos_offset;
 }

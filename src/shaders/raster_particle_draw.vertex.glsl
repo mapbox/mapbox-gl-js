@@ -13,7 +13,7 @@ void main() {
         mod(a_index, u_particle_texture_side_len),
         a_index / u_particle_texture_side_len);
     vec4 pixel = texelFetch(u_particle_texture, pixel_coord, 0);
-    vec2 pos = decode_pos(pixel) + u_tile_offset;
+    vec2 pos = unpack_pos_from_rgba(pixel) + u_tile_offset;
 
     vec2 tex_coord = fract(pos);
     vec2 velocity = lookup_velocity(tex_coord);

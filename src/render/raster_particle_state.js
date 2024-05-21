@@ -63,17 +63,26 @@ class RasterParticleState {
 
         const invScale = 1.0 / PARTICLE_POS_SCALE;
         const srand = mulberry32(id.key);
-        // Encode random particle positions into RGBA pixels
+        // Pack random positions in [0, 1] into RGBA pixels. Matches the GLSL
+        // `pack_pos_to_rgba` behavior.
         for (let i = 0; i < particlePositions.length; i += 4) {
-            // Decoded positions in shader: (PARTICLE_POS_SCALE * p - PARTICLE_POS_OFFSET), where p ∈ [0, 1].
-            // x, y are the inverse of the decoded position.
             const x = invScale * (srand() + PARTICLE_POS_OFFSET);
             const y = invScale * (srand() + PARTICLE_POS_OFFSET);
-            // Encode fractional part into RG, integral part into BA.
-            particlePositions[i + 0] = Math.floor(256 * ((255 * x) % 1));
-            particlePositions[i + 1] = Math.floor(256 * ((255 * y)  % 1));
-            particlePositions[i + 2] = Math.floor(256 * x);
-            particlePositions[i + 3] = Math.floor(256 * y);
+
+            const rx = x;
+            const ry = (x * 255.0) % 1;
+            const rz = y;
+            const rw = (y * 255.0) % 1;
+
+            const px = rx - ry / 255.0;
+            const py = ry;
+            const pz = rz - rw / 255.0;
+            const pw = rw;
+
+            particlePositions[i + 0] = Math.floor(255.0 * px);
+            particlePositions[i + 1] = Math.floor(255.0 * py);
+            particlePositions[i + 2] = Math.floor(255.0 * pz);
+            particlePositions[i + 3] = Math.floor(255.0 * pw);
         }
         const particleImage = new RGBAImage({width: particleTextureDimension, height: particleTextureDimension}, particlePositions);
         this.particleTexture0 = new Texture(this.context, particleImage, gl.RGBA, {premultiply: false, useMipmap: false});
