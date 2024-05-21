@@ -329,7 +329,7 @@ export type LineLayerSpecification = {|
     "filter"?: FilterSpecification,
     "layout"?: {|
         "line-cap"?: DataDrivenPropertyValueSpecification<"butt" | "round" | "square">,
-        "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
+        "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter" | "none">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
         "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
@@ -633,7 +633,8 @@ export type ModelLayerSpecification = {|
         "model-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "model-roughness"?: DataDrivenPropertyValueSpecification<number>,
         "model-height-based-emissive-strength-multiplier"?: DataDrivenPropertyValueSpecification<[number, number, number, number, number]>,
-        "model-cutoff-fade-range"?: ExpressionSpecification
+        "model-cutoff-fade-range"?: ExpressionSpecification,
+        "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>
     |}
 |}
 

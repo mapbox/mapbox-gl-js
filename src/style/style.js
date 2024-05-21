@@ -2559,7 +2559,7 @@ class Style extends Evented {
         return (this._flattenAndSortRenderedFeatures(sourceResults): any);
     }
 
-    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
+    querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter?: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }

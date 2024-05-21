@@ -146,7 +146,7 @@ export type MapOptions = {
     maxPitch?: ?number,
     boxZoom?: boolean,
     dragRotate?: boolean,
-    dragPan?: DragPanOptions,
+    dragPan?: boolean | DragPanOptions,
     keyboard?: boolean,
     doubleClickZoom?: boolean,
     touchZoomRotate?: boolean,
@@ -172,7 +172,11 @@ export type MapOptions = {
     respectPrefersReducedMotion?: boolean,
     contextCreateOptions?: ContextOptions,
     devtools?: boolean,
-    repaint?: boolean
+    repaint?: boolean,
+    fadeDuration?: number,
+    localFontFamily?: string,
+    localIdeographFontFamily?: string,
+    performanceMetricsCollection?: boolean,
 };
 
 const defaultMinZoom = -2;
@@ -1957,7 +1961,7 @@ export class Map extends Camera {
      *
      * @see [Example: Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
-    querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
+    querySourceFeatures(sourceId: string, parameters: ?{sourceLayer: ?string, filter?: ?Array<any>, validate?: boolean}): Array<QueryFeature> {
         if (!this._isValidId(sourceId)) {
             return [];
         }
