@@ -1,5 +1,3 @@
-precision highp float;
-
 uniform sampler2D u_color_ramp;
 
 in float v_particle_speed;
