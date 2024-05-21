@@ -2101,6 +2101,12 @@ export class Map extends Camera {
     /**
      * Returns the map's Mapbox [style](https://docs.mapbox.com/help/glossary/style/) object, a JSON object which can be used to recreate the map's style.
      *
+     * For the Mapbox Standard style or any "fragment" style (which is a style with `fragment: true`
+     * or a `schema` property defined), this method returns an empty style with no layers or sources.
+     * The original style is wrapped into an import with the ID `basemap` as a fragment style and is not intended
+     * to be used directly. This design ensures that user logic is not tied to style internals, allowing Mapbox
+     * to roll out style updates seamlessly and consistently.
+     *
      * @returns {Object} The map's style JSON object.
      *
      * @example

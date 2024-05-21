@@ -2377,6 +2377,7 @@ class Style extends Evented {
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
+            fragment: this.stylesheet.fragment,
             imports: this._serializeImports(),
             schema: this.stylesheet.schema,
             camera: this.stylesheet.camera,

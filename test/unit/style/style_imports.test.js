@@ -53,6 +53,50 @@ afterAll(() => {
 });
 
 describe('Style#loadURL', () => {
+    test('wraps style with schema into import', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            name: 'Mapbox Standard',
+            schema: {
+                lightPreset: {type: 'string', default: 'day'}
+            }
+        });
+
+        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+
+        await new Promise(resolve => {
+            style.once('style.load', () => {
+                const rootStyle = style.serialize();
+                expect(rootStyle.imports).toEqual([{id: 'basemap', url: '', data: initialStyle}]);
+                resolve();
+            });
+
+            style.loadURL('/style.json');
+        });
+    });
+
+    test('wraps fragment into import', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            name: 'Mapbox Standard',
+            fragment: true,
+        });
+
+        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+
+        await new Promise(resolve => {
+            style.once('style.load', () => {
+                const rootStyle = style.serialize();
+                expect(rootStyle.imports).toEqual([{id: 'basemap', url: '', data: initialStyle}]);
+                resolve();
+            });
+
+            style.loadURL('/style.json');
+        });
+    });
+
     test('imports style from URL', async () => {
         const style = new Style(new StubMap());
 
