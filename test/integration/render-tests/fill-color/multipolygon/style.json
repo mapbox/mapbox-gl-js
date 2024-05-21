@@ -1,0 +1,48 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+          "width": 64,
+          "height": 64
+        }
+    },
+    "sources": {
+      "test": {
+        "type": "geojson",
+        "data": {
+          "type": "Feature",
+          "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+              [
+                [
+                    [-5, -5],
+                    [-5,  5],
+                    [ 5,  5],
+                    [ 5, -5]
+                ]
+              ],
+              [
+                [
+                    [ 0,  0],
+                    [ 0, 10],
+                    [10, 10],
+                    [10,  0]
+                ]
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "layers": [
+      {
+        "id": "test",
+        "type": "fill",
+        "source": "test",
+        "paint": {
+          "fill-color": "red"
+        }
+      }
+    ]
+  }
