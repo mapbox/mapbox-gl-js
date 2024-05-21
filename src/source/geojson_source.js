@@ -147,7 +147,8 @@ class GeoJSONSource extends Evented implements Source {
                 generateId: options.generateId || false
             },
             clusterProperties: options.clusterProperties,
-            filter: options.filter
+            filter: options.filter,
+            dynamic: options.dynamic
         }, options.workerOptions);
     }
 
@@ -187,6 +188,41 @@ class GeoJSONSource extends Evented implements Source {
     setData(data: GeoJSON | string): this {
         this._data = data;
         this._updateWorkerData();
+        return this;
+    }
+
+    /**
+     * Updates the existing GeoJSON data with new features and re-renders the map.
+     * Can only be used on sources with `dynamic: true` in options.
+     * Updates features by their IDs:
+     *
+     * - If there's a feature with the same ID, overwrite it.
+     * - If there's a feature with the same ID but the new one's geometry is `null`, remove it
+     * - If there's no such ID in existing data, add it as a new feature.
+     *
+     * @param {Object | string} data A GeoJSON data object or a URL to one.
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * // Update the feature with ID=123 in the existing GeoJSON source
+     * map.getSource('source_id').updateData({
+     *     "type": "FeatureCollection",
+     *     "features": [{
+     *         "id": 123,
+     *         "type": "Feature",
+     *         "properties": {"name": "Null Island"},
+     *         "geometry": {
+     *             "type": "Point",
+     *             "coordinates": [ 0, 0 ]
+     *         }
+     *     }]
+     * });
+     */
+    updateData(data: GeoJSON | string): this {
+        if (!this._options.dynamic) {
+            return this.fire(new ErrorEvent(new Error("Can't call updateData on a GeoJSON source with dynamic set to false.")));
+        }
+        this._data = data;
+        this._updateWorkerData(true);
         return this;
     }
 
@@ -296,7 +332,7 @@ class GeoJSONSource extends Evented implements Source {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData() {
+    _updateWorkerData(append: boolean = false) {
         // if there's an earlier loadData to finish, wait until it finishes and then do another update
         if (this._pendingLoad) {
             this._coalesce = true;
@@ -306,7 +342,7 @@ class GeoJSONSource extends Evented implements Source {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this._loaded = false;
-        const options = extend({}, this.workerOptions);
+        const options = extend({append}, this.workerOptions);
         options.scope = this.scope;
         const data = this._data;
         if (typeof data === 'string') {
@@ -338,7 +374,7 @@ class GeoJSONSource extends Evented implements Source {
             }
 
             if (this._coalesce) {
-                this._updateWorkerData();
+                this._updateWorkerData(append);
                 this._coalesce = false;
             }
         });

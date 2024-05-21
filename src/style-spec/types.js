@@ -220,7 +220,8 @@ export type GeoJSONSourceSpecification = {|
     "clusterProperties"?: mixed,
     "lineMetrics"?: boolean,
     "generateId"?: boolean,
-    "promoteId"?: PromoteIdSpecification
+    "promoteId"?: PromoteIdSpecification,
+    "dynamic"?: boolean
 |}
 
 export type VideoSourceSpecification = {|

@@ -1,0 +1,97 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32,
+      "operations": [
+        [
+          "updateGeoJSONData",
+          "geojson",
+          {
+            "type": "FeatureCollection",
+            "features": [{
+              "id": 2,
+              "type": "Feature",
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [[-5, -10], [5, 10]]
+              },
+              "properties": {
+                "color": "orange"
+              }
+            }, {
+              "id": 3,
+              "type": "Feature",
+              "geometry": null
+            }, {
+              "id": 4,
+              "type": "Feature",
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [[15, -10], [15, 10]]
+              },
+              "properties": {
+                "color": "green"
+              }
+            }]
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "dynamic": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "id": 1,
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [[-15, -10], [-15, 10]]
+          },
+          "properties": {
+            "color": "black"
+          }
+        }, {
+          "id": 2,
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [[-5, -10], [-5, 10]]
+          },
+          "properties": {
+            "color": "red"
+          }
+        }, {
+          "id": 3,
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [[5, -10], [5, 10]]
+          },
+          "properties": {
+            "color": "blue"
+          }
+        }]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 5,
+        "line-color": ["get", "color"]
+      }
+    }
+  ]
+}

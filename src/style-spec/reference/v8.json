@@ -1004,11 +1004,21 @@
     "generateId": {
       "type": "boolean",
       "default": false,
-      "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
+      "doc": "Whether to generate ids for the GeoJSON features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
     },
     "promoteId": {
       "type": "promoteId",
       "doc": "A property to use as a feature id (for feature state). Either a property name, or an object of the form `{<sourceLayer>: <propertyName>}`."
+    },
+    "dynamic": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to optimize this source for frequent data updates (e.g. animating features).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.4.0"
+        }
+      }
     }
   },
   "source_video": {

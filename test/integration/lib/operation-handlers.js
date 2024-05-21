@@ -192,6 +192,10 @@ export const operationHandlers = {
             }
         }
         doneCb();
+    },
+    updateGeoJSONData(map, [sourceId, data], doneCb) {
+        map.getSource(sourceId).updateData(data);
+        doneCb();
     }
 };
 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 12.5,
+    center: [-122.4194, 37.7749]
+});
+
+const bounds = map.getBounds();
+
+const features = [];
+const geojson = {type: 'FeatureCollection', features};
+
+for (let i = 0; i < 10000; i++) {
+    features.push({
+        id: i,
+        type: 'Feature',
+        geometry: {
+            type: 'Point',
+            coordinates: [
+                bounds.getWest() + Math.random() * (bounds.getEast() - bounds.getWest()),
+                bounds.getSouth() + Math.random() * (bounds.getNorth() - bounds.getSouth())
+            ]
+        }
+    });
+}
+
+let currentId;
+
+function onMove({lngLat: {lng, lat}}) {
+    map.getCanvas().style.cursor = 'grabbing';
+
+    features[currentId].geometry.coordinates = [lng, lat];
+
+    // map.getSource('point').setData(geojson);
+    map.getSource('point').updateData(features[currentId]);
+}
+
+function onUp(e) {
+    map.getCanvas().style.cursor = '';
+    map.off('mousemove', onMove);
+    map.off('touchmove', onMove);
+}
+
+map.on('style.load', () => {
+    map.addSource('point', {
+        type: 'geojson',
+        data: geojson,
+        dynamic: true
+    });
+    map.addLayer({
+        'id': 'point',
+        'type': 'circle',
+        'source': 'point',
+        'paint': {
+            'circle-radius': 3,
+            'circle-color': '#F84C4C' // red color
+        }
+    });
+
+    map.on('mousedown', 'point', (e) => {
+        e.preventDefault();
+
+        currentId = e.features[0].id;
+
+        map.getCanvas().style.cursor = 'grab';
+
+        map.on('mousemove', onMove);
+        map.once('mouseup', onUp);
+    });
+
+});
+
+</script>
+</body>
+</html>
