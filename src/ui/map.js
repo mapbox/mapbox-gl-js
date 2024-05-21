@@ -106,6 +106,15 @@ export interface IControl {
 }
 /* eslint-enable no-use-before-define */
 
+// Public API type for the Map#setStyle options
+// as opposite to the internal StyleOptions type
+type SetStyleOptions = {
+    diff?: boolean,
+    config?: {[string]: ConfigSpecification},
+    localFontFamily: StyleOptions['localFontFamily'],
+    localIdeographFontFamily: StyleOptions['localIdeographFontFamily'],
+}
+
 export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
 export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
 export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
@@ -113,6 +122,7 @@ export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 export type MapOptions = {
     style?: StyleSpecification | string | void,
+    config?: {[string]: ConfigSpecification},
     hash?: boolean | string,
     interactive?: boolean,
     container: HTMLElement | string,
@@ -259,6 +269,21 @@ const defaultOptions = {
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v11?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/maps/#retrieve-tiles).
  *
+ * @param {Object} [options.config=null] The initial configuration options for the style fragments. Each key in the object is a fragment ID (e.g., `basemap`) and each value is a configuration object.
+ * @example
+ * const map = new mapboxgl.Map({
+ *     container: 'map',
+ *     center: [-122.420679, 37.772537],
+ *     zoom: 13,
+ *     style: 'mapbox://styles/mapbox/standard',
+ *     config: {
+ *         // Initial configuration for the Mapbox Standard style set above. By default, its ID is `basemap`.
+ *         basemap: {
+ *             // Here, we're setting the light preset to `night`.
+ *             lightPreset: 'night'
+ *         }
+ *     }
+ * });
  * @param {(boolean|string)} [options.hash=false] If `true`, the map's [position](https://docs.mapbox.com/help/glossary/camera) (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
  * For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  * An additional string may optionally be provided to indicate a parameter-styled hash,
@@ -655,7 +680,11 @@ export class Map extends Camera {
 
         if (options.style || !options.testMode) {
             const style = options.style || config.DEFAULT_STYLE;
-            this.setStyle(style, {localFontFamily: this._localFontFamily, localIdeographFontFamily: this._localIdeographFontFamily});
+            this.setStyle(style, {
+                config: options.config,
+                localFontFamily: this._localFontFamily,
+                localIdeographFontFamily: this._localIdeographFontFamily
+            });
         }
 
         if (options.projection) {
@@ -1974,26 +2003,39 @@ export class Map extends Camera {
      * In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
      * Set to `false`, to enable font settings from the map's style for these glyph ranges.
      * Forces a full update.
+     * @param {Object} [options.config=null] The initial configuration options for the style fragments.
+     * Each key in the object is a fragment ID (e.g., `basemap`) and each value is a configuration object.
      * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * map.setStyle("mapbox://styles/mapbox/streets-v11");
      *
      * @see [Example: Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
+     *
+     * @example
+     * map.setStyle("mapbox://styles/mapbox/standard", {
+     *     "config": {
+     *         "basemap": {
+     *             "lightPreset": "night"
+     *         }
+     *     }
+     * });
      */
-    setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions): this {
+    setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
         options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
 
-        if ((options.diff !== false &&
+        const diffNeeded =
+            options.diff !== false &&
+            options.localFontFamily === this._localFontFamily &&
             options.localIdeographFontFamily === this._localIdeographFontFamily &&
-            options.localFontFamily === this._localFontFamily) && this.style && style) {
+            !options.config; // Rebuild the style from scratch if config is set
+
+        if (this.style && style && diffNeeded) {
             this.style._diffStyle(
                 style,
-                (e: any, isUpdateNeeded) => {
+                (e: Error | {error: string} | null, isUpdateNeeded) => {
                     if (e) {
-                        warnOnce(
-                            `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
-                        );
+                        warnOnce(`Unable to perform style diff: ${String(e.message || e.error || e)}. Rebuilding the style from scratch.`);
                         this._updateStyle(style, options);
                     } else if (isUpdateNeeded) {
                         this._update(true);
@@ -2019,7 +2061,7 @@ export class Map extends Camera {
         return str;
     }
 
-    _updateStyle(style: StyleSpecification | string | null,  options?: {diff?: boolean} & StyleOptions): this {
+    _updateStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
@@ -2027,7 +2069,15 @@ export class Map extends Camera {
         }
 
         if (style) {
-            this.style = new Style(this, options)
+            // Move SetStyleOptions's `config` property to
+            // StyleOptions's `initialConfig` for internal use
+            const styleOptions: StyleOptions = extend({}, options);
+            if (options && options.config) {
+                styleOptions.initialConfig = options.config;
+                delete styleOptions.config;
+            }
+
+            this.style = new Style(this, styleOptions)
                 .setEventedParent(this, {style: this.style})
                 .load(style);
         }

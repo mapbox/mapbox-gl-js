@@ -163,6 +163,7 @@ export type StyleOptions = {
     importsCache?: Map<string, StyleSpecification>,
     resolvedImports?: Set<string>,
     config?: ?ConfigSpecification,
+    initialConfig?: {[string]: ConfigSpecification},
     configDependentLayers?: Set<string>;
 };
 
@@ -241,6 +242,7 @@ class Style extends Evented {
     _brightness: ?number;
     _configDependentLayers: Set<string>;
     _config: ?ConfigSpecification;
+    _initialConfig: ?{[string]: ConfigSpecification};
     _buildingIndex: BuildingIndex;
     _transition: TransitionSpecification;
 
@@ -337,6 +339,7 @@ class Style extends Evented {
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
         this._config = options.config;
+        this._initialConfig = options.initialConfig;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
@@ -573,6 +576,13 @@ class Style extends Evented {
     _createFragmentStyle(importSpec: ImportSpecification): Style {
         const scope = this.scope ? makeFQID(importSpec.id, this.scope) : importSpec.id;
 
+        // Merge import config and initial config from the Map constructor
+        let config;
+        const initialConfig = this._initialConfig && this._initialConfig[scope];
+        if (importSpec.config || initialConfig) {
+            config = extend({}, importSpec.config, initialConfig);
+        }
+
         const style = new Style(this.map, {
             scope,
             styleChanges: this._changes,
@@ -585,7 +595,7 @@ class Style extends Evented {
             imageManager: this.imageManager,
             glyphManager: this.glyphManager,
             modelManager: this.modelManager,
-            config: importSpec.config,
+            config,
             configOptions: this.options,
             configDependentLayers: this._configDependentLayers
         });

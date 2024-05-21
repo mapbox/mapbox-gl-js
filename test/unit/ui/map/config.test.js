@@ -2,6 +2,48 @@ import {describe, test, expect, waitFor, createMap} from '../../../util/vitest.j
 import {createStyle} from '../map/util.js';
 
 describe('Map#config', () => {
+    test('config in constructor', async () => {
+        const map = createMap({
+            style: createStyle({
+                // Style with `schema` property will be wrapped into a fragment with ID `basemap`
+                schema: {
+                    lightPreset: {type: 'string', default: 'day'}
+                }
+            }),
+            config: {
+                basemap: {
+                    lightPreset: 'night'
+                }
+            },
+        });
+
+        await waitFor(map, 'style.load');
+
+        expect(map.getConfigProperty('basemap', 'lightPreset')).toEqual('night');
+    });
+
+    test('#setStyle', async () => {
+        const map = createMap();
+
+        const style = createStyle({
+            schema: {
+                lightPreset: {type: 'string', default: 'day'}
+            }
+        });
+
+        map.setStyle(style, {
+            config: {
+                basemap: {
+                    lightPreset: 'night'
+                }
+            }
+        });
+
+        await waitFor(map, 'style.load');
+
+        expect(map.getConfigProperty('basemap', 'lightPreset')).toEqual('night');
+    });
+
     test('#setConfig and #getConfig', async () => {
         const map = createMap({
             style: createStyle({
