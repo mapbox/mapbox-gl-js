@@ -225,16 +225,17 @@ export class LngLatBounds {
     _ne: LngLat;
     _sw: LngLat;
 
-    // This constructor is too flexible to type. It should not be so flexible.
-    constructor(sw: any, ne: any) {
+    constructor(sw: [number, number, number, number] | [LngLatLike, LngLatLike] | LngLatLike | void, ne: LngLatLike | void) {
         if (!sw) {
             // noop
         } else if (ne) {
-            this.setSouthWest(sw).setNorthEast(ne);
+            this.setSouthWest(((sw: any): LngLatLike)).setNorthEast(ne);
         } else if (sw.length === 4) {
-            this.setSouthWest([sw[0], sw[1]]).setNorthEast([sw[2], sw[3]]);
+            const bounds = ((sw: any): [number, number, number, number]);
+            this.setSouthWest([bounds[0], bounds[1]]).setNorthEast([bounds[2], bounds[3]]);
         } else {
-            this.setSouthWest(sw[0]).setNorthEast(sw[1]);
+            const bounds = ((sw: any): [LngLatLike, LngLatLike]);
+            this.setSouthWest(bounds[0]).setNorthEast(bounds[1]);
         }
     }
 
