@@ -66,8 +66,8 @@ type Required<T> = ObjMap<T, <V>(v: V) => $NonMaybeType<V>>;
  * This is useful for drawing attention to a location that is not in the screen center.
  * `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
- *     Note that when `padding` is used with `jumpTo`, `easeTo`, and `flyTo`, it also sets the global map padding as a side effect,
- *     affecting all subsequent camera movements until the padding is reset.
+ * Note that when `padding` is used with `jumpTo`, `easeTo`, and `flyTo`, it also sets the global map padding as a side effect,
+ * affecting all subsequent camera movements until the padding is reset.
  * @example
  * // set the map's initial perspective with CameraOptions
  * const map = new mapboxgl.Map({
@@ -852,7 +852,7 @@ class Camera extends Evented {
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
-     *      `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
+     * `center`, `zoom`, and `bearing`. If map is unable to fit, method will warn and return undefined.
      * @private
      * @example
      * var p0 = [-79, 43];
