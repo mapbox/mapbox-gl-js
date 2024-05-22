@@ -1,17 +1,26 @@
-## 3.4.0-beta.1
+## 3.4.0
 
 ### Features and improvements ✨
+- Add `dynamic: true` option for GeoJSON sources that enables partial update API with `source.updateData` method. Further optimizations for this mode are expected in future releases.
+- Add `Map` `setConfig`, `getConfig`, `setSchema` and `getSchema` methods for batch setting of style configuration options.
+- Add `config` option for the `Map` constructor and `setStyle` methods for conveniently setting style configuration options on map initialization.
 - Add `icon-color-saturation`, `icon-color-contrast`, `icon-color-brightness-min` and `icon-color-brightness-max` to control symbol layer appearance.
 - Introduce a new `line-join` mode: `none` to improve line pattern distortions around joins.
 - Extend `model-id` property to support URIs (in addition to style-defined model references).
+- Expose more parameters in map `devtools` UI.
 
 ### Bug fixes 🐞
+- Fix an issue with `flyTo` ignoring `padding` in its options.
 - Respect padding in `cameraForBounds` on globe view. (h/t [@jonasnoki](https://github.com/jonasnoki)) [#13126](https://github.com/mapbox/mapbox-gl-js/pull/13126)
 - Fix `preloadOnly` not preloading tiles from style imports.
 - Fix `queryRenderedFeatures` for non-integer ID in non-tiled model sources
 - Fix `model-scale` property for large number of 3D models.
 - Fix flickering of `raster-particle` layer on globe view.
 - Improve rendering of low-resolution `raster-array` data.
+- Fix an issue with GL JS bundle not building locally on Windows.
+- Fix multiple edge cases when using `symbol-z-elevate`.
+- Fix rendering issues with `raster-particle` layer on certain Android devices.
+- Fix shadow and lighting rendering issues in certain areas when using Mapbox Standard.
 
 ## 3.3.0
 
