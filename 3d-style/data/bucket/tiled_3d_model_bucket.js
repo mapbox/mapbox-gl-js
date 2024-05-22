@@ -517,8 +517,8 @@ class Tiled3dModelBucket implements Bucket {
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
 
             assert(mesh.heightmap);
-            const xCell = ((x - meshAabb.min[0]) / (meshAabb.max[0] - meshAabb.min[0]) * HEIGHTMAP_DIM) | 0;
-            const yCell = ((y - meshAabb.min[1]) / (meshAabb.max[1] - meshAabb.min[1]) * HEIGHTMAP_DIM) | 0;
+            const xCell = ((x - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
+            const yCell = ((y - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
             const heightmapIndex = Math.min(HEIGHTMAP_DIM - 1, yCell) * HEIGHTMAP_DIM + Math.min(HEIGHTMAP_DIM - 1, xCell);
 
             tmpVertex[2] = mesh.heightmap[heightmapIndex];

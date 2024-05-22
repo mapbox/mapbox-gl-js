@@ -157,7 +157,7 @@ class BuildingIndex {
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.hidden) continue;
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
-            return (heightData.height || 0) * heightData.verticalScale;
+            return heightData.height ? heightData.height * heightData.verticalScale : Number.NEGATIVE_INFINITY;
         }
         // If we couldn't find a bucket, return Number.NEGATIVE_INFINITY. If a layer got hidden since previous frame, place symbols on ground.
         return this.layersGotHidden ? 0 : Number.NEGATIVE_INFINITY;
