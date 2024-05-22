@@ -2728,7 +2728,7 @@ class Style extends Evented {
         return this.fog ? this.fog.get() : null;
     }
 
-    setFog(fogOptions: FogSpecification) {
+    setFog(fogOptions?: FogSpecification) {
         this._checkLoaded();
 
         if (!fogOptions) {

@@ -154,15 +154,15 @@ type CustomRenderMethod = (gl: WebGL2RenderingContext, matrix: Array<number>, pr
  */
 export type CustomLayerInterface = {
     id: string,
-    type: "custom",
-    slot: ?string;
-    renderingMode: "2d" | "3d",
+    type: 'custom',
+    slot?: string | void,
+    renderingMode?: '2d' | '3d',
     render: CustomRenderMethod,
-    prerender: ?CustomRenderMethod,
-    renderToTile: ?(gl: WebGL2RenderingContext, tileId: MercatorCoordinate) => void,
-    shouldRerenderTiles: ?() => boolean,
-    onAdd: ?(map: Map, gl: WebGL2RenderingContext) => void,
-    onRemove: ?(map: Map, gl: WebGL2RenderingContext) => void
+    prerender?: CustomRenderMethod | void,
+    renderToTile?: (gl: WebGL2RenderingContext, tileId: MercatorCoordinate) => void,
+    shouldRerenderTiles?: () => boolean,
+    onAdd?: (map: Map, gl: WebGL2RenderingContext) => void,
+    onRemove?: (map: Map, gl: WebGL2RenderingContext) => void
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {

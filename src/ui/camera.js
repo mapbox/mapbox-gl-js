@@ -89,14 +89,15 @@ export type CameraOptions = {
     bearing?: number,
     pitch?: number,
     around?: LngLatLike,
-    padding?: PaddingOptions
+    padding?: PaddingOptions,
+    maxZoom?: number
 };
 
 export type FullCameraOptions = {
     maxZoom: number,
     offset: PointLike,
     padding: Required<PaddingOptions>
-} & CameraOptions
+} & CameraOptions;
 
 /**
  * Options common to map movement methods that involve animation, such as {@link Map#panBy} and
@@ -134,12 +135,17 @@ export type FullCameraOptions = {
  * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
 */
 export type AnimationOptions = {
+    animate?: boolean,
+    curve?: number,
     duration?: number,
     easing?: (_: number) => number,
-    offset?: PointLike,
-    animate?: boolean,
     essential?: boolean,
-    preloadOnly?: boolean
+    linear?: boolean,
+    maxDuration?: number,
+    offset?: PointLike,
+    preloadOnly?: boolean,
+    screenSpeed?: number,
+    speed?: number
 };
 
 export type EasingOptions = CameraOptions & AnimationOptions;

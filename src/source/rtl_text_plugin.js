@@ -15,8 +15,10 @@ const status = {
     error: 'error'
 };
 
+export type PluginStatus = $Values<typeof status>
+
 export type PluginState = {
-    pluginStatus: $Values<typeof status>;
+    pluginStatus: PluginStatus;
     pluginURL: ?string
 };
 
@@ -24,7 +26,7 @@ type PluginStateSyncCallback = (state: PluginState) => void;
 let _completionCallback = null;
 
 //Variables defining the current state of the plugin
-let pluginStatus = status.unavailable;
+let pluginStatus: PluginStatus = status.unavailable;
 let pluginURL: ?string = null;
 
 export const triggerPluginCompletionEvent = function(error: ?Error) {
@@ -44,7 +46,7 @@ function sendPluginStateToWorker() {
 
 export const evented: Evented = new Evented();
 
-export const getRTLTextPluginStatus = function (): string {
+export const getRTLTextPluginStatus = function (): PluginStatus {
     return pluginStatus;
 };
 

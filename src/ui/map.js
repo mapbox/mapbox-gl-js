@@ -1713,7 +1713,7 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerIds: any, listener?: Listener): this | Promise<Event> {
+    once(type: MapEvent, layerIds?: any, listener?: Listener): this | Promise<Event> {
 
         if (listener === undefined) {
             return super.once(type, layerIds);
@@ -3347,7 +3347,7 @@ export class Map extends Camera {
      * // update the exaggeration for the existing terrain
      * map.setTerrain({'exaggeration': 2});
      */
-    setTerrain(terrain: TerrainSpecification): this {
+    setTerrain(terrain?: TerrainSpecification): this {
         this._lazyInitEmptyStyle();
         if (!terrain && this.transform.projection.requiresDraping) {
             this.style.setTerrainForDraping();
@@ -3386,7 +3386,7 @@ export class Map extends Camera {
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
-    setFog(fog: FogSpecification): this {
+    setFog(fog?: FogSpecification): this {
         this._lazyInitEmptyStyle();
         this.style.setFog(fog);
         return this._update(true);
