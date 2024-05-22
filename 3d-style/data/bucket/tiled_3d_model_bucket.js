@@ -12,7 +12,7 @@ import {clamp} from '../../../src/util/util.js';
 import {DEMSampler} from '../../../src/terrain/elevation.js';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index.js';
 import {Aabb} from '../../../src/util/primitives.js';
-import {vec3} from 'gl-matrix';
+import {vec3, mat4} from 'gl-matrix';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import type {ReplacementSource} from '../../source/replacement_source.js';
@@ -509,6 +509,8 @@ class Tiled3dModelBucket implements Bucket {
 
         const tmpVertex = [0, 0, 0];
 
+        const nodeInverse = mat4.identity([]);
+
         for (let i = 0; i < this.nodesInfo.length; i++) {
             const nodeInfo = nodesInfo[i];
             assert(nodeInfo.node.meshes.length > 0);
@@ -517,13 +519,17 @@ class Tiled3dModelBucket implements Bucket {
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
 
             assert(mesh.heightmap);
-            const xCell = ((x - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
-            const yCell = ((y - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
-            const heightmapIndex = Math.min(HEIGHTMAP_DIM - 1, yCell) * HEIGHTMAP_DIM + Math.min(HEIGHTMAP_DIM - 1, xCell);
 
-            tmpVertex[2] = mesh.heightmap[heightmapIndex];
-            vec3.transformMat4(tmpVertex, tmpVertex, nodeInfo.node.matrix);
-            if (mesh.heightmap[heightmapIndex] < 0 && nodeInfo.node.footprint) {
+            mat4.invert(nodeInverse, nodeInfo.node.matrix);
+            tmpVertex[0] = x;
+            tmpVertex[1] = y;
+            vec3.transformMat4(tmpVertex, tmpVertex, nodeInverse);
+
+            const xCell = ((tmpVertex[0] - mesh.aabb.min[0]) / (mesh.aabb.max[0] - mesh.aabb.min[0]) * HEIGHTMAP_DIM) | 0;
+            const yCell = ((tmpVertex[1] - mesh.aabb.min[1]) / (mesh.aabb.max[1] - mesh.aabb.min[1]) * HEIGHTMAP_DIM) | 0;
+            const heightmapIndex = Math.min(HEIGHTMAP_DIM - 1, yCell) * HEIGHTMAP_DIM + Math.min(HEIGHTMAP_DIM - 1, xCell);
+            const heightValue = mesh.heightmap[heightmapIndex];
+            if (heightValue < 0 && nodeInfo.node.footprint) {
                 // unpopulated cell. If it is in the building footprint, return undefined height
                 nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
                 if (candidates.length > 0) {
@@ -532,7 +538,7 @@ class Tiled3dModelBucket implements Bucket {
                 continue;
             }
             if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
-            return {height: tmpVertex[2], maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
 }
