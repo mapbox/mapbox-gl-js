@@ -36,14 +36,6 @@ const todo = [
     // Needs port from Native
     // https://mapbox.atlassian.net/browse/MAPS3D-1331
     "render-tests/model-layer/landmark-shadows-cutoff-range",
-
-    // Needs port from Native
-    // https://mapbox.atlassian.net/browse/MAPS3D-1347
-    "render-tests/model-layer/landmark-front-cutoff",
-    "render-tests/model-layer/landmark-front-cutoff-disabled",
-    "render-tests/model-layer/landmark-front-cutoff-no-fade",
-    "render-tests/model-layer/landmark-front-cutoff-opacity",
-    "render-tests/model-layer/landmark-front-cutoff-terrain"
 ];
 
 const skip = [
@@ -200,8 +192,6 @@ const skip = [
 
     // The algorithm for raster colour gradient texels stretching needs an adjustment
     "render-tests/raster-color/categorical",
-
-    "render-tests/model-layer/landmark-front-cutoff-high-zoom",
 ];
 
 export default {todo, skip};

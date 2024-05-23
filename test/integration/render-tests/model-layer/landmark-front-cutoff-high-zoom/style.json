@@ -22,7 +22,7 @@
         "cast-shadows": true,
         "shadow-intensity": 1.0,
         "direction": [
-          -40,
+          320,
           30  
         ]
       }

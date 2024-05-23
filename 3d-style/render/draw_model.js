@@ -9,7 +9,7 @@ import StencilMode from '../../src/gl/stencil_mode.js';
 import ColorMode from '../../src/gl/color_mode.js';
 import DepthMode from '../../src/gl/depth_mode.js';
 import CullFaceMode from '../../src/gl/cull_face_mode.js';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4, vec3, vec4} from 'gl-matrix';
 import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import TextureSlots from './texture_slots.js';
 import {convertModelMatrixForGlobe} from '../util/model_util.js';
@@ -32,6 +32,7 @@ import type {Mesh, Node, ModelTexture} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 import type {Mat4} from 'gl-matrix';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
+import {Tiled3dModelFeature} from "../data/bucket/tiled_3d_model_bucket.js";
 
 export default drawModels;
 
@@ -46,6 +47,16 @@ type SortedMesh = {
     modelIndex: number;
     worldViewProjection: Mat4;
     nodeModelMatrix: Mat4;
+}
+
+type SortedNode = {
+    nodeInfo: Tiled3dModelFeature;
+    depth: number;
+    opacity: number;
+    wvpForNode: Mat4;
+    wvpForTile: Mat4;
+    nodeModelMatrix: Mat4;
+    tileModelMatrix: Mat4;
 }
 
 type RenderData = {
@@ -732,9 +743,25 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const isShadowPass = painter.renderPass === 'shadow';
     const frustum = isShadowPass && shadowRenderer ? shadowRenderer.getCurrentCascadeFrustum() : tr.getFrustum(tr.scaleZoom(tr.worldSize));
 
+    const frontCutoffParams = layer.paint.get('model-front-cutoff');
+    const frontCutoffEnabled = frontCutoffParams[2] < 1.0;
+
     const stats = layer.getLayerRenderingStats();
-    const drawTiles = function(enableColor: boolean, depthWrite: boolean) {
-        for (const coord of coords) {
+    const drawTiles = function() {
+        let start, end, step;
+        // When front cutoff is enabled the tiles are iterated in back to front order
+        if (frontCutoffEnabled) {
+            start = coords.length - 1;
+            end = -1;
+            step = -1;
+        } else {
+            start = 0;
+            end = coords.length;
+            step = 1;
+        }
+
+        for (let i = start; i !== end; i += step) {
+            const coord = coords[i];
             const tile = source.getTile(coord);
             const bucket: ?Tiled3dModelBucket = (tile.getBucket(layer): any);
             if (!bucket || !bucket.uploaded) continue;
@@ -746,11 +773,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
             const modelTraits = bucket.modelTraits;
 
+            const sortedNodes: Array<SortedNode> = [];
             for (const nodeInfo of bucket.getNodesInfo()) {
                 if (nodeInfo.hiddenByReplacement) continue;
                 if (!nodeInfo.node.meshes) continue;
 
-                const scale = nodeInfo.evaluatedScale;
                 const node = nodeInfo.node;
                 let elevation = 0;
                 if (painter.terrain && node.elevation) {
@@ -768,6 +795,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     return aabb;
                 };
 
+                const scale = nodeInfo.evaluatedScale;
                 if (scale[0] <= 1 && scale[1] <= 1 && scale[2] <= 1 && nodeAabb().intersects(frustum) === 0) {
                     // While it is possible to use arbitrary scale for landmarks, it is highly unlikely
                     // and frustum culling optimization could be skipped in that case.
@@ -787,10 +815,62 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     /* $FlowIgnore[incompatible-call] scale should always be an array */
                     mat4.scale(tileModelMatrix, tileModelMatrix, scale);
                 }
+
                 // keep model and nodemodel matrices separate for rendering door lights
                 const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.matrix);
+                const wvpForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
+                // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
+                const wvpForTile = mat4.multiply([], tr.expandedFarZProjMatrix, tileModelMatrix);
+                const anchorPos = vec4.transformMat4([], [anchorX, anchorY, elevation, 1.0], wvpForNode);
+                const depth = anchorPos[2];
 
-                let lightingMatrix = mat4.multiply([], zScaleMatrix, tileModelMatrix);
+                node.hidden = false;
+                let opacity = layerOpacity;
+                if (!isShadowPass && frontCutoffEnabled) {
+                    opacity *= calculateFrontcutoffOpacity(nodeModelMatrix, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
+                }
+                if (opacity === 0.0) {
+                    node.hidden = true;
+                    continue;
+                }
+
+                const sortedNode: SortedNode = {
+                    nodeInfo,
+                    depth,
+                    opacity,
+                    wvpForNode,
+                    wvpForTile,
+                    nodeModelMatrix,
+                    tileModelMatrix
+                };
+
+                sortedNodes.push(sortedNode);
+            }
+
+            if (!isShadowPass) {
+                // Sort nodes. Opaque nodes first in front to back order. Then non-opaque nodes in back to front order.
+                sortedNodes.sort((a, b) => {
+                    // Front to back order for opaque nodes, and for all nodes when front cutoff is disabled
+                    if (!frontCutoffEnabled || (a.opacity === 1.0 && b.opacity === 1.0)) {
+                        return a.depth < b.depth ? -1 : 1;
+                    }
+                    if (a.opacity === 1.0) {
+                        return -1;
+                    }
+                    if (b.opacity === 1.0) {
+                        return 1;
+                    }
+
+                    // Back to front order for non-opaque nodes
+                    return a.depth > b.depth ? -1 : 1;
+                });
+            }
+
+            for (const sortedNode of sortedNodes) {
+                const nodeInfo = sortedNode.nodeInfo;
+                const node = nodeInfo.node;
+
+                let lightingMatrix = mat4.multiply([], zScaleMatrix, sortedNode.tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
                 const normalMatrix = mat4.invert([], lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
@@ -800,16 +880,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.matrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
-                const wpvForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
-                // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
-                const wpvForTile = mat4.multiply([], tr.expandedFarZProjMatrix, tileModelMatrix);
                 const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
 
                 for (let i = 0; i < node.meshes.length; ++i) {
                     const mesh = node.meshes[i];
                     const isLight = i === node.lightMeshIndex;
-                    let worldViewProjection = wpvForNode;
+                    let worldViewProjection = sortedNode.wvpForNode;
                     if (isLight) {
                         if (!isLightBeamPass && !painter.terrain && painter.shadowRenderer) {
                             if (painter.currentLayer < painter.firstLightBeamLayer) {
@@ -818,7 +895,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             continue;
                         }
                         // Lights come in tilespace
-                        worldViewProjection = wpvForTile;
+                        worldViewProjection = sortedNode.wvpForTile;
                     } else if (isLightBeamPass) {
                         continue;
                     }
@@ -845,13 +922,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
 
                     if (isShadowPass) {
-                        drawShadowCaster(mesh, nodeModelMatrix, painter, layer);
+                        drawShadowCaster(mesh, sortedNode.nodeModelMatrix, painter, layer);
                         continue;
                     }
 
                     let fogMatrixArray = null;
                     if (fog) {
-                        const fogMatrix = fogMatrixForModel(nodeModelMatrix, painter.transform);
+                        const fogMatrix = fogMatrixForModel(sortedNode.nodeModelMatrix, painter.transform);
                         fogMatrixArray = new Float32Array(fogMatrix);
 
                         if (tr.projection.name !== 'globe') {
@@ -880,7 +957,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     if (!isShadowPass && shadowRenderer) {
                         // The shadow matrix does not need to include node transforms,
                         // as shadow_pos will be performing that transform in the shader
-                        shadowRenderer.setupShadowsFromMatrix(tileModelMatrix, program, shadowRenderer.useNormalOffset);
+                        shadowRenderer.setupShadowsFromMatrix(sortedNode.tileModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
                     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
@@ -897,7 +974,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             new Float32Array(normalMatrix),
                             new Float32Array(node.matrix),
                             painter,
-                            layerOpacity,
+                            sortedNode.opacity,
                             pbr.baseColorFactor,
                             material.emissiveFactor,
                             pbr.metallicFactor,
@@ -909,10 +986,16 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             occlusionTextureTransform
                     );
 
-                    const meshNeedsBlending = isLight || layerOpacity < 1.0 || nodeInfo.hasTranslucentParts;
-                    const colorMode = enableColor ? (meshNeedsBlending ? ColorMode.alphaBlended : ColorMode.unblended) : ColorMode.disabled;
-                    const depthMode = (depthWrite && !isLight) ? depthModeRW : depthModeRO;
+                    if (!isLight && (nodeInfo.hasTranslucentParts || sortedNode.opacity < 1.0)) {
 
+                        program.draw(painter, context.gl.TRIANGLES, depthModeRW, StencilMode.disabled, ColorMode.disabled, CullFaceMode.backCCW,
+                            uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                            undefined, dynamicBuffers);
+                    }
+
+                    const meshNeedsBlending = isLight || sortedNode.opacity < 1.0 || nodeInfo.hasTranslucentParts;
+                    const colorMode = meshNeedsBlending ? ColorMode.alphaBlended : ColorMode.unblended;
+                    const depthMode = !isLight ? depthModeRW : depthModeRO;
                     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
                         uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
                         undefined, dynamicBuffers);
@@ -924,17 +1007,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     // Evaluate bucket and prepare for rendering
     prepareBatched(painter, source, layer, coords);
 
-    if (layerOpacity === 1.0) {
-        drawTiles(true, true);
-    } else {
-        // Draw transparent buildings in two passes so that only the closest surface is drawn.
-        // First draw all the extrusions into only the depth buffer. No colors are drawn.
-        // Then draw all the extrusions a second type, only coloring fragments if they have the
-        // same depth value as the closest fragment in the previous pass. Use the stencil buffer
-        // to prevent the second draw in cases where we have coincident polygons.
-        drawTiles(false, true);
-        drawTiles(true, false);
-    }
+    drawTiles();
 }
 
 function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderData, painter: Painter, scope: string) {
@@ -974,3 +1047,54 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
     return intersection === 0;
 }
 
+function calculateFrontcutoffOpacity(nodeModelMatrix: Mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
+    // The cutoff opacity is completely disabled when pitch is lower than 20.
+    const fullyOpaquePitch = 20.0;
+    const fullyTransparentPitch = 40.0;
+    assert(fullyOpaquePitch !== fullyTransparentPitch);
+    if (tr.pitch < fullyOpaquePitch) {
+        return 1.0;
+    }
+
+    const worldToCamera = tr.getWorldToCameraMatrix();
+    const mat = mat4.multiply([], worldToCamera, nodeModelMatrix);
+
+    // The cutoff opacity is calculated based on how much below the view the AABB bottom corners are.
+    // For this, we find the AABB points with the highest and lowest y value in the view space.
+    const p = [...aabb.min, 1.0];
+    let r = vec4.transformMat4([], p, mat);
+    let pMin = r;
+    let pMax = r;
+    p[1] = aabb.max[1];
+    r = vec4.transformMat4([], p, mat);
+    pMin = r[1] < pMin[1] ? r : pMin;
+    pMax = r[1] > pMax[1] ? r : pMax;
+    p[0] = aabb.max[0];
+    r = vec4.transformMat4([], p, mat);
+    pMin = r[1] < pMin[1] ? r : pMin;
+    pMax = r[1] > pMax[1] ? r : pMax;
+    p[1] = aabb.min[1];
+    r = vec4.transformMat4([], p, mat);
+    pMin = r[1] < pMin[1] ? r : pMin;
+    pMax = r[1] > pMax[1] ? r : pMax;
+
+    const cutoffStartParam = clamp(cutoffParams[0], 0.0, 1.0);
+    // 100.0 is used here just because it provides a nice looking maximum value for the fade effect.
+    // This value could be increased to allow longer fade ranges.
+    const cutoffRangeParam = 100.0 * tr.pixelsPerMeter * clamp(cutoffParams[1], 0.0, 1.0);
+    const finalOpacity = clamp(cutoffParams[2], 0.0, 1.0);
+    const cutoffStart = vec3.lerp([], pMin, pMax, cutoffStartParam);
+
+    const fovScale = Math.tan(tr.fovX * 0.5);
+    // Lowest y coordinate that's still visible at the depth of the cutoff start point.
+    const yMinLimit = -cutoffStart[2] * fovScale;
+    if (cutoffRangeParam === 0.0) {
+        return (cutoffStart[1] < -Math.abs(yMinLimit)) ? finalOpacity : 1.0;
+    }
+
+    const cutoffFactor = (-Math.abs(yMinLimit) - cutoffStart[1]) / cutoffRangeParam;
+    const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
+    const opacity = clamp(lerp(1.0, finalOpacity, cutoffFactor), finalOpacity, 1.0);
+
+    return lerp(1.0, opacity, clamp((tr.pitch - fullyOpaquePitch) / (fullyTransparentPitch - fullyOpaquePitch), 0.0, 1.0));
+}

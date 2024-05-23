@@ -517,6 +517,7 @@ class Tiled3dModelBucket implements Bucket {
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = Aabb.applyTransform(mesh.aabb, nodeInfo.node.matrix);
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
+            if (nodeInfo.node.hidden === true) return {height: 0.0, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
             assert(mesh.heightmap);
 

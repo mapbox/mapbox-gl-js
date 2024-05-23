@@ -110,6 +110,7 @@ export type Node = {
     lightMeshIndex: number;
     elevation: ?number;
     anchor: Vec2;
+    hidden: boolean;
 }
 
 export const ModelTraits = {

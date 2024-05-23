@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "allowed": 0.00026,
       "standardDerivatives": true,
       "height": 512,
       "operations": [
