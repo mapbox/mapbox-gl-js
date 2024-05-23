@@ -2,8 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 100,
-      "height": 100,
+      "width": 200,
+      "height": 200,
       "allowed": 0.003,
       "operations": [
         ["setPaintProperty", "line", "line-trim-offset", [0.7, 1.0]],
@@ -11,7 +11,7 @@
       ]
     }
   },
-  "zoom": 2,
+  "zoom": 3,
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -66,7 +66,7 @@
       "type": "line",
       "source": "geojson",
       "paint": {
-        "line-width": 10,
+        "line-width": 20,
         "line-pattern": "generic_icon",
         "line-trim-offset": [0.0, 0.0]
       },
