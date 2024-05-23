@@ -15,7 +15,7 @@ import type Actor from '../util/actor.js';
 import type {Callback} from '../types/callback.js';
 import type {GeoJSONWorkerOptions} from './geojson_worker_source.js';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
-import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types.js';
+import type {GeoJSONSourceSpecification, PromoteIdSpecification, FilterSpecification} from '../style-spec/types.js';
 import type {Cancelable} from '../types/cancelable.js';
 
 /**
@@ -186,6 +186,48 @@ class GeoJSONSource extends Evented implements Source {
      */
     setData(data: GeoJSON | string): this {
         this._data = data;
+        this._updateWorkerData();
+        return this;
+    }
+
+    /**
+     * Sets filter for the GeoJSON data source and re-renders the map.
+     *
+     * @param {FilterSpecification} filter A FilterSpecification type for the filter expression.
+     * @returns {GeoJSONSource} Returns itself to allow for method chaining.
+     * @example
+     * map.addSource('source_id', {
+     *     type: 'geojson',
+     *     data: {
+     *         "type": "FeatureCollection",
+     *         "features": [{
+     *             "type": "Feature",
+     *             "properties": {"name": "Null Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 0, 0 ]
+     *             }
+     *         },
+     *         {
+     *             "type": "Feature",
+     *             "properties": {"name": "Another Island"},
+     *             "geometry": {
+     *                 "type": "Point",
+     *                 "coordinates": [ 1, 1 ]
+     *             }
+     *         }]
+     *     }
+     * });
+     * const geojsonSource = map.getSource('source_id');
+     * // Update the filter after the GeoJSON source was created
+     * geojsonSource.setFilter([
+     *     "==",
+     *     ["get", "name"],
+     *     "Another Island"
+     * ]);
+     */
+    setFilter(filter: ?FilterSpecification): this {
+        this.workerOptions = extend({filter}, this.workerOptions);
         this._updateWorkerData();
         return this;
     }
