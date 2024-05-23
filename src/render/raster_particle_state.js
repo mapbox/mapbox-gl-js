@@ -2,10 +2,8 @@
 
 import browser from '../util/browser.js';
 import Context from '../gl/context.js';
-import {mulberry32} from '../style-spec/util/random.js';
 import {ParticleIndexLayoutArray} from '../data/array_types.js';
 import particleAttributes from '../data/particle_attributes.js';
-import {RGBAImage} from '../util/image.js';
 import SegmentVector from '../data/segment.js';
 import Texture from './texture.js';
 import assert from 'assert';
@@ -13,9 +11,7 @@ import assert from 'assert';
 import type {OverscaledTileID} from "../source/tile_id";
 import type {TextureImage} from './texture.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
-
-export const PARTICLE_POS_SCALE = 1.3;
-export const PARTICLE_POS_OFFSET = 0.5 * (PARTICLE_POS_SCALE - 1.0);
+import type {RGBAImage} from "../util/image";
 
 class RasterParticleState {
     context: Context;
@@ -28,7 +24,7 @@ class RasterParticleState {
     particleTextureDimension: number;
     lastInvalidatedAt: number;
 
-    constructor(context: Context, id: OverscaledTileID, textureSize: [number, number], particleTextureDimension: number): void {
+    constructor(context: Context, id: OverscaledTileID, textureSize: [number, number], RGBAPositions: RGBAImage): void {
         const emptyImage: TextureImage = {
             width: textureSize[0],
             height: textureSize[1],
@@ -39,12 +35,13 @@ class RasterParticleState {
         this.backgroundColorTexture = new Texture(context, emptyImage, gl.RGBA, {useMipmap: false});
         this.context = context;
 
-        this.setParticleTextureDimension(id, particleTextureDimension);
+        this.updateParticleTexture(id, RGBAPositions);
         this.lastInvalidatedAt = 0;
     }
 
-    setParticleTextureDimension(id: OverscaledTileID, particleTextureDimension: number) {
-        if (this.particleTextureDimension === particleTextureDimension) {
+    updateParticleTexture(id: OverscaledTileID, RGBAPositions: RGBAImage) {
+        assert(RGBAPositions.width === RGBAPositions.height);
+        if (this.particleTextureDimension === RGBAPositions.width) {
             return;
         }
 
@@ -58,35 +55,10 @@ class RasterParticleState {
 
         const gl = this.context.gl;
 
-        const numParticles = particleTextureDimension * particleTextureDimension;
-        const particlePositions = new Uint8Array(numParticles * 4);
+        const numParticles = RGBAPositions.width * RGBAPositions.height;
 
-        const invScale = 1.0 / PARTICLE_POS_SCALE;
-        const srand = mulberry32(id.key);
-        // Pack random positions in [0, 1] into RGBA pixels. Matches the GLSL
-        // `pack_pos_to_rgba` behavior.
-        for (let i = 0; i < particlePositions.length; i += 4) {
-            const x = invScale * (srand() + PARTICLE_POS_OFFSET);
-            const y = invScale * (srand() + PARTICLE_POS_OFFSET);
-
-            const rx = x;
-            const ry = (x * 255.0) % 1;
-            const rz = y;
-            const rw = (y * 255.0) % 1;
-
-            const px = rx - ry / 255.0;
-            const py = ry;
-            const pz = rz - rw / 255.0;
-            const pw = rw;
-
-            particlePositions[i + 0] = Math.floor(255.0 * px);
-            particlePositions[i + 1] = Math.floor(255.0 * py);
-            particlePositions[i + 2] = Math.floor(255.0 * pz);
-            particlePositions[i + 3] = Math.floor(255.0 * pw);
-        }
-        const particleImage = new RGBAImage({width: particleTextureDimension, height: particleTextureDimension}, particlePositions);
-        this.particleTexture0 = new Texture(this.context, particleImage, gl.RGBA, {premultiply: false, useMipmap: false});
-        this.particleTexture1 = new Texture(this.context, particleImage, gl.RGBA, {premultiply: false, useMipmap: false});
+        this.particleTexture0 = new Texture(this.context, RGBAPositions, gl.RGBA, {premultiply: false, useMipmap: false});
+        this.particleTexture1 = new Texture(this.context, RGBAPositions, gl.RGBA, {premultiply: false, useMipmap: false});
 
         const particleIndices = new ParticleIndexLayoutArray();
         particleIndices.reserve(numParticles);
@@ -96,7 +68,7 @@ class RasterParticleState {
         this.particleIndexBuffer = this.context.createVertexBuffer(particleIndices, particleAttributes.members, true);
 
         this.particleSegment = SegmentVector.simpleSegment(0, 0, this.particleIndexBuffer.length, 0);
-        this.particleTextureDimension = particleTextureDimension;
+        this.particleTextureDimension = RGBAPositions.width;
     }
 
     update(layerLastInvalidatedAt: number): boolean {

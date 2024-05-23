@@ -84,8 +84,8 @@
     {
       "id": "wind-animation",
       "source": "wind-512-source",
+      "source-layer": "wind",
       "type": "raster-particle",
-      "slot": "top",
       "paint": {
         "raster-particle-speed-factor": 0.0,
         "raster-particle-reset-rate-factor": 0.0,

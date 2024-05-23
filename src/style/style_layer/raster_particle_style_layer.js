@@ -26,6 +26,7 @@ class RasterParticleStyleLayer extends StyleLayer {
     colorRampTexture: ?Texture;
     tileFramebuffer: Framebuffer;
     particleFramebuffer: Framebuffer;
+    particlePositionRGBAImage: RGBAImage;
 
     previousDrawTimestamp: ?number;
     lastInvalidatedAt: number;

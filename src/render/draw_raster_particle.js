@@ -6,7 +6,10 @@ import ColorMode from '../gl/color_mode.js';
 import CullFaceMode from '../gl/cull_face_mode.js';
 import DepthMode from '../gl/depth_mode.js';
 import StencilMode from '../gl/stencil_mode.js';
-import {rasterParticleUniformValues, rasterParticleTextureUniformValues, rasterParticleDrawUniformValues, rasterParticleUpdateUniformValues} from './program/raster_particle_program.js';
+import {rasterParticleUniformValues, rasterParticleTextureUniformValues, rasterParticleDrawUniformValues, rasterParticleUpdateUniformValues,
+    RASTER_PARTICLE_POS_OFFSET,
+    RASTER_PARTICLE_POS_SCALE,
+} from './program/raster_particle_program.js';
 import {computeRasterColorMix, computeRasterColorOffset} from './raster.js';
 import {COLOR_RAMP_RES} from '../style/style_layer/raster_particle_style_layer.js';
 import RasterArrayTile from '../source/raster_array_tile.js';
@@ -31,6 +34,7 @@ import {mercatorXfromLng, mercatorYfromLat} from "../geo/mercator_coordinate.js"
 import Transform from '../geo/transform.js';
 import rasterFade from './raster_fade.js';
 import assert from 'assert';
+import {RGBAImage} from "../util/image.js";
 
 export default drawRasterParticle;
 
@@ -50,6 +54,43 @@ function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: R
     }
 }
 
+function createPositionRGBAData(textureDimension: number): Uint8Array {
+    const numParticles = textureDimension * textureDimension;
+    const RGBAPositions = new Uint8Array(4 * numParticles);
+    // Hash function from https://www.shadertoy.com/view/XlGcRh
+    const esgtsa = function(s: number): number {
+        s |= 0;
+        s = Math.imul(s ^ 2747636419, 2654435769);
+        s = Math.imul(s ^ (s >>> 16), 2654435769);
+        s = Math.imul(s ^ (s >>> 16), 2654435769);
+        return (s >>> 0) / 4294967296;
+    };
+    // Pack random positions in [0, 1] into RGBA pixels. Matches the GLSL
+    // `pack_pos_to_rgba` behavior.
+    const invScale = 1.0 / RASTER_PARTICLE_POS_SCALE;
+    for (let i = 0; i < numParticles; i++) {
+        const x = invScale * (esgtsa(2 * i + 0) + RASTER_PARTICLE_POS_OFFSET);
+        const y = invScale * (esgtsa(2 * i + 1) + RASTER_PARTICLE_POS_OFFSET);
+
+        const rx = x;
+        const ry = (x * 255.0) % 1;
+        const rz = y;
+        const rw = (y * 255.0) % 1;
+
+        const px = rx - ry / 255.0;
+        const py = ry;
+        const pz = rz - rw / 255.0;
+        const pw = rw;
+
+        RGBAPositions[4 * i + 0] = 255.0 * px;
+        RGBAPositions[4 * i + 1] = 255.0 * py;
+        RGBAPositions[4 * i + 2] = 255.0 * pz;
+        RGBAPositions[4 * i + 3] = 255.0 * pw;
+    }
+
+    return RGBAPositions;
+}
+
 function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>) {
     if (!tileIDs.length) {
         return;
@@ -63,6 +104,14 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
     // update layer resources
 
     const particleTextureDimension = Math.ceil(Math.sqrt(layer.paint.get('raster-particle-count')));
+
+    let particlePositionRGBAImage = layer.particlePositionRGBAImage;
+    if (!particlePositionRGBAImage || particlePositionRGBAImage.width !== particleTextureDimension) {
+        const RGBAData = createPositionRGBAData(particleTextureDimension);
+        const imageSize = {width: particleTextureDimension, height: particleTextureDimension};
+        particlePositionRGBAImage = layer.particlePositionRGBAImage = new RGBAImage(imageSize, RGBAData);
+    }
+
     let particleFramebuffer = layer.particleFramebuffer;
     if (!particleFramebuffer) {
         particleFramebuffer = layer.particleFramebuffer = context.createFramebuffer(particleTextureDimension, particleTextureDimension, true, null);
@@ -94,13 +143,13 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
 
         let state = tile.rasterParticleState;
         if (!state) {
-            state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particleTextureDimension);
+            state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particlePositionRGBAImage);
         }
 
         const renderBackground = state.update(layer.lastInvalidatedAt);
 
         if (state.particleTextureDimension !== particleTextureDimension) {
-            state.setParticleTextureDimension(id, particleTextureDimension);
+            state.updateParticleTexture(id, particlePositionRGBAImage);
         }
 
         const t = state.targetColorTexture;

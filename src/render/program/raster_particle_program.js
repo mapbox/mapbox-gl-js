@@ -8,10 +8,12 @@ import {
     UniformMatrix3f,
     UniformMatrix4f
 } from '../uniform_binding.js';
-import {PARTICLE_POS_SCALE, PARTICLE_POS_OFFSET} from '../raster_particle_state.js';
 
 import type Context from '../../gl/context.js';
 import type {UniformValues} from '../uniform_binding.js';
+
+export const RASTER_PARTICLE_POS_OFFSET: number = 0.15;
+export const RASTER_PARTICLE_POS_SCALE: number = 1.0 + 2.0 * RASTER_PARTICLE_POS_OFFSET;
 
 export type RasterParticleUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -141,8 +143,8 @@ const rasterParticleDrawUniformValues = (particleTextureUnit: number, particleTe
     'u_uv_offset': textureOffset,
     'u_data_scale': dataScale,
     'u_data_offset': dataOffset,
-    'u_particle_pos_scale': PARTICLE_POS_SCALE,
-    'u_particle_pos_offset': [PARTICLE_POS_OFFSET, PARTICLE_POS_OFFSET]
+    'u_particle_pos_scale': RASTER_PARTICLE_POS_SCALE,
+    'u_particle_pos_offset': [RASTER_PARTICLE_POS_OFFSET, RASTER_PARTICLE_POS_OFFSET]
 });
 
 export type RasterParticleUpdateUniformsType = {|
@@ -189,8 +191,8 @@ const rasterParticleUpdateUniformValues = (particleTextureUnit: number, particle
     'u_uv_offset': textureOffset,
     'u_data_scale': dataScale,
     'u_data_offset': dataOffset,
-    'u_particle_pos_scale': PARTICLE_POS_SCALE,
-    'u_particle_pos_offset': [PARTICLE_POS_OFFSET, PARTICLE_POS_OFFSET]
+    'u_particle_pos_scale': RASTER_PARTICLE_POS_SCALE,
+    'u_particle_pos_offset': [RASTER_PARTICLE_POS_OFFSET, RASTER_PARTICLE_POS_OFFSET]
 });
 
 export {rasterParticleUniforms, rasterParticleUniformValues, rasterParticleTextureUniforms, rasterParticleTextureUniformValues, rasterParticleDrawUniforms, rasterParticleDrawUniformValues, rasterParticleUpdateUniforms, rasterParticleUpdateUniformValues};
