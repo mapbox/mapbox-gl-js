@@ -45,7 +45,7 @@ type QueryParameters = {
     }
 }
 
-export type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: QueryFeature }>};
+export type QueryResult = {[_: string]: Array<{ featureIndex: number, feature: QueryFeature, intersectionZ: boolean | number }>};
 
 type FeatureIndices = {
     bucketIndex: number,

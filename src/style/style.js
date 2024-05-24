@@ -2412,7 +2412,7 @@ class Style extends Evented {
         layer.invalidateCompiledFilter();
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<any>): Array<mixed> {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<QueryFeature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
         //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
@@ -2454,6 +2454,7 @@ class Style extends Evented {
         }
 
         features3D.sort((a, b) => {
+            // $FlowFixMe[unsafe-addition] - intersectionZ might be boolean
             return b.intersectionZ - a.intersectionZ;
         });
 
@@ -2465,7 +2466,7 @@ class Style extends Evented {
                 // add all 3D features that are in or above the current layer
                 for (let i = features3D.length - 1; i >= 0; i--) {
                     const topmost3D = features3D[i].feature;
-                    if (layerIndex[topmost3D.layer.id] < l) break;
+                    if (topmost3D.layer && layerIndex[topmost3D.layer.id] < l) break;
                     features.push(topmost3D);
                     features3D.pop();
                 }
@@ -2484,7 +2485,7 @@ class Style extends Evented {
         return features;
     }
 
-    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams, transform: Transform): Array<QueryResult> {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams, transform: Transform): Array<QueryFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
@@ -2557,7 +2558,7 @@ class Style extends Evented {
             );
         }
 
-        return (this._flattenAndSortRenderedFeatures(sourceResults): any);
+        return this._flattenAndSortRenderedFeatures(sourceResults);
     }
 
     querySourceFeatures(sourceID: string, params: ?{sourceLayer: ?string, filter?: ?Array<any>, validate?: boolean}): Array<QueryFeature> {

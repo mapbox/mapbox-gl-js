@@ -89,7 +89,6 @@ import type {
 import type StyleLayer from '../style/style_layer.js';
 import type {Source} from '../source/source.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
-import type {QueryResult} from '../data/feature_index.js';
 import type {EasingOptions} from './camera.js';
 import type {ContextOptions} from '../gl/context.js';
 
@@ -1891,7 +1890,7 @@ export class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object): Array<QueryResult> {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object): Array<QueryFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
