@@ -1106,6 +1106,61 @@ class Painter {
         this.gpuTimingEnd();
     }
 
+    colorForLayerPoint(layerId: string, point: PointLike) {
+
+        const layer = this.style._layers[layerId];
+        if (layer.type !== 'raster') { return }
+
+        const sourceCache = this.style._getLayerSourceCache(layer);
+
+        sourceCache.prepare(this.context);
+
+        const coordsAscending: Array<OverscaledTileID> = sourceCache.getVisibleCoordinates();
+        const coordsDescending: Array<OverscaledTileID> = coordsAscending.slice().reverse();
+
+        // Rebind the main framebuffer now that all offscreen layers have been rendered:
+        // this.context.bindFramebuffer.set(null);
+        this.context.viewport.set([0, 0, this.width, this.height]);
+
+        this.context.clear({
+            color: 'rgba(0,0,0,0)', //options.showOverdrawInspector ? Color.black : clearColor,
+            depth: 1,
+        });
+        this.clearStencil();
+
+        this._showOverdrawInspector = false; //options.showOverdrawInspector;
+
+        this.renderPass = "translucent";
+
+        // For symbol layers in the translucent pass, we add extra tiles to the renderable set
+        // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
+        // separate clipping masks
+        const coords = sourceCache
+            ? coordsDescending
+            : undefined;
+
+        this._renderTileClippingMasks(
+            layer,
+            sourceCache,
+            sourceCache ? coordsAscending : undefined
+        );
+        this.renderLayer(this, sourceCache, layer, coords);
+
+        const gl = this.context.gl;
+        var pixel = new Uint8Array(4);
+        gl.readPixels(
+            point.x * window.devicePixelRatio,
+            this.height - point.y * window.devicePixelRatio,
+            1,
+            1,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            pixel
+        );
+
+        return pixel;
+    }
+
     renderLayer(painter: Painter, sourceCache?: SourceCache, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && layer.type !== 'raster' && layer.type !== 'raster-particle' && !(coords && coords.length)) return;
