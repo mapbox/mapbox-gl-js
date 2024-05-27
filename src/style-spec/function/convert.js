@@ -47,8 +47,8 @@ export default function convertFunction(parameters: FunctionParameters, property
     }
 }
 
-function convertIdentityFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): Array<mixed> {
-    const get = ['get', parameters.property];
+function convertIdentityFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): ExpressionSpecification {
+    const get: ExpressionSpecification = ['get', parameters.property];
 
     if (parameters.default === undefined) {
         // By default, expressions for string-valued properties get coerced. To preserve
@@ -63,7 +63,7 @@ function convertIdentityFunction(parameters: FunctionParameters, propertySpec: S
             parameters.default
         ];
     } else {
-        const expression = [propertySpec.type === 'color' ? 'to-color' : propertySpec.type, get, convertLiteral(parameters.default)];
+        const expression: ExpressionSpecification = [propertySpec.type === 'color' ? 'to-color' : propertySpec.type, get, convertLiteral(parameters.default)];
         if (propertySpec.type === 'array') {
             expression.splice(1, 0, propertySpec.value, propertySpec.length || null);
         }
@@ -79,7 +79,7 @@ function getInterpolateOperator(parameters: FunctionParameters) {
     }
 }
 
-function convertZoomAndPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>) {
+function convertZoomAndPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>): ExpressionSpecification {
     const featureFunctionParameters = {};
     const featureFunctionStops = {};
     const zoomStops = [];
@@ -105,7 +105,7 @@ function convertZoomAndPropertyFunction(parameters: FunctionParameters, property
     // otherwise.
     const functionType = getFunctionType({}, propertySpec);
     if (functionType === 'exponential') {
-        const expression = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
+        const expression: ExpressionSpecification = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
 
         for (const z of zoomStops) {
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
@@ -114,7 +114,7 @@ function convertZoomAndPropertyFunction(parameters: FunctionParameters, property
 
         return expression;
     } else {
-        const expression = ['step', ['zoom']];
+        const expression: ExpressionSpecification = ['step', ['zoom']];
 
         for (const z of zoomStops) {
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
@@ -147,12 +147,12 @@ function getFallback(parameters: FunctionParameters, propertySpec: StyleProperty
     return defaultValue;
 }
 
-function convertPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>) {
+function convertPropertyFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>): ExpressionSpecification {
     const type = getFunctionType(parameters, propertySpec);
-    const get = ['get', parameters.property];
+    const get: ExpressionSpecification = ['get', parameters.property];
     if (type === 'categorical' && typeof stops[0][0] === 'boolean') {
         assert(parameters.stops.length > 0 && parameters.stops.length <= 2);
-        const expression = ['case'];
+        const expression: ExpressionSpecification = ['case'];
         for (const stop of stops) {
             expression.push(['==', get, stop[0]], stop[1]);
         }
@@ -160,14 +160,14 @@ function convertPropertyFunction(parameters: FunctionParameters, propertySpec: S
         expression.push(getFallback(parameters, propertySpec));
         return expression;
     } else if (type === 'categorical') {
-        const expression = ['match', get];
+        const expression: ExpressionSpecification = ['match', get];
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], false);
         }
         expression.push(getFallback(parameters, propertySpec));
         return expression;
     } else if (type === 'interval') {
-        const expression = ['step', ['number', get]];
+        const expression: ExpressionSpecification = ['step', ['number', get]];
         for (const stop of stops) {
             appendStopPair(expression, stop[0], stop[1], true);
         }
@@ -180,7 +180,7 @@ function convertPropertyFunction(parameters: FunctionParameters, propertySpec: S
         ];
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        const expression = [
+        const expression: ExpressionSpecification = [
             getInterpolateOperator(parameters),
             base === 1 ? ["linear"] : ["exponential", base],
             ["number", get]
@@ -256,7 +256,7 @@ function getFunctionType(parameters: FunctionParameters, propertySpec: StyleProp
 
 // "String with {name} token" => ["concat", "String with ", ["get", "name"], " token"]
 export function convertTokenString(s: string): string | ExpressionSpecification {
-    const result = ['concat'];
+    const result: ExpressionSpecification = ['concat'];
     const re = /{([^{}]+)}/g;
     let pos = 0;
     for (let match = re.exec(s); match !== null; match = re.exec(s)) {
