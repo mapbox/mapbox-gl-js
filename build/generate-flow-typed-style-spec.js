@@ -102,7 +102,7 @@ function flowLayerTypeName(key) {
 }
 
 function flowLayer(key) {
-    const layer = spec.layer;
+    const layer = structuredClone(spec.layer);
 
     layer.type = {
         type: 'enum',
