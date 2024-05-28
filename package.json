@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.6",
-    "@babel/eslint-parser": "^7.24.5",
+    "@babel/eslint-parser": "^7.24.6",
     "@mapbox/flow-remove-types": "^2.0.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/rest": "^20.1.1",
