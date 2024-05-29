@@ -64,7 +64,7 @@ class Light extends Evented {
         if (this._validate(validateLight, light, options)) {
             return;
         }
-        this._transitionable.setTransitionOrValue<LightSpecification>(light);
+        this._transitionable.setTransitionOrValue(light);
         this.id = id;
     }
 

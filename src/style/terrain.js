@@ -35,7 +35,7 @@ class Terrain extends Evented {
         super();
         this.scope = scope;
         this._transitionable = new Transitionable(properties, scope, configOptions);
-        this._transitionable.setTransitionOrValue<TerrainSpecification>(terrainOptions, configOptions);
+        this._transitionable.setTransitionOrValue(terrainOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this.drapeRenderMode = drapeRenderMode;
     }
@@ -45,7 +45,7 @@ class Terrain extends Evented {
     }
 
     set(terrain: TerrainSpecification, configOptions?: ?ConfigOptions) {
-        this._transitionable.setTransitionOrValue<TerrainSpecification>(terrain, configOptions);
+        this._transitionable.setTransitionOrValue(terrain, configOptions);
     }
 
     updateTransitions(parameters: TransitionParameters) {

@@ -204,7 +204,7 @@ export class Transitionable<Props: {[string]: any}> {
         this.isConfigDependent = this.isConfigDependent || this._values[name].value.expression.isConfigDependent;
     }
 
-    setTransitionOrValue<P: {[string]: any} | void>(properties: ?P, options?: ?ConfigOptions) {
+    setTransitionOrValue<P: {[string]: any}>(properties: ?P, options?: ?ConfigOptions) {
         if (options) this._options = options;
 
         const specProperties = this._properties.properties;
@@ -541,10 +541,10 @@ export class PossiblyEvaluated<Props: {[string]: any}> {
 
     constructor(properties: Properties<Props>) {
         this._properties = properties;
-        this._values = (Object.create(properties.defaultPossiblyEvaluatedValues): any);
+        this._values = Object.create(properties.defaultPossiblyEvaluatedValues);
     }
 
-    get<S: string>(name: S): $ElementType<PossiblyEvaluatedPropertyValues<Props>, S> {
+    get<S: string>(name: S): PossiblyEvaluatedPropertyValues<Props>[S] {
         return this._values[name];
     }
 }

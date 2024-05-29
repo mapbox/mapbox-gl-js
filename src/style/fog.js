@@ -95,7 +95,7 @@ class Fog extends Evented {
         }
 
         this._options = properties;
-        this._transitionable.setTransitionOrValue<FogSpecification>(this._options, configOptions);
+        this._transitionable.setTransitionOrValue(this._options, configOptions);
     }
 
     getOpacity(pitch: number): number {
@@ -161,7 +161,7 @@ class Fog extends Evented {
     }
 
     updateConfig(configOptions?: ?ConfigOptions) {
-        this._transitionable.setTransitionOrValue<FogSpecification>(this._options, new Map(configOptions));
+        this._transitionable.setTransitionOrValue(this._options, new Map(configOptions));
     }
 
     updateTransitions(parameters: TransitionParameters) {

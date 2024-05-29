@@ -3,11 +3,16 @@
 import {Evented} from '../../src/util/evented.js';
 import {Properties, Transitionable, Transitioning, PossiblyEvaluated} from '../../src/style/properties.js';
 
+import type EvaluationParameters from '../../src/style/evaluation_parameters.js';
 import type {LightsSpecification} from '../../src/style-spec/types.js';
 import type {TransitionParameters, ConfigOptions} from '../../src/style/properties.js';
-import type EvaluationParameters from '../../src/style/evaluation_parameters.js';
+import type {LightProps as FlatLightProps} from './flat_light_properties.js';
+import type {LightProps as AmbientLightProps} from './ambient_light_properties.js';
+import type {LightProps as DirectionalLightProps} from './directional_light_properties.js';
 
-class Lights<P: Object> extends Evented {
+type LightProps = FlatLightProps | AmbientLightProps | DirectionalLightProps;
+
+class Lights<P: LightProps> extends Evented {
     scope: string;
     properties: PossiblyEvaluated<P>;
     _transitionable: Transitionable<P>;
@@ -21,12 +26,12 @@ class Lights<P: Object> extends Evented {
         this.properties = new PossiblyEvaluated(properties);
 
         this._transitionable = new Transitionable(properties, scope, new Map(configOptions));
-        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(options.properties);
+        this._transitionable.setTransitionOrValue(options.properties);
         this._transitioning = this._transitionable.untransitioned();
     }
 
     updateConfig(configOptions?: ?ConfigOptions) {
-        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(this._options.properties, new Map(configOptions));
+        this._transitionable.setTransitionOrValue(this._options.properties, new Map(configOptions));
     }
 
     updateTransitions(parameters: TransitionParameters) {
@@ -42,17 +47,19 @@ class Lights<P: Object> extends Evented {
     }
 
     get(): LightsSpecification {
+        // $FlowFixMe
         this._options.properties = this._transitionable.serialize();
         return this._options;
     }
 
     set(options: LightsSpecification, configOptions?: ?ConfigOptions) {
         this._options = options;
-        this._transitionable.setTransitionOrValue<$PropertyType<LightsSpecification, 'properties'>>(options.properties, configOptions);
+        this._transitionable.setTransitionOrValue(options.properties, configOptions);
     }
 
     shadowsEnabled(): boolean {
         if (!this.properties) return false;
+        // $FlowFixMe
         return this.properties.get('cast-shadows') === true;
     }
 }
