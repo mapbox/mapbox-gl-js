@@ -5,12 +5,17 @@ in vec4 a_tex_size;
 in vec4 a_pixeloffset;
 in vec4 a_projected_pos;
 in float a_fade_opacity;
+
 #ifdef Z_OFFSET
 in float a_z_offset;
 #endif
 #ifdef PROJECTION_GLOBE_VIEW
 in vec3 a_globe_anchor;
 in vec3 a_globe_normal;
+#endif
+
+#ifdef OCCLUSION_QUERIES
+in float a_occlusion_query_opacity;
 #endif
 
 // contents of a_size vary based on the type of property value
@@ -54,6 +59,7 @@ out vec3 v_data1;
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float occludedOpacityMultiplier
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
 #pragma mapbox: define lowp float emissive_strength
@@ -62,6 +68,7 @@ void main() {
     #pragma mapbox: initialize highp vec4 fill_color
     #pragma mapbox: initialize highp vec4 halo_color
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float occludedOpacityMultiplier
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
     #pragma mapbox: initialize lowp float emissive_strength
@@ -171,7 +178,7 @@ void main() {
 #endif
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
-    float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
+    float occlusion_fade = globe_occlusion_fade;
     float projection_transition_fade = 1.0;
 #if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
     projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
@@ -179,7 +186,14 @@ void main() {
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+
     float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+
+#ifdef OCCLUSION_QUERIES
+    float occludedFadeMultiplier = mix(occludedOpacityMultiplier, 1.0, a_occlusion_query_opacity);
+    out_fade_opacity *= occludedFadeMultiplier;
+#endif
+
     float alpha = opacity * out_fade_opacity;
     float hidden = float(alpha == 0.0 || projected_point.w <= 0.0 || occlusion_fade == 0.0);
 

@@ -26,7 +26,8 @@ declare class WebGL2RenderingContext extends WebGLRenderingContext {
     MAX: 0x8008;
     INTERLEAVED_ATTRIBS: 0x8C8C;
     SEPARATE_ATTRIBS: 0x8C8D;
-
+    ANY_SAMPLES_PASSED: 0x8C2F;
+    QUERY_RESULT_AVAILABLE: 0x8867;
     createVertexArray: () => WebGLVertexArrayObject | null;
     deleteVertexArray: (vertexArray: WebGLVertexArrayObject | null) => void;
     bindVertexArray: (array: WebGLVertexArrayObject | null) => void;

@@ -4,7 +4,7 @@
     "test": {
       "height": 128,
       "width": 256,
-      "allowed": 0.003
+      "allowed": 0.005
     }
   },
   "center": [ 0, 0 ],

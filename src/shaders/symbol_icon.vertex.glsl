@@ -5,6 +5,11 @@ in vec4 a_tex_size;
 in vec4 a_pixeloffset;
 in vec4 a_projected_pos;
 in float a_fade_opacity;
+
+#ifdef OCCLUSION_QUERIES
+in float a_occlusion_query_opacity;
+#endif
+
 #ifdef Z_OFFSET
 in float a_z_offset;
 #endif
@@ -52,10 +57,12 @@ out vec2 v_tex_b;
 out float v_fade_opacity;
 
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float occludedOpacityMultiplier
 #pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float occludedOpacityMultiplier
     #pragma mapbox: initialize lowp float emissive_strength
 
     vec2 a_pos = a_pos_offset.xy;
@@ -156,7 +163,7 @@ void main() {
 #endif
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
-    float occlusion_fade = occlusionFade(projected_point) * globe_occlusion_fade;
+    float occlusion_fade = globe_occlusion_fade;
     float projection_transition_fade = 1.0;
 #if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
     projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
@@ -182,4 +189,9 @@ void main() {
     v_tex_b = a_texb / u_texsize;
 #endif
     v_fade_opacity = out_fade_opacity;
+
+#ifdef OCCLUSION_QUERIES
+    float occludedFadeMultiplier = mix(occludedOpacityMultiplier, 1.0, a_occlusion_query_opacity);
+    v_fade_opacity *= occludedFadeMultiplier;
+#endif
 }

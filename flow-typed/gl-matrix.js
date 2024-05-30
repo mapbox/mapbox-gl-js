@@ -81,6 +81,7 @@ declare module "gl-matrix" {
     declare var mat4: {
         create(): Float32Array,
 
+        fromValues(number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number): Float32Array,
         fromScaling<T: Mat4>(T, Vec3): T,
         fromTranslation<T: Mat4>(T, Vec3): T,
         fromQuat<T: Mat4>(T, Quat): T,

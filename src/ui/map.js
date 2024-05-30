@@ -423,6 +423,7 @@ export class Map extends Camera {
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
+    _occlusionOpacityChanged: ?boolean;
     _loaded: boolean;
     _fullyLoaded: boolean; // accounts for placement finishing as well
     _trackResize: boolean;
@@ -522,6 +523,12 @@ export class Map extends Camera {
     _contextCreateOptions: ContextOptions;
     _tp: ITrackedParameters;
 
+    // Current frame id, iterated on each render
+    _frameId: number;
+
+    // Last frame id, issued by anything not related to occlusion queries
+    _lastDirtyFrameId: number;
+
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(PerformanceMarkers.create);
 
@@ -592,6 +599,9 @@ export class Map extends Camera {
         this._visibilityHidden = 0;
 
         this._useExplicitProjection = false; // Fallback to stylesheet by default
+
+        this._frameId = 0;
+        this._lastDirtyFrameId = 0;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -3762,6 +3772,17 @@ export class Map extends Camera {
     }
 
     /**
+     * Returns a Boolean indicating whether the map is finished rendering, meaning all animations are finished.
+     *
+     * @returns {boolean} A Boolean indicating whether map finished rendering.
+     * @example
+     * const frameReady = map.frameReady();
+     */
+    frameReady(): boolean {
+        return this.loaded() && !this._placementDirty && !this._occlusionOpacityChanged && this._occlusionCriteriaSatisfied();
+    }
+
+    /**
      * Update this map's style and sources, and re-render the map.
      *
      * @param {boolean} updateStyle mark the map's style for reprocessing as
@@ -3826,6 +3847,8 @@ export class Map extends Camera {
     _render(paintStartTimeStamp: number) {
         const m = PerformanceUtils.beginMeasure('render');
         this.fire(new Event('renderstart'));
+
+        ++this._frameId;
 
         let gpuTimer;
         const extTimerQuery = this.painter.context.extTimerQuery;
@@ -3895,7 +3918,11 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
-        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
+        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
+        if (updatePlacementResult) {
+            this._placementDirty = updatePlacementResult.needsRerender;
+            this._occlusionOpacityChanged = updatePlacementResult.occlusionQueryBasedOpacityChanged;
+        }
 
         // Actually draw
         if (this.style) {
@@ -3991,8 +4018,12 @@ export class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#updateSources could have caused them to be set again.
-        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || averageElevationChanged;
-        if (somethingDirty || this._repaint) {
+        const somethingDirty = this._sourcesDirty || this._styleDirty || this._placementDirty || this._occlusionOpacityChanged || averageElevationChanged;
+        if (this._sourcesDirty || this._styleDirty || averageElevationChanged || this._occlusionOpacityChanged) {
+            this._lastDirtyFrameId = this._frameId;
+        }
+
+        if (somethingDirty || this._repaint || !this._occlusionCriteriaSatisfied()) {
             this.triggerRepaint();
         } else {
             const willIdle = !this.isMoving() && this.loaded();
@@ -4019,7 +4050,7 @@ export class Map extends Camera {
             }
         }
 
-        if (this._loaded && !this._fullyLoaded && !somethingDirty) {
+        if (this._loaded && !this._fullyLoaded && !somethingDirty && this._occlusionCriteriaSatisfied()) {
             this._fullyLoaded = true;
             LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
             // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
@@ -4579,6 +4610,17 @@ export class Map extends Camera {
     // for cache browser tests
     _setCacheLimits(limit: number, checkThreshold: number) {
         setCacheLimits(limit, checkThreshold);
+    }
+
+    _occlusionCriteriaSatisfied(): boolean {
+        const occluderLayers = this.style && (this.style.has3DLayers() || (this.style.terrain && !this.style.disableElevatedTerrain));
+        if (this.style && this.style.hasSymbolLayers() && occluderLayers && this.painter) {
+            const factor = 2; // Two times frame window to perform queries and gather result
+            const eps = 5; // Extra frames for result to apply
+            return this._frameId - this._lastDirtyFrameId > eps + factor * this.painter.symbolParams.occlusionQueryFrameWindow;
+        } else {
+            return true;
+        }
     }
 
     /**

@@ -1660,6 +1660,7 @@ window.dynamic = {
                 "icon-ignore-placement": true
             },
             "paint": {
+                "icon-occlusion-opacity": 0.4,
                 "icon-emissive-strength": [
                     "interpolate",
                     [ "linear" ],
@@ -6097,6 +6098,8 @@ window.dynamic = {
                 "text-letter-spacing": 0.15
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-color": [
                     "interpolate",
                     [ "linear" ],
@@ -6229,6 +6232,8 @@ window.dynamic = {
                 "text-size": 12
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-halo-color": "hsl(110, 65%, 65%)",
                 "text-halo-width": 0.5,
                 "text-halo-blur": 0.5,
@@ -6792,6 +6797,8 @@ window.dynamic = {
                 "text-pitch-alignment": "viewport"
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-halo-width": 0.5,
                 "text-halo-color": [
                     "interpolate",
@@ -7284,6 +7291,8 @@ window.dynamic = {
                 "text-letter-spacing": 0.05
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "icon-emissive-strength": [
                     "interpolate",
                     [ "linear" ],
@@ -7413,6 +7422,8 @@ window.dynamic = {
                 "text-font": [ "DIN Pro Bold", "Arial Unicode MS Bold" ]
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "icon-emissive-strength": [
                     "interpolate",
                     [ "linear" ],
@@ -7478,6 +7489,8 @@ window.dynamic = {
                 ]
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "icon-emissive-strength": [
                     "interpolate",
                     [ "linear" ],
@@ -7521,6 +7534,8 @@ window.dynamic = {
                 "text-font": [ "DIN Pro Regular", "Arial Unicode MS Regular" ]
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-color": "hsl(20, 0%, 60%)",
                 "text-halo-color": "hsl(20, 17%, 100%)",
                 "icon-opacity": 0.4
@@ -7559,6 +7574,8 @@ window.dynamic = {
                 "text-padding": 10
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-color": "hsl(20, 0%, 60%)",
                 "text-halo-color": "hsl(20, 17%, 100%)"
             }
@@ -7588,6 +7605,8 @@ window.dynamic = {
                 "text-size": 11
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "text-color": "hsl(20, 0%, 60%)",
                 "text-halo-color": "hsl(20, 17%, 100%)"
             }
@@ -7722,6 +7741,8 @@ window.dynamic = {
                 ]
             },
             "paint": {
+                "icon-occlusion-opacity": 0.4,
+                "text-occlusion-opacity": 0.4,
                 "icon-color-saturation": ["config", "icon-color-saturation"],
                 "icon-color-contrast": ["config", "icon-color-contrast"],
                 "icon-color-brightness-min": ["config", "icon-color-brightness-min"],
@@ -8064,6 +8085,8 @@ window.dynamic = {
                 ]
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "icon-image-cross-fade": [
                     "interpolate",
                     [ "linear" ],
@@ -8212,6 +8235,8 @@ window.dynamic = {
                 "text-max-width": 9
             },
             "paint": {
+                "text-occlusion-opacity": 0.4,
+                "icon-occlusion-opacity": 0.4,
                 "icon-image-cross-fade": [
                     "interpolate",
                     [ "linear" ],

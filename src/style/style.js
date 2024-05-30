@@ -23,6 +23,8 @@ import Lights from '../../3d-style/style/lights.js';
 import {properties as ambientProps} from '../../3d-style/style/ambient_light_properties.js';
 import {properties as directionalProps} from '../../3d-style/style/directional_light_properties.js';
 import {createExpression} from '../style-spec/expression/index.js';
+import Painter from '../render/painter.js';
+import type SymbolBucket from '../data/bucket/symbol_bucket.js';
 
 import {
     validateStyle,
@@ -2916,7 +2918,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false): boolean {
+    _updatePlacement(painter: Painter, transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false): {needsRerender: boolean, occlusionQueryBasedOpacityChanged: boolean} {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -2994,9 +2996,23 @@ class Style extends Evented {
             }
         }
 
+        // Update symbol bucket opacities due to occlusion queries
+        let opacityChanged = false;
+        for (const layerId of this._mergedOrder) {
+            const styleLayer = this._mergedLayers[layerId];
+            if (styleLayer.type !== 'symbol') continue;
+            const tiles = layerTiles[makeFQID(styleLayer.source, styleLayer.scope)];
+            for (const tile of tiles) {
+                const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
+                if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
+                    opacityChanged = symbolBucket.updateOcclusionOpacities(painter.context, painter.symbolParams, painter._dt) || opacityChanged;
+                }
+            }
+        }
+
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
-        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now());
-        return needsRerender;
+        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now()) || opacityChanged;
+        return {needsRerender, occlusionQueryBasedOpacityChanged: opacityChanged};
     }
 
     _releaseSymbolFadeTiles() {

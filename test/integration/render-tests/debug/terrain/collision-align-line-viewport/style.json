@@ -10,7 +10,7 @@
           "source": "rgbterrain",
           "exaggeration": 1.5
         }],
-        ["wait"]
+        ["waitFrameReady", 30]
       ]
     }
   },
@@ -73,8 +73,10 @@
         ]
       },
       "paint": {
-        "text-opacity": 1
-      }
+        "text-opacity": 1,
+        "icon-occlusion-opacity": 0,
+        "text-occlusion-opacity": 0
+}
     }
   ]
 }

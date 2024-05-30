@@ -25,6 +25,7 @@ import Texture from './texture.js';
 import {clippingMaskUniformValues} from './program/clipping_mask_program.js';
 import Color from '../style-spec/util/color.js';
 import symbol from './draw_symbol.js';
+import {SymbolParams} from './symbol_parameters.js';
 import circle from './draw_circle.js';
 import assert from 'assert';
 import heatmap from './draw_heatmap.js';
@@ -69,6 +70,8 @@ import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers.js';
 import type {ContextOptions} from '../gl/context.js';
 import type {ITrackedParameters} from 'tracked_parameters_proxy';
+
+import {OcclusionBuffers} from './occlusion_static_buffers.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type CanvasCopyInstances = {
@@ -221,20 +224,31 @@ class Painter {
     }
 
     _timeStamp: number;
+    _dt: number;
+
     _averageFPS: number;
 
     _fpsHistory: Array<number>;
 
+    occlusionBuffers: OcclusionBuffers;
+
+    symbolParams: SymbolParams;
+
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
+
+        this.occlusionBuffers = new OcclusionBuffers(this.context);
+
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
         this.loadTimeStamps = [];
         this.tp = tp;
-        this._timeStamp = new Date().getTime();
+
+        this._timeStamp = browser.now();
         this._averageFPS = 0;
         this._fpsHistory = [];
+        this._dt = 0;
 
         this._debugParams = {
             showTerrainProxyTiles: false,
@@ -274,6 +288,8 @@ class Painter {
         for (const layerType of layerTypes) {
             tp.registerParameter(this._debugParams.enabledLayers, ["Debug", "Layers"], layerType);
         }
+
+        this.symbolParams = new SymbolParams(tp);
 
         this.setup();
 
@@ -618,11 +634,7 @@ class Painter {
     }
 
     updateAverageFPS() {
-        const curTime = new Date().getTime();
-        const dt = curTime - this._timeStamp;
-        this._timeStamp = curTime;
-
-        const fps = dt === 0 ? 0 : 1000.0 / dt;
+        const fps = this._dt === 0 ? 0 : 1000.0 / this._dt;
 
         this._fpsHistory.push(fps);
         if (this._fpsHistory.length > this._debugParams.fpsWindow) {
@@ -633,6 +645,11 @@ class Painter {
     }
 
     render(style: Style, options: PainterOptions) {
+        // Update time delta and current timestamp
+        const curTime = browser.now();
+        this._dt = curTime - this._timeStamp;
+        this._timeStamp = curTime;
+
         Debug.run(() => { this.updateAverageFPS(); });
 
         // Update debug cache, i.e. clear all unused buffers

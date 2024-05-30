@@ -81,6 +81,8 @@ import atmosphereFrag from './atmosphere.fragment.glsl';
 import atmosphereVert from './atmosphere.vertex.glsl';
 import starsFrag from './stars.fragment.glsl';
 import starsVert from './stars.vertex.glsl';
+import occlusionFrag from './occlusion.fragment.glsl';
+import occlusionVert from './occlusion.vertex.glsl';
 
 // 3d-style related shaders
 import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
@@ -170,7 +172,8 @@ export default {
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
     model: compile(modelFrag, modelVert),
     modelDepth: compile(modelDepthFrag, modelDepthVert),
-    stars: compile(starsFrag, starsVert)
+    stars: compile(starsFrag, starsVert),
+    occlusion: compile(occlusionFrag, occlusionVert)
 };
 
 export function parseUsedPreprocessorDefines(source, defines) {

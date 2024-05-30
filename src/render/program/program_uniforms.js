@@ -30,6 +30,7 @@ import type {GlobeDefinesType} from '../../terrain/globe_raster_program.js';
 import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/program/model_program.js';
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program.js';
 import {starsUniforms} from '../../terrain/stars_program.js';
+import {occlusionUniforms} from './occlusion_program.js';
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
 export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType | DebugDefinesType | GlobeDefinesType | RasterDefinesType | RasterParticleDefinesType | FogDefinesType | HillshadeDefinesType;
@@ -75,4 +76,5 @@ export const programUniforms = {
     modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
+    occlusion: occlusionUniforms
 };

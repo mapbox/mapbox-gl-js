@@ -6844,6 +6844,39 @@
       },
       "property-type": "data-driven"
     },
+    "icon-occlusion-opacity": {
+      "doc": "The opacity at which the icon will be drawn in case of being depth occluded. Not supported on globe zoom levels.",
+      "type": "number",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "requires": [
+        "icon-image"  
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
+        },
+        "data-driven styling": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-driven"
+    },
     "icon-emissive-strength": {
       "type": "number",
       "default": 1,
@@ -7147,6 +7180,39 @@
           "js": "0.33.0",
           "android": "5.0.0",
           "ios": "3.5.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "text-occlusion-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the text will be drawn in case of being depth occluded. Not supported on globe zoom levels.",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
+        },
+        "data-driven styling": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
         }
       },
       "expression": {

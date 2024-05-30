@@ -641,7 +641,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
 const attributeNameExceptions = {
     'text-opacity': ['opacity'],
+    'text-occlusion-opacity': ['occludedOpacityMultiplier'],
     'icon-opacity': ['opacity'],
+    'icon-occlusion-opacity': ['occludedOpacityMultiplier'],
     'text-color': ['fill_color'],
     'icon-color': ['fill_color'],
     'text-emissive-strength': ['emissive_strength'],

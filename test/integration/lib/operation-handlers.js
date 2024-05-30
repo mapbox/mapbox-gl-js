@@ -27,6 +27,26 @@ export const operationHandlers = {
 
         waitForRender(map, () => map.loaded(), doneCb);
     },
+    waitFrameReady(map, params, doneCb) {
+        let timeIterationInterval = 0;
+        if (params.length) {
+            timeIterationInterval = params[0];
+        }
+
+        let prevTime = Date.now();
+
+        waitForRender(map, () => {
+            if (timeIterationInterval !== 0) {
+                window._renderTestNow += timeIterationInterval;
+            } else {
+                const curTime = Date.now();
+                window._renderTestNow += curTime - prevTime;
+                prevTime = curTime;
+            }
+            mapboxgl.setNow(window._renderTestNow);
+            return map.frameReady();
+        }, doneCb);
+    },
     sleep(map, params, doneCb) {
         setTimeout(doneCb, params[0]);
     },

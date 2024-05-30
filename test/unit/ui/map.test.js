@@ -812,11 +812,14 @@ describe('Map', () => {
 
         let timer;
         const map = createMap({style});
+        // Wait for render to trigger
         await waitFor(map, "render");
+        // Wait for idle state (final frame rendered)
+        await waitFor(map, "idle");
         if (timer) clearTimeout(timer);
         await new Promise(resolve => {
             timer = setTimeout(() => {
-                expect(map._frameId).toBeFalsy();
+                expect(map._frame).toBeFalsy();
                 resolve();
             }, 100);
         });

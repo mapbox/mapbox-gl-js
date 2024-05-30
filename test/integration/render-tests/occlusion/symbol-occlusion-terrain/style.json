@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 100,
+      "width": 200,
+      "allowed": 0.002,
+      "operations": [
+        [
+          "waitFrameReady",
+          30
+        ]
+      ]
+    }
+  },
+  "center": [
+    -113.32694547094238,
+    35.93455626259847
+  ],
+  "zoom": 12.2,
+  "pitch": 60,
+  "bearing": -20,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            -113.32599,
+            35.93355626259847
+          ],
+          [
+            -113.33341462261518,
+            35.9294218694216
+          ],
+          [
+            -113.3220882006336,
+            35.9418831745696
+          ]
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "symbols",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "bar-12",
+        "symbol-placement": "point"
+      },
+      "paint": {
+        "icon-occlusion-opacity": 0.5
+      }
+    }
+  ]
+}

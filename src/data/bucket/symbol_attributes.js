@@ -22,6 +22,10 @@ export const placementOpacityAttributes: StructArrayLayout = createLayout([
     {name: 'a_fade_opacity', components: 1, type: 'Uint32'}
 ], 4);
 
+export const occlusionQueryOpacityAttributes: StructArrayLayout = createLayout([
+    {name: 'a_occlusion_query_opacity', components: 1, type: 'Float32'}
+], 4);
+
 export const zOffsetAttributes: StructArrayLayout = createLayout([
     {name: 'a_z_offset', components: 1, type: 'Float32'}
 ], 4);
@@ -137,7 +141,9 @@ export const symbolInstance: StructArrayLayout = createLayout([
     {type: 'Float32', components: 2, name: 'textOffset'},
     {type: 'Float32', name: 'collisionCircleDiameter'},
     {type: 'Float32', name: 'zOffset'},
-    {type: 'Uint8', name: 'hasIconTextFit'}
+    {type: 'Float32', name: 'occlusionState'},
+    {type: 'Float32', name: 'occlusionOpacity'},
+    {type: 'Uint8', name: 'hasIconTextFit'},
 ]);
 
 export const glyphOffset: StructArrayLayout = createLayout([

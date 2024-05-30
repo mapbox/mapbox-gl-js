@@ -115,6 +115,7 @@ const layout: Properties<LayoutProps> = new Properties({
 
 export type PaintProps = {|
     "icon-opacity": DataDrivenProperty<number>,
+    "icon-occlusion-opacity": DataDrivenProperty<number>,
     "icon-emissive-strength": DataDrivenProperty<number>,
     "text-emissive-strength": DataDrivenProperty<number>,
     "icon-color": DataDrivenProperty<Color>,
@@ -125,6 +126,7 @@ export type PaintProps = {|
     "icon-translate-anchor": DataConstantProperty<"map" | "viewport">,
     "icon-image-cross-fade": DataDrivenProperty<number>,
     "text-opacity": DataDrivenProperty<number>,
+    "text-occlusion-opacity": DataDrivenProperty<number>,
     "text-color": DataDrivenProperty<Color>,
     "text-halo-color": DataDrivenProperty<Color>,
     "text-halo-width": DataDrivenProperty<number>,
@@ -139,6 +141,7 @@ export type PaintProps = {|
 
 const paint: Properties<PaintProps> = new Properties({
     "icon-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-opacity"]),
+    "icon-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-occlusion-opacity"]),
     "icon-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-emissive-strength"]),
     "text-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["text-emissive-strength"]),
     "icon-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-color"]),
@@ -149,6 +152,7 @@ const paint: Properties<PaintProps> = new Properties({
     "icon-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate-anchor"]),
     "icon-image-cross-fade": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-image-cross-fade"]),
     "text-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-opacity"]),
+    "text-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-occlusion-opacity"]),
     "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"], { runtimeType: ColorType, getOverride: (o) => o.textColor, hasOverride: (o) => !!o.textColor }),
     "text-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-color"]),
     "text-halo-width": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-width"]),

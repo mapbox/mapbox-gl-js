@@ -49,5 +49,7 @@ void main() {
     glFragColor = vec4(1.0);
 #endif
 
+    
+
     HANDLE_WIREFRAME_DEBUG;
 }
