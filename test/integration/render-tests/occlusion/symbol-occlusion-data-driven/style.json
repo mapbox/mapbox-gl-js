@@ -103,22 +103,7 @@
         "symbol-placement": "point"
       },
       "paint": {
-        "icon-occlusion-opacity": [
-          "match",
-          [
-            "get",
-            "maki"
-          ],
-          [
-            "restaurant"
-          ],
-          0.7,
-          [
-            "cafe"
-          ],
-          0.25,
-          1
-        ]
+        "icon-occlusion-opacity": 0.3
       }
     }
   ]

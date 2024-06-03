@@ -279,8 +279,8 @@ function drawOcclusions(
     const tr = painter.transform;
 
     const paint = layer.paint;
-    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity').constantOr(0) !== 1;
-    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity').constantOr(0) !== 1;
+    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity') !== 1;
+    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity') !== 1;
     const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
     if (!subjectForOcclusion) {
         return;
@@ -427,6 +427,8 @@ function drawLayerSymbols(
     const iconContrast = layer.paint.get('icon-color-contrast');
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
+    const iconOccludedOpacityMultiplier = layer.paint.get('icon-occlusion-opacity');
+    const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity');
 
     const context = painter.context;
     const gl = context.gl;
@@ -437,9 +439,8 @@ function drawLayerSymbols(
     const iconPitchWithMap = iconPitchAlignment === 'map';
     const textPitchWithMap = textPitchAlignment === 'map';
 
-    const paint = layer.paint;
-    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity').constantOr(0) !== 1;
-    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity').constantOr(0) !== 1;
+    const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
+    const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
     const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
 
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
@@ -544,11 +545,11 @@ function drawLayerSymbols(
 
             if (bucket.sdfIcons && !bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconOccludedOpacityMultiplier);
             } else {
                 const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
                 uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter, matrix,
-                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
+                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconOccludedOpacityMultiplier, colorAdjustmentMatrix, transitionProgress);
             }
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
@@ -652,10 +653,10 @@ function drawLayerSymbols(
 
             if (!bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
             } else {
                 uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
             }
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
@@ -785,7 +786,10 @@ function drawLayerSymbols(
 function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolSDFUniformsType>, instanceCount: number) {
     const context = painter.context;
     const gl = context.gl;
-    const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.occlusionQueryOpacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer, buffers.zOffsetVertexBuffer];
+    const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer, buffers.zOffsetVertexBuffer];
+    if (buffers.occlusionQueryOpacityVertexBuffer.length > 0) {
+        dynamicBuffers.push(buffers.occlusionQueryOpacityVertexBuffer);
+    }
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,

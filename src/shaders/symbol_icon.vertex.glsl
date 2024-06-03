@@ -8,6 +8,8 @@ in float a_fade_opacity;
 
 #ifdef OCCLUSION_QUERIES
 in float a_occlusion_query_opacity;
+
+uniform float u_occluded_opacity_multiplier;
 #endif
 
 #ifdef Z_OFFSET
@@ -57,12 +59,10 @@ out vec2 v_tex_b;
 out float v_fade_opacity;
 
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp float occludedOpacityMultiplier
 #pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp float occludedOpacityMultiplier
     #pragma mapbox: initialize lowp float emissive_strength
 
     vec2 a_pos = a_pos_offset.xy;
@@ -191,7 +191,7 @@ void main() {
     v_fade_opacity = out_fade_opacity;
 
 #ifdef OCCLUSION_QUERIES
-    float occludedFadeMultiplier = mix(occludedOpacityMultiplier, 1.0, a_occlusion_query_opacity);
+    float occludedFadeMultiplier = mix(u_occluded_opacity_multiplier, 1.0, a_occlusion_query_opacity);
     v_fade_opacity *= occludedFadeMultiplier;
 #endif
 }
