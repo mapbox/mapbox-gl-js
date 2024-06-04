@@ -34,8 +34,8 @@ import {Event, ErrorEvent} from '../util/evented.js';
 import {MapMouseEvent} from './events.js';
 import TaskQueue from '../util/task_queue.js';
 import webpSupported from '../util/webp_supported.js';
-import {PerformanceUtils} from '../util/performance.js';
-import {PerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
+import {PerformanceUtils, PerformanceMarkers} from '../util/performance.js';
+import {LivePerformanceMarkers, LivePerformanceUtils} from '../util/live_performance.js';
 import Marker from '../ui/marker.js';
 import Popup from '../ui/popup.js';
 import EasedVariable from '../util/eased_variable.js';
@@ -530,7 +530,7 @@ export class Map extends Camera {
     _lastDirtyFrameId: number;
 
     constructor(options: MapOptions) {
-        LivePerformanceUtils.mark(PerformanceMarkers.create);
+        LivePerformanceUtils.mark(LivePerformanceMarkers.create);
 
         const initialOptions = options;
 
@@ -3953,7 +3953,7 @@ export class Map extends Camera {
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
-            PerformanceUtils.mark(PerformanceMarkers.load);
+            LivePerformanceUtils.mark(LivePerformanceMarkers.load);
             this.fire(new Event('load'));
         }
 
@@ -3978,8 +3978,7 @@ export class Map extends Camera {
                     cpuTime: renderCPUTime,
                     gpuTime: renderGPUTime
                 }));
-                // $FlowFixMe extra-arg: fixed in later Flow versions
-                performance.mark('frame-gpu', {
+                PerformanceUtils.mark(PerformanceMarkers.frameGPU, {
                     startTime: frameStartTime,
                     detail: {
                         gpuTime: renderGPUTime
@@ -4052,7 +4051,7 @@ export class Map extends Camera {
 
         if (this._loaded && !this._fullyLoaded && !somethingDirty && this._occlusionCriteriaSatisfied()) {
             this._fullyLoaded = true;
-            LivePerformanceUtils.mark(PerformanceMarkers.fullLoad);
+            LivePerformanceUtils.mark(LivePerformanceMarkers.fullLoad);
             // Following lines are billing and metrics related code. Do not change. See LICENSE.txt
             if (this._performanceMetricsCollection) {
                 postPerformanceEvent(this._requestManager._customAccessToken, {

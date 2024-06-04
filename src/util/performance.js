@@ -1,11 +1,12 @@
 // @flow
 
-import {
-    PerformanceMarkers,
-    LivePerformanceUtils
-} from '../util/live_performance.js';
+import {LivePerformanceMarkers} from '../util/live_performance.js';
 
-performance.mark('library-evaluate');
+export const PerformanceMarkers = {
+    libraryEvaluate: 'library-evaluate',
+    frameGPU: 'frame-gpu',
+    frame: 'frame'
+};
 
 import {isWorker} from '../util/util.js';
 import type {RequestParameters} from '../util/ajax.js';
@@ -28,19 +29,25 @@ export type PerformanceMetrics = {
 
 export type PerformanceMark = {mark: string, name: string};
 
+type PerformanceMarkOptions = {
+    detail?: mixed;
+    startTime?: number;
+}
+
 let fullLoadFinished = false;
 let placementTime = 0;
 
 export const PerformanceUtils = {
-    mark(marker: $Keys<typeof PerformanceMarkers>) {
-        LivePerformanceUtils.mark(marker);
+    mark(marker: $Values<typeof PerformanceMarkers>, markOptions?: PerformanceMarkOptions) {
+        // $FlowFixMe extra-arg: fixed in later Flow versions
+        performance.mark(marker, markOptions);
 
-        if (marker === PerformanceMarkers.fullLoad) {
+        if (marker === LivePerformanceMarkers.fullLoad) {
             fullLoadFinished = true;
         }
     },
     measure(name: string, begin?: string, end?: string) {
-        LivePerformanceUtils.measure(name, begin, end);
+        performance.measure(name, begin, end);
     },
     beginMeasure(name: string): PerformanceMark {
         const mark = name;
@@ -63,7 +70,7 @@ export const PerformanceUtils = {
     },
     frame(timestamp: number, isRenderFrame: boolean) {
         // $FlowFixMe[extra-arg]
-        performance.mark('frame', {
+        performance.mark(PerformanceMarkers.frame, {
             detail: {
                 timestamp,
                 isRenderFrame
@@ -77,16 +84,16 @@ export const PerformanceUtils = {
         performance.clearMeasures('loadTime');
         performance.clearMeasures('fullLoadTime');
 
-        for (const marker in PerformanceMarkers) {
-            performance.clearMarks(PerformanceMarkers[marker]);
+        for (const marker in LivePerformanceMarkers) {
+            performance.clearMarks(LivePerformanceMarkers[marker]);
         }
     },
 
     getPerformanceMetrics(): PerformanceMetrics {
         const metrics = {};
 
-        performance.measure('loadTime', PerformanceMarkers.create, PerformanceMarkers.load);
-        performance.measure('fullLoadTime', PerformanceMarkers.create, PerformanceMarkers.fullLoad);
+        performance.measure('loadTime', LivePerformanceMarkers.create, LivePerformanceMarkers.load);
+        performance.measure('fullLoadTime', LivePerformanceMarkers.create, LivePerformanceMarkers.fullLoad);
 
         const measures = performance.getEntriesByType('measure');
         for (const measure of measures) {
@@ -118,6 +125,8 @@ export const PerformanceUtils = {
         };
     }
 };
+
+PerformanceUtils.mark(PerformanceMarkers.libraryEvaluate);
 
 export function getPerformanceMeasurement(request: ?RequestParameters): Array<PerformanceEntry> {
     const url = request ? request.url.toString() : undefined;

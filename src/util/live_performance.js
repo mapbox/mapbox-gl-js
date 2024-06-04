@@ -28,14 +28,14 @@ export type LivePerformanceData = {
     vendor: ?string
 };
 
-export const PerformanceMarkers = {
+export const LivePerformanceMarkers = {
     create: 'create',
     load: 'load',
     fullLoad: 'fullLoad'
 };
 
 export const LivePerformanceUtils = {
-    mark(marker: $Keys<typeof PerformanceMarkers>) {
+    mark(marker: $Values<typeof LivePerformanceMarkers>) {
         performance.mark(marker);
     },
     measure(name: string, begin?: string, end?: string) {
@@ -149,8 +149,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
         addMetric(metrics.counters, "interactionRangeMax", data.interactionRange[1]);
     }
     if (markerTimers) {
-        for (const marker of Object.keys(PerformanceMarkers)) {
-            const markerName = PerformanceMarkers[marker];
+        for (const marker of Object.keys(LivePerformanceMarkers)) {
+            const markerName = LivePerformanceMarkers[marker];
             const markerTimer = markerTimers.find((entry) => entry.name === markerName);
             if (markerTimer) {
                 addMetric(metrics.counters, markerName, markerTimer.startTime);
