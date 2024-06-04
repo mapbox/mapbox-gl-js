@@ -12,11 +12,12 @@ import type Context from '../gl/context.js';
 import type {FeatureStates} from '../source/source_state.js';
 import type {SpritePositions} from '../util/image.js';
 import type LineAtlas from '../render/line_atlas.js';
-import type {CanonicalTileID} from '../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../source/tile_id.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type Point from '@mapbox/point-geometry';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {IVectorTileFeature, IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../3d-style/util/conflation.js';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -103,6 +104,8 @@ export interface Bucket {
      * @private
      */
     destroy(): void;
+
+    updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>): void;
 }
 
 export function deserialize(input: Array<Bucket>, style: Style): {[_: string]: Bucket} {

@@ -24,7 +24,9 @@ import {properties as ambientProps} from '../../3d-style/style/ambient_light_pro
 import {properties as directionalProps} from '../../3d-style/style/directional_light_properties.js';
 import {createExpression} from '../style-spec/expression/index.js';
 import Painter from '../render/painter.js';
+import ClipStyleLayer from './style_layer/clip_style_layer.js';
 import type SymbolBucket from '../data/bucket/symbol_bucket.js';
+import {LayerTypeMask} from '../../3d-style/util/conflation.js';
 
 import {
     validateStyle,
@@ -65,6 +67,7 @@ import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid.
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer.js';
 import ModelManager from '../../3d-style/render/model_manager.js';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
+import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -222,6 +225,7 @@ class Style extends Evented {
     _mergedSourceCaches: {[_: string]: SourceCache};
     _mergedOtherSourceCaches: {[_: string]: SourceCache};
     _mergedSymbolSourceCaches: {[_: string]: SourceCache};
+    _clipLayerIndices: Array<number>;
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -288,6 +292,7 @@ class Style extends Evented {
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
+        this._clipLayerIndices = [];
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
@@ -943,6 +948,9 @@ class Style extends Evented {
         });
 
         this._mergedOrder = [];
+        this._clipLayerIndices = [];
+
+        let i = 0;
         const sort = (layers: StyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
@@ -957,6 +965,8 @@ class Style extends Evented {
                     if (layer.is3D()) this._has3DLayers = true;
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
+                    if (layer.type === 'clip') this._clipLayerIndices.push(i);
+                    i++;
                 }
             }
         };
@@ -2918,7 +2928,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(painter: Painter, transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, forceFullPlacement: boolean = false): {needsRerender: boolean, occlusionQueryBasedOpacityChanged: boolean} {
+    _updatePlacement(painter: Painter, transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean, replacementSource: ReplacementSource, forceFullPlacement: boolean = false): {needsRerender: boolean, occlusionQueryBasedOpacityChanged: boolean} {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -2989,10 +2999,12 @@ class Style extends Evented {
 
         if (placementCommitted || symbolBucketsChanged) {
             this._buildingIndex.onNewFrame(transform.zoom);
-            for (const layerId of this._mergedOrder) {
+            for (let i = 0; i < this._mergedOrder.length; i++) {
+                const layerId = this._mergedOrder[i];
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
-                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)]);
+                const checkAgainstClipLayer = this.isLayerClipped(styleLayer) && this._clipLayerIndices.some(c => i < c);
+                this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, checkAgainstClipLayer ? replacementSource : null);
             }
         }
 
@@ -3364,6 +3376,40 @@ class Style extends Evented {
 
     hasCircleLayers(): boolean {
         return this._hasCircleLayers;
+    }
+
+    isLayerClipped(layer: StyleLayer, source: ?Source): boolean {
+        // fill-extrusions can be conflated by landmarks.
+        if (this._clipLayerIndices.length === 0 && layer.type !== 'fill-extrusion') return false;
+        const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';
+
+        let layerMask = 0;
+        if (layer.is3D()) {
+            if (isFillExtrusion || (!!source && source.type === 'batched-model')) return true;
+            if (layer.type === 'model') {
+                layerMask = LayerTypeMask.Model;
+            }
+        } else {
+            if (layer.type === 'symbol') {
+                layerMask = LayerTypeMask.Symbol;
+            }
+        }
+
+        for (const i of this._clipLayerIndices) {
+            assert(i < this._mergedOrder.length);
+            const clipLayer: ClipStyleLayer = (this._mergedLayers[this._mergedOrder[i]]: any);
+            if (!clipLayer) continue;
+
+            const extraLayersToBeClipped = [];
+            for (const extra of clipLayer.layout.get('layer-types'))
+                extraLayersToBeClipped.push(extra === 'model' ? LayerTypeMask.Model : (extra === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
+
+            for (const mask of extraLayersToBeClipped)
+                if (layerMask & mask)
+                    return true;
+        }
+
+        return false;
     }
 
     _clearWorkerCaches() {

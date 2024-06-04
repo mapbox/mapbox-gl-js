@@ -3,6 +3,7 @@ import {ReplacementSource} from '../../../3d-style/source/replacement_source.js'
 import {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id.js';
 import Point from '@mapbox/point-geometry';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index.js';
+import {LayerTypeMask} from '../../../3d-style/util/conflation.js';
 
 describe('ReplacementSource', () => {
     const footprintSetA = [
@@ -66,6 +67,14 @@ describe('ReplacementSource', () => {
 
             getFootprints: () => {
                 return footprints;
+            },
+
+            getOrder: () => {
+                return Infinity;
+            },
+
+            getClipMask: () => {
+                return LayerTypeMask.All;
             }
         };
     };
@@ -101,6 +110,14 @@ describe('ReplacementSource', () => {
 
             getFootprints: () => {
                 return footprints;
+            },
+
+            getOrder: () => {
+                return Infinity;
+            },
+
+            getClipMask: () => {
+                return LayerTypeMask.All;
             }
         };
     };

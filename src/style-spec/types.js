@@ -802,6 +802,21 @@ export type SlotLayerSpecification = {|
     "slot"?: string
 |}
 
+export type ClipLayerSpecification = {|
+    "id": string,
+    "type": "clip",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "slot"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "layer-types"?: ExpressionSpecification
+    |}
+|}
+
 export type LayerSpecification =
     | FillLayerSpecification
     | LineLayerSpecification
@@ -815,5 +830,6 @@ export type LayerSpecification =
     | ModelLayerSpecification
     | BackgroundLayerSpecification
     | SkyLayerSpecification
-    | SlotLayerSpecification;
+    | SlotLayerSpecification
+    | ClipLayerSpecification;
 

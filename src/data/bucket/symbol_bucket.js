@@ -55,12 +55,14 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util.js';
 import {getProjection} from '../../geo/projection/index.js';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
+import {ReplacementSource, regionsEquals} from '../../../3d-style/source/replacement_source.js';
+
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer.js';
 
 import type {Class} from '../../types/class.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
-import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -78,6 +80,7 @@ import type {SizeData} from '../../symbol/symbol_size.js';
 import type {FeatureStates} from '../../source/source_state.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import {SymbolParams} from '../../render/symbol_parameters.js';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -457,6 +460,8 @@ class SymbolBucket implements Bucket {
 
     // Occlusion queries pool
     queries: Map<number, OcclusionQuery>;
+    activeReplacements: Array<any>;
+    replacementUpdateTime: number;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.queries = new Map<number, OcclusionQuery>();
@@ -506,6 +511,9 @@ class SymbolBucket implements Bucket {
         this.hasAnyZOffset = false;
         this.zOffsetSortDirty = false;
         this.zOffsetBuffersNeedUpload = layout.get('symbol-z-elevate');
+
+        this.activeReplacements = [];
+        this.replacementUpdateTime = 0;
     }
 
     createArrays() {
@@ -529,6 +537,25 @@ class SymbolBucket implements Bucket {
                 }
             }
         }
+    }
+
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
+    }
+
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource): boolean {
+        // Replacement has to be re-checked if the source has been updated since last time
+        if (source.updateTime === this.replacementUpdateTime) {
+            return false;
+        }
+        this.replacementUpdateTime = source.updateTime;
+
+        // Check if replacements have changed
+        const newReplacements = source.getReplacementRegionsForTile(coord.toUnwrapped(), true);
+        if (regionsEquals(this.activeReplacements, newReplacements)) {
+            return false;
+        }
+        this.activeReplacements = newReplacements;
+        return true;
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

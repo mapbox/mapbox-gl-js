@@ -541,6 +541,8 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
     const evaluationParameters = {...layer.layout.get("model-id").parameters};
 
+    const layerIndex = painter.style.order.indexOf(layer.fqid);
+
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?ModelBucket = (tile.getBucket(layer): any);
@@ -578,6 +580,14 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             (mercCameraPos.y * tiles - coord.canonical.y) * EXTENT,
             mercCameraPos.z * tiles * EXTENT
         ];
+
+        const clippable = painter.conflationActive && Object.keys(bucket.instancesPerModel).length > 0 && painter.style.isLayerClipped(layer, source.getSource());
+        if (clippable) {
+            if (bucket.updateReplacement(coord, painter.replacementSource, layerIndex)) {
+                bucket.uploaded = false;
+                bucket.upload(painter.context);
+            }
+        }
 
         for (let modelId in bucket.instancesPerModel) {
             // From effective tile zoom (distance to camera) and calculate model to use.

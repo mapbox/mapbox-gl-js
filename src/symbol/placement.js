@@ -13,7 +13,10 @@ import Point from '@mapbox/point-geometry';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util.js';
 import BuildingIndex from '../source/building_index.js';
 import {warnOnce} from '../util/util.js';
+import {transformPointToTile, pointInFootprint} from "../../3d-style/source/replacement_source.js";
+import {LayerTypeMask} from '../../3d-style/util/conflation.js';
 
+import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Transform from '../geo/transform.js';
 import type StyleLayer from '../style/style_layer.js';
 import type Tile from '../source/tile.js';
@@ -937,12 +940,12 @@ export class Placement {
         }
     }
 
-    updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>) {
+    updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource: ?ReplacementSource) {
         const seenCrossTileIDs = new Set();
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
-                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray);
+                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID);
                 const layout = symbolBucket.layers[0].layout;
                 if (layout.get('symbol-z-elevate') && this.buildingIndex) {
                     this.buildingIndex.updateZOffset(symbolBucket, tile.tileID);
@@ -952,7 +955,7 @@ export class Placement {
         }
     }
 
-    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: Set<number>, collisionBoxArray: ?CollisionBoxArray) {
+    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: Set<number>, collisionBoxArray: ?CollisionBoxArray, layerIndex: number, replacementSource: ?ReplacementSource, coord: OverscaledTileID) {
         if (bucket.hasTextData()) bucket.text.opacityVertexArray.clear();
         if (bucket.hasIconData()) bucket.icon.opacityVertexArray.clear();
         if (bucket.hasIconCollisionBoxData()) bucket.iconCollisionBox.collisionVertexArray.clear();
@@ -988,13 +991,19 @@ export class Placement {
 
         let visibleInstanceCount = 0;
 
+        if (replacementSource) {
+            bucket.updateReplacement(coord, replacementSource);
+        }
+
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances.get(s);
             const {
                 numHorizontalGlyphVertices,
                 numVerticalGlyphVertices,
                 crossTileID,
-                numIconVertices
+                numIconVertices,
+                tileAnchorX,
+                tileAnchorY
             } = symbolInstance;
 
             const isDuplicate = seenCrossTileIDs.has(crossTileID);
@@ -1018,8 +1027,23 @@ export class Placement {
             const verticalHidden = placedOrientation === WritingMode.horizontal || placedOrientation === WritingMode.horizontalOnly;
             if ((hasText || hasIcon) && !opacityState.isHidden()) visibleInstanceCount++;
 
+            let clippedSymbol = false;
+            if ((hasText || hasIcon) && replacementSource) {
+                for (const region of bucket.activeReplacements) {
+                    if (region.order < layerIndex || region.order === Infinity || !(region.clipMask & LayerTypeMask.Symbol)) continue;
+                    if (region.min.x > tileAnchorX || tileAnchorX > region.max.x || region.min.y > tileAnchorY || tileAnchorY > region.max.y) {
+                        continue;
+                    }
+
+                    const p = transformPointToTile(tileAnchorX, tileAnchorY, coord.canonical, region.footprintTileId.canonical);
+                    clippedSymbol = pointInFootprint(p, region);
+
+                    if (clippedSymbol) break;
+                }
+            }
+
             if (hasText) {
-                const packedOpacity = packOpacity(opacityState.text);
+                const packedOpacity = clippedSymbol ? PACKED_HIDDEN_OPACITY : packOpacity(opacityState.text);
                 // Vertical text fades in/out on collision the same way as corresponding
                 // horizontal text. Switch between vertical/horizontal should be instantaneous
                 const horizontalOpacity = horizontalHidden ? PACKED_HIDDEN_OPACITY : packedOpacity;
@@ -1057,7 +1081,7 @@ export class Placement {
             }
 
             if (hasIcon) {
-                const packedOpacity = packOpacity(opacityState.icon);
+                const packedOpacity = clippedSymbol ? PACKED_HIDDEN_OPACITY : packOpacity(opacityState.icon);
                 const {placedIconSymbolIndex, verticalPlacedIconSymbolIndex} = symbolInstance;
                 const array = bucket.icon.placedSymbolArray;
                 const iconHidden = opacityState.icon.isHidden() ? 1 : 0;

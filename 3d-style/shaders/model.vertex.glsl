@@ -87,6 +87,7 @@ void main() {
     vec4 translate = normal_matrix[1];
     vec3 pos_a = floor(pos_color);
     vec3 rgb = 1.05 * (pos_color - pos_a);
+    float hidden = float(pos_a.x > EXTENT);
     float color_mix = pos_a.z / 100.0;
     v_color_mix = vec4(sRGBToLinear(rgb), color_mix);
 
@@ -106,7 +107,7 @@ void main() {
     pos.xyz += pos_model_tile;
     local_pos = pos.xyz;
 
-    gl_Position = u_matrix * pos;
+    gl_Position = mix(u_matrix * pos, AWAY, hidden);
     pos.z *= meter_to_tile;
     v_position_height.xyz = pos.xyz - u_camera_pos;
 #else

@@ -45,6 +45,7 @@ import {Terrain} from '../terrain/terrain.js';
 import {Debug} from '../util/debug.js';
 import Tile from '../source/tile.js';
 import {RGBAImage} from '../util/image.js';
+import {LayerTypeMask} from '../../3d-style/util/conflation.js';
 import {ReplacementSource} from '../../3d-style/source/replacement_source.js';
 import type {Source} from '../source/source.js';
 import type {CutoffParams} from '../render/cutoff.js';
@@ -695,8 +696,12 @@ class Painter {
             }
         }
 
+        let clippingActive = false;
         for (const layer of orderedLayers) {
             if (layer.isHidden(this.transform.zoom)) continue;
+            if (layer.type === 'clip') {
+                clippingActive = true;
+            }
             this.prepareLayer(layer);
         }
 
@@ -721,31 +726,52 @@ class Painter {
             return cache.getSource();
         };
 
-        if (conflationSourcesInStyle) {
+        if (conflationSourcesInStyle || clippingActive) {
             const conflationLayersInStyle = [];
+            const conflationLayerIndicesInStyle = [];
 
+            let idx = 0;
             for (const layer of orderedLayers) {
-                if (this.layerUsedInConflation(layer, getLayerSource(layer))) {
+                if (this.isSourceForClippingOrConflation(layer, getLayerSource(layer))) {
                     conflationLayersInStyle.push(layer);
+                    conflationLayerIndicesInStyle.push(idx);
                 }
+                idx++;
             }
 
             // Check we have more than one conflation layer
-            if (conflationLayersInStyle && conflationLayersInStyle.length > 1) {
+            if (conflationLayersInStyle && (clippingActive || conflationLayersInStyle.length > 1)) {
                 // Some layer types such as fill extrusions and models might have interdependencies
                 // where certain features should be replaced by overlapping features from another layer with higher
                 // precedence. A special data structure 'replacementSource' is used to compute regions
                 // on visible tiles where potential overlap might occur between features of different layers.
                 const conflationSources = [];
 
-                for (const layer of conflationLayersInStyle) {
+                for (let i = 0; i < conflationLayersInStyle.length; i++) {
+                    const layer = conflationLayersInStyle[i];
+                    const layerIdx = conflationLayerIndicesInStyle[i];
                     const sourceCache = this.style.getLayerSourceCache(layer);
 
-                    if (!sourceCache || !sourceCache.used || !sourceCache.getSource().usedInConflation) {
+                    if (!sourceCache || !sourceCache.used || (!sourceCache.getSource().usedInConflation && layer.type !== 'clip')) {
                         continue;
                     }
 
-                    conflationSources.push({layer: layer.fqid, cache: sourceCache});
+                    let order = Infinity;
+                    let clipMask = LayerTypeMask.None;
+                    if (layer.type === 'clip') {
+                        // Landmarks have precedence over fill extrusions regardless of order in the style.
+                        // A clip layer however, is taken into account by 3D layers (i.e. fill-extrusion, landmarks, instance trees)
+                        // only if those layers appear below the said clip layer.
+                        // Therefore to keep the existing behaviour for landmarks we set the order to infinity.
+                        // This order is later used by fill-extrusion and instanced tree's rendering code to know
+                        // how to deal with landmarks.
+                        order = layerIdx;
+                        /* $FlowFixMe[incompatible-use] */
+                        for (const mask of layer.layout.get('layer-types')) {
+                            clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
+                        }
+                    }
+                    conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask});
                 }
 
                 this.replacementSource.setSources(conflationSources);
@@ -1130,8 +1156,8 @@ class Painter {
         this.id = layer.id;
 
         this.gpuTimingStart(layer);
-        if (!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
-            (painter.terrain && layer.type === 'custom')) {
+        if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
+            (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip') {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         this.gpuTimingEnd();
@@ -1534,7 +1560,7 @@ class Painter {
      * Initially planned to be used for Tiled3DModelSource, 2D source that is used with ModelLayer of buildings type and
      * custom layer buildings.
      */
-    layerUsedInConflation(layer: StyleLayer, source: ?Source): boolean {
+    isSourceForClippingOrConflation(layer: StyleLayer, source: ?Source): boolean {
         if (!layer.is3D()) {
             return false;
         }
@@ -1543,7 +1569,16 @@ class Painter {
             return false;
         }
 
-        if (layer.sourceLayer === "building") {
+        // Note: The reasoning behind the logic here is that if no clip layer is present, then in order to perform
+        // conflation both fill-extrusion and landmarks must be present.
+        // In short this is just an optimisation and we intend to keep the existing behaviour intact.
+        if (!this.style._clipLayerIndices.length) {
+            if (layer.sourceLayer === "building") {
+                return true;
+            }
+        }
+
+        if (layer.type === "clip") {
             return true;
         }
 

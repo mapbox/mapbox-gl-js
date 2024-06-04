@@ -12,7 +12,7 @@ import EXTENT from '../../style-spec/data/extent.js';
 import {register} from '../../util/web_worker_transfer.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 
-import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -33,6 +33,7 @@ import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type Projection from '../../geo/projection/projection.js';
 import type {Vec3} from 'gl-matrix';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 function addCircleVertex(layoutVertexArray: CircleLayoutArray, x: number, y: number, extrudeX: number, extrudeY: number) {
     layoutVertexArray.emplaceBack(
@@ -91,6 +92,9 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
+    }
+
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

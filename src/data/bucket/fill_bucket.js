@@ -16,7 +16,7 @@ import loadGeometry from '../load_geometry.js';
 import toEvaluationFeature from '../evaluation_feature.js';
 import EvaluationParameters from '../../style/evaluation_parameters.js';
 
-import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -34,6 +34,7 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 class FillBucket implements Bucket {
     index: number;
@@ -78,6 +79,9 @@ class FillBucket implements Bucket {
         this.segments2 = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.projection = options.projection;
+    }
+
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

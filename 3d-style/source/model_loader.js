@@ -1,6 +1,7 @@
 // @flow
 
-import {type Footprint, type Mesh, type Node, type Material, type ModelTexture, type Sampler, type AreaLight, HEIGHTMAP_DIM} from '../data/model.js';
+import {type Mesh, type Node, type Material, type ModelTexture, type Sampler, type AreaLight, HEIGHTMAP_DIM} from '../data/model.js';
+import type {Footprint} from '../util/conflation.js';
 import {Aabb} from '../../src/util/primitives.js';
 import Color from '../../src/style-spec/util/color.js';
 import {mat4, vec3} from 'gl-matrix';

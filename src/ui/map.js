@@ -3918,7 +3918,7 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
-        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
+        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource);
         if (updatePlacementResult) {
             this._placementDirty = updatePlacementResult.needsRerender;
             this._occlusionOpacityChanged = updatePlacementResult.occlusionQueryBasedOpacityChanged;

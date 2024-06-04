@@ -19,7 +19,7 @@ import type {ReplacementSource} from '../../source/replacement_source.js';
 import type {Bucket} from '../../../src/data/bucket.js';
 import type {Node} from '../model.js';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
-import type {CanonicalTileID} from '../../../src/source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id.js';
 import type Context from '../../../src/gl/context.js';
 import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type Painter from '../../../src/render/painter.js';
@@ -27,6 +27,7 @@ import type {Vec4} from 'gl-matrix';
 import type {Terrain} from '../../../src/terrain/terrain.js';
 import FeatureIndex from '../../../src/data/feature_index.js';
 import type {GridIndex} from '../../../src/types/grid-index.js';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -161,6 +162,19 @@ class Tiled3dModelBucket implements Bucket {
             this.nodesInfo.push(new Tiled3dModelFeature(node));
             addAABBsToGridIndex(node, featureIndex.featureIndexArray.length, featureIndex.grid);
             featureIndex.featureIndexArray.emplaceBack(this.nodesInfo.length - 1, 0 /*sourceLayerIndex*/, featureIndex.bucketLayerIDs.length - 1, 0);
+        }
+    }
+
+    updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>) {
+        for (const nodeInfo of this.getNodesInfo()) {
+            const node = nodeInfo.node;
+            if (!node.footprint) {
+                continue;
+            }
+            footprints.push({
+                footprint: node.footprint,
+                id
+            });
         }
     }
 

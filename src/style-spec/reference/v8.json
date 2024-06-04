@@ -1248,6 +1248,17 @@
               "ios": "11.0.0"
             }
           }
+        },
+        "clip": {
+          "doc": "Layer that removes 3D content from map.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "3.5.0",
+              "android": "11.5.0",
+              "ios": "11.5.0"
+            },
+            "experimental": true
+          }
         }
       },
       "doc": "Rendering type of this layer.",
@@ -1302,6 +1313,7 @@
     }
   },
   "layout": [
+    "layout_clip",
     "layout_fill",
     "layout_line",
     "layout_circle",
@@ -1434,6 +1446,37 @@
             "vector"
           ]
         }]
+    }
+  },
+  "layout_clip": {
+    "layer-types": {
+      "type": "array",
+      "value": "enum",
+      "values": {
+        "fill-extrusion": {
+          "doc": "If present the clip layer would remove all fill-extrusion layers below it. Currently only Mapbox Standard Style's extruded buildings are removed."
+        },
+        "model": {
+          "doc": "If present the clip layer would remove all 3d model layers below it. Currently only instanced models (e.g. trees) are removed."
+        },
+        "symbol": {
+          "doc": "If present the clip layer would remove all symbol layers below it."
+        }
+      },
+      "default": ["fill-extrusion"],
+      "doc": "Layer types that will be removed if fallen below this clip layer",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.5.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true
     }
   },
   "layout_fill": {

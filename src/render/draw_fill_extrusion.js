@@ -55,10 +55,10 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 
     // Update replacement used with model layer conflation
-    const conflateLayer = painter.conflationActive && painter.layerUsedInConflation(layer, source.getSource());
-
+    const conflateLayer = painter.conflationActive && painter.style.isLayerClipped(layer, source.getSource());
+    const layerIdx = painter.style.order.indexOf(layer.fqid);
     if (conflateLayer) {
-        updateReplacement(painter, source, layer, coords);
+        updateReplacement(painter, source, layer, coords, layerIdx);
     }
 
     if (terrain || conflateLayer) {
@@ -409,14 +409,14 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = false;
 }
 
-function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, layerIndex: number) {
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
         if (!bucket) {
             continue;
         }
-        bucket.updateReplacement(coord, painter.replacementSource);
+        bucket.updateReplacement(coord, painter.replacementSource, layerIndex);
         bucket.uploadCentroid(painter.context);
     }
 }

@@ -13,12 +13,14 @@ import {warnOnce} from '../../../src/util/util.js';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util.js';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate.js';
 import {instanceAttributes} from '../model_attributes.js';
+import {ReplacementSource, regionsEquals, transformPointToTile, pointInFootprint} from '../../../3d-style/source/replacement_source.js';
+import {LayerTypeMask} from '../../../3d-style/util/conflation.js';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer.js';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model.js';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature.js';
 import type {Mat4} from 'gl-matrix';
-import type {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -34,6 +36,7 @@ import type {SpritePositions} from '../../../src/util/image.js';
 import type {ProjectionSpecification} from '../../../src/style-spec/types.js';
 import type {TileTransform} from '../../../src/geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 class ModelFeature {
     feature: EvaluationFeature;
@@ -106,6 +109,9 @@ class ModelBucket implements Bucket {
     modelUris: Array<string>;
     modelsRequested: boolean;
 
+    activeReplacements: Array<any>;
+    replacementUpdateTime: number;
+
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
@@ -133,7 +139,11 @@ class ModelBucket implements Bucket {
         this.validForDEMTile = {id: null, timestamp: 0};
         this.modelUris = [];
         this.modelsRequested = false;
+        this.activeReplacements = [];
+        this.replacementUpdateTime = 0;
+    }
 
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -220,6 +230,61 @@ class ModelBucket implements Bucket {
         return reuploadNeeded;
     }
 
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number): boolean {
+        // Replacement has to be re-checked if the source has been updated since last time
+        if (source.updateTime === this.replacementUpdateTime) {
+            return false;
+        }
+        this.replacementUpdateTime = source.updateTime;
+
+        // Check if replacements have changed
+        const newReplacements = source.getReplacementRegionsForTile(coord.toUnwrapped(), true);
+        if (regionsEquals(this.activeReplacements, newReplacements)) {
+            return false;
+        }
+        this.activeReplacements = newReplacements;
+
+        let reuploadNeeded = false;
+
+        for (const modelId in this.instancesPerModel) {
+            const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId];
+            const va = perModelVertexArray.instancedDataArray;
+
+            for (const feature of perModelVertexArray.features) {
+                const offset = feature.instancedDataOffset;
+                const count = feature.instancedDataCount;
+
+                for (let i = 0; i < count; i++) {
+                    const i16 = (i + offset) * 16;
+
+                    let x_ = va.float32[i16 + 0];
+                    x_ = x_ > EXTENT ? x_ - EXTENT : x_;
+                    const x = Math.floor(x_);
+                    const y = va.float32[i16 + 1];
+
+                    let hidden = false;
+                    for (const region of this.activeReplacements) {
+                        if (region.order < layerIndex || region.order === Infinity || !(region.clipMask & LayerTypeMask.Model)) continue;
+
+                        if (region.min.x > x || x > region.max.x || region.min.y > y || y > region.max.y) {
+                            continue;
+                        }
+
+                        const p = transformPointToTile(x, y, coord.canonical, region.footprintTileId.canonical);
+                        hidden = pointInFootprint(p, region);
+
+                        if (hidden) break;
+                    }
+
+                    va.float32[i16] = hidden ? x_ + EXTENT : x_;
+                    reuploadNeeded = reuploadNeeded || hidden;
+                }
+            }
+        }
+
+        return reuploadNeeded;
+    }
+
     isEmpty(): boolean {
         for (const modelId in this.instancesPerModel) {
             const perModelAttributes = this.instancesPerModel[modelId];
@@ -277,7 +342,7 @@ class ModelBucket implements Bucket {
             return modelId;
         }
         // check if it's a valid model (absolute) URL
-        // otherwise is considered as an style defined model, and hence we don't need to
+        // otherwise it is considered as a style defined model, and hence we don't need to
         // load it here.
         if (isValidUrl(modelId, false)) {
             if (!this.modelUris.includes(modelId)) {

@@ -137,6 +137,55 @@ class TriangleGridIndex {
         }
     }
 
+    _lazyInitLookup() {
+        if (!this.lookup) {
+            this.lookup = new Uint8Array(Math.ceil(this.triangleCount / 8));
+        }
+        this.lookup.fill(0);
+    }
+
+    queryPoint(p: Point, out: Array<number>): void {
+        if (this.triangleCount === 0 || this.cells.length === 0) {
+            return;
+        }
+
+        if (p.x > this.max.x || this.min.x > p.x || p.y > this.max.y || this.min.y > p.y) {
+            return;
+        }
+
+        const x = toCellIdx(p.x - this.min.x, this.xScale, this.cellsX);
+        const y = toCellIdx(p.y - this.min.y, this.yScale, this.cellsY);
+
+        const cell = this.cells[y * this.cellsX + x];
+
+        if (!cell) {
+            return;
+        }
+
+        // Use a bitset for lookups
+        this._lazyInitLookup();
+
+        for (let i = 0; i < cell.len; i++) {
+            const triIdx = this.payload[cell.start + i];
+
+            // Check the lookup bitset if the triangle has been visited already
+            const byte = Math.floor(triIdx / 8);
+            const bit = 1 << (triIdx % 8);
+
+            if ((this.lookup: any)[byte] & bit) {
+                continue;
+            }
+
+            (this.lookup: any)[byte] |= bit;
+            out.push(triIdx);
+
+            if (out.length === this.triangleCount) {
+                // All triangles visited already
+                return;
+            }
+        }
+    }
+
     query(bbMin: Point, bbMax: Point, out: Array<number>): void {
         if (this.triangleCount === 0 || this.cells.length === 0) {
             return;
@@ -149,13 +198,7 @@ class TriangleGridIndex {
         }
 
         // Use a bitset for lookups
-        if (!this.lookup) {
-            this.lookup = new Uint8Array(Math.ceil(this.triangleCount / 8));
-        }
-
-        for (let i = 0; i < this.lookup.length; i++) {
-            this.lookup[i] = 0;
-        }
+        this._lazyInitLookup();
 
         const mnx = toCellIdx(bbMin.x - this.min.x, this.xScale, this.cellsX);
         const mxx = toCellIdx(bbMax.x - this.min.x, this.xScale, this.cellsX);

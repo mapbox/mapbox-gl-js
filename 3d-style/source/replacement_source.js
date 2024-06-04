@@ -2,39 +2,40 @@
 
 import Point from '@mapbox/point-geometry';
 import EXTENT from '../../src/style-spec/data/extent.js';
-import {UnwrappedTileID} from '../../src/source/tile_id.js';
-import {triangleIntersectsTriangle} from '../../src/util/intersection_tests.js';
+import {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id.js';
+import {triangleIntersectsTriangle, polygonContainsPoint} from '../../src/util/intersection_tests.js';
 
-import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket.js';
-import type {Footprint} from '../data/model.js';
+import type {Bucket} from '../../src/data/bucket.js';
+import type {Footprint, TileFootprint} from '../util/conflation.js';
 import type SourceCache from '../../src/source/source_cache.js';
-
-type TileFootprint = {
-    footprint: Footprint,
-    id: UnwrappedTileID,
-}
 
 // Abstract interface that acts as a source for footprints used in the replacement process
 interface FootprintSource {
     getSourceId():string,
-    getFootprints(): Array<TileFootprint>
+    getFootprints(): Array<TileFootprint>,
+    getOrder(): number,
+    getClipMask(): number
 }
 
 type Region = {
-    min: Point;
+    min: Point; // in tile
     max: Point;
     sourceId: string;
     footprint: Footprint;
     footprintTileId: UnwrappedTileID;
+    order: number;
+    clipMask: number;
 }
 
 type RegionData = {
-    min: Point;
+    min: Point; // in mercator
     max: Point;
-    hiddenByOverlap: boolean,
-    priority: number,
-    tileId: UnwrappedTileID,
-    footprint: Footprint
+    hiddenByOverlap: boolean;
+    priority: number;
+    tileId: UnwrappedTileID;
+    footprint: Footprint;
+    order: number;
+    clipMask: number;
 }
 
 class ReplacementSource {
@@ -42,12 +43,14 @@ class ReplacementSource {
     _sourceIds: Array<string>;
     _activeRegions: Array<RegionData>;
     _prevRegions: Array<RegionData>;
+    _globalClipBounds: {min: Point, max: Point};
 
     constructor() {
         this._updateTime = 0;
         this._sourceIds = [];
         this._activeRegions = [];
         this._prevRegions = [];
+        this._globalClipBounds = {min: new Point(0, 0), max: new Point(0, 0)};
     }
 
     clear() {
@@ -63,9 +66,14 @@ class ReplacementSource {
         return this._updateTime;
     }
 
-    getReplacementRegionsForTile(id: UnwrappedTileID): Array<Region> {
+    getReplacementRegionsForTile(id: UnwrappedTileID, checkAgainstGlobalClipBounds: boolean = false): Array<Region> {
         const tileBounds = transformAabbToMerc(new Point(0, 0), new Point(EXTENT, EXTENT), id);
         const result: Array<Region> = [];
+
+        if (checkAgainstGlobalClipBounds) {
+            if (!regionsOverlap(tileBounds, this._globalClipBounds))
+                return result;
+        }
 
         for (const region of this._activeRegions) {
             if (region.hiddenByOverlap) {
@@ -82,14 +90,16 @@ class ReplacementSource {
                 max: bounds.max,
                 sourceId: this._sourceIds[region.priority],
                 footprint: region.footprint,
-                footprintTileId: region.tileId
+                footprintTileId: region.tileId,
+                order: region.order,
+                clipMask: region.clipMask
             });
         }
 
         return result;
     }
 
-    setSources(sources: Array<{ layer: string, cache: SourceCache }>) {
+    setSources(sources: Array<{ layer: string, cache: SourceCache, order: number, clipMask: number }>) {
         this._setSources(sources.map(source => {
             return {
                 getSourceId: () => {
@@ -100,23 +110,19 @@ class ReplacementSource {
 
                     for (const id of source.cache.getVisibleCoordinates()) {
                         const tile = source.cache.getTile(id);
-                        const bucket: ?Tiled3dModelBucket = (tile.buckets[source.layer]: any);
-                        if (!bucket) {
-                            continue;
-                        }
-                        for (const nodeInfo of bucket.getNodesInfo()) {
-                            const node = nodeInfo.node;
-                            if (!node.footprint) {
-                                continue;
-                            }
-                            footprints.push({
-                                footprint: node.footprint,
-                                id: id.toUnwrapped()
-                            });
+                        const bucket: ?Bucket = (tile.buckets[source.layer]: any);
+                        if (bucket) {
+                            bucket.updateFootprints(id.toUnwrapped(), footprints);
                         }
                     }
 
                     return footprints;
+                },
+                getOrder: () => {
+                    return source.order;
+                },
+                getClipMask: () => {
+                    return source.clipMask;
                 }
             };
         }));
@@ -128,6 +134,8 @@ class ReplacementSource {
         if (footprints.length === 0) {
             return;
         }
+        const order = source.getOrder();
+        const clipMask = source.getClipMask();
 
         for (const fp of footprints) {
             if (!fp.footprint) {
@@ -142,7 +150,9 @@ class ReplacementSource {
                 hiddenByOverlap: false,
                 priority: this._sourceIds.length,
                 tileId: fp.id,
-                footprint: fp.footprint
+                footprint: fp.footprint,
+                order,
+                clipMask
             });
         }
 
@@ -158,22 +168,29 @@ class ReplacementSource {
         let regionsChanged = this._activeRegions.length !== this._prevRegions.length;
 
         if (!regionsChanged) {
-            let activeIdx = 0;
-            let prevIdx = 0;
+            let idx = 0;
 
-            while (!regionsChanged && activeIdx !== this._activeRegions.length) {
-                const curr = this._activeRegions[activeIdx];
-                const prev = this._prevRegions[prevIdx];
+            while (!regionsChanged && idx !== this._activeRegions.length) {
+                const curr = this._activeRegions[idx];
+                const prev = this._prevRegions[idx];
 
-                regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev);
+                regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev) || (curr.order !== prev.order) || (curr.clipMask !== prev.clipMask);
 
-                ++activeIdx;
-                ++prevIdx;
+                ++idx;
             }
         }
 
         if (regionsChanged) {
             ++this._updateTime;
+
+            for (const region of this._activeRegions) {
+                if (region.order !== Infinity) {
+                    this._globalClipBounds.min.x = Math.min(this._globalClipBounds.min.x, region.min.x);
+                    this._globalClipBounds.min.y = Math.min(this._globalClipBounds.min.y, region.min.y);
+                    this._globalClipBounds.max.x = Math.max(this._globalClipBounds.max.x, region.max.x);
+                    this._globalClipBounds.max.y = Math.max(this._globalClipBounds.max.y, region.max.y);
+                }
+            }
 
             const firstRegionOfNextPriority = (idx: number) => {
                 const regs = this._activeRegions;
@@ -215,6 +232,10 @@ class ReplacementSource {
                             const prev = this._activeRegions[prevIdx];
 
                             if (prev.hiddenByOverlap) {
+                                continue;
+                            }
+
+                            if (active.order !== Infinity) {
                                 continue;
                             }
 
@@ -271,7 +292,7 @@ function regionsEquals(a: Array<Region>, b: Array<Region>): boolean {
     }
 
     for (let i = 0; i < a.length; i++) {
-        if (a[i].sourceId !== b[i].sourceId || !boundsEquals(a[i], b[i])) {
+        if (a[i].sourceId !== b[i].sourceId || !boundsEquals(a[i], b[i]) || a[i].order !== b[i].order || a[i].clipMask !== b[i].clipMask) {
             return false;
         }
     }
@@ -368,5 +389,37 @@ function footprintsIntersect(a: Footprint, aTile: UnwrappedTileID, b: Footprint,
     return footprintTrianglesIntersect(b, queryVertices, a.indices, 0, a.indices.length, 0, 0);
 }
 
+function transformPointToTile(x: number, y: number, src: CanonicalTileID, dst: CanonicalTileID): Point {
+    // convert a point in src tile coordinates to dst tile coordinates.
+    const zDiff = Math.pow(2.0, dst.z - src.z);
+    const xf = (x + src.x * EXTENT) * zDiff - dst.x * EXTENT;
+    const yf = (y + src.y * EXTENT) * zDiff - dst.y * EXTENT;
+    return new Point(xf, yf);
+}
+
+function pointInFootprint(p: Point, region: Region): boolean {
+    // get a list of all triangles that potentially cover this point.
+    const candidateTriangles = [];
+    region.footprint.grid.queryPoint(p, candidateTriangles);
+
+    // finally check if the point is in any of the triangles.
+    const fpIndices: Array<number> = region.footprint.indices;
+    const fpVertices: Array<Point> = region.footprint.vertices;
+    for (let j = 0; j < candidateTriangles.length; j++) {
+        const triIdx = candidateTriangles[j];
+        const triangle = [
+            fpVertices[fpIndices[triIdx * 3 + 0]],
+            fpVertices[fpIndices[triIdx * 3 + 1]],
+            fpVertices[fpIndices[triIdx * 3 + 2]]
+        ];
+
+        if (polygonContainsPoint(triangle, p)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export type {TileFootprint, FootprintSource, Region};
-export {ReplacementSource, regionsEquals, footprintTrianglesIntersect};
+export {ReplacementSource, regionsEquals, footprintTrianglesIntersect, transformPointToTile, pointInFootprint};

@@ -27,11 +27,12 @@ import {clamp} from '../../util/util.js';
 import {earthRadius} from '../../geo/lng_lat.js';
 import {Aabb, Frustum} from '../../util/primitives.js';
 import {Elevation} from '../../terrain/elevation.js';
+import {LayerTypeMask} from '../../../3d-style/util/conflation.js';
 
 import type {Feature} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping.js';
 import type {Vec3} from 'gl-matrix';
-import type {CanonicalTileID, OverscaledTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type {Segment} from '../segment.js';
 import type {
     Bucket,
@@ -49,6 +50,7 @@ import type {SpritePositions} from '../../util/image.js';
 import type {ProjectionSpecification} from '../../style-spec/types.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-base',
@@ -679,6 +681,9 @@ class FillExtrusionBucket implements Bucket {
         this.partLookup = {};
         this.triangleSubSegments = [];
         this.polygonSegments = [];
+    }
+
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
@@ -1433,7 +1438,7 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    updateReplacement(coord: OverscaledTileID, source: ReplacementSource) {
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number) {
         // Replacement has to be re-checked if the source has been updated since last time
         if (source.updateTime === this.replacementUpdateTime) {
             return;
@@ -1459,6 +1464,8 @@ class FillExtrusionBucket implements Bucket {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
+            if ((region.order < layerIndex) || (region.order !== Infinity && region.order > layerIndex && !(region.clipMask & LayerTypeMask.FillExtrusion))) continue;
+
             // Apply slight padding (one unit) to fill extrusion footprints. This reduces false positives where
             // two adjacent lines would be reported overlapping due to limited precision (16 bit) of tile units.
             const padding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);

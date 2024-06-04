@@ -14,15 +14,14 @@ import {number as interpolate} from '../../src/style-spec/util/interpolate.js';
 import MercatorCoordinate, {getMetersPerPixelAtLatitude, getLatitudeScale, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate.js';
 import {rotationScaleYZFlipMatrix, getBoxBottomFace, rotationFor3Points, convertModelMatrixForGlobe} from '../util/model_util.js';
 
-import type Point from '@mapbox/point-geometry';
 import type {Mat4, Vec2, Vec3, Vec4, Quat} from 'gl-matrix';
 import type Context from '../../src/gl/context.js';
 import type IndexBuffer from '../../src/gl/index_buffer.js';
 import type Painter from '../../src/render/painter.js';
-import type TriangleGridIndex from '../../src/util/triangle_grid_index.js';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import type {TextureImage, TextureWrap, TextureFilter} from '../../src/render/texture.js';
 import type Transform from '../../src/geo/transform.js';
+import type {Footprint} from '../util/conflation.js';
 
 export type Sampler = {
     minFilter: TextureFilter;
@@ -83,13 +82,6 @@ export type Mesh = {
     heightmap: Float32Array;
 }
 
-export type Footprint = {
-    vertices: Array<Point>;
-    indices: Array<number>;
-    grid: TriangleGridIndex;
-    min: Point;
-    max: Point;
-}
 // A rectangle with 5 DoF, no rolling
 export type AreaLight = {
     pos: Vec3;

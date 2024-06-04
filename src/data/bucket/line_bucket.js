@@ -22,7 +22,7 @@ import EvaluationParameters from '../../style/evaluation_parameters.js';
 import '../../render/line_atlas.js';
 
 import type {ProjectionSpecification} from '../../style-spec/types.js';
-import type {CanonicalTileID} from '../../source/tile_id.js';
+import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id.js';
 import type {
     Bucket,
     BucketParameters,
@@ -42,6 +42,7 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type LineAtlas from '../../render/line_atlas.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
+import type {TileFootprint} from '../../../3d-style/util/conflation.js';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -155,6 +156,9 @@ class LineBucket implements Bucket {
         this.maxLineLength = 0;
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
+    }
+
+    updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

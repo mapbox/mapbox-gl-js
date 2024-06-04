@@ -28,6 +28,8 @@ void main() {
     vec4 translate = instance[1];
     vec3 pos_a = floor(pos_color);
 
+    float hidden = float(pos_a.x > EXTENT);
+
     float meter_to_tile = instance[0].w;
     vec4 pos = vec4(pos_a.xy, translate.z, 1.0);
     mat3 rs;
@@ -42,7 +44,7 @@ void main() {
     vec3 pos_model_tile = (rotated_pos_node + vec3(translate.xy, 0.0)) * vec3(meter_to_tile, meter_to_tile, 1.0);
     pos.xyz += pos_model_tile;
 
-    gl_Position = u_matrix * pos;
+    gl_Position = mix(u_matrix * pos, AWAY, hidden);
 #else
     gl_Position = u_matrix * vec4(a_pos_3f, 1);
 #endif
