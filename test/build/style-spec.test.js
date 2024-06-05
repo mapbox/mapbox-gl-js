@@ -23,7 +23,7 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
         const warn = console.warn;
         console.warn = () => {};
         rollup({
-            input: `${styleSpecDirectory}/style-spec.js`,
+            input: `${styleSpecDirectory}/style-spec.ts`,
             plugins: [{
                 resolveId: (id, importer) => {
                     if (isBuiltin(id) || /node_modules/.test(id) || /node_modules/.test(importer)) {

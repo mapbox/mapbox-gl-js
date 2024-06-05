@@ -8,6 +8,7 @@
 // filepath: relative filepath from the root of the mapboxgl repo
 // data: base64 encoded string of the data to be persisted to disk
 function isWorker() {
+    // @ts-expect-error - TS2304
     return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' && self instanceof WorkerGlobalScope;
 }
 const browserWriteFile = (filepath, data, cb) => {

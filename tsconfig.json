@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowArbitraryExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "strict": false,
+    "target": "es2021",
+    "importsNotUsedAsValues": "remove",
+    "preserveValueImports": false,
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "node",
+      "jest",
+      "geojson",
+      "offscreencanvas"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "tracked_parameters_proxy": [
+        "./src/types/tracked_parameters_proxy"
+      ]
+    },
+  },
+  "include": [
+    "./src/**/*",
+    "./test/unit/**/*",
+    "./test/util/**/*",
+    "./vitest.config.*",
+    "./rollup.config.*",
+  ],
+  "exclude": [
+    "./dist",
+    "./build",
+    "./node_modules",
+    "./src/style-spec/dist",
+  ]
+}

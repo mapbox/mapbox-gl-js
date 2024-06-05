@@ -1,6 +1,8 @@
-/* eslint-disable flowtype/require-valid-file-annotation */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable camelcase */
 
-import flowRemoveTypes from '@mapbox/flow-remove-types';
+import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
@@ -17,8 +19,12 @@ import {fileURLToPath} from 'url';
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
 export const plugins = ({minified, production, test, bench, keepClassNames}) => [
-    flow(),
     minifyStyleSpec(),
+    esbuild({
+        target: 'es2021',
+        minify: false,
+        sourceMap: true,
+    }),
     json({
         exclude: 'src/style-spec/reference/v8.json'
     }),
@@ -26,15 +32,15 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
         entries: [{
             find: 'tracked_parameters_proxy',
             replacement: production ?
-                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_mock.js', import.meta.url)) :
-                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_ui.js', import.meta.url))
+                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_mock.ts', import.meta.url)) :
+                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_ui.ts', import.meta.url))
         }]
     }),
     (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*']
     }) : false,
-    production || bench ? unassert() : false,
+    production || bench ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
     test ? replace({
         preventAssignment: true,
         values: {
@@ -59,20 +65,8 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
         // global keyword handling causes Webpack compatibility issues, so we disabled it:
         // https://github.com/mapbox/mapbox-gl-js/pull/6956
         ignoreGlobal: true
-    })
+    }),
 ].filter(Boolean);
-
-// Using this instead of rollup-plugin-flow due to
-// https://github.com/leebyron/rollup-plugin-flow/issues/5
-export function flow() {
-    return {
-        name: 'flow-remove-types',
-        transform: (code) => ({
-            code: flowRemoveTypes(code).toString(),
-            map: null
-        })
-    };
-}
 
 // Using this instead of rollup-plugin-string to add minification
 function glsl(include, minify) {

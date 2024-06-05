@@ -6,11 +6,13 @@ import fs from 'fs';
 import {execSync} from 'child_process';
 import {createRequire} from 'module';
 
+// @ts-expect-error - TS2345 - Argument of type 'Buffer' is not assignable to parameter of type 'string'.
 const packageJson = JSON.parse(fs.readFileSync('./package.json'));
 
 process.on('unhandledRejection', error => {
     // don't log `error` directly, because errors from child_process.execSync
     // contain an (undocumented) `envPairs` with environment variable values
+// @ts-expect-error - TS2339 - Property 'message' does not exist on type 'unknown'.
     console.log(error.message || 'unhandledRejection');
     process.exit(1);
 });

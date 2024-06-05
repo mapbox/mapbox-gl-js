@@ -5,40 +5,38 @@
   const srcDir = locals.srcDir;
   const styleDir =  locals.styleDir;
 -%>
-// This file is generated. Edit build/generate-style-code.js, then run `npm run codegen`.
-// @flow
+// This file is generated. Edit build/generate-style-code.ts, then run `npm run codegen`.
 /* eslint-disable */
 
-import styleSpec from '<%= srcDir -%>/style-spec/reference/latest.js';
+import styleSpec from '<%= srcDir -%>/style-spec/reference/latest';
 
 import {
     Properties,
-    DataConstantProperty,
+    ColorRampProperty,
     DataDrivenProperty,
-    ColorRampProperty
-} from '<%= styleDir -%>/properties.js';
+    DataConstantProperty
+} from '<%= styleDir -%>/properties';
 
-import type Color from '<%= srcDir -%>/style-spec/util/color.js';
-
-import type Formatted from '<%= srcDir %>/style-spec/expression/types/formatted.js';
-
-import type ResolvedImage from '<%= srcDir -%>/style-spec/expression/types/resolved_image.js';
 <%
 const overridables = paintProperties.filter(p => p.overridable)
 if (overridables.length) { -%>
 
 import {
     <%= overridables.reduce((imports, prop) => { imports.push(runtimeType(prop)); return imports; }, []).join(',\n\t'); -%>
-
-} from '../../style-spec/expression/types.js';
+} from '../../style-spec/expression/types';
 <% } -%>
+
+import type Color from '<%= srcDir -%>/style-spec/util/color';
+import type Formatted from '<%= srcDir %>/style-spec/expression/types/formatted';
+import type ResolvedImage from '<%= srcDir -%>/style-spec/expression/types/resolved_image';
+import type {StylePropertySpecification} from '<%= srcDir -%>/style-spec/style-spec';
 
 <% if (layoutProperties.length) { -%>
-export type LayoutProps = {|
+export type LayoutProps = {
 <% for (const property of layoutProperties) { -%>
-    "<%= property.name %>": <%- propertyType(type, property) %>,
+    "<%= property.name %>": <%- propertyType(type, property) %>;
 <% } -%>
-|};
+};
 
 const layout: Properties<LayoutProps> = new Properties({
 <% for (const property of layoutProperties) { -%>
@@ -47,11 +45,11 @@ const layout: Properties<LayoutProps> = new Properties({
 });
 <% } -%>
 <% if(paintProperties.length){ %>
-export type PaintProps = {|
+export type PaintProps = {
 <% for (const property of paintProperties) { -%>
-    "<%= property.name %>": <%- propertyType(type, property) %>,
+    "<%= property.name %>": <%- propertyType(type, property) %>;
 <% } -%>
-|};
+};
 <% } else{ %>
 export type PaintProps = {};
 <% } %>
@@ -61,9 +59,4 @@ const paint: Properties<PaintProps> = new Properties({
 <% } -%>
 });
 
-// Note: without adding the explicit type annotation, Flow infers weaker types
-// for these objects from their use in the constructor to StyleLayer, as
-// {layout?: Properties<...>, paint: Properties<...>}
-export default ({ paint<% if (layoutProperties.length) { %>, layout<% } %> }: $Exact<{
-  paint: Properties<PaintProps><% if (layoutProperties.length) { %>, layout: Properties<LayoutProps><% } %>
-}>);
+export default { paint<% if (layoutProperties.length) { %>, layout<% } %> };

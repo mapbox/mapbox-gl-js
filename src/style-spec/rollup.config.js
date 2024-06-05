@@ -6,7 +6,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from '@rollup/plugin-json';
-import {flow} from '../../build/rollup_plugins.js';
+import esbuild from 'rollup-plugin-esbuild';
 
 // Build es modules?
 const esm = 'esm' in process.env;
@@ -15,7 +15,7 @@ import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const config = [{
-    input: `${__dirname}/style-spec.js`,
+    input: `${__dirname}style-spec.ts`,
     output: {
         name: 'mapboxGlStyleSpecification',
         file: `${__dirname}/dist/${esm ? 'index.es.js' : 'index.cjs'}`,
@@ -42,16 +42,16 @@ const config = [{
         },
         // https://github.com/zaach/jison/issues/351
         replace({
+            preventAssignment: true,
             include: /\/jsonlint-lines-primitives\/lib\/jsonlint.js/,
             delimiters: ['', ''],
-            preventAssignment: true,
             values: {
                 '_token_stack:': ''
             }
         }),
-        flow(),
+        esbuild({tsconfig: `${__dirname}/../../tsconfig.json`}),
         json(),
-        unassert(),
+        unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}),
         resolve({
             browser: true,
             preferBuiltins: false
@@ -59,4 +59,5 @@ const config = [{
         commonjs()
     ]
 }];
+
 export default config;

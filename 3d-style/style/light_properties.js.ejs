@@ -2,26 +2,26 @@
   const type = locals.type;
   const properties = locals.properties;
 -%>
-// This file is generated. Edit build/generate-style-code.js, then run `npm run codegen`.
-// @flow
+// This file is generated. Edit build/generate-style-code.ts, then run `npm run codegen`.
 /* eslint-disable */
 
-import styleSpec from '../../src/style-spec/reference/latest.js';
+import styleSpec from '../../src/style-spec/reference/latest';
 
 import {
     Properties,
-    DataConstantProperty,
     DirectionProperty,
-} from '../../src/style/properties.js';
+    DataConstantProperty
+} from '../../src/style/properties';
 
-import type Color from '../../src/style-spec/util/color.js';
+import type Color from '../../src/style-spec/util/color';
+import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
 
 <% if (properties.length) { -%>
-export type LightProps = {|
+export type LightProps = {
 <% for (const property of properties) { -%>
-    "<%= property.name %>": <%- propertyType(type, property) %>,
+    "<%= property.name %>": <%- propertyType(type, property) %>;
 <% } -%>
-|};
+};
 
 const properties: Properties<LightProps> = new Properties({
 <% for (const property of properties) { -%>

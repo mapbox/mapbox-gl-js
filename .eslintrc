@@ -1,221 +1,255 @@
 {
-  "extends": [
-    "mourner",
-    "plugin:flowtype/recommended",
-    "plugin:import/recommended"
-  ],
-  "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "sourceType": "module",
-    "requireConfigFile": false,
-    "ecmaVersion": 2016,
-    "babelOptions": {
-      "parserOpts": {
-        "plugins": ["flow"]
-      }
-    }
-  },
-  "plugins": [
-    "flowtype",
-    "import",
-    "jsdoc",
-    "eslint-plugin-jsdoc"
-  ],
-  "rules": {
-    // no-duplicate-imports doesn't play well with Flow
-    // https://github.com/babel/eslint-plugin-babel/issues/59
-    "no-duplicate-imports": "off",
-    "import/no-duplicates": "error",
-
-    // ensure compatibility with Node's native ESM
-    "import/extensions": ["error", {
-      "js": "always",
-      "json": "always"
-    }],
-
-    // temporarily disabled for easier upgrading of dependencies
-    "no-use-before-define": "off",
-    "implicit-arrow-linebreak": "off",
-    "arrow-parens": "off",
-    "arrow-body-style": "off",
-    "no-confusing-arrow": "off",
-    "no-control-regex": "off",
-    "no-invalid-this": "off",
-    "no-prototype-builtins": "off",
-    "accessor-pairs": "off",
-    "require-atomic-updates": "off",
-
-    "array-bracket-spacing": "off",
-    "consistent-return": "off",
-    "flowtype/define-flow-type": 1,
-    "flowtype/require-valid-file-annotation": [
-      2,
-      "always", {
-        "annotationStyle": "line"
-      }
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+        "mourner",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "plugin:@typescript-eslint/recommended-type-checked"
     ],
-    "global-require": "off",
-    "import/no-commonjs": "error",
-    "key-spacing": "off",
-    "no-eq-null": "off",
-    "no-lonely-if": "off",
-    "no-new": "off",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
-    "no-warning-comments": "error",
-    "no-mixed-operators": ["error", {"groups": [["&", "|", "^", "~", "<<", ">>", ">>>"], ["&&", "||"]]}],
-    "object-curly-spacing": ["error", "never"],
-    "prefer-arrow-callback": "error",
-    "prefer-const": ["error", {"destructuring": "all"}],
-    "prefer-template": "error",
-    "quotes": "off",
-    "space-before-function-paren": "off",
-    "template-curly-spacing": "error",
-    "no-useless-escape": "off",
-    "indent": ["error", 4, {
-      "flatTernaryExpressions": true,
-      "CallExpression": {
-        "arguments": "off"
-      },
-      "FunctionDeclaration": {
-        "parameters": "off"
-      },
-      "FunctionExpression": {
-        "parameters": "off"
-      }
-    }],
-    "no-multiple-empty-lines": [ "error", {
-        "max": 1
-    }],
-  },
-  "settings": {
-    "jsdoc":{
-      "ignorePrivate": true,
-      "preferredTypes": {
-        "object": "Object"
-      }
-    }
-  },
-  "overrides": [
-    {
-      "files": ["src/fake_filename_for_jsdoc_examples"],
-      "rules": {
-        "flowtype/require-valid-file-annotation": "off"
-      },
-      "globals": {
-        "map": true
-      }
+    "parserOptions": {
+        "EXPERIMENTAL_useProjectService": true
     },
-    {
-      "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
-      "rules": {
-        "flowtype/require-valid-file-annotation": "off",
-        "jsdoc/check-param-names": "off",
-        "jsdoc/require-param": "off",
-        "jsdoc/require-param-description": "off",
-        "jsdoc/require-param-name": "off",
-        "jsdoc/require-returns": "off",
-        "jsdoc/require-returns-description": "off",
-        "jsdoc/require-property": "off",
-        "jsdoc/require-description-complete-sentence": "off",
-        "jsdoc/check-access": "off",
+    "plugins": [
+        "jsdoc",
+        "import",
+        "@typescript-eslint"
+    ],
+    "settings": {
+        "import/parsers": {
+            "@typescript-eslint/parser": [".ts"]
+        },
+        "import/resolver": {
+            "node": true,
+            "typescript": {
+                "project": "./tsconfig.json"
+            },
+        },
+        "jsdoc": {
+            "ignorePrivate": true,
+            "preferredTypes": {
+                "object": "Object"
+            }
+        }
+    },
+    "rules": {
+        // temporarily disabled for easier migration to TypeScript
         "jsdoc/check-examples": "off",
-        "jsdoc/check-line-alignment": "off",
-        "jsdoc/check-property-names": "off",
-        "jsdoc/check-types": "off",
-        "jsdoc/tag-lines": "off",
-        "jsdoc/require-description": "off",
-        "jsdoc/require-example": "off",
-        "jsdoc/require-param-type": "off",
-        "jsdoc/require-property-description": "off",
-        "jsdoc/require-property-name": "off",
-        "jsdoc/require-property-type": "off",
-        "jsdoc/require-returns-type": "off"
-        
-      }
-    },
-    {
-      "files": [
-        "src/index.js",
-        "src/ui/map.js",
-        "src/ui/camera.js",
-        "src/ui/marker.js",
-        "src/ui/popup.js",
-        "src/ui/events.js",
-        "src/ui/control/**",
-        "src/ui/handler/**",
-        "src/geo/lng_lat.js",
-        "src/geo/mercator_coordinate.js",
-        "src/source/**",
-      ],
-      "rules": {
-        "jsdoc/check-param-names": "error",
-        "jsdoc/require-param": "error",
-        "jsdoc/require-param-description": "error",
-        "jsdoc/require-param-name": "error",
-        "jsdoc/require-returns": "error",
-        "jsdoc/require-returns-description": "error",
-        "jsdoc/require-property": "error",
-        "jsdoc/require-description-complete-sentence": "error",
-        "jsdoc/check-access": "error",
-        "jsdoc/check-examples": ["error", {
-            "matchingFileName": "src/fake_filename_for_jsdoc_examples",
-            "rejectExampleCodeRegex": "<script>"
+        "@typescript-eslint/ban-types": "off",
+        "@typescript-eslint/no-this-alias": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/unbound-method": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-loss-of-precision": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-redundant-type-constituents": "off",
+
+        // TypeScript specific rules
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/consistent-type-exports": "off",
+        "@typescript-eslint/consistent-type-imports": "off",
+        "@typescript-eslint/restrict-template-expressions": ["off", { "allowNever": true }],
+        "@typescript-eslint/no-unnecessary-type-constraint": "off",
+        "@typescript-eslint/no-unused-vars": ["off", { "argsIgnorePattern": "^_" }],
+
+        // Disable those rules since TypeScript provides the same checks as part of standard type checking
+        // See https://typescript-eslint.io/troubleshooting/performance-troubleshooting/#eslint-plugin-import
+        "import/named": "off",
+        "import/namespace": "off",
+        "import/default": "off",
+        "import/no-named-as-default-member": "off",
+        "import/no-unresolved": "off",
+
+        // Import plugin rules
+        "no-duplicate-imports": "off",
+        "import/no-duplicates": "error",
+
+        // ensure compatibility with Node's native ESM
+        "import/extensions": ["error", {
+            "js": "always",
+            "json": "always"
         }],
-        "jsdoc/check-line-alignment": ["error"],
-        "jsdoc/check-property-names": "error",
-        "jsdoc/check-types": "error",
-        "jsdoc/tag-lines": ["error", "any", {"startLines": 1}],
-        "jsdoc/require-description": "error",
-        "jsdoc/require-example": "error",
-        "jsdoc/require-param-type": "error",
-        "jsdoc/require-property-description": "error",
-        "jsdoc/require-property-name": "error",
-        "jsdoc/require-property-type": "error",
-        "jsdoc/require-returns-type": "error",
-      }
+
+        // temporarily disabled for easier upgrading of dependencies
+        "no-use-before-define": "off",
+        "implicit-arrow-linebreak": "off",
+        "arrow-parens": "off",
+        "arrow-body-style": "off",
+        "no-confusing-arrow": "off",
+        "no-control-regex": "off",
+        "no-invalid-this": "off",
+        "no-prototype-builtins": "off",
+        "accessor-pairs": "off",
+        "require-atomic-updates": "off",
+
+        "array-bracket-spacing": "off",
+        "consistent-return": "off",
+        "global-require": "off",
+        "import/no-commonjs": "error",
+        "key-spacing": "off",
+        "no-eq-null": "off",
+        "no-lonely-if": "off",
+        "no-new": "off",
+        "no-warning-comments": "error",
+        "no-mixed-operators": ["error", { "groups": [["&", "|", "^", "~", "<<", ">>", ">>>"], ["&&", "||"]] }],
+        "object-curly-spacing": ["error", "never"],
+        "prefer-arrow-callback": "error",
+        "prefer-const": ["error", { "destructuring": "all" }],
+        "prefer-template": "error",
+        "quotes": "off",
+        "space-before-function-paren": "off",
+        "template-curly-spacing": "error",
+        "no-useless-escape": "off",
+        "indent": ["error", 4, {
+            "flatTernaryExpressions": true,
+            "CallExpression": {
+                "arguments": "off"
+            },
+            "FunctionDeclaration": {
+                "parameters": "off"
+            },
+            "FunctionExpression": {
+                "parameters": "off"
+            }
+        }],
+        "no-multiple-empty-lines": ["error", {
+            "max": 1
+        }],
     },
-    {
-      "files": [
-        "src/**/*",
-        "3d-style/**/*"
-      ],
-      "rules": {
-        "no-restricted-syntax": [
-          "error",
-          {
-            "selector": "AwaitExpression",
-            "message": "Async/await syntax is not allowed."
-          },
-          {
-            "selector": "FunctionDeclaration[async=true]",
-            "message": "Async function declarations are not allowed."
-          },
-          {
-            "selector": "FunctionExpression[async=true]",
-            "message": "Async function expressions are not allowed."
-          },
-          {
-            "selector": "ArrowFunctionExpression[async=true]",
-            "message": "Async arrow functions are not allowed."
-          },
-          // prevent issues with esbuild/vite https://github.com/mapbox/mapbox-gl-js/issues/12656
-          {
-            "selector": "ClassProperty[value]",
-            "message": "ClassProperty values are not allowed."
-          },
-          {
-            "selector": "LogicalExpression[operator='??']",
-            "message": "Nullish coalescing is not allowed."
-          },
-          {
-            "selector": "ChainExpression",
-            "message": "Optional chaining is now allowed."
-          }
-        ]
-      }
-    }
-  ],
-  "env": {
-    "es6": true
-  }
+    "overrides": [
+        {
+            "files": ["src/render/draw_sky.ts"],
+            "rules": { "@typescript-eslint/no-base-to-string": "off" }
+        },
+        {
+            "files": ["src/style/style_layer.ts"],
+            "rules": { "no-self-assign": "off" }
+        },
+        {
+            "files": ["src/terrain/terrain.ts"],
+            "rules": { "@typescript-eslint/no-base-to-string": "off" }
+        },
+        {
+            "files": ["src/util/util.ts"],
+            "rules": { "@typescript-eslint/restrict-plus-operands": "off" }
+        },
+        {
+            "files": ["build/**", "debug/**", "bench/**", "test/**", "src/style-spec/**"],
+            "rules": {
+                "jsdoc/check-param-names": "off",
+                "jsdoc/require-param": "off",
+                "jsdoc/require-param-description": "off",
+                "jsdoc/require-param-name": "off",
+                "jsdoc/require-returns": "off",
+                "jsdoc/require-returns-description": "off",
+                "jsdoc/require-property": "off",
+                "jsdoc/require-description-complete-sentence": "off",
+                "jsdoc/check-access": "off",
+                "jsdoc/check-examples": "off",
+                "jsdoc/check-line-alignment": "off",
+                "jsdoc/check-property-names": "off",
+                "jsdoc/check-types": "off",
+                "jsdoc/tag-lines": "off",
+                "jsdoc/require-description": "off",
+                "jsdoc/require-example": "off",
+                "jsdoc/require-param-type": "off",
+                "jsdoc/require-property-description": "off",
+                "jsdoc/require-property-name": "off",
+                "jsdoc/require-property-type": "off",
+                "jsdoc/require-returns-type": "off",
+            }
+        },
+        {
+            "files": [
+                "src/index.ts",
+                "src/ui/map.ts",
+                "src/ui/camera.ts",
+                "src/ui/marker.ts",
+                "src/ui/popup.ts",
+                "src/ui/events.ts",
+                "src/ui/control/**",
+                "src/ui/handler/**",
+                "src/geo/lng_lat.ts",
+                "src/geo/mercator_coordinate.ts",
+                "src/source/**",
+            ],
+            "rules": {
+                "jsdoc/check-param-names": "error",
+                "jsdoc/require-param": "error",
+                "jsdoc/require-param-description": "error",
+                "jsdoc/require-param-name": "error",
+                "jsdoc/require-returns": "error",
+                "jsdoc/require-returns-description": "error",
+                "jsdoc/require-property": "error",
+                "jsdoc/require-description-complete-sentence": "error",
+                "jsdoc/check-access": "error",
+                // temporarily disabled for easier migration to TypeScript
+                // "jsdoc/check-examples": ["error", {
+                //   "matchingFileName": "src/fake_filename_for_jsdoc_examples",
+                //   "rejectExampleCodeRegex": "<script>"
+                // }],
+                "jsdoc/check-line-alignment": ["error"],
+                "jsdoc/check-property-names": "error",
+                "jsdoc/check-types": "error",
+                "jsdoc/tag-lines": ["error", "any", { "startLines": 1 }],
+                "jsdoc/require-description": "error",
+                "jsdoc/require-example": "error",
+                "jsdoc/require-param-type": "error",
+                "jsdoc/require-property-description": "error",
+                "jsdoc/require-property-name": "error",
+                "jsdoc/require-property-type": "error",
+                "jsdoc/require-returns-type": "error",
+            }
+        },
+        {
+            "files": [
+                "src/**/*",
+                "3d-style/**/*"
+            ],
+            "rules": {
+                "no-restricted-syntax": [
+                    "error",
+                    {
+                        "selector": "AwaitExpression",
+                        "message": "Async/await syntax is not allowed."
+                    },
+                    {
+                        "selector": "FunctionDeclaration[async=true]",
+                        "message": "Async function declarations are not allowed."
+                    },
+                    {
+                        "selector": "FunctionExpression[async=true]",
+                        "message": "Async function expressions are not allowed."
+                    },
+                    {
+                        "selector": "ArrowFunctionExpression[async=true]",
+                        "message": "Async arrow functions are not allowed."
+                    },
+                    // prevent issues with esbuild/vite https://github.com/mapbox/mapbox-gl-js/issues/12656
+                    {
+                        "selector": "ClassProperty[value]",
+                        "message": "ClassProperty values are not allowed."
+                    },
+                    {
+                        "selector": "LogicalExpression[operator='??']",
+                        "message": "Nullish coalescing is not allowed."
+                    },
+                    {
+                        "selector": "ChainExpression",
+                        "message": "Optional chaining is now allowed."
+                    }
+                ]
+            }
+        }
+    ],
+    "env": {
+        "es6": true
+    },
+    "ignorePatterns": [
+        "dist/**/*"
+    ]
 }

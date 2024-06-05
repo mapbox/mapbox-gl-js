@@ -11,6 +11,7 @@
   "license": "SEE LICENSE IN LICENSE.txt",
   "main": "./dist/index.cjs",
   "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
@@ -24,10 +25,10 @@
   "scripts": {
     "pretest": "npm run build",
     "test": "node ./test.js",
-    "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/rollup -c && ../../node_modules/.bin/rollup -c --environment esm",
-    "prepublishOnly": "npm run copy-flow-typed && npm run build",
-    "postpublish": "rm -r flow-typed dist/index.cjs"
+    "build-dts": "../../node_modules/.bin/dts-bundle-generator --no-banner --export-referenced-types=false -o ./dist/index.d.ts ./style-spec.ts",
+    "prepublishOnly": "npm run build && npm run build-dts",
+    "postpublish": "rm dist/index.cjs dist/index.d.ts"
   },
   "repository": {
     "type": "git",
@@ -43,14 +44,14 @@
     "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/unitbezier": "^0.0.0",
+    "cheap-ruler": "^3.0.1",
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^2.0.0",
     "minimist": "^1.2.6",
+    "quickselect": "^2.0.0",
     "rw": "^1.3.3",
     "sort-object": "^0.3.2",
-    "quickselect": "^2.0.0",
-    "tinyqueue": "^2.0.3",
-    "cheap-ruler": "^3.0.1"
+    "tinyqueue": "^2.0.3"
   },
   "sideEffects": false
 }

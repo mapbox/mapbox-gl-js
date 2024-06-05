@@ -28,14 +28,17 @@ function getQueryVariable(variable) {
 // Tape outputs via `console.log` and is intercepted by testem using this function
 Testem.handleConsoleMessage = function(msg) {
     // Send output over ws to testem server
+// @ts-expect-error - TS2339 - Property 'emit' does not exist on type 'typeof Testem'.
     Testem.emit('tap', msg);
     // Return true and log output only when not in CI mode. (npm run watch-render).
     return !process.env.CI;
 };
 
 // Persist the current html on the page as an artifact once tests finish
+// @ts-expect-error - TS2339 - Property 'afterTests' does not exist on type 'typeof Testem'.
 Testem.afterTests((config, data, cb) => {
     browserWriteFile(
+// @ts-expect-error - TS2339 - Property '_suiteName' does not exist on type 'Window & typeof globalThis'.
         `test/integration/${window._suiteName}/index.html`,
         window.btoa(document.documentElement.outerHTML),
         () => cb()

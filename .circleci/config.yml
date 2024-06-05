@@ -23,6 +23,12 @@ workflows:
             # This RegEx is setup to ignore that.
             branches:
               ignore: /pull\/[0-9]*/
+      - typecheck:
+          requires:
+            - prepare-linux
+          filters:
+            tags:
+              only: /.*/
       - lint:
           requires:
             - prepare-linux
@@ -42,9 +48,9 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-flow:
+      - test-typings:
           requires:
-            - prepare-linux
+            - build
           filters:
             tags:
               only: /.*/
@@ -76,12 +82,6 @@ workflows:
       - test-expressions:
           requires:
             - prepare-linux
-          filters:
-            tags:
-              only: /.*/
-      - test-typescript:
-          requires:
-            - build
           filters:
             tags:
               only: /.*/
@@ -230,6 +230,16 @@ jobs:
             - .aws
             - mbx-ci
 
+  typecheck:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Typecheck
+          command: |
+            npm run tsc
+
   lint:
     <<: *linux-defaults
     steps:
@@ -256,7 +266,7 @@ jobs:
       - run: npm run build-csp
       - run: npm run build-css
       - run: npm run build-style-spec
-      - run: npm run build-flow-types
+      - run: npm run build-dts
       - run: npm run test-build
       - run: npm run prepare-release-pages
       - run:
@@ -304,12 +314,17 @@ jobs:
           name: Check bundle size
           command: npm run check-bundle-size
 
-  test-flow:
+  test-typings:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
-      - run: npm run test-flow
+      - run:
+          name: Test public typings
+          command: |
+            cd ./test/build/typings &&
+            npm ci &&
+            npm run tsc
 
   test-unit:
     <<: *linux-defaults
@@ -331,21 +346,6 @@ jobs:
           path: test/integration/query-tests
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
-
-  test-typescript:
-    <<: *linux-defaults
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Build TypeScript
-          command: |
-            cd ./test/build/typescript &&
-            npm ci &&
-            npm run build &&
-            rm -rf node_modules
-      - store_artifacts:
-          path: "test/build/typescript"
 
   test-csp:
     <<:  *linux-defaults
@@ -549,7 +549,6 @@ jobs:
             Remove-Item node_modules/@mapbox/mvt-fixtures/real-world/osm-qa-* -Recurse -Force;
             Remove-Item node_modules/@octokit -Recurse -Force;
             Remove-Item node_modules/puppeteer-core -Recurse -Force;
-            Remove-Item node_modules/lodash -Recurse -Force;
       - persist_to_workspace:
           root: ~/
           paths:

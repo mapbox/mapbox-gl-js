@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-if [ "$#" == 5 ]; then
-  arg="${@:1:3} ${4}/${5}"
-else
-  arg="${@}"
-fi
-
-node_modules/.bin/tap --node-arg=--no-warnings --node-arg=--experimental-loader --node-arg=./build/node-loader.js --timeout 0 $arg

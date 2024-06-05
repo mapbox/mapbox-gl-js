@@ -1,0 +1,13 @@
+{
+  "name": "mapbox-gl-ts",
+  "scripts": {
+    "tsc": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "mapbox-gl": "file:../../../"
+  },
+  "devDependencies": {
+    "@types/geojson": "*",
+    "typescript": "^5.4.5"
+  }
+}

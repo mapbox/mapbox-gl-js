@@ -15,10 +15,10 @@ const config = (input, file, format) => ({
         banner
     },
     treeshake: true,
-    plugins: plugins({minified: true, production: true, keepClassNames: true})
+    plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, bench: false})
 });
 
 export default [
-    config('src/index.js', 'dist/mapbox-gl-csp.js', 'umd'),
-    config('src/source/worker.js', 'dist/mapbox-gl-csp-worker.js', 'iife')
+    config('src/index.ts', 'dist/mapbox-gl-csp.js', 'umd'),
+    config('src/source/worker.ts', 'dist/mapbox-gl-csp-worker.js', 'iife')
 ];

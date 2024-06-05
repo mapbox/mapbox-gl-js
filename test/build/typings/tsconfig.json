@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es6", "dom"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noImplicitAny": false,
+    "noImplicitThis": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
+    "target": "es2021",
+    "types": [],
+  },
+  "files": [
+    "index.ts",
+    "compatibility-test.ts"
+  ]
+}
