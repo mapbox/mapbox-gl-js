@@ -22,6 +22,7 @@ import {Aabb} from '../../src/util/primitives.js';
 import {getCutoffParams} from '../../src/render/cutoff.js';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers.js';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index.js';
+import {Tiled3dModelFeature} from "../data/bucket/tiled_3d_model_bucket.js";
 
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
 import type Painter from '../../src/render/painter.js';
@@ -32,7 +33,7 @@ import type {Mesh, Node, ModelTexture} from '../data/model.js';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms.js';
 import type {Mat4} from 'gl-matrix';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
-import {Tiled3dModelFeature} from "../data/bucket/tiled_3d_model_bucket.js";
+import type {CutoffParams} from '../../src/render/cutoff.js';
 import {Texture3D} from '../../src/render/texture.js';
 import type {LUT} from "../../src/util/lut";
 
@@ -768,6 +769,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const frontCutoffParams = layer.paint.get('model-front-cutoff');
     const frontCutoffEnabled = frontCutoffParams[2] < 1.0;
 
+    const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
+
     const stats = layer.getLayerRenderingStats();
     const drawTiles = function() {
         let start, end, step;
@@ -848,8 +851,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                 node.hidden = false;
                 let opacity = layerOpacity;
-                if (!isShadowPass && frontCutoffEnabled) {
-                    opacity *= calculateFrontcutoffOpacity(nodeModelMatrix, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
+                if (!isShadowPass) {
+                    if (frontCutoffEnabled) {
+                        opacity *= calculateFrontCutoffOpacity(nodeModelMatrix, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
+                    }
+                    opacity *= calculateFarCutoffOpacity(cutoffParams, depth);
                 }
                 if (opacity === 0.0) {
                     node.hidden = true;
@@ -1069,7 +1075,22 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
     return intersection === 0;
 }
 
-function calculateFrontcutoffOpacity(nodeModelMatrix: Mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
+function calculateFarCutoffOpacity(cutoffParams: CutoffParams, depth: number): number {
+    assert(cutoffParams.uniformValues.u_cutoff_params.length === 4);
+    const near = cutoffParams.uniformValues.u_cutoff_params[0];
+    const far = cutoffParams.uniformValues.u_cutoff_params[1];
+    const cutoffStart = cutoffParams.uniformValues.u_cutoff_params[2];
+    const cutoffEnd = cutoffParams.uniformValues.u_cutoff_params[3];
+
+    if (far === near || cutoffEnd === cutoffStart) {
+        return 1.0;
+    }
+
+    const linearDepth = (depth - near) / (far - near);
+    return clamp((linearDepth - cutoffStart) / (cutoffEnd - cutoffStart), 0.0, 1.0);
+}
+
+function calculateFrontCutoffOpacity(nodeModelMatrix: Mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
     // The cutoff opacity is completely disabled when pitch is lower than 20.
     const fullyOpaquePitch = 20.0;
     const fullyTransparentPitch = 40.0;
