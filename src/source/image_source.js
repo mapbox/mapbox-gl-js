@@ -16,7 +16,7 @@ import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants.js';
 import {mat3, vec3} from 'gl-matrix';
 import LngLat from '../geo/lng_lat.js';
 
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type {CanvasSourceSpecification} from './canvas_source.js';
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
@@ -217,7 +217,7 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  * @see [Example: Animate a series of images](https://www.mapbox.com/mapbox-gl-js/example/animate-images/)
  */
-class ImageSource extends Evented implements Source {
+class ImageSource extends Evented implements ISource {
     type: string;
     id: string;
     scope: string;
@@ -227,6 +227,13 @@ class ImageSource extends Evented implements Source {
     url: ?string;
     width: number;
     height: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
+    roundZoom: boolean | void;
+    reparseOverscaled: boolean | void;
+    attribution: string | void;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
 
     coordinates: Coordinates;
     tiles: {[_: string]: Tile};
@@ -254,6 +261,12 @@ class ImageSource extends Evented implements Source {
     _imageRequest: ?Cancelable;
     perspectiveTransform: [number, number];
     elevatedGlobePerspectiveTransform: [number, number];
+
+    reload: void;
+    abortTile: void;
+    unloadTile: void;
+    hasTile: void;
+    afterUpdate: void;
 
     /**
      * @private
@@ -394,7 +407,7 @@ class ImageSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    onRemove() {
+    onRemove(_: Map) {
         if (this._imageRequest) {
             this._imageRequest.cancel();
             this._imageRequest = null;

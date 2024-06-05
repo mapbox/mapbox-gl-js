@@ -173,7 +173,7 @@ class CanvasSource extends ImageSource {
     }
 
     // $FlowFixMe[method-unbinding]
-    onRemove() {
+    onRemove(_: Map) {
         this.pause();
     }
 

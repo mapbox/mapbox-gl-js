@@ -1139,6 +1139,7 @@ class Style extends Evented {
             return;
         }
 
+        // $FlowFixMe[incompatible-use]
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
@@ -1624,6 +1625,7 @@ class Style extends Evented {
             addSourceCache(true);
         }
 
+        // $FlowFixMe[method-unbinding]
         if (sourceInstance.onAdd) sourceInstance.onAdd(this.map);
 
         // Avoid triggering redundant style update after adding initial sources.
@@ -1669,9 +1671,8 @@ class Style extends Evented {
         this.mergeSources();
 
         source.setEventedParent(null);
-        if (source.onRemove) {
-            source.onRemove(this.map);
-        }
+        // $FlowFixMe[method-unbinding]
+        if (source.onRemove) source.onRemove(this.map);
         this._changes.setDirty();
         return this;
     }
@@ -2994,6 +2995,7 @@ class Style extends Evented {
 
     reloadSources() {
         for (const source of this.getSources()) {
+            // $FlowFixMe[method-unbinding]
             if (source.reload) source.reload();
         }
     }

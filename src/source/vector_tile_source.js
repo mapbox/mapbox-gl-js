@@ -12,7 +12,7 @@ import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile.js';
 import {makeFQID} from '../util/fqid.js';
 
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
@@ -50,7 +50,7 @@ import type {WorkerTileResult} from './worker_source.js';
  * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
  * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class VectorTileSource extends Evented implements Source {
+class VectorTileSource extends Evented implements ISource {
     type: 'vector';
     id: string;
     scope: string;
@@ -59,6 +59,12 @@ class VectorTileSource extends Evented implements Source {
     url: string;
     scheme: string;
     tileSize: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
+    roundZoom: boolean | void;
+    attribution: string | void;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
     promoteId: ?PromoteIdSpecification;
 
     _options: VectorSourceSpecification;
@@ -74,6 +80,10 @@ class VectorTileSource extends Evented implements Source {
     _loaded: boolean;
     _tileWorkers: {[string]: Actor};
     _deduped: DedupedRequest;
+    vectorLayerIds: Array<string> | void;
+
+    prepare: void;
+    _clear: void;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -207,7 +217,7 @@ class VectorTileSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    onRemove() {
+    onRemove(_: Map) {
         this.cancelTileJSONRequest();
     }
 
@@ -317,7 +327,7 @@ class VectorTileSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    unloadTile(tile: Tile) {
+    unloadTile(tile: Tile, _: ?Callback<void>) {
         if (tile.actor) {
             tile.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         }

@@ -1,17 +1,41 @@
 // @flow
 
 import {bindAll} from '../util/util.js';
-
-import type Dispatcher from '../util/dispatcher.js';
-import type {Event, Evented} from '../util/evented.js';
-import type {Map} from '../ui/map.js';
-import type Tile from './tile.js';
-import type {OverscaledTileID} from './tile_id.js';
-import type {Callback} from '../types/callback.js';
-import type {MapEvent} from '../ui/events.js';
 import {CanonicalTileID} from './tile_id.js';
 
+import vector from '../source/vector_tile_source.js';
+import raster from '../source/raster_tile_source.js';
+import rasterDem from '../source/raster_dem_tile_source.js';
+import rasterArray from '../source/raster_array_tile_source.js';
+import geojson from '../source/geojson_source.js';
+import video from '../source/video_source.js';
+import image from '../source/image_source.js';
+import canvas from '../source/canvas_source.js';
+import custom from '../source/custom_source.js';
+import model from '../../3d-style/source/model_source.js';
+import tiled3DModel from '../../3d-style/source/tiled_3d_model_source.js';
+
+import type Tile from './tile.js';
+import type Dispatcher from '../util/dispatcher.js';
+import type {Map} from '../ui/map.js';
 import type {Class} from '../types/class.js';
+import type {Callback} from '../types/callback.js';
+import type {MapEvent} from '../ui/events.js';
+import type {Event, Evented} from '../util/evented.js';
+import type {OverscaledTileID} from './tile_id.js';
+
+import type VectorTileSource from '../source/vector_tile_source';
+import type RasterTileSource from '../source/raster_tile_source';
+import type RasterDemTileSource from '../source/raster_dem_tile_source';
+import type RasterArrayTileSource from '../source/raster_array_tile_source';
+import type GeoJSONSource from '../source/geojson_source';
+import type VideoSource from '../source/video_source';
+import type ImageSource from '../source/image_source';
+import type CanvasSource from '../source/canvas_source';
+import type ModelSource from '../../3d-style/source/model_source';
+import type Tiled3DModelSource from '../../3d-style/source/tiled_3d_model_source';
+import type CustomSource from '../source/custom_source';
+import type {SourceSpecification} from '../style-spec/types.js';
 
 export type SourceRasterLayer = {
     id: string;
@@ -28,6 +52,19 @@ export type SourceVectorLayer = {
     maxzoom?: number;
     minzoom?: number;
 };
+
+export type Source =
+    | VectorTileSource
+    | RasterTileSource
+    | RasterDemTileSource
+    | RasterArrayTileSource
+    | GeoJSONSource
+    | VideoSource
+    | ImageSource
+    | CanvasSource
+    | CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>
+    | ModelSource
+    | Tiled3DModelSource;
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types like `vector`, `raster`,
@@ -54,7 +91,7 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface Source {
+export interface ISource {
     +type: string;
     id: string;
     scope: string;
@@ -118,22 +155,9 @@ type SourceStatics = {
     workerSourceURL?: URL;
 };
 
-export type SourceClass = Class<Source> & SourceStatics;
+export type SourceClass = Class<ISource> & SourceStatics;
 
-import vector from '../source/vector_tile_source.js';
-import raster from '../source/raster_tile_source.js';
-import rasterDem from '../source/raster_dem_tile_source.js';
-import rasterArray from '../source/raster_array_tile_source.js';
-import geojson from '../source/geojson_source.js';
-import video from '../source/video_source.js';
-import image from '../source/image_source.js';
-import canvas from '../source/canvas_source.js';
-import custom from '../source/custom_source.js';
-import model from '../../3d-style/source/model_source.js';
-import tiled3DModel from '../../3d-style/source/tiled_3d_model_source.js';
-import type {SourceSpecification} from '../style-spec/types.js';
-
-const sourceTypes: {[string]: Class<Source>} = {
+const sourceTypes: {[key: Source['type']]: Class<ISource>} = {
     vector,
     raster,
     'raster-dem': rasterDem,
@@ -169,11 +193,11 @@ export const create = function(id: string, specification: SourceSpecification, d
     return source;
 };
 
-export const getType = function (name: string): Class<Source> {
+export const getType = function (name: string): Class<ISource> {
     return sourceTypes[name];
 };
 
-export const setType = function (name: string, type: Class<Source>) {
+export const setType = function (name: string, type: Class<ISource>) {
     sourceTypes[name] = type;
 };
 

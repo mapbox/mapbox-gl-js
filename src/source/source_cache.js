@@ -160,13 +160,15 @@ class SourceCache extends Evented {
     }
 
     _unloadTile(tile: Tile): void {
+        // $FlowFixMe[method-unbinding]
         if (this._source.unloadTile)
-            return this._source.unloadTile(tile, () => {});
+            return this._source.unloadTile(tile);
     }
 
     _abortTile(tile: Tile): void {
+        // $FlowFixMe[method-unbinding]
         if (this._source.abortTile)
-            return this._source.abortTile(tile, () => {});
+            return this._source.abortTile(tile);
     }
 
     serialize(): SourceSpecification {
@@ -174,7 +176,8 @@ class SourceCache extends Evented {
     }
 
     prepare(context: Context) {
-        if  (this._source.prepare) {
+        // $FlowFixMe[method-unbinding]
+        if (this._source.prepare) {
             this._source.prepare();
         }
 
@@ -536,7 +539,7 @@ class SourceCache extends Evented {
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
         } else if (this._source.tileID) {
-            idealTileIDs = transform.getVisibleUnwrappedCoordinates(this._source.tileID)
+            idealTileIDs = transform.getVisibleUnwrappedCoordinates(((this._source.tileID: any): CanonicalTileID))
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else if (this.tileCoverLift !== 0.0) {
             // Extended tile cover to load elevated tiles
@@ -568,8 +571,10 @@ class SourceCache extends Evented {
                 isTerrainDEM: this.usedForTerrain
             });
 
+            // $FlowFixMe[method-unbinding]
             if (this._source.hasTile) {
-                idealTileIDs = idealTileIDs.filter((coord) => (this._source.hasTile: any)(coord));
+                const hasTile = this._source.hasTile.bind(this._source);
+                idealTileIDs = idealTileIDs.filter((coord) => hasTile(coord));
             }
         }
 
@@ -666,6 +671,7 @@ class SourceCache extends Evented {
         // Construct a cache of loaded parents
         this._updateLoadedParentTileCache();
 
+        // $FlowFixMe[method-unbinding]
         if (this._onlySymbols && this._source.afterUpdate) {
             this._source.afterUpdate();
         }
@@ -907,6 +913,7 @@ class SourceCache extends Evented {
         for (const id in this._tiles)
             this._removeTile(+id);
 
+        // $FlowFixMe[method-unbinding]
         if (this._source._clear) this._source._clear();
 
         this._cache.reset();

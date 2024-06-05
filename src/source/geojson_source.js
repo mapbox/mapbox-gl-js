@@ -7,7 +7,7 @@ import EXTENT from '../style-spec/data/extent.js';
 import {ResourceType} from '../util/ajax.js';
 import browser from '../util/browser.js';
 
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
@@ -64,16 +64,21 @@ import type {Cancelable} from '../types/cancelable.js';
  * @see [Example: Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  * @see [Example: Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
-class GeoJSONSource extends Evented implements Source {
+class GeoJSONSource extends Evented implements ISource {
     type: 'geojson';
     id: string;
     scope: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
     attribution: string | void;
     promoteId: ?PromoteIdSpecification;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
 
+    roundZoom: boolean | void;
     isTileClipped: boolean | void;
     reparseOverscaled: boolean | void;
     _data: GeoJSON | string;
@@ -86,6 +91,12 @@ class GeoJSONSource extends Evented implements Source {
     _metadataFired: ?boolean;
     _collectResourceTiming: boolean;
     _pendingLoad: ?Cancelable;
+
+    reload: void;
+    hasTile: void;
+    prepare: void;
+    afterUpdate: void;
+    _clear: void;
 
     /**
      * @private
@@ -435,13 +446,13 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    unloadTile(tile: Tile) {
+    unloadTile(tile: Tile, _: ?Callback<void>) {
         this.actor.send('removeTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
         tile.destroy();
     }
 
     // $FlowFixMe[method-unbinding]
-    onRemove() {
+    onRemove(_: Map) {
         if (this._pendingLoad) {
             this._pendingLoad.cancel();
         }

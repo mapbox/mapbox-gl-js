@@ -48,7 +48,6 @@ class VideoSource extends ImageSource {
     options: VideoSourceSpecification;
     urls: Array<string>;
     video: HTMLVideoElement;
-    roundZoom: boolean;
 
     /**
      * @private

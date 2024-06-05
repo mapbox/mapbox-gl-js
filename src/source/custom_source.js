@@ -9,9 +9,10 @@ import {makeFQID} from '../util/fqid.js';
 
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type {Callback} from '../types/callback.js';
 import type {OverscaledTileID} from './tile_id.js';
+import type {SourceSpecification} from '../style-spec/types.js';
 
 type DataType = 'raster';
 
@@ -132,7 +133,7 @@ function isRaster(data: any): boolean {
  * @returns {Promise<TextureImage | undefined | null>} The promise that resolves to the tile image data as an `HTMLCanvasElement`, `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
  * If `loadTile` resolves to `undefined`, a map will render an overscaled parent tile in the tile’s space. If `loadTile` resolves to `null`, a map will render nothing in the tile’s space.
  */
-export type CustomSourceInterface<T> = {
+export interface CustomSourceInterface<T> extends Evented {
     id: string;
     type: 'custom',
     dataType: ?DataType,
@@ -140,6 +141,8 @@ export type CustomSourceInterface<T> = {
     maxzoom: ?number,
     scheme: ?string;
     tileSize: ?number,
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
     attribution: ?string,
     bounds: ?[number, number, number, number];
     hasTile: ?(tileID: { z: number, x: number, y: number }) => boolean,
@@ -149,7 +152,7 @@ export type CustomSourceInterface<T> = {
     onRemove: ?(map: Map) => void,
 }
 
-class CustomSource<T> extends Evented implements Source {
+class CustomSource<T> extends Evented implements ISource {
     id: string;
     scope: string;
     type: 'custom';
@@ -163,12 +166,18 @@ class CustomSource<T> extends Evented implements Source {
     tileBounds: ?TileBounds;
     minTileCacheSize: ?number;
     maxTileCacheSize: ?number;
+    reparseOverscaled: boolean | void;
 
     _map: Map;
     _loaded: boolean;
     _dispatcher: Dispatcher;
     _dataType: ?DataType;
     _implementation: CustomSourceInterface<T>;
+
+    reload: void;
+    prepare: void;
+    afterUpdate: void;
+    _clear: void;
 
     constructor(id: string, implementation: CustomSourceInterface<T>, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -214,7 +223,7 @@ class CustomSource<T> extends Evented implements Source {
         extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
     }
 
-    serialize(): Source {
+    serialize(): SourceSpecification {
         return pick(this, ['type', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution']);
     }
 
@@ -317,7 +326,7 @@ class CustomSource<T> extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    unloadTile(tile: Tile, callback: Callback<void>): void {
+    unloadTile(tile: Tile, callback?: Callback<void>): void {
         // Only raster data supported at the moment
         // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
         if (tile.texture && tile.texture instanceof Texture) {
@@ -338,17 +347,17 @@ class CustomSource<T> extends Evented implements Source {
             this._implementation.unloadTile({x, y, z});
         }
 
-        callback();
+        if (callback) callback();
     }
 
     // $FlowFixMe[method-unbinding]
-    abortTile(tile: Tile, callback: Callback<void>): void {
+    abortTile(tile: Tile, callback?: Callback<void>): void {
         if (tile.request && tile.request.cancel) {
             tile.request.cancel();
             delete tile.request;
         }
 
-        callback();
+        if (callback) callback();
     }
 
     hasTransition(): boolean {

@@ -7,7 +7,7 @@ import Model from '../data/model.js';
 import convertModel from './model_loader.js';
 import {loadGLTF} from '../util/loaders.js';
 
-import type {Source} from '../../src/source/source.js';
+import type {ISource} from '../../src/source/source.js';
 import type Tile from '../../src/source/tile.js';
 import type {Callback} from '../../src/types/callback.js';
 import type Dispatcher from '../../src/util/dispatcher.js';
@@ -20,18 +20,35 @@ import type {ModelSourceSpecification} from '../../src/style-spec/types.js';
 // Important Note: ModelSource is legacy and should not be offered in the API, as the only valid official sources to add models
 // are batched-models and via GeoJson/vector sources. We keep this one (for now) just for ease development and get the render-tests
 // passing.
-class ModelSource extends Evented implements Source {
+class ModelSource extends Evented implements ISource {
     type: 'model';
     id: string;
     scope: string;
     minzoom: number;
     maxzoom: number;
     tileSize: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
+    roundZoom: boolean | void;
+    reparseOverscaled: boolean | void;
+    attribution: string | void;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
     map: Map;
     uri: string;
     models: Array<Model>;
     _options: ModelSourceSpecification;
     _loaded: boolean;
+
+    onRemove: void;
+    reload: void;
+    abortTile: void;
+    unloadTile: void;
+    hasTile: void;
+    prepare: void;
+    afterUpdate: void;
+    _clear: void;
+
     /**
      * @private
      */

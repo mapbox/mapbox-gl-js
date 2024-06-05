@@ -13,7 +13,7 @@ import RasterTileSource from './raster_tile_source.js';
 import '../data/dem_data.js';
 
 import type DEMData from '../data/dem_data.js';
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type Tile from './tile.js';
 import type {Callback} from '../types/callback.js';
@@ -21,7 +21,7 @@ import type {TextureImage} from '../render/texture.js';
 import type {RasterDEMSourceSpecification} from '../style-spec/types.js';
 
 // $FlowFixMe[method-unbinding]
-class RasterDEMTileSource extends RasterTileSource implements Source {
+class RasterDEMTileSource extends RasterTileSource implements ISource {
     encoding: "mapbox" | "terrarium";
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {

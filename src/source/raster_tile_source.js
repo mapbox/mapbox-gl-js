@@ -11,7 +11,7 @@ import browser from '../util/browser.js';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache.js';
 import {makeFQID} from '../util/fqid.js';
 
-import type {Source} from './source.js';
+import type {ISource} from './source.js';
 import type {OverscaledTileID} from './tile_id.js';
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
@@ -46,7 +46,7 @@ import Texture from '../render/texture.js';
  * @see [Example: Add a raster tile source](https://docs.mapbox.com/mapbox-gl-js/example/map-tiles/)
  * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
  */
-class RasterTileSource extends Evented implements Source {
+class RasterTileSource extends Evented implements ISource {
     type: 'raster' | 'raster-dem' | 'raster-array';
     id: string;
     scope: string;
@@ -54,11 +54,17 @@ class RasterTileSource extends Evented implements Source {
     maxzoom: number;
     url: string;
     scheme: string;
+    attribution: string | void;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
     tileSize: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
 
     bounds: ?[number, number, number, number];
     tileBounds: TileBounds;
     roundZoom: boolean | void;
+    reparseOverscaled: boolean | void;
     dispatcher: Dispatcher;
     map: Map;
     tiles: Array<string>;
@@ -66,6 +72,10 @@ class RasterTileSource extends Evented implements Source {
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification;
     _tileJSONRequest: ?Cancelable;
+
+    prepare: void;
+    afterUpdate: void;
+    _clear: void;
 
     constructor(id: string, options: RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -178,7 +188,7 @@ class RasterTileSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    onRemove() {
+    onRemove(_: Map) {
         this.cancelTileJSONRequest();
     }
 
@@ -219,16 +229,16 @@ class RasterTileSource extends Evented implements Source {
     }
 
     // $FlowFixMe[method-unbinding]
-    abortTile(tile: Tile, callback: Callback<void>) {
+    abortTile(tile: Tile, callback?: Callback<void>) {
         if (tile.request) {
             tile.request.cancel();
             delete tile.request;
         }
-        callback();
+        if (callback) callback();
     }
 
     // $FlowFixMe[method-unbinding]
-    unloadTile(tile: Tile, callback: Callback<void>) {
+    unloadTile(tile: Tile, callback?: Callback<void>) {
         // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
         if (tile.texture && tile.texture instanceof Texture) {
             // Clean everything else up owned by the tile, but preserve the texture.
@@ -243,7 +253,7 @@ class RasterTileSource extends Evented implements Source {
             tile.destroy();
         }
 
-        callback();
+        if (callback) callback();
     }
 
     hasTransition(): boolean {

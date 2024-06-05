@@ -12,16 +12,17 @@ import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data.js';
 
+import type Tile from './tile.js';
 import type {Map} from '../ui/map.js';
 import type Dispatcher from '../util/dispatcher.js';
 import type RasterArrayTile from './raster_array_tile.js';
 import type {Callback} from '../types/callback.js';
 import type {TextureDescriptor} from './raster_array_tile.js';
-import type {Source, SourceRasterLayer} from './source.js';
+import type {ISource, SourceRasterLayer} from './source.js';
 import type {RasterArraySourceSpecification} from '../style-spec/types.js';
 
 // $FlowFixMe[method-unbinding]
-class RasterArrayTileSource extends RasterTileSource implements Source {
+class RasterArrayTileSource extends RasterTileSource implements ISource {
     map: Map;
     rasterLayers: Array<SourceRasterLayer> | void;
     rasterLayerIds: Array<string> | void;
@@ -47,7 +48,9 @@ class RasterArrayTileSource extends RasterTileSource implements Source {
 
     // $FlowFixMe[incompatible-type]
     // $FlowFixMe[incompatible-extend]
-    loadTile(tile: RasterArrayTile, callback: Callback<void>) {
+    loadTile(tile: Tile, callback: Callback<void>) {
+        tile = ((tile: any): RasterArrayTile);
+
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         const requestParams = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
@@ -80,7 +83,9 @@ class RasterArrayTileSource extends RasterTileSource implements Source {
     // $FlowFixMe[method-unbinding]
     // $FlowFixMe[incompatible-type]
     // $FlowFixMe[incompatible-extend]
-    unloadTile(tile: RasterArrayTile) {
+    unloadTile(tile: Tile, _: ?Callback<void>) {
+        tile = ((tile: any): RasterArrayTile);
+
         const texture = tile.texture;
         if (texture && texture instanceof Texture) {
             // Clean everything else up owned by the tile, but preserve the texture.

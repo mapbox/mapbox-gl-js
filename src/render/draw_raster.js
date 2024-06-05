@@ -466,6 +466,7 @@ function configureRaster(source: Source, layer: RasterStyleLayer, context: Conte
 
         if (!range) {
             if (source.rasterLayers) {
+                // $FlowFixMe[incompatible-use]
                 const foundLayer = source.rasterLayers.find(({id}) => id === layer.sourceLayer);
                 if (foundLayer && foundLayer.fields && foundLayer.fields.range) {
                     range = foundLayer.fields.range;

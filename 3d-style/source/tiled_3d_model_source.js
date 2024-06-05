@@ -12,7 +12,7 @@ import {postTurnstileEvent} from '../../src/util/mapbox.js';
 import '../data/bucket/tiled_3d_model_bucket.js';
 
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket.js';
-import type {Source} from '../../src/source/source.js';
+import type {ISource} from '../../src/source/source.js';
 import type Tile from '../../src/source/tile.js';
 import type {Callback} from '../../src/types/callback.js';
 import type {Cancelable} from '../../src/types/cancelable.js';
@@ -21,7 +21,7 @@ import type {ModelSourceSpecification} from '../../src/style-spec/types.js';
 import type {Map} from '../../src/ui/map.js';
 import type {OverscaledTileID} from '../../src/source/tile_id.js';
 
-class Tiled3DModelSource extends Evented implements Source {
+class Tiled3DModelSource extends Evented implements ISource {
     type: 'batched-model';
     id: string;
     scope: string;
@@ -32,6 +32,11 @@ class Tiled3DModelSource extends Evented implements Source {
     reparseOverscaled: boolean | void;
     usedInConflation: boolean;
     tileSize: number;
+    minTileCacheSize: ?number;
+    maxTileCacheSize: ?number;
+    attribution: string | void;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | void;
     tiles: Array<string>;
     dispatcher: Dispatcher;
     scheme: string;
@@ -39,6 +44,14 @@ class Tiled3DModelSource extends Evented implements Source {
     _options: ModelSourceSpecification;
     _tileJSONRequest: ?Cancelable;
     map: Map;
+
+    onRemove: void;
+    reload: void;
+    abortTile: void;
+    unloadTile: void;
+    prepare: void;
+    afterUpdate: void;
+    _clear: void;
 
     /**
      * @private
