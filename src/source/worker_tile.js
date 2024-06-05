@@ -50,6 +50,7 @@ class WorkerTile {
     collectResourceTiming: boolean;
     isSymbolTile: ?boolean;
     extraShadowCaster: ?boolean;
+    tessellationStep: ?number;
     projection: Projection;
     tileTransform: TileTransform;
     brightness: number;
@@ -81,6 +82,7 @@ class WorkerTile {
         this.projection = params.projection;
         this.brightness = params.brightness;
         this.extraShadowCaster = !!params.extraShadowCaster;
+        this.tessellationStep = params.tessellationStep;
     }
 
     parse(data: IVectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -180,7 +182,8 @@ class WorkerTile {
                     collisionBoxArray: this.collisionBoxArray,
                     sourceLayerIndex,
                     sourceID: this.source,
-                    projection: this.projection.spec
+                    projection: this.projection.spec,
+                    tessellationStep: this.tessellationStep
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);

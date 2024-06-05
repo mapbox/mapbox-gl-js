@@ -1236,12 +1236,14 @@ class Style extends Evented {
         }
 
         const changed = this._changes.isDirty();
+        let layersUpdated = false;
         if (this._changes.isDirty()) {
             const updatesByScope = this._changes.getLayerUpdatesByScope();
             for (const scope in updatesByScope) {
                 const {updatedIds, removedIds} = updatesByScope[scope];
                 if (updatedIds || removedIds) {
                     this._updateWorkerLayers(scope, updatedIds, removedIds);
+                    layersUpdated = true;
                 }
             }
 
@@ -1322,6 +1324,11 @@ class Style extends Evented {
         }
         if (this._shouldPrecompile) {
             this._precompileDone = true;
+        }
+
+        if (this.terrain && layersUpdated) {
+            // Changed layers (layout properties only) could have become drapeable.
+            this.mergeLayers();
         }
 
         for (const sourceId in sourcesUsedBefore) {

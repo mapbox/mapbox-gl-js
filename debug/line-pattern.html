@@ -73,6 +73,8 @@ const zoomConstExpression = {
 
 const PatternDemo = function() {
     this.useZoomLevelConstantWidth = true;
+    this.terrain = false;
+    this.elevatedLine = false;
 };
 
 const patternDemo = new PatternDemo();
@@ -90,12 +92,23 @@ window.onload = function() {
             map.setPaintProperty('route', 'line-width', lineBaseWidth);
         }
     });
+    gui.addInput(patternDemo, 'terrain').on('change', (ev) => {
+        if (patternDemo.terrain) {
+            map.setTerrain({"exaggeration" : 2.5, source: 'mapbox-dem'});
+        } else {
+            map.setTerrain(null);
+        }
+    });
+    gui.addInput(patternDemo, 'elevatedLine').on('change', (ev) => {
+        map.setLayoutProperty('route0', 'line-z-offset', patternDemo.elevatedLine ? 0.01 : 0);
+        map.setLayoutProperty('route', 'line-z-offset', patternDemo.elevatedLine ? 0.01 : 0);
+    });
 };
 
 const map = window.map = new mapboxgl.Map({
     container: 'map',
     devtools: true,
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/standard',
     hash: true,
     center: [2.3406, 48.8542],
     zoom: 16
@@ -147,17 +160,63 @@ map.on('load', () => {
         'maxzoom': 19,
     });
 
-    map.addLayer({
-        'id': 'route',
-        'source': 'route',
-        'type': 'line',
-        'layout': {
-            'line-join': 'none'
-        },
-        'paint': {
-            'line-pattern': 'dot-11',
-            'line-width': zoomConstExpression
-        }
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 12
+    });
+
+    map.loadImage(
+    'graycircle.png',
+    (error, image) => {
+        if (error) throw error;
+        map.addImage('graycircle', image);
+        map.loadImage(
+            'bluecircle.png',
+            (error, image) => {
+                if (error) throw error;
+
+                map.addImage('bluecircle', image);
+
+                map.addLayer({
+                    'id': 'route0',
+                    'slot': 'top',
+                    'source': 'route',
+                    'type': 'line',
+                    'layout': {
+                        'line-join': 'none'
+                    },
+                    'paint': {
+                        'line-pattern': 'graycircle',
+                        'line-opacity': 0.6,
+                        'line-width': zoomConstExpression,
+                        'line-occlusion-opacity': 0.4
+                    }
+                });
+                map.addLayer({
+                    'id': 'route',
+                    'slot': 'top',
+                    'source': 'route',
+                    'type': 'line',
+                    'layout': {
+                        'line-join': 'none'
+                    },
+                    'paint': {
+                        'line-pattern': 'bluecircle',
+                        'line-width': zoomConstExpression,
+                        'line-occlusion-opacity': 0.4
+                    }
+                });
+                let progress = 0;
+                var timer = window.setInterval(function () {
+                    progress += 0.001;
+                    if (progress > 1) {
+                        progress = 0;
+                    }
+                    map.setPaintProperty('route', 'line-trim-offset', [0, progress]);
+                }, 100);
+            });
     });
 });
 </script>

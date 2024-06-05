@@ -21,15 +21,7 @@ import type {DEMSampler} from '../../terrain/elevation.js';
 import type {Vec2, Vec4} from 'gl-matrix';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {ConfigOptions} from '../properties.js';
-
-class Point3D extends Point {
-    z: number;
-
-    constructor(x: number, y: number, z: number) {
-        super(x, y);
-        this.z = z;
-    }
-}
+import {Point3D} from '../../util/polygon_clipping.js';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

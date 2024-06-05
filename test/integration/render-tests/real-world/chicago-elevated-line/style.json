@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "tessellationStep": 16,
+      "operations": [
+        ["setStyle", "local://styles/chicago.json"],
+        ["setZoom", 13 ],
+        ["wait"],
+        ["setLayoutProperty", "road_major", "visibility", "none"],
+        ["setLayoutProperty", "road_minor", "visibility", "none"],
+        ["addSource", "rgbterrain", {
+          "type": "raster-dem",
+          "tiles": [
+            "local://tiles/{z}-{x}-{y}.noterrain.png"
+          ],
+          "maxzoom": 11,
+          "tileSize": 512
+        }],
+        ["setTerrain", {"source": "rgbterrain"}],
+        ["addLayer", {
+            "interactive": true,
+            "layout": {
+                "line-cap": "round",
+                "line-join": "round",
+                "line-z-offset": 10
+            },
+            "type": "line",
+            "source": "mapbox",
+            "id": "road_elevated",
+            "paint": {
+                "line-color": "#fff",
+                "line-width": 2
+            },
+            "source-layer": "road"
+        }],
+        ["setCenter", [-87.6842445, 41.8683965] ],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

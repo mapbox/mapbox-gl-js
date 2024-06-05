@@ -235,7 +235,8 @@ class VectorTileSource extends Evented implements Source {
             promoteId: this.promoteId,
             isSymbolTile: tile.isSymbolTile,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
-            extraShadowCaster: tile.isExtraShadowCaster
+            extraShadowCaster: tile.isExtraShadowCaster,
+            tessellationStep: this.map._tessellationStep
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 

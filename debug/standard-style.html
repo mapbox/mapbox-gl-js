@@ -104,7 +104,7 @@
                 const schema = fragment.schema || {};
                 for (const config in schema) {
                     const meta = schema[config];
-                    const label = meta.metadata['mapbox:title'];
+                    const label = meta.metadata ? meta.metadata['mapbox:title'] : "";
                     const options = meta.values && Array.isArray(meta.values) ? arrayToOptions(meta.values) : undefined;
                     params[config] = meta.default;
                     const configBinding = folder.addBinding(params, config, {label, options});

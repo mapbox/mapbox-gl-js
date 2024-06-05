@@ -1,4 +1,5 @@
 #include "_prelude_fog.vertex.glsl"
+#include "_prelude_terrain.vertex.glsl"
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
@@ -10,6 +11,9 @@
 
 in vec2 a_pos_normal;
 in vec4 a_data;
+#if defined(ELEVATED)
+in float a_z_offset;
+#endif
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices.
 // Only line-trim-offset will requires a_packed info.
@@ -95,7 +99,25 @@ void main() {
     mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
+#if defined(ELEVATED)
+    vec2 offsetTile = offset2 * u_pixels_to_tile_units;
+    // forward or backward along the line, perpendicular to offset
+    vec2 halfCellProgress = normal.yx * 32.0;
+    float ele0 = elevation(pos);
+    float ele_line = max(ele0, max(elevation(pos + halfCellProgress), elevation(pos - halfCellProgress)));
+    float ele1 = elevation(pos + offsetTile);
+    float ele2 = elevation(pos - offsetTile);
+    float ele_max = max(ele_line, 0.5 * (ele1 + ele2));
+    // keep cross slope by default
+    float ele = ele_max - ele0 + ele1 + a_z_offset ;
+    gl_Position = u_matrix * vec4(pos + offsetTile, ele, 1.0) + projected_extrude;
+    float z = clamp(gl_Position.z / gl_Position.w, 0.5, 1.0);
+    float zbias = max(0.00005, (pow(z, 0.8) - z) * 0.1 * u_exaggeration);
+    gl_Position.z -= (gl_Position.w * zbias);
+#else
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
+#endif
+
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude

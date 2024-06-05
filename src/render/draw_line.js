@@ -17,9 +17,10 @@ import type LineStyleLayer from '../style/style_layer/line_style_layer.js';
 import type LineBucket from '../data/bucket/line_bucket.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
-import {clamp, nextPowerOfTwo} from '../util/util.js';
+import {clamp, nextPowerOfTwo, warnOnce} from '../util/util.js';
 import {renderColorRamp} from '../util/color_ramp.js';
 import EXTENT from '../style-spec/data/extent.js';
+import assert from 'assert';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
@@ -29,30 +30,60 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     if (opacity.constantOr(1) === 0 || width.constantOr(1) === 0) return;
 
     const emissiveStrength = layer.paint.get('line-emissive-strength');
+    const occlusionOpacity = layer.paint.get('line-occlusion-opacity');
 
-    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const context = painter.context;
+    const gl = context.gl;
+
+    const zOffset = layer.layout.get('line-z-offset');
+    const hasZOffset = !zOffset.isConstant() || !!zOffset.constantOr(0);
+
+    const depthMode = hasZOffset ?
+        (new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D)) :
+        painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
-    const pixelRatio = (painter.terrain && painter.terrain.renderingToTexture) ? 1.0 : browser.devicePixelRatio;
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+    const pixelRatio = isDraping ? 1.0 : browser.devicePixelRatio;
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
     const dasharray = dasharrayProperty.constantOr((1: any));
     const capProperty = layer.layout.get('line-cap');
+    const constantDash = dasharrayProperty.constantOr(null);
+    const constantCap = capProperty.constantOr((null: any));
     const patternProperty = layer.paint.get('line-pattern');
     const image = patternProperty.constantOr((1: any));
-    const hasOpacity = layer.paint.get('line-opacity').constantOr(1.0) !== 1.0;
-    let useStencilMaskRenderPass = (!image && hasOpacity);
+    const constantPattern = patternProperty.constantOr(null);
+    const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);
+    const hasOpacity = lineOpacity !== 1.0;
+    let useStencilMaskRenderPass = (!image && hasOpacity) ||
+        // Only semi-transparent lines need stencil masking
+        (painter.depthOcclusion && occlusionOpacity > 0 && occlusionOpacity < 1);
 
     const gradient = layer.paint.get('line-gradient');
 
     const programId = image ? 'linePattern' : 'line';
 
-    const context = painter.context;
-    const gl = context.gl;
-
     const definesValues = ((lineDefinesValues(layer): any): DynamicDefinesType[]);
-    if (painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
+    if (isDraping && painter.terrain && painter.terrain.clipOrMaskOverlapStencilType()) {
         useStencilMaskRenderPass = false;
     }
+
+    let lineOpacityForOcclusion; // line opacity uniform gets amend by line occlusion opacity
+    if (occlusionOpacity !== 0 && painter.depthOcclusion) {
+        const value = layer.paint._values["line-opacity"];
+        if (value && value.value && value.value.kind === "constant") {
+            lineOpacityForOcclusion = value.value;
+        } else {
+            warnOnce(`Occlusion opacity for layer ${layer.id} is supported only when line-opacity isn't data-driven.`);
+        }
+    }
+    if (hasZOffset) painter.forceTerrainMode = true;
+    if (!hasZOffset && occlusionOpacity !== 0 && painter.terrain && !isDraping) {
+        warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has non-zero line-z-offset.`);
+        return;
+    }
+    // No need for tile clipping, a single pass only even for transparent lines.
+    const stencilMode3D = (useStencilMaskRenderPass && hasZOffset) ? painter.stencilModeFor3D() : StencilMode.disabled;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -64,16 +95,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: hasZOffset ? [...definesValues, "ELEVATED"] : definesValues, overrideFog: affectedByFog});
 
-        const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
-
-        const constantDash = dasharrayProperty.constantOr(null);
-        const constantCap = capProperty.constantOr((null: any));
 
         if (!image && constantDash && constantCap && tile.lineAtlas) {
             const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
@@ -99,7 +126,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             }
         }
 
-        const matrix = painter.terrain ? coord.projMatrix : null;
+        const matrix = isDraping ? coord.projMatrix : null;
         const uniformValues = image ?
             linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, [trimStart, trimEnd]) :
             lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
@@ -153,21 +180,32 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             programConfiguration.updatePaintBuffers();
         }
 
+        if (hasZOffset) {
+            assert(painter.terrain);
+            // $FlowFixMe[incompatible-use] - terrain is defined by forceTerrainMode.
+            painter.terrain.setupElevationDraw(tile, program);
+        }
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped());
 
         const renderLine = (stencilMode: StencilMode) => {
+            if (lineOpacityForOcclusion != null) {
+                lineOpacityForOcclusion.value = lineOpacity * occlusionOpacity;
+            }
             program.draw(painter, gl.TRIANGLES, depthMode,
                 stencilMode, colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-                layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer]);
+                layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer]);
+            if (lineOpacityForOcclusion != null) {
+                lineOpacityForOcclusion.value = lineOpacity; //restore
+            }
         };
 
-        if (useStencilMaskRenderPass) {
+        if (useStencilMaskRenderPass && !hasZOffset) {
             const stencilId = painter.stencilModeForClipping(coord).ref;
             // When terrain is on, ensure that the stencil buffer has 0 values.
             // As stencil may be disabled when it is not in overlapping stencil
             // mode. Refer to stencilModeForRTTOverlap logic.
-            if (stencilId === 0 && painter.terrain) {
+            if (stencilId === 0 && isDraping) {
                 context.clear({stencil: 0});
             }
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
@@ -184,7 +222,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             uniformValues['u_alpha_discard_threshold'] = 0.0;
             renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
         } else {
-            renderLine(painter.stencilModeForClipping(coord));
+            if (useStencilMaskRenderPass && hasZOffset) {
+                uniformValues['u_alpha_discard_threshold'] = 0.001; // to avoid stenciling pattern quads, only the content.
+            }
+            renderLine(hasZOffset ? stencilMode3D : painter.stencilModeForClipping(coord));
         }
     }
 
@@ -194,6 +235,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     // but tile clipping drawing is usually faster to draw than lines.
     if (useStencilMaskRenderPass) {
         painter.resetStencilClippingMasks();
-        if (painter.terrain) { context.clear({stencil: 0}); }
+        if (isDraping) { context.clear({stencil: 0}); }
     }
+
+    if (occlusionOpacity !== 0 && !painter.depthOcclusion && !isDraping) {
+        painter.layersWithOcclusionOpacity.push(painter.currentLayer);
+    }
+    if (hasZOffset) painter.forceTerrainMode = false;
 }

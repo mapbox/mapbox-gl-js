@@ -24,6 +24,7 @@ import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import {lineDefinesValues} from "../../render/program/line_program.js";
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
+import SourceCache from '../../source/source_cache.js';
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: ?boolean;
@@ -59,6 +60,9 @@ class LineStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
         super(layer, properties, scope, options);
+        if (properties.layout) {
+            this.layout = new PossiblyEvaluated(properties.layout);
+        }
         this.gradientVersion = 0;
     }
 
@@ -141,6 +145,12 @@ class LineStyleLayer extends StyleLayer {
 
     isTileClipped(): boolean {
         return true;
+    }
+
+    // $FlowFixMe[method-unbinding]
+    isDraped(_: ?SourceCache): boolean {
+        const zOffset = this.layout.get('line-z-offset');
+        return zOffset.isConstant() && !zOffset.constantOr(0);
     }
 }
 

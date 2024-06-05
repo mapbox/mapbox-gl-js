@@ -473,6 +473,7 @@ export class Terrain extends Elevation {
     _disable() {
         if (!this.enabled) return;
         this.enabled = false;
+        this._emptyDEMTextureDirty = true;
         this._sharedDepthStencil = undefined;
         this._evaluationZoom = undefined;
         this._previousUpdateTimestamp = undefined;
@@ -509,7 +510,7 @@ export class Terrain extends Elevation {
 
     // Implements Elevation::exaggeration.
     exaggeration(): number {
-        return this._exaggeration;
+        return this.enabled ? this._exaggeration : 0;
     }
 
     get visibleDemTiles(): Array<Tile> {
@@ -659,6 +660,7 @@ export class Terrain extends Elevation {
     }
 
     _getLoadedAreaMinimum(): number {
+        if (!this.enabled) return 0;
         let nonzero = 0;
         const min = this._visibleDemTiles.reduce((acc, tile) => {
             if (!tile.dem) return acc;
@@ -743,23 +745,25 @@ export class Terrain extends Elevation {
             uniforms['u_dem_size'] = demTexture.size[0] === 1 ? 1 : demTexture.size[0] - 2;
         };
 
-        if (prevDemTile && demTile) {
+        let demTexture = null;
+        if (!this.enabled) {
+            demTexture = this.emptyDEMTexture;
+        } else if (prevDemTile && demTile) {
             // Both DEM textures are expected to be correctly set if geomorphing is enabled
-            context.activeTexture.set(gl.TEXTURE2);
-            (demTile.demTexture: any).bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
+            demTexture = demTile.demTexture;
             context.activeTexture.set(gl.TEXTURE4);
             (prevDemTile.demTexture: any).bind(filteringForDemTile(prevDemTile), gl.CLAMP_TO_EDGE);
-            if (demTile.demTexture) {
-                setDemSizeUniform(demTile.demTexture);
-            }
             uniforms["u_dem_lerp"] = morphingPhase;
         } else {
             demTile = this.terrainTileForTile[tile.tileID.key];
-            context.activeTexture.set(gl.TEXTURE2);
-            const demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
+            demTexture = this._prepareDemTileUniforms(tile, demTile, uniforms) ?
                 (demTile.demTexture: any) : this.emptyDEMTexture;
-            demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
+        }
+        assert(demTexture);
+        context.activeTexture.set(gl.TEXTURE2);
+        if (demTexture) {
             setDemSizeUniform(demTexture);
+            demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
         }
 
         context.activeTexture.set(gl.TEXTURE3);

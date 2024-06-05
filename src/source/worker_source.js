@@ -39,7 +39,8 @@ export type WorkerTileParameters = RequestedTileParameters & {
     collectResourceTiming?: boolean,
     projection: Projection,
     brightness: number,
-    extraShadowCaster?: boolean
+    extraShadowCaster?: boolean,
+    tessellationStep?: number // test purpose only
 };
 
 export type DEMSourceEncoding = "mapbox" | "terrarium";

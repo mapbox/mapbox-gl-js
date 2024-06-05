@@ -176,6 +176,7 @@ export type MapOptions = {
     localFontFamily?: string,
     localIdeographFontFamily?: string,
     performanceMetricsCollection?: boolean,
+    tessellationStep?: number,
 };
 
 const defaultMinZoom = -2;
@@ -465,6 +466,7 @@ export class Map extends Camera {
     _interactionRange: [number, number];
     _visibilityHidden: number;
     _performanceMetricsCollection: boolean;
+    _tessellationStep: ?number;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -587,6 +589,7 @@ export class Map extends Camera {
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
         this._performanceMetricsCollection = options.performanceMetricsCollection;
+        this._tessellationStep = options.tessellationStep;
         this._containerWidth = 0;
         this._containerHeight = 0;
         this._showParseStatus = true;
@@ -4113,8 +4116,7 @@ export class Map extends Camera {
             const currentElevation = this.transform.averageElevation;
             let newElevation = this.transform.sampleAverageElevation();
 
-            if (this.transform.elevation) {
-                // $FlowIgnore[incompatible-use]
+            if (this.transform.elevation != null) {
                 this._averageElevationExaggeration = this.transform.elevation.exaggeration();
             }
 

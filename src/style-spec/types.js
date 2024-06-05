@@ -360,6 +360,7 @@ export type LineLayerSpecification = {|
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
         "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        "line-z-offset"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: ExpressionSpecification
     |},
     "paint"?: {|
@@ -387,7 +388,9 @@ export type LineLayerSpecification = {|
         "line-border-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-border-width-transition"?: TransitionSpecification,
         "line-border-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
-        "line-border-color-transition"?: TransitionSpecification
+        "line-border-color-transition"?: TransitionSpecification,
+        "line-occlusion-opacity"?: PropertyValueSpecification<number>,
+        "line-occlusion-opacity-transition"?: TransitionSpecification
     |}
 |}
 
@@ -449,7 +452,7 @@ export type SymbolLayerSpecification = {|
     "paint"?: {|
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "icon-opacity-transition"?: TransitionSpecification,
-        "icon-occlusion-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-occlusion-opacity"?: PropertyValueSpecification<number>,
         "icon-occlusion-opacity-transition"?: TransitionSpecification,
         "icon-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "icon-emissive-strength-transition"?: TransitionSpecification,
@@ -470,7 +473,7 @@ export type SymbolLayerSpecification = {|
         "icon-image-cross-fade-transition"?: TransitionSpecification,
         "text-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "text-opacity-transition"?: TransitionSpecification,
-        "text-occlusion-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "text-occlusion-opacity"?: PropertyValueSpecification<number>,
         "text-occlusion-opacity-transition"?: TransitionSpecification,
         "text-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "text-color-transition"?: TransitionSpecification,

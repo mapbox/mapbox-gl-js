@@ -2,6 +2,7 @@
 #include "_prelude_lighting.glsl"
 
 uniform lowp float u_device_pixel_ratio;
+uniform float u_alpha_discard_threshold;
 uniform vec2 u_texsize;
 uniform mediump float u_tile_units_to_pixels;
 uniform highp vec2 u_trim_offset;
@@ -111,6 +112,11 @@ void main() {
 
     color *= (alpha * opacity);
 
+    if (u_alpha_discard_threshold != 0.0) {
+        if (color.a < u_alpha_discard_threshold) {
+            discard;
+        }
+    }
 #ifdef INDICATOR_CUTOUT
     color = applyCutout(color);
 #endif

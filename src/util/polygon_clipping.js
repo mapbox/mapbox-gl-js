@@ -2,6 +2,25 @@
 
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
+import {number as interpolate} from '../style-spec/util/interpolate.js';
+
+export class Point3D extends Point {
+    z: number;
+
+    constructor(x: number, y: number, z: number) {
+        super(x, y);
+        this.z = z;
+    }
+}
+
+export class Point4D extends Point3D {
+    w: number; // used for line progress and interpolated on clipping
+
+    constructor(x: number, y: number, z: number, w: number) {
+        super(x, y, z);
+        this.w = w;
+    }
+}
 
 export type ClippedPolygon = {
     polygon: Array<Array<Point>>,
@@ -170,4 +189,43 @@ export function subdividePolygons(polygons: PolygonArray, bounds: [Point, Point]
     }
 
     return outPolygons;
+}
+
+function clipFirst(a: Point, b: Point, axis: string, clip: number): void {
+    const axis1 = axis === 'x' ? 'y' : 'x';
+    // $FlowFixMe[prop-missing]
+    const ratio = (clip - a[axis]) / (b[axis] - a[axis]);
+    // $FlowFixMe[prop-missing]
+    a[axis1] = a[axis1] + (b[axis1] - a[axis1]) * ratio;
+    // $FlowFixMe[prop-missing]
+    a[axis] = clip;
+    if (a.hasOwnProperty('z')) { // $FlowFixMe[prop-missing]
+        a['z'] = interpolate(a['z'], b['z'], ratio);
+    }
+    if (a.hasOwnProperty('w')) { // $FlowFixMe[prop-missing]
+        a['w'] = interpolate(a['w'], b['w'], ratio);
+    }
+}
+
+export function clipLine(p0: Point, p1: Point, boundsMin: number, boundsMax: number): void {
+    const clipAxis1 = boundsMin;
+    const clipAxis2 = boundsMax;
+    for (const axis of ["x", "y"]) {
+        let a = p0;
+        let b = p1;
+        // $FlowFixMe[prop-missing]
+        if (a[axis] >= b[axis]) {
+            a = p1;
+            b = p0;
+        }
+
+        // $FlowFixMe[prop-missing]
+        if (a[axis] < clipAxis1 && b[axis] > clipAxis1) {
+            clipFirst(a, b, axis, clipAxis1);
+        }
+        // $FlowFixMe[prop-missing]
+        if (a[axis] < clipAxis2 && b[axis] > clipAxis2) {
+            clipFirst(b, a, axis, clipAxis2);
+        }
+    }
 }

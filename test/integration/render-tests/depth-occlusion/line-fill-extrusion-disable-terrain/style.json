@@ -1,0 +1,228 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["setTerrain", null],
+        ["wait"]
+      ]
+    }
+  },
+  "terrain": {
+    "source": "terrain",
+    "exaggeration": 1.0
+  },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/terrain-buffer-0/{z}-{x}-{y}.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "line": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [ -113.2905, 35.9519 ],
+                [ -113.2975, 35.9529 ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "line-ends": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "MultiPoint",
+              "coordinates": [
+                [ -113.2905, 35.9519 ],
+                [ -113.2975, 35.9529 ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 30
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0002,
+                    -0.0002
+                  ],
+                  [
+                    -0.0002,
+                    0.0002
+                  ],
+                  [
+                    0.0002,
+                    0.0002
+                  ],
+                  [
+                    0.0002,
+                    -0.0002
+                  ],
+                  [
+                    -0.0002,
+                    -0.0002
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0002,
+                    0
+                  ],
+                  [
+                    0,
+                    0.0002
+                  ],
+                  [
+                    0.0002,
+                    0
+                  ],
+                  [
+                    0,
+                    -0.0002
+                  ],
+                  [
+                    -0.0002,
+                    0
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 10
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -113.2915, 35.9519
+                  ],
+                  [
+                    -113.2915, 35.9529
+                  ],
+                  [
+                    -113.2935, 35.9529
+                  ],
+                  [
+                    -113.2935, 35.9519
+                  ],
+                  [
+                    -113.2915, 35.9519
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "center": [-113.2935, 35.9529],
+  "zoom": 14.5,
+  "pitch": 30,
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "line-ends",
+      "paint": {
+        "circle-color": "orange",
+        "circle-radius": 40.0,
+        "circle-blur": 0.5,
+        "circle-pitch-alignment": "map"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-color": "rgba(0,128,255,1)",
+        "line-width": 22.0,
+        "line-occlusion-opacity": 0.5
+      }
+    },
+    {
+      "id": "circle1",
+      "type": "circle",
+      "source": "line-ends",
+      "paint": {
+        "circle-color": "rgba(255,0,0, 1)",
+        "circle-radius": 5.0,
+        "circle-pitch-alignment": "map"
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "line",
+      "layout": {
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-color": "rgba(0,255,0,1)",
+        "line-width": 15.0,
+        "line-occlusion-opacity": 0.5
+        
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 100,
+        "fill-extrusion-color": "purple"
+      }
+    }
+  ]
+}

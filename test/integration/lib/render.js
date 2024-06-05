@@ -198,6 +198,7 @@ async function renderMap(style, options) {
         projection: options.projection,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
+        tessellationStep: options.tessellationStep,
         contextCreateOptions: {
             // Anisotropic filtering is disabled
             extTextureFilterAnisotropicForceOff: true,

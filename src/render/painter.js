@@ -75,6 +75,7 @@ import type {ITrackedParameters} from 'tracked_parameters_proxy';
 import {OcclusionBuffers} from './occlusion_static_buffers.js';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
+
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[],
     timeStamps: number[]
@@ -175,6 +176,7 @@ class Painter {
     glyphManager: GlyphManager;
     modelManager: ModelManager;
     depthRangeFor3D: DepthRangeType;
+    depthOcclusion: boolean;
     opaquePassCutoff: number;
     frameCounter: number;
     renderPass: RenderPass;
@@ -194,6 +196,7 @@ class Painter {
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: ?Terrain;
+    _forceTerrainMode: boolean;
     globeSharedBuffers: ?GlobeSharedBuffers;
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
@@ -203,6 +206,8 @@ class Painter {
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
+    _lastOcclusionLayer: number;
+    layersWithOcclusionOpacity: Array<number>;
     longestCutoffRange: number;
     minCutoffZoom: number;
     renderDefaultNorthPole: boolean;
@@ -315,6 +320,7 @@ class Painter {
         this._wireframeDebugCache = new WireframeDebugCache();
         this.renderDefaultNorthPole = true;
         this.renderDefaultSouthPole = true;
+        this.layersWithOcclusionOpacity = [];
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -360,7 +366,20 @@ class Painter {
     }
 
     get terrain(): ?Terrain {
-        return this.transform._terrainEnabled() && this._terrain && this._terrain.enabled ? this._terrain : null;
+        return (this.transform._terrainEnabled() && this._terrain && this._terrain.enabled) || this._forceTerrainMode ?
+            this._terrain :
+            null;
+    }
+
+    get forceTerrainMode(): boolean {
+        return this._forceTerrainMode;
+    }
+
+    set forceTerrainMode(value: boolean) {
+        if (value && !this._terrain) {
+            this._terrain = new Terrain(this, this.style);
+        }
+        this._forceTerrainMode = value;
     }
 
     get shadowRenderer(): ?ShadowRenderer {
@@ -618,6 +637,9 @@ class Painter {
     }
 
     depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType, skipOpaquePassCutoff: boolean = false): $ReadOnly<DepthMode> {
+        if (this.depthOcclusion) {
+            return new DepthMode(this.context.gl.GREATER, DepthMode.ReadOnly, this.depthRangeFor3D);
+        }
         if (!this.opaquePassEnabledForLayer() && !skipOpaquePassCutoff) return DepthMode.disabled;
         const depth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         return new DepthMode(func || this.context.gl.LEQUAL, mask, [depth, depth]);
@@ -791,7 +813,11 @@ class Painter {
         this.minCutoffZoom = 0.0;
         // The longest cutoff range will be used for cutting shadows if any layer has non-zero cutoffRange
         this.longestCutoffRange = 0.0;
-        for (const layer of orderedLayers) {
+        this.opaquePassCutoff = Infinity;
+        this._lastOcclusionLayer = -1;
+        this.layersWithOcclusionOpacity = [];
+        for (let i = 0; i < orderedLayers.length; i++) {
+            const layer = orderedLayers[i];
             const cutoffRange = layer.cutoffRange();
             this.longestCutoffRange = Math.max(cutoffRange, this.longestCutoffRange);
             if (cutoffRange > 0.0) {
@@ -803,14 +829,11 @@ class Painter {
                     this.minCutoffZoom = Math.max(layer.minzoom, this.minCutoffZoom);
                 }
             }
-        }
-
-        this.opaquePassCutoff = Infinity;
-        for (let i = 0; i < orderedLayers.length; i++) {
-            const layer = orderedLayers[i];
             if (layer.is3D()) {
-                this.opaquePassCutoff = i;
-                break;
+                if (this.opaquePassCutoff === Infinity) {
+                    this.opaquePassCutoff = i;
+                }
+                this._lastOcclusionLayer = i;
             }
         }
 
@@ -1048,12 +1071,15 @@ class Painter {
                 }
                 const prevLayer = this.currentLayer;
                 this.currentLayer = terrain.renderBatch(this.currentLayer);
+                this._lastOcclusionLayer = Math.max(this.currentLayer, this._lastOcclusionLayer);
                 assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
             }
 
-            this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
+            if (!layer.is3D() && !this.terrain) {
+                this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
+            }
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
 
             // Render ground shadows after the last shadow caster layer
@@ -1074,6 +1100,26 @@ class Painter {
                     this.currentLayer = saveCurrentLayer;
                     this.renderPass = 'translucent';
                 }
+
+            }
+
+            if (this.currentLayer >= this._lastOcclusionLayer && this.layersWithOcclusionOpacity.length > 0) {
+                const saveCurrentLayer = this.currentLayer;
+                this.depthOcclusion = true;
+                for (const current of this.layersWithOcclusionOpacity) {
+                    this.currentLayer = current;
+                    const layer = orderedLayers[this.currentLayer];
+                    const sourceCache = style.getLayerSourceCache(layer);
+                    const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
+                    if (!layer.is3D() && !this.terrain) {
+                        this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
+                    }
+                    this.renderLayer(this, sourceCache, layer, coords);
+                }
+                this.depthOcclusion = false;
+                this.currentLayer = saveCurrentLayer;
+                this.renderPass = 'translucent';
+                this.layersWithOcclusionOpacity = [];
             }
 
             ++this.currentLayer;
@@ -1314,7 +1360,7 @@ class Painter {
 
     terrainRenderModeElevated(): boolean {
         // Whether elevation sampling should be enabled in the vertex shader.
-        return this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture;
+        return (this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture) || this.forceTerrainMode;
     }
 
     linearFloatFilteringSupported(): boolean {
@@ -1331,7 +1377,6 @@ class Painter {
      */
     currentGlobalDefines(name: string, overrideFog: ?boolean, overrideRtt: ?boolean): string[] {
         const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
-        const zeroExaggeration = this.terrain && this.terrain.exaggeration() === 0.0;
         const defines = [];
 
         if (this.style && this.style.enable3dLights()) {
@@ -1358,7 +1403,6 @@ class Painter {
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
             if (this.linearFloatFilteringSupported()) defines.push('TERRAIN_DEM_FLOAT_FORMAT');
-            if (zeroExaggeration) defines.push('ZERO_EXAGGERATION');
         }
         if (this.transform.projection.name === 'globe') defines.push('GLOBE');
         // When terrain is active, fog is rendered as part of draping, not as part of tile

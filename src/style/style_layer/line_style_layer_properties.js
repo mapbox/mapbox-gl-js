@@ -23,6 +23,7 @@ export type LayoutProps = {|
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
     "line-sort-key": DataDrivenProperty<number>,
+    "line-z-offset": DataDrivenProperty<number>,
     "visibility": DataConstantProperty<"visible" | "none">,
 |};
 
@@ -32,6 +33,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
     "line-sort-key": new DataDrivenProperty(styleSpec["layout_line"]["line-sort-key"]),
+    "line-z-offset": new DataDrivenProperty(styleSpec["layout_line"]["line-z-offset"]),
     "visibility": new DataConstantProperty(styleSpec["layout_line"]["visibility"]),
 });
 
@@ -51,6 +53,7 @@ export type PaintProps = {|
     "line-emissive-strength": DataConstantProperty<number>,
     "line-border-width": DataDrivenProperty<number>,
     "line-border-color": DataDrivenProperty<Color>,
+    "line-occlusion-opacity": DataConstantProperty<number>,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -69,6 +72,7 @@ const paint: Properties<PaintProps> = new Properties({
     "line-emissive-strength": new DataConstantProperty(styleSpec["paint_line"]["line-emissive-strength"]),
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
     "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
+    "line-occlusion-opacity": new DataConstantProperty(styleSpec["paint_line"]["line-occlusion-opacity"]),
 });
 
 // Note: without adding the explicit type annotation, Flow infers weaker types

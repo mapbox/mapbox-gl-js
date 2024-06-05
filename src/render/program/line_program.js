@@ -43,7 +43,7 @@ export type LinePatternUniformsType = {|
     'u_trim_offset': Uniform2f,
 |};
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),

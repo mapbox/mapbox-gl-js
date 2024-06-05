@@ -29,7 +29,8 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     collisionBoxArray: CollisionBoxArray,
     sourceLayerIndex: number,
     sourceID: string,
-    projection: ProjectionSpecification
+    projection: ProjectionSpecification,
+    tessellationStep: ?number
 }
 
 export type PopulateParameters = {
