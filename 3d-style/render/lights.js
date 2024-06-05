@@ -4,6 +4,7 @@ import Context from '../../src/gl/context.js';
 import {Uniform3f} from '../../src/render/uniform_binding.js';
 import {sRGBToLinearAndScale, linearVec3TosRGB, clamp} from '../../src/util/util.js';
 import {vec3} from 'gl-matrix';
+import type Style from '../../src/style/style.js';
 
 import Lights from '../style/lights.js';
 import type {UniformValues} from '../../src/render/uniform_binding.js';
@@ -70,13 +71,14 @@ function calculateGroundRadiance(dir: Vec3, dirColor: Vec3, ambientColor: Vec3):
 
 export const lightsUniformValues = (
     directional: Lights<Directional>,
-    ambient: Lights<Ambient>
+    ambient: Lights<Ambient>,
+    style: Style
 ): UniformValues<LightsUniformsType> => {
     const direction = directional.properties.get('direction');
 
-    const directionalColor = directional.properties.get('color').toArray01();
+    const directionalColor = directional.properties.get('color').toRenderColor(style._luts[directional.scope]).toArray01();
     const directionalIntensity = directional.properties.get('intensity');
-    const ambientColor = ambient.properties.get('color').toArray01();
+    const ambientColor = ambient.properties.get('color').toRenderColor(style._luts[ambient.scope]).toArray01();
     const ambientIntensity = ambient.properties.get('intensity');
 
     const dirVec = [direction.x, direction.y, direction.z];

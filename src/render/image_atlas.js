@@ -8,6 +8,7 @@ import type {StyleImage} from '../style/style_image.js';
 import type ImageManager from './image_manager.js';
 import type Texture from './texture.js';
 import type {SpritePosition} from '../util/image.js';
+import type {LUT} from "../util/lut";
 
 const IMAGE_PADDING: number = 1;
 export {IMAGE_PADDING};
@@ -65,7 +66,7 @@ export default class ImageAtlas {
     haveRenderCallbacks: Array<string>;
     uploaded: ?boolean;
 
-    constructor(icons: {[_: string]: StyleImage}, patterns: {[_: string]: StyleImage}) {
+    constructor(icons: {[_: string]: StyleImage}, patterns: {[_: string]: StyleImage}, lut: LUT | null) {
         const iconPositions = {}, patternPositions = {};
         this.haveRenderCallbacks = [];
 
@@ -83,7 +84,7 @@ export default class ImageAtlas {
             // For SDF icons, we override the RGB channels with white.
             // This is because we read the red channel in the shader and RGB channels will get alpha-premultiplied on upload.
             const overrideRGB = src.sdf;
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + IMAGE_PADDING, y: bin.y + IMAGE_PADDING}, src.data, overrideRGB);
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + IMAGE_PADDING, y: bin.y + IMAGE_PADDING}, src.data, lut, overrideRGB);
         }
 
         for (const id in patterns) {
@@ -94,12 +95,12 @@ export default class ImageAtlas {
                 w = src.data.width,
                 h = src.data.height;
 
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data);
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data, lut);
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src.data, image, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
-            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
-            RGBAImage.copy(src.data, image, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
-            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
+            RGBAImage.copy(src.data, image, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}, lut); // T
+            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}, lut); // B
+            RGBAImage.copy(src.data, image, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}, lut); // L
+            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}, lut); // R
         }
 
         this.image = image;

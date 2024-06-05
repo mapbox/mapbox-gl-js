@@ -20,6 +20,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {ConfigOptions} from '../properties.js';
+import type {LUT} from "../../util/lut";
 
 class FillStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -29,8 +30,8 @@ class FillStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
     }
 
     getProgramIds(): string[] {
@@ -46,9 +47,9 @@ class FillStyleLayer extends StyleLayer {
         return ids;
     }
 
-    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
-            config: new ProgramConfiguration(this, zoom),
+            config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false
         };
     }

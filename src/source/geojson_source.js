@@ -387,6 +387,7 @@ class GeoJSONSource extends Evented implements Source {
     loadTile(tile: Tile, callback: Callback<void>) {
         const message = !tile.actor ? 'loadTile' : 'reloadTile';
         tile.actor = this.actor;
+        const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
         const params = {
             type: this.type,
             uid: tile.uid,
@@ -396,6 +397,9 @@ class GeoJSONSource extends Evented implements Source {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
+            lut: lutForScope ? {
+                image: lutForScope.image.clone()
+            } : null,
             scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,

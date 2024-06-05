@@ -33,11 +33,13 @@ import type {
 import type {PromoteIdSpecification} from '../style-spec/types.js';
 import type {TileTransform} from '../geo/projection/tile_transform.js';
 import type {IVectorTile} from '@mapbox/vector-tile';
+import type {LUT} from "../util/lut";
 
 class WorkerTile {
     tileID: OverscaledTileID;
     uid: number;
     zoom: number;
+    lut: LUT | null;
     tileZoom: number;
     canonical: CanonicalTileID;
     pixelRatio: number;
@@ -68,6 +70,7 @@ class WorkerTile {
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
         this.zoom = params.zoom;
+        this.lut = params.lut;
         this.canonical = params.tileID.canonical;
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
@@ -176,6 +179,7 @@ class WorkerTile {
                     // $FlowFixMe[incompatible-call] - Flow can't infer proper `family` type from `layer` above
                     layers: family,
                     zoom: this.zoom,
+                    lut: this.lut,
                     canonical: this.canonical,
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
@@ -229,7 +233,7 @@ class WorkerTile {
             } else if (glyphMap && iconMap && patternMap) {
                 const m = PerformanceUtils.beginMeasure('parseTile2');
                 const glyphAtlas = new GlyphAtlas(glyphMap);
-                const imageAtlas = new ImageAtlas(iconMap, patternMap);
+                const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut);
 
                 for (const key in buckets) {
                     const bucket = buckets[key];

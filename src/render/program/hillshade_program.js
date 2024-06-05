@@ -88,10 +88,10 @@ const hillshadeUniformValues = (
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
-        'u_shadow': shadow,
-        'u_highlight': highlight,
+        'u_shadow': shadow.toRenderColor(layer.lut),
+        'u_highlight': highlight.toRenderColor(layer.lut),
         'u_emissive_strength': emissiveStrength,
-        'u_accent': accent
+        'u_accent': accent.toRenderColor(layer.lut)
     };
 };
 

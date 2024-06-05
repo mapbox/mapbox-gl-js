@@ -149,6 +149,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             workerTile.brightness = params.brightness;
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
             workerTile.extraShadowCaster = params.extraShadowCaster;
+            workerTile.lut = params.lut;
             const done = (err: ?Error, data: ?WorkerTileResult) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {

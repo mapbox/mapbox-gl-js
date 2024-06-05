@@ -17,6 +17,7 @@ import type {UniformValues} from '../../../src/render/uniform_binding.js';
 import type Context from '../../../src/gl/context.js';
 import type Painter from '../../../src/render/painter.js';
 import type {Material} from '../../data/model.js';
+import type {RenderColor} from "../../../src/style-spec/util/color";
 
 export type ModelUniformsType = {
     'u_matrix': UniformMatrix4f,
@@ -40,6 +41,7 @@ export type ModelUniformsType = {
     'u_normalTexture': Uniform1i,
     'u_occlusionTexture': Uniform1i,
     'u_emissionTexture': Uniform1i,
+    'u_lutTexture': Uniform1i,
     'u_color_mix': Uniform4f,
     'u_aoIntensity': Uniform1f,
     'u_emissive_strength': Uniform1f,
@@ -68,6 +70,7 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_normalTexture': new Uniform1i(context),
     'u_occlusionTexture': new Uniform1i(context),
     'u_emissionTexture': new Uniform1i(context),
+    'u_lutTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
     'u_aoIntensity': new Uniform1f(context),
     'u_emissive_strength' : new Uniform1f(context),
@@ -84,7 +87,7 @@ const modelUniformValues = (
     nodeMatrix: Float32Array,
     painter: Painter,
     opacity: number,
-    baseColorFactor: Color,
+    baseColorFactor: RenderColor,
     emissiveFactor: [number, number, number],
     metallicFactor: number,
     roughnessFactor: number,
@@ -107,10 +110,10 @@ const modelUniformValues = (
 
     const alphaMask = material.alphaMode === 'MASK';
 
-    const lightColor = light.properties.get('color');
+    const lightColor = light.properties.get('color').toRenderColor(null);
 
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
-    const colorMix = layer.paint.get('model-color').constantOr(Color.white);
+    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toRenderColor(null);
     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
 
     const uniformValues = {
@@ -135,6 +138,7 @@ const modelUniformValues = (
         'u_normalTexture': TextureSlots.Normal,
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
+        'u_lutTexture': TextureSlots.LUT,
         'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity],
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,

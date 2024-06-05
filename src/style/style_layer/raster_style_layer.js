@@ -13,6 +13,7 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
 import type {ConfigOptions} from '../properties.js';
 import type SourceCache from '../../source/source_cache.js';
+import type {LUT} from "../../util/lut";
 
 export const COLOR_RAMP_RES = 256;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
@@ -32,8 +33,8 @@ class RasterStyleLayer extends StyleLayer {
     // it's changed.
     _curRampRange: [number, number];
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         this.updateColorRamp();
         this._curRampRange = [NaN, NaN];
     }

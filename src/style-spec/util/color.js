@@ -1,5 +1,9 @@
 // @flow
 
+import type {LUT} from "../../util/lut";
+
+import {number as lerp} from '../../style-spec/util/interpolate.js';
+
 import {parseCSSColor} from 'csscolorparser';
 
 /**
@@ -73,8 +77,94 @@ class Color {
      * translucentGreen.toString(); // = "rgba(26,207,26,0.73)"
      */
     toString(): string {
-        const [r, g, b, a] = this.toArray();
+        const [r, g, b, a] = this.a === 0 ? [0, 0, 0, 0] : [
+            this.r * 255 / this.a,
+            this.g * 255 / this.a,
+            this.b * 255 / this.a,
+            this.a
+        ];
         return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
+    }
+
+    toRenderColor(lut: LUT | null): RenderColor {
+        const {r, g, b, a} = this;
+        return new RenderColor(lut, r, g, b, a);
+    }
+}
+
+/**
+ * Renderable color created from a Color and an optional LUT value
+ */
+export class RenderColor {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+
+    constructor(lut: LUT | null, r: number, g: number, b: number, a: number) {
+        if (!lut) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        } else {
+            const N = lut.image.height;
+            const N2 = N * N;
+            // Normalize to cube dimensions.
+            r = a === 0 ? 0 : (r / a) * (N - 1);
+            g = a === 0 ? 0 : (g / a) * (N - 1);
+            b = a === 0 ? 0 : (b / a) * (N - 1);
+
+            // Determine boundary values for the cube the color is in.
+            const r0 = Math.floor(r);
+            const g0 = Math.floor(g);
+            const b0 = Math.floor(b);
+            const r1 = Math.ceil(r);
+            const g1 = Math.ceil(g);
+            const b1 = Math.ceil(b);
+
+            // Determine weights within the cube.
+            const rw = r - r0;
+            const gw = g - g0;
+            const bw = b - b0;
+
+            const data = lut.image.data;
+            const i0 = (r0 + g0 * N2 + b0 * N) * 4;
+            const i1 = (r0 + g0 * N2 + b1 * N) * 4;
+            const i2 = (r0 + g1 * N2 + b0 * N) * 4;
+            const i3 = (r0 + g1 * N2 + b1 * N) * 4;
+            const i4 = (r1 + g0 * N2 + b0 * N) * 4;
+            const i5 = (r1 + g0 * N2 + b1 * N) * 4;
+            const i6 = (r1 + g1 * N2 + b0 * N) * 4;
+            const i7 = (r1 + g1 * N2 + b1 * N) * 4;
+            if (i0 < 0 || i7 >= data.length) {
+                throw new Error("out of range");
+            }
+
+            // Trilinear interpolation.
+            this.r = lerp(
+                lerp(
+                    lerp(data[i0], data[i1], bw),
+                    lerp(data[i2], data[i3], bw), gw),
+                lerp(
+                    lerp(data[i4], data[i5], bw),
+                    lerp(data[i6], data[i7], bw), gw), rw) / 255 * a;
+            this.g = lerp(
+                lerp(
+                    lerp(data[i0 + 1], data[i1 + 1], bw),
+                    lerp(data[i2 + 1], data[i3 + 1], bw), gw),
+                lerp(
+                    lerp(data[i4 + 1], data[i5 + 1], bw),
+                    lerp(data[i6 + 1], data[i7 + 1], bw), gw), rw) / 255 * a;
+            this.b = lerp(
+                lerp(
+                    lerp(data[i0 + 2], data[i1 + 2], bw),
+                    lerp(data[i2 + 2], data[i3 + 2], bw), gw),
+                lerp(
+                    lerp(data[i4 + 2], data[i5 + 2], bw),
+                    lerp(data[i6 + 2], data[i7 + 2], bw), gw), rw) / 255 * a;
+            this.a = a;
+        }
     }
 
     /**

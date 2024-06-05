@@ -30,6 +30,7 @@ import type {CreateProgramParams} from "../render/painter.js";
 import type SourceCache from '../source/source_cache.js';
 import type Painter from '../render/painter.js';
 import type {QueryFeature} from '../util/vectortile_to_geojson.js';
+import type {LUT} from "../util/lut.js";
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -45,6 +46,7 @@ class StyleLayer extends Evented {
     id: string;
     fqid: string;
     scope: string;
+    lut: LUT | null;
     metadata: mixed;
     type: string;
     source: string;
@@ -69,13 +71,14 @@ class StyleLayer extends Evented {
     options: ?ConfigOptions;
     _stats: ?LayerRenderingStats;
 
-    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, scope: string, options?: ?ConfigOptions) {
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: $ReadOnly<{layout?: Properties<*>, paint?: Properties<*>}>, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
         super();
 
         this.id = layer.id;
         this.fqid = makeFQID(this.id, scope);
         this.type = layer.type;
         this.scope = scope;
+        this.lut = lut;
         this.options = options;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
@@ -211,7 +214,7 @@ class StyleLayer extends Evented {
     }
 
     // eslint-disable-next-line no-unused-vars
-    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         // No-op; can be overridden by derived classes.
         return null;
     }

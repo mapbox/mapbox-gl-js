@@ -20,6 +20,7 @@ import model from '../../3d-style/style/style_layer/model_style_layer.js';
 
 import type {LayerSpecification} from '../style-spec/types.js';
 import type {ConfigOptions} from './properties.js';
+import type {LUT} from "../util/lut";
 
 const subclasses = {
     circle,
@@ -38,10 +39,10 @@ const subclasses = {
     clip
 };
 
-export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, scope: string, options?: ?ConfigOptions): StyleLayer | CustomStyleLayer {
+export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface, scope: string, lut: LUT | null, options?: ?ConfigOptions): StyleLayer | CustomStyleLayer {
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
-        return new subclasses[layer.type](layer, scope, options);
+        return new subclasses[layer.type](layer, scope, lut, options);
     }
 }

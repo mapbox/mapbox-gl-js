@@ -264,7 +264,7 @@ class Tiled3dModelBucket implements Bucket {
                     if (part.length) {
                         evaluationFeature.properties['part'] = part;
                     }
-                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical);
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical).toRenderColor(null);
                     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, {}, canonical);
                     nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
                     nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, {}, canonical);
@@ -572,7 +572,6 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
     let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
     let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
-
     if (colorMix[3] > 0) {
         r = interpolate(r, 255 * colorMix[0], colorMix[3]);
         g = interpolate(g, 255 * colorMix[1], colorMix[3]);

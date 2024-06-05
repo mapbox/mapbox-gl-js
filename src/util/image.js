@@ -3,6 +3,8 @@
 import assert from 'assert';
 
 import {register} from './web_worker_transfer.js';
+import Color from '../style-spec/util/color.js';
+import type {LUT} from "./lut";
 
 export type Size = interface {
     width: number,
@@ -44,14 +46,14 @@ function resizeImage<T: AlphaImage | RGBAImage>(image: T, newImage: T, channels:
     copyImage(image, newImage, {x: 0, y: 0}, {x: 0, y: 0}, {
         width: Math.min(image.width, width),
         height: Math.min(image.height, height)
-    }, channels);
+    }, channels, null);
 
     image.width = width;
     image.height = height;
     image.data = newImage.data;
 }
 
-function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, srcPt: Point, dstPt: Point, size: Size, channels: number, overrideRGBWithWhite: ?boolean): T {
+function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, srcPt: Point, dstPt: Point, size: Size, channels: number, lut: LUT | null, overrideRGBWithWhite: ?boolean): T {
     if (size.width === 0 || size.height === 0) {
         return dstImg;
     }
@@ -88,6 +90,20 @@ function copyImage<T: RGBAImage | AlphaImage>(srcImg: T | ImageData, dstImg: T, 
                 dstData[dstPixelOffset + 2] = 255;
                 dstData[dstPixelOffset + 3] = srcData[srcByteOffset];
             }
+        } else if (lut) {
+            for (let i = 0; i < size.width; i++) {
+                const srcByteOffset = srcOffset + i * channels;
+                const dstPixelOffset = dstOffset + i * channels;
+
+                const alpha = srcData[srcByteOffset + 3];
+                const color = new Color(srcData[srcByteOffset + 0] / 255 * alpha, srcData[srcByteOffset + 1] / 255 * alpha, srcData[srcByteOffset + 2] / 255 * alpha, alpha);
+                const shifted = color.toRenderColor(lut).toArray();
+
+                dstData[dstPixelOffset + 0] = shifted[0];
+                dstData[dstPixelOffset + 1] = shifted[1];
+                dstData[dstPixelOffset + 2] = shifted[2];
+                dstData[dstPixelOffset + 3] = shifted[3];
+            }
         } else {
             for (let i = 0; i < size.width * channels; i++) {
                 const srcByte = srcOffset + i;
@@ -116,7 +132,7 @@ export class AlphaImage {
     }
 
     static copy(srcImg: AlphaImage, dstImg: AlphaImage, srcPt: Point, dstPt: Point, size: Size) {
-        copyImage(srcImg, dstImg, srcPt, dstPt, size, 1);
+        copyImage(srcImg, dstImg, srcPt, dstPt, size, 1, null);
     }
 }
 
@@ -152,8 +168,8 @@ export class RGBAImage {
         return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
-    static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size, overrideRGBWithWhite: ?boolean) {
-        copyImage(srcImg, dstImg, srcPt, dstPt, size, 4, overrideRGBWithWhite);
+    static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size, lut: LUT | null, overrideRGBWithWhite: ?boolean) {
+        copyImage(srcImg, dstImg, srcPt, dstPt, size, 4, lut, overrideRGBWithWhite);
     }
 }
 

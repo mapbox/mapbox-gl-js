@@ -14,6 +14,7 @@ import type {StyleGlyph} from '../style/style_glyph.js';
 import type {StyleImage} from '../style/style_image.js';
 import type {PromoteIdSpecification} from '../style-spec/types.js';
 import type Projection from '../geo/projection/projection.js';
+import type {LUT} from "../util/lut";
 
 export type TileParameters = {
     source: string,
@@ -31,6 +32,7 @@ export type RequestedTileParameters = TileParameters & {
 
 export type WorkerTileParameters = RequestedTileParameters & {
     zoom: number,
+    lut: LUT | null,
     maxZoom: number,
     tileSize: number,
     promoteId: ?PromoteIdSpecification,

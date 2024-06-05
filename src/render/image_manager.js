@@ -15,6 +15,7 @@ import type Context from '../gl/context.js';
 import type {Bin as PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback.js';
 import type {Size} from '../util/image.js';
+import type {LUT} from "../util/lut.js";
 
 type Pattern = {
     bin: PotpackBox,
@@ -234,7 +235,7 @@ class ImageManager extends Evented {
         return {width, height};
     }
 
-    getPattern(id: string, scope: string): ?ImagePosition {
+    getPattern(id: string, scope: string, lut: LUT | null): ?ImagePosition {
         const pattern = this.patterns[scope][id];
 
         const image = this.getImage(id, scope);
@@ -256,7 +257,7 @@ class ImageManager extends Evented {
             pattern.position.version = image.version;
         }
 
-        this._updatePatternAtlas(scope);
+        this._updatePatternAtlas(scope, lut);
 
         return this.patterns[scope][id].position;
     }
@@ -276,7 +277,7 @@ class ImageManager extends Evented {
         atlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
-    _updatePatternAtlas(scope: string) {
+    _updatePatternAtlas(scope: string, lut: LUT | null) {
         const bins = [];
         for (const id in this.patterns[scope]) {
             bins.push(this.patterns[scope][id].bin);
@@ -295,13 +296,13 @@ class ImageManager extends Evented {
             const w = src.width;
             const h = src.height;
 
-            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h});
+            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h}, lut);
 
             // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}); // T
-            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}); // B
-            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}); // L
-            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}); // R
+            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}, lut); // T
+            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}, lut); // B
+            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}, lut); // L
+            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}, lut); // R
         }
 
         this.dirty = true;

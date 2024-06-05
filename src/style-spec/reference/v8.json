@@ -109,6 +109,10 @@
       "type": "camera",
       "doc": "Global setting to control additional camera intrinsics parameters, e.g. projection type (perspective / orthographic)."
     },
+    "color-theme": {
+      "type": "colorTheme",
+      "doc": "A global modifier for the colors of the style."
+    },
     "imports": {
       "type": "array",
       "value": "import",
@@ -4894,6 +4898,17 @@
       },
       "default": "perspective",
       "property-type": "data-constant"
+    }
+  },
+  "colorTheme": {
+    "data": {
+      "type": "string",
+      "doc": "Expects a base64 encoded PNG image which represents a cube strip LUT. The height of the image cannot exceed 32 pixels and the width must be equal to the height squared.",
+      "transition": false,
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      }
     }
   },
   "light": {

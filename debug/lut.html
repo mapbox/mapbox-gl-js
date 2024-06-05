@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #pane {
+            position: absolute;
+            top: 64px;
+            left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<canvas id="lutCanvas" width="1024" height="32" style="display: none;" ></canvas>
+<img id="canvasImageHolder" style="position: absolute; top: 0px;">
+<input type="file" id="fileInput" accept="image/*" style="position: absolute; left: 4px; top: 36px;">
+<div id='pane'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
+<script type='module'>
+    /* globals d3 */
+
+    import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
+
+    const PARAMS = {
+        brightness: 1.0,
+        contrast: 1.0,
+        saturation: 0.5,
+        hue: 0.01,
+        lightPreset: 'day',
+        lutPreset: 'custom',
+        styleURL: 'mapbox://styles/mapbox/standard',
+        firstLoadDone: false
+    };
+
+    const pane = new Pane({title: 'Parameters', container: document.querySelector('#pane')});
+
+    let lutData = "";
+    let standard = '{}';
+
+    const lightPresets = ['dawn', 'day', 'dusk', 'night'];
+    const lutPresets = ['custom', 'almost-bw', 'bright', 'bw-2', 'identity', 'red'];
+
+    var map = window.map = new mapboxgl.Map({
+        container: 'map',
+        devtools: true,
+        zoom: 12.2,
+        center: [19.12269, 47.5125],
+        pitch: 50.0,
+        bearing: 50.0,
+        hash: true,
+        style: PARAMS.styleURL
+    });
+
+    function updateStyle() {
+        map.setStyle({
+            "version": 8,
+            "imports": [
+                {
+                    "id": "standard",
+                    "url": "",
+                    "data": standard,
+                    "config": {
+                        "lightPreset": PARAMS.lightPreset
+                    }
+                }
+            ],
+            "color-theme": standard["color-theme"],
+            "sources": {},
+            "layers": []
+        });
+    }
+
+    async function fetchJSON(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching JSON:', error);
+        }
+    }
+
+    function downloadStyle() {
+        fetchJSON(`https://api.mapbox.com/styles/v1/${PARAMS.styleURL.replace("mapbox://styles/", "")}?sdk=js-3.4.0-beta.1&access_token=${mapboxgl.accessToken}`).then(data => {
+            standard = data;
+            updateStyle();
+            if (!PARAMS.firstLoadDone) {
+                updateLUT();
+                PARAMS.firstLoadDone = true;
+            }
+        });
+    }
+
+    const query = Object.fromEntries(location.search.substring(1).split('&').map(v => v.split('=')));
+
+    const name = query.lut ? query.lut : 'red';
+
+    function generate3DLUT(resolution, contrast, brightness, saturation, hueShift) {
+        const size = resolution;
+        const step = 1.0 / (size - 1);
+        const lut = new Uint8ClampedArray(size * size * size * 4);
+
+        function adjustContrast(color, contrast) {
+            return color.map(channel => {
+                return Math.max(0, Math.min(255, ((channel - 0.5) * contrast + 0.5) * 255));
+            });
+        }
+
+        function adjustBrightness(color, brightness) {
+            return color.map(channel => {
+                return Math.max(0, Math.min(255, channel + (-1.0 + brightness) * 255));
+            });
+        }
+
+        function adjustSaturation(color, saturation) {
+            const gray = 0.2989 * color[0] + 0.5870 * color[1] + 0.1140 * color[2];
+            return color.map(channel => {
+                return Math.max(0, Math.min(255, gray + (channel - gray) * saturation));
+            });
+        }
+
+        function adjustHue(color, hueShift) {
+            // Convert RGB to HSV
+            let r = color[0] / 255;
+            let g = color[1] / 255;
+            let b = color[2] / 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h = max;
+            let s = max;
+            const v = max;
+
+            const d = max - min;
+            s = max === 0 ? 0 : d / max;
+
+            if (max === min) {
+                h = 0; // achromatic
+            } else {
+                switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            // Adjust hue
+            h = (h + hueShift) % 1;
+            if (h < 0) h += 1;
+
+            // Convert HSV back to RGB
+            const i = Math.floor(h * 6);
+            const f = h * 6 - i;
+            const p = v * (1 - s);
+            const q = v * (1 - f * s);
+            const t = v * (1 - (1 - f) * s);
+
+            switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+            }
+
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        for (let r = 0; r < size; r++) {
+            for (let g = 0; g < size; g++) {
+                for (let b = 0; b < size; b++) {
+                    const normalizedColor = [r * step, g * step, b * step];
+
+                    let adjustedColor = adjustContrast(normalizedColor, contrast);
+                    adjustedColor = adjustBrightness(adjustedColor, brightness);
+                    adjustedColor = adjustSaturation(adjustedColor, saturation);
+                    adjustedColor = adjustHue(adjustedColor, hueShift);
+
+                    const index = 4 * (r + g * size + b * size * size);
+                    lut[index] = adjustedColor[0];
+                    lut[index + 1] = adjustedColor[2];
+                    lut[index + 2] = adjustedColor[1];
+                    lut[index + 3] = 255;
+                }
+            }
+        }
+
+        return lut;
+    }
+
+    function drawLUTOnCanvas(canvas, lut, resolution) {
+        const ctx = canvas.getContext('2d');
+        const size = resolution;
+        const imageData = new ImageData(lut, size * size, size);
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function updateLUT() {
+        const canvas = document.getElementById('lutCanvas');
+        if (PARAMS.lutPreset === 'custom') {
+            // Generate LUT
+            const resolution = 32;
+            const lut = generate3DLUT(resolution, PARAMS.contrast, PARAMS.brightness, PARAMS.saturation, PARAMS.hue);
+            drawLUTOnCanvas(canvas, lut, resolution);
+            document.getElementById('canvasImageHolder').src = canvas.toDataURL("image/png");
+            lutData = canvas.toDataURL();
+            standard['color-theme'] = {
+                "data": lutData
+            };
+            updateStyle();
+        } else {
+            // Load from preset
+            const img = document.getElementById('canvasImageHolder');
+            img.src = `luts/${PARAMS.lutPreset}.png`;
+            img.onload = function () {
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                lutData = canvas.toDataURL();
+                standard['color-theme'] = {
+                    "data": lutData
+                };
+                updateStyle();
+            };
+            img.onerror = function (e) {
+                throw new Error(e.message);
+            };
+        }
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        PARAMS.lutPreset = 'custom';
+        pane.refresh();
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                standard['color-theme'] = {
+                    "data":  e.target.result
+                };
+                updateStyle();
+                const img = document.getElementById('canvasImageHolder');
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    pane.addBinding(PARAMS, 'lutPreset', {
+        label: 'lutPreset',
+        options: lutPresets.reduce((acc, item) => ({...acc, [item]: item}), {})
+    }).on('change', (e) => {
+        updateLUT();
+    });
+
+    pane.addBinding(PARAMS, 'contrast', {
+        label: 'contrast',
+        min: 0.0,
+        max: 4.0
+    }).on('change', (e) => {
+        PARAMS.lutPreset = 'custom';
+        pane.refresh();
+        updateLUT();
+    });
+
+    pane.addBinding(PARAMS, 'brightness', {
+        label: 'brightness',
+        min: 0.0,
+        max: 4.0
+    }).on('change', (e) => {
+        PARAMS.lutPreset = 'custom';
+        pane.refresh();
+        updateLUT();
+    });
+
+    pane.addBinding(PARAMS, 'saturation', {
+        label: 'saturation',
+        min: 0.0,
+        max: 4.0
+    }).on('change', (e) => {
+        PARAMS.lutPreset = 'custom';
+        pane.refresh();
+        updateLUT();
+    });
+
+    pane.addBinding(PARAMS, 'hue', {
+        label: 'hue',
+        min: 0.0,
+        max: 0.5
+    }).on('change', (e) => {
+        PARAMS.lutPreset = 'custom';
+        pane.refresh();
+        updateLUT();
+    });
+
+    pane.addBinding(PARAMS, 'lightPreset', {
+        label: 'lightPreset',
+        options: lightPresets.reduce((acc, item) => ({...acc, [item]: item}), {})
+    }).on('change', (e) => {
+        updateStyle();
+    });
+
+    pane.addBinding(PARAMS, 'styleURL', {
+        label: 'styleURL'
+    }).on('change', (e) => {
+        downloadStyle();
+    });
+
+    map.on('style.load', () => {
+        const features = [];
+        const resolution = 32.0;
+        for (var x = 0; x < resolution; x++) {
+            for (var y = 0; y < resolution; y++) {
+                for (var z = 0; z < resolution; z++) {
+                    features.push({
+                        "type": "Feature",
+                        "properties": {
+                            "color": `rgba(${x / (resolution - 1.0) * 255.0}, ${y / (resolution - 1.0) * 255.0}, ${z / (resolution - 1.0) * 255.0}, 1.0)`,
+                            "height": 80.0 + z * 100.0,
+                            "base": z * 100.0
+                        },
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    [
+                                        19.06098381915382 + x * 0.003,
+                                        47.50595419938594 + y * 0.002
+                                    ],
+                                    [
+                                        19.06098381915382 + x * 0.003,
+                                        47.505151960518106 + y * 0.002
+                                    ],
+                                    [
+                                        19.06213182218744 + x * 0.003,
+                                        47.505151960518106 + y * 0.002
+                                    ],
+                                    [
+                                        19.06213182218744 + x * 0.003,
+                                        47.50595419938594 + y * 0.002
+                                    ],
+                                    [
+                                        19.06098381915382 + x * 0.003,
+                                        47.50595419938594 + y * 0.002
+                                    ]
+                                ]
+                            ],
+                            "type": "Polygon"
+                        }
+                    });
+                }
+            }
+        }
+        map.addSource('cube', {
+            'type': 'geojson',
+            'data': {
+                "type": "FeatureCollection",
+                features
+            }
+        });
+        map.addLayer({
+            'id': `grid`,
+            'source': `cube`,
+            'type': 'fill-extrusion',
+            'layout': {},
+            'paint': {
+                'fill-extrusion-color': ["get", "color"],
+                'fill-extrusion-height': ["get", "height"],
+                'fill-extrusion-base': ["get", "base"]
+            }
+        });
+    });
+    map.once('load', () => {
+        downloadStyle();
+    });
+
+</script>
+</body>
+</html>

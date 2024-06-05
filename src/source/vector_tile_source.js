@@ -218,7 +218,7 @@ class VectorTileSource extends Evented implements Source {
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
-
+        const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
         const params = {
             request,
             data: undefined,
@@ -226,6 +226,9 @@ class VectorTileSource extends Evented implements Source {
             tileID: tile.tileID,
             tileZoom: tile.tileZoom,
             zoom: tile.tileID.overscaledZ,
+            lut: lutForScope ? {
+                image: lutForScope.image.clone()
+            } : null,
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             source: this.id,

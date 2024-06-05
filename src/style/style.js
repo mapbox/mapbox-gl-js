@@ -68,6 +68,26 @@ import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_render
 import ModelManager from '../../3d-style/render/model_manager.js';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform.js';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
+import {RGBAImage} from "../util/image.js";
+import type {ColorThemeSpecification,
+    LayerSpecification,
+    FilterSpecification,
+    StyleSpecification,
+    ImportSpecification,
+    LightSpecification,
+    SourceSpecification,
+    TerrainSpecification,
+    LightsSpecification,
+    FlatLightSpecification,
+    FogSpecification,
+    ProjectionSpecification,
+    TransitionSpecification,
+    PropertyValueSpecification,
+    ConfigSpecification,
+    SchemaSpecification,
+    CameraSpecification
+} from "../style-spec/types";
+import {evaluateColorThemeProperties} from "../util/lut.js";
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -88,24 +108,6 @@ import type {Placement} from '../symbol/placement.js';
 import type {Cancelable} from '../types/cancelable.js';
 import type {RequestParameters, ResponseCallback} from '../util/ajax.js';
 import type {GeoJSON} from '@mapbox/geojson-types';
-import type {
-    LayerSpecification,
-    FilterSpecification,
-    StyleSpecification,
-    ImportSpecification,
-    LightSpecification,
-    SourceSpecification,
-    TerrainSpecification,
-    LightsSpecification,
-    FlatLightSpecification,
-    FogSpecification,
-    ProjectionSpecification,
-    TransitionSpecification,
-    PropertyValueSpecification,
-    ConfigSpecification,
-    SchemaSpecification,
-    CameraSpecification
-} from '../style-spec/types.js';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer.js';
 import type {Validator, ValidationErrors} from './validate_style.js';
 import type {OverscaledTileID} from '../source/tile_id.js';
@@ -116,6 +118,7 @@ import type {PointLike} from '../types/point-like.js';
 import type {Source, SourceClass} from '../source/source.js';
 import type {TransitionParameters, ConfigOptions} from './properties.js';
 import type {QueryRenderedFeaturesParams} from '../source/query_features.js';
+import type {LUT} from "../util/lut.js";
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -203,6 +206,7 @@ class Style extends Evented {
     disableElevatedTerrain: ?boolean;
     fog: ?Fog;
     camera: CameraSpecification;
+    lut: LUT | null;
     transition: TransitionSpecification;
     projection: ProjectionSpecification;
 
@@ -226,6 +230,7 @@ class Style extends Evented {
     _mergedOtherSourceCaches: {[_: string]: SourceCache};
     _mergedSymbolSourceCaches: {[_: string]: SourceCache};
     _clipLayerIndices: Array<number>;
+    _luts: {[_: string]: LUT};
 
     _request: ?Cancelable;
     _spriteRequest: ?Cancelable;
@@ -342,6 +347,7 @@ class Style extends Evented {
         this._availableImages = [];
         this._order = [];
         this._markersNeedUpdate = false;
+        this._luts = {};
 
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
@@ -653,94 +659,107 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = clone(json);
 
-        for (const id in json.sources) {
-            this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
-        }
+        const proceedWithStyleLoad = () => {
+            for (const id in json.sources) {
+                this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
+            }
 
-        if (json.sprite) {
-            this._loadSprite(json.sprite);
-        } else {
-            this.imageManager.setLoaded(true, this.scope);
-            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
-        }
-
-        this.glyphManager.setURL(json.glyphs, this.scope);
-
-        const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
-        this._order = layers.map((layer) => layer.id);
-
-        if (this.stylesheet.light) {
-            warnOnce('The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.');
-        }
-
-        if (this.stylesheet.lights) {
-            if (this.stylesheet.lights.length === 1 && this.stylesheet.lights[0].type === "flat") {
-                const flatLight: FlatLightSpecification = this.stylesheet.lights[0];
-                this.light = new Light(flatLight.properties, flatLight.id);
+            if (json.sprite) {
+                this._loadSprite(json.sprite);
             } else {
-                this.setLights(this.stylesheet.lights);
+                this.imageManager.setLoaded(true, this.scope);
+                this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             }
-        }
 
-        if (!this.light) {
-            this.light = new Light(this.stylesheet.light);
-        }
+            this.glyphManager.setURL(json.glyphs, this.scope);
 
-        this._layers = {};
-        this._serializedLayers = {};
-        for (const layer of layers) {
-            const styleLayer = createStyleLayer(layer, this.scope, this.options);
-            if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
-            styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
-            this._layers[styleLayer.id] = styleLayer;
-            this._serializedLayers[styleLayer.id] = styleLayer.serialize();
+            const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
+            this._order = layers.map((layer) => layer.id);
 
-            const sourceCache = this.getOwnLayerSourceCache(styleLayer);
-            const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
-
-            if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
-                sourceCache.castsShadows = true;
+            if (this.stylesheet.light) {
+                warnOnce('The `light` root property is deprecated, prefer using `lights` with `flat` light type instead.');
             }
-        }
 
-        if (this.stylesheet.models) {
-            this.modelManager.addModels(this.stylesheet.models, this.scope);
-        }
-
-        const terrain = this.stylesheet.terrain;
-        if (terrain) {
-            // This workaround disables terrain and hillshade
-            // if there is noise in the Canvas2D operations used for image decoding.
-            if (this.disableElevatedTerrain === undefined)
-                this.disableElevatedTerrain = browser.hasCanvasFingerprintNoise();
-
-            if (this.disableElevatedTerrain) {
-                warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
-            } else if (!this.terrainSetForDrapingOnly()) {
-                this._createTerrain(terrain, DrapeRenderMode.elevated);
+            if (this.stylesheet.lights) {
+                if (this.stylesheet.lights.length === 1 && this.stylesheet.lights[0].type === "flat") {
+                    const flatLight: FlatLightSpecification = this.stylesheet.lights[0];
+                    this.light = new Light(flatLight.properties, flatLight.id);
+                } else {
+                    this.setLights(this.stylesheet.lights);
+                }
             }
-        }
 
-        if (this.stylesheet.fog) {
-            this._createFog(this.stylesheet.fog);
-        }
+            if (!this.light) {
+                this.light = new Light(this.stylesheet.light);
+            }
 
-        if (this.stylesheet.transition) {
-            this.setTransition(this.stylesheet.transition);
-        }
+            this._layers = {};
+            this._serializedLayers = {};
+            for (const layer of layers) {
+                const styleLayer = createStyleLayer(layer, this.scope, this.lut, this.options);
+                if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
+                styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
+                this._layers[styleLayer.id] = styleLayer;
+                this._serializedLayers[styleLayer.id] = styleLayer.serialize();
 
-        this.fire(new Event('data', {dataType: 'style'}));
+                const sourceCache = this.getOwnLayerSourceCache(styleLayer);
+                const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
-        const isRootStyle = this.isRootStyle();
+                if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
+                    sourceCache.castsShadows = true;
+                }
+            }
 
-        if (json.imports) {
-            this._loadImports(json.imports, validate).then(() => {
+            if (this.stylesheet.models) {
+                this.modelManager.addModels(this.stylesheet.models, this.scope);
+            }
+
+            const terrain = this.stylesheet.terrain;
+            if (terrain) {
+                // This workaround disables terrain and hillshade
+                // if there is noise in the Canvas2D operations used for image decoding.
+                if (this.disableElevatedTerrain === undefined)
+                    this.disableElevatedTerrain = browser.hasCanvasFingerprintNoise();
+
+                if (this.disableElevatedTerrain) {
+                    warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
+                } else if (!this.terrainSetForDrapingOnly()) {
+                    this._createTerrain(terrain, DrapeRenderMode.elevated);
+                }
+            }
+
+            if (this.stylesheet.fog) {
+                this._createFog(this.stylesheet.fog);
+            }
+
+            if (this.stylesheet.transition) {
+                this.setTransition(this.stylesheet.transition);
+            }
+
+            this.fire(new Event('data', {dataType: 'style'}));
+
+            const isRootStyle = this.isRootStyle();
+
+            if (json.imports) {
+                this._loadImports(json.imports, validate).then(() => {
+                    this._reloadImports();
+                    this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+                });
+            } else {
                 this._reloadImports();
                 this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+            }
+        };
+
+        if (this.stylesheet['color-theme']) {
+            this._loadColorTheme(this.stylesheet['color-theme']).then(() => {
+                proceedWithStyleLoad();
+            }).catch((e) => {
+                warnOnce(`Couldn\'t load color theme from the stylesheet: ${e}`);
+                proceedWithStyleLoad();
             });
         } else {
-            this._reloadImports();
-            this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+            proceedWithStyleLoad();
         }
     }
 
@@ -924,12 +943,16 @@ class Style extends Evented {
         const slots: {[string]: StyleLayer[]} = {};
         const mergedOrder: StyleLayer[] = [];
         const mergedLayers: {[string]: StyleLayer} = {};
+        const luts: {[string]: LUT} = {};
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
 
         this.forEachFragmentStyle((style: Style) => {
+            if (style.lut) {
+                luts[style.scope] = style.lut;
+            }
             for (const layerId of style._order) {
                 const layer = style._layers[layerId];
                 if (layer.type === 'slot') {
@@ -973,6 +996,7 @@ class Style extends Evented {
 
         sort(mergedOrder);
         this._mergedLayers = mergedLayers;
+        this._luts = luts;
         this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
     }
@@ -989,6 +1013,62 @@ class Style extends Evented {
         this.stylesheet.camera = extend({}, this.stylesheet.camera, camera);
         this.camera = this.stylesheet.camera;
         return this;
+    }
+
+    _loadColorTheme(colorization: ?ColorThemeSpecification): Promise<any> {
+        if (!colorization) {
+            return Promise.resolve();
+        }
+        if (!colorization.data) {
+            return Promise.resolve();
+        }
+
+        const properties = evaluateColorThemeProperties(this.scope, colorization, this.options);
+        let data = properties.get('data');
+        const dataURLPrefix = 'data:image/png;base64,';
+        if (!data.startsWith(dataURLPrefix)) {
+            data = dataURLPrefix + data;
+        }
+        // Reserved image name, which references the LUT in the image manager
+        const styleLutName = 'mapbox-reserved-lut';
+
+        return new Promise((resolve, reject) => {
+            this.map.loadImage(data, (err, bitmap) => {
+                if (err) {
+                    reject(new Error(`${err.message}`));
+                    return;
+                }
+                if (bitmap.height > 32) {
+                    reject(new Error('The height of the image must be less than or equal to 32 pixels.'));
+                    return;
+                }
+                if (bitmap.width !== bitmap.height * bitmap.height) {
+                    reject(new Error('The width of the image must be equal to the height squared.'));
+                    return;
+                }
+
+                if (this.getImage(styleLutName)) {
+                    this.removeImage(styleLutName);
+                }
+                const {width, height, data} = browser.getImageData(bitmap);
+                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, version: 0});
+
+                const image = this.imageManager.getImage(styleLutName, this.scope);
+                if (!image) {
+                    reject(new Error('Missing LUT image.'));
+                } else {
+                    this.lut = {
+                        name: styleLutName,
+                        image: image.data
+                    };
+                    resolve();
+                }
+            });
+        });
+    }
+
+    getLut(scope: string): LUT | null {
+        return this._luts ? this._luts[scope] : null;
     }
 
     setProjection(projection?: ?ProjectionSpecification) {
@@ -1300,7 +1380,7 @@ class Style extends Evented {
                         if (!programIds) continue;
 
                         for (const programId of programIds) {
-                            const params = layer.getDefaultProgramParams(programId, parameters.zoom);
+                            const params = layer.getDefaultProgramParams(programId, parameters.zoom, this.lut);
                             if (params) {
                                 painter.style = this;
                                 if (this.fog) {
@@ -1715,7 +1795,7 @@ class Style extends Evented {
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         };
 
-        const directionalColor = directional.properties.get('color').toArray01();
+        const directionalColor = directional.properties.get('color').toRenderColor(null).toArray01();
         const directionalIntensity = directional.properties.get('intensity');
         const direction = directional.properties.get('direction');
 
@@ -1723,7 +1803,7 @@ class Style extends Evented {
         const polarIntensity = 1.0 - sphericalDirection[2] / 90.0;
         const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
 
-        const ambientColor = ambient.properties.get('color').toArray01();
+        const ambientColor = ambient.properties.get('color').toRenderColor(null).toArray01();
         const ambientIntensity = ambient.properties.get('intensity');
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
 
@@ -1947,7 +2027,7 @@ class Style extends Evented {
         let layer;
         if (layerObject.type === 'custom') {
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
-            layer = createStyleLayer(layerObject, this.scope, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this.lut, this.options);
         } else {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
@@ -1959,7 +2039,7 @@ class Style extends Evented {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject, this.scope, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this.lut, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
@@ -2405,6 +2485,7 @@ class Style extends Evented {
             terrain: scopedTerrain,
             fog: this.stylesheet.fog,
             center: this.stylesheet.center,
+            "color-theme": this.stylesheet["color-theme"],
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
             pitch: this.stylesheet.pitch,

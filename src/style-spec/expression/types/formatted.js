@@ -65,7 +65,7 @@ export default class Formatted {
                 options["font-scale"] = section.scale;
             }
             if (section.textColor) {
-                options["text-color"] = (["rgba"]: Array<mixed>).concat(section.textColor.toArray());
+                options["text-color"] = (["rgba"]: Array<mixed>).concat(section.textColor.toRenderColor(null).toArray());
             }
             serialized.push(options);
         }

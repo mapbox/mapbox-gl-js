@@ -37,6 +37,8 @@ import type {FeatureStates} from '../source/source_state.js';
 import type {FormattedSection} from '../style-spec/expression/types/formatted.js';
 import type {IVectorTileLayer} from '@mapbox/vector-tile';
 import type {IUniform} from '../render/uniform_binding.js';
+import type {LUT} from "../util/lut";
+import type {RenderColor} from "../style-spec/util/color";
 
 export type BinderUniform = {
     name: string,
@@ -44,7 +46,12 @@ export type BinderUniform = {
     binding: IUniform<any>
 };
 
-function packColor(color: Color): [number, number] {
+export type ProgramConfigurationContext = {
+    zoom: number,
+    lut: LUT | null
+};
+
+function packColor(color: RenderColor): [number, number] {
     return [
         packUint8ToFloat(255 * color.r, 255 * color.g),
         packUint8ToFloat(255 * color.b, 255 * color.a)
@@ -80,6 +87,7 @@ function packColor(color: Color): [number, number] {
  */
 
 interface AttributeBinder {
+    context: ProgramConfigurationContext;
     populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness: ?number, formattedSection?: FormattedSection): void;
     updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: SpritePositions, brightness: number): void;
     upload(Context): void;
@@ -88,6 +96,7 @@ interface AttributeBinder {
 
 interface UniformBinder {
     uniformNames: Array<string>;
+    context: ProgramConfigurationContext;
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void;
     getBinding(context: Context, name: string): $Shape<IUniform<any>>;
 }
@@ -96,15 +105,22 @@ class ConstantBinder implements UniformBinder {
     value: mixed;
     type: string;
     uniformNames: Array<string>;
+    context: ProgramConfigurationContext;
 
-    constructor(value: mixed, names: Array<string>, type: string) {
+    constructor(value: mixed, names: Array<string>, type: string, context: ProgramConfigurationContext) {
         this.value = value;
         this.uniformNames = names.map(name => `u_${name}`);
         this.type = type;
+        this.context = context;
     }
 
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<mixed>, uniformName: string): void {
-        uniform.set(program, uniformName, currentValue.constantOr(this.value));
+        const value = currentValue.constantOr(this.value);
+        if (value instanceof Color) {
+            uniform.set(program, uniformName, value.toRenderColor(this.context.lut));
+        } else {
+            uniform.set(program, uniformName, value);
+        }
     }
 
     // $FlowFixMe[method-unbinding]
@@ -120,6 +136,7 @@ class PatternConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
     pattern: ?Array<number>;
     pixelRatio: number;
+    context: ProgramConfigurationContext;
 
     constructor(value: mixed, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
@@ -152,6 +169,7 @@ class SourceExpressionBinder implements AttributeBinder {
     expression: SourceExpression;
     type: string;
     maxValue: number;
+    context: ProgramConfigurationContext;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -176,17 +194,17 @@ class SourceExpressionBinder implements AttributeBinder {
         // $FlowFixMe[method-unbinding]
         const value = this.expression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         this.paintVertexArray.resize(newLength);
-        this._setPaintValue(start, newLength, value);
+        this._setPaintValue(start, newLength, value, this.context);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
         const value = this.expression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages);
-        this._setPaintValue(start, end, value);
+        this._setPaintValue(start, end, value, this.context);
     }
 
-    _setPaintValue(start: number, end: number, value: any) {
+    _setPaintValue(start: number, end: number, value: any, context: ProgramConfigurationContext) {
         if (this.type === 'color') {
-            const color = packColor(value);
+            const color = packColor(value.toRenderColor(context.lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, color[0], color[1]);
             }
@@ -220,19 +238,19 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     uniformNames: Array<string>;
     type: string;
     useIntegerZoom: boolean;
-    zoom: number;
+    context: ProgramConfigurationContext;
     maxValue: number;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, PaintVertexArray: Class<StructArray>) {
+    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, context: ProgramConfigurationContext, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.uniformNames = names.map(name => `u_${name}_t`);
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
-        this.zoom = zoom;
+        this.context = context;
         this.maxValue = 0;
         this.paintVertexAttributes = names.map((name) => ({
             name: `a_${name}`,
@@ -245,24 +263,24 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness: ?number, formattedSection?: FormattedSection) {
         // $FlowFixMe[method-unbinding]
-        const min = this.expression.evaluate(new EvaluationParameters(this.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection);
+        const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         // $FlowFixMe[method-unbinding]
-        const max = this.expression.evaluate(new EvaluationParameters(this.zoom + 1, {brightness}), feature, {}, canonical, availableImages, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
-        this._setPaintValue(start, newLength, min, max);
+        this._setPaintValue(start, newLength, min, max, this.context);
     }
 
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
-        const min = this.expression.evaluate({zoom: this.zoom, brightness}, feature, featureState, undefined, availableImages);
-        const max = this.expression.evaluate({zoom: this.zoom + 1, brightness}, feature, featureState, undefined, availableImages);
-        this._setPaintValue(start, end, min, max);
+        const min = this.expression.evaluate({zoom: this.context.zoom, brightness}, feature, featureState, undefined, availableImages);
+        const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness}, feature, featureState, undefined, availableImages);
+        this._setPaintValue(start, end, min, max, this.context);
     }
 
-    _setPaintValue(start: number, end: number, min: any, max: any) {
+    _setPaintValue(start: number, end: number, min: any, max: any, context: ProgramConfigurationContext) {
         if (this.type === 'color') {
-            const minColor = packColor(min);
-            const maxColor = packColor(max);
+            const minColor = packColor(min.toRenderColor(context.lut));
+            const maxColor = packColor(min.toRenderColor(context.lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }
@@ -292,7 +310,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, _: PossiblyEvaluatedPropertyValue<*>, uniformName: string): void {
         const currentZoom = this.useIntegerZoom ? Math.floor(globals.zoom) : globals.zoom;
-        const factor = clamp(this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1), 0, 1);
+        const factor = clamp(this.expression.interpolationFactor(currentZoom, this.context.zoom, this.context.zoom + 1), 0, 1);
         uniform.set(program, uniformName, factor);
     }
 
@@ -305,6 +323,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 class PatternCompositeBinder implements AttributeBinder {
     expression: CompositeExpression;
     layerId: string;
+    context: ProgramConfigurationContext;
 
     paintVertexArray: StructArray;
     paintVertexBuffer: ?VertexBuffer;
@@ -322,7 +341,7 @@ class PatternCompositeBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions) {
+    populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, _availableImages: Array<string>) {
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
@@ -378,12 +397,14 @@ class PatternCompositeBinder implements AttributeBinder {
 export default class ProgramConfiguration {
     binders: {[_: string]: (AttributeBinder | UniformBinder) };
     cacheKey: string;
+    context: ProgramConfigurationContext;
 
     _buffers: Array<VertexBuffer>;
 
-    constructor(layer: TypedStyleLayer, zoom: number, filterProperties: (_: string) => boolean = () => true) {
+    constructor(layer: TypedStyleLayer, context: ProgramConfigurationContext, filterProperties: (_: string) => boolean = () => true) {
         this.binders = {};
         this._buffers = [];
+        this.context = context;
 
         const keys = [];
 
@@ -403,7 +424,7 @@ export default class ProgramConfiguration {
             if (expression.kind === 'constant' && !sourceException) {
                 this.binders[property] = isPattern ?
                     new PatternConstantBinder(expression.value, names) :
-                    new ConstantBinder(expression.value, names, type);
+                    new ConstantBinder(expression.value, names, type, context);
                 keys.push(`/u_${property}`);
 
             } else if (expression.kind === 'source' || sourceException || isPattern) {
@@ -422,7 +443,7 @@ export default class ProgramConfiguration {
                 const StructArrayLayout = layoutType(property, type, 'composite');
                 // $FlowFixMe[prop-missing]
                 // $FlowFixMe[incompatible-call] — expression can be a `constant` kind expression
-                this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, zoom, StructArrayLayout);
+                this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, context, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
         }
@@ -438,6 +459,7 @@ export default class ProgramConfiguration {
     populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness: ?number, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
+            binder.context = this.context;
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
                 (binder: AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection);
         }
@@ -455,8 +477,10 @@ export default class ProgramConfiguration {
         const keys = Object.keys(featureStates);
         const featureStateUpdate = (keys.length !== 0);
         const ids = featureStateUpdate ? keys : featureMap.uniqueIds;
+        this.context.lut = layer.lut;
         for (const property in this.binders) {
             const binder = this.binders[property];
+            binder.context = this.context;
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
                  binder instanceof PatternCompositeBinder) && ((binder: any).expression.isStateDependent === true || (binder: any).expression.isLightConstant === false)) {
                 //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
@@ -586,10 +610,10 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     _bufferOffset: number;
     _idlessCounter: number;
 
-    constructor(layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (_: string) => boolean = () => true) {
+    constructor(layers: $ReadOnlyArray<Layer>, context: ProgramConfigurationContext, filterProperties: (_: string) => boolean = () => true) {
         this.programConfigurations = {};
         for (const layer of layers) {
-            this.programConfigurations[layer.id] = new ProgramConfiguration(layer, zoom, filterProperties);
+            this.programConfigurations[layer.id] = new ProgramConfiguration(layer, context, filterProperties);
         }
         this.needsUpload = false;
         this._featureMap = new FeaturePositionMap();

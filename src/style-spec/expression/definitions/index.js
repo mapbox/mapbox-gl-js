@@ -193,7 +193,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
-            return v.evaluate(ctx).toArray();
+            return v.evaluate(ctx).toRenderColor(null).toArray();
         }
     ],
     'rgb': [

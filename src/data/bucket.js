@@ -18,11 +18,13 @@ import type Point from '@mapbox/point-geometry';
 import type {ProjectionSpecification} from '../style-spec/types.js';
 import type {IVectorTileFeature, IVectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../3d-style/util/conflation.js';
+import type {LUT} from "../util/lut";
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
     layers: Array<Layer>,
     zoom: number,
+    lut: LUT | null,
     canonical: CanonicalTileID,
     pixelRatio: number,
     overscaling: number,

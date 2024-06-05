@@ -13,9 +13,10 @@ import {extend} from '../../util/util.js';
 import type Painter from '../painter.js';
 import type {UniformValues} from '../uniform_binding.js';
 import type Context from '../../gl/context.js';
-import type Color from '../../style-spec/util/color.js';
 import type {OverscaledTileID} from '../../source/tile_id.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
+import type {RenderColor} from "../../style-spec/util/color";
+import type {ImagePosition} from "../image_atlas";
 
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -64,7 +65,7 @@ const backgroundUniformValues = (
     matrix: Float32Array,
     emissiveStrength: number,
     opacity: number,
-    color: Color
+    color: RenderColor
 ): UniformValues<BackgroundUniformsType> => ({
     'u_matrix': matrix,
     'u_emissive_strength': emissiveStrength,
@@ -79,9 +80,10 @@ const backgroundPatternUniformValues = (
     painter: Painter,
     image: ResolvedImage,
     scope: string,
+    patternPosition: ?ImagePosition,
     tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> => extend(
-    bgPatternUniformValues(image, scope, painter, tile),
+    bgPatternUniformValues(image, scope, patternPosition, painter, tile),
     {
         'u_matrix': matrix,
         'u_emissive_strength': emissiveStrength,

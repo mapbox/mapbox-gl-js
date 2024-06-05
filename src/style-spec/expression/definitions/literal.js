@@ -60,7 +60,7 @@ class Literal implements Expression {
             // Constant-folding can generate Literal expressions that you
             // couldn't actually generate with a "literal" expression,
             // so we have to implement an equivalent serialization here
-            return ["rgba"].concat(this.value.toArray());
+            return ["rgba"].concat(this.value.toRenderColor(null).toArray());
         } else if (this.value instanceof Formatted) {
             // Same as Color
             return this.value.serialize();

@@ -25,6 +25,7 @@ import {lineDefinesValues} from "../../render/program/line_program.js";
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
 import SourceCache from '../../source/source_cache.js';
+import type {LUT} from "../../util/lut";
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: ?boolean;
@@ -58,8 +59,8 @@ class LineStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         if (properties.layout) {
             this.layout = new PossiblyEvaluated(properties.layout);
         }
@@ -100,10 +101,10 @@ class LineStyleLayer extends StyleLayer {
         return [programId];
     }
 
-    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = ((lineDefinesValues(this): any): DynamicDefinesType[]);
         return {
-            config: new ProgramConfiguration(this, zoom),
+            config: new ProgramConfiguration(this, {zoom, lut}),
             defines: definesValues,
             overrideFog: false
         };

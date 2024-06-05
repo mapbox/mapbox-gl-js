@@ -17,6 +17,7 @@ import type {RGBAImage} from '../../util/image.js';
 import type SkyboxGeometry from '../../render/skybox_geometry.js';
 import type {Position} from '../../util/util.js';
 import type {ConfigOptions} from '../properties.js';
+import type {LUT} from "../../util/lut";
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
     const up = [0, 0, 1];
@@ -44,8 +45,8 @@ class SkyLayer extends StyleLayer {
 
     skyboxGeometry: SkyboxGeometry;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         this._updateColorRamp();
     }
 

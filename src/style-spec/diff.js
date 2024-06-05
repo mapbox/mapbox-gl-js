@@ -486,6 +486,11 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         if (!isEqual(before.camera, after.camera)) {
             commands.push({command: operations.setCamera, args: [after.camera]});
         }
+        if (!isEqual(before["color-theme"], after["color-theme"])) {
+            // Update this to setColorTheme after
+            // https://mapbox.atlassian.net/browse/GLJS-842 is implemented
+            return [{command: operations.setStyle, args: [after]}];
+        }
 
         // Handle changes to `sources`
         // If a source is to be removed, we also--before the removeSource

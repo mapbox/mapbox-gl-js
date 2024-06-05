@@ -81,6 +81,7 @@ import type {FeatureStates} from '../../source/source_state.js';
 import type {TileTransform} from '../../geo/projection/tile_transform.js';
 import {SymbolParams} from '../../render/symbol_parameters.js';
 import type {TileFootprint} from '../../../3d-style/util/conflation.js';
+import type {LUT} from "../../util/lut.js";
 
 export type SingleCollisionBox = {
     x1: number;
@@ -401,6 +402,7 @@ class SymbolBucket implements Bucket {
 
     collisionBoxArray: CollisionBoxArray;
     zoom: number;
+    lut: LUT | null;
     overscaling: number;
     layers: Array<SymbolStyleLayer>;
     layerIds: Array<string>;
@@ -468,6 +470,7 @@ class SymbolBucket implements Bucket {
 
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
+        this.lut = options.lut;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
@@ -517,8 +520,8 @@ class SymbolBucket implements Bucket {
     }
 
     createArrays() {
-        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, this.zoom, (property) => /^text/.test(property)));
-        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, this.zoom, (property) => /^icon/.test(property)));
+        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^text/.test(property)));
+        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^icon/.test(property)));
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();

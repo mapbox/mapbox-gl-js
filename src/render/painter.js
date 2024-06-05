@@ -66,7 +66,6 @@ import type ModelManager from '../../3d-style/render/model_manager.js';
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type IndexBuffer from '../gl/index_buffer.js';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types.js';
-import type ResolvedImage from '../style-spec/expression/types/resolved_image.js';
 import type {DynamicDefinesType} from './program/program_uniforms.js';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers.js';
 import type {ContextOptions} from '../gl/context.js';
@@ -947,16 +946,20 @@ class Painter {
                 return Color.black;
             }
 
-            if (this.style.fog && this.transform.projection.supportsFog && !shouldRenderAtmosphere) {
-                const fogColor = this.style.fog.properties.get('color').toArray01();
+            const fog = this.style.fog;
+            if (fog && this.transform.projection.supportsFog) {
+                const fogLUT = this.style._luts[fog.scope];
+                if (!shouldRenderAtmosphere) {
+                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
 
-                return new Color(...fogColor);
-            }
+                    return new Color(...fogColor);
+                }
 
-            if (this.style.fog && this.transform.projection.supportsFog && shouldRenderAtmosphere) {
-                const spaceColor = this.style.fog.properties.get('space-color').toArray01();
+                if (shouldRenderAtmosphere) {
+                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
 
-                return new Color(...spaceColor);
+                    return new Color(...spaceColor);
+                }
             }
 
             return Color.transparent;
@@ -1346,18 +1349,6 @@ class Painter {
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 
-    /**
-     * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
-     *
-     * @returns true if a needed image is missing and rendering needs to be skipped.
-     * @private
-     */
-    isPatternMissing(image: ?ResolvedImage, scope: string): boolean {
-        if (image === null) return true;
-        if (image === undefined) return false;
-        return !this.imageManager.getPattern(image.toString(), scope);
-    }
-
     terrainRenderModeElevated(): boolean {
         // Whether elevation sampling should be enabled in the vertex shader.
         return (this.style && !!this.style.getTerrain() && !!this.terrain && !this.terrain.renderingToTexture) || this.forceTerrainMode;
@@ -1503,7 +1494,7 @@ class Painter {
             const ambientLight = this.style.ambientLight;
 
             if (directionalLight && ambientLight) {
-                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight);
+                const lightsUniforms = lightsUniformValues(directionalLight, ambientLight, this.style);
                 program.setLightsUniformValues(context, lightsUniforms);
             }
         }

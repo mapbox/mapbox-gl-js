@@ -70,3 +70,14 @@ vec4 textureLodCustom(sampler2D image, vec2 pos, vec2 lod_coord) {
     // https://developer.arm.com/documentation/101897/0301/Buffers-and-textures/Texture-sampling-performance
     return textureLod(image, pos, lod);
 }
+
+vec4 applyLUT(highp sampler3D lut, vec4 col) {
+    vec3 size = vec3(textureSize(lut, 0));
+    // Sample from the center of the pixel in the LUT
+    vec3 uvw = (col.rbg * float(size - 1.0) + 0.5) / size;
+    return vec4(texture(lut, uvw).rgb,col.a);
+}
+
+vec3 applyLUT(highp sampler3D lut, vec3 col) {
+    return applyLUT(lut, vec4(col, 1.0)).rgb;
+}

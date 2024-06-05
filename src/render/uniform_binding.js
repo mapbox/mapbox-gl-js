@@ -3,6 +3,7 @@
 import Color from '../style-spec/util/color.js';
 import type Context from '../gl/context.js';
 import type {ObjMap} from '../types/obj-map.js';
+import type {RenderColor} from "../style-spec/util/color";
 
 export type UniformValues<Us: Object>
     = $Exact<ObjMap<Us, <V>(u: IUniform<V>) => V>>;
@@ -116,13 +117,13 @@ class Uniform4f extends Uniform<[number, number, number, number]> implements IUn
     }
 }
 
-class UniformColor extends Uniform<Color> implements IUniform<Color> {
+class UniformColor extends Uniform<RenderColor> implements IUniform<RenderColor> {
     constructor(context: Context) {
         super(context);
-        this.current = Color.transparent;
+        this.current = Color.transparent.toRenderColor(null);
     }
 
-    set(program: WebGLProgram, name: string, v: Color): void {
+    set(program: WebGLProgram, name: string, v: RenderColor): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v.r !== this.current.r || v.g !== this.current.g ||
             v.b !== this.current.b || v.a !== this.current.a) {

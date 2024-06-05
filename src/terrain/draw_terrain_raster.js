@@ -312,7 +312,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             const directionalLight = painter.style.directionalLight;
             const ambientLight = painter.style.ambientLight;
             if (directionalLight && ambientLight) {
-                groundShadowFactor = calculateGroundShadowFactor(directionalLight, ambientLight);
+                groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
             }
         }
 

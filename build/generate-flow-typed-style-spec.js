@@ -238,6 +238,8 @@ ${flowObjectDeclaration('FogSpecification', spec.fog)}
 
 ${flowObjectDeclaration('CameraSpecification', spec.camera)}
 
+${flowObjectDeclaration('ColorThemeSpecification', spec.colorTheme)}
+
 ${flowObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${flowObjectDeclaration('ImportSpecification', spec.import)}

@@ -163,7 +163,7 @@ class LineBucket implements Bucket {
         this.layoutVertexArray2 = new LineExtLayoutArray();
         this.patternVertexArray = new LinePatternLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
         this.segments = new SegmentVector();
         this.maxLineLength = 0;
         this.zOffsetVertexArray = new ZOffsetVertexArray();

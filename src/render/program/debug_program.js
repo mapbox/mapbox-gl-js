@@ -27,7 +27,7 @@ const debugUniforms = (context: Context): DebugUniformsType => ({
 
 const debugUniformValues = (matrix: Float32Array, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
     'u_matrix': matrix,
-    'u_color': color,
+    'u_color': color.toRenderColor(null),
     'u_overlay': 0,
     'u_overlay_scale': scaleRatio
 });

@@ -28,6 +28,8 @@ declare class WebGL2RenderingContext extends WebGLRenderingContext {
     SEPARATE_ATTRIBS: 0x8C8D;
     ANY_SAMPLES_PASSED: 0x8C2F;
     QUERY_RESULT_AVAILABLE: 0x8867;
+    TEXTURE_3D: 0x806F;
+
     createVertexArray: () => WebGLVertexArrayObject | null;
     deleteVertexArray: (vertexArray: WebGLVertexArrayObject | null) => void;
     bindVertexArray: (array: WebGLVertexArrayObject | null) => void;
@@ -39,4 +41,5 @@ declare class WebGL2RenderingContext extends WebGLRenderingContext {
     endQuery: (target: GLenum) => void;
     deleteQuery: (query: WebGLQuery) => void;
     getQueryParameter: (query: WebGLQuery, pname: GLenum) => GLuint;
+    texImage3D: (target: GLenum, level: GLuint, internalformat: GLuint, width: GLsizei, height: GLsizei, depth: GLsizei, border: GLuint, format: GLenum, type: GLenum, srcData: GLintptr) => void;
 };

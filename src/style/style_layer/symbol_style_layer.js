@@ -45,6 +45,7 @@ import FormatSectionOverride from '../format_section_override.js';
 import FormatExpression from '../../style-spec/expression/definitions/format.js';
 import Literal from '../../style-spec/expression/definitions/literal.js';
 import ProgramConfiguration from '../../data/program_configuration.js';
+import type {LUT} from "../../util/lut";
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -60,8 +61,8 @@ class SymbolStyleLayer extends StyleLayer {
     _brightnessMin: number;
     _brightnessMax: number;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         // $FlowFixMe[incompatible-type]
         this._colorAdjustmentMatrix = mat4.identity([]);
     }
@@ -241,9 +242,9 @@ class SymbolStyleLayer extends StyleLayer {
         return ids;
     }
 
-    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
-            config: new ProgramConfiguration(this, zoom),
+            config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false
         };
     }

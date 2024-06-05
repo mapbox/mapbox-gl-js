@@ -47,6 +47,7 @@ class Fog extends Evented {
     _transitioning: Transitioning<Props>;
     properties: PossiblyEvaluated<Props>;
     _options: FogSpecification;
+    scope: string;
 
     // Alternate projections do not yet support fog.
     // Hold on to transform so that we know whether a projection is set.
@@ -59,6 +60,7 @@ class Fog extends Evented {
         this._transitioning = this._transitionable.untransitioned();
         this._transform = transform;
         this.properties = new PossiblyEvaluated(fogProperties);
+        this.scope = scope;
     }
 
     get state(): FogState {

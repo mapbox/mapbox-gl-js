@@ -27,6 +27,7 @@ import {circleDefinesValues} from '../../render/program/circle_program.js';
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {DynamicDefinesType} from "../../render/program/program_uniforms.js";
 import type {ConfigOptions} from '../properties.js';
+import type {LUT} from "../../util/lut";
 
 class CircleStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -36,8 +37,8 @@ class CircleStyleLayer extends StyleLayer {
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
     }
 
     createBucket(parameters: BucketParameters<CircleStyleLayer>): CircleBucket<CircleStyleLayer> {
@@ -79,10 +80,10 @@ class CircleStyleLayer extends StyleLayer {
         return ['circle'];
     }
 
-    getDefaultProgramParams(_: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = ((circleDefinesValues(this): any): DynamicDefinesType[]);
         return {
-            config: new ProgramConfiguration(this, zoom),
+            config: new ProgramConfiguration(this, {zoom, lut}),
             defines: definesValues,
             overrideFog: false
         };

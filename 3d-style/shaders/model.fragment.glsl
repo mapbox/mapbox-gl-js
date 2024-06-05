@@ -64,6 +64,9 @@ uniform sampler2D u_normalTexture;
 #ifdef HAS_TEXTURE_u_emissionTexture
 uniform sampler2D u_emissionTexture;
 #endif
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
 in highp float v_depth;
@@ -160,7 +163,12 @@ vec4 getBaseColor() {
         albedo *= texColor;
     }
 #endif
-    return vec4(mix(albedo.rgb, v_color_mix.rgb, v_color_mix.a), albedo.a);
+
+    vec4 color = vec4(mix(albedo.rgb, v_color_mix.rgb, v_color_mix.a), albedo.a);
+#ifdef APPLY_LUT_ON_GPU
+    color = applyLUT(u_lutTexture, color);
+#endif
+    return color;
 }
 
 // From http://www.thetenthplanet.de/archives/1180
@@ -474,7 +482,11 @@ vec4 finalColor;
 
     resEmission *= v_height_based_emission_params.z + v_height_based_emission_params.w * pow(clamp(v_height_based_emission_params.x, 0.0, 1.0), v_height_based_emission_params.y);
 
-    color = mix(color, v_color_mix.rgb, min(1.0, resEmission));
+    vec3 color_mix = v_color_mix.rgb;
+#ifdef APPLY_LUT_ON_GPU
+    color_mix = applyLUT(u_lutTexture, color_mix);
+#endif
+    color = mix(color, color_mix, min(1.0, resEmission));
 #ifdef HAS_ATTRIBUTE_a_color_4f
     // pbr includes color. If pbr is used, color_4f is used to pass information about light geometry.
     // calculate distance to line segment, multiplier 1.3 additionally deattenuates towards extruded corners.

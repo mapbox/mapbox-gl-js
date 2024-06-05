@@ -133,7 +133,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const aoIntensity = layer.paint.get('fill-extrusion-ambient-occlusion-intensity');
             const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-ground-radius');
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
-            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3);
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3);
             const aoEnabled = aoIntensity > 0 && aoRadius > 0;
             const floodLightEnabled = floodLightIntensity > 0;
 
@@ -260,7 +260,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
-    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toArray01().slice(0, 3): any);
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3): any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
@@ -297,7 +297,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const directionalLight = painter.style.directionalLight;
         const ambientLight = painter.style.ambientLight;
         if (directionalLight && ambientLight) {
-            groundShadowFactor = calculateGroundShadowFactor(directionalLight, ambientLight);
+            groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
         }
 
         singleCascadeDefines = baseDefines.concat(['SHADOWS_SINGLE_CASCADE']);

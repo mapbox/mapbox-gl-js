@@ -183,6 +183,78 @@ class Texture {
 }
 
 export default Texture;
+export class Texture3D {
+    context: Context;
+    size: [number, number, number];
+    texture: WebGLTexture;
+    format: TextureFormat;
+    minFilter: ?TextureFilter;
+    magFilter: ?TextureFilter;
+    wrapS: ?TextureWrap;
+    wrapT: ?TextureWrap;
+
+    constructor(context: Context, image: TextureImage, size: [number, number, number], format: TextureFormat) {
+        this.context = context;
+        this.format = format;
+        this.size = size;
+        this.texture = ((context.gl.createTexture(): any): WebGLTexture);
+
+        const [width, height, depth] = this.size;
+        const {gl} = context;
+
+        gl.bindTexture(gl.TEXTURE_3D, this.texture);
+
+        context.pixelStoreUnpack.set(1);
+
+        let internalFormat = this.format;
+        let type: TextureType = gl.UNSIGNED_BYTE;
+
+        if (this.format === gl.DEPTH_COMPONENT) {
+            // $FlowFixMe[incompatible-type]
+            internalFormat = gl.DEPTH_COMPONENT16;
+            type = gl.UNSIGNED_SHORT;
+        }
+        if (this.format === gl.R8) {
+            format = gl.RED;
+        }
+        if (this.format === gl.R32F) {
+            assert(image instanceof Float32Image);
+            type = gl.FLOAT;
+            format = gl.RED;
+        }
+        assert(image.width === (image.height * image.height));
+        assert(image.height === height);
+        assert(image.width === width * depth);
+
+        // $FlowFixMe prop-missing - Flow can't refine image type here
+        gl.texImage3D(gl.TEXTURE_3D, 0, internalFormat, width, height, depth, 0, format, type, image.data);
+    }
+
+    bind(filter: TextureFilter, wrap: TextureWrap) {
+        const {context} = this;
+        const {gl} = context;
+        gl.bindTexture(gl.TEXTURE_3D, this.texture);
+
+        if (filter !== this.minFilter) {
+            gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);
+            gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
+            this.minFilter = filter;
+        }
+
+        if (wrap !== this.wrapS) {
+            gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, wrap);
+            gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, wrap);
+            this.wrapS = wrap;
+        }
+    }
+
+    destroy() {
+        const {gl} = this.context;
+        gl.deleteTexture(this.texture);
+        this.texture = (null: any);
+    }
+}
+
 export class UserManagedTexture {
     context: Context;
     texture: WebGLTexture;

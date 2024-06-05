@@ -364,7 +364,7 @@ export class GroundEffect {
         const filtered = (property: string) => {
             return fillExtrusionGroundDataDrivenProperties.includes(property);
         };
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom, filtered);
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut}, filtered);
         this._segments = new SegmentVector();
         this.hiddenByLandmarkVertexArray = new FillExtrusionHiddenByLandmarkArray();
         this._segmentToGroundQuads = {};
@@ -673,7 +673,7 @@ class FillExtrusionBucket implements Bucket {
         const filtered = (property: string) => {
             return fillExtrusionDefaultDataDrivenProperties.includes(property);
         };
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, options.zoom, filtered);
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut}, filtered);
         this.segments = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.groundEffect = new GroundEffect(options);

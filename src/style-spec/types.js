@@ -71,6 +71,7 @@ export type StyleSpecification = {|
     "terrain"?: ?TerrainSpecification,
     "fog"?: FogSpecification,
     "camera"?: CameraSpecification,
+    "color-theme"?: ColorThemeSpecification,
     "imports"?: Array<ImportSpecification>,
     "schema"?: SchemaSpecification,
     "sources": SourcesSpecification,
@@ -126,6 +127,10 @@ export type FogSpecification = {|
 export type CameraSpecification = {|
     "camera-projection"?: PropertyValueSpecification<"perspective" | "orthographic">,
     "camera-projection-transition"?: TransitionSpecification
+|}
+
+export type ColorThemeSpecification = {|
+    "data"?: ExpressionSpecification
 |}
 
 export type ProjectionSpecification = {|

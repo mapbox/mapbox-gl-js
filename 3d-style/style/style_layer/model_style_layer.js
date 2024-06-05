@@ -30,6 +30,7 @@ import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index.j
 import type {QueryFeature} from '../../../src/util/vectortile_to_geojson.js';
 import {CanonicalTileID} from '../../../src/source/tile_id.js';
 import EvaluationParameters from '../../../src/style/evaluation_parameters.js';
+import type {LUT} from "../../../src/util/lut";
 
 class ModelStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -38,8 +39,8 @@ class ModelStyleLayer extends StyleLayer {
     layout: PossiblyEvaluated<LayoutProps>;
     modelManager: ModelManager;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }
 

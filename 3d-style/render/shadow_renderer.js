@@ -380,7 +380,7 @@ export class ShadowRenderer {
             baseDefines.push('RENDER_CUTOFF');
         }
 
-        const shadowColor = calculateGroundShadowFactor(directionalLight, ambientLight);
+        const shadowColor = calculateGroundShadowFactor(style, directionalLight, ambientLight);
 
         const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
@@ -592,7 +592,7 @@ export function shadowDirectionFromProperties(directionalLight: Lights<Direction
     return vec3.fromValues(position.x, position.y, position.z);
 }
 
-export function calculateGroundShadowFactor(directionalLight: Lights<Directional>, ambientLight: Lights<Ambient>): [number, number, number] {
+export function calculateGroundShadowFactor(style: Style, directionalLight: Lights<Directional>, ambientLight: Lights<Ambient>): [number, number, number] {
     const dirColor = directionalLight.properties.get('color');
     const dirIntensity = directionalLight.properties.get('intensity');
     const dirDirection = directionalLight.properties.get('direction');
@@ -603,9 +603,9 @@ export function calculateGroundShadowFactor(directionalLight: Lights<Directional
     const groundNormal = [0.0, 0.0, 1.0];
     const dirDirectionalFactor = Math.max(vec3.dot(groundNormal, directionVec), 0.0);
     const ambStrength = [0, 0, 0];
-    vec3.scale(ambStrength, ambientColor.toArray01Linear().slice(0, 3), ambientIntensity);
+    vec3.scale(ambStrength, ambientColor.toRenderColor(style._luts[directionalLight.scope]).toArray01Linear().slice(0, 3), ambientIntensity);
     const dirStrength = [0, 0, 0];
-    vec3.scale(dirStrength, dirColor.toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
+    vec3.scale(dirStrength, dirColor.toRenderColor(style._luts[ambientLight.scope]).toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)

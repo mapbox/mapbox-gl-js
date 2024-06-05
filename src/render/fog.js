@@ -60,7 +60,7 @@ export const fogUniformValues = (
     fogMatrix: ?Float32Array
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
-    const fogColor = fog.properties.get('color').toArray01();
+    const fogColor = fog.properties.get('color').toRenderColor(painter.style._luts[fog.scope]).toArray01();
     fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
     const [verticalRangeMin, verticalRangeMax] = fog.properties.get('vertical-range');

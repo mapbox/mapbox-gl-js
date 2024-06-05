@@ -13,6 +13,7 @@ import {OverscaledTileID} from '../source/tile_id.js';
 import type Painter from './painter.js';
 import type SourceCache from '../source/source_cache.js';
 import type BackgroundStyleLayer from '../style/style_layer/background_style_layer.js';
+import type {ImagePosition} from "./image_atlas";
 
 export default drawBackground;
 
@@ -28,7 +29,17 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
-    if (painter.isPatternMissing(image, layer.scope)) return;
+    let patternPosition: ?ImagePosition;
+    if (image !== undefined) {
+        // Check if pattern image is loaded and retrieve position
+        if (image === null) {
+            return;
+        }
+        patternPosition = painter.imageManager.getPattern(image.toString(), layer.scope, painter.style._luts[layer.scope]);
+        if (!patternPosition) {
+            return;
+        }
+    }
 
     const pass = (!image && color.a === 1 && opacity === 1 && painter.opaquePassEnabledForLayer()) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
@@ -61,8 +72,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, {tileID, tileSize}) :
-            backgroundUniformValues(matrix, emissiveStrength, opacity, color);
+            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, {tileID, tileSize}) :
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

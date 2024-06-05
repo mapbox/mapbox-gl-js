@@ -11,14 +11,15 @@ import type {LayoutProps, PaintProps} from './clip_style_layer_properties.js';
 import type EvaluationParameters from '../evaluation_parameters.js';
 import type {LayerSpecification} from '../../style-spec/types.js';
 import type {ConfigOptions} from '../properties.js';
+import type {LUT} from "../../util/lut";
 
 class ClipStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
     layout: PossiblyEvaluated<LayoutProps>;
     paint: PossiblyEvaluated<PaintProps>;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {

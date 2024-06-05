@@ -14,6 +14,7 @@ import type {LayerSpecification} from '../../style-spec/types.js';
 import type Texture from '../../render/texture.js';
 import type Framebuffer from '../../gl/framebuffer.js';
 import type SourceCache from '../../source/source_cache.js';
+import type {LUT} from "../../util/lut";
 
 const COLOR_RAMP_RES = 256;
 
@@ -31,8 +32,8 @@ class RasterParticleStyleLayer extends StyleLayer {
     previousDrawTimestamp: ?number;
     lastInvalidatedAt: number;
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
         this._updateColorRamp();
         this.lastInvalidatedAt = browser.now();
     }

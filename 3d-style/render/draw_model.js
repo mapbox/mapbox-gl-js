@@ -33,6 +33,8 @@ import type {DynamicDefinesType} from '../../src/render/program/program_uniforms
 import type {Mat4} from 'gl-matrix';
 import type VertexBuffer from '../../src/gl/vertex_buffer.js';
 import {Tiled3dModelFeature} from "../data/bucket/tiled_3d_model_bucket.js";
+import {Texture3D} from '../../src/render/texture.js';
+import type {LUT} from "../../src/util/lut";
 
 export default drawModels;
 
@@ -79,7 +81,7 @@ function fogMatrixForModel(modelMatrix: Mat4, transform: Transform): Mat4 {
 }
 
 // Collect defines and dynamic buffers (colors, normals, uv) and bind textures. Used for single mesh and instanced draw.
-function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?VertexBuffer>, mesh: Mesh, painter: Painter) {
+function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?VertexBuffer>, mesh: Mesh, painter: Painter, lut: LUT | null) {
     const material = mesh.material;
     const context = painter.context;
 
@@ -103,6 +105,16 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<?Vert
     setupTexture(normalTexture, 'HAS_TEXTURE_u_normalTexture', TextureSlots.Normal);
     setupTexture(occlusionTexture, 'HAS_TEXTURE_u_occlusionTexture', TextureSlots.Occlusion);
     setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
+    if (lut) {
+        if (!lut.texture) {
+            lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA);
+        }
+        context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.LUT);
+        if (lut.texture) {
+            lut.texture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
+        }
+        definesValues.push('APPLY_LUT_ON_GPU');
+    }
 
     if (mesh.texcoordBuffer) {
         definesValues.push('HAS_ATTRIBUTE_a_uv_2f');
@@ -167,7 +179,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         null,
         painter,
         opacity,
-        pbr.baseColorFactor,
+        pbr.baseColorFactor.toRenderColor(null),
         material.emissiveFactor,
         pbr.metallicFactor,
         pbr.roughnessFactor,
@@ -182,7 +194,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     // Extra buffers (colors, normals, texCoords)
     const dynamicBuffers = [];
 
-    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter);
+    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter, layer.lut);
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
@@ -636,7 +648,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
-                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter);
+                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: ((definesValues: any): DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
@@ -651,7 +663,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                     null,
                     painter,
                     layerOpacity,
-                    pbr.baseColorFactor,
+                    pbr.baseColorFactor.toRenderColor(null),
                     material.emissiveFactor,
                     pbr.metallicFactor,
                     pbr.roughnessFactor,
@@ -914,7 +926,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         defines: []
                     };
                     const dynamicBuffers = [];
-                    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter);
+                    setupMeshDraw(((programOptions.defines: any): Array<string>), dynamicBuffers, mesh, painter, layer.lut);
                     if (!hasMapboxFeatures) {
                         (programOptions.defines: any).push('DIFFUSE_SHADED');
                     }
@@ -985,7 +997,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             new Float32Array(node.matrix),
                             painter,
                             sortedNode.opacity,
-                            pbr.baseColorFactor,
+                            pbr.baseColorFactor.toRenderColor(null),
                             material.emissiveFactor,
                             pbr.metallicFactor,
                             pbr.roughnessFactor,

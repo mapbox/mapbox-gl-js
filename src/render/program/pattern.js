@@ -13,6 +13,7 @@ import type {OverscaledTileID} from '../../source/tile_id.js';
 import type {UniformValues} from '../uniform_binding.js';
 import type Tile from '../../source/tile.js';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image.js';
+import type {ImagePosition} from "../image_atlas";
 
 type BackgroundPatternUniformsType = {|
     'u_image': Uniform1i,
@@ -54,11 +55,11 @@ function patternUniformValues(painter: Painter, tile: Tile): UniformValues<Patte
 function bgPatternUniformValues(
     image: ResolvedImage,
     scope: string,
+    patternPosition: ?ImagePosition,
     painter: Painter,
     tile: {tileID: OverscaledTileID, tileSize: number}
 ): UniformValues<BackgroundPatternUniformsType> {
-    const imagePos = painter.imageManager.getPattern(image.toString(), scope);
-    assert(imagePos);
+    assert(patternPosition);
     const {width, height} = painter.imageManager.getPixelSize(scope);
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
@@ -69,10 +70,10 @@ function bgPatternUniformValues(
 
     return {
         'u_image': 0,
-        'u_pattern_tl': (imagePos: any).tl,
-        'u_pattern_br': (imagePos: any).br,
+        'u_pattern_tl': (patternPosition: any).tl,
+        'u_pattern_br': (patternPosition: any).br,
         'u_texsize': [width, height],
-        'u_pattern_size': (imagePos: any).displaySize,
+        'u_pattern_size': (patternPosition: any).displaySize,
         'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

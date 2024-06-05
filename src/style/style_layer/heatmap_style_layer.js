@@ -25,6 +25,7 @@ import type CircleBucket from '../../data/bucket/circle_bucket.js';
 import type {IVectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from "../../render/painter.js";
 import type {ConfigOptions} from '../properties.js';
+import type {LUT} from "../../util/lut";
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -40,8 +41,8 @@ class HeatmapStyleLayer extends StyleLayer {
         return new HeatmapBucket(parameters);
     }
 
-    constructor(layer: LayerSpecification, scope: string, options?: ?ConfigOptions) {
-        super(layer, properties, scope, options);
+    constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ?ConfigOptions) {
+        super(layer, properties, scope, lut, options);
 
         // make sure color ramp texture is generated for default heatmap color too
         this._updateColorRamp();
@@ -99,10 +100,10 @@ class HeatmapStyleLayer extends StyleLayer {
         return ['heatmap', 'heatmapTexture'];
     }
 
-    getDefaultProgramParams(name: string, zoom: number): CreateProgramParams | null {
+    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         if (name === 'heatmap') {
             return {
-                config: new ProgramConfiguration(this, zoom),
+                config: new ProgramConfiguration(this, {zoom, lut}),
                 overrideFog: false
             };
         }
