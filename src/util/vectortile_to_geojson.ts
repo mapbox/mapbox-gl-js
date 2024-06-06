@@ -60,8 +60,7 @@ class Feature {
         };
         if (this.id !== undefined) json.id = this.id;
         for (const key of customProps) {
-            // Flow doesn't support indexed access for classes https://github.com/facebook/flow/issues/1323
-            if ((this as any)[key] !== undefined) json[key] = (this as any)[key];
+            if (this[key] !== undefined) json[key] = this[key];
         }
         return json;
     }

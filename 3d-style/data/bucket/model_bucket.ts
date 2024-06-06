@@ -424,7 +424,7 @@ class ModelBucket implements Bucket {
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 
-        rotationScaleYZFlipMatrix(rotationScaleYZFlip, (rotation as any), (scale as any));
+        rotationScaleYZFlipMatrix(rotationScaleYZFlip, rotation, scale);
 
         // https://github.com/mapbox/mapbox-gl-native-internal/blob/c380f9492220906accbdca1f02cca5ee489d97fc/src/mbgl/renderer/layers/render_model_layer.cpp#L1282
         const constantTileToMeterAcrossTile = 10;

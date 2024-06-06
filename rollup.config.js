@@ -34,9 +34,8 @@ export default ({watch}) => {
         // - rollup/build/worker.js: the worker module, plus all dependencies not shared by the main module
         // - rollup/build/shared.js: the set of modules that are dependencies of both the main module and the worker module
         //
-        // This is also where we do all of our source transformations: removing
-        // flow annotations, transpiling ES6 features using buble, inlining shader
-        // sources as strings, etc.
+        // This is also where we do all of our source transformations:
+        // transpiling ES6 features, inlining shader sources as strings, etc.
         input: ['src/index.ts', 'src/source/worker.ts'],
         output: {
             dir: 'rollup/build/mapboxgl',

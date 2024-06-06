@@ -22,6 +22,10 @@ import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index';
 import {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
 
+import type ModelSource from '../source/model_source';
+import type Tiled3DModelSource from '../source/tiled_3d_model_source';
+import type GeoJSONSource from '../../src/source/geojson_source';
+import type VectorTileSource from '../../src/source/vector_tile_source';
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
 import type Painter from '../../src/render/painter';
 import type {CreateProgramParams} from '../../src/render/painter';
@@ -215,7 +219,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
     if (cutoffParams.shouldRenderCutoff) {
-        (programOptions.defines as any).push('RENDER_CUTOFF');
+        programOptions.defines.push('RENDER_CUTOFF');
     }
 
     const program = painter.getOrCreateProgram('model', programOptions);
@@ -236,7 +240,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 }
 
 export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painter: Painter) {
-    const modelSource = sourceCache.getSource();
+    const modelSource = sourceCache.getSource() as ModelSource | Tiled3DModelSource | VectorTileSource | GeoJSONSource;
     if (!modelSource.loaded()) return;
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         const scope = modelSource.type === 'vector' ? layer.scope : "";
@@ -251,7 +255,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
         // batched models uploads happen in tile_3d_bucket
         return;
     }
-    const models = (modelSource as any).getModels();
+    const models = modelSource.getModels();
     // Upload models
     for (const model of models) {
         model.upload(painter.context);
@@ -349,7 +353,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         }
     };
 
-    const modelSource = sourceCache.getSource();
+    const modelSource = sourceCache.getSource() as ModelSource | Tiled3DModelSource | VectorTileSource | GeoJSONSource;
     if (painter.renderPass === 'light-beam' && modelSource.type !== 'batched-model') {
         return;
     }
@@ -368,10 +372,10 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         cleanup();
         return;
     }
-    const models = (modelSource as any).getModels();
+    const models = modelSource.getModels();
     const modelParametersVector: ModelParameters[] = [];
 
-    const mercCameraPos = (painter.transform.getFreeCameraOptions().position as any);
+    const mercCameraPos = painter.transform.getFreeCameraOptions().position;
     const cameraPos = vec3.scale([] as any, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     vec3.negate(cameraPos, cameraPos);
     const transparentMeshes: SortedMesh[] = [];
@@ -380,11 +384,11 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     // Draw models
     for (const model of models) {
 
-        const rotation = layer.paint.get('model-rotation').constantOr((null as any));
+        const rotation = layer.paint.get('model-rotation').constantOr(null);
 
-        const scale = layer.paint.get('model-scale').constantOr((null as any));
+        const scale = layer.paint.get('model-scale').constantOr(null);
 
-        const translation = layer.paint.get('model-translation').constantOr((null as any));
+        const translation = layer.paint.get('model-translation').constantOr(null);
         // update model matrices
         model.computeModelMatrix(painter, rotation, scale, translation, true, true, false);
 
@@ -513,7 +517,7 @@ const renderData: RenderData = {
 
 function calculateTileZoom(id: OverscaledTileID, tr: Transform): number {
     const tiles = 1 << id.canonical.z;
-    const cameraPos = (tr.getFreeCameraOptions().position as any);
+    const cameraPos = tr.getFreeCameraOptions().position;
     const elevation = tr.elevation;
 
     // Compute tile zoom from the distance between the camera and
@@ -549,7 +553,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
         return;
     }
 
-    const mercCameraPos = (tr.getFreeCameraOptions().position as any);
+    const mercCameraPos = tr.getFreeCameraOptions().position;
     if (!painter.modelManager) return;
     const modelManager = painter.modelManager;
     layer.modelManager = modelManager;
@@ -565,7 +569,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        const bucket: ModelBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as ModelBucket | null | undefined;
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
         const modelUris = bucket.getModelUris();
         if (modelUris && !bucket.modelsRequested) {
@@ -731,7 +735,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
     const zoom = painter.transform.zoom;
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        const bucket: Tiled3dModelBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
         if (!bucket) continue;
         // Conflation
         if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
@@ -758,7 +762,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
         return;
     }
 
-    const mercCameraPos = (painter.transform.getFreeCameraOptions().position as any);
+    const mercCameraPos = painter.transform.getFreeCameraOptions().position;
     const cameraPos = vec3.scale([] as any, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     vec3.negate(cameraPos, cameraPos);
     // compute model parameters matrices
@@ -798,7 +802,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
         for (let i = start; i !== end; i += step) {
             const coord = coords[i];
             const tile = source.getTile(coord);
-            const bucket: Tiled3dModelBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
             if (!bucket || !bucket.uploaded) continue;
 
             let singleCascade = false;
@@ -955,11 +959,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const dynamicBuffers = [];
                     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
                     if (!hasMapboxFeatures) {
-                        (programOptions.defines as any).push('DIFFUSE_SHADED');
+                        // @ts-expect-error
+                        programOptions.defines.push('DIFFUSE_SHADED');
                     }
 
                     if (singleCascade) {
-                        (programOptions.defines as any).push('SHADOWS_SINGLE_CASCADE');
+                        // @ts-expect-error
+                        programOptions.defines.push('SHADOWS_SINGLE_CASCADE');
                     }
 
                     if (stats) {
@@ -993,7 +999,8 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     // Handle Texture transform
                     if (material.occlusionTexture && material.occlusionTexture.offsetScale) {
                         occlusionTextureTransform = material.occlusionTexture.offsetScale;
-                        (programOptions.defines as any).push('OCCLUSION_TEXTURE_TRANSFORM');
+                        // @ts-expect-error
+                        programOptions.defines.push('OCCLUSION_TEXTURE_TRANSFORM');
                     }
 
                     if (!isShadowPass && shadowRenderer) {
@@ -1099,7 +1106,6 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
 }
 
 function calculateFarCutoffOpacity(cutoffParams: CutoffParams, depth: number): number {
-// @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
     assert(cutoffParams.uniformValues.u_cutoff_params.length === 4);
     const near = cutoffParams.uniformValues.u_cutoff_params[0];
     const far = cutoffParams.uniformValues.u_cutoff_params[1];

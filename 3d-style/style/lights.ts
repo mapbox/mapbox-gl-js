@@ -47,7 +47,7 @@ class Lights<P extends LightProps> extends Evented {
     }
 
     get(): LightsSpecification {
-        // @ts-expect-error - TS2322 - Type 'ObjMap<P, <T, R>(p: Property<T, R>) => PropertyValueSpecification<T>>' is not assignable to type '{ color?: PropertyValueSpecification<string>; "color-transition"?: TransitionSpecification; intensity?: PropertyValueSpecification<number>; "intensity-transition"?: TransitionSpecification; } | { ...; } | { ...; }'.
+        // @ts-expect-error
         this._options.properties = this._transitionable.serialize();
         return this._options;
     }

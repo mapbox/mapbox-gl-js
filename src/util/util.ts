@@ -279,7 +279,7 @@ export function asyncAll<Item, Result>(
     array.forEach((item, i) => {
         fn(item, (err, result) => {
             if (err) error = err;
-            results[i] = (result); // https://github.com/facebook/flow/issues/2123
+            results[i] = result;
             if (--remaining === 0) callback(error, results);
         });
     });
@@ -607,13 +607,12 @@ export type Direction = {
  * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
  * @return Position cartesian coordinates
  */
-export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, any]): GeolocationPosition {
+export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, any]): Position {
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     const a = degToRad(azimuthal + 90), p = degToRad(polar);
 
     return {
-        // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'x' does not exist in type 'GeolocationPosition'.
         x: r * Math.cos(a) * Math.sin(p),
         y: r * Math.sin(a) * Math.sin(p),
         z: r * Math.cos(p),
@@ -632,11 +631,8 @@ export function sphericalDirectionToCartesian([azimuthal, polar]: [any, any]): D
     const position = sphericalPositionToCartesian([1.0, azimuthal, polar]);
 
     return {
-        // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'GeolocationPosition'.
         x: position.x,
-        // @ts-expect-error - TS2339 - Property 'y' does not exist on type 'GeolocationPosition'.
         y: position.y,
-        // @ts-expect-error - TS2339 - Property 'z' does not exist on type 'GeolocationPosition'.
         z: position.z
     };
 }

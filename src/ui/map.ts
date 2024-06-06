@@ -1915,8 +1915,7 @@ export class Map extends Camera {
         //     queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: Object)
         //     queryRenderedFeatures(options?: Object)
         //
-        // There no way to express that in a way that's compatible with both flow and documentation.js.
-        // Related: https://github.com/facebook/flow/issues/1556
+        // There no way to express that in a way that's compatible with documentation.js.
 
         if (!this.style) {
             return [];

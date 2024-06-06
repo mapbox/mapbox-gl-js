@@ -26,10 +26,9 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {TextAnchor} from './symbol_layout';
 import type {FogState} from '../style/fog_helpers';
 import type {PlacedCollisionBox} from './collision_index';
-import type {ObjMap} from '../types/obj-map';
 
 // PlacedCollisionBox with all fields optional
-type PartialPlacedCollisionBox = ObjMap<PlacedCollisionBox, <V>() => V | null | undefined>;
+type PartialPlacedCollisionBox = Partial<PlacedCollisionBox>;
 
 class OpacityState {
     opacity: number;
@@ -585,7 +584,6 @@ export class Placement {
                             } else {
                                 placed = placeHorizontalFn();
                             }
-                            // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
                             if (placed && placed.box && placed.box.length) break;
                         }
                     } else {
@@ -623,7 +621,6 @@ export class Placement {
                         (placeVertical as () => PartialPlacedCollisionBox),
                     );
 
-                    // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
                     const isPlaced = placed && placed.box && placed.box.length;
                     updatePreviousOrientationIfNotPlaced(!!isPlaced);
 
@@ -662,7 +659,6 @@ export class Placement {
 
                             if (result) {
                                 placedBox = (result.placedGlyphBoxes as PartialPlacedCollisionBox);
-                                // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
                                 if (placedBox && placedBox.box && placedBox.box.length) {
                                     placeText = true;
                                     shift = result.shift;
@@ -681,7 +677,6 @@ export class Placement {
                     const placeVertical = () => {
                         const verticalTextBox = collisionArrays.verticalTextBox;
                         if (verticalTextBox) updateBoxData(verticalTextBox);
-                        // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
                         const wasPlaced = placed && placed.box && placed.box.length;
                         if (bucket.allowVerticalPlacement && !wasPlaced && numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBoxForVariableAnchors(verticalTextBox, collisionArrays.verticalIconBox, WritingMode.vertical);
@@ -692,11 +687,9 @@ export class Placement {
                     placeTextForPlacementModes(placeHorizontal, placeVertical);
 
                     if (placed) {
-                        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'boolean'.
+                        // @ts-expect-error - placeText is boolean, box is number[]
                         placeText = placed.box;
-                        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'boolean'.
                         offscreen = placed.offscreen;
-                        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'boolean'.
                         textOccluded = placed.occluded;
                     }
 
@@ -774,7 +767,6 @@ export class Placement {
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 
-                // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {
                     placedIconBoxes = placeIconFeature(collisionArrays.verticalIconBox);
                     placeIcon = placedIconBoxes.box.length > 0;

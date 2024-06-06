@@ -45,7 +45,7 @@ const heatmapTextureUniforms = (context: Context): HeatmapTextureUniformsType =>
     'u_opacity': new Uniform1f(context)
 });
 
-const identityMatrix = mat4.create();
+const identityMatrix = mat4.create() as Float32Array;
 
 const heatmapUniformValues = (
     painter: Painter,
@@ -65,10 +65,10 @@ const heatmapUniformValues = (
         'u_extrude_scale': extrudeScale,
         'u_intensity': intensity,
         'u_inv_rot_matrix': identityMatrix,
-        'u_merc_center': [0, 0],
-        'u_tile_id': [0, 0, 0],
+        'u_merc_center': [0, 0] as [number, number],
+        'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
-        'u_up_dir': [0, 0, 0],
+        'u_up_dir': [0, 0, 0] as [number, number, number]
     };
 
     if (isGlobe) {

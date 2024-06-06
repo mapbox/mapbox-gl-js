@@ -748,7 +748,7 @@ export class DirectionProperty implements Property<[number, number], Direction> 
     }
 }
 
-export class PositionProperty implements Property<[number, number, number], GeolocationPosition> {
+export class PositionProperty implements Property<[number, number, number], Position> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -756,23 +756,18 @@ export class PositionProperty implements Property<[number, number, number], Geol
     }
 
     possiblyEvaluate(
-        value: PropertyValue<[number, number, number], GeolocationPosition>,
+        value: PropertyValue<[number, number, number], Position>,
         parameters: EvaluationParameters,
-    ): GeolocationPosition {
+    ): Position {
         return sphericalPositionToCartesian(value.expression.evaluate(parameters));
     }
 
-    interpolate(a: GeolocationPosition, b: GeolocationPosition, t: number): GeolocationPosition {
+    interpolate(a: Position, b: Position, t: number): Position {
         return {
-            // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'x' does not exist in type 'GeolocationPosition'. | TS2339 - Property 'x' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'x' does not exist on type 'GeolocationPosition'.
             x: interpolateValue(a.x, b.x, t),
-            // @ts-expect-error - TS2339 - Property 'y' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'y' does not exist on type 'GeolocationPosition'.
             y: interpolateValue(a.y, b.y, t),
-            // @ts-expect-error - TS2339 - Property 'z' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'z' does not exist on type 'GeolocationPosition'.
             z: interpolateValue(a.z, b.z, t),
-            // @ts-expect-error - TS2339 - Property 'azimuthal' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'azimuthal' does not exist on type 'GeolocationPosition'.
             azimuthal: interpolateValue(a.azimuthal, b.azimuthal, t),
-            // @ts-expect-error - TS2339 - Property 'polar' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'polar' does not exist on type 'GeolocationPosition'.
             polar: interpolateValue(a.polar, b.polar, t),
         };
     }

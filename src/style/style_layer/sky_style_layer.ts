@@ -17,22 +17,22 @@ import type {Position} from '../../util/util';
 import type {ConfigOptions} from '../properties';
 import type {LUT} from "../../util/lut";
 
-function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean) {
-    const up = [0, 0, 1];
+function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): [number, number, number] {
+    const up: [number, number, number] = [0, 0, 1];
     const rotation = quat.identity([] as any);
 
     quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
     quat.rotateX(rotation, rotation, -degToRad(altitude));
-    vec3.transformQuat(up as [number, number, number], up as [number, number, number], rotation);
+    vec3.transformQuat(up, up, rotation);
 
-    return vec3.normalize(up as [number, number, number], up as [number, number, number]);
+    return vec3.normalize(up, up) as [number, number, number];
 }
 
 class SkyLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
-    _lightPosition: GeolocationPosition;
+    _lightPosition: Position;
 
     skyboxFbo: Framebuffer | null | undefined;
     skyboxTexture: WebGLTexture | null | undefined;
@@ -77,9 +77,7 @@ class SkyLayer extends StyleLayer {
         }
         if (!this.paint.get('sky-atmosphere-sun')) {
             const lightPosition = painter.style.light.properties.get('position');
-            // @ts-expect-error - TS2339 - Property 'azimuthal' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'azimuthal' does not exist on type 'unknown'.
             return this._lightPosition.azimuthal !== lightPosition.azimuthal ||
-            // @ts-expect-error - TS2339 - Property 'polar' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'polar' does not exist on type 'unknown'.
                    this._lightPosition.polar !== lightPosition.polar;
         }
         return false;
@@ -97,15 +95,12 @@ class SkyLayer extends StyleLayer {
                 warnOnce('The sun direction is attached to a light with viewport anchor, lighting may behave unexpectedly.');
             }
 
-            // @ts-expect-error - TS2322 - Type 'vec3' is not assignable to type '[number, number, number]'.
             return useLightPosition ?
-            // @ts-expect-error - TS2339 - Property 'azimuthal' does not exist on type 'unknown'. | TS2339 - Property 'polar' does not exist on type 'unknown'.
                 getCelestialDirection(lightPosition.azimuthal, -lightPosition.polar + 90, leftHanded) :
                 getCelestialDirection(sunPosition[0], -sunPosition[1] + 90, leftHanded);
         }
         assert(type === 'gradient');
         const direction = this.paint.get('sky-gradient-center');
-        // @ts-expect-error - TS2322 - Type 'vec3' is not assignable to type '[number, number, number]'.
         return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
 

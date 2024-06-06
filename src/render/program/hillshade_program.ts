@@ -100,7 +100,7 @@ const hillshadeUniformValues = (
 const hillshadeUniformPrepareValues = (tileID: OverscaledTileID, dem: DEMData): UniformValues<HillshadePrepareUniformsType> => {
 
     const stride = dem.stride;
-    const matrix = mat4.create();
+    const matrix = mat4.create() as Float32Array;
     // Flip rendering at y axis.
     mat4.ortho(matrix, 0, EXTENT, -EXTENT, 0, 0, 1);
     mat4.translate(matrix, matrix, [0, -EXTENT, 0]);
@@ -113,7 +113,7 @@ const hillshadeUniformPrepareValues = (tileID: OverscaledTileID, dem: DEMData): 
     };
 };
 
-function getTileLatRange(painter: Painter, tileID: OverscaledTileID) {
+function getTileLatRange(painter: Painter, tileID: OverscaledTileID): [number, number] {
     // for scaling the magnitude of a points slope by its latitude
     const tilesAtZoom = Math.pow(2, tileID.canonical.z);
     const y = tileID.canonical.y;

@@ -179,8 +179,7 @@ class LngLat {
         }
         if (!Array.isArray(input) && typeof input === 'object' && input !== null) {
             return new LngLat(
-                // flow can't refine this to have one of lng or lat, so we have to cast to any
-                Number('lng' in input ? (input as any).lng : (input as any).lon),
+                Number('lng' in input ? input.lng : input.lon),
                 Number(input.lat)
             );
         }

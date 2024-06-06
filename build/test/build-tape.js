@@ -1,4 +1,3 @@
-/* eslint-disable flowtype/require-valid-file-annotation */
 import browserify from 'browserify';
 import envify from 'envify';
 import fs from 'fs';

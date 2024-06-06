@@ -323,8 +323,7 @@ export class DEMSampler {
     constructor(demTile: Tile, scale: number, offset: [number, number]) {
         this._demTile = demTile;
         // demTile.dem will always exist because the factory method `create` does the check
-        // Make flow happy with a cast through any
-        this._dem = ((this._demTile.dem));
+        this._dem = this._demTile.dem;
         this._scale = scale;
         this._offset = offset;
     }

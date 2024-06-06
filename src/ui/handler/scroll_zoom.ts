@@ -181,8 +181,7 @@ class ScrollZoomHandler implements Handler {
             }
         }
 
-        // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
-        let value = e.deltaMode === (WheelEvent as any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
+        let value = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
         const now = browser.now(),
             timeDelta = now - (this._lastWheelEventTime || 0);
 

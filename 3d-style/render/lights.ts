@@ -79,7 +79,7 @@ export const lightsUniformValues = (directional: Lights<Directional>, ambient: L
     const ambientColor = ambient.properties.get('color').toRenderColor(style._luts[ambient.scope]).toArray01();
     const ambientIntensity = ambient.properties.get('intensity');
 
-    const dirVec = [direction.x, direction.y, direction.z];
+    const dirVec: [number, number, number] = [direction.x, direction.y, direction.z];
 
     const ambientColorLinear = sRGBToLinearAndScale(ambientColor, ambientIntensity);
 

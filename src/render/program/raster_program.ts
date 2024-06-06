@@ -181,7 +181,7 @@ const rasterPoleUniformValues = (
     emissiveStrength,
 ));
 
-function spinWeights(angle: number) {
+function spinWeights(angle: number): [number, number, number] {
     angle *= Math.PI / 180;
     const s = Math.sin(angle);
     const c = Math.cos(angle);

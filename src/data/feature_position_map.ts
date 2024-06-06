@@ -69,9 +69,9 @@ export default class FeaturePositionMap {
     static deserialize(obj: SerializedFeaturePositionMap): FeaturePositionMap {
         const map = new FeaturePositionMap();
         // after transferring, we only use these arrays statically (no pushes),
-        // so TypedArray vs Array distinction that flow points out doesn't matter
-        map.ids = (obj.ids as any);
-        map.positions = (obj.positions as any);
+        // so TypedArray vs Array distinction that TS points out doesn't matter
+        map.ids = obj.ids as any;
+        map.positions = obj.positions as any;
         let prev;
         for (const id of map.ids) {
             if (id !== prev) map.uniqueIds.push(id);

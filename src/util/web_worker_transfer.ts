@@ -188,8 +188,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
 
         if (!klass.serialize) {
             for (const key in input) {
-                // any cast due to https://github.com/facebook/flow/issues/5393
-                if (!(input as any).hasOwnProperty(key)) continue;
+                if (!input.hasOwnProperty(key)) continue;
                 if (registry[name].omit.indexOf(key) >= 0) continue;
                 const property = (input as any)[key];
                 properties[key] = serialize(property, transferables);

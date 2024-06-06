@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-
-// @flow
 /* eslint-disable no-process-exit */
 
 import fs from 'fs';

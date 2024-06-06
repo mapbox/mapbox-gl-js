@@ -224,7 +224,7 @@ export type FilterSpecification =
     | ['>=', string, string | number | boolean]
     | ['<', string, string | number | boolean]
     | ['<=', string, string | number | boolean]
-    | Array<string | FilterSpecification>; // Can't type in, !in, all, any, none -- https://github.com/facebook/flow/issues/2443
+    | Array<string | FilterSpecification>;
 
 export type TransitionSpecification = {
     duration?: number,

@@ -1,5 +1,3 @@
-/* eslint-disable flowtype/require-valid-file-annotation */
-
 import {ip} from 'address';
 import qrcode from 'qrcode-terminal';
 

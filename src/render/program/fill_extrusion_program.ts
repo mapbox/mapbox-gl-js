@@ -150,7 +150,7 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_fb_size': new Uniform1f(context)
 });
 
-const identityMatrix = mat4.create();
+const identityMatrix = mat4.create() as Float32Array;
 
 const fillExtrusionUniformValues = (
     matrix: Float32Array,
@@ -172,13 +172,12 @@ const fillExtrusionUniformValues = (
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
-    // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'unknown'. | TS2339 - Property 'y' does not exist on type 'unknown'. | TS2339 - Property 'z' does not exist on type 'unknown'.
-    const lightPos = [_lp.x, _lp.y, _lp.z];
+    const lightPos: [number, number, number] = [_lp.x, _lp.y, _lp.z];
     const lightMat = mat3.create();
     const anchor = light.properties.get('anchor');
     if (anchor === 'viewport') {
         mat3.fromRotation(lightMat, -painter.transform.angle);
-        vec3.transformMat3(lightPos as [number, number, number], lightPos as [number, number, number], lightMat);
+        vec3.transformMat3(lightPos, lightPos, lightMat);
     }
 
     const lightColor = light.properties.get('color');
@@ -189,14 +188,14 @@ const fillExtrusionUniformValues = (
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
 
-        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
+        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
         'u_vertical_gradient': +shouldUseVerticalGradient,
         'u_opacity': opacity,
-        'u_tile_id': [0, 0, 0],
+        'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
         'u_inv_rot_matrix': identityMatrix,
-        'u_merc_center': [0, 0],
-        'u_up_dir': [0, 0, 0],
+        'u_merc_center': [0, 0] as [number, number],
+        'u_up_dir': [0, 0, 0] as [number, number, number],
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,

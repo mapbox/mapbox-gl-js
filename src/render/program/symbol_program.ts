@@ -179,7 +179,7 @@ const symbolTextAndIconUniforms = (context: Context): symbolTextAndIconUniformsT
     'u_occluded_opacity_multiplier': new Uniform1f(context)
 });
 
-const identityMatrix = mat4.create();
+const identityMatrix = mat4.create() as Float32Array;
 
 const symbolIconUniformValues = (
     functionType: string,
@@ -220,14 +220,14 @@ const symbolIconUniformValues = (
         'u_pitch_with_map': +pitchWithMap,
         'u_texsize': texSize,
         'u_texture': 0,
-        'u_tile_id': [0, 0, 0],
+        'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
         'u_inv_rot_matrix': identityMatrix,
-        'u_merc_center': [0, 0],
-        'u_camera_forward': [0, 0, 0],
-        'u_ecef_origin': [0, 0, 0],
+        'u_merc_center': [0, 0] as [number, number],
+        'u_camera_forward': [0, 0, 0] as [number, number, number],
+        'u_ecef_origin': [0, 0, 0] as [number, number, number],
         'u_tile_matrix': identityMatrix,
-        'u_up_vector': [0, -1, 0],
+        'u_up_vector': [0, -1, 0] as [number, number, number],
         'u_occluded_opacity_multiplier': occludedOpacityMultiplier,
         'u_color_adj_mat': colorAdjustmentMatrix,
         'u_icon_transition': transition ? transition : 0.0

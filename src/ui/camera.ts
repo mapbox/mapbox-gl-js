@@ -38,12 +38,6 @@ import type {PointLike} from '../types/point-like';
 import {Aabb} from '../util/primitives';
 import type {PaddingOptions} from '../geo/edge_insets';
 import type {MapEvent} from './events';
-import type {ObjMap} from '../types/obj-map';
-
-/**
- * A helper type: converts all Object type values to non-maybe types.
- */
-type Required<T> = ObjMap<T, <V>(v: V) => NonNullable<V>>;
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -639,7 +633,6 @@ class Camera extends Evented {
             maxZoom: this.transform.maxZoom
         }, options);
 
-        // @ts-expect-error - TS2322 - Type 'ObjMap<PaddingOptions, <V>(v: V) => NonNullable<V>>' is not assignable to type 'PaddingOptions'.
         options.padding = this._extendPadding(options.padding);
 
         // @ts-expect-error - TS2322 - Type 'CameraOptions' is not assignable to type 'FullCameraOptions'.
@@ -1396,7 +1389,6 @@ class Camera extends Evented {
         const zoomChanged = this._zooming || (zoom !== startZoom);
         const bearingChanged = this._rotating || (startBearing !== bearing);
         const pitchChanged = this._pitching || (pitch !== startPitch);
-        // @ts-expect-error - TS2345 - Argument of type 'ObjMap<PaddingOptions, <V>(v: V) => NonNullable<V>>' is not assignable to parameter of type 'PaddingOptions'.
         const paddingChanged = !tr.isPaddingEqual(padding);
 
         const frame = (tr: Transform) => (k: number) => {
@@ -1410,7 +1402,6 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                // @ts-expect-error - TS2345 - Argument of type 'ObjMap<PaddingOptions, <V>(v: V) => NonNullable<V>>' is not assignable to parameter of type 'PaddingOptions'.
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
@@ -1718,7 +1709,6 @@ class Camera extends Evented {
         const zoomChanged = true;
         const bearingChanged = (startBearing !== bearing);
         const pitchChanged = (pitch !== startPitch);
-        // @ts-expect-error - TS2345 - Argument of type 'ObjMap<PaddingOptions, <V>(v: V) => NonNullable<V>>' is not assignable to parameter of type 'PaddingOptions'.
         const paddingChanged = !tr.isPaddingEqual(padding);
 
         const frame = (tr: Transform) => (k: number) => {
@@ -1734,7 +1724,6 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                // @ts-expect-error - TS2345 - Argument of type 'ObjMap<PaddingOptions, <V>(v: V) => NonNullable<V>>' is not assignable to parameter of type 'PaddingOptions'.
                 tr.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every frame

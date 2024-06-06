@@ -601,7 +601,6 @@ export function shadowDirectionFromProperties(directionalLight: Lights<Direction
     const position = sphericalPositionToCartesian([spherical[0], spherical[1], spherical[2]]);
 
     // Convert polar and azimuthal to cartesian
-    // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'y' does not exist on type 'GeolocationPosition'. | TS2339 - Property 'z' does not exist on type 'GeolocationPosition'.
     return vec3.fromValues(position.x, position.y, position.z);
 }
 

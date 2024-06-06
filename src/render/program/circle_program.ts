@@ -39,7 +39,7 @@ const circleUniforms = (context: Context): CircleUniformsType => ({
     'u_emissive_strength': new Uniform1f(context),
 });
 
-const identityMatrix = mat4.create();
+const identityMatrix = mat4.create() as Float32Array;
 
 const circleUniformValues = (
     painter: Painter,
@@ -73,16 +73,15 @@ const circleUniformValues = (
         'u_matrix': painter.translatePosMatrix(
             coord.projMatrix,
             tile,
-
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale,
         'u_inv_rot_matrix': identityMatrix,
-        'u_merc_center': [0, 0],
-        'u_tile_id': [0, 0, 0],
+        'u_merc_center': [0, 0] as [number, number],
+        'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
-        'u_up_dir': [0, 0, 0],
+        'u_up_dir': [0, 0, 0] as [number, number, number],
         'u_emissive_strength': layer.paint.get('circle-emissive-strength')
     };
 

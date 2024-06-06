@@ -1,5 +1,3 @@
-// @flow
-
 /*
  * Generates the following:
  *  - data/array_types.js, which consists of:

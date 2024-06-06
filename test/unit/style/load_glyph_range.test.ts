@@ -22,7 +22,7 @@ test('loadGlyphRange', async () => {
             expect(transform).toHaveBeenCalledTimes(1);
             expect(transform.mock.calls[0]).toEqual(['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
 
-            if (!result) return expect.unreachable(); // appease flow
+            if (!result) return expect.unreachable();
             expect(request.url).toEqual('https://localhost/fonts/v1/Arial%20Unicode%20MS/0-255.pbf');
             expect(typeof result.ascender).toEqual('undefined');
             expect(typeof result.descender).toEqual('undefined');
@@ -32,7 +32,7 @@ test('loadGlyphRange', async () => {
             for (const key in result.glyphs) {
                 const id = Number(key);
                 const glyph = result.glyphs[id];
-                if (!glyph) return expect.unreachable(); // appease flow
+                if (!glyph) return expect.unreachable();
                 expect(glyph.id).toEqual(Number(id));
                 expect(glyph.metrics).toBeTruthy();
                 expect(typeof glyph.metrics.width).toEqual('number');

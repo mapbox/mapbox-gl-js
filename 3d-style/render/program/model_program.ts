@@ -98,13 +98,12 @@ const modelUniformValues = (
 
     const light = painter.style.light;
     const _lp = light.properties.get('position');
-    // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'unknown'. | TS2339 - Property 'y' does not exist on type 'unknown'. | TS2339 - Property 'z' does not exist on type 'unknown'.
-    const lightPos = [-_lp.x, -_lp.y, _lp.z];
+    const lightPos: [number, number, number] = [-_lp.x, -_lp.y, _lp.z];
     const lightMat = mat3.create();
     const anchor = light.properties.get('anchor');
     if (anchor === 'viewport') {
         mat3.fromRotation(lightMat, -painter.transform.angle);
-        vec3.transformMat3(lightPos as [number, number, number], lightPos as [number, number, number], lightMat);
+        vec3.transformMat3(lightPos, lightPos, lightMat);
     }
 
     const alphaMask = material.alphaMode === 'MASK';
@@ -124,14 +123,14 @@ const modelUniformValues = (
         'u_node_matrix': nodeMatrix ? nodeMatrix : emptyMat4,
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
-        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b],
+        'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
         'u_camera_pos': cameraPos,
         'u_opacity': opacity,
         'u_baseTextureIsAlpha': 0,
         'u_alphaMask': +alphaMask,
         'u_alphaCutoff': material.alphaCutoff,
-        'u_baseColorFactor': [baseColorFactor.r, baseColorFactor.g, baseColorFactor.b, baseColorFactor.a],
-        'u_emissiveFactor': [emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1.0],
+        'u_baseColorFactor': [baseColorFactor.r, baseColorFactor.g, baseColorFactor.b, baseColorFactor.a] as [number, number, number, number],
+        'u_emissiveFactor': [emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1.0] as [number, number, number, number],
         'u_metallicFactor': metallicFactor,
         'u_roughnessFactor': roughnessFactor,
         'u_baseColorTexture': TextureSlots.BaseColor,
@@ -140,10 +139,10 @@ const modelUniformValues = (
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
         'u_lutTexture': TextureSlots.LUT,
-        'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity],
+        'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity] as [number, number, number, number],
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,
-        'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0]
+        'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number]
     };
 
     return uniformValues;

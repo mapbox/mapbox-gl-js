@@ -1,9 +1,10 @@
 import Color from '../style-spec/util/color';
 import type Context from '../gl/context';
-import type {ObjMap} from '../types/obj-map';
 import type {RenderColor} from "../style-spec/util/color";
 
-export type UniformValues<Us extends any> = ObjMap<Us, <V>(u: IUniform<V>) => V>;
+export type UniformValues<Us> = {
+    [Key in keyof Us]: Us[Key] extends IUniform<infer V> ? V : never;
+};
 
 export interface IUniform<T> {
     gl: WebGL2RenderingContext;
