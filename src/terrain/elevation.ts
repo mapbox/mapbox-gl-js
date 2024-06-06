@@ -10,8 +10,6 @@ import type {vec4} from 'gl-matrix';
 import type SourceCache from '../source/source_cache';
 import type Projection from '../geo/projection/projection';
 import type Tile from '../source/tile';
-import type {VecType} from '../types/vec-type';
-
 /**
  * Options common to {@link Map#queryTerrainElevation} and {@link Map#unproject3d}, used to control how elevation
  * data is returned.
@@ -126,7 +124,7 @@ export class Elevation {
         lat: number,
         worldSize: number,
         projection: Projection,
-    ): (arg1: Point) => VecType {
+    ): (arg1: Point) => [number, number, number] {
         return ((p: Point) => {
             const elevation = this.getAtTileOffset(tileID, p.x, p.y);
             const upVector = projection.upVector(tileID.canonical, p.x, p.y);

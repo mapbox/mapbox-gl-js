@@ -456,7 +456,7 @@ function boundsToECEF(bounds: LngLatBounds, radius: number = GLOBE_RADIUS): Arra
     ];
 }
 
-export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): vec3 {
+export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radius?: number): [number, number, number] {
     const tileCount = 1 << id.z;
     const mercatorX = (x / EXTENT + id.x) / tileCount;
     const mercatorY = (y / EXTENT + id.y) / tileCount;

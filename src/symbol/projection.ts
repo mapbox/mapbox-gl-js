@@ -19,9 +19,9 @@ import type {
     PlacedSymbol
 } from '../data/array_types';
 
-import type {VecType} from '../types/vec-type';
-
 export {updateLineLabels, hideGlyphs, getLabelPlaneMatrixForRendering, getLabelPlaneMatrixForPlacement, getGlCoordMatrix, project, projectClamped, getPerspectiveRatio, placeFirstAndLastGlyph, placeGlyphAlongLine, xyTransformMat4};
+
+type GetElevation = (p: Point) => [number, number, number];
 
 type PlacedGlyph = {
     angle: number;
@@ -31,7 +31,7 @@ type PlacedGlyph = {
     up: vec3;
 };
 type ProjectionCache = {
-    [_: number]: vec3;
+    [_: number]: [number, number, number];
 };
 
 type PlacementStatus = {
@@ -256,7 +256,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           glCoordMatrix: Float32Array,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
-                          getElevation: ((p: Point) => VecType) | null | undefined,
+                          getElevation: GetElevation | null | undefined,
                           tileID: OverscaledTileID) {
 
     const tr = painter.transform;
@@ -332,7 +332,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
-        const labelPlaneAnchorPoint = project(x, y, z, labelPlaneMatrix);
+        const labelPlaneAnchorPoint = project(x, y, z, labelPlaneMatrix) as [number, number, number, number];
 
         // Skip labels behind the camera
         if (labelPlaneAnchorPoint[3] <= 0.0) {
@@ -344,7 +344,7 @@ function updateLineLabels(bucket: SymbolBucket,
 
         const getElevationForPlacement = pitchWithMap ? null : getElevation; // When pitchWithMap, we're projecting to scaled tile coordinate space: there is no need to get elevation as it doesn't affect projection.
         const placeUnflipped = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap);
+            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint as unknown as [number, number, number], tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap);
 
         useVertical = placeUnflipped.useVertical;
 
@@ -352,7 +352,7 @@ function updateLineLabels(bucket: SymbolBucket,
         if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
              placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint, tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap).notEnoughRoom)) {
+                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, globeExtVertexArray, labelPlaneAnchorPoint as unknown as [number, number, number], tileAnchorPoint, projectionCache, aspectRatio, getElevationForPlacement, tr.projection, tileID, pitchWithMap).notEnoughRoom)) {
             hideGlyphs(numGlyphs, dynamicLayoutVertexArray);
         }
     }
@@ -376,13 +376,13 @@ function placeFirstAndLastGlyph(
     lineOffsetX: number,
     lineOffsetY: number,
     flip: boolean,
-    anchorPoint: vec3,
+    anchorPoint: [number, number, number],
     tileAnchorPoint: Point,
     symbol: PlacedSymbol,
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
     projectionCache: ProjectionCache,
-    getElevation: ((p: Point) => VecType) | null | undefined,
+    getElevation: GetElevation | null | undefined,
     returnPathInTileCoords: boolean | null | undefined,
     projection: Projection,
     tileID: OverscaledTileID,
@@ -453,11 +453,11 @@ function placeGlyphsAlongLine(
     lineVertexArray: SymbolLineVertexArray,
     dynamicLayoutVertexArray: SymbolDynamicLayoutArray,
     globeExtVertexArray: SymbolGlobeExtArray | null | undefined,
-    anchorPoint: VecType,
+    anchorPoint: [number, number, number],
     tileAnchorPoint: Point,
     projectionCache: ProjectionCache,
     aspectRatio: number,
-    getElevation: ((p: Point) => VecType) | null | undefined,
+    getElevation: GetElevation | null | undefined,
     projection: Projection,
     tileID: OverscaledTileID,
     pitchWithMap: boolean,
@@ -484,7 +484,6 @@ function placeGlyphsAlongLine(
     if (numGlyphs > 1) {
         // Place the first and the last glyph in the label first, so we can figure out
         // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
-        // @ts-expect-error - TS2345 - Argument of type 'VecType' is not assignable to parameter of type 'vec3'.
         const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, projection, tileID, pitchWithMap);
         if (!firstAndLastGlyph) {
             return {notEnoughRoom: true};
@@ -505,7 +504,6 @@ function placeGlyphsAlongLine(
         addGlyph(firstAndLastGlyph.first);
         for (let glyphIndex = glyphStartIndex + 1; glyphIndex < glyphStartIndex + numGlyphs - 1; glyphIndex++) {
             // Since first and last glyph fit on the line, the rest of the glyphs can be placed too, but check to make sure
-            // @ts-expect-error - TS2345 - Argument of type 'VecType' is not assignable to parameter of type 'vec3'.
             const glyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, segment,
                 lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, projection, tileID, pitchWithMap);
             if (!glyph) {
@@ -538,7 +536,6 @@ function placeGlyphsAlongLine(
                 return orientationChange;
             }
         }
-        // @ts-expect-error - TS2345 - Argument of type 'VecType' is not assignable to parameter of type 'vec3'.
         const singleGlyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphStartIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, segment,
             lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, getElevation, false, false, projection, tileID, pitchWithMap);
         if (!singleGlyph) {
@@ -550,7 +547,7 @@ function placeGlyphsAlongLine(
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation?: ((p: Point) => VecType) | null) {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation?: GetElevation) {
     const {x, y, z} = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(x, y, z, posMatrix);
@@ -565,10 +562,10 @@ function projectTruncatedLineSegment(
     previousProjectedPoint: vec3,
     minimumLength: number,
     projectionMatrix: Float32Array,
-    getElevation: ((p: Point) => VecType) | null | undefined,
+    getElevation: GetElevation | null | undefined,
     projection: Projection,
     tileID: CanonicalTileID,
-): vec3 {
+): [number, number, number] {
     // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
@@ -589,7 +586,7 @@ function placeGlyphAlongLine(
     lineOffsetX: number,
     lineOffsetY: number,
     flip: boolean,
-    anchorPoint: vec3,
+    anchorPoint: [number, number, number],
     tileAnchorPoint: Point,
     anchorSegment: number,
     lineStartIndex: number,
@@ -597,7 +594,7 @@ function placeGlyphAlongLine(
     lineVertexArray: SymbolLineVertexArray,
     labelPlaneMatrix: Float32Array,
     projectionCache: ProjectionCache,
-    getElevation: ((p: Point) => VecType) | null | undefined,
+    getElevation: GetElevation | null | undefined,
     returnPathInTileCoords: boolean | null | undefined,
     endGlyph: boolean | null | undefined,
     reprojection: Projection,
@@ -685,7 +682,7 @@ function placeGlyphAlongLine(
     const prevToCurrent = vec3.sub([] as any, current, prev);
     const labelPlanePoint = vec3.scaleAndAdd([] as any, prev, prevToCurrent, segmentInterpolationT);
 
-    let axisZ: vec3 = [0, 0, 1];
+    let axisZ: [number, number, number] = [0, 0, 1];
     let diffX = prevToCurrent[0];
     let diffY = prevToCurrent[1];
 
@@ -694,11 +691,11 @@ function placeGlyphAlongLine(
 
         if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
             // Compute coordinate frame that is aligned to the tangent of the surface
-            const axisX = [axisZ[2], 0, -axisZ[0]];
-            const axisY = vec3.cross([] as any, axisZ as [number, number, number], axisX as [number, number, number]);
-            vec3.normalize(axisX as [number, number, number], axisX as [number, number, number]);
+            const axisX: [number, number, number] = [axisZ[2], 0, -axisZ[0]];
+            const axisY = vec3.cross([] as any, axisZ, axisX);
+            vec3.normalize(axisX, axisX);
             vec3.normalize(axisY, axisY);
-            diffX = vec3.dot(prevToCurrent, axisX as [number, number, number]);
+            diffX = vec3.dot(prevToCurrent, axisX);
             diffY = vec3.dot(prevToCurrent, axisY);
         }
     }
@@ -706,7 +703,7 @@ function placeGlyphAlongLine(
     // offset the point from the line to text-offset and icon-offset
     if (lineOffsetY) {
         // Find a coordinate frame for the vertical offset
-        const offsetDir = vec3.cross([] as any, axisZ as [number, number, number], prevToCurrent);
+        const offsetDir = vec3.cross([] as any, axisZ, prevToCurrent);
         vec3.normalize(offsetDir, offsetDir);
         vec3.scaleAndAdd(labelPlanePoint, labelPlanePoint, offsetDir, lineOffsetY * dir);
     }

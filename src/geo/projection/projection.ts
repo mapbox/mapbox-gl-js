@@ -151,11 +151,11 @@ export default class Projection {
         return posMatrix;
     }
 
-    upVector(id: CanonicalTileID, x: number, y: number): vec3 { // eslint-disable-line
+    upVector(id: CanonicalTileID, x: number, y: number): [number, number, number] {
         return [0, 0, 1];
     }
 
-    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale { // eslint-disable-line
+    upVectorScale(id: CanonicalTileID, latitude: number, worldSize: number): ElevationScale {
         return {metersToTile: 1};
     }
 }

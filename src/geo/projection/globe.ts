@@ -143,7 +143,7 @@ export default class Globe extends Mercator {
         return globePixelDistance;
     }
 
-    upVector(id: CanonicalTileID, x: number, y: number): vec3 {
+    upVector(id: CanonicalTileID, x: number, y: number): [number, number, number] {
         return tileCoordToECEF(x, y, id, 1);
     }
 

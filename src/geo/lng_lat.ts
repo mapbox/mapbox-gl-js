@@ -2,9 +2,7 @@ import assert from 'assert';
 import {wrap, degToRad, radToDeg} from '../util/util';
 import {GLOBE_RADIUS} from '../geo/projection/globe_constants';
 
-import type {vec3} from 'gl-matrix';
-
-export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): vec3 {
+export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): [number, number, number] {
     lng = degToRad(lng);
 
     // Convert lat & lng to spherical representation. Use zoom=0 as a reference
@@ -23,7 +21,7 @@ export function ecefToLatLng([x, y, z]: [any, any, any]): LngLat {
     return new LngLat(radToDeg(lng), radToDeg(lat));
 }
 
-export function latLngToECEF(lat: number, lng: number, radius?: number): vec3 {
+export function latLngToECEF(lat: number, lng: number, radius?: number): [number, number, number] {
     assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
 }
