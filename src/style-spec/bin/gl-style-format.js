@@ -5,7 +5,6 @@ import fs from 'fs';
 import minimist from 'minimist';
 
 /* eslint import/no-unresolved: [error, { ignore: ['^@mapbox/mapbox-gl-style-spec$'] }] */
-/* $FlowFixMe[cannot-resolve-module] */
 import {format} from '@mapbox/mapbox-gl-style-spec';
 
 const argv = minimist(process.argv.slice(2));

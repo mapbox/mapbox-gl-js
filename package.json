@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
+  "workspaces": [
+    "src/style-spec"
+  ],
   "dependencies": {
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^3.0.0",
@@ -126,7 +129,7 @@
     "build-csp": "rollup -c rollup.config.csp.js",
     "build-test-suite": "rollup -c test/integration/rollup.config.test.js",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
-    "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
+    "build-style-spec": "(cd src/style-spec && npm run build) && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
     "build-dts": "dts-bundle-generator --no-banner --export-referenced-types=false --umd-module-name=mapboxgl -o ./dist/mapbox-gl.d.ts ./src/index.ts",
     "watch-css": "postcss --watch -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-token": "node build/generate-access-token-script.js",
