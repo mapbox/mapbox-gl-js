@@ -162,6 +162,7 @@
     "prepublishOnly": "run-s build-dev build-prod-min build-prod build-csp build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "check-bundle-size": "node build/check-bundle-size.js",
+    "check-ts-suppressions": "node build/check-ts-suppressions.js",
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts",
     "build-typed-style-spec": "tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --project tsconfig.json"

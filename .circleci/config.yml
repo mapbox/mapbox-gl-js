@@ -41,6 +41,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - check-ts-suppressions:
+          requires:
+            - install-mbx-ci
+          filters:
+            tags:
+              only: /.*/
       - check-bundle-size:
           requires:
             - install-mbx-ci
@@ -305,11 +311,30 @@ jobs:
           paths:
             - .cache
 
+  check-ts-suppressions:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Add mbx-ci to PATH
+          command: |
+            echo 'export PATH=$HOME:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Check TypeScript error suppressions
+          command: npm run check-ts-suppressions
+
   check-bundle-size:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+          name: Add mbx-ci to PATH
+          command: |
+            echo 'export PATH=$HOME:$PATH' >> $BASH_ENV
+            source $BASH_ENV
       - run:
           name: Check bundle size
           command: npm run check-bundle-size
