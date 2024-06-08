@@ -5,7 +5,8 @@ import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type Point from '@mapbox/point-geometry';
-import type {CanonicalTileID} from '../../../source/tile_id';
+import type {CanonicalTileID} from '../../types/tile_id';
+
 import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 import type {BBox} from '../../util/geometry_util';
 

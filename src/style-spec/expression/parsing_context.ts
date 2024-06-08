@@ -15,7 +15,7 @@ import Var from './definitions/var';
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
-import type {ConfigOptions} from '../../style/properties';
+import type {ConfigOptions} from '../types/config_options';
 
 /**
  * State associated parsing at a given point in an expression tree.

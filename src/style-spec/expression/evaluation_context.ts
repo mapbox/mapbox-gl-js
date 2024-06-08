@@ -3,9 +3,9 @@ import {Color} from './values';
 import type Point from '@mapbox/point-geometry';
 import type {FormattedSection} from './types/formatted';
 import type {GlobalProperties, Feature, FeatureState} from './index';
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../types/tile_id';
 import type {FeatureDistanceData} from '../feature_filter/index';
-import type {ConfigOptions, ConfigOptionValue} from '../../style/properties';
+import type {ConfigOptions, ConfigOptionValue} from '../types/config_options';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 

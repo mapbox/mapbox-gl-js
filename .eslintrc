@@ -68,6 +68,14 @@
         "no-duplicate-imports": "off",
         "import/no-duplicates": "error",
 
+        // Restrict imports outside of the style-spec
+        "import/no-restricted-paths": ["error", {
+            "zones": [{
+                "target": "./src/style-spec",
+                "from": ["./src/!(style-spec)/**/*", "./3d-style/**/*"]
+            }]
+        }],
+
         // ensure compatibility with Node's native ESM
         "import/extensions": ["error", {
             "js": "always",

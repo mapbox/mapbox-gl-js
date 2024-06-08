@@ -1,16 +1,17 @@
 import {isValue} from '../values';
-import type {Type} from '../types';
 import {NumberType} from '../types';
-import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
-import type {CanonicalTileID} from '../../../source/tile_id';
 import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
-import type {BBox} from '../../util/geometry_util';
 import CheapRuler from "cheap-ruler";
 import Point from "@mapbox/point-geometry";
 import TinyQueue from "tinyqueue";
 import EXTENT from '../../data/extent';
+
+import type ParsingContext from '../parsing_context';
+import type {BBox} from '../../util/geometry_util';
+import type {Type} from '../types';
+import type {Expression} from '../expression';
+import type {CanonicalTileID} from '../../types/tile_id';
+import type EvaluationContext from '../evaluation_context';
 
 type DistanceGeometry = GeoJSON.Point | GeoJSON.MultiPoint | GeoJSON.LineString | GeoJSON.MultiLineString | GeoJSON.Polygon | GeoJSON.MultiPolygon;
 

@@ -29,9 +29,9 @@ import type {InterpolationType} from './definitions/interpolate';
 import type {PropertyValueSpecification} from '../types';
 import type {FormattedSection} from './types/formatted';
 import type Point from '@mapbox/point-geometry';
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../types/tile_id';
 import type {FeatureDistanceData} from '../feature_filter/index';
-import type {ConfigOptions} from '../../style/properties';
+import type {ConfigOptions} from '../types/config_options';
 
 export interface Feature {
     readonly type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';

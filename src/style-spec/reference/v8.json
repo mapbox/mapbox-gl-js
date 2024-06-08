@@ -243,6 +243,10 @@
     "default": {
       "type": "*",
       "doc": "Default configuration value for this option.",
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      },
       "required": true
     },
     "type": {
@@ -6959,7 +6963,7 @@
       "maximum": 1,
       "transition": true,
       "requires": [
-        "icon-image"  
+        "icon-image"
       ],
       "sdk-support": {
         "basic functionality": {

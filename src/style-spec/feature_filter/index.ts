@@ -3,7 +3,7 @@ import {isFeatureConstant} from '../expression/is_constant';
 import {deepUnbundle} from '../util/unbundle_jsonlint';
 import latest from '../reference/latest';
 import type {GlobalProperties, Feature} from '../expression/index';
-import type {CanonicalTileID} from '../../source/tile_id';
+import type {CanonicalTileID} from '../types/tile_id';
 import type Point from '@mapbox/point-geometry';
 
 export type FeatureDistanceData = {

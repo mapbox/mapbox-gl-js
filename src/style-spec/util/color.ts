@@ -1,8 +1,6 @@
-import type {LUT} from "../../util/lut";
-
-import {number as lerp} from '../../style-spec/util/interpolate';
-
 import {parseCSSColor} from 'csscolorparser';
+import {number as lerp} from '../../style-spec/util/interpolate';
+import type {LUT} from '../types/lut';
 
 /**
  * An RGBA color value. Create instances from color strings using the static

@@ -21,7 +21,9 @@ import type {
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression/index';
-import type {Expression} from '../style-spec/expression/expression';
+
+import type {ConfigOptions} from '../style-spec/types/config_options';
+export type {ConfigOptions};
 
 type TimePoint = number;
 
@@ -69,17 +71,6 @@ export interface Property<T, R> {
     ): R;
     interpolate(a: R, b: R, t: number): R;
 }
-
-export type ConfigOptionValue = {
-    default: Expression;
-    value?: Expression;
-    values?: Array<unknown>;
-    minValue?: number;
-    maxValue?: number;
-    stepValue?: number;
-    type?: 'string' | 'number' | 'boolean' | 'color';
-};
-export type ConfigOptions = Map<string, ConfigOptionValue>;
 
 /**
  *  `PropertyValue` represents the value part of a property key-value unit. It's used to represent both
