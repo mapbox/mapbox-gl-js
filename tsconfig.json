@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noFallthroughCasesInSwitch": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,

@@ -6,6 +6,7 @@ export type SerializedExpression = Array<unknown> | Array<string> | string | num
 
 export interface Expression {
     readonly type: Type;
+    value?: any;
     evaluate(ctx: EvaluationContext): any;
     eachChild(fn: (arg1: Expression) => void): void;
     /**
@@ -16,13 +17,10 @@ export interface Expression {
     serialize(): SerializedExpression;
 }
 
-interface ExpressionConstructor {
+export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | void;
+
+export type ExpressionRegistration = {
     new(...args: any[]): Expression;
-}
-
-export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | null | undefined;
-
-export type ExpressionRegistration = ExpressionConstructor & {
     readonly parse: ExpressionParser;
 };
 

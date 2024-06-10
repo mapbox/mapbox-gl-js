@@ -68,7 +68,7 @@ const VALIDATORS = {
 export type ValidationOptions = {
     key: string;
     value: any;
-    valueSpec: any;
+    valueSpec?: any;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
 };

@@ -139,7 +139,7 @@ class CompoundExpression implements Expression {
         if (overloadParams.length === 1) {
             context.errors.push(...signatureContext.errors);
         } else {
-            const expected = overloadParams.length ? overloadParams : availableOverloads.map(([params]: [any]) => params);
+            const expected = overloadParams.length ? overloadParams : availableOverloads.map(([params]) => params);
             const signatures = expected.map(stringifySignature).join(' | ');
 
             const actualTypes = [];

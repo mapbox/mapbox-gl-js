@@ -190,7 +190,7 @@ class SourceCache extends Evented {
      * @private
      */
     getIds(): Array<number> {
-        return values((this._tiles as any)).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
+        return values((this._tiles)).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
     getRenderableIds(symbolLayer?: boolean, includeShadowCasters?: boolean): Array<number> {
