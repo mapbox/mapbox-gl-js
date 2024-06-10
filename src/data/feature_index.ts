@@ -20,8 +20,8 @@ import {FeatureIndexArray} from './array_types';
 import {DEMSampler} from '../terrain/elevation';
 
 import type StyleLayer from '../style/style_layer';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
-import type {FeatureStates} from "../source/source_state";
+import type {QueryResult, QueryFeature} from '../source/query_features';
+import type {FeatureStates} from '../source/source_state';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type Transform from '../geo/transform';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
@@ -41,14 +41,6 @@ type QueryParameters = {
         layers: Array<string>;
         availableImages: Array<string>;
     };
-};
-
-export type QueryResult = {
-    [_: string]: Array<{
-        featureIndex: number;
-        feature: QueryFeature;
-        intersectionZ: boolean | number;
-    }>;
 };
 
 type FeatureIndices = {
@@ -168,7 +160,7 @@ class FeatureIndex {
             elevationHelper = DEMSampler.create(transform.elevation, this.tileID);
         }
 
-        const result: Record<string, any> = {};
+        const result: QueryResult = {};
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
             const index = matching[k];
@@ -272,7 +264,6 @@ class FeatureIndex {
             let featureState: Record<string, any> = {};
             if (id !== undefined && sourceFeatureState) {
                 // `feature-state` expression evaluation requires feature state to be available
-                // @ts-expect-error - TS2345 - Argument of type 'string | number | void' is not assignable to parameter of type 'string | number'.
                 featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
             }
 
@@ -282,7 +273,6 @@ class FeatureIndex {
                 continue;
             }
 
-            // @ts-expect-error - TS2345 - Argument of type 'string | number | void' is not assignable to parameter of type 'string | number'.
             const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
 
             const serializedLayer = extend({}, serializedLayers[layerID]);
@@ -291,7 +281,6 @@ class FeatureIndex {
             serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
             geojsonFeature.layer = serializedLayer;
-            // @ts-expect-error - TS2345 - Argument of type 'Feature' is not assignable to parameter of type 'QueryFeature'.
             this.appendToResult(result, layerID, featureIndex, geojsonFeature, intersectionZ);
         }
     }
@@ -372,13 +361,12 @@ class FeatureIndex {
         return false;
     }
 
-    getId(feature: VectorTileFeature, sourceLayerId: string): string | number | void {
-        let id = feature.id;
+    getId(feature: VectorTileFeature, sourceLayerId: string): string | number {
+        let id: string | number = feature.id;
         if (this.promoteId) {
             const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
             if (propName != null)
-            // @ts-expect-error - TS2322 - Type 'string | number | boolean' is not assignable to type 'number'.
-                id = feature.properties[propName];
+                id = feature.properties[propName] as string | number;
             if (typeof id === 'boolean') id = Number(id);
         }
         return id;

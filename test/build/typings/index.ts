@@ -137,3 +137,24 @@ map.addSource('mapbox-dem', {
 });
 
 map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+
+//
+// Query features
+//
+
+const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id']});
+const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: [], validate: true});
+
+//
+// Set state
+//
+
+const feature1 = features1[0];
+if (feature1.id) {
+    map.setFeatureState({id: feature1.id, ...feature1}, {hide: true});
+}
+
+const feature2 = features2[0];
+if (feature2.id) {
+    map.setFeatureState({id: feature2.id, ...feature2}, {hide: true});
+}

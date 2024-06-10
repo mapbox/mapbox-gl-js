@@ -27,7 +27,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
+import type {QueryFeature} from '../source/query_features';
 import type {LUT} from '../util/lut';
 
 const TRANSITION_SUFFIX = '-transition';

@@ -1,17 +1,31 @@
-import type {OverscaledTileID} from './tile_id';
-import type SourceCache from './source_cache';
-import type StyleLayer from '../style/style_layer';
-import type CollisionIndex from '../symbol/collision_index';
-import type Transform from '../geo/transform';
-import type {RetainedQueryData} from '../symbol/placement';
-import type {FilterSpecification} from '../style-spec/types';
-import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
 
 import type Point from '@mapbox/point-geometry';
-import type {QueryResult} from '../data/feature_index';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
+import type SourceCache from './source_cache';
+import type StyleLayer from '../style/style_layer';
+import type CollisionIndex from '../symbol/collision_index';
+import type Transform from '../geo/transform';
+import type {OverscaledTileID} from './tile_id';
+import type {RetainedQueryData} from '../symbol/placement';
+import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
+import type {LayerSpecification, FilterSpecification} from '../style-spec/types';
+
+// we augment GeoJSON with custom properties in query*Features results
+export interface QueryFeature extends GeoJSON.Feature {
+    layer?: LayerSpecification;
+    source: string;
+    sourceLayer?: string;
+    state?: unknown;
+}
+
+export type QueryResult = {
+    [_: string]: Array<{
+        featureIndex: number;
+        feature: QueryFeature;
+        intersectionZ: boolean | number;
+    }>;
+};
 
 export type RenderedFeatureLayers = Array<{
     wrappedTileID: number;
@@ -60,7 +74,7 @@ export function queryRenderedFeatures(
 ): QueryResult {
     const tileResults = sourceCache.tilesIn(queryGeometry, use3DQuery, visualizeQueryGeometry);
     tileResults.sort(sortTilesIn);
-    const renderedFeatureLayers = [];
+    const renderedFeatureLayers: RenderedFeatureLayers = [];
     for (const tileResult of tileResults) {
         renderedFeatureLayers.push({
             wrappedTileID: tileResult.tile.tileID.wrapped().key,
@@ -211,7 +225,7 @@ function sortTilesIn(a: TilespaceQueryGeometry | RetainedQueryData, b: Tilespace
 function mergeRenderedFeatureLayers(tiles: RenderedFeatureLayers): QueryResult {
     // Merge results from all tiles, but if two tiles share the same
     // wrapped ID, don't duplicate features between the two tiles
-    const result: Record<string, any> = {};
+    const result: QueryResult = {};
     const wrappedIDLayerMap: Record<string, any> = {};
     for (const tile of tiles) {
         const queryResults = tile.queryResults;

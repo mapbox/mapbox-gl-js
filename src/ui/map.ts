@@ -86,9 +86,9 @@ import type {
 } from '../style-spec/types';
 import type StyleLayer from '../style/style_layer';
 import type {Source} from '../source/source';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
+import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
 
 import type {ITrackedParameters} from 'tracked_parameters_proxy';
 
@@ -104,7 +104,7 @@ export interface IControl {
 
 // Public API type for the Map#setStyle options
 // as opposite to the internal StyleOptions type
-type SetStyleOptions = {
+export type SetStyleOptions = {
     diff?: boolean;
     config?: {
         [key: string]: ConfigSpecification;
@@ -112,6 +112,12 @@ type SetStyleOptions = {
     localFontFamily: StyleOptions['localFontFamily'];
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
 };
+
+export type FeatureSelector = {
+    id: string | number;
+    source: string;
+    sourceLayer?: string;
+}
 
 export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
 export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
@@ -1908,7 +1914,7 @@ export class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: any): Array<QueryFeature> {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>): Array<QueryFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -3545,14 +3551,7 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Tutorial: Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
-    setFeatureState(
-        feature: {
-            source: string;
-            sourceLayer?: string;
-            id: string | number;
-        },
-        state: any,
-    ): this {
+    setFeatureState(feature: FeatureSelector, state: any): this {
         if (!this._isValidId(feature.source)) {
             return this;
         }
@@ -3607,14 +3606,7 @@ export class Map extends Camera {
      *     }, 'hover');
      * });
      */
-    removeFeatureState(
-        feature: {
-            source: string;
-            sourceLayer?: string;
-            id?: string | number;
-        },
-        key?: string,
-    ): this {
+    removeFeatureState(feature: FeatureSelector, key?: string): this {
         if (!this._isValidId(feature.source)) {
             return this;
         }
@@ -3651,13 +3643,7 @@ export class Map extends Camera {
      *     }
      * });
      */
-    getFeatureState(
-        feature: {
-            source: string;
-            sourceLayer?: string;
-            id: string | number;
-        },
-    ): any {
+    getFeatureState(feature: FeatureSelector): any {
         if (!this._isValidId(feature.source)) {
             return null;
         }

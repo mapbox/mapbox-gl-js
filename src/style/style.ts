@@ -108,13 +108,11 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {QueryResult} from '../data/feature_index';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
 import type {FeatureStates} from '../source/source_state';
 import type {PointLike} from '../types/point-like';
 import type {Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryRenderedFeaturesParams} from '../source/query_features';
+import type {QueryResult, QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
 import type {LUT} from '../util/lut';
 
 const supportedDiffOperations = pick(diffOperations, [
@@ -2426,11 +2424,7 @@ class Style extends Evented {
         return layer.getPaintProperty(name);
     }
 
-    setFeatureState(target: {
-        source: string;
-        sourceLayer?: string;
-        id: string | number;
-    }, state: any) {
+    setFeatureState(target: {id: string | number; source: string; sourceLayer?: string}, state: any) {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;

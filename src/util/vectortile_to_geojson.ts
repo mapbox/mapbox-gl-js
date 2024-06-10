@@ -1,32 +1,25 @@
-import type {LayerSpecification, SourceSpecification} from '../style-spec/types';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 
-// we augment GeoJSON with custom properties in query*Features results
-export interface QueryFeature extends GeoJSON.Feature {
-    layer?: LayerSpecification | null | undefined;
-    source?: SourceSpecification | null | undefined | unknown    ;
-    sourceLayer?: string | null | undefined | unknown    ;
-    state: unknown | null | undefined;
-    [key: string]: unknown;
-}
+import type {QueryFeature} from '../source/query_features';
+import type {LayerSpecification, SourceSpecification} from '../style-spec/types';
 
-const customProps = ['tile', 'layer', 'source', 'sourceLayer', 'state'];
+const customProps = ['id', 'tile', 'layer', 'source', 'sourceLayer', 'state'] as const;
 
 class Feature {
     type: 'Feature';
-    _geometry: GeoJSON.Geometry | null | undefined;
-    properties: Record<any, any> | null | undefined;
-    id: number | string | undefined;
+    _geometry?: GeoJSON.Geometry;
+    properties: Record<any, any>;
+    id?: number | string;
     _vectorTileFeature: VectorTileFeature;
     _x: number;
     _y: number;
     _z: number;
 
-    tile: unknown | null | undefined;
-    layer: LayerSpecification | null | undefined;
-    source: unknown | null | undefined;
-    sourceLayer: unknown | null | undefined;
-    state: unknown | null | undefined;
+    layer: LayerSpecification;
+    source: string;
+    sourceLayer?: string;
+    tile?: unknown;
+    state?: unknown;
 
     constructor(vectorTileFeature: VectorTileFeature, z: number, x: number, y: number, id?: string | number) {
         this.type = 'Feature';
@@ -52,17 +45,18 @@ class Feature {
     }
 
     toJSON(): QueryFeature {
-        const json: QueryFeature = {
+        const json = {
             type: 'Feature',
             state: undefined,
             geometry: this.geometry,
             properties: this.properties
         };
-        if (this.id !== undefined) json.id = this.id;
+
         for (const key of customProps) {
             if (this[key] !== undefined) json[key] = this[key];
         }
-        return json;
+
+        return json as QueryFeature;
     }
 }
 

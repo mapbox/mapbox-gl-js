@@ -51,9 +51,8 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Projection from '../geo/projection/projection';
 import type {TileTransform} from '../geo/projection/tile_transform';
-import type {QueryResult} from '../data/feature_index';
 import type Painter from '../render/painter';
-import type {QueryFeature} from '../util/vectortile_to_geojson';
+import type {QueryResult, QueryFeature} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 
@@ -507,11 +506,9 @@ class Tile {
                 continue;
             }
             const id = featureIndex.getId(feature, sourceLayer);
-            // @ts-expect-error - TS2345 - Argument of type 'string | number | void' is not assignable to parameter of type 'string | number'.
             const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
             geojsonFeature.tile = coord;
 
-            // @ts-expect-error - TS2345 - Argument of type 'Feature' is not assignable to parameter of type 'QueryFeature'.
             result.push(geojsonFeature);
         }
     }

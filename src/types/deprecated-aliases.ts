@@ -52,3 +52,8 @@ export type TransformRequestFunction = RequestTransformFunction;
  * @deprecated Use `GeoJSONFeature` instead.
 */
 export type MapboxGeoJSONFeature = GeoJSONFeature;
+
+/**
+ * @deprecated Use `MapOptions['fitBoundsOptions']` instead.
+*/
+export type FitBoundsOptions = MapOptions['fitBoundsOptions'];

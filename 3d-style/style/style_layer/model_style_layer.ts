@@ -24,7 +24,7 @@ import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
-import type {QueryFeature} from '../../../src/util/vectortile_to_geojson';
+import type {QueryFeature} from '../../../src/source/query_features';
 import {CanonicalTileID} from '../../../src/source/tile_id';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import type {LUT} from "../../../src/util/lut";
