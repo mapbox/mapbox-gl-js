@@ -107,6 +107,27 @@ async function notifyPR(pullRequest, bannedTsComments, priorBannedTsComments) {
     });
 }
 
+async function notifyBranch(bannedTsComments) {
+    const githubNotifier = new Octokit({
+        auth: execSync('mbx-ci github notifier token').toString().trim()
+    });
+
+    await githubNotifier.checks.create({
+        owner,
+        repo,
+        name: 'TypeScript suppressions',
+        output: {
+            title: `Total ${bannedTsComments} suppressions.`,
+            summary: JSON.stringify({current: bannedTsComments})
+        },
+        head_branch: branch,
+        head_sha: execSync('git rev-parse HEAD').toString().trim(),
+        status: 'completed',
+        conclusion: 'success',
+        completed_at: new Date().toISOString()
+    });
+}
+
 const bannedTsComments = await getBannedTsComments();
 if (bannedTsComments === 0) {
     console.log('No suppressed TypeScript errors found.');
@@ -123,7 +144,8 @@ if (!PK) {
 
 const pullRequest = await getTargetPR();
 if (!pullRequest) {
-    console.log(`No open PR found for branch "${branch}", skipping notification.`);
+    console.log(`No open PR found for branch "${branch}", notifying branch.`);
+    await notifyBranch(bannedTsComments);
     process.exit(0);
 }
 
