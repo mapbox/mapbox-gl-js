@@ -67,14 +67,10 @@ export class StyleExpression {
 
     _evaluator: EvaluationContext;
     _defaultValue: Value;
-    _warningHistory: {
-        [key: string]: boolean;
-    };
-    _enumValues: {
-        [_: string]: any;
-    } | null | undefined;
+    _warningHistory: {[key: string]: boolean};
+    _enumValues?: {[_: string]: unknown};
 
-    constructor(expression: Expression, propertySpec?: StylePropertySpecification | null, scope?: string | null, options?: ConfigOptions | null) {
+    constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions) {
         this.expression = expression;
         this._warningHistory = {};
         this._evaluator = new EvaluationContext(scope, options);

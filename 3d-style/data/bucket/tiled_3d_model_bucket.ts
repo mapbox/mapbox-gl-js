@@ -590,7 +590,7 @@ function encodeEmissionToByte(emission: number) {
     return Math.min(Math.round(0.5 * clampedEmission * 255), 255);
 }
 
-function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: vec4, rmea: vec4, heightBasedEmissionMultiplierParams: [number, number, number, number, number], zMin: number, zMax: number, lightsFeatureArray?: FeatureVertexArray | null) {
+function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: vec4, rmea: vec4, heightBasedEmissionMultiplierParams: [number, number, number, number, number], zMin: number, zMax: number, lightsFeatureArray?: FeatureVertexArray) {
     let r = ((color & 0xF000) | ((color & 0xF000) >> 4)) >> 8;
     let g = ((color & 0x0F00) | ((color & 0x0F00) >> 4)) >> 4;
     let b = (color & 0x00F0) | ((color & 0x00F0) >> 4);
@@ -663,7 +663,7 @@ function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChang
             const evaluatedColor = nodeInfo.evaluatedColor[partId];
             const emissionParams = nodeInfo.emissionHeightBasedParams[partId];
 
-            let lightsFeatureArray;
+            let lightsFeatureArray: FeatureVertexArray | null;
             if (pendingDoorLightUpdate && partId === PartIndices.door && node.lights) {
                 lightsFeatureArray = new FeatureVertexArray();
                 lightsFeatureArray.resize(node.lights.length * 10);

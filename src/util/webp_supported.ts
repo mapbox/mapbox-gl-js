@@ -13,11 +13,9 @@ let webpImgTestOnloadComplete = false;
 /**
  * @note Expressions test suite run in Node.js and use this file
  */
-const window = typeof self !== 'undefined' ? self : {};
+const window = typeof self !== 'undefined' ? self : {} as Window;
 
-// @ts-expect-error - TS2339 - Property 'document' does not exist on type '{}'.
 if (window.document) {
-// @ts-expect-error - TS2339 - Property 'document' does not exist on type '{}'.
     webpImgTest = window.document.createElement('img');
     webpImgTest.onload = function() {
         if (glForTesting) testWebpTextureUpload(glForTesting);

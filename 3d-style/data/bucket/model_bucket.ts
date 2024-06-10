@@ -193,7 +193,7 @@ class ModelBucket implements Bucket {
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
         // called when setFeature state API is used
         for (const modelId in this.instancesPerModel) {
-            const instances = this.instancesPerModel[modelId];
+            const instances: PerModelAttributes = this.instancesPerModel[modelId];
             for (const id in states) {
                 if (instances.idToFeaturesIndex.hasOwnProperty(id)) {
                     const feature = instances.features[instances.idToFeaturesIndex[id]];
@@ -309,7 +309,7 @@ class ModelBucket implements Bucket {
         const useInstancingThreshold = 0;
         if (!this.uploaded) {
             for (const modelId in this.instancesPerModel) {
-                const perModelAttributes = this.instancesPerModel[modelId];
+                const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId];
                 if (perModelAttributes.instancedDataArray.length < useInstancingThreshold || perModelAttributes.instancedDataArray.length === 0) continue;
                 if (!perModelAttributes.instancedDataBuffer) {
                     perModelAttributes.instancedDataBuffer = context.createVertexBuffer(perModelAttributes.instancedDataArray, instanceAttributes.members, true, undefined, this.instanceCount);
@@ -323,7 +323,7 @@ class ModelBucket implements Bucket {
 
     destroy() {
         for (const modelId in this.instancesPerModel) {
-            const perModelAttributes = this.instancesPerModel[modelId];
+            const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId];
             if (perModelAttributes.instancedDataArray.length === 0) continue;
             if (perModelAttributes.instancedDataBuffer) {
                 perModelAttributes.instancedDataBuffer.destroy();
@@ -364,7 +364,7 @@ class ModelBucket implements Bucket {
             this.instancesPerModel[modelId] = new PerModelAttributes();
         }
 
-        const perModelVertexArray = this.instancesPerModel[modelId];
+        const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId];
         const instancedDataArray = perModelVertexArray.instancedDataArray;
 
         const modelFeature = new ModelFeature(evaluationFeature, instancedDataArray.length);

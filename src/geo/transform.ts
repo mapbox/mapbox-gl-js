@@ -91,7 +91,7 @@ class Transform {
     angle: number;
 
     // 2D rotation matrix in the horizontal plane, as a function of bearing
-    rotationMatrix: Float32Array;
+    rotationMatrix: [number, number, number, number];
 
     // Zoom, modulo 1
     zoomFraction: number;
@@ -452,8 +452,7 @@ class Transform {
         this._calcMatrices();
 
         // 2x2 matrix for rotating points
-        // @ts-expect-error - TS2322 - Type 'mat2' is not assignable to type 'Float32Array'.
-        this.rotationMatrix = mat2.create();
+        this.rotationMatrix = mat2.create() as [number, number, number, number];
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
     }
 
@@ -679,9 +678,8 @@ class Transform {
         }
 
         if (options.position) {
-            const newPosition = [options.position.x, options.position.y, options.position.z];
-            if (!vec3.exactEquals(newPosition as [number, number, number], this._camera.position)) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+            const newPosition: [number, number, number] = [options.position.x, options.position.y, options.position.z];
+            if (!vec3.exactEquals(newPosition, this._camera.position)) {
                 this._setCameraPosition(newPosition);
                 changed = true;
             }
@@ -1273,19 +1271,18 @@ class Transform {
             const fogCullDistSq = this.fogCullDistSq;
             const horizonLineFromTop = this.horizonLineFromTop();
             result = result.filter(entry => {
-                const tl = [0, 0, 0, 1];
-                const br = [EXTENT, EXTENT, 0, 1];
+                const tl: [number, number, number, number] = [0, 0, 0, 1];
+                const br: [number, number, number, number] = [EXTENT, EXTENT, 0, 1];
 
                 const fogTileMatrix = this.calculateFogTileMatrix(entry.tileID.toUnwrapped());
 
-                vec4.transformMat4(tl as [number, number, number, number], tl as [number, number, number, number], fogTileMatrix);
-                vec4.transformMat4(br as [number, number, number, number], br as [number, number, number, number], fogTileMatrix);
+                vec4.transformMat4(tl, tl, fogTileMatrix);
+                vec4.transformMat4(br, br, fogTileMatrix);
 
                 // the fog matrix can flip the min/max values, so we calculate them explicitly
-                const min = vec4.min([] as any, tl as [number, number, number, number], br as [number, number, number, number]);
-                const max = vec4.max([] as any, tl as [number, number, number, number], br as [number, number, number, number]);
+                const min = vec4.min([] as any, tl, br) as [number, number, number, number];
+                const max = vec4.max([] as any, tl, br) as [number, number, number, number];
 
-                // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'number[]'.
                 const sqDist = getAABBPointSquareDist(min, max);
 
                 if (sqDist === 0) { return true; }
@@ -1496,49 +1493,48 @@ class Transform {
         // unproject two points to get a line and then find the point on that
         // line with z=0.
 
-        const p0 = [p.x, p.y, 0, 1];
-        const p1 = [p.x, p.y, 1, 1];
+        const p0: [number, number, number, number] = [p.x, p.y, 0, 1];
+        const p1: [number, number, number, number] = [p.x, p.y, 1, 1];
 
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        vec4.transformMat4(p0 as [number, number, number, number], p0 as [number, number, number, number], this.pixelMatrixInverse);
+        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        vec4.transformMat4(p1 as [number, number, number, number], p1 as [number, number, number, number], this.pixelMatrixInverse);
+        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
 
         const w0 = p0[3];
         const w1 = p1[3];
-        vec4.scale(p0 as [number, number, number, number], p0 as [number, number, number, number], 1 / w0);
-        vec4.scale(p1 as [number, number, number, number], p1 as [number, number, number, number], 1 / w1);
+        vec4.scale(p0, p0, 1 / w0);
+        vec4.scale(p1, p1, 1 / w1);
 
         const z0 = p0[2];
         const z1 = p1[2];
 
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec4'. | TS2322 - Type 'number[]' is not assignable to type 'vec4'.
         return {p0, p1, t};
     }
 
     screenPointToMercatorRay(p: Point): Ray {
-        const p0 = [p.x, p.y, 0, 1];
-        const p1 = [p.x, p.y, 1, 1];
+        const p0: [number, number, number, number] = [p.x, p.y, 0, 1];
+        const p1: [number, number, number, number] = [p.x, p.y, 1, 1];
 
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        vec4.transformMat4(p0 as [number, number, number, number], p0 as [number, number, number, number], this.pixelMatrixInverse);
+        vec4.transformMat4(p0, p0, this.pixelMatrixInverse);
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        vec4.transformMat4(p1 as [number, number, number, number], p1 as [number, number, number, number], this.pixelMatrixInverse);
+        vec4.transformMat4(p1, p1, this.pixelMatrixInverse);
 
-        vec4.scale(p0 as [number, number, number, number], p0 as [number, number, number, number], 1 / p0[3]);
-        vec4.scale(p1 as [number, number, number, number], p1 as [number, number, number, number], 1 / p1[3]);
+        vec4.scale(p0, p0, 1 / p0[3]);
+        vec4.scale(p1, p1, 1 / p1[3]);
 
         // Convert altitude from meters to pixels.
         p0[2] = mercatorZfromAltitude(p0[2], this._center.lat) * this.worldSize;
         p1[2] = mercatorZfromAltitude(p1[2], this._center.lat) * this.worldSize;
 
-        vec4.scale(p0 as [number, number, number, number], p0 as [number, number, number, number], 1 / this.worldSize);
-        vec4.scale(p1 as [number, number, number, number], p1 as [number, number, number, number], 1 / this.worldSize);
+        vec4.scale(p0, p0, 1 / this.worldSize);
+        vec4.scale(p1, p1, 1 / this.worldSize);
 
         // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'ReadonlyVec3'.
-        return new Ray([p0[0], p0[1], p0[2]], vec3.normalize([] as any, vec3.sub([] as any, p1 as [number, number, number, number], p0 as [number, number, number, number])));
+        return new Ray([p0[0], p0[1], p0[2]], vec3.normalize([] as any, vec3.sub([] as any, p1, p0)));
     }
 
     /**
@@ -1959,8 +1955,7 @@ class Transform {
             const m = mat4.fromScaling([] as any, [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
             // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
             mat4.multiply(m, m, this.globeMatrix);
-            // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'number[]'.
-            return m;
+            return m as number[];
         }
         return undefined;
     }
@@ -2014,7 +2009,6 @@ class Transform {
         // The default camera position might have been compensated by the active projection model.
         const mercPixelsPerMeter = mercatorZfromAltitude(1, this._center.lat) * this.worldSize;
         const pos = this._computeCameraPosition(mercPixelsPerMeter);
-        // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
         const elevationAtCamera = elevation.getAtPointOrZero(new MercatorCoordinate(...pos));
         const terrainElevation = this.pixelsPerMeter / this.worldSize * elevationAtCamera;
         const minHeight = this._minimumHeightOverTerrain();
@@ -2201,7 +2195,7 @@ class Transform {
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         const worldToClipPerspective: Array<number> | Float32Array | Float64Array = mat4.mul([] as any, cameraToClipPerspective, worldToCamera);
         // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        let m: Array<number> | Float32Array | Float64Array = mat4.mul([] as any, cameraToClip, worldToCamera);
+        let m: mat4 | Float64Array = mat4.mul([] as any, cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
@@ -2212,7 +2206,6 @@ class Transform {
             // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyMat4'.
             mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
-            // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
             mat4.multiply(m, m, adjustments);
             // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
             mat4.multiply(worldToClipPerspective, worldToClipPerspective, adjustments);
@@ -2287,22 +2280,15 @@ class Transform {
         this.alignedProjMatrix = alignedM;
 
         m = mat4.create();
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
         mat4.translate(m, m, [1, -1, 0]);
-        // @ts-expect-error - TS2322 - Type 'number[] | Float32Array' is not assignable to type 'Float32Array'.
-        this.labelPlaneMatrix = m;
+        this.labelPlaneMatrix = m as Float32Array;
 
         m = mat4.create();
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(m, m, [1, -1, 1]);
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
         mat4.translate(m, m, [-1, -1, 0]);
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(m, m, [2 / this.width, 2 / this.height, 1]);
-        // @ts-expect-error - TS2322 - Type 'number[] | Float32Array' is not assignable to type 'Float32Array'.
-        this.glCoordMatrix = m;
+        this.glCoordMatrix = m as Float32Array;
 
         // matrix for conversion from location to screen coordinates
         // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
@@ -2321,10 +2307,8 @@ class Transform {
         if (this.projection.name === 'globe' || this.mercatorFromTransition) {
             this.globeMatrix = calculateGlobeMatrix(this);
 
-            const globeCenter = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
-
-            // @ts-expect-error - TS2322 - Type 'vec3' is not assignable to type '[number, number, number]'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter as [number, number, number], globeCenter as [number, number, number], worldToCamera);
+            const globeCenter: [number, number, number] = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
+            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera as unknown as mat4) as [number, number, number];
             this.globeRadius = this.worldSize / 2.0 / Math.PI - 1.0;
         } else {
             // @ts-expect-error - TS2322 - Type 'number[] | Float32Array' is not assignable to type 'Float64Array'.
@@ -2367,7 +2351,7 @@ class Transform {
         this.worldToFogMatrix = this._camera.getWorldToCameraPosition(cameraWorldSizeForFog, cameraPixelsPerMeter, windowScaleFactor);
     }
 
-    _computeCameraPosition(targetPixelsPerMeter?: number | null): vec3 {
+    _computeCameraPosition(targetPixelsPerMeter?: number | null): [number, number, number] {
         targetPixelsPerMeter = targetPixelsPerMeter || this.pixelsPerMeter;
         const pixelSpaceConversion = targetPixelsPerMeter / this.pixelsPerMeter;
 

@@ -143,8 +143,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      */
     reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded,
-            uid = params.uid,
-            vtSource = this;
+            uid = params.uid;
+
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
@@ -157,7 +157,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, this.availableImages, vtSource.actor, reloadCallback);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, reloadCallback);
                 }
                 callback(err, data);
             };

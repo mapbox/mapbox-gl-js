@@ -1,12 +1,10 @@
 import Point from '@mapbox/point-geometry';
 
-// @ts-expect-error - TS2300 - Duplicate identifier 'VectorTileFeature'.
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const toGeoJSON = VectorTileFeature.prototype.toGeoJSON;
 import EXTENT from '../style-spec/data/extent';
 
-// @ts-expect-error - TS2300 - Duplicate identifier 'VectorTileFeature'.
-import type {VectorTile, VectorTileLayer, VectorTileFeature} from '@mapbox/vector-tile';
+import type {VectorTile, VectorTileLayer} from '@mapbox/vector-tile';
 
 // The feature type used by geojson-vt and supercluster. Should be extracted to
 // global type and used in module definitions for those two modules.

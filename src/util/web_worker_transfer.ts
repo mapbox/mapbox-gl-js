@@ -16,11 +16,17 @@ import Formatted, {FormattedSection} from '../style-spec/expression/types/format
 type SerializedObject = {
     [_: string]: Serialized;
 };
-export type Serialized = null | undefined | boolean | number | string       | Date | RegExp | ArrayBuffer | ArrayBufferView | ImageData | Array<Serialized> | SerializedObject;
+
+export type Serialized = null | undefined | boolean | number | string | Date | RegExp | ArrayBuffer | ArrayBufferView | ImageData | Array<Serialized> | SerializedObject;
+
+type Klass = Class<any> & {
+    _classRegistryKey: string;
+    serialize?: (input: any, transferables?: Set<Transferable>) => SerializedObject;
+};
 
 type Registry = {
     [_: string]: {
-        klass: Class<any>;
+        klass: Klass;
         omit: ReadonlyArray<string>;
     };
 };
@@ -44,14 +50,12 @@ export function register<T extends any>(klass: Class<T>, name: string, options: 
     assert(!registry[name], `${name} is already registered.`);
     Object.defineProperty(klass, '_classRegistryKey', {
         value: name,
-        // @ts-expect-error - TS2561 - Object literal may only specify known properties, but 'writeable' does not exist in type 'PropertyDescriptor & ThisType<any>'. Did you mean to write 'writable'?
-        writeable: false
+        writable: false
     });
     registry[name] = {
         klass,
-        // @ts-expect-error - TS2322 - Type 'readonly (keyof T)[]' is not assignable to type 'readonly string[]'.
         omit: options.omit || []
-    };
+    } as unknown as Registry[string];
 }
 
 register(Object, 'Object');
@@ -169,7 +173,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
 
     if (typeof input === 'object') {
-        const klass = (input.constructor as any);
+        const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
         if (!name) {
             throw new Error(`can't serialize object of unregistered class ${name}`);
@@ -184,7 +188,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
             // approach for objects whose members include instances of dynamic
             // StructArray types. Once we refactor StructArray to be static,
             // we can remove this complexity.
-            (klass.serialize(input, transferables) as SerializedObject) : {};
+            klass.serialize(input, transferables) : {};
 
         if (!klass.serialize) {
             for (const key in input) {

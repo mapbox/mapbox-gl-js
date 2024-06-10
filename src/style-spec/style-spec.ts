@@ -30,7 +30,7 @@ export type StylePropertySpecification = {
     type: 'enum',
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
-    values: {[_: string]: {}},
+    values: {[_: string]: unknown},
     transition?: boolean,
     default?: string
 } | {

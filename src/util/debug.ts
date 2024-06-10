@@ -17,15 +17,15 @@ import type {OverscaledTileID} from '../source/tile_id';
 export const Debug: {
     debugCanvas: HTMLCanvasElement | null | undefined;
     aabbCorners: Array<vec3>;
-    extend: any;
-    run: any;
-    logToElement: any;
-    drawAabbs: any;
-    clearAabbs: any;
-    _drawBox: any;
-    _drawLine: any;
-    _drawQuad: any;
-    _initializeCanvas: any;
+    extend: (...args: any) => void;
+    run: (...args: any) => void;
+    logToElement: (...args: any) => void;
+    drawAabbs: (...args: any) => void;
+    clearAabbs: (...args: any) => void;
+    _drawBox: (...args: any) => void;
+    _drawLine: (...args: any) => void;
+    _drawQuad: (...args: any) => void;
+    _initializeCanvas: (tr: Transform) => HTMLCanvasElement;
 } =
 {
     extend(dest: any, ...sources: Array<any | null | undefined>): any {

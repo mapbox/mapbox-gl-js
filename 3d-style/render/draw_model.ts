@@ -37,6 +37,7 @@ import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import {Texture3D} from '../../src/render/texture';
 import type {LUT} from "../../src/util/lut";
+import type EvaluationParameters from '../../src/style/evaluation_parameters';
 
 export default drawModels;
 
@@ -563,7 +564,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 
-    const evaluationParameters = {...layer.layout.get("model-id").parameters};
+    const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 
@@ -580,7 +581,6 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
         const tileZoom = calculateTileZoom(coord, tr);
         evaluationParameters.zoom = tileZoom;
-        // @ts-expect-error - TS2345 - Argument of type '{ zoom: number; pitch: number; now: number; fadeDuration: number; transition: TransitionSpecification; brightness: number; }' is not assignable to parameter of type 'EvaluationParameters'.
         const modelIdProperty = modelIdUnevaluatedProperty.possiblyEvaluate(evaluationParameters);
         updateModelBucketData(painter, bucket, coord);
 

@@ -19,7 +19,7 @@ declare module 'tracked_parameters_proxy' {
     containerObject: any,
     scope: Array<string>,
     name: string,
-    description?: Object,
+    description?: object,
   ): void;
 
   export interface ITrackedParameters {
@@ -41,7 +41,7 @@ declare module 'tracked_parameters_proxy' {
       containerObject: any,
       scope: Array<string>,
       name: string,
-      description?: Object,
+      description?: object,
     ): void;
 
     refreshUI(): void;
@@ -68,7 +68,7 @@ declare module 'tracked_parameters_proxy' {
         containerObject: any,
         scope: Array<string>,
         name: string,
-        description?: Object,
+        description?: object,
       ): void;
 
       refreshUI(): void;
