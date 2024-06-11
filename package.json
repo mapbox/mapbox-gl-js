@@ -114,7 +114,7 @@
     "tape": "^5.7.5",
     "tape-filter": "^1.0.4",
     "testem": "^3.14.0",
-    "tsx": "^4.15.1",
+    "tsx": "^4.15.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.13.0",
     "vite-plugin-arraybuffer": "^0.0.7",
