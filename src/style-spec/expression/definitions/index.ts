@@ -1,5 +1,4 @@
 import {
-    Type,
     NumberType,
     StringType,
     BooleanType,
@@ -47,6 +46,7 @@ import Config from './config';
 import Distance from './distance';
 import {mulberry32} from '../../util/random';
 
+import type {Type} from '../types';
 import type EvaluationContext from '../evaluation_context';
 import type {Varargs} from '../compound_expression';
 import type {Expression, ExpressionRegistry} from '../expression';

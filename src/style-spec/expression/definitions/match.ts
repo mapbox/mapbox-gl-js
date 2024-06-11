@@ -1,8 +1,9 @@
 import assert from 'assert';
 
 import {typeOf} from '../values';
-import {ValueType, Type} from '../types';
+import {ValueType} from '../types';
 
+import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';

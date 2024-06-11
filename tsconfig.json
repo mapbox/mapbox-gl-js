@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "noFallthroughCasesInSwitch": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
@@ -10,11 +9,11 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "strict": false,
     "target": "es2021",
-    "importsNotUsedAsValues": "remove",
-    "preserveValueImports": false,
+    "verbatimModuleSyntax": true,
     "lib": [
       "ESNext",
       "DOM",

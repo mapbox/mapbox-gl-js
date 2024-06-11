@@ -1,18 +1,21 @@
+import assert from 'assert';
+import Point from '@mapbox/point-geometry';
+
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
-import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
 import {bindAll, extend, radToDeg, smoothstep} from '../util/util';
-import {Anchor, anchorTranslate} from './anchor';
+import {anchorTranslate} from './anchor';
 import {Event, Evented} from '../util/evented';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
+import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util';
+
+import type {Anchor} from './anchor';
 import type {Map} from './map';
 import type Popup from './popup';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {MapMouseEvent, MapTouchEvent} from './events';
 import type {PointLike} from '../types/point-like';
-import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
-import {globeTiltAtLngLat, globeCenterToScreenPoint, isLngLatBehindGlobe} from '../geo/projection/globe_util';
-import assert from 'assert';
 
 type Options = {
     element?: HTMLElement;

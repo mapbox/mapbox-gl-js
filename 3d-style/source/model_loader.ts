@@ -1,8 +1,10 @@
-import {Mesh, Node, Material, ModelTexture, Sampler, AreaLight, HEIGHTMAP_DIM} from '../data/model';
-import type {Footprint} from '../util/conflation';
+import Point from '@mapbox/point-geometry';
+import assert from 'assert';
+import earcut from 'earcut';
+import {mat4, vec3} from 'gl-matrix';
+
 import {Aabb} from '../../src/util/primitives';
 import Color from '../../src/style-spec/util/color';
-import {mat4, vec3} from 'gl-matrix';
 import {TriangleIndexArray,
     ModelLayoutArray,
     NormalLayoutArray,
@@ -11,17 +13,15 @@ import {TriangleIndexArray,
     Color4fLayoutArray
 } from '../../src/data/array_types';
 import {GLTF_TO_ARRAY_TYPE, GLTF_COMPONENTS} from '../util/loaders';
-
-import Point from '@mapbox/point-geometry';
-import earcut from 'earcut';
-
 import {base64DecToArr} from '../../src/util/util';
-import assert from 'assert';
 import TriangleGridIndex from '../../src/util/triangle_grid_index';
+import {HEIGHTMAP_DIM} from '../data/model';
 
-import type {Class} from '../../src/types/class';
 import type {vec2} from 'gl-matrix';
+import type {Class} from '../../src/types/class';
+import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
+import type {Mesh, Node, Material, ModelTexture, Sampler, AreaLight} from '../data/model';
 
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];

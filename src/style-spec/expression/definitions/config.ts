@@ -1,9 +1,10 @@
-import {Type, ValueType} from '../types';
+import {ValueType} from '../types';
 import {Color, typeOf, toString as valueToString} from '../values';
 import Formatted from '../types/formatted';
 import ResolvedImage from '../types/resolved_image';
 import Literal from './literal';
 
+import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
