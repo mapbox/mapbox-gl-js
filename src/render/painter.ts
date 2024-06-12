@@ -820,7 +820,7 @@ class Painter {
                         // This order is later used by fill-extrusion and instanced tree's rendering code to know
                         // how to deal with landmarks.
                         order = layerIdx;
-                        for (const mask of layer.layout.get('layer-types')) {
+                        for (const mask of layer.layout.get('clip-layer-types')) {
                             clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
                         }
                     }

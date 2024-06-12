@@ -1457,13 +1457,10 @@
     }
   },
   "layout_clip": {
-    "layer-types": {
+    "clip-layer-types": {
       "type": "array",
       "value": "enum",
       "values": {
-        "fill-extrusion": {
-          "doc": "If present the clip layer would remove all fill-extrusion layers below it. Currently only Mapbox Standard Style's extruded buildings are removed."
-        },
         "model": {
           "doc": "If present the clip layer would remove all 3d model layers below it. Currently only instanced models (e.g. trees) are removed."
         },
@@ -1471,8 +1468,8 @@
           "doc": "If present the clip layer would remove all symbol layers below it."
         }
       },
-      "default": ["fill-extrusion"],
-      "doc": "Layer types that will be removed if fallen below this clip layer",
+      "default": [],
+      "doc": "Layer types that will also be removed if fallen below this clip layer.",
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0",

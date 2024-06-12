@@ -188,6 +188,9 @@ const skip = [
 
     // The algorithm for raster colour gradient texels stretching needs an adjustment
     "render-tests/raster-color/categorical",
+
+    // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions"
 ];
 
 export default {todo, skip};

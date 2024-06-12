@@ -953,7 +953,7 @@ export type ClipLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "layer-types"?: ExpressionSpecification
+        "clip-layer-types"?: ExpressionSpecification
     },
     "paint"?: never
 }

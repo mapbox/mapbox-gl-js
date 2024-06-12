@@ -32,7 +32,6 @@ class ClipBucket implements Bucket {
     layerIds: Array<string>;
     stateDependentLayers: Array<ClipStyleLayer>;
     stateDependentLayerIds: Array<string>;
-    patternFeatures: Array<BucketFeature>;
     hasPattern: boolean;
 
     footprints: Array<Footprint>;
@@ -42,7 +41,6 @@ class ClipBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
-        this.patternFeatures = [];
         this.hasPattern = false;
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);

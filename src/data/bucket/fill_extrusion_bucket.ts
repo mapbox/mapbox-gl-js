@@ -1492,7 +1492,8 @@ class FillExtrusionBucket implements Bucket {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
-            if ((region.order < layerIndex) || (region.order !== Infinity && region.order > layerIndex && !(region.clipMask & LayerTypeMask.FillExtrusion))) continue;
+            // if ((region.order < layerIndex) || (region.order !== Infinity && region.order > layerIndex && !(region.clipMask & LayerTypeMask.FillExtrusion))) continue;
+            if ((region.order < layerIndex)) continue; // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
 
             // Apply slight padding (one unit) to fill extrusion footprints. This reduces false positives where
             // two adjacent lines would be reported overlapping due to limited precision (16 bit) of tile units.

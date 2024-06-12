@@ -15,7 +15,7 @@
           "type": "clip",
           "source": "eraser",
           "layout": {
-            "layer-types": ["fill-extrusion", "symbol"]
+            "clip-layer-types": ["symbol"]
           }
         }],
         ["wait"]

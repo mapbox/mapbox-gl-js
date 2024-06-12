@@ -17,11 +17,11 @@ import type ResolvedImage from '../../style-spec/expression/types/resolved_image
 import type {StylePropertySpecification} from '../../style-spec/style-spec';
 
 export type LayoutProps = {
-    "layer-types": DataConstantProperty<Array<"fill-extrusion" | "model" | "symbol">>;
+    "clip-layer-types": DataConstantProperty<Array<"model" | "symbol">>;
 };
 
 const layout: Properties<LayoutProps> = new Properties({
-    "layer-types": new DataConstantProperty(styleSpec["layout_clip"]["layer-types"]),
+    "clip-layer-types": new DataConstantProperty(styleSpec["layout_clip"]["clip-layer-types"]),
 });
 
 export type PaintProps = {};

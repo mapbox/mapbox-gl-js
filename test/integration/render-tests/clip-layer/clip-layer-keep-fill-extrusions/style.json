@@ -13,7 +13,7 @@
           "type": "clip",
           "source": "eraser",
           "layout": {
-            "layer-types": ["symbol", "model"]
+            "clip-layer-types": ["symbol", "model"]
           }
         }],
         ["wait"]

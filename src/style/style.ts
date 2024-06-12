@@ -3593,7 +3593,7 @@ class Style extends Evented {
 
             const extraLayersToBeClipped = [];
 
-            for (const extra of clipLayer.layout.get('layer-types'))
+            for (const extra of clipLayer.layout.get('clip-layer-types'))
                 extraLayersToBeClipped.push(extra === 'model' ? LayerTypeMask.Model : (extra === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
 
             for (const mask of extraLayersToBeClipped)
