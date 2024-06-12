@@ -43,7 +43,6 @@ import {setCacheLimits} from '../util/tile_request_cache';
 import {Debug} from '../util/debug';
 import config from '../util/config';
 import {isFQID} from '../util/fqid';
-import * as TP from '../tracked-parameters/tracked_parameters';
 
 import type {Listener} from '../util/evented';
 import type {PointLike} from '../types/point-like';
@@ -90,7 +89,8 @@ import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
 
-import type {ITrackedParameters} from 'tracked_parameters_proxy';
+import {ITrackedParameters, TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
+import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -656,11 +656,16 @@ export class Map extends Camera {
         ], this);
 
         this._setupContainer();
-        if (options.devtools) {
-            this._tp = new TP.TrackedParameters(this);
-        } else {
-            this._tp = new TP.TrackedParametersMock();
+
+        Debug.run(() => {
+            if (options.devtools) {
+                this._tp = new TrackedParameters(this);
+            }
+        });
+        if (!this._tp) {
+            this._tp = new TrackedParametersMock();
         }
+
         this._tp.registerParameter(this, ["Debug"], "showOverdrawInspector");
         this._tp.registerParameter(this, ["Debug"], "showTileBoundaries");
         this._tp.registerParameter(this, ["Debug"], "showParseStatus");

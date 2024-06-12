@@ -26,11 +26,6 @@
       "offscreencanvas"
     ],
     "baseUrl": ".",
-    "paths": {
-      "tracked_parameters_proxy": [
-        "./src/types/tracked_parameters_proxy"
-      ]
-    },
   },
   "include": [
     "./src/**/*",

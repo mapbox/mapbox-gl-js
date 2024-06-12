@@ -28,14 +28,6 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     json({
         exclude: 'src/style-spec/reference/v8.json'
     }),
-    alias({
-        entries: [{
-            find: 'tracked_parameters_proxy',
-            replacement: production ?
-                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_mock.ts', import.meta.url)) :
-                fileURLToPath(new URL('../src/tracked-parameters/internal/tracked_parameters_ui.ts', import.meta.url))
-        }]
-    }),
     (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*'],

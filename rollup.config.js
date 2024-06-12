@@ -46,8 +46,13 @@ export default ({watch}) => {
             minifyInternalExports: production
         },
         onwarn: production ? onwarn : false,
-        treeshake: production,
-        plugins: plugins({minified, production, bench, test: false, keepClassNames: false})
+        treeshake: production ? {
+            moduleSideEffects: (id, external) => {
+                return !id.endsWith("tracked_parameters.ts");
+            },
+            preset: "recommended"
+        } : false,
+        plugins: plugins({ minified, production, bench, test: false, keepClassNames: false })
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and

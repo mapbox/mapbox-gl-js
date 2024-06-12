@@ -67,7 +67,7 @@ import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type {DynamicDefinesType} from './program/program_uniforms';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import type {ContextOptions} from '../gl/context';
-import type {ITrackedParameters} from 'tracked_parameters_proxy';
+import {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 
 import {OcclusionBuffers} from './occlusion_static_buffers';
 

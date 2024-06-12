@@ -72,10 +72,5 @@ export default defineConfig({
     plugins: [
         glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl']),
         arraybuffer(),
-        alias({
-            entries: [
-                {find: 'tracked_parameters_proxy', replacement: fileURLToPath(new URL('src/tracked-parameters/internal/tracked_parameters_mock.js', import.meta.url))}
-            ]
-        }),
     ],
 });
