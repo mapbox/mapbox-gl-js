@@ -1,4 +1,4 @@
-import {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
+import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 
 // none  - no debug visualization
 // zPass - always render occluders

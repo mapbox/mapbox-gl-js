@@ -89,8 +89,9 @@ import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
 
-import {ITrackedParameters, TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
+import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
+import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
