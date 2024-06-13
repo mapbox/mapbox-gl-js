@@ -357,7 +357,13 @@ class GeoJSONSource extends Evented implements ISource {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this._loaded = false;
-        const options = extend({append}, this.workerOptions);
+        const options = extend({append}, this.workerOptions) as GeoJSONWorkerOptions & {
+            data?: string
+            scope?: string;
+            append?: boolean;
+            request?: ReturnType<typeof this.map._requestManager.transformRequest>;
+        };
+
         options.scope = this.scope;
         const data = this._data;
         if (typeof data === 'string') {

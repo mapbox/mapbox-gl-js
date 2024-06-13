@@ -5,8 +5,9 @@ import UnitBezier from '@mapbox/unitbezier';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 
-import type {Callback} from '../types/callback';
 import type {vec4} from 'gl-matrix';
+import type {UnionToIntersection} from 'utility-types';
+import type {Callback} from '../types/callback';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -337,13 +338,14 @@ export function keysDifference<S, T>(
  * @param sources sources from which properties are pulled
  * @private
  */
-export function extend(dest: any, ...sources: Array<any | null | undefined>): any {
+export function extend<T extends object, U extends Array<object | null | undefined>>(dest: T, ...sources: U): T & UnionToIntersection<U[number]> {
     for (const src of sources) {
         for (const k in src) {
             dest[k] = src[k];
         }
     }
-    return dest;
+
+    return dest as T & UnionToIntersection<U[number]>;
 }
 
 /**
@@ -360,8 +362,8 @@ export function extend(dest: any, ...sources: Array<any | null | undefined>): an
  * // justName = { name: 'Charlie' }
  * @private
  */
-export function pick(src: any, properties: Array<string>): any {
-    const result: Record<string, any> = {};
+export function pick<T extends object, K extends keyof T>(src: T, properties: Array<K>): Pick<T, K> {
+    const result: any = {};
     for (let i = 0; i < properties.length; i++) {
         const k = properties[i];
         if (k in src) {

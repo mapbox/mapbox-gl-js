@@ -1,8 +1,10 @@
 import {extend} from '../../util/util';
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events';
 
-import type {Map} from '../map';
 import type Point from '@mapbox/point-geometry';
+import type {Mutable} from 'utility-types';
+
+import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
 
 export class MapEventHandler implements Handler {
@@ -42,7 +44,7 @@ export class MapEventHandler implements Handler {
     }
 
     preclick(e: MouseEvent) {
-        const synth = extend({}, e);
+        const synth: Mutable<MouseEvent> = extend({}, e);
         synth.type = 'preclick';
         this._map.fire(new MapMouseEvent(synth.type, this._map, synth));
     }

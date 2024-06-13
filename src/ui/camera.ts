@@ -1586,7 +1586,7 @@ class Camera extends Evented {
     flyTo(options: EasingOptions, eventData?: any): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (this._prefersReducedMotion(options)) {
-            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around']);
+            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding']);
             return this.jumpTo(coercedOptions, eventData);
         }
 

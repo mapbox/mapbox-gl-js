@@ -239,7 +239,7 @@ class CustomSource<T> extends Evented implements ISource {
         extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
     }
 
-    serialize(): SourceSpecification {
+    serialize() {
         return pick(this, ['type', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution']);
     }
 

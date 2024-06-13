@@ -546,7 +546,7 @@ export class Map extends Camera {
 
         const initialOptions = options;
 
-        options = (extend({}, defaultOptions, options) as typeof defaultOptions & MapOptions);
+        options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than or equal to minZoom`);
@@ -3766,7 +3766,7 @@ export class Map extends Camera {
             antialias: this._antialias || false
         });
 
-        const gl = (this._canvas.getContext('webgl2', attributes) as WebGL2RenderingContext);
+        const gl = this._canvas.getContext('webgl2', attributes);
 
         if (!gl) {
             this.fire(new ErrorEvent(new Error('Failed to initialize WebGL')));

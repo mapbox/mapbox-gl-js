@@ -297,6 +297,7 @@ const symbolTextAndIconUniformValues = (
     projection: Projection,
     occludedOpacityMultiplier: number,
 ): UniformValues<SymbolIconUniformsType> => {
+    // @ts-expect-error
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
         true, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection, occludedOpacityMultiplier), {

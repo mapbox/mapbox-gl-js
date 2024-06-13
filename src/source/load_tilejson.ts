@@ -7,6 +7,7 @@ import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
+import type {SourceSpecification} from '../style-spec/types';
 import type {SourceVectorLayer, SourceRasterLayer} from './source';
 
 type ExtendedTileJSON = TileJSON & {
@@ -16,25 +17,28 @@ type ExtendedTileJSON = TileJSON & {
     rasterLayerIds?: Array<string>;
 };
 
+type TileJSONLike = {url?: string, tiles?: Array<string>};
+type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike;
+
 export default function(
-    options: any,
+    options: Options,
     requestManager: RequestManager,
     language: string | null | undefined,
     worldview: string | null | undefined,
     callback: Callback<ExtendedTileJSON>,
 ): Cancelable {
-    const loaded = function(err?: Error | null, tileJSON?: TileJSON | null) {
+    const loaded = function(err?: Error | null, tileJSON?: Partial<TileJSON>) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {
             // Prefer TileJSON tiles, if both URL and tiles options are set
             if (options.url && tileJSON.tiles && options.tiles) delete options.tiles;
 
-            const result: ExtendedTileJSON = pick(
+            const result = pick(
                 // explicit source options take precedence over TileJSON
                 extend(tileJSON, options),
-                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
-            );
+                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
+            ) as ExtendedTileJSON;
 
             if (tileJSON.vector_layers) {
                 result.vectorLayers = tileJSON.vector_layers;
