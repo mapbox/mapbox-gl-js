@@ -1,66 +1,98 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
-        #map { border: 1px solid #ccc; }
+        #map {border: 1px solid #ccc;}
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+    <div id='map'></div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script type="module">
-    import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script type='module'>
+        import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
 
-    const test = 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+        async function fetchStyle() {
+            let test = new URLSearchParams(location.search).get('test');
+            if (!test) test = prompt('test name:') || 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
 
-    const style = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`)
-        .then(response => response.json());
+            const response = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`);
+            const style = await response.json();
 
-    console.log(style);
+            history.replaceState({}, '', `${location.pathname}?test=${test}`);
+            console.log(style);
 
-    const {
-        width, height,
-        fadeDuration = 0,
-        localIdeographFontFamily = false,
-        debug,
-        operations,
-    } = style.metadata.test;
+            return style;
+        }
 
-    const container = document.getElementById('map');
-    container.style.width = width + 'px';
-    container.style.height = height + 'px';
+        const style = await fetchStyle();
 
-    const transformRequest = url => ({url: url.replace('local://', 'http://localhost:9966/test/integration/')});
+        const {
+            width, height,
+            fadeDuration = 0,
+            localIdeographFontFamily = false,
+            operations,
+            ...options
+        } = style.metadata.test;
 
-    const map = window.map = new mapboxgl.Map({
-        container,
-        style,
-        transformRequest,
-        fadeDuration,
-        localIdeographFontFamily,
-        interactive: false,
-        attributionControl: false,
-        performanceMetricsCollection: false
-    });
+        const container = document.getElementById('map');
+        container.style.width = width + 'px';
+        container.style.height = height + 'px';
 
-    map.removeControl(map._logoControl);
-    if (debug) map.showTileBoundaries = true;
+        const transformRequest = url => ({url: url.replace('local://', 'http://localhost:9966/test/integration/')});
 
-    map.repaint = true;
-    await map.once('load');
+        const map = window.map = new mapboxgl.Map({
+            container,
+            style,
+            transformRequest,
+            fadeDuration,
+            localIdeographFontFamily,
+            interactive: false,
+            attributionControl: false,
+            performanceMetricsCollection: false
+        });
 
-    await applyOperations(map, style.metadata.test);
+        map.removeControl(map._logoControl);
 
-    map.repaint = true;
-    await new Promise(resolve => requestAnimationFrame(map._requestDomTask.bind(map, resolve)));
+        map.on('error', (e) => {
+            console.error(e);
+        });
 
-</script>
+        map._authenticate = () => { };
+
+        // override internal timing to enable precise wait operations
+        window._renderTestNow = 0;
+        mapboxgl.setNow(window._renderTestNow);
+
+        if (options.debug) {
+            map.showTileBoundaries = true;
+            map.showParseStatus = false;
+        }
+
+        if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+        if (options.showTerrainWireframe) map.showTerrainWireframe = true;
+        if (options.showLayers2DWireframe) map.showLayers2DWireframe = true;
+        if (options.showLayers3DWireframe) map.showLayers3DWireframe = true;
+        if (options.showPadding) map.showPadding = true;
+        if (options.collisionDebug) map.showCollisionBoxes = true;
+        if (options.fadeDuration) map._isInitialLoad = false;
+
+        map.repaint = true;
+        await map.once('load');
+
+        await applyOperations(map, style.metadata.test);
+
+        map.repaint = true;
+        await new Promise(resolve => requestAnimationFrame(map._requestDomTask.bind(map, resolve)));
+
+    </script>
 </body>
+
 </html>
