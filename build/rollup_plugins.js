@@ -8,12 +8,10 @@ import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
-import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
-import {createFilter} from '@rollup/pluginutils';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
-import alias from '@rollup/plugin-alias';
-import {fileURLToPath} from 'url';
+import {createFilter} from '@rollup/pluginutils';
+import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
@@ -21,7 +19,9 @@ import {fileURLToPath} from 'url';
 export const plugins = ({minified, production, test, bench, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
-        target: 'es2021',
+        // We target `esnext` and disable minification so esbuild
+        // doesn't transform the code, which we'll minify later with the terser
+        target: 'esnext',
         minify: false,
         sourceMap: true,
     }),
@@ -43,11 +43,13 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
     }) : false,
     glsl(['./src/shaders/*.glsl', './3d-style/shaders/*.glsl'], production),
     minified ? terser({
+        ecma: 2020,
+        module: true,
+        keep_classnames: keepClassNames,
         compress: {
             pure_getters: true,
             passes: 3
         },
-        keep_classnames: keepClassNames
     }) : false,
     resolve({
         browser: true,
