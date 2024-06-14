@@ -98,7 +98,8 @@ void main() {
     vec3 mercator_pos;
 #ifdef PROJECTION_GLOBE_VIEW
     mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
-    world_pos = mix_globe_mercator(a_globe_anchor + h, mercator_pos, u_zoom_transition);
+    vec3 world_pos_globe = a_globe_anchor + h;
+    world_pos = mix_globe_mercator(world_pos_globe, mercator_pos, u_zoom_transition);
 
     vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
     vec3 origin_to_point = ecef_point.xyz - u_ecef_origin;
@@ -130,15 +131,17 @@ void main() {
     if (u_rotate_symbol) {
         // See comments in symbol_sdf.vertex
         vec4 offsetProjected_point;
+        vec2 a;
 #ifdef PROJECTION_GLOBE_VIEW
         vec3 displacement = vec3(a_globe_normal.z, 0, -a_globe_normal.x);
         offsetProjected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
+        vec4 projected_point_globe = u_matrix * vec4(world_pos_globe, 1);
+        a = projected_point_globe.xy / projected_point_globe.w;
 #else
         offsetProjected_point = u_matrix * vec4(tile_anchor + vec2(1, 0), 0, 1);
+        a = projected_point.xy / projected_point.w;
 #endif
-        vec2 a = projected_point.xy / projected_point.w;
         vec2 b = offsetProjected_point.xy / offsetProjected_point.w;
-
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
