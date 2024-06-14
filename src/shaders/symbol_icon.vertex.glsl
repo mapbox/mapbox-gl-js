@@ -96,9 +96,10 @@ void main() {
     float globe_occlusion_fade;
     vec3 world_pos;
     vec3 mercator_pos;
+    vec3 world_pos_globe;
 #ifdef PROJECTION_GLOBE_VIEW
     mercator_pos = mercator_tile_position(u_inv_rot_matrix, tile_anchor, u_tile_id, u_merc_center);
-    vec3 world_pos_globe = a_globe_anchor + h;
+    world_pos_globe = a_globe_anchor + h;
     world_pos = mix_globe_mercator(world_pos_globe, mercator_pos, u_zoom_transition);
 
     vec4 ecef_point = u_tile_matrix * vec4(world_pos, 1.0);
