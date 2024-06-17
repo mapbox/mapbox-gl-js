@@ -6,6 +6,7 @@ import {extend} from '../util/util';
 
 import type {Map} from './map';
 import type LngLat from '../geo/lng_lat';
+import type {SourceSpecification} from '../style-spec/types';
 
 /**
  * `MapMouseEvent` is a class used by other classes to generate
@@ -376,9 +377,9 @@ export class MapWheelEvent extends Event {
  * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
 export type MapBoxZoomEvent = {
- type: 'boxzoomstart' | 'boxzoomend' | 'boxzoomcancel';
- target: Map;
- originalEvent: MouseEvent;
+    type: 'boxzoomstart' | 'boxzoomend' | 'boxzoomcancel';
+    target: Map;
+    originalEvent: MouseEvent;
 };
 
 /**
@@ -420,14 +421,29 @@ export type MapBoxZoomEvent = {
  * @see [Example: Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
  * @see [Example: Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
  */
-export type MapDataEvent = {
- type: 'data' | 'dataloading' | 'styledata' | 'styledataloading' | 'sourcedata' | 'sourcedataloading';
- dataType: 'source' | 'style';
+export type MapDataEvent =
+    | MapStyleDataEvent
+    | MapSourceDataEvent;
+
+export type MapStyleDataEvent = {
+    type: 'data' | 'dataloading' | 'styledata' | 'styledataloading';
+    dataType: 'style';
+};
+
+export type MapSourceDataEvent = {
+    type: 'data' | 'dataloading' | 'sourcedata' | 'sourcedataloading';
+    dataType: 'source';
+    isSourceLoaded: boolean;
+    source: SourceSpecification;
+    sourceId: string;
+    sourceDataType: 'metadata' | 'content' | 'visibility' | 'error';
+    tile: object;
+    coord: object;
 };
 
 export type MapContextEvent = {
- type: 'webglcontextlost' | 'webglcontextrestored';
- originalEvent: WebGLContextEvent;
+    type: 'webglcontextlost' | 'webglcontextrestored';
+    originalEvent: WebGLContextEvent;
 };
 
 export type MapEvent = /** @section {Interaction}

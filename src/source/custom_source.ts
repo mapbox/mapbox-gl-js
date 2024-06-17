@@ -142,6 +142,7 @@ export interface CustomSourceInterface<T> extends Evented {
     minTileCacheSize: number | null | undefined;
     maxTileCacheSize: number | null | undefined;
     attribution: string | null | undefined;
+    mapbox_logo: boolean | undefined;
     bounds: [number, number, number, number] | null | undefined;
     hasTile: (
         tileID: {
@@ -180,6 +181,8 @@ class CustomSource<T> extends Evented implements ISource {
     maxzoom: number;
     tileSize: number;
     attribution: string | undefined;
+    // eslint-disable-next-line camelcase
+    mapbox_logo: boolean | undefined;
 
     roundZoom: boolean | undefined;
     tileBounds: TileBounds | null | undefined;

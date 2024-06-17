@@ -222,7 +222,7 @@ export type RasterArraySourceSpecification = {
 
 export type GeoJSONSourceSpecification = {
     "type": "geojson",
-    "data"?: unknown,
+    "data"?: GeoJSON.GeoJSON | string,
     "maxzoom"?: number,
     "minzoom"?: number,
     "attribution"?: string,
@@ -1120,11 +1120,6 @@ export type Expression = ExpressionSpecification;
  * @deprecated Use `TransitionSpecification` instead.
  */
 export type Transition = TransitionSpecification;
-
-/**
- * @deprecated Use `SourceSpecification` instead.
- */
-export type Source = SourceSpecification;
 
 /**
  * @deprecated Use `SourceSpecification` instead.

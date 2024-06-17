@@ -1742,8 +1742,12 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent, layerIds?: any, listener?: Listener): this | Promise<Event> {
+    once(type: MapEvent): Promise<Event>;
+    once(type: MapEvent, listener: Listener): this;
+    once(type: MapEvent, layerIds: string | string[]): Promise<Event>;
+    once(type: MapEvent, layerIds: string | string[], listener: Listener): this;
 
+    once(type: MapEvent, layerIds?: any, listener?: Listener): this | Promise<Event> {
         if (listener === undefined) {
             return super.once(type, layerIds);
         }
@@ -2313,12 +2317,12 @@ export class Map extends Camera {
      * @see [Example: Animate a point](https://docs.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      * @see [Example: Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
-    getSource(id: string): Source | null | undefined {
+    getSource<T extends Source>(id: string): T | null | undefined {
         if (!this._isValidId(id)) {
             return null;
         }
 
-        return this.style.getOwnSource(id);
+        return this.style.getOwnSource(id) as T;
     }
 
     /** @section {Images} */
@@ -4221,7 +4225,6 @@ export class Map extends Camera {
                     const gl = this.painter.context.gl;
                     storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {
-                        // @ts-expect-error - TS2554 - Expected 1 arguments, but got 0.
                         this._logoControl._updateLogo();
                     }
                     if (gl) gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);

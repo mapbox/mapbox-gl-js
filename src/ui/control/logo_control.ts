@@ -2,6 +2,7 @@ import * as DOM from '../../util/dom';
 import {bindAll} from '../../util/util';
 
 import type {Map, ControlPosition} from '../map';
+import type {MapSourceDataEvent} from '../events';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -37,7 +38,6 @@ class LogoControl {
         this._container.style.display = 'none';
 
         this._map.on('sourcedata', this._updateLogo);
-        // @ts-expect-error - TS2554 - Expected 1 arguments, but got 0.
         this._updateLogo();
 
         this._map.on('resize', this._updateCompact);
@@ -56,7 +56,7 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e: any) {
+    _updateLogo(e?: MapSourceDataEvent) {
         if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
@@ -68,7 +68,6 @@ class LogoControl {
         if (Object.entries(sourceCaches).length === 0) return true;
         for (const id in sourceCaches) {
             const source = sourceCaches[id].getSource();
-            // @ts-expect-error - TS2339 - Property 'mapbox_logo' does not exist on type 'Source'.
             if (source.hasOwnProperty('mapbox_logo') && !source.mapbox_logo) {
                 return false;
             }

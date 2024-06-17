@@ -18,7 +18,9 @@ function tsEnum(values) {
     }
 }
 
-function tsType(property) {
+function tsType(property, overrideFn?: (any) => string) {
+    if (overrideFn) return overrideFn(property);
+
     if (typeof property.type === 'function') {
         return property.type();
     }
@@ -37,7 +39,7 @@ function tsType(property) {
                 return 'Array<LightsSpecification>';
             }
             // eslint-disable-next-line no-case-declarations
-            const elementType = tsType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value);
+            const elementType = tsType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value, overrideFn);
             if (property.length) {
                 return `[${Array(property.length).fill(elementType).join(', ')}]`;
             } else {
@@ -63,25 +65,25 @@ function tsType(property) {
     }
 }
 
-function tsProperty(key, property) {
+function tsProperty(key, property, overrideFn) {
     assert(property, `Property not found in the style-specification for ${key}`);
     if (key === '*') {
-        return `[_: string]: ${tsType(property)}`;
+        return `[_: string]: ${tsType(property, overrideFn)}`;
     } else {
-        return `"${key}"${property.required ? '' : '?'}: ${tsType(property)}${property['optional'] ? ' | null | undefined' : ''}`;
+        return `"${key}"${property.required ? '' : '?'}: ${tsType(property, overrideFn)}${property['optional'] ? ' | null | undefined' : ''}`;
     }
 }
 
-function tsObjectDeclaration(key, properties) {
+function tsObjectDeclaration(key, properties, overrides = {}) {
     assert(properties, `Properties not found in the style-specification for ${key}`);
-    return `export type ${key} = ${tsObject(properties, '')}`;
+    return `export type ${key} = ${tsObject(properties, '', overrides)}`;
 }
 
-function tsObject(properties, indent) {
+function tsObject(properties, indent, overrides = {}) {
     return `{
 ${Object.keys(properties)
         .map(k => {
-            const property = `    ${indent}${tsProperty(k, properties[k])}`;
+            const property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');
@@ -121,7 +123,7 @@ function tsLayerSpecificationTypeName(key) {
 }
 
 function tsLayer(key) {
-    const layer = structuredClone(spec.layer as any);
+    const layer = structuredClone(spec.layer);
 
     layer.type = {
         type: 'enum',
@@ -185,7 +187,7 @@ function tsLayer(key) {
 }
 
 function tsLight(key) {
-    const light = spec['light-3d'] as any;
+    const light = spec['light-3d'];
 
     light.type = {
         type: 'enum',
@@ -288,7 +290,14 @@ ${tsObjectDeclaration('SchemaSpecification', spec.schema)}
 
 ${tsObjectDeclaration('OptionSpecification', spec.option)}
 
-${spec.source.map(key => tsObjectDeclaration(tsSourceSpecificationTypeName(key), spec[key])).join('\n\n')}
+${spec.source.map(key => {
+        const sourceSpecName = tsSourceSpecificationTypeName(key);
+        if (sourceSpecName === 'GeoJSONSourceSpecification') {
+            return tsObjectDeclaration(sourceSpecName, spec[key], {data: () => 'GeoJSON.GeoJSON | string'});
+        }
+
+        return tsObjectDeclaration(sourceSpecName, spec[key]);
+    }).join('\n\n')}
 
 export type SourceSpecification =
 ${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')}
@@ -343,8 +352,6 @@ ${layerTypes.filter(key => !!spec[`paint_${key}`]).map(key => `    | ${tsLayerNa
 ${alias('Expression', 'ExpressionSpecification')}
 
 ${alias('Transition', 'TransitionSpecification')}
-
-${alias('Source', 'SourceSpecification')}
 
 ${alias('AnySourceData', 'SourceSpecification')}
 

@@ -99,6 +99,9 @@ export class Evented {
      *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} Returns `this` | Promise.
      */
+    once(type: MapEvent): Promise<Event>;
+    once(type: MapEvent, listener: Listener): this;
+
     once(type: MapEvent, listener?: Listener): this | Promise<Event> {
         if (!listener) {
             return new Promise((resolve) => this.once(type, resolve));

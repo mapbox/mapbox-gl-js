@@ -376,8 +376,8 @@ features2; // $ExpectType MapboxGeoJSONFeature[]
 /**
  * GeoJSONSource
  */
-// @ts-expect-error - incompatible
-var geoJSONSourceObj = new mapboxgl.GeoJSONSource({
+var geoJSONSource: mapboxgl.GeoJSONSourceSpecification = {
+    type: "geojson",
     data: {
         type: "FeatureCollection",
         features: [
@@ -391,15 +391,18 @@ var geoJSONSourceObj = new mapboxgl.GeoJSONSource({
             },
         ],
     },
-});
-map.addSource("some id", geoJSONSourceObj); // add
+};
+map.addSource("some id", geoJSONSource); // add
 map.removeSource("some id"); // remove
+
+var geoJSONSourceObj: mapboxgl.GeoJSONSource = map.getSource("some id"); // get
+geoJSONSourceObj.setData(geoJSONSource["data"]);
 
 /**
  * ImageSource
  */
-// @ts-expect-error - incompatible
-var imageSourceObj = new mapboxgl.ImageSource({
+var imageSource: mapboxgl.ImageSourceSpecification = {
+    type: "image",
     url: "/foo.png",
     coordinates: [
         [-76.54335737228394, 39.18579907229748],
@@ -407,9 +410,11 @@ var imageSourceObj = new mapboxgl.ImageSource({
         [-76.5295386314392, 39.17683392507606],
         [-76.54520273208618, 39.17876344106642],
     ],
-});
-map.addSource("some id", imageSourceObj); // add
+};
+
+map.addSource("some id", imageSource); // add
 map.removeSource("some id"); // remove
+var imageSourceObj: mapboxgl.ImageSource = map.getSource("some id"); // get
 
 imageSourceObj.updateImage({
     url: "/foo.png",
@@ -431,8 +436,8 @@ imageSourceObj.setCoordinates([
 /**
  * Video Source
  */
-// @ts-expect-error - incompatible
-var videoSourceObj = new mapboxgl.VideoSource({
+var videoSource: mapboxgl.VideoSourceSpecification = {
+    type: "video",
     urls: ["/blah.mp4", "/blah.webm"],
     coordinates: [
         [-76.54335737228394, 39.18579907229748],
@@ -440,15 +445,19 @@ var videoSourceObj = new mapboxgl.VideoSource({
         [-76.5295386314392, 39.17683392507606],
         [-76.54520273208618, 39.17876344106642],
     ],
-});
-map.addSource("some id", videoSourceObj); // add
+};
+
+map.addSource("some id", videoSource); // add
 map.removeSource("some id"); // remove
+
+var videoSourceObj: mapboxgl.VideoSource = map.getSource("some id"); // get
+videoSourceObj.pause();
+videoSourceObj.play();
 
 /**
  * Raster Source
  */
-// @ts-expect-error - incompatible
-const rasterSource = map.getSource("tile-source") as mapboxgl.RasterSourceImpl;
+const rasterSource: mapboxgl.RasterTileSource = map.getSource("tile-source");
 // $ExpectType void
 rasterSource.reload();
 // $ExpectType RasterSourceImpl
@@ -459,8 +468,7 @@ rasterSource.setUrl("https://github.com");
 /**
  * Vector Source
  */
-// @ts-expect-error - incompatible
-const vectorSource = map.getSource("tile-source") as mapboxgl.VectorSourceImpl;
+const vectorSource: mapboxgl.VectorTileSource = map.getSource("tile-source");
 // $ExpectType void
 vectorSource.reload();
 // $ExpectType VectorSourceImpl
@@ -494,7 +502,6 @@ let featureIdentifier = {
     source: "source-id",
     sourceLayer: "liam-was-here",
 };
-// @ts-expect-error - incompatible
 expectType<mapboxgl.FeatureIdentifier>(featureIdentifier);
 map.setFeatureState(featureIdentifier, {someState: true, someOtherState: 123});
 map.getFeatureState(featureIdentifier);
@@ -750,9 +757,7 @@ map = new mapboxgl.Map({
     hash: "customHash",
 });
 
-// @ts-expect-error - incompatible
 const syncOnce: mapboxgl.Map = map.once("load", () => {});
-// @ts-expect-error - incompatible
 const asyncOnce: Promise<mapboxgl.MapboxEvent> = map.once("load");
 
 /**
@@ -1496,70 +1501,60 @@ expectType<mapboxgl.Map>(
 );
 
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("click", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("dblclick", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mousedown", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mouseup", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mousemove", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mouseenter", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mouseleave", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mouseover", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("mouseout", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("contextmenu", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerMouseEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
@@ -1567,21 +1562,18 @@ expectType<mapboxgl.Map>(
 );
 
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("touchstart", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerTouchEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("touchend", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerTouchEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.once("touchcancel", eitherType("text", ["text1", "text2"]), ev => {
         expectType<mapboxgl.MapLayerTouchEvent>(ev);
         expectType<mapboxgl.MapboxGeoJSONFeature[] | undefined>(ev.features);

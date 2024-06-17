@@ -1,11 +1,17 @@
 import type GeoJSONFeature from '../util/vectortile_to_geojson';
-import type {MapOptions} from '../ui/map';
+import type {MapOptions, FeatureSelector} from '../ui/map';
 import type {Event, ErrorEvent} from '../util/evented';
 import type {RequestTransformFunction} from '../util/mapbox';
-import type {MapDataEvent, MapMouseEvent, MapTouchEvent} from '../ui/events';
+import type {MapMouseEvent, MapTouchEvent} from '../ui/events';
+import type {
+    Source,
+    VectorTileSource,
+    RasterTileSource,
+} from '../source/source_types';
 
 /**
  * List of type aliases for partial backwards compatibility with @types/mapbox-gl.
+ * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/5a4218ff5d0efa72761f5e740e501666e22261e0/types/mapbox-gl/index.d.ts
  */
 
 /**
@@ -22,16 +28,6 @@ export type MapboxEvent = Event;
  * @deprecated Use `ErrorEvent` instead.
  */
 export type MapboxErrorEvent = ErrorEvent;
-
-/**
- * @deprecated Use `MapDataEvent` instead.
- */
-export type MapSourceDataEvent = MapDataEvent;
-
-/**
- * @deprecated Use `MapDataEvent` instead.
- */
-export type MapStyleDataEvent = MapDataEvent;
 
 /**
  * @deprecated Use `MapMouseEvent` instead.
@@ -57,3 +53,23 @@ export type MapboxGeoJSONFeature = GeoJSONFeature;
  * @deprecated Use `MapOptions['fitBoundsOptions']` instead.
 */
 export type FitBoundsOptions = MapOptions['fitBoundsOptions'];
+
+/**
+ * @deprecated Use `FeatureSelector` instead.
+*/
+export type FeatureIdentifier = FeatureSelector;
+
+/**
+ * @deprecated Use `Source` instead.
+*/
+export type AnySourceImpl = Source;
+
+/**
+ * @deprecated Use `VectorTileSource` instead.
+*/
+export type VectorSourceImpl = VectorTileSource;
+
+/**
+ * @deprecated Use `RasterTileSource` instead.
+*/
+export type RasterSourceImpl = RasterTileSource;

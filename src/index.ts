@@ -33,6 +33,7 @@ import browser from './util/browser';
 // Explicit type re-exports
 export type * from './ui/events';
 export type * from './style-spec/types';
+export type * from './source/source_types';
 export type * from './types/deprecated-aliases';
 export type {Anchor} from './ui/anchor';
 export type {PointLike} from './types/point-like';
