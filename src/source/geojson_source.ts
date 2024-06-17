@@ -231,7 +231,20 @@ class GeoJSONSource extends Evented implements ISource {
         if (!this._options.dynamic) {
             return this.fire(new ErrorEvent(new Error("Can't call updateData on a GeoJSON source with dynamic set to false.")));
         }
-        this._data = data;
+        if (typeof data !== 'string') {
+            if (data.type === 'Feature') {
+                data = {type: 'FeatureCollection', features: [data]};
+            }
+            if (data.type !== 'FeatureCollection') {
+                return this.fire(new ErrorEvent(new Error("Data to update should be a feature or a feature collection.")));
+            }
+        }
+        // if there's a pending load, accummulate feature updates
+        if (this._coalesce && typeof data !== 'string' && typeof this._data !== 'string' && this._data.type === 'FeatureCollection') {
+            this._data.features.push(...data.features);
+        } else {
+            this._data = data;
+        }
         this._updateWorkerData(true);
         return this;
     }

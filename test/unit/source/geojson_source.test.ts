@@ -126,6 +126,33 @@ describe('GeoJSONSource#update', () => {
         new GeoJSONSource('id', {data: {}}, mockDispatcher).setData({});
     });
 
+    test('coalesces updateData calls', async () => {
+        let count = 0;
+
+        return new Promise((resolve) => {
+            const mockDispatcher = wrapDispatcher({
+                send(message, args, callback) {
+                    const ids = JSON.parse(args.data).features.map(f => f.id);
+                    if (count++ === 0) {
+                        expect(ids).to.deep.equal([1]);
+                    } else {
+                        expect(ids).to.deep.equal([2, 3]);
+                        resolve();
+                    }
+                    setTimeout(callback);
+                    return true;
+                }
+            });
+
+            /* eslint-disable no-new */
+            const source = new GeoJSONSource('id', {dynamic: true, data: {}}, mockDispatcher);
+
+            source.updateData({type: 'Feature', id: 1});
+            source.updateData({type: 'Feature', id: 2});
+            source.updateData({type: 'Feature', id: 3});
+        });
+    });
+
     test('forwards geojson-vt options with worker request', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, params) {
