@@ -865,6 +865,7 @@
     }
   },
   "source_raster_array": {
+    "experimental": true,
     "type": {
       "required": true,
       "type": "enum",
@@ -1198,6 +1199,7 @@
           }
         },
         "raster-particle": {
+          "experimental": true,
           "doc": "Particle animation driven by textures such as wind maps.",
           "sdk-support": {
             "basic functionality": {
@@ -1219,6 +1221,7 @@
         },
         "model": {
           "doc": "A 3D model",
+          "experimental": true,
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -1657,6 +1660,7 @@
     },
     "fill-extrusion-edge-radius": {
       "type": "number",
+      "experimental": true,
       "private": true,
       "default": 0,
       "minimum": 0,
@@ -5658,6 +5662,7 @@
     "fill-extrusion-ambient-occlusion-wall-radius": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
@@ -5683,6 +5688,7 @@
     "fill-extrusion-ambient-occlusion-ground-radius": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
@@ -5707,6 +5713,7 @@
     "fill-extrusion-ambient-occlusion-ground-attenuation": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 0.69,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -5732,6 +5739,7 @@
     "fill-extrusion-flood-light-color": {
       "property-type": "data-constant",
       "type": "color",
+      "experimental": true,
       "default": "#ffffff",
       "doc": "The color of the flood light effect on the walls of the extruded buildings.",
       "requires": [
@@ -5756,6 +5764,7 @@
     "fill-extrusion-flood-light-intensity": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -5782,6 +5791,7 @@
     "fill-extrusion-flood-light-wall-radius": {
       "property-type": "data-driven",
       "type": "number",
+      "experimental": true,
       "units": "meters",
       "default": 0,
       "minimum": 0,
@@ -5813,6 +5823,7 @@
     "fill-extrusion-flood-light-ground-radius": {
       "property-type": "data-driven",
       "type": "number",
+      "experimental": true,
       "units": "meters",
       "default": 0,
       "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
@@ -5843,6 +5854,7 @@
     "fill-extrusion-flood-light-ground-attenuation": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 0.69,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -5868,6 +5880,7 @@
     "fill-extrusion-vertical-scale": {
       "property-type": "data-constant",
       "type": "number",
+      "experimental": true,
       "default": 1.0,
       "minimum": 0.0,
       "doc": "A global multiplier that can be used to scale base, height, AO, and flood light of the fill extrusions.",
@@ -5890,6 +5903,7 @@
       "property-type": "data-constant",
       "type": "boolean",
       "default": true,
+      "experimental": true,
       "doc": "Indicates whether top edges should be rounded when fill-extrusion-edge-radius has a value greater than 0. If false, rounded edges are only applied to the sides. Default is true.",
       "requires": [
         "fill-extrusion-edge-radius"
@@ -7885,6 +7899,7 @@
     "raster-array-band": {
       "type": "string",
       "required": false,
+      "experimental": true,
       "property-type": "data-constant",
       "transition": false,
       "requires": [
@@ -7908,6 +7923,7 @@
       "default": 0,
       "minimum": 0,
       "transition": true,
+      "experimental": true,
       "sdk-support": {
         "basic functionality": {
           "js": "3.1.0",
