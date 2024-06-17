@@ -572,7 +572,6 @@ jobs:
             Remove-Item .git -Recurse -Force;
             Remove-Item node_modules/@mapbox/mvt-fixtures/real-world/osm-qa-* -Recurse -Force;
             Remove-Item node_modules/@octokit -Recurse -Force;
-            Remove-Item node_modules/puppeteer-core -Recurse -Force;
       - persist_to_workspace:
           root: ~/
           paths:
