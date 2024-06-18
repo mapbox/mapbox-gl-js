@@ -1,3 +1,21 @@
+## 3.5.0-beta.1
+
+### Breaking changes ⚠️
+- This release marks a significant transition for GL JS, moving from [Flow](https://flow.org/) to [TypeScript](https://www.typescriptlang.org/). While we have maintained backward compatibility where possible, the community typings `@types/mapbox-gl` are not fully compatible with the new first-class typings. Users relying on the community typings may experience breaking changes. Please remove the `@types/mapbox-gl` dependency and refer to the [v3.5.0 migration guide](https://github.com/mapbox/mapbox-gl-js/issues/13203) for instructions on upgrading, resolving common issues, and asking questions regarding the migration to the first-class typings. We welcome your feedback and contributions to make Mapbox GL JS better.
+
+### Features and improvements ✨
+- Add `color-theme` property to enable colorization with a lookup table (LUT) images.
+- Add `icon-occlusion-opacity` and `text-occlusion-opacity` properties to fade symbols behind models and landmarks.
+- Add `line-occlusion-opacity` property to fade lines behind 3D objects.
+- Add experimental `clip` layer to filter out rendering data.
+- Add experimental `line-z-offset` property for a non-globe view.
+- Add `model-cutoff-fade-range` property support to control fade out of faraway 3D buildings.
+
+### Bug fixes 🐞
+- Fix icon rotation during globe transition.
+- Fix GeoJSON data loss due to frequent `updateData` calls.
+- Improve `raster-particle` layer animation.
+
 ## 3.4.0
 
 ### Features and improvements ✨
