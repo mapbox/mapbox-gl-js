@@ -206,6 +206,9 @@ export type RasterDEMSourceSpecification = {
     [_: string]: unknown
 }
 
+/**
+ * @experimental This is experimental and subject to change in future versions.
+ */
 export type RasterArraySourceSpecification = {
     "type": "raster-array",
     "url"?: string,
@@ -374,6 +377,9 @@ export type LineLayerSpecification = {
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
         "line-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "line-z-offset"?: DataDrivenPropertyValueSpecification<number>,
         "visibility"?: ExpressionSpecification
     },
@@ -623,6 +629,9 @@ export type FillExtrusionLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "visibility"?: ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "fill-extrusion-edge-radius"?: ExpressionSpecification
     },
     "paint"?: {
@@ -661,6 +670,9 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-flood-light-ground-attenuation-transition"?: TransitionSpecification,
         "fill-extrusion-vertical-scale"?: PropertyValueSpecification<number>,
         "fill-extrusion-vertical-scale-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification,
         "fill-extrusion-emissive-strength"?: PropertyValueSpecification<number>,
@@ -713,6 +725,9 @@ export type RasterLayerSpecification = {
         "raster-fade-duration"?: PropertyValueSpecification<number>,
         "raster-emissive-strength"?: PropertyValueSpecification<number>,
         "raster-emissive-strength-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "raster-array-band"?: string,
         "raster-elevation"?: PropertyValueSpecification<number>,
         "raster-elevation-transition"?: TransitionSpecification
@@ -953,6 +968,9 @@ export type ClipLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "clip-layer-types"?: ExpressionSpecification
     },
     "paint"?: never

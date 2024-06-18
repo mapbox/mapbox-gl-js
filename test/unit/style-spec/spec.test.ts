@@ -205,7 +205,11 @@ function validSchema(k, name, obj, ref, version, kind) {
         });
         // Container object.
     } else if (typeof obj === 'object') {
-        for (const j in obj) validSchema(`${k}.${j}`, name, obj[j], ref);
+        for (const j in obj) {
+            // Skip validation for `experimental: true` keys.
+            if (j === 'experimental' && obj[j] === true) continue;
+            validSchema(`${k}.${j}`, name, obj[j], ref);
+        }
         // Invalid ref object.
     } else {
         expect(false).toBeTruthy();

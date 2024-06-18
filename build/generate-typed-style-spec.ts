@@ -3,11 +3,17 @@ import assert from 'assert';
 import spec from '../src/style-spec/reference/latest';
 import {supportsPropertyExpression, supportsZoomExpression} from '../src/style-spec/util/properties';
 
+function tag(tag, description = '', indent = '') {
+    return [
+        '/**',
+        ` * ${tag} ${description}`,
+        ' */'
+    ].map(line => `${indent}${line}`).join('\n');
+}
+
 function alias(from, to) {
-    return `/**
- * @deprecated Use \`${to}\` instead.
- */
-export type ${from} = ${to};`;
+    const deprecatedTag = tag('@deprecated', `Use \`${to}\` instead.`);
+    return [deprecatedTag, `export type ${from} = ${to};`].join('\n');
 }
 
 function tsEnum(values) {
@@ -76,7 +82,15 @@ function tsProperty(key, property, overrideFn) {
 
 function tsObjectDeclaration(key, properties, overrides = {}) {
     assert(properties, `Properties not found in the style-specification for ${key}`);
-    return `export type ${key} = ${tsObject(properties, '', overrides)}`;
+
+    let experimentalTag;
+    if (properties.experimental) {
+        delete properties.experimental;
+        experimentalTag = tag('@experimental', 'This is experimental and subject to change in future versions.');
+    }
+
+    const objectDeclaration = `export type ${key} = ${tsObject(properties, '', overrides)}`;
+    return experimentalTag ? [experimentalTag, objectDeclaration].join('\n') : objectDeclaration;
 }
 
 function tsObject(properties, indent, overrides = {}) {
@@ -87,6 +101,9 @@ ${Object.keys(properties)
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');
+            } else if (properties[k].experimental) {
+                const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
+                return [experimentalTag, property].join('\n');
             } else {
                 return property;
             }

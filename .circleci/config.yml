@@ -412,6 +412,7 @@ jobs:
           name: Verify codegen output
           command: |
             npm run codegen
+            npm run build-typed-style-spec
             git add -A && git diff --staged --exit-code | tee check.patch
       - store_artifacts:
           path: "check.patch"
