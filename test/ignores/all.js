@@ -172,6 +172,12 @@ const skip = [
     "render-tests/model-layer/landmark-shadow-skip-render",
     "render-tests/model-layer/landmark-multiple-model-layers-z-offset-hide-evaluated",
     "render-tests/model-layer/landmark-shadows-opacity-cutoff-range",
+    "render-tests/model-layer/landmark-front-cutoff",
+    "render-tests/model-layer/landmark-front-cutoff-disabled",
+    "render-tests/model-layer/landmark-front-cutoff-no-fade",
+    "render-tests/model-layer/landmark-front-cutoff-opacity",
+    "render-tests/model-layer/landmark-front-cutoff-terrain",
+    "render-tests/clip-layer/clip-layer-default-below-one-batched-model",
 
     // Not implemented in gl-js
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-0",
