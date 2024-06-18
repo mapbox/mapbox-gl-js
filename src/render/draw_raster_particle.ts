@@ -39,7 +39,7 @@ export default drawRasterParticle;
 const VELOCITY_TEXTURE_UNIT = 0;
 const RASTER_PARTICLE_TEXTURE_UNIT = 1;
 const RASTER_COLOR_TEXTURE_UNIT = 2;
-const SPEED_MAX_VALUE = 0.3;
+const SPEED_MAX_VALUE = 0.15;
 
 function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: any, isInitialLoad: boolean) {
     if (painter.renderPass === 'offscreen') {
