@@ -1706,7 +1706,6 @@ const anchor: mapboxgl.Anchor = "center";
  */
 
 const backgroundLayout: mapboxgl.BackgroundLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 
@@ -1741,7 +1740,6 @@ const fillPaint: mapboxgl.FillPaint = {
 };
 
 const fillExtrusionLayout: mapboxgl.FillExtrusionLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 
@@ -1877,7 +1875,6 @@ const symbolPaint: mapboxgl.SymbolPaint = {
 };
 
 const rasterLayout: mapboxgl.RasterLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 
@@ -1899,7 +1896,6 @@ const rasterPaint: mapboxgl.RasterPaint = {
 };
 
 const circleLayout: mapboxgl.CircleLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
     "circle-sort-key": eitherType(0, expression),
 };
@@ -1928,7 +1924,6 @@ const circlePaint: mapboxgl.CirclePaint = {
 };
 
 const heatmapLayout: mapboxgl.HeatmapLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 
@@ -1944,7 +1939,6 @@ const heatmapPaint: mapboxgl.HeatmapPaint = {
 };
 
 const hillshadeLayout: mapboxgl.HillshadeLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 
@@ -1962,7 +1956,6 @@ const hillshadePaint: mapboxgl.HillshadePaint = {
 };
 
 const skyLayout: mapboxgl.SkyLayout = {
-    // @ts-expect-error - incompatible
     visibility: eitherType("visible", "none"),
 };
 

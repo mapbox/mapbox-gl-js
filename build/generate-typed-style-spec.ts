@@ -65,6 +65,7 @@ function tsType(property, overrideFn?: (any) => string) {
     } else if (supportsZoomExpression(property)) {
         return `PropertyValueSpecification<${baseType}>`;
     } else if (property.expression) {
+        if (property.type === 'enum') return `${baseType} | ExpressionSpecification`;
         return `ExpressionSpecification`;
     } else {
         return baseType;

@@ -332,7 +332,7 @@ export type FillLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "fill-antialias"?: PropertyValueSpecification<boolean>,
@@ -381,7 +381,7 @@ export type LineLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "line-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
@@ -477,7 +477,7 @@ export type SymbolLayerSpecification = {
         "text-allow-overlap"?: PropertyValueSpecification<boolean>,
         "text-ignore-placement"?: PropertyValueSpecification<boolean>,
         "text-optional"?: PropertyValueSpecification<boolean>,
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
@@ -545,7 +545,7 @@ export type CircleLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
@@ -593,7 +593,7 @@ export type HeatmapLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "heatmap-radius"?: DataDrivenPropertyValueSpecification<number>,
@@ -628,7 +628,7 @@ export type FillExtrusionLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification,
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
@@ -701,7 +701,7 @@ export type RasterLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "raster-opacity"?: PropertyValueSpecification<number>,
@@ -755,7 +755,7 @@ export type RasterParticleLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "raster-particle-array-band"?: string,
@@ -791,7 +791,7 @@ export type HillshadeLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "hillshade-illumination-direction"?: PropertyValueSpecification<number>,
@@ -830,7 +830,7 @@ export type ModelLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        "visibility"?: ExpressionSpecification,
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
         "model-id"?: DataDrivenPropertyValueSpecification<string>
     },
     "paint"?: {
@@ -883,7 +883,7 @@ export type BackgroundLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: never,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
@@ -917,7 +917,7 @@ export type SkyLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: never,
     "layout"?: {
-        "visibility"?: ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
         "sky-type"?: PropertyValueSpecification<"gradient" | "atmosphere">,

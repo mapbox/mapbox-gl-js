@@ -101,7 +101,9 @@ map.addLayer({
     'type': 'fill',
     'slot': 'middle',
     'source': 'urban-areas',
-    'layout': {},
+    'layout': {
+        'visibility': 'visible'
+    },
     'paint': {
         'fill-color': '#f08',
         'fill-opacity': 0.4,
