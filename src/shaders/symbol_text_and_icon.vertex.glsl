@@ -7,8 +7,6 @@ in float a_fade_opacity;
 
 #ifdef OCCLUSION_QUERIES
 in float a_occlusion_query_opacity;
-
-uniform float u_occluded_opacity_multiplier;
 #endif
 
 #ifdef Z_OFFSET
@@ -64,6 +62,7 @@ out vec4 v_data1;
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
 #pragma mapbox: define lowp float emissive_strength
+#pragma mapbox: define lowp float occlusion_opacity
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -72,6 +71,7 @@ void main() {
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
     #pragma mapbox: initialize lowp float emissive_strength
+    #pragma mapbox: initialize lowp float occlusion_opacity
 
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
@@ -183,7 +183,7 @@ void main() {
 
     float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
 #ifdef OCCLUSION_QUERIES
-    float occludedFadeMultiplier = mix(u_occluded_opacity_multiplier, 1.0, a_occlusion_query_opacity);
+    float occludedFadeMultiplier = mix(occlusion_opacity, 1.0, a_occlusion_query_opacity);
     out_fade_opacity *= occludedFadeMultiplier;
 #endif
 

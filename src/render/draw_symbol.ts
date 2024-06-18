@@ -294,8 +294,8 @@ function drawOcclusions(
     const tr = painter.transform;
 
     const paint = layer.paint;
-    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity') !== 1;
-    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity') !== 1;
+    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity').constantOr(0) !== 1;
+    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity').constantOr(0) !== 1;
     const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
     if (!subjectForOcclusion) {
         return;
@@ -444,8 +444,8 @@ function drawLayerSymbols(
     const iconContrast = layer.paint.get('icon-color-contrast');
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
-    const iconOccludedOpacityMultiplier = layer.paint.get('icon-occlusion-opacity');
-    const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity');
+    const iconOccludedOpacityMultiplier = layer.paint.get('icon-occlusion-opacity').constantOr(0);
+    const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity').constantOr(0);
 
     const context = painter.context;
     const gl = context.gl;
@@ -567,13 +567,13 @@ function drawLayerSymbols(
             if (bucket.sdfIcons && !bucket.iconsInText) {
                 uniformValues = symbolSDFUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                     // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconOccludedOpacityMultiplier);
+                    matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
             } else {
 
                 const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
                 uniformValues = symbolIconUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter, matrix,
                     // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), iconOccludedOpacityMultiplier, colorAdjustmentMatrix, transitionProgress);
+                    uLabelPlaneMatrix, uglCoordMatrix, false, texSize, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
             }
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;

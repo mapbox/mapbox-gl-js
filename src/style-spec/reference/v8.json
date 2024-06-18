@@ -6981,6 +6981,11 @@
           "js": "3.5.0",
           "android": "11.5.0",
           "ios": "11.6.0"
+        },
+        "data-driven styling": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
         }
       },
       "expression": {
@@ -6992,7 +6997,7 @@
           "measure-light"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "icon-emissive-strength": {
       "type": "number",
@@ -7325,6 +7330,11 @@
           "js": "3.5.0",
           "android": "11.5.0",
           "ios": "11.6.0"
+        },
+        "data-driven styling": {
+          "js": "3.5.0",
+          "android": "11.5.0",
+          "ios": "11.6.0"
         }
       },
       "expression": {
@@ -7336,7 +7346,7 @@
           "measure-light"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "text-color": {
       "type": "color",

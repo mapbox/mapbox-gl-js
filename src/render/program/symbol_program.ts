@@ -37,7 +37,6 @@ export type SymbolIconUniformsType = {
     ['u_texture']: Uniform1i;
     ['u_icon_transition']: Uniform1f;
     ['u_color_adj_mat']: UniformMatrix4f;
-    ['u_occluded_opacity_multiplier']: Uniform1f;
 };
 
 export type SymbolSDFUniformsType = {
@@ -67,7 +66,6 @@ export type SymbolSDFUniformsType = {
     ['u_up_vector']: Uniform3f;
     ['u_ecef_origin']: Uniform3f;
     ['u_is_halo']: Uniform1i;
-    ['u_occluded_opacity_multiplier']: Uniform1f;
 };
 
 export type symbolTextAndIconUniformsType = {
@@ -91,7 +89,6 @@ export type symbolTextAndIconUniformsType = {
     ['u_gamma_scale']: Uniform1f;
     ['u_device_pixel_ratio']: Uniform1f;
     ['u_is_halo']: Uniform1i;
-    ['u_occluded_opacity_multiplier']: Uniform1f;
 };
 
 export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
@@ -122,7 +119,6 @@ const symbolIconUniforms = (context: Context): SymbolIconUniformsType => ({
     'u_texture': new Uniform1i(context),
     'u_icon_transition': new Uniform1f(context),
     'u_color_adj_mat': new UniformMatrix4f(context),
-    'u_occluded_opacity_multiplier': new Uniform1f(context),
 });
 
 const symbolSDFUniforms = (context: Context): SymbolSDFUniformsType => ({
@@ -152,7 +148,6 @@ const symbolSDFUniforms = (context: Context): SymbolSDFUniformsType => ({
     'u_up_vector': new Uniform3f(context),
     'u_ecef_origin': new Uniform3f(context),
     'u_is_halo': new Uniform1i(context),
-    'u_occluded_opacity_multiplier': new Uniform1f(context)
 });
 
 const symbolTextAndIconUniforms = (context: Context): symbolTextAndIconUniformsType => ({
@@ -176,7 +171,6 @@ const symbolTextAndIconUniforms = (context: Context): symbolTextAndIconUniformsT
     'u_gamma_scale': new Uniform1f(context),
     'u_device_pixel_ratio': new Uniform1f(context),
     'u_is_halo': new Uniform1i(context),
-    'u_occluded_opacity_multiplier': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create() as Float32Array;
@@ -198,7 +192,6 @@ const symbolIconUniformValues = (
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection,
-    occludedOpacityMultiplier: number,
     colorAdjustmentMatrix?: Float32Array | null,
     transition?: number | null,
 ): UniformValues<SymbolIconUniformsType> => {
@@ -228,7 +221,6 @@ const symbolIconUniformValues = (
         'u_ecef_origin': [0, 0, 0] as [number, number, number],
         'u_tile_matrix': identityMatrix,
         'u_up_vector': [0, -1, 0] as [number, number, number],
-        'u_occluded_opacity_multiplier': occludedOpacityMultiplier,
         'u_color_adj_mat': colorAdjustmentMatrix,
         'u_icon_transition': transition ? transition : 0.0
     };
@@ -266,11 +258,10 @@ const symbolSDFUniformValues = (
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection,
-    occludedOpacityMultiplier: number,
 ): UniformValues<SymbolSDFUniformsType> => {
     return extend(symbolIconUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, isText,
-        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection, occludedOpacityMultiplier), {
+        texSize, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_is_halo': +isHalo,
@@ -295,12 +286,11 @@ const symbolTextAndIconUniformValues = (
     invMatrix: Float32Array,
     upVector: [number, number, number],
     projection: Projection,
-    occludedOpacityMultiplier: number,
 ): UniformValues<SymbolIconUniformsType> => {
     // @ts-expect-error
     return extend(symbolSDFUniformValues(functionType, size, rotateInShader,
         pitchWithMap, painter, matrix, labelPlaneMatrix, glCoordMatrix, true, texSizeSDF,
-        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection, occludedOpacityMultiplier), {
+        true, coord, zoomTransition, mercatorCenter, invMatrix, upVector, projection), {
         'u_texsize_icon': texSizeIcon,
         'u_texture_icon': 1
     });
