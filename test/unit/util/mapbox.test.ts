@@ -477,6 +477,9 @@ describe("mapbox", () => {
                 expect(manager.normalizeTileURL("mapbox://rasterarrays/a.b/0/0/0.mrt")).toEqual(
                     `https://api.mapbox.com/rasterarrays/v1/a.b/0/0/0.mrt?sku=${manager._skuToken}&access_token=key`
                 );
+                expect(manager.normalizeTileURL("mapbox://3dtiles/a.b/0/0/0.glb")).toEqual(
+                    `https://api.mapbox.com/3dtiles/v1/a.b/0/0/0.glb?sku=${manager._skuToken}&access_token=key`
+                );
 
                 config.API_URL = 'https://api.example.com/';
                 expect(manager.normalizeTileURL("mapbox://tiles/a.b/0/0/0.png")).toEqual(

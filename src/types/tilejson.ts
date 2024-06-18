@@ -14,4 +14,5 @@ export type TileJSON = {
     center?: [number, number, number];
     vector_layers?: Array<any>;
     raster_layers?: Array<any>;
+    variants?: Array<any>;
 };

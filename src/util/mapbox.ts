@@ -148,6 +148,8 @@ export class RequestManager {
             urlObject.path = `/${config.RASTER_URL_PREFIX}${urlObject.path}`;
         } else if (urlObject.authority === 'rasterarrays') {
             urlObject.path = `/${config.RASTERARRAYS_URL_PREFIX}${urlObject.path}`;
+        } else if (urlObject.authority === '3dtiles') {
+            urlObject.path = `/${config.TILES3D_URL_PREFIX}${urlObject.path}`;
         } else {
             const tileURLAPIPrefixRe = /^.+\/v4\//;
             urlObject.path = urlObject.path.replace(tileURLAPIPrefixRe, '/');
