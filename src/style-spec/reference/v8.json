@@ -5162,6 +5162,7 @@
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
+    "paint_raster-particle",
     "paint_hillshade",
     "paint_background",
     "paint_sky",
