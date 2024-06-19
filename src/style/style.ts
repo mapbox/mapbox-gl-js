@@ -181,6 +181,12 @@ export type Fragment = {
     config?: ConfigSpecification | null | undefined;
 };
 
+type StyleColorTheme = {
+    lut: LUT | null;
+    lutLoading: boolean;
+    colorTheme: ColorThemeSpecification | null;
+};
+
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
 
@@ -201,7 +207,10 @@ class Style extends Evented {
     disableElevatedTerrain: boolean | null | undefined;
     fog: Fog | null | undefined;
     camera: CameraSpecification;
-    lut: LUT | null;
+    _styleColorTheme: StyleColorTheme;
+    _styleColorThemeForScope: {
+        [_: string]: StyleColorTheme;
+    };
     transition: TransitionSpecification;
     projection: ProjectionSpecification;
 
@@ -233,9 +242,6 @@ class Style extends Evented {
         [_: string]: SourceCache;
     };
     _clipLayerIndices: Array<number>;
-    _luts: {
-        [_: string]: LUT;
-    };
 
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
@@ -364,7 +370,12 @@ class Style extends Evented {
         this._availableImages = [];
         this._order = [];
         this._markersNeedUpdate = false;
-        this._luts = {};
+        this._styleColorTheme = {
+            lut: null,
+            lutLoading: false,
+            colorTheme: null
+        };
+        this._styleColorThemeForScope = {};
 
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
@@ -722,7 +733,7 @@ class Style extends Evented {
             this._layers = {};
             this._serializedLayers = {};
             for (const layer of layers) {
-                const styleLayer = createStyleLayer(layer, this.scope, this.lut, this.options);
+                const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
@@ -777,14 +788,18 @@ class Style extends Evented {
             }
         };
 
-        if (this.stylesheet['color-theme']) {
-            this._loadColorTheme(this.stylesheet['color-theme']).then(() => {
+        const colorTheme = this.stylesheet['color-theme'];
+        this._styleColorTheme.colorTheme = colorTheme;
+        if (colorTheme) {
+            const data = this._evaluateColorThemeData(colorTheme);
+            this._loadColorTheme(data).then(() => {
                 proceedWithStyleLoad();
             }).catch((e) => {
                 warnOnce(`Couldn\'t load color theme from the stylesheet: ${e}`);
                 proceedWithStyleLoad();
             });
         } else {
+            this._styleColorTheme.lut = null;
             proceedWithStyleLoad();
         }
     }
@@ -802,6 +817,9 @@ class Style extends Evented {
         let projection;
         let transition;
         let camera;
+        const styleColorThemeForScope: {
+            [_: string]: StyleColorTheme;
+        } = {};
 
         // Reset terrain that might have been set by a previous merge
         if (this.terrain && this.terrain.scope !== this.scope) {
@@ -841,12 +859,15 @@ class Style extends Evented {
 
             if (style.stylesheet.transition != null)
                 transition = style.stylesheet.transition;
+
+            styleColorThemeForScope[style.scope] = style._styleColorTheme;
         });
 
         this.light = light;
         this.ambientLight = ambientLight;
         this.directionalLight = directionalLight;
         this.fog = fog;
+        this._styleColorThemeForScope = styleColorThemeForScope;
 
         if (terrain === null) {
             delete this.terrain;
@@ -976,18 +997,12 @@ class Style extends Evented {
         const mergedLayers: {
             [key: string]: StyleLayer;
         } = {};
-        const luts: {
-            [key: string]: LUT;
-        } = {};
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
 
         this.forEachFragmentStyle((style: Style) => {
-            if (style.lut) {
-                luts[style.scope] = style.lut;
-            }
             for (const layerId of style._order) {
                 const layer = style._layers[layerId];
                 if (layer.type === 'slot') {
@@ -1031,7 +1046,6 @@ class Style extends Evented {
 
         sort(mergedOrder);
         this._mergedLayers = mergedLayers;
-        this._luts = luts;
         this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
     }
@@ -1050,27 +1064,34 @@ class Style extends Evented {
         return this;
     }
 
-    _loadColorTheme(colorization?: ColorThemeSpecification | null): Promise<any> {
-        if (!colorization) {
-            return Promise.resolve();
+    _evaluateColorThemeData(theme: ColorThemeSpecification): string | null {
+        if (!theme.data) {
+            return null;
         }
-        if (!colorization.data) {
-            return Promise.resolve();
-        }
+        const properties = evaluateColorThemeProperties(this.scope, theme, this.options);
+        return properties.get('data');
+    }
 
-        const properties = evaluateColorThemeProperties(this.scope, colorization, this.options);
-        let data = properties.get('data');
-        const dataURLPrefix = 'data:image/png;base64,';
-
-        if (!data.startsWith(dataURLPrefix)) {
-            data = dataURLPrefix + data;
-        }
-        // Reserved image name, which references the LUT in the image manager
-        const styleLutName = 'mapbox-reserved-lut';
-
+    _loadColorTheme(colorThemeData: string): Promise<void> {
+        this._styleColorTheme.lutLoading = true;
         return new Promise((resolve, reject) => {
+            const dataURLPrefix = 'data:image/png;base64,';
 
-            this.map.loadImage(data, (err, bitmap) => {
+            if (colorThemeData.length === 0) {
+                this._styleColorTheme.lut = null;
+                this._styleColorTheme.lutLoading = false;
+                resolve();
+                return;
+            }
+
+            if (!colorThemeData.startsWith(dataURLPrefix)) {
+                colorThemeData = dataURLPrefix + colorThemeData;
+            }
+            // Reserved image name, which references the LUT in the image manager
+            const styleLutName = 'mapbox-reserved-lut';
+
+            this.map.loadImage(colorThemeData, (err, bitmap) => {
+                this._styleColorTheme.lutLoading = false;
                 if (err) {
                     reject(new Error(`${err.message}`));
                     return;
@@ -1094,12 +1115,10 @@ class Style extends Evented {
                 if (!image) {
                     reject(new Error('Missing LUT image.'));
                 } else {
-                    this.lut = {
-                        // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'name' does not exist in type 'LUT'.
-                        name: styleLutName,
-                        image: image.data
+                    this._styleColorTheme.lut = {
+                        image: image.data,
+                        data: colorThemeData
                     };
-                    // @ts-expect-error - TS2794 - Expected 1 arguments, but got 0. Did you forget to include 'void' in your type argument to 'Promise'?
                     resolve();
                 }
             });
@@ -1107,7 +1126,8 @@ class Style extends Evented {
     }
 
     getLut(scope: string): LUT | null {
-        return this._luts ? this._luts[scope] : null;
+        const styleColorTheme = this._styleColorThemeForScope[scope];
+        return styleColorTheme ? styleColorTheme.lut : null;
     }
 
     setProjection(projection?: ProjectionSpecification | null) {
@@ -1203,6 +1223,9 @@ class Style extends Evented {
             return false;
 
         if (!this.modelManager.isLoaded())
+            return false;
+
+        if (this._styleColorTheme.lutLoading)
             return false;
 
         for (const {style} of this.fragments) {
@@ -1423,7 +1446,7 @@ class Style extends Evented {
                         if (!programIds) continue;
 
                         for (const programId of programIds) {
-                            const params = layer.getDefaultProgramParams(programId, parameters.zoom, this.lut);
+                            const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
                             if (params) {
                                 painter.style = this;
                                 if (this.fog) {
@@ -2049,6 +2072,15 @@ class Style extends Evented {
             this.fog.updateConfig(this.options);
         }
 
+        this.forEachFragmentStyle((style: Style) => {
+            if (style._styleColorTheme.colorTheme) {
+                const data = style._evaluateColorThemeData(style._styleColorTheme.colorTheme);
+                if (!style._styleColorTheme.lut || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
+                    style.setColorTheme(style._styleColorTheme.colorTheme);
+                }
+            }
+        });
+
         this._changes.setDirty();
     }
 
@@ -2073,7 +2105,7 @@ class Style extends Evented {
         let layer;
         if (layerObject.type === 'custom') {
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
-            layer = createStyleLayer(layerObject, this.scope, this.lut, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this._styleColorTheme.lut, this.options);
         } else {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
@@ -2085,7 +2117,7 @@ class Style extends Evented {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject, this.scope, this.lut, this.options);
+            layer = createStyleLayer(layerObject, this.scope, this._styleColorTheme.lut, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
@@ -2917,6 +2949,34 @@ class Style extends Evented {
         }
 
         this._markersNeedUpdate = true;
+    }
+
+    setColorTheme(colorTheme?: ColorThemeSpecification) {
+        this._checkLoaded();
+
+        const updateStyle = () => {
+            for (const layerId in this._layers) {
+                const layer = this._layers[layerId];
+                layer.lut = this._styleColorTheme.lut;
+            }
+            for (const id in this._sourceCaches) {
+                this._sourceCaches[id].clearTiles();
+            }
+        };
+
+        this._styleColorTheme.colorTheme = colorTheme;
+        if (!colorTheme) {
+            this._styleColorTheme.lut = null;
+            updateStyle();
+            return;
+        }
+
+        const data = this._evaluateColorThemeData(colorTheme);
+        this._loadColorTheme(data).then(() => {
+            updateStyle();
+        }).catch((e) => {
+            warnOnce(`Couldn\'t set color theme: ${e}`);
+        });
     }
 
     _getTransitionParameters(transition?: TransitionSpecification | null): TransitionParameters {

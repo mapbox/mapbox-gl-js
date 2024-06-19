@@ -36,9 +36,8 @@
         contrast: 1.0,
         saturation: 0.5,
         hue: 0.01,
-        lightPreset: 'day',
         lutPreset: 'custom',
-        styleURL: 'mapbox://styles/mapbox/standard',
+        styleURL: 'mapbox://styles/mapbox/streets-v12',
         firstLoadDone: false
     };
 
@@ -47,7 +46,6 @@
     let lutData = "";
     let standard = '{}';
 
-    const lightPresets = ['dawn', 'day', 'dusk', 'night'];
     const lutPresets = ['custom', 'almost-bw', 'bright', 'bw-2', 'identity', 'red'];
 
     var map = window.map = new mapboxgl.Map({
@@ -61,25 +59,6 @@
         style: PARAMS.styleURL
     });
 
-    function updateStyle() {
-        map.setStyle({
-            "version": 8,
-            "imports": [
-                {
-                    "id": "standard",
-                    "url": "",
-                    "data": standard,
-                    "config": {
-                        "lightPreset": PARAMS.lightPreset
-                    }
-                }
-            ],
-            "color-theme": standard["color-theme"],
-            "sources": {},
-            "layers": []
-        });
-    }
-
     async function fetchJSON(url) {
         try {
             const response = await fetch(url);
@@ -91,17 +70,6 @@
         } catch (error) {
             console.error('Error fetching JSON:', error);
         }
-    }
-
-    function downloadStyle() {
-        fetchJSON(`https://api.mapbox.com/styles/v1/${PARAMS.styleURL.replace("mapbox://styles/", "")}?sdk=js-3.4.0-beta.1&access_token=${mapboxgl.accessToken}`).then(data => {
-            standard = data;
-            updateStyle();
-            if (!PARAMS.firstLoadDone) {
-                updateLUT();
-                PARAMS.firstLoadDone = true;
-            }
-        });
     }
 
     const query = Object.fromEntries(location.search.substring(1).split('&').map(v => v.split('=')));
@@ -218,10 +186,9 @@
             drawLUTOnCanvas(canvas, lut, resolution);
             document.getElementById('canvasImageHolder').src = canvas.toDataURL("image/png");
             lutData = canvas.toDataURL();
-            standard['color-theme'] = {
+            map.setColorTheme({
                 "data": lutData
-            };
-            updateStyle();
+            });
         } else {
             // Load from preset
             const img = document.getElementById('canvasImageHolder');
@@ -230,10 +197,9 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
                 lutData = canvas.toDataURL();
-                standard['color-theme'] = {
+                map.setColorTheme({
                     "data": lutData
-                };
-                updateStyle();
+                });
             };
             img.onerror = function (e) {
                 throw new Error(e.message);
@@ -248,10 +214,9 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                standard['color-theme'] = {
-                    "data":  e.target.result
-                };
-                updateStyle();
+                map.setColorTheme({
+                    "data": e.target.result
+                });
                 const img = document.getElementById('canvasImageHolder');
                 img.src = e.target.result;
                 img.style.display = 'block';
@@ -307,17 +272,10 @@
         updateLUT();
     });
 
-    pane.addBinding(PARAMS, 'lightPreset', {
-        label: 'lightPreset',
-        options: lightPresets.reduce((acc, item) => ({...acc, [item]: item}), {})
-    }).on('change', (e) => {
-        updateStyle();
-    });
-
     pane.addBinding(PARAMS, 'styleURL', {
         label: 'styleURL'
     }).on('change', (e) => {
-        downloadStyle();
+        map.setStyle(PARAMS.styleURL);
     });
 
     map.on('style.load', () => {
@@ -382,9 +340,6 @@
                 'fill-extrusion-base': ["get", "base"]
             }
         });
-    });
-    map.once('load', () => {
-        downloadStyle();
     });
 
 </script>

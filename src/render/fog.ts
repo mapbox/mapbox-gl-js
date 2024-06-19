@@ -59,7 +59,7 @@ export const fogUniformValues = (
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
 
-    const fogColor = fog.properties.get('color').toRenderColor(painter.style._luts[fog.scope]).toArray01();
+    const fogColor = fog.properties.get('color').toRenderColor(painter.style.getLut(fog.scope)).toArray01();
     fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
 

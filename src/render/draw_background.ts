@@ -33,7 +33,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         if (image === null) {
             return;
         }
-        patternPosition = painter.imageManager.getPattern(image.toString(), layer.scope, painter.style._luts[layer.scope]);
+        patternPosition = painter.imageManager.getPattern(image.toString(), layer.scope, painter.style.getLut(layer.scope));
         if (!patternPosition) {
             return;
         }

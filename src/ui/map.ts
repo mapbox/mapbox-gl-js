@@ -81,7 +81,8 @@ import type {
     CameraSpecification,
     ImportSpecification,
     ConfigSpecification,
-    SchemaSpecification
+    SchemaSpecification,
+    ColorThemeSpecification
 } from '../style-spec/types';
 import type StyleLayer from '../style/style_layer';
 import type {Source} from '../source/source';
@@ -3472,6 +3473,24 @@ export class Map extends Camera {
      */
     getFog(): FogSpecification | null | undefined {
         return this.style ? this.style.getFog() : null;
+    }
+
+    /**
+     * Sets the color-theme property of the style.
+     *
+     * @param {ColorThemeSpecification} colorTheme The color-theme properties to set.
+     * If `null` or `undefined` is provided, this function call removes the color-theme from the map.
+     * Note: Calling this function triggers a full reload of tiles.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setColorTheme({
+     *     "data": "iVBORw0KGgoAA..."
+     * });
+     */
+    setColorTheme(colorTheme?: ColorThemeSpecification): this {
+        this._lazyInitEmptyStyle();
+        this.style.setColorTheme(colorTheme);
+        return this._update(true);
     }
 
     /**

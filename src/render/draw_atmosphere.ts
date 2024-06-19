@@ -137,7 +137,7 @@ class Atmosphere {
 
         const transitionT = globeToMercatorTransition(tr.zoom);
 
-        const fogLUT = painter.style._luts[fog.scope];
+        const fogLUT = painter.style.getLut(fog.scope);
 
         const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
 

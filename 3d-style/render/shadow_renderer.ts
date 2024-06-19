@@ -621,10 +621,10 @@ export function calculateGroundShadowFactor(
     const dirDirectionalFactor = Math.max(vec3.dot(groundNormal as [number, number, number], directionVec as [number, number, number]), 0.0);
     const ambStrength = [0, 0, 0];
     // @ts-expect-error - TS2339 - Property 'toRenderColor' does not exist on type 'unknown'. | TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
-    vec3.scale(ambStrength as [number, number, number], ambientColor.toRenderColor(style._luts[directionalLight.scope]).toArray01Linear().slice(0, 3), ambientIntensity);
+    vec3.scale(ambStrength as [number, number, number], ambientColor.toRenderColor(style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3), ambientIntensity);
     const dirStrength = [0, 0, 0];
     // @ts-expect-error - TS2339 - Property 'toRenderColor' does not exist on type 'unknown'. | TS2363 - The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-    vec3.scale(dirStrength as [number, number, number], dirColor.toRenderColor(style._luts[ambientLight.scope]).toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
+    vec3.scale(dirStrength as [number, number, number], dirColor.toRenderColor(style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)

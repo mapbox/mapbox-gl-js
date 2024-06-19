@@ -216,15 +216,6 @@ export const operationHandlers = {
     updateGeoJSONData(map, [sourceId, data], doneCb) {
         map.getSource(sourceId).updateData(data);
         doneCb();
-    },
-    setColorTheme(map, params, doneCb) {
-        // Update this to setColorTheme after
-        // https://mapbox.atlassian.net/browse/GLJS-842 is implemented
-        const style = map.getStyle();
-        style["color-theme"] = params[0];
-        this.setStyle(map, [style], () => {
-            doneCb();
-        });
     }
 };
 

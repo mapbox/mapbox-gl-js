@@ -9,6 +9,7 @@ import type {ConfigOptions} from '../../src/style/properties';
 
 export type LUT = {
     image: RGBAImage;
+    data: string;
     texture?: Texture3D;
 };
 

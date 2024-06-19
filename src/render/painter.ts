@@ -981,7 +981,7 @@ class Painter {
 
             const fog = this.style.fog;
             if (fog && this.transform.projection.supportsFog) {
-                const fogLUT = this.style._luts[fog.scope];
+                const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
                     const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
