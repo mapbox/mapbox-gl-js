@@ -482,7 +482,7 @@ export type SymbolLayerSpecification = {
     "paint"?: {
         "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "icon-opacity-transition"?: TransitionSpecification,
-        "icon-occlusion-opacity"?: PropertyValueSpecification<number>,
+        "icon-occlusion-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "icon-occlusion-opacity-transition"?: TransitionSpecification,
         "icon-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "icon-emissive-strength-transition"?: TransitionSpecification,
@@ -503,7 +503,7 @@ export type SymbolLayerSpecification = {
         "icon-image-cross-fade-transition"?: TransitionSpecification,
         "text-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "text-opacity-transition"?: TransitionSpecification,
-        "text-occlusion-opacity"?: PropertyValueSpecification<number>,
+        "text-occlusion-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "text-occlusion-opacity-transition"?: TransitionSpecification,
         "text-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "text-color-transition"?: TransitionSpecification,
