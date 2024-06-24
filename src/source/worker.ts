@@ -164,11 +164,10 @@ export default class Worker {
         for (const workerSource in this.workerSources[mapId][scope]) {
             const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
-                if (ws[source] instanceof VectorTileWorkerSource) {
-                    // @ts-expect-error - TS2339 - Property 'isSpriteLoaded' does not exist on type 'WorkerSource'.
-                    ws[source].isSpriteLoaded = isLoaded;
-                    // @ts-expect-error - TS2339 - Property 'fire' does not exist on type 'WorkerSource'.
-                    ws[source].fire(new Event('isSpriteLoaded'));
+                const workerSource = ws[source];
+                if (workerSource instanceof VectorTileWorkerSource) {
+                    workerSource.isSpriteLoaded = isLoaded;
+                    workerSource.fire(new Event('isSpriteLoaded'));
                 }
             }
         }
