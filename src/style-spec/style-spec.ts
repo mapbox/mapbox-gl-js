@@ -12,7 +12,8 @@ export type StylePropertySpecification = {
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
-    default?: number
+    default?: number,
+    tokens: never
 } | {
     type: 'string',
     'property-type': ExpressionType,
@@ -25,20 +26,23 @@ export type StylePropertySpecification = {
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
-    default?: boolean
+    default?: boolean,
+    tokens: never
 } | {
     type: 'enum',
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     values: {[_: string]: unknown},
     transition?: boolean,
-    default?: string
+    default?: string,
+    tokens: never
 } | {
     type: 'color',
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
     default?: string,
+    tokens: never,
     overridable: boolean
 } | {
     type: 'array',
@@ -47,7 +51,8 @@ export type StylePropertySpecification = {
     expression?: ExpressionSpecification,
     length?: number,
     transition?: boolean,
-    default?: Array<number>
+    default?: Array<number>,
+    tokens: never
 } | {
     type: 'array',
     value: 'string',
@@ -55,13 +60,15 @@ export type StylePropertySpecification = {
     expression?: ExpressionSpecification,
     length?: number,
     transition?: boolean,
-    default?: Array<string>
+    default?: Array<string>,
+    tokens: never
 } | {
     type: 'resolvedImage',
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
-    default?: string
+    default?: string,
+    tokens: never
 };
 
 import v8 from './reference/v8.json';

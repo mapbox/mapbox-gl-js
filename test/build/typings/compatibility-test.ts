@@ -190,7 +190,6 @@ map.on("load", function () {
         layout: {
             "icon-image": "marker-15",
             "text-field": ["get", "property"],
-            // @ts-expect-error - incompatible
             "text-max-width": {
                 stops: [
                     [10, 2],
@@ -617,7 +616,6 @@ var mapStyle: mapboxgl.Style = {
             layout: {
                 "text-field": "{name_en}",
                 "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
-                // @ts-expect-error - incompatible
                 "text-size": {
                     stops: [
                         [4, 9],
@@ -671,7 +669,6 @@ var mapStyle: mapboxgl.Style = {
                 ],
                 "text-letter-spacing": 0.15,
                 "text-max-width": 7,
-                // @ts-expect-error - incompatible
                 "text-size": {
                     stops: [
                         [4, 10],

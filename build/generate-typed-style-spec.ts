@@ -253,6 +253,21 @@ export type TransitionSpecification = {
 
 // Note: doesn't capture interpolatable vs. non-interpolatable types.
 
+export type PropertyFunctionStop<T> = [number, T];
+export type ZoomAndPropertyFunctionStop<T> = [{zoom: number; value: string | number | boolean}, T];
+
+/**
+ * @deprecated Use [Expressions](https://docs.mapbox.com/style-spec/reference/expressions/) syntax instead.
+*/
+export type FunctionSpecification<T> = {
+    stops: Array<PropertyFunctionStop<T> | ZoomAndPropertyFunctionStop<T>>;
+    base?: number;
+    property?: string;
+    type?: 'identity' | 'exponential' | 'interval' | 'categorical';
+    colorSpace?: 'rgb' | 'lab' | 'hcl';
+    default?: T;
+};
+
 export type CameraFunctionSpecification<T> =
     | { type: 'exponential', stops: Array<[number, T]> }
     | { type: 'interval',    stops: Array<[number, T]> };
@@ -277,6 +292,7 @@ export type PropertyValueSpecification<T> =
 
 export type DataDrivenPropertyValueSpecification<T> =
     | T
+    | FunctionSpecification<T>
     | CameraFunctionSpecification<T>
     | SourceFunctionSpecification<T>
     | CompositeFunctionSpecification<T>

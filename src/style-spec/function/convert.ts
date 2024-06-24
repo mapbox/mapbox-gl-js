@@ -1,27 +1,18 @@
 import assert from 'assert';
 
 import type {StylePropertySpecification} from '../style-spec';
-import type {ExpressionSpecification} from '../types';
-
-type Stop = [{
-    zoom: number;
-    value: string | number | boolean;
-}, unknown];
-
-type FunctionParameters = {
-    stops: Array<Stop>;
-    base: number;
-    property: string;
-    type: 'identity' | 'exponential' | 'interval' | 'categorical';
-    colorSpace: 'rgb' | 'lab' | 'hcl';
-    default: unknown;
-};
+import type {
+    FunctionSpecification,
+    PropertyFunctionStop,
+    ZoomAndPropertyFunctionStop,
+    ExpressionSpecification,
+} from '../types';
 
 function convertLiteral(value: unknown) {
     return typeof value === 'object' ? ['literal', value] : value;
 }
 
-export default function convertFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): ExpressionSpecification {
+export default function convertFunction<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification): ExpressionSpecification {
     let stops = parameters.stops;
     if (!stops) {
         // identity function
@@ -33,23 +24,22 @@ export default function convertFunction(parameters: FunctionParameters, property
     const zoomDependent = zoomAndFeatureDependent || !featureDependent;
 
     stops = stops.map((stop) => {
-        // @ts-expect-error - TS2339 - Property 'tokens' does not exist on type 'StylePropertySpecification'.
         if (!featureDependent && propertySpec.tokens && typeof stop[1] === 'string') {
             return [stop[0], convertTokenString(stop[1])];
         }
         return [stop[0], convertLiteral(stop[1])];
-    });
+    }) as FunctionSpecification<T>['stops'];
 
     if (zoomAndFeatureDependent) {
-        return convertZoomAndPropertyFunction(parameters, propertySpec, stops);
+        return convertZoomAndPropertyFunction(parameters, propertySpec, stops as Array<ZoomAndPropertyFunctionStop<T>>);
     } else if (zoomDependent) {
-        return convertZoomFunction(parameters, propertySpec, stops);
+        return convertZoomFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
     } else {
-        return convertPropertyFunction(parameters, propertySpec, stops);
+        return convertPropertyFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
     }
 }
 
-function convertIdentityFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): ExpressionSpecification {
+function convertIdentityFunction<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification): ExpressionSpecification {
     const get: ExpressionSpecification = ['get', parameters.property];
 
     if (parameters.default === undefined) {
@@ -73,7 +63,7 @@ function convertIdentityFunction(parameters: FunctionParameters, propertySpec: S
     }
 }
 
-function getInterpolateOperator(parameters: FunctionParameters) {
+function getInterpolateOperator<T>(parameters: FunctionSpecification<T>) {
     switch (parameters.colorSpace) {
     case 'hcl': return 'interpolate-hcl';
     case 'lab': return 'interpolate-lab';
@@ -81,10 +71,10 @@ function getInterpolateOperator(parameters: FunctionParameters) {
     }
 }
 
-function convertZoomAndPropertyFunction(
-    parameters: FunctionParameters,
+function convertZoomAndPropertyFunction<T>(
+    parameters: FunctionSpecification<T>,
     propertySpec: StylePropertySpecification,
-    stops: Array<Stop>,
+    stops: Array<ZoomAndPropertyFunctionStop<T>>,
 ): ExpressionSpecification {
     const featureFunctionParameters: Record<string, any> = {};
     const featureFunctionStops: Record<string, any> = {};
@@ -109,8 +99,7 @@ function convertZoomAndPropertyFunction(
     // function is determined directly from the style property specification
     // for which it's being used: linear for interpolatable properties, step
     // otherwise.
-    // @ts-expect-error - TS2345 - Argument of type '{}' is not assignable to parameter of type 'FunctionParameters'.
-    const functionType = getFunctionType({}, propertySpec);
+    const functionType = getFunctionType({} as FunctionSpecification<unknown>, propertySpec);
     if (functionType === 'exponential') {
         const expression: ExpressionSpecification = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
 
@@ -139,7 +128,7 @@ function coalesce(a: unknown, b: unknown) {
     if (b !== undefined) return b;
 }
 
-function getFallback(parameters: FunctionParameters, propertySpec: StylePropertySpecification) {
+function getFallback<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification) {
     const defaultValue = convertLiteral(coalesce(parameters.default, propertySpec.default));
 
     /*
@@ -154,10 +143,10 @@ function getFallback(parameters: FunctionParameters, propertySpec: StyleProperty
     return defaultValue;
 }
 
-function convertPropertyFunction(
-    parameters: FunctionParameters,
+function convertPropertyFunction<T>(
+    parameters: FunctionSpecification<T>,
     propertySpec: StylePropertySpecification,
-    stops: Array<Stop>,
+    stops: Array<PropertyFunctionStop<T>>,
 ): ExpressionSpecification {
     const type = getFunctionType(parameters, propertySpec);
     const get: ExpressionSpecification = ['get', parameters.property];
@@ -211,7 +200,7 @@ function convertPropertyFunction(
     }
 }
 
-function convertZoomFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, stops: Array<Stop>, input: Array<string> = ['zoom']) {
+function convertZoomFunction<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification, stops: Array<PropertyFunctionStop<T>>, input: Array<string> = ['zoom']) {
     const type = getFunctionType(parameters, propertySpec);
     let expression;
     let isStep = false;
@@ -256,7 +245,7 @@ function appendStopPair(curve: ExpressionSpecification, input: unknown, output: 
     curve.push(output);
 }
 
-function getFunctionType(parameters: FunctionParameters, propertySpec: StylePropertySpecification): string {
+function getFunctionType<T>(parameters: FunctionSpecification<T>, propertySpec: StylePropertySpecification): string {
     if (parameters.type) {
         return parameters.type;
     } else {
