@@ -33,10 +33,18 @@ export default function(
         } else if (tileJSON) {
             // Prefer TileJSON tiles, if both URL and tiles options are set
             if (options.url && tileJSON.tiles && options.tiles) delete options.tiles;
-
             // check if we have variants and merge with the original TileJson
             if (tileJSON.variants) {
+                if (!Array.isArray(tileJSON.variants)) {
+                    return callback(new Error("variants must be an array"));
+                }
                 for (const variant of tileJSON.variants) {
+                    if (variant == null || typeof variant !== 'object' || variant.constructor !== Object) {
+                        return callback(new Error("variant must be an object"));
+                    }
+                    if (!Array.isArray(variant.capabilities)) {
+                        return callback(new Error("capabilities must be an array"));
+                    }
                     // in this version we only support meshopt, we check there is no more different capabilities
                     // so future tileJsons with more capabilities won't break existing sdk's
                     if (variant.capabilities.length === 1 && variant.capabilities[0] === "meshopt") {
