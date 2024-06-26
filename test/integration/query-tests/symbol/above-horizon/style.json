@@ -1,0 +1,82 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 200,
+      "height": 700,
+      "collisionDebug": true,
+      "operations": [
+        ["wait"],
+        ["wait"]
+      ],
+      "queryGeometry": [
+        [
+          0,
+          0
+        ],
+        [
+          200,
+          700
+        ]
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geo": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "id": "feature1",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [ -0.1276474, 51.5073219]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": "feature2",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [ -0.175, 52.00]
+            }
+          },
+          {
+            "type": "Feature",
+            "id": "feature3",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [ -0.079, 52.75]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 85,
+  "zoom": 12.0,
+  "bearing": 0,
+  "center": [
+    -0.1276474,
+    51.5073219
+  ],
+  "layers": [
+    {      
+      "id": "testing",
+      "layout": {
+          "icon-image": "building-12",
+          "icon-size": 3.0,
+          "icon-anchor": "bottom",
+          "icon-allow-overlap": true,
+          "icon-pitch-alignment": "viewport"
+      },
+      "paint": {},
+      "source": "geo",
+      "type": "symbol"
+    }
+  ]
+}
