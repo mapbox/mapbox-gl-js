@@ -1,17 +1,17 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
 
-uniform lowp float u_device_pixel_ratio;
-uniform float u_alpha_discard_threshold;
-uniform vec2 u_texsize;
-uniform mediump float u_tile_units_to_pixels;
+uniform highp float u_device_pixel_ratio;
+uniform highp float u_alpha_discard_threshold;
+uniform highp vec2 u_texsize;
+uniform highp float u_tile_units_to_pixels;
 uniform highp vec2 u_trim_offset;
 
 uniform sampler2D u_image;
 
 in vec2 v_normal;
 in vec2 v_width2;
-in float v_linesofar;
+in highp float v_linesofar;
 in float v_gamma_scale;
 in float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
@@ -22,24 +22,23 @@ in highp vec4 v_uv;
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
 #endif
 
-#pragma mapbox: define lowp vec4 pattern
-#pragma mapbox: define lowp float pixel_ratio
-#pragma mapbox: define lowp float blur
-#pragma mapbox: define lowp float opacity
+#pragma mapbox: define mediump vec4 pattern
+#pragma mapbox: define mediump float pixel_ratio
+#pragma mapbox: define mediump float blur
+#pragma mapbox: define mediump float opacity
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern
-    #pragma mapbox: initialize lowp float pixel_ratio
-
-    #pragma mapbox: initialize lowp float blur
-    #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize mediump float pixel_ratio
+    #pragma mapbox: initialize mediump float blur
+    #pragma mapbox: initialize mediump float opacity
 
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
-    vec2 pattern_size = vec2(display_size.x / u_tile_units_to_pixels, display_size.y);
+    float pattern_size = display_size.x / u_tile_units_to_pixels;
 
     float aspect = display_size.y / v_width;
 
@@ -52,7 +51,7 @@ void main() {
     float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
-    float pattern_x = v_linesofar / pattern_size.x * aspect;
+    highp float pattern_x = v_linesofar / pattern_size * aspect;
     float x = mod(pattern_x, 1.0);
 
     float y = 0.5 * v_normal.y + 0.5;
@@ -91,8 +90,8 @@ void main() {
     // negative). v_pattern_data.y is not modified because we can't access overlap info for other end of the segment.
     // All units are tile units.
     // Distance from segment start point to start of first pattern instance
-    float pattern_len = pattern_size.x / aspect;
-    float segment_phase = pattern_len - mod((v_linesofar - v_pattern_data.x), pattern_len);
+    float pattern_len = pattern_size / aspect;
+    float segment_phase = pattern_len - mod(v_linesofar - v_pattern_data.x + pattern_len, pattern_len);
     // Step is used to check if we can fit an extra pattern cycle when considering the segment overlap at the corner
     float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
     float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;

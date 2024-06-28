@@ -20,46 +20,46 @@ in float a_z_offset;
 #ifdef RENDER_LINE_TRIM_OFFSET
 in highp vec4 a_packed;
 #endif
-in float a_linesofar;
+in highp float a_linesofar;
 
 #ifdef LINE_JOIN_NONE
-in vec2 a_pattern_data; // [position_in_segment & offset_sign, segment_length];
+in highp vec3 a_pattern_data; // [position_in_segment & offset_sign, segment_length, linesofar_hi];
 out vec2 v_pattern_data; // [position_in_segment, segment_length]
 #endif
 
 uniform mat4 u_matrix;
-uniform mediump float u_tile_units_to_pixels;
+uniform float u_tile_units_to_pixels;
 uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
-uniform lowp float u_device_pixel_ratio;
+uniform float u_device_pixel_ratio;
 
 out vec2 v_normal;
 out vec2 v_width2;
-out float v_linesofar;
+out highp float v_linesofar;
 out float v_gamma_scale;
 out float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
 out highp vec4 v_uv;
 #endif
 
-#pragma mapbox: define lowp float blur
-#pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp float offset
+#pragma mapbox: define mediump float blur
+#pragma mapbox: define mediump float opacity
+#pragma mapbox: define mediump float offset
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define mediump float width
-#pragma mapbox: define lowp float floorwidth
-#pragma mapbox: define lowp vec4 pattern
-#pragma mapbox: define lowp float pixel_ratio
+#pragma mapbox: define mediump float floorwidth
+#pragma mapbox: define mediump vec4 pattern
+#pragma mapbox: define mediump float pixel_ratio
 
 void main() {
-    #pragma mapbox: initialize lowp float blur
-    #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp float offset
+    #pragma mapbox: initialize mediump float blur
+    #pragma mapbox: initialize mediump float opacity
+    #pragma mapbox: initialize mediump float offset
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize mediump float width
-    #pragma mapbox: initialize lowp float floorwidth
+    #pragma mapbox: initialize mediump float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern
-    #pragma mapbox: initialize lowp float pixel_ratio
+    #pragma mapbox: initialize mediump float pixel_ratio
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
@@ -73,7 +73,7 @@ void main() {
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     // We store these in the least significant bit of a_pos_normal
-    mediump vec2 normal = a_pos_normal - 2.0 * pos;
+    vec2 normal = a_pos_normal - 2.0 * pos;
     normal.y = normal.y * 2.0 - 1.0;
     v_normal = normal;
 
@@ -88,15 +88,15 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist = outset * a_extrude * scale;
+    vec2 dist = outset * a_extrude * scale;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
     // it when we're drawing round end points (a_direction = -1 or 1) since their
     // extrude vector points in another direction.
-    mediump float u = 0.5 * a_direction;
-    mediump float t = 1.0 - abs(u);
-    mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+    float u = 0.5 * a_direction;
+    float t = 1.0 - abs(u);
+    vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
 #if defined(ELEVATED)
@@ -141,11 +141,19 @@ void main() {
 
 #ifdef LINE_JOIN_NONE
     // Needs to consider antialiasing width extension to get accurate pattern aspect ratio
-    v_width += ANTIALIASING;
+    v_width = floorwidth + ANTIALIASING;
+
+    mediump float pixels_to_tile_units = 1.0 / u_tile_units_to_pixels;
+    mediump float pixel_ratio_inverse = 1.0 / pixel_ratio;
+    mediump float aspect = v_width / ((pattern.w - pattern.y) * pixel_ratio_inverse);
+    // Pattern length * 32 is chosen experimentally, seems to provide good quality
+    highp float subt_multiple = (pattern.z - pattern.x) * pixel_ratio_inverse * pixels_to_tile_units * aspect * 32.0;
+    highp float subt = floor(a_pattern_data.z / subt_multiple) * subt_multiple;
+
     // Offset caused by vertices extended forward or backward from line point
     float offset_sign = (fract(a_pattern_data.x) - 0.5) * 4.0;
-    float line_progress_offset = offset_sign * v_width * 0.5 / u_tile_units_to_pixels;
-    v_linesofar += line_progress_offset;
+    float line_progress_offset = offset_sign * v_width * 0.5 * pixels_to_tile_units;
+    v_linesofar = (a_pattern_data.z - subt) + a_linesofar + line_progress_offset;
     v_pattern_data = vec2(a_pattern_data.x + line_progress_offset, a_pattern_data.y);
 #endif
 

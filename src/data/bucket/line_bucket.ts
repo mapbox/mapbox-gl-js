@@ -110,6 +110,7 @@ class LineBucket implements Bucket {
 
     patternJoinNone: boolean;
     segmentStart: number;
+    segmentStartf32: number;
     segmentPoints: Array<number>;
 
     index: number;
@@ -401,6 +402,7 @@ class LineBucket implements Bucket {
         const joinNone = join === 'none';
         this.patternJoinNone = this.hasPattern && joinNone;
         this.segmentStart = 0;
+        this.segmentStartf32 = 0;
         this.segmentPoints = [];
 
         if (this.lineClips) {
@@ -511,13 +513,12 @@ class LineBucket implements Bucket {
                             // Integer part contains position in tile units
                             // Fractional part has offset sign 0.25 = -1, 0.5 = 0, 0.75 = 1
                             const posAndOffset = Math.round(pos) + 0.5 + offsetSign * 0.25;
-                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength);
-                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength);
+                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength, bucket.segmentStart);
+                            bucket.patternVertexArray.emplaceBack(posAndOffset, segmentLength, bucket.segmentStart);
                         }
 
                         // Reset line segment
-                        bucket.segmentPoints = [];
-                        bucket.segmentStart = bucket.lineSoFar;
+                        bucket.segmentPoints.length = 0;
                         assert(bucket.zOffsetVertexArray.length === bucket.patternVertexArray.length || !bucket.hasZOffset);
                     }
 
@@ -815,6 +816,18 @@ class LineBucket implements Bucket {
         x,
         y,
     }: Point, extrudeX: number, extrudeY: number, round: boolean, up: boolean, dir: number, segment: Segment, fixedElevation?: number | null) {
+        if (this.patternJoinNone) {
+            if (this.segmentPoints.length === 0) {
+                this.segmentStart = this.lineSoFar;
+                this.segmentStartf32 = Math.fround(this.lineSoFar);
+            }
+
+            if (!up) { // Only add one segment point for each line point
+                // Real vertex data is inserted after each line segment is finished
+                this.segmentPoints.push(this.lineSoFar - this.segmentStart, dir);
+            }
+        }
+
         this.layoutVertexArray.emplaceBack(
             // a_pos_normal
             // Encode round/up the least significant bits
@@ -827,7 +840,7 @@ class LineBucket implements Bucket {
             ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1),
             0, // unused
             // a_linesofar
-            this.lineSoFar);
+            this.lineSoFar - this.segmentStartf32);
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
@@ -846,10 +859,6 @@ class LineBucket implements Bucket {
         }
         if (fixedElevation != null) {
             this.zOffsetVertexArray.emplaceBack(fixedElevation);
-        }
-        if (!up && this.patternJoinNone) {
-            // Real data is inserted after each line segment is finished
-            this.segmentPoints.push(this.lineSoFar - this.segmentStart, dir);
         }
         assert(this.zOffsetVertexArray.length === this.layoutVertexArray.length || !this.hasZOffset);
     }

@@ -3,7 +3,7 @@ import {createLayout} from '../../util/struct_array';
 import type {StructArrayLayout} from '../../util/struct_array';
 
 const lineLayoutAttributesPattern: StructArrayLayout = createLayout([
-    {name: 'a_pattern_data', components: 2, type: 'Float32'}
+    {name: 'a_pattern_data', components: 3, type: 'Float32'}
 ]);
 
 export default lineLayoutAttributesPattern;

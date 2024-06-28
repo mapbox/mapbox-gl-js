@@ -148,6 +148,28 @@ const route = {
     ]
 };
 
+const longRoute = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    [ 48.884680, 16.085282 ], [ 49.061463, 16.515979 ], [ 48.891005, 16.562687 ], [ 48.974135, 16.763008 ],
+                    [ 49.268492, 16.718297 ], [ 49.331357, 16.902966 ], [ 49.386120, 16.986536 ], [ 49.587155, 17.011794 ], 
+                    [ 49.936453, 17.009859 ], [ 50.180135, 17.013721 ], [ 50.236977, 16.961266 ], [ 49.676524, 16.889389 ],
+                    [ 49.528352, 16.714410 ], [ 49.408444, 16.321152 ], [ 49.556546, 16.118124 ], [ 49.802388, 16.008736 ],
+                    [ 50.056386, 15.991148 ], [ 50.415946, 16.075220 ], [ 50.674048, 16.215688 ], [ 50.180274, 16.204027 ], 
+                    [ 50.178172, 16.317207 ], [ 49.885689, 16.315238 ], [ 49.875532, 16.399057 ], [ 49.674499, 16.445862 ], 
+                    [ 50.186082, 16.722162 ], [ 50.699853, 16.720252 ]
+                ], 
+                "type": "LineString"
+            }
+        }
+    ]
+};
+
 map.on('load', () => {
     map.setFog({
         'horizon-blend': 0.0
@@ -158,6 +180,13 @@ map.on('load', () => {
         'data': route,
         'lineMetrics': true,
         'maxzoom': 19,
+    });
+
+    map.addSource('longRoute', {
+        'type': 'geojson',
+        'data': longRoute,
+        'lineMetrics': true,
+        'maxzoom': 16,
     });
 
     map.addSource('mapbox-dem', {
@@ -216,6 +245,20 @@ map.on('load', () => {
                     }
                     map.setPaintProperty('route', 'line-trim-offset', [0, progress]);
                 }, 100);
+
+                map.addLayer({
+                    'id': 'longRoute',
+                    'slot': 'top',
+                    'source': 'longRoute',
+                    'type': 'line',
+                    'layout': {
+                        'line-join': 'none'
+                    },
+                    'paint': {
+                        'line-pattern': 'bluecircle',
+                        'line-width': zoomConstExpression
+                    }
+                });
             });
     });
 });
