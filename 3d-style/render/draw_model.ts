@@ -875,7 +875,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 if (!isShadowPass) {
                     if (frontCutoffEnabled) {
 
-                        opacity *= calculateFrontCutoffOpacity(nodeModelMatrix, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
+                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix as any, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
                     }
 
                     opacity *= calculateFarCutoffOpacity(cutoffParams, depth);
@@ -1120,7 +1120,7 @@ function calculateFarCutoffOpacity(cutoffParams: CutoffParams, depth: number): n
     return clamp((linearDepth - cutoffStart) / (cutoffEnd - cutoffStart), 0.0, 1.0);
 }
 
-function calculateFrontCutoffOpacity(nodeModelMatrix: mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
+function calculateFrontCutoffOpacity(tileModelMatrix: mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
     // The cutoff opacity is completely disabled when pitch is lower than 20.
     const fullyOpaquePitch = 20.0;
     const fullyTransparentPitch = 40.0;
@@ -1131,7 +1131,7 @@ function calculateFrontCutoffOpacity(nodeModelMatrix: mat4, tr: Transform, aabb:
     }
 
     const worldToCamera = tr.getWorldToCameraMatrix();
-    const mat = mat4.multiply([] as any, worldToCamera, nodeModelMatrix);
+    const mat = mat4.multiply([] as any, worldToCamera, tileModelMatrix);
 
     // The cutoff opacity is calculated based on how much below the view the AABB bottom corners are.
     // For this, we find the AABB points with the highest and lowest y value in the view space.
