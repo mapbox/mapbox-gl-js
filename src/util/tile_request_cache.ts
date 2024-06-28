@@ -62,6 +62,15 @@ function prepareBody(response: Response, callback: (body?: Blob | ReadableStream
     }
 }
 
+// https://fetch.spec.whatwg.org/#null-body-status
+function isNullBodyStatus(status: Response["status"]): boolean {
+    if (status === 200 || status === 404) {
+        return false;
+    }
+
+    return [101, 103, 204, 205, 304].includes(status);
+}
+
 export function cachePut(request: Request, response: Response, requestTime: number) {
     cacheOpen();
     if (!sharedCache) return;
@@ -100,7 +109,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
     }
 
     prepareBody(response, body => {
-        const clonedResponse = new Response(body, options);
+        const clonedResponse = new Response(isNullBodyStatus(response.status) ? null : body, options);
 
         cacheOpen();
         if (!sharedCache) return;
