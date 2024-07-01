@@ -41,6 +41,7 @@ export type WorkerTileParameters = RequestedTileParameters & {
     brightness: number;
     extraShadowCaster?: boolean;
     tessellationStep?: number // test purpose only;
+    partial?: boolean;
 };
 
 export type DEMSourceEncoding = 'mapbox' | 'terrarium';
