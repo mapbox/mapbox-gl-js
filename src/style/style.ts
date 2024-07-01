@@ -753,14 +753,8 @@ class Style extends Evented {
 
             const terrain = this.stylesheet.terrain;
             if (terrain) {
-                // This workaround disables terrain and hillshade
-                // if there is noise in the Canvas2D operations used for image decoding.
-                if (this.disableElevatedTerrain === undefined)
-                    this.disableElevatedTerrain = browser.hasCanvasFingerprintNoise();
-
-                if (this.disableElevatedTerrain) {
-                    warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
-                } else if (!this.terrainSetForDrapingOnly()) {
+                this.checkCanvasFingerprintNoise();
+                if (!this.terrainSetForDrapingOnly()) {
                     this._createTerrain(terrain, DrapeRenderMode.elevated);
                 }
             }
@@ -2817,6 +2811,15 @@ class Style extends Evented {
         this.setTerrain(mockTerrainOptions, DrapeRenderMode.deferred);
     }
 
+    checkCanvasFingerprintNoise() {
+        // This workaround disables terrain and hillshade
+        // if there is noise in the Canvas2D operations used for image decoding.
+        if (this.disableElevatedTerrain === undefined) {
+            this.disableElevatedTerrain = browser.hasCanvasFingerprintNoise();
+            if (this.disableElevatedTerrain) warnOnce('Terrain and hillshade are disabled because of Canvas2D limitations when fingerprinting protection is enabled (e.g. in private browsing mode).');
+        }
+    }
+
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
@@ -2841,9 +2844,13 @@ class Style extends Evented {
             return;
         }
 
+        this.checkCanvasFingerprintNoise();
+
         let options: TerrainSpecification = terrainOptions;
         const isUpdating = terrainOptions.source == null;
         if (drapeRenderMode === DrapeRenderMode.elevated) {
+            if (this.disableElevatedTerrain) return;
+
             // Input validation and source object unrolling
             if (typeof options.source === 'object') {
                 const id = 'terrain-dem-src';
