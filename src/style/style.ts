@@ -1084,17 +1084,21 @@ class Style extends Evented {
             // Reserved image name, which references the LUT in the image manager
             const styleLutName = 'mapbox-reserved-lut';
 
-            this.map.loadImage(colorThemeData, (err, bitmap) => {
+            const lutImage = new Image();
+            lutImage.src = colorThemeData;
+            lutImage.onerror = () => {
                 this._styleColorTheme.lutLoading = false;
-                if (err) {
-                    reject(new Error(`${err.message}`));
-                    return;
-                }
-                if (bitmap.height > 32) {
+                reject(new Error('Failed to load image data'));
+
+            };
+            lutImage.onload = () => {
+                this._styleColorTheme.lutLoading = false;
+                const {width, height, data} = browser.getImageData(lutImage);
+                if (height > 32) {
                     reject(new Error('The height of the image must be less than or equal to 32 pixels.'));
                     return;
                 }
-                if (bitmap.width !== bitmap.height * bitmap.height) {
+                if (width !== height * height) {
                     reject(new Error('The width of the image must be equal to the height squared.'));
                     return;
                 }
@@ -1102,7 +1106,6 @@ class Style extends Evented {
                 if (this.getImage(styleLutName)) {
                     this.removeImage(styleLutName);
                 }
-                const {width, height, data} = browser.getImageData(bitmap);
                 this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, version: 0});
 
                 const image = this.imageManager.getImage(styleLutName, this.scope);
@@ -1115,7 +1118,7 @@ class Style extends Evented {
                     };
                     resolve();
                 }
-            });
+            };
         });
     }
 
