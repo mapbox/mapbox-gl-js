@@ -4,6 +4,8 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
+uniform lowp vec2 u_trim_fade_range;
+uniform lowp vec4 u_trim_color;
 
 in vec2 v_width2;
 in vec2 v_normal;
@@ -69,7 +71,7 @@ void main() {
     out_color = color;
 #endif
 
-    float trimmed = 1.0;
+    float trim_alpha = 1.0;
 #ifdef RENDER_LINE_TRIM_OFFSET
     // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
     highp float start = v_uv[2];
@@ -86,10 +88,11 @@ void main() {
     // Nested conditionals fixes the issue
     // https://github.com/mapbox/mapbox-gl-js/issues/12013
     if (trim_end > trim_start) {
-        if (line_progress <= trim_end && line_progress >= trim_start) {
-            out_color = vec4(0, 0, 0, 0);
-            trimmed = 0.0;
-        }
+        float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / clamp(u_trim_fade_range[0], 1e-4, 1.0)));
+        float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / clamp(u_trim_fade_range[1], 1e-4, 1.0)));
+        float transition_factor = min(start_transition, end_transition);
+        out_color = mix(out_color, u_trim_color, transition_factor);
+        trim_alpha = out_color.a;
     }
 #endif
 
@@ -114,7 +117,7 @@ void main() {
                 out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
             }
         } else {
-            out_color.rgb = mix(border_color.rgb * border_color.a * trimmed, out_color.rgb, smoothAlpha);
+            out_color.rgb = mix(border_color.rgb * border_color.a * trim_alpha, out_color.rgb, smoothAlpha);
         }
     }
 #endif

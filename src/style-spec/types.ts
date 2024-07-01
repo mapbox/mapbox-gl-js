@@ -419,6 +419,12 @@ export type LineLayerSpecification = {
         "line-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "line-gradient"?: ExpressionSpecification,
         "line-trim-offset"?: [number, number],
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-trim-fade-range"?: PropertyValueSpecification<[number, number]>,
+        "line-trim-color"?: PropertyValueSpecification<ColorSpecification>,
+        "line-trim-color-transition"?: TransitionSpecification,
         "line-emissive-strength"?: PropertyValueSpecification<number>,
         "line-emissive-strength-transition"?: TransitionSpecification,
         "line-border-width"?: DataDrivenPropertyValueSpecification<number>,

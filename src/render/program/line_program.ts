@@ -1,4 +1,4 @@
-import {Uniform1i, Uniform1f, Uniform2f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
 import type Context from '../../gl/context';
@@ -20,6 +20,8 @@ export type LineUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_alpha_discard_threshold']: Uniform1f;
     ['u_trim_offset']: Uniform2f;
+    ['u_trim_fade_range']: Uniform2f;
+    ['u_trim_color']: Uniform4f;
     ['u_emissive_strength']: Uniform1f;
 };
 
@@ -49,6 +51,8 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_alpha_discard_threshold': new Uniform1f(context),
     'u_trim_offset': new Uniform2f(context),
+    'u_trim_fade_range': new Uniform2f(context),
+    'u_trim_color': new Uniform4f(context),
     'u_emissive_strength': new Uniform1f(context)
 });
 
@@ -90,6 +94,8 @@ const lineUniformValues = (
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
+        'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
+        'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength')
     };
 };

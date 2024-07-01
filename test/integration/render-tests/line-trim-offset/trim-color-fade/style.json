@@ -1,0 +1,201 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 150,
+      "height": 150
+    }
+  },
+  "zoom": 6.5,
+  "center": [0.4, 0.5],
+  "sources": {
+    "trim_offset": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 1,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 2,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.2,
+                  0.0
+                ],
+                [
+                  0.2,
+                  1.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 3,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.4,
+                  0.0
+                ],
+                [
+                  0.4,
+                  1.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 4,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.6,
+                  0.0
+                ],
+                [
+                  0.6,
+                  1.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 5,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.8,
+                  0.0
+                ],
+                [
+                  0.8,
+                  1.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      },
+      "lineMetrics": true
+    }
+  },
+  "layers": [
+    {
+      "id": "default_color_fade_begin",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 1],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.0, 0.2],
+        "line-trim-fade-range": [0.0, 0.1]
+      }
+    },
+    {
+      "id": "default_color_fade_end",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 2],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.8, 1.0],
+        "line-trim-fade-range": [0.1, 0.0]
+      }
+    },
+    {
+      "id": "trim-color",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 3],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.2, 0.6],
+        "line-trim-fade-range": [0.0, 0.2],
+        "line-trim-color": "orange",
+        "line-color": "transparent"
+      }
+    },
+    {
+      "id": "trim-fade-both-sides",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 4],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.2, 0.9],
+        "line-trim-fade-range": [0.1, 0.1],
+        "line-trim-color": "green",
+        "line-color": "transparent"
+      }
+    },
+    {
+      "id": "trim-fade-gradient",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 5],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.1, 0.3],
+        "line-trim-fade-range": [0.02, 0.02],
+        "line-trim-color": "aquamarine",
+        "line-gradient": ["interpolate",
+          ["linear"],
+          ["line-progress"],
+          0.0, "red",
+          0.7, "green",
+          1.0, "transparent"
+        ]
+      }
+    }
+  ]
+}

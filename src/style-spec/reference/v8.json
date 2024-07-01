@@ -6316,19 +6316,19 @@
     "line-trim-offset": {
       "type": "array",
       "value": "number",
-      "doc": "The line part between [trim-start, trim-end] will be marked as transparent to make a route vanishing effect. The line trim-off offset is based on the whole line range [0.0, 1.0].",
+      "doc": "The line part between [trim-start, trim-end] will be painted using `line-trim-color,` which is transparent by default to produce a route vanishing effect. The line trim-off offset is based on the whole line range [0.0, 1.0].",
       "length": 2,
       "default": [0.0, 0.0],
       "minimum": [0.0, 0.0],
       "maximum": [1.0, 1.0],
       "transition": false,
       "requires": [
-          {
-              "source": "geojson",
-              "has": {
-                  "lineMetrics": true
-              }
-          }
+        {
+            "source": "geojson",
+            "has": {
+                "lineMetrics": true
+            }
+        }
       ],
       "sdk-support": {
         "basic functionality": {
@@ -6338,6 +6338,72 @@
         }
       },
       "property-type": "constant"
+    },
+    "line-trim-fade-range": {
+      "type": "array",
+      "value": "number",
+      "doc": "The fade range for the trim-start and trim-end points is defined by the `line-trim-offset` property. The first element of the array represents the fade range from the trim-start point toward the end of the line, while the second element defines the fade range from the trim-end point toward the beginning of the line. The fade result is achieved by interpolating between `line-trim-color` and the color specified by the `line-color` or the `line-gradient` property.",
+      "experimental": true,
+      "length": 2,
+      "default": [0.0, 0.0],
+      "minimum": [0.0, 0.0],
+      "maximum": [1.0, 1.0],
+      "transition": false,
+      "requires": [
+        "line-trim-offset",
+        {
+          "source": "geojson",
+          "has": {
+            "lineMetrics": true
+          }
+        }
+      ],
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.6.0",
+          "android": "11.6.0",
+          "ios": "11.6.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "line-trim-color": {
+      "type": "color",
+      "doc": "The color to be used for rendering the trimmed line section that is defined by the `line-trim-offset` property.",
+      "experimental": true,
+      "default": "transparent",
+      "transition": true,
+      "requires": [
+        "line-trim-offset",
+        {
+          "source": "geojson",
+          "has": {
+              "lineMetrics": true
+          }
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.6.0",
+          "android": "11.6.0",
+          "ios": "11.6.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-constant"
     },
     "line-emissive-strength": {
       "type": "number",
