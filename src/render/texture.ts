@@ -185,7 +185,9 @@ export class Texture3D {
 
         gl.bindTexture(gl.TEXTURE_3D, this.texture);
 
+        context.pixelStoreUnpackFlipY.set(false);
         context.pixelStoreUnpack.set(1);
+        context.pixelStoreUnpackPremultiplyAlpha.set(false);
 
         let internalFormat = this.format;
         let type: TextureType = gl.UNSIGNED_BYTE;

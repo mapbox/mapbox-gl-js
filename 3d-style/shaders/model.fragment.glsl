@@ -494,6 +494,10 @@ vec4 finalColor;
     distance +=  mix(0.5, 0.0, clamp(resEmission - 1.0, 0.0, 1.0));
     opacity *= v_roughness_metallic_emissive_alpha.w * saturate(1.0 - distance * distance);
 #endif
+#else
+#ifdef APPLY_LUT_ON_GPU
+    color = applyLUT(u_lutTexture, color);
+#endif
 #endif
     // Use emissive strength as interpolation between lit and unlit color
     // for coherence with other layer types.
