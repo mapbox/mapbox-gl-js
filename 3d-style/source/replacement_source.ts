@@ -51,7 +51,7 @@ class ReplacementSource {
         this._sourceIds = [];
         this._activeRegions = [];
         this._prevRegions = [];
-        this._globalClipBounds = {min: new Point(0, 0), max: new Point(0, 0)};
+        this._globalClipBounds = {min: new Point(Infinity, Infinity), max: new Point(-Infinity, -Infinity)};
     }
 
     clear() {
