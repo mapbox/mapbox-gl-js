@@ -53,7 +53,7 @@
     "@rollup/plugin-replace": "^5.0.7",
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^0.4.4",
-    "@tweakpane/core": "^2.0.3",
+    "@tweakpane/core": "^2.0.4",
     "@types/geojson": "^7946.0.14",
     "@types/geojson-vt": "^3.2.5",
     "@types/jest": "^29.5.12",
