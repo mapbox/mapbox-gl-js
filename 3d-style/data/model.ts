@@ -75,6 +75,7 @@ export type Mesh = {
     pbrBuffer: VertexBuffer;
     material: Material;
     aabb: Aabb;
+    transformedAabb: Aabb;
     segments: SegmentVector;
     centroid: vec3;
     heightmap: Float32Array;

@@ -95,8 +95,9 @@ export class Tiled3dModelFeature {
         this.emissionHeightBasedParams = [];
         // Needs to calculate geometry
         this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
+        this.aabb = this._getLocalBounds();
     }
-    getLocalBounds(): Aabb {
+    _getLocalBounds(): Aabb {
         if (!this.node.meshes) {
             return new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
         }
@@ -105,11 +106,12 @@ export class Tiled3dModelFeature {
             const aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
             for (const mesh of this.node.meshes) {
                 if (this.node.lightMeshIndex !== i) {
-                    aabb.encapsulate(mesh.aabb);
+                    mesh.transformedAabb = Aabb.applyTransform(mesh.aabb, this.node.matrix);
+                    aabb.encapsulate(mesh.transformedAabb);
                 }
                 i++;
             }
-            this.aabb = Aabb.applyTransform(aabb, this.node.matrix);
+            this.aabb = aabb;
         }
         return this.aabb;
     }
@@ -551,7 +553,7 @@ class Tiled3dModelBucket implements Bucket {
             const nodeInfo = nodesInfo[i];
             assert(nodeInfo.node.meshes.length > 0);
             const mesh = nodeInfo.node.meshes[0];
-            const meshAabb = Aabb.applyTransform(mesh.aabb, nodeInfo.node.matrix);
+            const meshAabb = mesh.transformedAabb;
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
             if (nodeInfo.node.hidden === true) return {height: 0.0, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 

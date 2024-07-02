@@ -824,7 +824,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 }
 
                 const nodeAabb = () => {
-                    const localBounds = nodeInfo.getLocalBounds();
+                    const localBounds = nodeInfo.aabb;
                     // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
                     aabb.min = [...localBounds.min];
                     // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
@@ -874,8 +874,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 let opacity = layerOpacity;
                 if (!isShadowPass) {
                     if (frontCutoffEnabled) {
-
-                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix as any, tr, nodeInfo.getLocalBounds(), frontCutoffParams);
+                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix as any, tr, nodeInfo.aabb, frontCutoffParams);
                     }
 
                     opacity *= calculateFarCutoffOpacity(cutoffParams, depth);
