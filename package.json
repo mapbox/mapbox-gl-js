@@ -118,7 +118,7 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.14.1",
     "utility-types": "^3.11.0",
-    "vite-plugin-arraybuffer": "^0.0.7",
+    "vite-plugin-arraybuffer": "^0.0.8",
     "vitest": "^1.6.0"
   },
   "scripts": {
