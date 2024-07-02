@@ -1,10 +1,8 @@
 // @ts-nocheck
 import {readFile} from 'node:fs/promises';
-import {fileURLToPath} from 'node:url';
 
 import {defineConfig} from 'vite';
 import {createFilter} from '@rollup/pluginutils';
-import alias from '@rollup/plugin-alias';
 import arraybuffer from 'vite-plugin-arraybuffer';
 
 function glsl(include: string[]) {
@@ -38,6 +36,7 @@ function fixAssertUtil(regexp = /node_modules\/assert/) {
 }
 
 export default defineConfig({
+    retry: 2,
     pool: 'threads',
     poolOptions: {
         threads: {
@@ -57,7 +56,11 @@ export default defineConfig({
             fileParallelism: false,
         },
         restoreMocks: true,
-        unstubGlobals: true
+        unstubGlobals: true,
+        reporters: process.env.CI ? [
+            ['html', {outputFile: './test/unit/vitest/index.html'}],
+            ['junit', {outputFile: './test/unit/test-results.xml'}],
+        ] : ['basic'],
     },
     optimizeDeps: {
         esbuildOptions: {

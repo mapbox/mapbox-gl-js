@@ -46,7 +46,6 @@
   "devDependencies": {
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/rest": "^21.0.0",
-    "@rollup/plugin-alias": "^5.1.0",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",

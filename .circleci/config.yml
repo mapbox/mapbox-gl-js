@@ -357,8 +357,14 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          command: npm run test-unit
+          name: Run unit tests
+          command: |
+            npm run test-unit
           no_output_timeout: 5m
+      - store_artifacts:
+          path: test/unit/vitest
+      - store_test_results:
+          path: test/unit/test-results.xml
 
   test-query:
     <<: *linux-defaults

@@ -1225,6 +1225,7 @@ describe('Style#moveLayer', () => {
         });
     });
 });
+
 describe('Style#_mergeLayers', () => {
     test('supports slots', async () => {
         const style = new Style(new StubMap());
@@ -1556,6 +1557,7 @@ describe('Style#_mergeLayers', () => {
         ]);
     });
 });
+
 describe('Style#getLights', () => {
     test('root style resolves lights from import', async () => {
         const style = new Style(new StubMap());
@@ -1966,6 +1968,7 @@ describe('Terrain', () => {
         expect(style.getTerrain().exaggeration).toEqual(2);
     });
 });
+
 describe('Style#getFog', () => {
     test('resolves fog from import', async () => {
         const style = new Style(new StubMap());
@@ -2032,6 +2035,7 @@ describe('Style#getFog', () => {
         expect(fog['horizon-blend']).toEqual(0);
     });
 });
+
 describe('Camera', () => {
     test('resolves camera from import', async () => {
         const map = new StubMap();
@@ -2136,6 +2140,7 @@ describe('Camera', () => {
         }
     );
 });
+
 describe('Projection', () => {
     test('resolves projection from import', async () => {
         const map = new StubMap();
@@ -2199,6 +2204,7 @@ describe('Projection', () => {
         }
     );
 });
+
 describe('Transition', () => {
     test('resolves transition from import', async () => {
         const style = new Style(new StubMap());
@@ -2230,6 +2236,7 @@ describe('Transition', () => {
         expect(style.transition).toEqual({duration: 600, delay: 100});
     });
 });
+
 describe('Glyphs', () => {
     test('fallbacks to the default glyphs URL', async () => {
         const style = new Style(new StubMap());
@@ -2445,6 +2452,7 @@ test('Style#setPaintProperty', () => {
         expect(spy).toHaveBeenCalledTimes(2);
     });
 });
+
 test('Style#setLayerZoomRange', () => {
     const style = new Style(new StubMap());
 
@@ -2590,6 +2598,7 @@ describe('Style#setConfigProperty', () => {
         expect(layer.getLayoutProperty('visibility')).toEqual('visible');
     });
 });
+
 describe('Style#setState', () => {
     test('Adds fragment', async () => {
         const map = new StubMap();
@@ -2894,6 +2903,7 @@ describe('Style#setState', () => {
         ]);
     });
 });
+
 test('Style#serialize', async () => {
     const style = new Style(new StubMap());
 
