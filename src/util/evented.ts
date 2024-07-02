@@ -24,9 +24,10 @@ function _removeEventListener(type: string, listener: Listener, listenerList: Li
 }
 
 export class Event {
+    target: unknown;
     readonly type: string;
 
-    constructor(type: string, data: any = {}) {
+    constructor(type: string, data: object = {}) {
         extend(this, data);
         this.type = type;
     }
@@ -56,8 +57,8 @@ export class ErrorEvent extends Event {
 export class Evented {
     _listeners: Listeners;
     _oneTimeListeners: Listeners;
-    _eventedParent: Evented | null | undefined;
-    _eventedParentData: any | (() => any) | null | undefined;
+    _eventedParent?: Evented;
+    _eventedParentData?: unknown | (() => unknown);
 
     /**
      * Adds a listener to a specified event type.
@@ -113,7 +114,7 @@ export class Evented {
         return this;
     }
 
-    fire(event: Event | string, properties?: any): this {
+    fire(event: Event | string, properties?: object): this {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
         //     https://github.com/mapbox/mapbox-gl-draw/issues/766
@@ -124,7 +125,7 @@ export class Evented {
         const type = event.type;
 
         if (this.listens(type)) {
-            (event as any).target = this;
+            event.target = this;
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
@@ -141,10 +142,11 @@ export class Evented {
 
             const parent = this._eventedParent;
             if (parent) {
-                extend(
-                    event,
-                    typeof this._eventedParentData === 'function' ? this._eventedParentData() : this._eventedParentData
-                );
+                const eventedParentData = typeof this._eventedParentData === 'function' ?
+                    this._eventedParentData() :
+                    this._eventedParentData;
+
+                extend(event, eventedParentData);
                 parent.fire(event);
             }
 
@@ -178,7 +180,7 @@ export class Evented {
      * @returns {Object} `this`
      * @private
      */
-    setEventedParent(parent?: Evented | null, data?: any | (() => any)): this {
+    setEventedParent(parent?: Evented, data?: unknown | (() => unknown)): this {
         this._eventedParent = parent;
         this._eventedParentData = data;
 

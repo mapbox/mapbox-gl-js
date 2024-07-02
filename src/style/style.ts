@@ -70,6 +70,7 @@ import {RGBAImage} from '../util/image';
 import type {ColorThemeSpecification,
     LayerSpecification,
     FilterSpecification,
+    ExpressionSpecification,
     StyleSpecification,
     ImportSpecification,
     LightSpecification,
@@ -84,7 +85,7 @@ import type {ColorThemeSpecification,
     ConfigSpecification,
     SchemaSpecification,
     CameraSpecification
-} from "../style-spec/types";
+} from '../style-spec/types';
 import {evaluateColorThemeProperties} from '../util/lut';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -2749,10 +2750,10 @@ class Style extends Evented {
     querySourceFeatures(
         sourceID: string,
         params?: {
-            sourceLayer: string | null | undefined;
-            filter?: Array<any> | null | undefined;
+            sourceLayer?: string;
+            filter?: FilterSpecification | ExpressionSpecification;
             validate?: boolean;
-        } | null,
+        },
     ): Array<QueryFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);

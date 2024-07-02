@@ -1,10 +1,12 @@
+import type Point from '@mapbox/point-geometry';
+import latest from '../reference/latest';
+
+import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {createExpression} from '../expression/index';
 import {isFeatureConstant} from '../expression/is_constant';
-import {deepUnbundle} from '../util/unbundle_jsonlint';
-import latest from '../reference/latest';
-import type {GlobalProperties, Feature} from '../expression/index';
 import type {CanonicalTileID} from '../types/tile_id';
-import type Point from '@mapbox/point-geometry';
+import type {GlobalProperties, Feature} from '../expression/index';
+import type {FilterSpecification, ExpressionSpecification} from '../types';
 
 export type FeatureDistanceData = {
     bearing: [number, number];
@@ -28,7 +30,7 @@ export type FeatureFilter = {
 export default createFilter;
 export {isExpressionFilter, isDynamicFilter, extractStaticFilter};
 
-function isExpressionFilter(filter: any): boolean {
+function isExpressionFilter(filter: unknown): boolean {
     if (filter === true || filter === false) {
         return true;
     }
@@ -80,14 +82,15 @@ function isExpressionFilter(filter: any): boolean {
  * @param {string} layerType the type of the layer this filter will be applied to.
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter: any, layerType: string = 'fill'): FeatureFilter {
+function createFilter(filter?: FilterSpecification | ExpressionSpecification, layerType: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
         return {filter: () => true, needGeometry: false, needFeature: false};
     }
 
     if (!isExpressionFilter(filter)) {
-        filter = convertFilter(filter);
+        filter = convertFilter(filter) as ExpressionSpecification;
     }
+
     const filterExp = (filter as string[] | string | boolean);
 
     let staticFilter = true;

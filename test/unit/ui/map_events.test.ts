@@ -1077,3 +1077,13 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 });
+
+test('Map#on style.load event has style property', async () => {
+    const map = createMap();
+    await new Promise(resolve => {
+        map.once('style.load', (event) => {
+            expect(event.style).toEqual(map.style);
+            resolve();
+        });
+    });
+});

@@ -82,10 +82,11 @@ import type {
     ImportSpecification,
     ConfigSpecification,
     SchemaSpecification,
-    ColorThemeSpecification
+    ColorThemeSpecification,
+    ExpressionSpecification
 } from '../style-spec/types';
 import type StyleLayer from '../style/style_layer';
-import type {Source} from '../source/source';
+import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
@@ -93,6 +94,7 @@ import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_fe
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
+import type {Callback} from 'src/types/callback';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -115,6 +117,12 @@ export type SetStyleOptions = {
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
 };
 
+type DelegatedListener = {
+    layers: Set<string>;
+    listener: Listener;
+    delegates: {[K in MapEvent]?: Listener};
+};
+
 export type FeatureSelector = {
     id: string | number;
     source: string;
@@ -127,7 +135,7 @@ export const AVERAGE_ELEVATION_EASE_THRESHOLD = 1; // meters
 export const AVERAGE_ELEVATION_CHANGE_THRESHOLD = 1e-4; // meters
 
 export type MapOptions = {
-    style?: StyleSpecification | string | undefined;
+    style?: StyleSpecification | string;
     config?: {
         [key: string]: ConfigSpecification;
     };
@@ -148,10 +156,10 @@ export type MapOptions = {
     maxBounds?: LngLatBoundsLike;
     fitBoundsOptions?: EasingOptions;
     scrollZoom?: boolean;
-    minZoom?: number | null | undefined;
-    maxZoom?: number | null | undefined;
-    minPitch?: number | null | undefined;
-    maxPitch?: number | null | undefined;
+    minZoom?: number;
+    maxZoom?: number;
+    minPitch?: number;
+    maxPitch?: number;
     boxZoom?: boolean;
     dragRotate?: boolean;
     dragPan?: boolean | DragPanOptions;
@@ -171,8 +179,8 @@ export type MapOptions = {
     maxTileCacheSize?: number;
     transformRequest?: RequestTransformFunction;
     accessToken?: string;
-    testMode?: boolean | null | undefined;
-    locale?: any;
+    testMode?: boolean;
+    locale?: Partial<typeof defaultLocale>;
     language?: string;
     worldview?: string;
     crossSourceCollisions?: boolean;
@@ -444,7 +452,7 @@ export class Map extends Camera {
     _antialias: boolean;
     _refreshExpiredTiles: boolean;
     _hash: Hash;
-    _delegatedListeners: any;
+    _delegatedListeners: {[type: string]: DelegatedListener[]};
     _fullscreenchangeEvent: 'fullscreenchange' | 'webkitfullscreenchange';
     _isInitialLoad: boolean;
     _shouldCheckAccess: boolean;
@@ -461,7 +469,7 @@ export class Map extends Camera {
     _localIdeographFontFamily: string;
     _localFontFamily: string | null | undefined;
     _requestManager: RequestManager;
-    _locale: any;
+    _locale: Partial<typeof defaultLocale>;
     _removed: boolean;
     _speedIndexTiming: boolean;
     _clickTolerance: number;
@@ -753,7 +761,7 @@ export class Map extends Camera {
 
         this.on('style.load', () => {
             if (this.transform.unmodified) {
-                this.jumpTo((this.style.stylesheet as any));
+                this.jumpTo((this.style.stylesheet as unknown));
             }
             this._postStyleLoadEvent();
         });
@@ -920,7 +928,7 @@ export class Map extends Camera {
      * const mapDiv = document.getElementById('map');
      * if (mapDiv.style.visibility === true) map.resize();
      */
-    resize(eventData?: any): this {
+    resize(eventData?: object): this {
         this._updateContainerDimensions();
 
         // do nothing if container remained the same size
@@ -1505,7 +1513,7 @@ export class Map extends Camera {
         return (this.handlers && this.handlers._isDragging()) || false;
     }
 
-    _createDelegatedListener(type: MapEvent, layers: Array<any>, listener: any): any {
+    _createDelegatedListener(type: MapEvent, layers: Array<string>, listener: Listener): DelegatedListener {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
             const mousemove = (e: MapMouseEvent) => {
@@ -1674,9 +1682,12 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, layerIds: any, listener?: Listener): this {
-        if (listener === undefined) {
-            return super.on(type, layerIds);
+    on(type: MapEvent, listener: Listener): this;
+    on(type: MapEvent, layerIds: string | string[], listener: Listener): this;
+
+    on(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener): this {
+        if (typeof layerIds === 'function' || listener === undefined) {
+            return super.on(type, layerIds as Listener);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1698,7 +1709,7 @@ export class Map extends Camera {
         this._delegatedListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
-            this.on((event as any), delegatedListener.delegates[event]);
+            this.on(event as MapEvent, delegatedListener.delegates[event]);
         }
 
         return this;
@@ -1748,9 +1759,9 @@ export class Map extends Camera {
     once(type: MapEvent, layerIds: string | string[]): Promise<Event>;
     once(type: MapEvent, layerIds: string | string[], listener: Listener): this;
 
-    once(type: MapEvent, layerIds?: any, listener?: Listener): this | Promise<Event> {
-        if (listener === undefined) {
-            return super.once(type, layerIds);
+    once(type: MapEvent, layerIds?: string | string[] | Listener, listener?: Listener): this | Promise<Event> {
+        if (typeof layerIds === 'function' || listener === undefined) {
+            return super.once(type, layerIds as Listener);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1768,7 +1779,7 @@ export class Map extends Camera {
         const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
 
         for (const event in delegatedListener.delegates) {
-            this.once((event as any), delegatedListener.delegates[event]);
+            this.once(event as MapEvent, delegatedListener.delegates[event]);
         }
 
         return this;
@@ -1799,19 +1810,23 @@ export class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, layerIds: any, listener?: Listener): this {
-        if (listener === undefined) {
-            return super.off(type, layerIds);
+    off(type: MapEvent, listener: Listener): this;
+    off(type: MapEvent, layerIds: string | string[], listener: Listener): this;
+
+    off(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener): this {
+        if (typeof layerIds === 'function' || listener === undefined) {
+            return super.off(type, layerIds as Listener);
         }
 
-        layerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
-        for (const layerId of layerIds) {
+        const uniqLayerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
+
+        for (const layerId of uniqLayerIds) {
             if (!this._isValidId(layerId)) {
                 return this;
             }
         }
 
-        const areLayerArraysEqual = (hash1: Set<string>, hash2: Set<string>) => {
+        const areLayerIdsEqual = (hash1: Set<string>, hash2: Set<string>) => {
             if (hash1.size !== hash2.size) {
                 return false; // at-least 1 arr has duplicate value(s)
             }
@@ -1823,12 +1838,12 @@ export class Map extends Camera {
             return true;
         };
 
-        const removeDelegatedListeners = (listeners: Array<any>) => {
+        const removeDelegatedListeners = (listeners: Array<DelegatedListener>) => {
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
-                if (delegatedListener.listener === listener && areLayerArraysEqual(delegatedListener.layers, layerIds)) {
+                if (delegatedListener.listener === listener && areLayerIdsEqual(delegatedListener.layers, uniqLayerIds)) {
                     for (const event in delegatedListener.delegates) {
-                        this.off((event as any), delegatedListener.delegates[event]);
+                        this.off(event as MapEvent, delegatedListener.delegates[event]);
                     }
                     listeners.splice(i, 1);
                     return this;
@@ -1939,7 +1954,7 @@ export class Map extends Camera {
         }
 
         if (options === undefined && geometry !== undefined && !(geometry instanceof Point) && !Array.isArray(geometry)) {
-            options = (geometry as any);
+            options = geometry;
             geometry = undefined;
         }
 
@@ -1997,10 +2012,10 @@ export class Map extends Camera {
     querySourceFeatures(
         sourceId: string,
         parameters?: {
-            sourceLayer: string | null | undefined;
-            filter?: Array<any> | null | undefined;
+            sourceLayer?: string;
+            filter?: FilterSpecification | ExpressionSpecification;
             validate?: boolean;
-        } | null,
+        },
     ): Array<QueryFeature> {
         if (!this._isValidId(sourceId)) {
             return [];
@@ -2108,7 +2123,7 @@ export class Map extends Camera {
         return str;
     }
 
-    _updateStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
+    _updateStyle(style?: StyleSpecification | string, options?: SetStyleOptions): this {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
@@ -2124,9 +2139,8 @@ export class Map extends Camera {
                 delete styleOptions.config;
             }
 
-            this.style = new Style(this, styleOptions)
-                .setEventedParent(this, {style: this.style})
-                .load(style);
+            this.style = new Style(this, styleOptions).load(style);
+            this.style.setEventedParent(this, {style: this.style});
         }
 
         this._updateTerrain();
@@ -2275,7 +2289,7 @@ export class Map extends Camera {
      * @param {Function} SourceType A {@link Source} constructor.
      * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
      */
-    addSourceType(name: string, SourceType: any, callback: any) {
+    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
         this._lazyInitEmptyStyle();
         this.style.addSourceType(name, SourceType, callback);
     }
@@ -2454,10 +2468,8 @@ export class Map extends Camera {
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
             return;
         }
-        const imageData = (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) ? browser.getImageData(image) : image;
-        const {width, height} = imageData;
-        // Flow can't refine the type enough to exclude ImageBitmap
-        const data = ((imageData as any).data as Uint8Array | Uint8ClampedArray);
+        const imageData = (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) ? browser.getImageData(image) : image as ImageData;
+        const {width, height, data} = imageData;
 
         if (width === undefined || height === undefined) {
             this.fire(new ErrorEvent(new Error(
@@ -2537,7 +2549,7 @@ export class Map extends Camera {
      *
      * @see [Example: Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
-    loadImage(url: string, callback: any) {
+    loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
         // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
             callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);

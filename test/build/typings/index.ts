@@ -144,8 +144,8 @@ map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 // Query features
 //
 
-const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id']});
-const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: [], validate: true});
+const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], filter: ['>=', 'area', 80000], validate: true});
+const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true});
 
 //
 // Set state

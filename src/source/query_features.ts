@@ -9,7 +9,7 @@ import type Transform from '../geo/transform';
 import type {OverscaledTileID} from './tile_id';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
-import type {LayerSpecification, FilterSpecification} from '../style-spec/types';
+import type {LayerSpecification, FilterSpecification, ExpressionSpecification} from '../style-spec/types';
 
 // we augment GeoJSON with custom properties in query*Features results
 export interface QueryFeature extends GeoJSON.Feature {
@@ -196,7 +196,11 @@ export function queryRenderedSymbols(
     return result;
 }
 
-export function querySourceFeatures(sourceCache: SourceCache, params: any): Array<QueryFeature> {
+export function querySourceFeatures(sourceCache: SourceCache, params?: {
+    sourceLayer?: string;
+    filter?: FilterSpecification | ExpressionSpecification;
+    validate?: boolean;
+}): Array<QueryFeature> {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

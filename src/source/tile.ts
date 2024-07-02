@@ -45,7 +45,7 @@ import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
-import type {FilterSpecification} from '../style-spec/types';
+import type {FilterSpecification, ExpressionSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
@@ -480,7 +480,11 @@ class Tile {
         }, layers, serializedLayers, sourceFeatureState);
     }
 
-    querySourceFeatures(result: Array<QueryFeature>, params: any) {
+    querySourceFeatures(result: Array<QueryFeature>, params?: {
+        sourceLayer?: string;
+        filter?: FilterSpecification | ExpressionSpecification;
+        validate?: boolean;
+    }) {
         const featureIndex = this.latestFeatureIndex;
         if (!featureIndex || !featureIndex.rawTileData) return;
 
