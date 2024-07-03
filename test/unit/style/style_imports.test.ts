@@ -1115,6 +1115,7 @@ describe('Style#addLayer', () => {
         });
     });
 });
+
 describe('Style#removeLayer', () => {
     test('same id in different scope is intact', async () => {
         const style = new Style(new StubMap());
@@ -1162,6 +1163,7 @@ describe('Style#removeLayer', () => {
         });
     });
 });
+
 describe('Style#moveLayer', () => {
     test('reorders layers', async () => {
         const style = new Style(new StubMap());
@@ -1556,6 +1558,45 @@ describe('Style#_mergeLayers', () => {
             makeFQID('d'),
         ]);
     });
+});
+
+test('Style#getSlots', async () => {
+    const style = new Style(new StubMap());
+
+    const initialStyle = createStyleJSON({
+        imports: [
+            {
+                id: 'basemap',
+                url: '',
+                data: {
+                    version: 8,
+                    sources: {},
+                    layers: [
+                        {id: 'layer-0', type: 'background'},
+                        {id: 'bottom', type: 'slot'},
+                        {id: 'layer-1', type: 'background'},
+                        {id: 'middle', type: 'slot'},
+                        {id: 'layer-2', type: 'background'},
+                        {id: 'top', type: 'slot'},
+                        {id: 'layer-3', type: 'background'}
+                    ]
+                }
+            }
+        ],
+        sources: {},
+        layers: [
+            {id: 'user-slot-1', type: 'slot', 'slot': 'middle'},
+            {id: 'user-slot-2', type: 'slot'},
+            {id: 'user-layer-1', type: 'background'}
+        ]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+    expect(style.getSlots()).toEqual(['bottom', 'user-slot-1', 'middle', 'top', 'user-slot-2']);
+
+    style.addLayer({id: 'runtime-slot-1', type: 'slot', slot: 'top'});
+    expect(style.getSlots()).toEqual(['bottom', 'user-slot-1', 'middle', 'runtime-slot-1', 'top', 'user-slot-2']);
 });
 
 describe('Style#getLights', () => {

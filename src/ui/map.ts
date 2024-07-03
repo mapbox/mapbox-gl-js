@@ -3048,6 +3048,18 @@ export class Map extends Camera {
     }
 
     /**
+     * Returns the IDs of all slots in the map's style.
+     *
+     * @returns {Array<string>} The IDs of all slots in the map's style.
+     *
+     * @example
+     * const slots = map.getSlots();
+     */
+    getSlots(): Array<string> {
+        return this.style.getSlots();
+    }
+
+    /**
      * Sets the zoom extent for the specified style layer. The zoom extent includes the
      * [minimum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-minzoom)
      * and [maximum zoom level](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-maxzoom))

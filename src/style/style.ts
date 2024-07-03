@@ -230,18 +230,11 @@ class Style extends Evented {
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
-    _mergedLayers: {
-        [_: string]: StyleLayer;
-    };
-    _mergedSourceCaches: {
-        [_: string]: SourceCache;
-    };
-    _mergedOtherSourceCaches: {
-        [_: string]: SourceCache;
-    };
-    _mergedSymbolSourceCaches: {
-        [_: string]: SourceCache;
-    };
+    _mergedLayers: Record<string, StyleLayer>;
+    _mergedSlots: Array<string>;
+    _mergedSourceCaches: Record<string, SourceCache>;
+    _mergedOtherSourceCaches: Record<string, SourceCache>;
+    _mergedSymbolSourceCaches: Record<string, SourceCache>;
     _clipLayerIndices: Array<number>;
 
     _request: Cancelable | null | undefined;
@@ -985,14 +978,11 @@ class Style extends Evented {
     }
 
     mergeLayers() {
-        const slots: {
-            [key: string]: StyleLayer[];
-        } = {};
+        const slots: Record<string, StyleLayer[]> = {};
         const mergedOrder: StyleLayer[] = [];
-        const mergedLayers: {
-            [key: string]: StyleLayer;
-        } = {};
+        const mergedLayers: Record<string, StyleLayer> = {};
 
+        this._mergedSlots = [];
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
@@ -1024,6 +1014,7 @@ class Style extends Evented {
                 if (layer.type === 'slot') {
                     const slotName = getNameFromFQID(layer.id);
                     if (slots[slotName]) sort(slots[slotName]);
+                    this._mergedSlots.push(slotName);
                 } else {
                     const fqid = makeFQID(layer.id, layer.scope);
                     this._mergedOrder.push(fqid);
@@ -2325,6 +2316,11 @@ class Style extends Evented {
             layer.maxzoom = maxzoom;
         }
         this._updateLayer(layer);
+    }
+
+    getSlots(): string[] {
+        this._checkLoaded();
+        return this._mergedSlots;
     }
 
     setSlot(layerId: string, slot?: string | null) {
