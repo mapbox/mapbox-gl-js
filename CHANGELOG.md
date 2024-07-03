@@ -1,20 +1,30 @@
-## 3.5.0-beta.1
+## 3.5.0
 
 ### Breaking changes ⚠️
 - This release marks a significant transition for GL JS, moving from [Flow](https://flow.org/) to [TypeScript](https://www.typescriptlang.org/). While we have maintained backward compatibility where possible, the community typings `@types/mapbox-gl` are not fully compatible with the new first-class typings. Users relying on the community typings may experience breaking changes. Please remove the `@types/mapbox-gl` dependency and refer to the [v3.5.0 migration guide](https://github.com/mapbox/mapbox-gl-js/issues/13203) for instructions on upgrading, resolving common issues, and asking questions regarding the migration to the first-class typings. We welcome your feedback and contributions to make Mapbox GL JS better.
 
 ### Features and improvements ✨
-- Add `color-theme` property to enable colorization with a lookup table (LUT) images.
+- Add `color-theme` property and `Map` `setColorTheme` method to enable colorization with a lookup table (LUT) images.
+- Significantly improve performance of `updateData` for `GeoJSON` sources in `dynamic` mode.
 - Add `icon-occlusion-opacity` and `text-occlusion-opacity` properties to fade symbols behind models and landmarks.
 - Add `line-occlusion-opacity` property to fade lines behind 3D objects.
 - Add experimental `clip` layer to filter out rendering data.
 - Add experimental `line-z-offset` property for a non-globe view.
-- Add `model-cutoff-fade-range` property support to control fade out of faraway 3D buildings.
+- Add `model-cutoff-fade-range` property to control fade out of faraway 3D buildings.
+- Improve precision of `line-pattern` on long lines and higher zooms.
+- Add experimental `line-trim-color` and `line-trim-fade-range` properties to customize rendering of lines trimmed with `line-trim-offset`.
+- Add `Map` `getSlots` method for listing available slots of a style.
 
 ### Bug fixes 🐞
+- Fix a performance regression in Standard style introduced in v3.4.0.
 - Fix icon rotation during globe transition.
 - Fix GeoJSON data loss due to frequent `updateData` calls.
 - Improve `raster-particle` layer animation.
+- Fix `model-front-cutoff` property for Meshopt-encoded models.
+- Fix errors in the console on empty 3D tiles.
+- Fix not properly detecting fingerprinting protection when adding terrain through `setTerrain`.
+- Fix `style.load` event missing `style` property.
+- Fix errors when using `queryRenderedFeatures` on areas with missing DEM tiles when terrain is enabled.
 
 ## 3.4.0
 
