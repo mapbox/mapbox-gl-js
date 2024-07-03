@@ -112,7 +112,7 @@ export default class Projection {
     }
 
     isPointAboveHorizon(tr: Transform, p: Point): boolean {
-        if (tr.elevation) {
+        if (tr.elevation && tr.elevation.visibleDemTiles.length) {
             const raycastOnTerrain = this.pointCoordinate3D(tr, p.x, p.y);
             return !raycastOnTerrain;
         }
