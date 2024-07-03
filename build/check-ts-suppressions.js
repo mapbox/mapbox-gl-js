@@ -8,7 +8,7 @@ import {Octokit} from '@octokit/rest';
 import {execSync} from 'child_process';
 
 const owner = 'mapbox';
-const repo = 'mapbox-gl-js-internal';
+const repo = 'mapbox-gl-js';
 const branch = process.env['CIRCLE_BRANCH'] || execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
 
 async function getBannedTsComments() {
