@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable camelcase */
 
-import {TileHeader, NumericData} from './mrt_pbf_decoder';
+import {readTileHeader, readNumericData} from './mrt_pbf_decoder';
 import {lru} from 'tiny-lru';
 import deltaDecode from './filters/delta';
 import zigzagDecode from './filters/zigzag';
@@ -99,7 +99,7 @@ class MapboxRasterTile {
         const pbf = new Pbf(bytes.subarray(0, headerLength));
 
         /** @type {TPbfRasterTileData} */
-        const meta = TileHeader.read(pbf);
+        const meta = readTileHeader(pbf);
 
         // Validate the incoming tile z/x/y matches, if already initialized
         if (
@@ -424,18 +424,9 @@ MapboxRasterTile.performDecoding = function (buf, decodingBatch) {
             switch (codec) {
             case 'gzip_data': {
                 decoded = decompress(taskBuf, codec).then((bytes) => {
-                    const pbf = NumericData.read(new Pbf(bytes));
-                    switch (pbf.values) {
-                    case 'uint32_values': {
-                        pbf.uint32_values.readValuesInto(values);
-                        const Ctor = PIXEL_FORMAT_TO_CTOR[pixelFormat];
-                        return new Ctor(values.buffer);
-                    }
-                    default:
-                        throw new Error(
-                                    `Unhandled numeric data "${pbf.values}"`
-                        );
-                    }
+                    readNumericData(new Pbf(bytes), values);
+                    const Ctor = PIXEL_FORMAT_TO_CTOR[pixelFormat];
+                    return new Ctor(values.buffer);
                 });
                 break;
             }
