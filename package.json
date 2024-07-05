@@ -12,7 +12,8 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "workspaces": [
-    "src/style-spec"
+    "src/style-spec",
+    "test/build/typings"
   ],
   "dependencies": {
     "@mapbox/jsonlint-lines-primitives": "^2.0.2",
