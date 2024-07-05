@@ -59,10 +59,14 @@ class SymbolStyleLayer extends StyleLayer {
     _brightnessMin: number;
     _brightnessMax: number;
 
+    hasInitialOcclusionOpacityProperties: boolean;
+
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         super(layer, properties, scope, lut, options);
         // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
         this._colorAdjustmentMatrix = mat4.identity([] as any);
+
+        this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {

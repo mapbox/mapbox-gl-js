@@ -755,9 +755,13 @@ class SymbolBucket implements Bucket {
         if (bucket.hasIconData()) hasFilledData = hasFilledData || (bucket.icon.occlusionQueryOpacityVertexArray.length !== 0);
 
         const paint =  bucket.layers[0].paint;
-        const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity').constantOr(0) !== 1;
-        const textHasOcclusionOpacity = paint.get('text-occlusion-opacity').constantOr(0) !== 1;
-        const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
+
+        const iconOccludedOpacityMultiplier = paint.get('icon-occlusion-opacity').constantOr(0);
+        const textOccludedOpacityMultiplier = paint.get('text-occlusion-opacity').constantOr(0);
+
+        const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
+        const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
+        const subjectForOcclusion = bucket.layers[0].hasInitialOcclusionOpacityProperties && (iconHasOcclusionOpacity || textHasOcclusionOpacity);
 
         // Fill buffer only once for pitched data
         if (!subjectForOcclusion) {

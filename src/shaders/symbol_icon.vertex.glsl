@@ -168,6 +168,11 @@ void main() {
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
+
+    #ifdef SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH
+        occlusion_fade *= occlusionFade(projected_point);
+    #endif
+
     float projection_transition_fade = 1.0;
 #if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
     projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);

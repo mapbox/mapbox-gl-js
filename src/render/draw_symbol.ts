@@ -294,9 +294,14 @@ function drawOcclusions(
     const tr = painter.transform;
 
     const paint = layer.paint;
-    const iconHasOcclusionOpacity = paint.get('icon-occlusion-opacity').constantOr(0) !== 1;
-    const textHasOcclusionOpacity = paint.get('text-occlusion-opacity').constantOr(0) !== 1;
-    const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
+
+    const iconOccludedOpacityMultiplier = paint.get('icon-occlusion-opacity').constantOr(0);
+    const textOccludedOpacityMultiplier = paint.get('text-occlusion-opacity').constantOr(0);
+
+    const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
+    const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
+    const subjectForOcclusion = layer.hasInitialOcclusionOpacityProperties && (iconHasOcclusionOpacity || textHasOcclusionOpacity);
+
     if (!subjectForOcclusion) {
         return;
     }
@@ -444,6 +449,7 @@ function drawLayerSymbols(
     const iconContrast = layer.paint.get('icon-color-contrast');
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
+
     const iconOccludedOpacityMultiplier = layer.paint.get('icon-occlusion-opacity').constantOr(0);
     const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity').constantOr(0);
 
@@ -458,7 +464,6 @@ function drawLayerSymbols(
 
     const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
     const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
-    const subjectForOcclusion = iconHasOcclusionOpacity || textHasOcclusionOpacity;
 
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
@@ -506,8 +511,12 @@ function drawLayerSymbols(
 
             const baseDefines = ([] as any);
 
-            if (subjectForOcclusion && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
+            if (layer.hasInitialOcclusionOpacityProperties && iconHasOcclusionOpacity && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
                 baseDefines.push('OCCLUSION_QUERIES');
+            }
+
+            if (!layer.hasInitialOcclusionOpacityProperties) {
+                baseDefines.push('SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH');
             }
 
             const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
@@ -616,8 +625,12 @@ function drawLayerSymbols(
             const baseDefines = ([] as any);
             const projectedPosOnLabelSpace = alongLine || variablePlacement || updateTextFitIcon;
 
-            if (subjectForOcclusion && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
+            if (layer.hasInitialOcclusionOpacityProperties && textHasOcclusionOpacity && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
                 baseDefines.push('OCCLUSION_QUERIES');
+            }
+
+            if (!layer.hasInitialOcclusionOpacityProperties) {
+                baseDefines.push('SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH');
             }
 
             if (painter.terrainRenderModeElevated() && textPitchWithMap) {
@@ -784,7 +797,8 @@ function drawLayerSymbols(
 
         if (painter.terrain) {
             const options = {
-                useDepthForOcclusion: false,
+                // Use depth occlusion only for unspecified opacity multiplier case
+                useDepthForOcclusion: !layer.hasInitialOcclusionOpacityProperties ? tr.depthOcclusionForSymbolsAndCircles : false,
                 labelPlaneMatrixInv: state.labelPlaneMatrixInv
             };
             painter.terrain.setupElevationDraw(state.tile, state.program, options);

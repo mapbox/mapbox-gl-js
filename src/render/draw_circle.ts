@@ -120,7 +120,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         segmentsRenderStates.sort((a, b) => a.sortKey - b.sortKey);
     }
 
-    const terrainOptions = {useDepthForOcclusion: tr.depthOcclusionForCircles};
+    const terrainOptions = {useDepthForOcclusion: tr.depthOcclusionForSymbolsAndCircles};
 
     for (const segmentsState of segmentsRenderStates) {
         const {programConfiguration, program, layoutVertexBuffer, globeExtVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;

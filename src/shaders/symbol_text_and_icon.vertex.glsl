@@ -172,6 +172,9 @@ void main() {
 #endif
 #endif
     float occlusion_fade = globe_occlusion_fade;
+    #ifdef SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH
+        occlusion_fade *= occlusionFade(projected_point);
+    #endif
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));

@@ -7034,11 +7034,11 @@
       "property-type": "data-driven"
     },
     "icon-occlusion-opacity": {
-      "doc": "The opacity at which the icon will be drawn in case of being depth occluded. Not supported on globe zoom levels.",
+      "doc": "The opacity at which the icon will be drawn in case of being depth occluded. Not supported on globe zoom levels. Absent value means behavior prior to this property introduction.",
       "type": "number",
-      "default": 1.0,
       "minimum": 0,
       "maximum": 1,
+      "default": 1,
       "transition": true,
       "requires": [
         "icon-image"
@@ -7384,10 +7384,10 @@
     },
     "text-occlusion-opacity": {
       "type": "number",
-      "doc": "The opacity at which the text will be drawn in case of being depth occluded. Not supported on globe zoom levels.",
-      "default": 1.0,
+      "doc": "The opacity at which the text will be drawn in case of being depth occluded. Not supported on globe zoom levels. Absent value means behavior prior to this property introduction.",
       "minimum": 0,
       "maximum": 1,
+      "default": 1,
       "transition": true,
       "requires": [
         "text-field"

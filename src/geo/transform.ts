@@ -293,7 +293,7 @@ class Transform {
         this._updateCameraOnTerrain();
         this._calcMatrices();
     }
-    get depthOcclusionForCircles(): boolean {
+    get depthOcclusionForSymbolsAndCircles(): boolean {
         return this.projection.name !== 'globe' && !this.isOrthographic;
     }
 
