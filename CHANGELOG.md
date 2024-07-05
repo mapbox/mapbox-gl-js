@@ -1,3 +1,7 @@
+## 3.5.1
+
+- Revert default behavior of symbol occlusion behind terrain to maintain compatibility. Set `icon-occlusion-opacity`/`text-occlusion-opacity` properties to opt-in to new occlusion behavior.
+
 ## 3.5.0
 
 ### Breaking changes ⚠️
