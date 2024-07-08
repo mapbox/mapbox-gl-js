@@ -8,7 +8,7 @@ const vec2 INVALID_VELOCITY = vec2(-1);
 
 uniform highp vec2 u_uv_offset;
 uniform highp float u_data_offset;
-uniform highp vec4 u_data_scale;
+uniform highp vec2 u_data_scale;
 
 ivec4 rasterArrayLinearCoord(highp vec2 texCoord, highp vec2 texResolution, out highp vec2 fxy) {
     texCoord = texCoord * texResolution - 0.5;
@@ -41,7 +41,8 @@ highp vec2 lookup_velocity(highp vec2 uv) {
 
     highp vec4 t = mix(mix(bl, br, fxy.x), mix(tl, tr, fxy.x), fxy.y);
 
-    highp vec2 velocity = vec2(u_data_offset + dot(t.rg, u_data_scale.yx), -(u_data_offset + dot(t.ba, u_data_scale.yx)));
+    highp vec2 velocity = u_data_offset + vec2(dot(t.rg, u_data_scale), dot(t.ba, u_data_scale));
+    velocity.y = -velocity.y;
     velocity /= max(u_max_speed, length(velocity));
     return velocity;
 }
