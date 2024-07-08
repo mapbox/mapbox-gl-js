@@ -1,3 +1,0 @@
-// @flow
-/* eslint-disable */
-export * from '../src/index.js';

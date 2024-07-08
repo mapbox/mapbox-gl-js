@@ -169,11 +169,9 @@
     "tsc": "tsc --project tsconfig.json"
   },
   "files": [
-    "build/",
     "dist/mapbox-gl*",
     "dist/style-spec/",
     "dist/package.json",
-    "src/",
     "LICENSE.txt"
   ]
 }
