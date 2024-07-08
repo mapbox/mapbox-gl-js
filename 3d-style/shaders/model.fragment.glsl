@@ -473,6 +473,9 @@ vec4 finalColor;
 #if defined(HAS_TEXTURE_u_emissionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     emissive.rgb *= sRGBToLinear(texture(u_emissionTexture, uv_2f).rgb);
 #endif
+#ifdef APPLY_LUT_ON_GPU
+    emissive.rgb = sRGBToLinear(applyLUT(u_lutTexture, linearTosRGB(emissive.rgb)));
+#endif
     color += emissive.rgb;
 
     // Apply transparency
@@ -493,10 +496,6 @@ vec4 finalColor;
     float distance = length(vec2(1.3 * max(0.0, abs(color_4f.x) - color_4f.z), color_4f.y));
     distance +=  mix(0.5, 0.0, clamp(resEmission - 1.0, 0.0, 1.0));
     opacity *= v_roughness_metallic_emissive_alpha.w * saturate(1.0 - distance * distance);
-#endif
-#else
-#ifdef APPLY_LUT_ON_GPU
-    color = applyLUT(u_lutTexture, color);
 #endif
 #endif
     // Use emissive strength as interpolation between lit and unlit color
