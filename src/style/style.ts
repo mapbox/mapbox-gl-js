@@ -185,6 +185,7 @@ export type Fragment = {
 type StyleColorTheme = {
     lut: LUT | null;
     lutLoading: boolean;
+    lutLoadingCorrelationID: number;
     colorTheme: ColorThemeSpecification | null;
 };
 
@@ -367,6 +368,7 @@ class Style extends Evented {
         this._styleColorTheme = {
             lut: null,
             lutLoading: false,
+            lutLoadingCorrelationID: 0,
             colorTheme: null
         };
         this._styleColorThemeForScope = {};
@@ -1058,18 +1060,21 @@ class Style extends Evented {
         return properties.get('data');
     }
 
-    _loadColorTheme(colorThemeData: string): Promise<void> {
+    _loadColorTheme(inputData: string | null): Promise<void> {
         this._styleColorTheme.lutLoading = true;
+        this._styleColorTheme.lutLoadingCorrelationID += 1;
+        const correlationID = this._styleColorTheme.lutLoadingCorrelationID;
         return new Promise((resolve, reject) => {
             const dataURLPrefix = 'data:image/png;base64,';
 
-            if (colorThemeData.length === 0) {
+            if (!inputData || inputData.length === 0) {
                 this._styleColorTheme.lut = null;
                 this._styleColorTheme.lutLoading = false;
                 resolve();
                 return;
             }
 
+            let colorThemeData = inputData;
             if (!colorThemeData.startsWith(dataURLPrefix)) {
                 colorThemeData = dataURLPrefix + colorThemeData;
             }
@@ -1084,6 +1089,10 @@ class Style extends Evented {
 
             };
             lutImage.onload = () => {
+                if (this._styleColorTheme.lutLoadingCorrelationID !== correlationID) {
+                    resolve();
+                    return;
+                }
                 this._styleColorTheme.lutLoading = false;
                 const {width, height, data} = browser.getImageData(lutImage);
                 if (height > 32) {
@@ -1106,7 +1115,7 @@ class Style extends Evented {
                 } else {
                     this._styleColorTheme.lut = {
                         image: image.data,
-                        data: colorThemeData
+                        data: inputData
                     };
                     resolve();
                 }
@@ -2980,6 +2989,7 @@ class Style extends Evented {
 
         const data = this._evaluateColorThemeData(colorTheme);
         this._loadColorTheme(data).then(() => {
+            this.fire(new Event('colorthemeset'));
             updateStyle();
         }).catch((e) => {
             warnOnce(`Couldn\'t set color theme: ${e}`);
