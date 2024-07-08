@@ -19,7 +19,7 @@
       "type": "directional",
       "id": "sun_light",
       "properties": {
-        "cast-shadows": true,
+        "cast-shadows": false,
         "intensity": 0.8599999904632569,
         "direction": [
           311.9219970703125,
@@ -153,15 +153,6 @@
       "minzoom": 11.0,
       "type": "line",
       "paint": {
-        "line-opacity": [
-          "step",
-          [
-            "zoom"
-          ],
-          0.0,
-          14.0,
-          1.0
-        ],
         "line-color": [
           "match",
           [
@@ -428,15 +419,6 @@
                   ]
               ]
           ],
-          "model-opacity": [
-              "interpolate",
-              [ "linear" ],
-              [ "zoom" ],
-              14.2,
-              0.0,
-              14.5,
-              1.0
-          ],
           "model-roughness": [
               "match",
               [
@@ -469,7 +451,7 @@
         "fill-extrusion-ambient-occlusion-intensity": 0.3499999940395355,
         "fill-extrusion-ambient-occlusion-ground-radius": 5,
         "fill-extrusion-ambient-occlusion-wall-radius": 5,
-        "fill-extrusion-opacity": 0.5,
+        "fill-extrusion-opacity": 1.0,
         "fill-extrusion-base": [
           "number",
           [
@@ -542,147 +524,6 @@
                   [ "literal", [ 0, 0 ] ],
                   13,
                   [ "literal", [ 0, 1 ] ]
-              ]
-          ],
-          "text-anchor": [
-              "step",
-              [ "zoom" ],
-              [
-                  "step",
-                  [ "number", [ "get", "sizerank" ] ],
-                  "center",
-                  5,
-                  "top"
-              ],
-              17,
-              [
-                  "step",
-                  [ "number", [ "get", "sizerank" ] ],
-                  "center",
-                  13,
-                  "top"
-              ]
-          ]
-      },
-      "paint": {
-          "icon-image-cross-fade": [
-              "interpolate",
-              [ "linear" ],
-              [ "measure-light", "brightness" ],
-              0.25,
-              0.0,
-              0.3,
-              1.0
-          ],
-          "icon-opacity": [
-              "step",
-              [ "zoom" ],
-              [ "step", [ "number", [ "get", "sizerank" ] ], 0, 5, 1 ],
-              17,
-              [ "step", [ "number", [ "get", "sizerank" ] ], 0, 13, 1 ]
-          ],
-          "text-halo-width": 1,
-          "text-halo-blur": 0,
-          "text-halo-color": [
-              "interpolate",
-              [ "linear" ],
-              [ "measure-light", "brightness" ],
-              0.25,
-              "hsl(0, 0%, 10%)",
-              0.3,
-              "hsl(0, 0%, 100%)"
-          ],
-          "text-color": [
-              "match",
-              [ "get", "class" ],
-              "food_and_drink",
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(40, 95%, 70%)",
-                  0.3,
-                  "hsl(30, 100%, 48%)"
-              ],
-              "park_like",
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(110, 55%, 65%)",
-                  0.3,
-                  "hsl(110, 70%, 28%)"
-              ],
-              "education",
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(30, 50%, 70%)",
-                  0.3,
-                  "hsl(30, 50%, 38%)"
-              ],
-              "medical",
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(0, 70%, 70%)",
-                  0.3,
-                  "hsl(0, 90%, 60%)"
-              ],
-              "sport_and_leisure",
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(190, 60%, 70%)",
-                  0.3,
-                  "hsl(190, 75%, 38%)"
-              ],
-              [ "store_like", "food_and_drink_stores" ],
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(210, 70%, 75%)",
-                  0.3,
-                  "hsl(210, 75%, 53%)"
-              ],
-              [ "commercial_services", "motorist", "lodging" ],
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(260, 70%, 75%)",
-                  0.3,
-                  "hsl(250, 75%, 60%)"
-              ],
-              [ "arts_and_entertainment", "historic", "landmark" ],
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(320, 70%, 75%)",
-                  0.3,
-                  "hsl(320, 85%, 60%)"
-              ],
-              [
-                  "interpolate",
-                  [ "linear" ],
-                  [ "measure-light", "brightness" ],
-                  0.25,
-                  "hsl(210, 20%, 70%)",
-                  0.3,
-                  "hsl(210, 20%, 43%)"
               ]
           ]
       }
