@@ -106,7 +106,7 @@ export class Tiled3dModelFeature {
             const aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
             for (const mesh of this.node.meshes) {
                 if (this.node.lightMeshIndex !== i) {
-                    mesh.transformedAabb = Aabb.applyTransform(mesh.aabb, this.node.matrix);
+                    mesh.transformedAabb = Aabb.applyTransformFast(mesh.aabb, this.node.matrix);
                     aabb.encapsulate(mesh.transformedAabb);
                 }
                 i++;

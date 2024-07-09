@@ -347,15 +347,14 @@ class Aabb {
     center: vec3;
 
     static fromPoints(points: Array<vec3>): Aabb {
-        const min = [Infinity, Infinity, Infinity];
-        const max = [-Infinity, -Infinity, -Infinity];
+        const min : vec3 = [Infinity, Infinity, Infinity];
+        const max : vec3 = [-Infinity, -Infinity, -Infinity];
 
         for (const p of points) {
-            vec3.min(min as [number, number, number], min as [number, number, number], p);
-            vec3.max(max as [number, number, number], max as [number, number, number], p);
+            vec3.min(min, min, p);
+            vec3.max(max, max, p);
         }
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
         return new Aabb(min, max);
     }
 
@@ -374,6 +373,25 @@ class Aabb {
             vec3.transformMat4(corners[i], corners[i], transform);
         }
         return Aabb.fromPoints(corners);
+    }
+
+    // A fast version of applyTransform. Note that it breaks down for non-uniform
+    // scale and complex projection matrices.
+    static applyTransformFast(aabb: Aabb, transform: mat4): Aabb {
+        const min : vec3 = [transform[12], transform[13], transform[14]];
+        const max : vec3 = [...min];
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const value = transform[j * 4 + i];
+                const a = value * aabb.min[j];
+                const b = value * aabb.max[j];
+                min[i] += Math.min(a, b);
+                max[i] += Math.max(a, b);
+            }
+        }
+
+        return new Aabb(min, max);
     }
 
     static projectAabbCorners(aabb: Aabb, transform: mat4): Array<vec3> {
