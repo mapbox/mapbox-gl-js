@@ -50,7 +50,7 @@
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^4.0.0",
     "minimist": "^1.2.6",
-    "quickselect": "^2.0.0",
+    "quickselect": "^3.0.0",
     "rw": "^1.3.3",
     "tinyqueue": "^2.0.3"
   }
