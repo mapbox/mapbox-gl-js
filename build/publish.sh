@@ -35,3 +35,9 @@ git tag --points-at HEAD | while read tag; do
         echo "Unrecognized tag: $tag"
     fi
 done
+
+if [ -n "$(git tag --points-at HEAD)" ]; then
+    node build/generate-release-list.js &&
+    aws s3 cp --acl public-read --content-type application/json dist/versions.json s3://mapbox-gl-js/versions.json &&
+    aws s3 cp --acl public-read --content-type application/javascript dist/versions.jsonp s3://mapbox-gl-js/versions.jsonp
+fi
