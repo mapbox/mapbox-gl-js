@@ -40,7 +40,7 @@
     "serialize-to-js": "^3.1.2",
     "supercluster": "^8.0.1",
     "tiny-lru": "^11.2.6",
-    "tinyqueue": "^2.0.3",
+    "tinyqueue": "^3.0.0",
     "tweakpane": "^4.0.4",
     "vt-pbf": "^3.1.3"
   },
