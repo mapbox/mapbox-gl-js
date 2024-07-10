@@ -474,7 +474,10 @@ vec4 finalColor;
     emissive.rgb *= sRGBToLinear(texture(u_emissionTexture, uv_2f).rgb);
 #endif
 #ifdef APPLY_LUT_ON_GPU
-    emissive.rgb = sRGBToLinear(applyLUT(u_lutTexture, linearTosRGB(emissive.rgb)));
+    // Note: the color is multiplied by the length of u_emissiveFactor
+    // which avoids increasing the brightness if the LUT doesn't have pure black.
+    float emissiveFactorLength = max(length(u_emissiveFactor.rgb), 0.001);
+    emissive.rgb = sRGBToLinear(applyLUT(u_lutTexture, linearTosRGB(emissive.rgb / emissiveFactorLength).rbg)) * emissiveFactorLength;
 #endif
     color += emissive.rgb;
 
