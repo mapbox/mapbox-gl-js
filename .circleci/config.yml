@@ -56,7 +56,7 @@ workflows:
               only: /.*/
       - test-typings:
           requires:
-            - build
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -272,7 +272,6 @@ jobs:
       - run: npm run build-csp
       - run: npm run build-css
       - run: npm run build-style-spec
-      - run: npm run build-dts
       - run: npm run test-build
       - run: npm run prepare-release-pages
       - run:
@@ -344,6 +343,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run: npm run build-dts
       - run:
           name: Test public typings
           command: |
