@@ -69,7 +69,7 @@ export class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    on(type: MapEvent, listener: Listener): this {
+    on(type: MapEvent | string, listener: Listener): this {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -83,7 +83,7 @@ export class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    off(type: MapEvent, listener: Listener): this {
+    off(type: MapEvent | string, listener: Listener): this {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -100,10 +100,10 @@ export class Evented {
      *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} Returns `this` | Promise.
      */
-    once(type: MapEvent): Promise<Event>;
-    once(type: MapEvent, listener: Listener): this;
+    once(type: MapEvent | string): Promise<Event>;
+    once(type: MapEvent | string, listener: Listener): this;
 
-    once(type: MapEvent, listener?: Listener): this | Promise<Event> {
+    once(type: MapEvent | string, listener?: Listener): this | Promise<Event> {
         if (!listener) {
             return new Promise((resolve) => this.once(type, resolve));
         }

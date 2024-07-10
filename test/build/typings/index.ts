@@ -18,14 +18,30 @@ const map = new mapboxgl.Map({
 });
 
 //
-// Controls, Markers, and Popups
+// Controls
 //
 
 map.addControl(new mapboxgl.ScaleControl());
-map.addControl(new mapboxgl.GeolocateControl());
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.FullscreenControl());
 map.addControl(new mapboxgl.AttributionControl());
+
+//
+// GeolocateControl
+//
+
+const geolocateControl = new mapboxgl.GeolocateControl();
+
+geolocateControl.on('error', (error) => {});
+geolocateControl.on('geolocate', (position) => {});
+geolocateControl.on('outofmaxbounds', (position) => {});
+geolocateControl.on('trackuserlocationstart', () => {});
+geolocateControl.on('trackuserlocationend', () => {});
+map.addControl(geolocateControl);
+
+//
+// Markers and Popups
+//
 
 const center = mapboxgl.LngLat.convert(map.getCenter());
 
@@ -128,6 +144,18 @@ map.addLayer({
 });
 
 //
+// Add Custom Layer
+//
+
+const highlightLayer: mapboxgl.CustomLayerInterface = {
+    id: 'highlight',
+    type: 'custom',
+    render: (gl: WebGLRenderingContext, matrix: number[]): void => {}
+}
+
+map.addLayer(highlightLayer);
+
+//
 // Add 3D terrain
 //
 
@@ -151,7 +179,7 @@ const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer
 // Set state
 //
 
-const feature1 = features1[0];
+const feature1: mapboxgl.GeoJSONFeature = features1[0];
 if (feature1.id) {
     map.setFeatureState({id: feature1.id, ...feature1}, {hide: true});
 }
@@ -160,3 +188,28 @@ const feature2 = features2[0];
 if (feature2.id) {
     map.setFeatureState({id: feature2.id, ...feature2}, {hide: true});
 }
+
+//
+// EasingOptions, CameraOptions, AnimationOptions
+//
+
+const cameraOptions: mapboxgl.CameraOptions = {
+    center: [0, 0],
+    zoom: 10,
+};
+
+const animationOptions: mapboxgl.AnimationOptions = {
+    speed: 0.5,
+    curve: 1,
+    screenSpeed: 1,
+    easing: function (t: number): number { return t; },
+    maxDuration: 1,
+};
+
+const easingOptions: mapboxgl.EasingOptions = Object.assign({}, cameraOptions, animationOptions);
+
+//
+// FlyTo
+//
+
+map.flyTo(easingOptions);

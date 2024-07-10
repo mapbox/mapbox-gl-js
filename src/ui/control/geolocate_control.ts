@@ -8,6 +8,7 @@ import throttle from '../../util/throttle';
 import {mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 
 import type {Map} from '../map';
+import type {Listener} from '../../util/evented';
 import type {AnimationOptions, CameraOptions} from '../camera';
 
 type Options = {
@@ -154,6 +155,15 @@ class GeolocateControl extends Evented {
         this._map = (undefined as any);
         this._numberOfWatches = 0;
         this._noTimeout = false;
+    }
+
+    on(type: 'error', listener: (error: GeolocationPositionError) => void): this;
+    on(type: 'geolocate', listener: (position: GeolocationPosition) => void): this;
+    on(type: 'outofmaxbounds', listener: (position: GeolocationPosition) => void): this;
+    on(type: 'trackuserlocationstart', listener: () => void): this;
+    on(type: 'trackuserlocationend', listener: () => void): this;
+    on(type: 'error' | 'geolocate' | 'outofmaxbounds' | 'trackuserlocationstart' | 'trackuserlocationend', listener: Listener): this {
+        return super.on(type, listener);
     }
 
     _checkGeolocationSupport(callback: (arg1: boolean) => void) {

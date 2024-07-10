@@ -6,23 +6,16 @@ import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {OverscaledTileID} from './tile_id';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
-import type {LayerSpecification, FilterSpecification, ExpressionSpecification} from '../style-spec/types';
-
-// we augment GeoJSON with custom properties in query*Features results
-export interface QueryFeature extends GeoJSON.Feature {
-    layer?: LayerSpecification;
-    source: string;
-    sourceLayer?: string;
-    state?: unknown;
-}
+import type {FilterSpecification, ExpressionSpecification} from '../style-spec/types';
 
 export type QueryResult = {
     [_: string]: Array<{
         featureIndex: number;
-        feature: QueryFeature;
+        feature: GeoJSONFeature;
         intersectionZ: boolean | number;
     }>;
 };
@@ -200,7 +193,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
     sourceLayer?: string;
     filter?: FilterSpecification | ExpressionSpecification;
     validate?: boolean;
-}): Array<QueryFeature> {
+}): Array<GeoJSONFeature> {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

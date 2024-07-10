@@ -109,11 +109,12 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {FeatureStates} from '../source/source_state';
+import type {FeatureState} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
 import type {Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryResult, QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
+import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const supportedDiffOperations = pick(diffOperations, [
@@ -149,6 +150,12 @@ const ignoredDiffOperations = pick(diffOperations, [
 ]);
 
 const empty = emptyStyle();
+
+export type FeatureSelector = {
+    id: string | number;
+    source: string;
+    sourceLayer?: string;
+}
 
 export type StyleOptions = {
     validate?: boolean;
@@ -2459,7 +2466,7 @@ class Style extends Evented {
         return layer.getPaintProperty(name);
     }
 
-    setFeatureState(target: {id: string | number; source: string; sourceLayer?: string}, state: any) {
+    setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
@@ -2486,11 +2493,7 @@ class Style extends Evented {
         }
     }
 
-    removeFeatureState(target: {
-        source: string;
-        sourceLayer?: string;
-        id?: string | number;
-    }, key?: string) {
+    removeFeatureState(target: FeatureSelector | GeoJSONFeature, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
 
@@ -2516,13 +2519,7 @@ class Style extends Evented {
         }
     }
 
-    getFeatureState(
-        target: {
-            source: string;
-            sourceLayer?: string;
-            id: string | number;
-        },
-    ): FeatureStates | null | undefined {
+    getFeatureState(target: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
@@ -2601,7 +2598,7 @@ class Style extends Evented {
         layer.invalidateCompiledFilter();
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<QueryFeature> {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<GeoJSONFeature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
         //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
@@ -2677,7 +2674,7 @@ class Style extends Evented {
         queryGeometry: PointLike | [PointLike, PointLike],
         params: QueryRenderedFeaturesParams,
         transform: Transform,
-    ): Array<QueryFeature> {
+    ): Array<GeoJSONFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
@@ -2759,7 +2756,7 @@ class Style extends Evented {
             filter?: FilterSpecification | ExpressionSpecification;
             validate?: boolean;
         },
-    ): Array<QueryFeature> {
+    ): Array<GeoJSONFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }

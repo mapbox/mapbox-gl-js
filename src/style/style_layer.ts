@@ -27,7 +27,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
-import type {QueryFeature} from '../source/query_features';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -381,7 +381,7 @@ class StyleLayer extends Evented {
         _transform: Transform,
         // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     ): {
-        queryFeature: QueryFeature | null | undefined;
+        queryFeature: GeoJSONFeature | null | undefined;
         intersectionZ: number;
     } {}
 }

@@ -1,7 +1,7 @@
 import {uniqueId, parseCacheControl} from '../util/util';
 import {deserialize as deserializeBucket} from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
-import GeoJSONFeature from '../util/vectortile_to_geojson';
+import Feature from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter/index';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
@@ -43,6 +43,7 @@ import type Context from '../gl/context';
 import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification, ExpressionSpecification} from '../style-spec/types';
@@ -52,7 +53,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type Projection from '../geo/projection/projection';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type Painter from '../render/painter';
-import type {QueryResult, QueryFeature} from '../source/query_features';
+import type {QueryResult} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 
@@ -480,7 +481,7 @@ class Tile {
         }, layers, serializedLayers, sourceFeatureState);
     }
 
-    querySourceFeatures(result: Array<QueryFeature>, params?: {
+    querySourceFeatures(result: Array<GeoJSONFeature>, params?: {
         sourceLayer?: string;
         filter?: FilterSpecification | ExpressionSpecification;
         validate?: boolean;
@@ -510,7 +511,7 @@ class Tile {
                 continue;
             }
             const id = featureIndex.getId(feature, sourceLayer);
-            const geojsonFeature = new GeoJSONFeature(feature, z, x, y, id);
+            const geojsonFeature = new Feature(feature, z, x, y, id);
             geojsonFeature.tile = coord;
 
             result.push(geojsonFeature);

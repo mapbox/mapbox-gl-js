@@ -6,6 +6,7 @@ import {extend} from '../util/util';
 
 import type {Map} from './map';
 import type LngLat from '../geo/lng_lat';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {SourceSpecification} from '../style-spec/types';
 
 /**
@@ -91,7 +92,7 @@ export class MapMouseEvent extends Event {
      *     console.log(`There are ${features.length} features at point ${e.point}`);
      * });
      */
-    features: Array<any> | undefined;
+    features: Array<GeoJSONFeature> | undefined;
 
     /**
      * Prevents subsequent default processing of the event by the map.
@@ -236,7 +237,7 @@ export class MapTouchEvent extends Event {
      *     console.log(`There are ${features.length} features at point ${e.point}`);
      * });
      */
-    features: Array<any> | undefined;
+    features: Array<GeoJSONFeature> | undefined;
 
     /**
      * Prevents subsequent default processing of the event by the map.

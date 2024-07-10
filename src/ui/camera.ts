@@ -1898,7 +1898,6 @@ function addAssertions(camera: Camera) { //eslint-disable-line
                 assert(inProgress.move);
             });
 
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'MapEvent'.
             camera.on(name, () => {
                 assert(inProgress[name]);
                 assert(inProgress.move);

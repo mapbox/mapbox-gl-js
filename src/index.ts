@@ -39,11 +39,13 @@ export type {Anchor} from './ui/anchor';
 export type {PointLike} from './types/point-like';
 export type {PopupOptions} from './ui/popup';
 export type {PluginStatus} from './source/rtl_text_plugin';
+export type {GeoJSONFeature} from './util/vectortile_to_geojson';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {Event, ErrorEvent} from './util/evented';
 export type {MapOptions, IControl} from './ui/map';
+export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
 export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
-export type {AnimationOptions, CameraOptions} from './ui/camera';
+export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
 
 export type {
     Map,

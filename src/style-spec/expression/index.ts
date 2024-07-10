@@ -46,7 +46,7 @@ export interface Feature {
 }
 
 export type FeatureState = {
-    [_: string]: any;
+    [_: string]: unknown;
 };
 
 export interface GlobalProperties {

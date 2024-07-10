@@ -29,6 +29,7 @@ import type {
 
 import type Context from '../../../src/gl/context';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
+import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {SpritePositions} from '../../../src/util/image';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
@@ -405,7 +406,7 @@ class ModelBucket implements Bucket {
         return this.modelUris;
     }
 
-    evaluate(feature: ModelFeature, featureState: FeatureStates, perModelVertexArray: PerModelAttributes, update: boolean) {
+    evaluate(feature: ModelFeature, featureState: FeatureState, perModelVertexArray: PerModelAttributes, update: boolean) {
         const layer = this.layers[0];
         const evaluationFeature = feature.feature;
         const canonical = this.canonical;

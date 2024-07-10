@@ -17,7 +17,7 @@ import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
-import type {FeatureStates} from './source_state';
+import type {FeatureState} from '../style-spec/expression/index';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 import type {vec3} from 'gl-matrix';
 
@@ -1056,7 +1056,7 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer: string | null | undefined, featureId: number | string, state: any) {
+    setFeatureState(sourceLayer: string | null | undefined, featureId: number | string, state: FeatureState) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         this._state.updateState(sourceLayer, featureId, state);
     }
@@ -1074,7 +1074,7 @@ class SourceCache extends Evented {
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer: string | null | undefined, featureId: number | string): FeatureStates {
+    getFeatureState(sourceLayer: string | null | undefined, featureId: number | string): FeatureState {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, featureId);
     }

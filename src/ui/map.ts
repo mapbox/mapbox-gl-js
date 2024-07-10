@@ -46,13 +46,13 @@ import {isFQID} from '../util/fqid';
 
 import type {Listener} from '../util/evented';
 import type {PointLike} from '../types/point-like';
+import type {FeatureState} from '../style-spec/expression/index';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
-import type {StyleOptions, StyleSetterOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
-
+import type {StyleOptions, StyleSetterOptions, FeatureSelector} from '../style/style';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
@@ -89,7 +89,8 @@ import type StyleLayer from '../style/style_layer';
 import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
-import type {QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
+import type {QueryRenderedFeaturesParams} from '../source/query_features';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
@@ -122,12 +123,6 @@ type DelegatedListener = {
     listener: Listener;
     delegates: {[K in MapEvent]?: Listener};
 };
-
-export type FeatureSelector = {
-    id: string | number;
-    source: string;
-    sourceLayer?: string;
-}
 
 export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
 export const AVERAGE_ELEVATION_EASE_TIME = 300; // ms
@@ -1940,7 +1935,7 @@ export class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>): Array<QueryFeature> {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>): Array<GeoJSONFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -2016,7 +2011,7 @@ export class Map extends Camera {
             filter?: FilterSpecification | ExpressionSpecification;
             validate?: boolean;
         },
-    ): Array<QueryFeature> {
+    ): Array<GeoJSONFeature> {
         if (!this._isValidId(sourceId)) {
             return [];
         }
@@ -3604,7 +3599,7 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Tutorial: Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
-    setFeatureState(feature: FeatureSelector, state: any): this {
+    setFeatureState(feature: FeatureSelector | GeoJSONFeature, state: FeatureState): this {
         if (!this._isValidId(feature.source)) {
             return this;
         }
@@ -3659,7 +3654,7 @@ export class Map extends Camera {
      *     }, 'hover');
      * });
      */
-    removeFeatureState(feature: FeatureSelector, key?: string): this {
+    removeFeatureState(feature: FeatureSelector | GeoJSONFeature, key?: string): this {
         if (!this._isValidId(feature.source)) {
             return this;
         }
@@ -3696,7 +3691,7 @@ export class Map extends Camera {
      *     }
      * });
      */
-    getFeatureState(feature: FeatureSelector): any {
+    getFeatureState(feature: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
         if (!this._isValidId(feature.source)) {
             return null;
         }
