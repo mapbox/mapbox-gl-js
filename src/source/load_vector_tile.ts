@@ -29,15 +29,22 @@ export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | unde
 
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
+export type VectorTileQueueEntry = {key : string,
+    metadata: any,
+    requestFunc: any,
+    callback: LoadVectorDataCallback,
+    cancelled: boolean,
+    cancel: () => void
+};
 
-let requestQueue, numRequests;
+let requestQueue: VectorTileQueueEntry[], numRequests: number;
 const resetRequestQueue = () => {
     requestQueue = [];
     numRequests = 0;
 };
 resetRequestQueue();
 
-const filterQueue = (key) => {
+const filterQueue = (key: string) => {
     for (let i = requestQueue.length - 1; i >= 0; i--) {
         if (requestQueue[i].key === key) {
             requestQueue.splice(i, 1);
@@ -120,7 +127,7 @@ export class DedupedRequest {
                         requestFunc,
                         callback,
                         true
-                    );
+                    ).cancel;
                 } else {
                     filterQueue(key);
                 }
