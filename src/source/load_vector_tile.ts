@@ -30,17 +30,17 @@ export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | unde
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
 
-let imageQueue, numImageRequests;
-export const resetImageRequestQueue = () => {
-    imageQueue = [];
-    numImageRequests = 0;
+let requestQueue, numRequests;
+const resetRequestQueue = () => {
+    requestQueue = [];
+    numRequests = 0;
 };
-resetImageRequestQueue();
+resetRequestQueue();
 
 const filterQueue = (key) => {
-    for (let i = imageQueue.length - 1; i >= 0; i--) {
-        if (imageQueue[i].key === key) {
-            imageQueue.splice(i, 1);
+    for (let i = requestQueue.length - 1; i >= 0; i--) {
+        if (requestQueue[i].key === key) {
+            requestQueue.splice(i, 1);
         }
     }
 };
@@ -62,11 +62,11 @@ export class DedupedRequest {
         err,
         result,
     }: {
-    callback: LoadVectorDataCallback;
-    metadata: any;
-    err: Error | null | undefined;
-    result: any;
-  }) {
+        callback: LoadVectorDataCallback;
+        metadata: any;
+        err: Error | null | undefined;
+        result: any;
+    }) {
         if (this.scheduler) {
             this.scheduler.add(() => {
                 callback(err, result);
@@ -85,8 +85,7 @@ export class DedupedRequest {
         );
     };
 
-    request(key: string, metadata: any, requestFunc: any, callback: LoadVectorDataCallback, fromQueue?: boolean
-    ): Cancelable {
+    request(key: string, metadata: any, requestFunc: any, callback: LoadVectorDataCallback, fromQueue?: boolean): Cancelable {
         const entry = (this.entries[key] = this.getEntry(key));
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
@@ -109,10 +108,10 @@ export class DedupedRequest {
                 return;
             }
             advanced = true;
-            numImageRequests--;
-            assert(numImageRequests >= 0);
-            while (imageQueue.length && numImageRequests < 50) {
-                const request = imageQueue.shift();
+            numRequests--;
+            assert(numRequests >= 0);
+            while (requestQueue.length && numRequests < 50) {
+                const request = requestQueue.shift();
                 const {key, metadata, requestFunc, callback, cancelled} = request;
                 if (!cancelled) {
                     request.cancel = this.request(
@@ -141,10 +140,10 @@ export class DedupedRequest {
 
         entry.callbacks.add(callback);
 
-        const inQueue = imageQueue.some((queued) => queued.key === key);
+        const inQueue = requestQueue.some((queued) => queued.key === key);
         if ((!entry.cancel && !inQueue) || fromQueue) {
             // Lack of attached cancel handler means this is the first request for this resource
-            if (numImageRequests >= 50) {
+            if (numRequests >= 50) {
                 const queued = {
                     key,
                     metadata,
@@ -161,10 +160,10 @@ export class DedupedRequest {
                     });
                 };
                 queued.cancel = cancelFunc;
-                imageQueue.push(queued);
+                requestQueue.push(queued);
                 return queued;
             }
-            numImageRequests++;
+            numRequests++;
 
             const actualRequestCancel = requestFunc((err, result) => {
                 entry.result = [err, result];
