@@ -116,11 +116,11 @@ export class DedupedRequest {
                 const {key, metadata, requestFunc, callback, cancelled} = request;
                 if (!cancelled) {
                     request.cancel = this.request(
-            key,
-            metadata,
-            requestFunc,
-            callback,
-            true
+                        key,
+                        metadata,
+                        requestFunc,
+                        callback,
+                        true
                     );
                 } else {
                     filterQueue(key);
