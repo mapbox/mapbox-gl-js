@@ -9,7 +9,7 @@ import type {VectorTile} from '@mapbox/vector-tile';
 import type {Callback} from '../types/callback';
 import type {RequestedTileParameters} from './worker_source';
 import type Scheduler from '../util/scheduler';
-import type { Cancelable } from 'src/types/cancelable';
+import type {Cancelable} from 'src/types/cancelable';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
@@ -240,7 +240,7 @@ export function loadVectorTile(
         makeRequest,
         callback,
         false
-        );
-    
-        return dedupedAndQueuedRequest.cancel;
+    );
+
+    return dedupedAndQueuedRequest.cancel;
 }
