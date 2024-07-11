@@ -11,7 +11,7 @@ import assert from 'assert';
 import SourceFeatureState from './source_state';
 import {mercatorXfromLng} from '../geo/mercator_coordinate';
 
-import type {Source} from './source';
+import type {ISource, Source} from './source';
 import type {SourceSpecification} from '../style-spec/types';
 import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
@@ -36,7 +36,7 @@ class SourceCache extends Evented {
     id: string;
     map: MapboxMap;
 
-    _source: Source;
+    _source: ISource;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
     _tiles: Partial<Record<string | number, Tile>>;
@@ -135,7 +135,7 @@ class SourceCache extends Evented {
     }
 
     getSource(): Source {
-        return this._source;
+        return this._source as Source;
     }
 
     pause() {
@@ -167,7 +167,7 @@ class SourceCache extends Evented {
             return this._source.abortTile(tile);
     }
 
-    serialize(): SourceSpecification {
+    serialize(): SourceSpecification | {type: 'custom', [key: string]: unknown} {
         return this._source.serialize();
     }
 
@@ -532,10 +532,8 @@ class SourceCache extends Evented {
 
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
-            // @ts-expect-error - TS2339 - Property 'tileID' does not exist on type 'Source'.
         } else if (this._source.tileID) {
-            // @ts-expect-error - TS2339 - Property 'tileID' does not exist on type 'Source'.
-            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID as CanonicalTileID))
+            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID))
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else if (this.tileCoverLift !== 0.0) {
             // Extended tile cover to load elevated tiles

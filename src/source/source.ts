@@ -17,11 +17,10 @@ import type Tile from './tile';
 import type Dispatcher from '../util/dispatcher';
 import type {Map} from '../ui/map';
 import type {Class} from '../types/class';
-import type {Callback} from '../types/callback';
-import type {MapEvent} from '../ui/events';
-import type {Event, Evented} from '../util/evented';
-import type {OverscaledTileID} from './tile_id';
 import type {Source} from './source_types';
+import type {Evented} from '../util/evented';
+import type {Callback} from '../types/callback';
+import type {OverscaledTileID} from './tile_id';
 import type {SourceSpecification} from '../style-spec/types';
 
 export type {Source};
@@ -67,7 +66,7 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface ISource {
+export interface ISource extends Evented {
     readonly type: string;
     id: string;
     scope: string;
@@ -91,10 +90,6 @@ export interface ISource {
     rasterLayerIds?: Array<string>;
     hasTransition(): boolean;
     loaded(): boolean;
-    fire(event: Event): unknown;
-    on(type: MapEvent, listener: (arg1: any) => any): Evented;
-    off(type: MapEvent, listener: (arg1: any) => any): Evented;
-    setEventedParent(parent?: Evented | null | undefined, data?: any | (() => any)): Evented;
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
     loadTile(
@@ -105,8 +100,8 @@ export interface ISource {
         },
     ): void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
-    readonly abortTile?: (tile: Tile, callback: Callback<undefined>) => void;
-    readonly unloadTile?: (tile: Tile, callback: Callback<undefined>) => void;
+    readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
+    readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
     readonly reload?: () => void;
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
@@ -114,7 +109,7 @@ export interface ISource {
      * equivalent to this one.
      * @private
      */
-    serialize(): any;
+    serialize(): SourceSpecification | {type: 'custom', [key: string]: unknown};
     readonly prepare?: () => void;
     readonly afterUpdate?: () => void;
     readonly _clear?: () => void;
@@ -160,14 +155,13 @@ export const create = function(
     dispatcher: Dispatcher,
     eventedParent: Evented,
 ): Source {
-    const source = new sourceTypes[specification.type](id, specification, dispatcher, eventedParent);
+    const source = new sourceTypes[specification.type](id, specification, dispatcher, eventedParent) as Source;
 
     if (source.id !== id) {
         throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
     }
 
     bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
-    // @ts-expect-error - TS2322 - Type 'ISource' is not assignable to type 'Source'.
     return source;
 };
 
@@ -180,5 +174,5 @@ export const setType = function (name: string, type: Class<ISource>) {
 };
 
 export interface Actor {
-    send(type: string, data: any, callback: Callback<any>): void;
+    send(type: string, data: unknown, callback: Callback<unknown>): void;
 }
