@@ -175,6 +175,7 @@ export class DedupedRequest {
             numRequests++;
 
             const actualRequestCancel = requestFunc((err, result) => {
+                console.log("actualRequest resolving", err, result);
                 entry.result = [err, result];
 
                 // Notable difference here compared to previous deduper, no longer iterating through callbacks stored on the entry
@@ -197,7 +198,6 @@ export class DedupedRequest {
                 console.log("entry being cancelled");
                 actualRequestCancel();
             };
-            return entry;
         }
 
         return {
@@ -224,6 +224,7 @@ export function loadVectorTile(
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
         const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+            console.log("getArrayBuffer callback", err, data);
             if (err) {
                 callback(err);
             } else if (data) {
