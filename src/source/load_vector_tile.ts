@@ -223,7 +223,7 @@ export class DedupedRequest {
     }
 }
 
-const createArrayBufferCallback = ({requestParams, skipParse}) => {
+const makeArrayBufferHandler = ({requestParams, skipParse}) => {
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
         const request = getArrayBuffer(requestParams, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
@@ -257,11 +257,11 @@ export function loadVectorTile(
     callback: LoadVectorDataCallback,
     deduped: DedupedRequest,
     skipParse?: boolean,
-    providedArrayBufferCallbackCreator?: any
+    providedArrayBufferHandlerMaker?: any
 ): () => void {
     const key = JSON.stringify(params.request);
 
-    const arrayBufferCallbackMaker = providedArrayBufferCallbackCreator || createArrayBufferCallback;
+    const arrayBufferCallbackMaker = providedArrayBufferHandlerMaker || makeArrayBufferHandler;
     const makeRequest = arrayBufferCallbackMaker({requestParams: params.request, skipParse});
 
     if (params.data) {
