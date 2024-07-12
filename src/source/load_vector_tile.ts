@@ -119,7 +119,7 @@ export class DedupedRequest {
             while (requestQueue.size && numRequests < 50) {
                 const request = requestQueue.values().next().value;
                 const {key, metadata, requestFunc, callback, cancelled} = request;
-                requestQueue.delete(key);
+                filterQueue(key);
                 if (!cancelled) {
                     request.cancel = this.request({
                         key,
