@@ -92,6 +92,7 @@ export class DedupedRequest {
     };
 
     request({key, metadata, requestFunc, callback, fromQueue}: DedupedRequestInput): Cancelable {
+        console.log("deduped request");
         const entry = (this.entries[key] = this.getEntry(key));
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
@@ -189,7 +190,10 @@ export class DedupedRequest {
                     delete this.entries[key];
                 }, 1000 * 3);
             });
-            entry.cancel = actualRequestCancel;
+            entry.cancel = () => {
+                console.log("entry being cancelled"); actualRequestCancel();
+            };
+            return entry;
         }
 
         return {
@@ -227,6 +231,7 @@ export function loadVectorTile(
             }
         });
         return () => {
+            console.log("cancelling makeRequest");
             request.cancel();
             callback();
         };
@@ -246,5 +251,10 @@ export function loadVectorTile(
         fromQueue: false
     });
 
-    return dedupedAndQueuedRequest.cancel;
+    console.log("loadVectorTile returning ", dedupedAndQueuedRequest.cancel);
+
+    return () => {
+        console.log("cancelling loadVectorTile");
+        dedupedAndQueuedRequest.cancel();
+    };
 }

@@ -11,7 +11,7 @@ import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 const actor = {send: () => {}};
 
-test('VectorTileWorkerSource#abortTile aborts pending request', () => {
+test.only('VectorTileWorkerSource#abortTile aborts pending request', () => {
     const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
 
     expect.assertions(3);

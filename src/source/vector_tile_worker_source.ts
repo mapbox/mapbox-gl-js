@@ -74,6 +74,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
+        console.log("loading tile", uid);
+
 
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
@@ -82,6 +84,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         workerTile.abort = this.loadVectorData(params, (err, response) => {
 
             const aborted = !this.loading[uid];
+
+            console.log("loadVectorData resolving", this.loading, aborted);
 
             delete this.loading[uid];
 
@@ -186,10 +190,14 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      */
     abortTile(params: TileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
+        console.log("aborting tile", uid);
+
         const tile = this.loading[uid];
         if (tile) {
+            console.log("tile found, aborting it");
             if (tile.abort) tile.abort();
             delete this.loading[uid];
+            console.log("tile aborted", this.loading);
         }
         callback();
     }
