@@ -40,19 +40,15 @@ export type VectorTileQueueEntry = DedupedRequestInput & {
     cancel: () => void
 };
 
-let requestQueue: VectorTileQueueEntry[], numRequests: number;
+let requestQueue: Map<string, VectorTileQueueEntry>, numRequests: number;
 const resetRequestQueue = () => {
-    requestQueue = [];
+    requestQueue = new Map();
     numRequests = 0;
 };
 resetRequestQueue();
 
 const filterQueue = (key: string) => {
-    for (let i = requestQueue.length - 1; i >= 0; i--) {
-        if (requestQueue[i].key === key) {
-            requestQueue.splice(i, 1);
-        }
-    }
+    requestQueue.delete(key);
 };
 
 export class DedupedRequest {
@@ -120,9 +116,10 @@ export class DedupedRequest {
             advanced = true;
             numRequests--;
             assert(numRequests >= 0);
-            while (requestQueue.length && numRequests < 50) {
-                const request = requestQueue.shift();
+            while (requestQueue.size && numRequests < 50) {
+                const request = requestQueue.values().next().value;
                 const {key, metadata, requestFunc, callback, cancelled} = request;
+                requestQueue.delete(key);
                 if (!cancelled) {
                     request.cancel = this.request({
                         key,
@@ -131,8 +128,6 @@ export class DedupedRequest {
                         callback,
                         fromQueue: true
                     }).cancel;
-                } else {
-                    filterQueue(key);
                 }
             }
         };
@@ -150,7 +145,7 @@ export class DedupedRequest {
 
         entry.callbacks.add(callback);
 
-        const inQueue = requestQueue.some((queued) => queued.key === key);
+        const inQueue = requestQueue.has(key);
         if ((!entry.cancel && !inQueue) || fromQueue) {
             // Lack of attached cancel handler means this is the first request for this resource
             if (numRequests >= 50) {
@@ -170,7 +165,7 @@ export class DedupedRequest {
                     });
                 };
                 queued.cancel = cancelFunc;
-                requestQueue.push(queued);
+                requestQueue.set(key, queued);
                 return queued;
             }
             numRequests++;
