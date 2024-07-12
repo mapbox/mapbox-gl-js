@@ -107,7 +107,6 @@ class SourceCache extends Evented {
         this._isRaster =
             this._source.type === 'raster' ||
             this._source.type === 'raster-dem' || this._source.type === 'raster-array' ||
-            // @ts-expect-error - TS2339 - Property '_dataType' does not exist on type 'VideoSource | ImageSource | CanvasSource | CustomSource<ImageBitmap | HTMLCanvasElement | HTMLImageElement | ImageData>'.
             (this._source.type === 'custom' && this._source._dataType === 'raster');
     }
 
