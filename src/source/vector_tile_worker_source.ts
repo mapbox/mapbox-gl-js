@@ -89,6 +89,10 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             delete this.loading[uid];
 
+            if (workerTile.status === 'done') {
+                return;
+            }
+
             if (aborted || err || !response) {
                 workerTile.status = 'done';
                 if (!aborted) this.loaded[uid] = workerTile;
