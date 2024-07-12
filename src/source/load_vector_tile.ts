@@ -178,14 +178,25 @@ export class DedupedRequest {
                 console.log("actualRequest resolving", err, result);
                 entry.result = [err, result];
 
+                console.log("entry.callbacks", entry.callbacks.size, entry.callbacks);
+
+                for (const cb of entry.callbacks) {
+                    this.addToSchedulerOrCallDirectly({
+                        callback: cb,
+                        metadata,
+                        err,
+                        result,
+                    });
+                }
+
                 // Notable difference here compared to previous deduper, no longer iterating through callbacks stored on the entry
                 // Due to intermittent errors thrown when duplicate arrayBuffers get added to the scheduling
-                this.addToSchedulerOrCallDirectly({
-                    callback,
-                    metadata,
-                    err,
-                    result,
-                });
+                // this.addToSchedulerOrCallDirectly({
+                //     callback,
+                //     metadata,
+                //     err,
+                //     result,
+                // });
 
                 filterQueue(key);
                 advanceImageRequestQueue();
