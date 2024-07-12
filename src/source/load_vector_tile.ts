@@ -28,7 +28,7 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
+export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback, deduped: DedupedRequest) => AbortVectorData | null | undefined;
 export type DedupedRequestInput = {key : string,
     metadata: any,
     requestFunc: any,
@@ -223,18 +223,10 @@ export class DedupedRequest {
     }
 }
 
-/**
- * @private
- */
-export function loadVectorTile(
-    params: RequestedTileParameters,
-    callback: LoadVectorDataCallback,
-    skipParse?: boolean,
-): () => void {
-    const key = JSON.stringify(params.request);
+const createArrayBufferCallback = ({requestParams, skipParse}) => {
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
-        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        const request = getArrayBuffer(requestParams, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
             console.log("getArrayBuffer callback", err, data);
             if (err) {
                 callback(err);
@@ -254,13 +246,31 @@ export function loadVectorTile(
         };
     };
 
+    return makeRequest;
+};
+
+/**
+ * @private
+ */
+export function loadVectorTile(
+    params: RequestedTileParameters,
+    callback: LoadVectorDataCallback,
+    deduped: DedupedRequest,
+    skipParse?: boolean,
+    providedArrayBufferCallbackCreator?: any
+): () => void {
+    const key = JSON.stringify(params.request);
+
+    const arrayBufferCallbackMaker = providedArrayBufferCallbackCreator || createArrayBufferCallback;
+    const makeRequest = arrayBufferCallbackMaker({requestParams: params.request, skipParse});
+
     if (params.data) {
         // if we already got the result earlier (on the main thread), return it directly
-        (this.deduped as DedupedRequest).entries[key] = {result: [null, params.data]};
+        deduped.entries[key] = {result: [null, params.data]};
     }
 
     const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-    const dedupedAndQueuedRequest = (this.deduped as DedupedRequest).request({
+    const dedupedAndQueuedRequest = deduped.request({
         key,
         metadata: callbackMetadata,
         requestFunc: makeRequest,
