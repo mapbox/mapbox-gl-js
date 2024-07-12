@@ -111,7 +111,7 @@ import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {FeatureState} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
-import type {Source, SourceClass} from '../source/source';
+import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
 import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
@@ -1485,7 +1485,8 @@ class Style extends Evented {
         for (const sourceId in sourcesUsedBefore) {
             const sourceCache = this._mergedSourceCaches[sourceId];
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
-                sourceCache.getSource().fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
+                const source = sourceCache.getSource() as ISource;
+                source.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
             }
         }
 

@@ -120,8 +120,8 @@ export type SetStyleOptions = {
 
 type DelegatedListener = {
     layers: Set<string>;
-    listener: Listener;
-    delegates: {[K in MapEvent]?: Listener};
+    listener: Listener<any>;
+    delegates: {[K in MapEvent]?: Listener<any>};
 };
 
 export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
@@ -1677,12 +1677,12 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, listener: Listener): this;
-    on(type: MapEvent, layerIds: string | string[], listener: Listener): this;
+    on(type: MapEvent, listener: Listener<any>): this;
+    on(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
 
-    on(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener): this {
+    on(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener<any>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.on(type, layerIds as Listener);
+            return super.on(type, layerIds as Listener<any>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1749,14 +1749,14 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent): Promise<Event>;
-    once(type: MapEvent, listener: Listener): this;
-    once(type: MapEvent, layerIds: string | string[]): Promise<Event>;
-    once(type: MapEvent, layerIds: string | string[], listener: Listener): this;
+    once(type: MapEvent): Promise<Event<string, any>>;
+    once(type: MapEvent, listener: Listener<any>): this;
+    once(type: MapEvent, layerIds: string | string[]): Promise<Event<string, any>>;
+    once(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
 
-    once(type: MapEvent, layerIds?: string | string[] | Listener, listener?: Listener): this | Promise<Event> {
+    once(type: MapEvent, layerIds?: string | string[] | Listener<any>, listener?: Listener<any>): this | Promise<Event<string, any>> {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.once(type, layerIds as Listener);
+            return super.once(type, layerIds as Listener<any>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1805,12 +1805,12 @@ export class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, listener: Listener): this;
-    off(type: MapEvent, layerIds: string | string[], listener: Listener): this;
+    off(type: MapEvent, listener: Listener<any>): this;
+    off(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
 
-    off(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener): this {
+    off(type: MapEvent, layerIds: string | string[] | Listener<any>, listener?: Listener<any>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.off(type, layerIds as Listener);
+            return super.off(type, layerIds as Listener<any>);
         }
 
         const uniqLayerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
@@ -4458,7 +4458,7 @@ export class Map extends Camera {
         this._update();
     }
 
-    _onWindowResize(event: Event) {
+    _onWindowResize(event: UIEvent) {
         if (this._trackResize) {
             this.resize({originalEvent: event})._update();
         }

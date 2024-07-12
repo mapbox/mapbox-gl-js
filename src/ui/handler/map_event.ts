@@ -26,7 +26,7 @@ export class MapEventHandler implements Handler {
     wheel(e: WheelEvent): HandlerResult | null | undefined {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - ScrollZoom
-        return this._firePreventable(new MapWheelEvent(e.type, this._map, e));
+        return this._firePreventable(new MapWheelEvent(this._map, e));
     }
 
     mousedown(e: MouseEvent, point: Point): HandlerResult | null | undefined {
@@ -36,7 +36,7 @@ export class MapEventHandler implements Handler {
         // - MouseRotate
         // - MousePitch
         // - DblclickHandler
-        return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
+        return this._firePreventable(new MapMouseEvent(e.type as 'mousedown', this._map, e));
     }
 
     mouseup(e: MouseEvent) {
@@ -58,7 +58,7 @@ export class MapEventHandler implements Handler {
     dblclick(e: MouseEvent): HandlerResult | null | undefined {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - DblClickZoom
-        return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
+        return this._firePreventable(new MapMouseEvent(e.type as 'dblclick', this._map, e));
     }
 
     mouseover(e: MouseEvent) {
@@ -77,19 +77,19 @@ export class MapEventHandler implements Handler {
         // - TouchPitch
         // - TapZoom
         // - SwipeZoom
-        return this._firePreventable(new MapTouchEvent(e.type, this._map, e));
+        return this._firePreventable(new MapTouchEvent(e.type as 'touchstart', this._map, e));
     }
 
     touchmove(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchstart', this._map, e));
     }
 
     touchend(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchend', this._map, e));
     }
 
     touchcancel(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchend', this._map, e));
     }
 
     _firePreventable(mapEvent: MapMouseEvent | MapTouchEvent | MapWheelEvent): HandlerResult | null | undefined {

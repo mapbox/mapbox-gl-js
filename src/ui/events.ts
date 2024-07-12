@@ -1,4 +1,4 @@
-import {Event} from '../util/evented';
+import {Event, type EventData} from '../util/evented';
 
 import * as DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
@@ -37,11 +37,18 @@ import type {SourceSpecification} from '../style-spec/types';
  * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  */
-export class MapMouseEvent extends Event {
+type MapMouseEventType = 'mousedown' | 'mouseup' | 'preclick' | 'click' | 'dblclick' | 'mousemove' | 'mouseover' | 'mouseenter' | 'mouseleave' | 'mouseout' | 'contextmenu';
+type MapMouseEventData = {
+    point: Point;
+    lngLat: LngLat;
+    originalEvent: MouseEvent;
+};
+
+export class MapMouseEvent<T extends string = MapMouseEventType> extends Event<T, MapMouseEventData> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: 'mousedown' | 'mouseup' | 'preclick' | 'click' | 'dblclick' | 'mousemove' | 'mouseover' | 'mouseenter' | 'mouseleave' | 'mouseout' | 'contextmenu';
+    type: T;
 
     /**
      * The `Map` object that fired the event.
@@ -126,7 +133,7 @@ export class MapMouseEvent extends Event {
     /**
      * @private
      */
-    constructor(type: string, map: Map, originalEvent: MouseEvent, data: any = {}) {
+    constructor(type: T, map: Map, originalEvent: MouseEvent, data: EventData = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
         const lngLat = map.unproject(point);
         super(type, extend({point, lngLat, originalEvent}, data));
@@ -176,11 +183,20 @@ export class MapMouseEvent extends Event {
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
-export class MapTouchEvent extends Event {
+type MapTouchEventType ='touchstart' | 'touchend' | 'touchcancel';
+type MapTouchEventData = {
+    point: Point;
+    points: Array<Point>;
+    lngLat: LngLat;
+    lngLats: Array<LngLat>;
+    originalEvent: TouchEvent
+};
+
+export class MapTouchEvent<T extends string = MapTouchEventType> extends Event<T, MapTouchEventData> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: 'touchstart' | 'touchend' | 'touchcancel';
+    type: T;
 
     /**
      * The `Map` object that fired the event.
@@ -269,7 +285,7 @@ export class MapTouchEvent extends Event {
     /**
      * @private
      */
-    constructor(type: string, map: Map, originalEvent: TouchEvent) {
+    constructor(type: T, map: Map, originalEvent: TouchEvent) {
         const touches = type === "touchend" ? originalEvent.changedTouches : originalEvent.touches;
         const points = DOM.touchPos(map.getCanvasContainer(), touches);
         const lngLats = points.map((t) => map.unproject(t));
@@ -303,7 +319,7 @@ export class MapTouchEvent extends Event {
  * // }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
-export class MapWheelEvent extends Event {
+export class MapWheelEvent extends Event<'wheel', object> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
@@ -346,8 +362,8 @@ export class MapWheelEvent extends Event {
     /**
      * @private
      */
-    constructor(type: string, map: Map, originalEvent: WheelEvent) {
-        super(type, {originalEvent});
+    constructor(map: Map, originalEvent: WheelEvent) {
+        super('wheel', {originalEvent});
         this._defaultPrevented = false;
     }
 }

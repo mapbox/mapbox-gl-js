@@ -30,7 +30,7 @@ const isMoving = (p: {
     [key: string]: any;
 }) => p.zoom || p.drag || p.pitch || p.rotate;
 
-class RenderFrameEvent extends Event {
+class RenderFrameEvent extends Event<'renderFrame', {timeStamp: number}> {
     type: 'renderFrame';
     timeStamp: number;
 }

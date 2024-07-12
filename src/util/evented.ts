@@ -1,34 +1,26 @@
 import {extend} from './util';
-import type {MapEvent} from '../ui/events';
 
-export type Listener = (arg1: any) => void;
-type Listeners = {
-    [_: string]: Array<Listener>;
-};
+export type EventData = object;
 
-function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
-    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
-    if (!listenerExists) {
-        listenerList[type] = listenerList[type] || [];
-        listenerList[type].push(listener);
-    }
-}
-
-function _removeEventListener(type: string, listener: Listener, listenerList: Listeners) {
-    if (listenerList && listenerList[type]) {
-        const index = listenerList[type].indexOf(listener);
-        if (index !== -1) {
-            listenerList[type].splice(index, 1);
-        }
-    }
-}
-
-export class Event {
+export class Event<Type extends string = string, Data extends EventData | void = void> {
     target: unknown;
-    readonly type: string;
+    readonly type: Type;
 
-    constructor(type: string, data: object = {}) {
-        extend(this, data);
+    /**
+     * Virtual property to ensure that events with different data types are not compatible.
+     *
+     * @private
+     * @example
+     * new Event('click', {required: true}) satisfies Event<'click', {required: boolean}>;
+     *
+     * @example
+     * // @ts-expect-error - Property 'required' is missing in type '{}' but required in type '{ required: boolean; }'
+     * new Event('click', {}) satisfies Event<'click', {required: boolean}>;
+     */
+    private _eventData: Data;
+
+    constructor(type: Type, eventData: Data = {} as Data) {
+        extend(this, eventData as EventData);
         this.type = type;
     }
 }
@@ -37,11 +29,56 @@ interface ErrorLike {
     message: string;
 }
 
-export class ErrorEvent extends Event {
+export class ErrorEvent extends Event<'error', EventData> {
     error: ErrorLike;
 
-    constructor(error: ErrorLike, data: any = {}) {
+    constructor(error: ErrorLike, data: EventData = {} as EventData) {
         super('error', extend({error}, data));
+    }
+}
+
+export type Listener<T = Event> = (e: T) => void
+
+type Listeners<R extends EventRegistry> = {
+    [T in keyof R]?: Array<Listener<EventOf<R[T]>>>;
+};
+
+/**
+ * Utility type that represents a registry of events. Maps event type to an event object.
+ */
+type EventRegistry = Record<string, Event<string, EventData | void>>;
+type GenericEventRegistry = Record<string, Event<string, EventData>>;
+
+/**
+ * Utility type that extracts the event data type from the event.
+ */
+type EventDataOf<E> = E extends Event<string, infer D> ? D : never;
+
+/**
+ * Utility type that extracts the event type and extends it with the event data type if present.
+ */
+type EventOf<E> =
+    E extends Event<infer T, infer D> ?
+        (D extends void ?
+            Event<T, void> :
+            // after migration to strongly typed events registry, this must be simplified to Event<T, D> & D
+            Event<T, D> & (D extends object ? D & {[key: string]: any} : D)
+        ) : never;
+
+function _addEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<EventOf<R[T]>>, listenerList: Listeners<R>) {
+    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
+    if (!listenerExists) {
+        listenerList[type] = listenerList[type] || [];
+        listenerList[type].push(listener);
+    }
+}
+
+function _removeEventListener<R extends EventRegistry, T extends keyof R>(type: T, listener: Listener<EventOf<R[T]>>, listenerList: Listeners<R>) {
+    if (listenerList && listenerList[type]) {
+        const index = listenerList[type].indexOf(listener);
+        if (index !== -1) {
+            listenerList[type].splice(index, 1);
+        }
     }
 }
 
@@ -54,11 +91,11 @@ export class ErrorEvent extends Event {
  *
  * @mixin Evented
  */
-export class Evented {
-    _listeners: Listeners;
-    _oneTimeListeners: Listeners;
+export class Evented<R extends EventRegistry = GenericEventRegistry> {
+    _listeners: Listeners<R>;
+    _oneTimeListeners: Listeners<R>;
     _eventedParent?: Evented;
-    _eventedParentData?: unknown | (() => unknown);
+    _eventedParentData?: EventData | (() => EventData);
 
     /**
      * Adds a listener to a specified event type.
@@ -69,7 +106,7 @@ export class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    on(type: MapEvent | string, listener: Listener): this {
+    on<T extends keyof R & string>(type: T, listener: Listener<EventOf<R[T]>>): this {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -83,7 +120,7 @@ export class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    off(type: MapEvent | string, listener: Listener): this {
+    off<T extends keyof R & string>(type: T, listener: Listener<EventOf<R[T]>>): this {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -100,10 +137,9 @@ export class Evented {
      *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} Returns `this` | Promise.
      */
-    once(type: MapEvent | string): Promise<Event>;
-    once(type: MapEvent | string, listener: Listener): this;
-
-    once(type: MapEvent | string, listener?: Listener): this | Promise<Event> {
+    once<T extends keyof R & string>(type: T): Promise<EventOf<R[T]>>;
+    once<T extends keyof R & string>(type: T, listener: Listener<EventOf<R[T]>>): this;
+    once<T extends keyof R & string>(type: T, listener?: Listener<EventOf<R[T]>>): this | Promise<EventOf<R[T]>> {
         if (!listener) {
             return new Promise((resolve) => this.once(type, resolve));
         }
@@ -114,14 +150,13 @@ export class Evented {
         return this;
     }
 
-    fire(event: Event | string, properties?: object): this {
+    fire<T extends keyof R>(event: R[T]): this;
+    fire<T extends keyof R>(type: T, eventData?: EventDataOf<R[T]>): this;
+    fire<T extends keyof R>(e: R[T] | T, eventData?: EventDataOf<R[T]>): this {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
         //     https://github.com/mapbox/mapbox-gl-draw/issues/766
-        if (typeof event === 'string') {
-            event = new Event(event, properties || {});
-        }
-
+        const event = (typeof e === 'string' ? new Event(e, eventData || {}) : e) as R[T];
         const type = event.type;
 
         if (this.listens(type)) {
@@ -147,7 +182,7 @@ export class Evented {
                     this._eventedParentData;
 
                 extend(event, eventedParentData);
-                parent.fire(event);
+                parent.fire(event as Event<string, EventData>);
             }
 
         // To ensure that no error events are dropped, print them to the
@@ -166,7 +201,7 @@ export class Evented {
      * @returns {boolean} Returns `true` if there is at least one registered listener for specified event type, `false` otherwise.
      * @private
      */
-    listens(type: string): boolean {
+    listens<T extends keyof R & string>(type: T): boolean {
         return !!(
             (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
             (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
@@ -180,7 +215,7 @@ export class Evented {
      * @returns {Object} `this`
      * @private
      */
-    setEventedParent(parent?: Evented, data?: unknown | (() => unknown)): this {
+    setEventedParent(parent?: Evented, data?: EventData | (() => EventData)): this {
         this._eventedParent = parent;
         this._eventedParentData = data;
 
