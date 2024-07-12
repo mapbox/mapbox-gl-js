@@ -97,7 +97,10 @@ export class DedupedRequest {
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
             const entry = this.getEntry(key);
-            if (entry.result) return;
+            if (entry.result) {
+                console.log("aborting with result");
+                return;
+            }
             entry.callbacks.delete(requestCallback);
             if (entry.callbacks.size) {
                 return;
@@ -191,13 +194,15 @@ export class DedupedRequest {
                 }, 1000 * 3);
             });
             entry.cancel = () => {
-                console.log("entry being cancelled"); actualRequestCancel();
+                console.log("entry being cancelled");
+                actualRequestCancel();
             };
             return entry;
         }
 
         return {
             cancel() {
+                console.log("cancelling from the default return");
                 removeCallbackFromEntry({
                     key,
                     requestCallback: callback,
