@@ -29,10 +29,13 @@ export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | unde
 
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
-export type VectorTileQueueEntry = {key : string,
+export type DedupedRequestInput = {key : string,
     metadata: any,
     requestFunc: any,
     callback: LoadVectorDataCallback,
+    fromQueue?: boolean
+};
+export type VectorTileQueueEntry = DedupedRequestInput & {
     cancelled: boolean,
     cancel: () => void
 };
@@ -92,7 +95,7 @@ export class DedupedRequest {
         );
     };
 
-    request(key: string, metadata: any, requestFunc: any, callback: LoadVectorDataCallback, fromQueue?: boolean): Cancelable {
+    request({key, metadata, requestFunc, callback, fromQueue}: DedupedRequestInput): Cancelable {
         const entry = (this.entries[key] = this.getEntry(key));
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
@@ -121,13 +124,13 @@ export class DedupedRequest {
                 const request = requestQueue.shift();
                 const {key, metadata, requestFunc, callback, cancelled} = request;
                 if (!cancelled) {
-                    request.cancel = this.request(
+                    request.cancel = this.request({
                         key,
                         metadata,
                         requestFunc,
                         callback,
-                        true
-                    ).cancel;
+                        fromQueue: true
+                    }).cancel;
                 } else {
                     filterQueue(key);
                 }
@@ -240,13 +243,13 @@ export function loadVectorTile(
     }
 
     const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-    const dedupedAndQueuedRequest = (this.deduped as DedupedRequest).request(
+    const dedupedAndQueuedRequest = (this.deduped as DedupedRequest).request({
         key,
-        callbackMetadata,
-        makeRequest,
+        metadata: callbackMetadata,
+        requestFunc: makeRequest,
         callback,
-        false
-    );
+        fromQueue: false
+    });
 
     return dedupedAndQueuedRequest.cancel;
 }
