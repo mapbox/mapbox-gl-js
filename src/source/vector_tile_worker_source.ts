@@ -136,7 +136,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             this.loaded = this.loaded || {};
             this.loaded[uid] = workerTile;
-        },this.deduped);
+        }, this.deduped);
     }
 
     /**
