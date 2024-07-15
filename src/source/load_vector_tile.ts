@@ -191,9 +191,7 @@ export class DedupedRequest {
                     delete this.entries[key];
                 }, 1000 * 3);
             });
-            entry.cancel = () => {
-                actualRequestCancel();
-            };
+            entry.cancel = actualRequestCancel;
         }
 
         return {
@@ -260,7 +258,5 @@ export function loadVectorTile(
         fromQueue: false
     });
 
-    return () => {
-        dedupedAndQueuedRequest.cancel();
-    };
+    return dedupedAndQueuedRequest.cancel;
 }
