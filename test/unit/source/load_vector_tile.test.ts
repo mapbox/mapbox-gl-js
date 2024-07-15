@@ -1,13 +1,19 @@
 // @ts-nocheck
-import {test, expect, vi} from '../../util/vitest';
+import {test, expect, vi, beforeEach} from '../../util/vitest';
 // eslint-disable-next-line import/no-unresolved
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
-import {loadVectorTile, DedupedRequest} from '../../../src/source/load_vector_tile';
+import {loadVectorTile, DedupedRequest, resetRequestQueue} from '../../../src/source/load_vector_tile';
 
-const scheduler = {add: () => {}};
+const createScheduler = () => ({add: () => {}});
+const arrayBufDelay = 1500;
+const maxRequests = 50;
+
+beforeEach(() => {
+    resetRequestQueue();
+});
 
 test('loadVectorTile does not make array buffer request for duplicate tile requests', () => {
-    const deduped = new DedupedRequest(scheduler);
+    const deduped = new DedupedRequest(createScheduler());
     const params = {request: {url: 'http://localhost:2900/fake.pbf'}};
     expect.assertions(1);
     const arrayBufRequester = () => () => {
@@ -22,21 +28,54 @@ test('loadVectorTile does not make array buffer request for duplicate tile reque
 
 test('only processes concurrent requests up to the queue limit', () => {
     vi.useFakeTimers();
-    const deduped = new DedupedRequest(scheduler);
-    expect.assertions(49);
-    const arrayBufRequester = () => {
-        return () => {
+    const deduped = new DedupedRequest(createScheduler());
+    const reportingFunction = vi.fn();
+
+    const delayedArrayBufRequesterWithCallback = () => {
+        return (callback) => {
             setTimeout(() => {
+                callback(null, {});
+                reportingFunction();
+            }, arrayBufDelay);
+        };
+    };
+
+    for (let i = 0; i < 60; i++) {
+        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    }
+    vi.advanceTimersByTime(arrayBufDelay);
+    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
+    vi.useRealTimers();
+});
+
+test('processes other items within the queue after earlier ones resolve', () => {
+    vi.useFakeTimers();
+    const deduped = new DedupedRequest(createScheduler());
+    const reportingFunction = vi.fn();
+
+    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
+        return (callback) => {
+            setTimeout(() => {
+                reportingFunction(requestParams);
+                callback(null, {});
                 expect(true).toBeTruthy();
-            }, 1500);
+            }, arrayBufDelay);
         };
     };
 
     for (let i = 0; i < 300; i++) {
-        loadVectorTile({request: {url: i}}, () => {}, deduped, false, arrayBufRequester);
+        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
     }
-    vi.advanceTimersByTime(1500);
+
+    vi.advanceTimersByTime(arrayBufDelay);
+    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
+    expect(reportingFunction).toHaveBeenLastCalledWith({url: maxRequests - 1});
+
+    vi.advanceTimersByTime(arrayBufDelay);
+    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests * 2);
+    expect(reportingFunction).toHaveBeenLastCalledWith({url: (maxRequests * 2) - 1});
     vi.useRealTimers();
 });
+
 // Fails to fetch if concurrent requests get too large when unqueued
 // Some stuff about cancelling within the queue?

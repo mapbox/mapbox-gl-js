@@ -41,7 +41,7 @@ export type VectorTileQueueEntry = DedupedRequestInput & {
 };
 
 let requestQueue: Map<string, VectorTileQueueEntry>, numRequests: number;
-const resetRequestQueue = () => {
+export const resetRequestQueue = () => {
     requestQueue = new Map();
     numRequests = 0;
 };
@@ -92,13 +92,11 @@ export class DedupedRequest {
     };
 
     request({key, metadata, requestFunc, callback, fromQueue}: DedupedRequestInput): Cancelable {
-        console.log("deduped request");
         const entry = (this.entries[key] = this.getEntry(key));
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
             const entry = this.getEntry(key);
             if (entry.result) {
-                console.log("aborting with result");
                 return;
             }
             entry.callbacks.delete(requestCallback);
@@ -175,10 +173,7 @@ export class DedupedRequest {
             numRequests++;
 
             const actualRequestCancel = requestFunc((err, result) => {
-                console.log("actualRequest resolving", err, result);
                 entry.result = [err, result];
-
-                console.log("entry.callbacks", entry.callbacks.size, entry.callbacks);
 
                 for (const cb of entry.callbacks) {
                     this.addToSchedulerOrCallDirectly({
@@ -189,15 +184,6 @@ export class DedupedRequest {
                     });
                 }
 
-                // Notable difference here compared to previous deduper, no longer iterating through callbacks stored on the entry
-                // Due to intermittent errors thrown when duplicate arrayBuffers get added to the scheduling
-                // this.addToSchedulerOrCallDirectly({
-                //     callback,
-                //     metadata,
-                //     err,
-                //     result,
-                // });
-
                 filterQueue(key);
                 advanceImageRequestQueue();
 
@@ -206,14 +192,12 @@ export class DedupedRequest {
                 }, 1000 * 3);
             });
             entry.cancel = () => {
-                console.log("entry being cancelled");
                 actualRequestCancel();
             };
         }
 
         return {
             cancel() {
-                console.log("cancelling from the default return");
                 removeCallbackFromEntry({
                     key,
                     requestCallback: callback,
@@ -227,7 +211,6 @@ const makeArrayBufferHandler = ({requestParams, skipParse}) => {
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
         const request = getArrayBuffer(requestParams, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
-            console.log("getArrayBuffer callback", err, data);
             if (err) {
                 callback(err);
             } else if (data) {
@@ -240,7 +223,6 @@ const makeArrayBufferHandler = ({requestParams, skipParse}) => {
             }
         });
         return () => {
-            console.log("cancelling makeRequest");
             request.cancel();
             callback();
         };
@@ -278,10 +260,8 @@ export function loadVectorTile(
         fromQueue: false
     });
 
-    console.log("loadVectorTile returning ", dedupedAndQueuedRequest.cancel);
 
     return () => {
-        console.log("cancelling loadVectorTile");
         dedupedAndQueuedRequest.cancel();
     };
 }
