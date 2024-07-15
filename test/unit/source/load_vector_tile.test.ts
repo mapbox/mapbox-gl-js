@@ -3,8 +3,8 @@ import {loadVectorTile, DedupedRequest, resetRequestQueue} from '../../../src/so
 import type {RequestedTileParameters} from 'src/source/worker_source';
 
 const createScheduler = () => ({add: () => {}} as any);
-const arrayBufDelay = 1500;
-const maxRequests = 50;
+const ARRAY_BUF_DELAY = 1500;
+const MAX_REQUESTS = 50;
 const arrayBufResolutionSpy = vi.fn();
 
 const cancellableDelayedArrayBufRequestMaker = ({requestParams}) => {
@@ -15,7 +15,7 @@ const cancellableDelayedArrayBufRequestMaker = ({requestParams}) => {
                 arrayBufResolutionSpy(requestParams);
             }
             callback(null, {});
-        }, arrayBufDelay);
+        }, ARRAY_BUF_DELAY);
         return () => {
             cancelled = true;
         };
@@ -42,20 +42,19 @@ test('loadVectorTile does not make array buffer request for duplicate tile reque
     loadVectorTile(params, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
     loadVectorTile(params, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
 
-    vi.advanceTimersByTime(arrayBufDelay);
+    vi.advanceTimersByTime(ARRAY_BUF_DELAY);
     expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
-
 });
 
 test('only processes concurrent requests up to the queue limit', () => {
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
 
-    makeRequests({numberOfRequests: 2 * maxRequests, deduped});
+    makeRequests({numberOfRequests: 2 * MAX_REQUESTS, deduped});
 
-    vi.advanceTimersByTime(arrayBufDelay);
-    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
+    vi.advanceTimersByTime(ARRAY_BUF_DELAY);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(MAX_REQUESTS);
     vi.useRealTimers();
 });
 
@@ -63,15 +62,15 @@ test('processes other items within the queue after earlier ones resolve', () => 
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
 
-    makeRequests({numberOfRequests: 3 * maxRequests, deduped});
+    makeRequests({numberOfRequests: 3 * MAX_REQUESTS, deduped});
 
-    vi.advanceTimersByTime(arrayBufDelay);
-    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
-    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String(maxRequests - 1)});
+    vi.advanceTimersByTime(ARRAY_BUF_DELAY);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(MAX_REQUESTS);
+    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String(MAX_REQUESTS - 1)});
 
-    vi.advanceTimersByTime(arrayBufDelay);
-    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests * 2);
-    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String((maxRequests * 2) - 1)});
+    vi.advanceTimersByTime(ARRAY_BUF_DELAY);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(MAX_REQUESTS * 2);
+    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String((MAX_REQUESTS * 2) - 1)});
     vi.useRealTimers();
 });
 
@@ -79,12 +78,12 @@ test('entries that are cancelled whilst in the queue do not send array buffer re
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
 
-    makeRequests({numberOfRequests: maxRequests, deduped});
+    makeRequests({numberOfRequests: MAX_REQUESTS, deduped});
     const cancel = loadVectorTile({request: {url: "abort"}} as RequestedTileParameters, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
     cancel();
 
-    vi.advanceTimersByTime(2 * arrayBufDelay);
-    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
+    vi.advanceTimersByTime(2 * ARRAY_BUF_DELAY);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(MAX_REQUESTS);
     expect(arrayBufResolutionSpy).not.toHaveBeenCalledWith({url: "abort"});
 
     vi.useRealTimers();
@@ -97,11 +96,9 @@ test('entries cancelled outside the queue do not send array buffer requests', ()
     const cancel = loadVectorTile({request: {url: "abort"}} as RequestedTileParameters, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
     cancel();
 
-    vi.advanceTimersByTime(arrayBufDelay);
+    vi.advanceTimersByTime(ARRAY_BUF_DELAY);
     expect(arrayBufResolutionSpy).not.toHaveBeenCalled();
     expect(arrayBufResolutionSpy).not.toHaveBeenCalledWith({url: "abort"});
 
     vi.useRealTimers();
 });
-
-// Fails to fetch if concurrent requests get too large when unqueued
