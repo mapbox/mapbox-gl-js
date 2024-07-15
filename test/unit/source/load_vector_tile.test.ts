@@ -34,15 +34,18 @@ beforeEach(() => {
 });
 
 test('loadVectorTile does not make array buffer request for duplicate tile requests', () => {
+    vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
     const params = {request: {url: 'http://localhost:2900/fake.pbf'}} as RequestedTileParameters;
-    expect.assertions(1);
-    const arrayBufRequester = () => () => {
-        expect(true).toBeTruthy();
-    };
-    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
-    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
-    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
+
+    loadVectorTile(params, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
+    loadVectorTile(params, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
+    loadVectorTile(params, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
+
+    vi.advanceTimersByTime(arrayBufDelay);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+
 });
 
 test('only processes concurrent requests up to the queue limit', () => {
