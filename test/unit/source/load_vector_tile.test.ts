@@ -6,12 +6,17 @@ import {loadVectorTile, DedupedRequest} from '../../../src/source/load_vector_ti
 
 const scheduler = {add: () => {}};
 
-test('loadVectorTile does not resolve duplicate requests', () => {
+test('loadVectorTile does not make array buffer request for duplicate tile requests', () => {
     const deduped = new DedupedRequest(scheduler);
     const params = {url: 'http://localhost:2900/fake.pbf'};
-    loadVectorTile(params, () => {}, deduped, false, () => { return () => {}; });
+    expect.assertions(1);
+    const arrayBufRequester = () => () => {
+        expect(true).toBeTruthy();
+    };
+    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
+    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
+    loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
 });
 
-// does not resolve duplicated requests
 // Handles 300 concurrent requests through queue
 // Fails to fetch if concurrent requests get too large when unqueued
