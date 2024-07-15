@@ -258,7 +258,7 @@ class VectorTileSource extends Evented implements ISource {
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
             if (!this.dispatcher.ready) {
-                const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
+                const cancel = loadVectorTile.call({}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
                     if (err || !data) {
                         done.call(this, err);
                     } else {
@@ -270,7 +270,7 @@ class VectorTileSource extends Evented implements ISource {
                         };
                         if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                     }
-                }, true);
+                }, this._deduped, true);
                 tile.request = {cancel};
 
             } else {

@@ -28,7 +28,7 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
+export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback, deduped: DedupedRequest) => AbortVectorData | null | undefined;
 export type DedupedRequestInput = {key : string,
     metadata: any,
     requestFunc: any,
@@ -41,7 +41,7 @@ export type VectorTileQueueEntry = DedupedRequestInput & {
 };
 
 let requestQueue: Map<string, VectorTileQueueEntry>, numRequests: number;
-const resetRequestQueue = () => {
+export const resetRequestQueue = () => {
     requestQueue = new Map();
     numRequests = 0;
 };
@@ -96,7 +96,9 @@ export class DedupedRequest {
 
         const removeCallbackFromEntry = ({key, requestCallback}) => {
             const entry = this.getEntry(key);
-            if (entry.result) return;
+            if (entry.result) {
+                return;
+            }
             entry.callbacks.delete(requestCallback);
             if (entry.callbacks.size) {
                 return;
@@ -173,14 +175,14 @@ export class DedupedRequest {
             const actualRequestCancel = requestFunc((err, result) => {
                 entry.result = [err, result];
 
-                // Notable difference here compared to previous deduper, no longer iterating through callbacks stored on the entry
-                // Due to intermittent errors thrown when duplicate arrayBuffers get added to the scheduling
-                this.addToSchedulerOrCallDirectly({
-                    callback,
-                    metadata,
-                    err,
-                    result,
-                });
+                for (const cb of entry.callbacks) {
+                    this.addToSchedulerOrCallDirectly({
+                        callback: cb,
+                        metadata,
+                        err,
+                        result,
+                    });
+                }
 
                 filterQueue(key);
                 advanceImageRequestQueue();
@@ -203,18 +205,10 @@ export class DedupedRequest {
     }
 }
 
-/**
- * @private
- */
-export function loadVectorTile(
-    params: RequestedTileParameters,
-    callback: LoadVectorDataCallback,
-    skipParse?: boolean,
-): () => void {
-    const key = JSON.stringify(params.request);
+const makeArrayBufferHandler = ({requestParams, skipParse}) => {
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
-        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        const request = getArrayBuffer(requestParams, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
             if (err) {
                 callback(err);
             } else if (data) {
@@ -232,13 +226,31 @@ export function loadVectorTile(
         };
     };
 
+    return makeRequest;
+};
+
+/**
+ * @private
+ */
+export function loadVectorTile(
+    params: RequestedTileParameters,
+    callback: LoadVectorDataCallback,
+    deduped: DedupedRequest,
+    skipParse?: boolean,
+    providedArrayBufferHandlerMaker?: any
+): () => void {
+    const key = JSON.stringify(params.request);
+
+    const arrayBufferCallbackMaker = providedArrayBufferHandlerMaker || makeArrayBufferHandler;
+    const makeRequest = arrayBufferCallbackMaker({requestParams: params.request, skipParse});
+
     if (params.data) {
         // if we already got the result earlier (on the main thread), return it directly
-        (this.deduped as DedupedRequest).entries[key] = {result: [null, params.data]};
+        deduped.entries[key] = {result: [null, params.data]};
     }
 
     const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-    const dedupedAndQueuedRequest = (this.deduped as DedupedRequest).request({
+    const dedupedAndQueuedRequest = deduped.request({
         key,
         metadata: callbackMetadata,
         requestFunc: makeRequest,
