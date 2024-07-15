@@ -1,20 +1,41 @@
-// @ts-nocheck
 import {test, expect, vi, beforeEach} from '../../util/vitest';
-// eslint-disable-next-line import/no-unresolved
-import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import {loadVectorTile, DedupedRequest, resetRequestQueue} from '../../../src/source/load_vector_tile';
+import type {RequestedTileParameters} from 'src/source/worker_source';
 
-const createScheduler = () => ({add: () => {}});
+const createScheduler = () => ({add: () => {}} as any);
 const arrayBufDelay = 1500;
 const maxRequests = 50;
+const arrayBufResolutionSpy = vi.fn();
+
+const cancellableDelayedArrayBufRequestMaker = ({requestParams}) => {
+    return (callback) => {
+        let cancelled = false;
+        setTimeout(() => {
+            if (!cancelled) {
+                arrayBufResolutionSpy(requestParams);
+            }
+            callback(null, {});
+        }, arrayBufDelay);
+        return () => {
+            cancelled = true;
+        };
+    };
+};
+
+const makeRequests = ({numberOfRequests, deduped}: {numberOfRequests: number, deduped: DedupedRequest}) => {
+    for (let i = 0; i < numberOfRequests; i++) {
+        loadVectorTile({request: {url: String(i)}} as RequestedTileParameters, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
+    }
+};
 
 beforeEach(() => {
+    arrayBufResolutionSpy.mockRestore();
     resetRequestQueue();
 });
 
 test('loadVectorTile does not make array buffer request for duplicate tile requests', () => {
     const deduped = new DedupedRequest(createScheduler());
-    const params = {request: {url: 'http://localhost:2900/fake.pbf'}};
+    const params = {request: {url: 'http://localhost:2900/fake.pbf'}} as RequestedTileParameters;
     expect.assertions(1);
     const arrayBufRequester = () => () => {
         expect(true).toBeTruthy();
@@ -24,82 +45,44 @@ test('loadVectorTile does not make array buffer request for duplicate tile reque
     loadVectorTile(params, () => {}, deduped, false, arrayBufRequester);
 });
 
-// Handles 300 concurrent requests through queue
-
 test('only processes concurrent requests up to the queue limit', () => {
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
-    const reportingFunction = vi.fn();
 
-    const delayedArrayBufRequesterWithCallback = () => {
-        return (callback) => {
-            setTimeout(() => {
-                callback(null, {});
-                reportingFunction();
-            }, arrayBufDelay);
-        };
-    };
+    makeRequests({numberOfRequests: 2 * maxRequests, deduped});
 
-    for (let i = 0; i < 2 * maxRequests; i++) {
-        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
-    }
     vi.advanceTimersByTime(arrayBufDelay);
-    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
     vi.useRealTimers();
 });
 
 test('processes other items within the queue after earlier ones resolve', () => {
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
-    const reportingFunction = vi.fn();
 
-    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
-        return (callback) => {
-            setTimeout(() => {
-                reportingFunction(requestParams);
-                callback(null, {});
-            }, arrayBufDelay);
-        };
-    };
-
-    for (let i = 0; i < 3 * maxRequests; i++) {
-        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
-    }
+    makeRequests({numberOfRequests: 3 * maxRequests, deduped});
 
     vi.advanceTimersByTime(arrayBufDelay);
-    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
-    expect(reportingFunction).toHaveBeenLastCalledWith({url: maxRequests - 1});
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
+    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String(maxRequests - 1)});
 
     vi.advanceTimersByTime(arrayBufDelay);
-    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests * 2);
-    expect(reportingFunction).toHaveBeenLastCalledWith({url: (maxRequests * 2) - 1});
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests * 2);
+    expect(arrayBufResolutionSpy).toHaveBeenLastCalledWith({url: String((maxRequests * 2) - 1)});
     vi.useRealTimers();
 });
 
 test('entries that are cancelled whilst in the queue do not send array buffer requests', () => {
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
-    const reportingFunction = vi.fn();
 
-    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
-        return (callback) => {
-            setTimeout(() => {
-                reportingFunction(requestParams);
-                callback(null, {});
-            }, arrayBufDelay);
-        };
-    };
-
-    for (let i = 0; i < maxRequests; i++) {
-        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
-    }
-
-    const cancel = loadVectorTile({request: {url: "abort"}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    makeRequests({numberOfRequests: maxRequests, deduped});
+    const cancel = loadVectorTile({request: {url: "abort"}} as RequestedTileParameters, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
     cancel();
 
     vi.advanceTimersByTime(2 * arrayBufDelay);
-    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
-    expect(reportingFunction).not.toHaveBeenCalledWith({url: "abort"});
+    expect(arrayBufResolutionSpy).toHaveBeenCalledTimes(maxRequests);
+    expect(arrayBufResolutionSpy).not.toHaveBeenCalledWith({url: "abort"});
 
     vi.useRealTimers();
 });
@@ -107,29 +90,13 @@ test('entries that are cancelled whilst in the queue do not send array buffer re
 test('entries cancelled outside the queue do not send array buffer requests', () => {
     vi.useFakeTimers();
     const deduped = new DedupedRequest(createScheduler());
-    const reportingFunction = vi.fn();
 
-    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
-        return (callback) => {
-            let cancelled = false;
-            setTimeout(() => {
-                if (!cancelled) {
-                    reportingFunction(requestParams);
-                }
-                callback(null, {});
-            }, arrayBufDelay);
-            return () => {
-                cancelled = true;
-            };
-        };
-    };
-
-    const cancel = loadVectorTile({request: {url: "abort"}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    const cancel = loadVectorTile({request: {url: "abort"}} as RequestedTileParameters, () => {}, deduped, false, cancellableDelayedArrayBufRequestMaker);
     cancel();
 
     vi.advanceTimersByTime(arrayBufDelay);
-    expect(reportingFunction).not.toHaveBeenCalled();
-    expect(reportingFunction).not.toHaveBeenCalledWith({url: "abort"});
+    expect(arrayBufResolutionSpy).not.toHaveBeenCalled();
+    expect(arrayBufResolutionSpy).not.toHaveBeenCalledWith({url: "abort"});
 
     vi.useRealTimers();
 });
