@@ -104,5 +104,34 @@ test('entries that are cancelled whilst in the queue do not send array buffer re
     vi.useRealTimers();
 });
 
+test('entries cancelled outside the queue do not send array buffer requests', () => {
+    vi.useFakeTimers();
+    const deduped = new DedupedRequest(createScheduler());
+    const reportingFunction = vi.fn();
+
+    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
+        return (callback) => {
+            let cancelled = false;
+            setTimeout(() => {
+                if (!cancelled) {
+                    reportingFunction(requestParams);
+                }
+                callback(null, {});
+            }, arrayBufDelay);
+            return () => {
+                cancelled = true;
+            };
+        };
+    };
+
+    const cancel = loadVectorTile({request: {url: "abort"}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    cancel();
+
+    vi.advanceTimersByTime(arrayBufDelay);
+    expect(reportingFunction).not.toHaveBeenCalled();
+    expect(reportingFunction).not.toHaveBeenCalledWith({url: "abort"});
+
+    vi.useRealTimers();
+});
+
 // Fails to fetch if concurrent requests get too large when unqueued
-// Some stuff about cancelling within the queue?

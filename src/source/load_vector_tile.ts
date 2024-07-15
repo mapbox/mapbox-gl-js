@@ -260,7 +260,6 @@ export function loadVectorTile(
         fromQueue: false
     });
 
-
     return () => {
         dedupedAndQueuedRequest.cancel();
     };
