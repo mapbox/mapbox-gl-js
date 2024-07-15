@@ -40,7 +40,7 @@ test('only processes concurrent requests up to the queue limit', () => {
         };
     };
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 2 * maxRequests; i++) {
         loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
     }
     vi.advanceTimersByTime(arrayBufDelay);
@@ -58,12 +58,11 @@ test('processes other items within the queue after earlier ones resolve', () => 
             setTimeout(() => {
                 reportingFunction(requestParams);
                 callback(null, {});
-                expect(true).toBeTruthy();
             }, arrayBufDelay);
         };
     };
 
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 3 * maxRequests; i++) {
         loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
     }
 
@@ -74,6 +73,34 @@ test('processes other items within the queue after earlier ones resolve', () => 
     vi.advanceTimersByTime(arrayBufDelay);
     expect(reportingFunction).toHaveBeenCalledTimes(maxRequests * 2);
     expect(reportingFunction).toHaveBeenLastCalledWith({url: (maxRequests * 2) - 1});
+    vi.useRealTimers();
+});
+
+test('entries that are cancelled whilst in the queue do not send array buffer requests', () => {
+    vi.useFakeTimers();
+    const deduped = new DedupedRequest(createScheduler());
+    const reportingFunction = vi.fn();
+
+    const delayedArrayBufRequesterWithCallback = ({requestParams}) => {
+        return (callback) => {
+            setTimeout(() => {
+                reportingFunction(requestParams);
+                callback(null, {});
+            }, arrayBufDelay);
+        };
+    };
+
+    for (let i = 0; i < maxRequests; i++) {
+        loadVectorTile({request: {url: i}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    }
+
+    const cancel = loadVectorTile({request: {url: "abort"}}, () => {}, deduped, false, delayedArrayBufRequesterWithCallback);
+    cancel();
+
+    vi.advanceTimersByTime(2 * arrayBufDelay);
+    expect(reportingFunction).toHaveBeenCalledTimes(maxRequests);
+    expect(reportingFunction).not.toHaveBeenCalledWith({url: "abort"});
+
     vi.useRealTimers();
 });
 
