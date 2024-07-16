@@ -1262,13 +1262,13 @@
         },
         "clip": {
           "doc": "Layer that removes 3D content from map.",
+          "experimental": true,
           "sdk-support": {
             "basic functionality": {
               "js": "3.5.0",
               "android": "11.5.0",
               "ios": "11.5.0"
-            },
-            "experimental": true
+            }
           }
         }
       },
