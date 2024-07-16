@@ -70,12 +70,34 @@ uniform highp sampler3D u_lutTexture;
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
 in highp float v_depth;
-uniform sampler2D u_depthTexture;
+uniform highp sampler2D u_depthTexture;
 uniform vec2 u_inv_depth_size;
+uniform vec2 u_depth_range_unpack;
+
+#ifdef TERRAIN_DEPTH_D24
+    float unpack_depth(float depth) {
+        return  depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
+    }
+#else
+    // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
+    // shadow mapping examples.
+    // https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+    highp float unpack_depth_rgba(highp vec4 rgba_depth)
+    {
+        const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+        return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+    }
+#endif
 
 bool isOccluded() {
     vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
-    highp float depth = unpack_depth(texture(u_depthTexture, coord));
+
+    #ifdef TERRAIN_DEPTH_D24
+        highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
+    #else
+        highp float depth = unpack_depth_rgba(texture(u_depthTexture, coord));
+    #endif
+
     // Add some marging to avoid depth precision issues
     return v_depth > depth + 0.0005;
 }
