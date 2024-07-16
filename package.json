@@ -84,7 +84,7 @@
     "eslint-plugin-html": "^8.1.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.7.0",
-    "glob": "^10.4.2",
+    "glob": "^11.0.0",
     "is-builtin-module": "^4.0.0",
     "jest-extended": "^4.0.2",
     "json-stringify-pretty-compact": "^4.0.0",
