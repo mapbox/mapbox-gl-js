@@ -64,8 +64,8 @@
     "@types/pbf": "^3.0.5",
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^7.16.0",
-    "@vitest/browser": "^1.6.0",
-    "@vitest/ui": "^1.6.0",
+    "@vitest/browser": "^2.0.3",
+    "@vitest/ui": "^2.0.3",
     "address": "^2.0.3",
     "browserify": "^17.0.0",
     "chalk": "^5.0.1",
@@ -119,7 +119,7 @@
     "typescript-eslint": "^7.16.0",
     "utility-types": "^3.11.0",
     "vite-plugin-arraybuffer": "^0.0.8",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.3"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",

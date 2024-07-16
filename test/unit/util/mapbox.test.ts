@@ -563,8 +563,8 @@ describe("mapbox", () => {
             checkMetric(performanceEvent.metadata, 'sdkVersion', version);
             checkMetric(performanceEvent.metadata, 'sdkIdentifier', 'mapbox-gl-js');
             checkMetric(performanceEvent.metadata, 'devicePixelRatio', '1');
-            checkMetric(performanceEvent.metadata, 'windowWidth', '300');
-            checkMetric(performanceEvent.metadata, 'windowHeight', '150');
+            checkMetric(performanceEvent.metadata, 'windowWidth', '414');
+            checkMetric(performanceEvent.metadata, 'windowHeight', '896');
             checkMetric(performanceEvent.metadata, 'mapWidth', '100');
             checkMetric(performanceEvent.metadata, 'mapHeight', '50');
             checkMetric(performanceEvent.metadata, 'webglVendor', 'webgl vendor');

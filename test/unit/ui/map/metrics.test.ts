@@ -644,10 +644,6 @@ describe('Map', () => {
                     accessToken: 'access-token'
                 });
 
-                map.on('style.load', () => {
-                    console.log('style.load');
-                });
-
                 await waitFor(map, 'load');
 
                 map.setStyle('/another.json');

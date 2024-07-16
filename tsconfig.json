@@ -42,6 +42,6 @@
     "./node_modules",
     "./src/style-spec/bin",
     "./src/style-spec/dist",
-    "./test/util/mockServiceWorker.js"
+    "./test/unit/mock-worker/mockServiceWorker.js"
   ]
 }
