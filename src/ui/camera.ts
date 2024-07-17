@@ -83,7 +83,7 @@ export type CameraOptions = {
     bearing?: number;
     pitch?: number;
     around?: LngLatLike;
-    padding?: PaddingOptions;
+    padding?: number | PaddingOptions;
     maxZoom?: number;
 };
 
@@ -1138,8 +1138,12 @@ class Camera extends Evented<MapEvents> {
             tr.pitch = +options.pitch;
         }
 
-        if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
-            tr.padding = options.padding;
+        if (options.padding != null) {
+            const padding = typeof options.padding === 'number' ?
+                this._extendPadding(options.padding) :
+                options.padding;
+
+            if (!tr.isPaddingEqual(padding)) tr.padding = padding;
         }
 
         if (options.preloadOnly) {

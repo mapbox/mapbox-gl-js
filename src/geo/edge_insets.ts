@@ -1,6 +1,7 @@
-import {number} from '../style-spec/util/interpolate';
-import Point  from "@mapbox/point-geometry";
+import Point from "@mapbox/point-geometry";
+
 import {clamp} from '../util/util';
+import {number} from '../style-spec/util/interpolate';
 
 /**
  * @private
@@ -102,10 +103,10 @@ class EdgeInsets {
 }
 
 export type PaddingOptions = {
-    readonly top: number | null | undefined;
-    readonly bottom: number | null | undefined;
-    readonly right: number | null | undefined;
-    readonly left: number | null | undefined;
+    readonly top?: number;
+    readonly bottom?: number;
+    readonly right?: number;
+    readonly left?: number;
 };
 
 export default EdgeInsets;

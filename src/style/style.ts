@@ -152,6 +152,16 @@ const ignoredDiffOperations = pick(diffOperations, [
 
 const empty = emptyStyle();
 
+type AnyLayerSource = {
+    source: LayerSpecification['source'] | SourceSpecification
+}
+
+/**
+ * Helper type that represents user provided layer in addLayer method.
+ * @private
+ */
+export type AnyLayer = Omit<LayerSpecification, 'source'> & AnyLayerSource | CustomLayerInterface;
+
 export type FeatureSelector = {
     id: string | number;
     source: string;
@@ -2099,7 +2109,7 @@ class Style extends Evented<MapEvents> {
      * @param {Object} options Style setter options.
      * @returns {Map} The {@link Map} object.
      */
-    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options: StyleSetterOptions = {}) {
+    addLayer(layerObject: AnyLayer, before?: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const id = layerObject.id;
@@ -2124,7 +2134,7 @@ class Style extends Evented<MapEvents> {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject, this.scope, this._styleColorTheme.lut, this.options);
+            layer = createStyleLayer(layerObject as LayerSpecification, this.scope, this._styleColorTheme.lut, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});

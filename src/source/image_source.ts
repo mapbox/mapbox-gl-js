@@ -242,7 +242,7 @@ class ImageSource extends Evented<SourceEvents> implements ISource {
     map: Map;
     texture: Texture | UserManagedTexture | null;
     image: HTMLImageElement | ImageBitmap | ImageData;
-    tileID: CanonicalTileID | null | undefined;
+    tileID?: CanonicalTileID;
     onNorthPole: boolean;
     onSouthPole: boolean;
     _unsupportedCoords: boolean;

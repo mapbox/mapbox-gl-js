@@ -52,7 +52,7 @@ import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
-import type {StyleOptions, StyleSetterOptions, FeatureSelector} from '../style/style';
+import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector} from '../style/style';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
 import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
@@ -103,7 +103,7 @@ export interface IControl {
     readonly onAdd: (map: Map) => HTMLElement;
     readonly onRemove: (map: Map) => void;
     readonly getDefaultPosition?: () => ControlPosition;
-    readonly _setLanguage?: (language: string | null | undefined | string[]) => void;
+    readonly _setLanguage?: (language?: string | string[]) => void;
 }
 /* eslint-enable no-use-before-define */
 
@@ -2386,19 +2386,20 @@ export class Map extends Camera {
      * @see Example: Use `HTMLImageElement`: [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see Example: Use `ImageData`: [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      */
-    addImage(id: string,
-             image: HTMLImageElement | ImageBitmap | ImageData | {
-                 width: number;
-                 height: number;
-                 data: Uint8Array | Uint8ClampedArray;
-             } | StyleImageInterface,
-             {
-                 pixelRatio = 1,
-                 sdf = false,
-                 stretchX,
-                 stretchY,
-                 content,
-             }: Partial<StyleImageMetadata> = {}) {
+    addImage(
+        id: string,
+        image: HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface | {
+            width: number;
+            height: number;
+            data: Uint8Array | Uint8ClampedArray;
+        },
+        {
+            pixelRatio = 1,
+            sdf = false,
+            stretchX,
+            stretchY,
+            content,
+        }: Partial<StyleImageMetadata> = {}) {
         this._lazyInitEmptyStyle();
         const version = 0;
 
@@ -2803,7 +2804,7 @@ export class Map extends Camera {
      * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/) (line layer)
      * @see [Example: Add a WMS layer](https://docs.mapbox.com/mapbox-gl-js/example/wms/) (raster layer)
      */
-    addLayer(layer: LayerSpecification | CustomLayerInterface, beforeId?: string): this {
+    addLayer(layer: AnyLayer, beforeId?: string): this {
         if (!this._isValidId(layer.id)) {
             return this;
         }

@@ -101,7 +101,6 @@ expectType<mapboxgl.MapboxOptions>({
     container: "map",
     bounds: new mapboxgl.LngLatBounds([-100, -90, 100, 90]),
     fitBoundsOptions: {
-        // @ts-expect-error - incompatible
         padding: 0,
         offset: new mapboxgl.Point(0, 0),
         linear: true,

@@ -7,18 +7,18 @@ import LngLat from '../../geo/lng_lat';
 import throttle from '../../util/throttle';
 import {mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 
-import type {Map} from '../map';
+import type {Map, IControl} from '../map';
 import type {MapEventOf} from '../events';
 import type {AnimationOptions, CameraOptions} from '../camera';
 
-type Options = {
-    positionOptions: PositionOptions;
-    fitBoundsOptions: AnimationOptions & CameraOptions;
-    trackUserLocation: boolean;
-    showAccuracyCircle: boolean;
-    showUserLocation: boolean;
-    showUserHeading: boolean;
-    geolocation: Geolocation;
+export type GeolocateControlOptions = {
+    positionOptions?: PositionOptions;
+    fitBoundsOptions?: AnimationOptions & CameraOptions;
+    trackUserLocation?: boolean;
+    showAccuracyCircle?: boolean;
+    showUserLocation?: boolean;
+    showUserHeading?: boolean;
+    geolocation?: Geolocation;
 };
 
 type DeviceOrientationEvent = {
@@ -93,29 +93,29 @@ type GeolocateControlEvents = {
  * }));
  * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
-class GeolocateControl extends Evented<GeolocateControlEvents> {
+class GeolocateControl extends Evented<GeolocateControlEvents> implements IControl {
     _map: Map;
-    options: Options;
+    options: GeolocateControlOptions;
     _container: HTMLElement;
     _dotElement: HTMLElement;
     _circleElement: HTMLElement;
     _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
-    _timeoutId: number | null | undefined;
+    _timeoutId?: number;
     _watchState: 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
-    _lastKnownPosition: any;
+    _lastKnownPosition?: GeolocationPosition;
     _userLocationDotMarker: Marker;
     _accuracyCircleMarker: Marker;
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
-    _heading: number | null | undefined;
-    _updateMarkerRotationThrottled: any;
+    _heading?: number;
+    _updateMarkerRotationThrottled?: () => number;
 
     _numberOfWatches: number;
     _noTimeout: boolean;
     _supportsGeolocation: boolean;
 
-    constructor(options?: Partial<Options>) {
+    constructor(options: GeolocateControlOptions = {}) {
         super();
         const geolocation = navigator.geolocation;
         this.options = extend({geolocation}, defaultOptions, options);

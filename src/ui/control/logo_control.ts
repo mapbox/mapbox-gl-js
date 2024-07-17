@@ -2,7 +2,7 @@ import * as DOM from '../../util/dom';
 import {bindAll} from '../../util/util';
 
 import type {MapEventOf} from '../events';
-import type {Map, ControlPosition} from '../map';
+import type {Map, IControl, ControlPosition} from '../map';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -14,7 +14,7 @@ import type {Map, ControlPosition} from '../map';
  * @private
 **/
 
-class LogoControl {
+class LogoControl implements IControl {
     _map: Map;
     _container: HTMLElement;
 

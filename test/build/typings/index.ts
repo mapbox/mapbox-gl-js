@@ -18,13 +18,76 @@ const map = new mapboxgl.Map({
 });
 
 //
+// Events
+//
+
+map.on('load', (event) => {
+    event.type === 'load';
+    event.target satisfies mapboxgl.Map;
+});
+
+map.on('style.load', (event) => {
+    event.type === 'style.load';
+    event.target satisfies mapboxgl.Map;
+});
+
+map.on('click', (event) => {
+    event.type === 'click';
+    event.target satisfies mapboxgl.Map;
+
+    event.point satisfies mapboxgl.Point;
+    event.lngLat satisfies mapboxgl.LngLat;
+    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.originalEvent satisfies MouseEvent;
+
+    event.preventDefault();
+});
+
+map.on('touchstart', 'layerId', (event) => {
+    event.type === 'touchstart';
+    event.target satisfies mapboxgl.Map;
+
+    event.point satisfies mapboxgl.Point;
+    event.lngLat satisfies mapboxgl.LngLat;
+    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.originalEvent satisfies TouchEvent;
+
+    event.preventDefault();
+});
+
+// Custom events
+map.fire('flystart' as mapboxgl.MapEventType, {});
+map.on('flystart' as mapboxgl.MapEventType, () => {})
+
+await new Promise((resolve) => map.on('style.load', resolve));
+
+//
 // Controls
 //
 
-map.addControl(new mapboxgl.ScaleControl());
-map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new mapboxgl.FullscreenControl());
-map.addControl(new mapboxgl.AttributionControl());
+map.addControl(
+    new mapboxgl.ScaleControl({unit: 'metric', maxWidth: 80}),
+    'bottom-left' satisfies mapboxgl.ControlPosition
+);
+
+map.addControl(
+    new mapboxgl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: true
+    })
+);
+
+map.addControl(
+    new mapboxgl.FullscreenControl({
+        container: document.querySelector('body')
+    })
+);
+
+map.addControl(new mapboxgl.AttributionControl({
+    compact: true,
+    customAttribution: 'Custom attribution'
+}));
 
 //
 // GeolocateControl
@@ -32,9 +95,9 @@ map.addControl(new mapboxgl.AttributionControl());
 
 const geolocateControl = new mapboxgl.GeolocateControl();
 
-geolocateControl.on('error', (error) => {});
-geolocateControl.on('geolocate', (position) => {});
-geolocateControl.on('outofmaxbounds', (position) => {});
+geolocateControl.on('error', (error) => error satisfies GeolocationPositionError);
+geolocateControl.on('geolocate', (position) => position satisfies GeolocationPosition);
+geolocateControl.on('outofmaxbounds', (position) => position satisfies GeolocationPosition);
 geolocateControl.on('trackuserlocationstart', () => {});
 geolocateControl.on('trackuserlocationend', () => {});
 map.addControl(geolocateControl);
@@ -52,8 +115,6 @@ new mapboxgl.Marker()
     .setLngLat(center)
     .setPopup(popup)
     .addTo(map);
-
-await new Promise((resolve) => map.on('style.load', resolve));
 
 map.setConfigProperty('basemap', 'lightPreset', 'dawn');
 
@@ -128,6 +189,25 @@ map.addLayer({
 });
 
 map.addLayer({
+    'id': 'radar',
+    'type': 'raster',
+    'slot': 'middle',
+    'source': {
+        'type': 'image',
+        'url': 'https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif',
+        'coordinates': [
+            [-80.425, 46.437],
+            [-71.516, 46.437],
+            [-71.516, 37.936],
+            [-80.425, 37.936]
+        ]
+    },
+    'paint': {
+        'raster-fade-duration': 0
+    }
+});
+
+map.addLayer({
     'id': 'points',
     'type': 'symbol',
     'source': 'points',
@@ -172,8 +252,8 @@ map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 // Query features
 //
 
-const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], filter: ['>=', 'area', 80000], validate: true});
-const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true});
+const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
+const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
 
 //
 // Set state
@@ -196,6 +276,7 @@ if (feature2.id) {
 const cameraOptions: mapboxgl.CameraOptions = {
     center: [0, 0],
     zoom: 10,
+    padding: {top: 10, bottom: 10, left: 10, right: 10},
 };
 
 const animationOptions: mapboxgl.AnimationOptions = {
@@ -213,3 +294,12 @@ const easingOptions: mapboxgl.EasingOptions = Object.assign({}, cameraOptions, a
 //
 
 map.flyTo(easingOptions);
+
+//
+// FitBounds
+//
+
+map.fitBounds([[-73.9876, 40.7661], [-73.9397, 40.8002]], {
+    padding: 20,
+    maxZoom: 12,
+});

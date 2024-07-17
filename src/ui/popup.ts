@@ -35,6 +35,11 @@ export type PopupOptions = {
     maxWidth?: string;
 };
 
+type PopupEvents = {
+    'open': void;
+    'close': void;
+}
+
 const focusQuerySelector = [
     "a[href]",
     "[tabindex]:not([tabindex='-1'])",
@@ -99,7 +104,7 @@ const focusQuerySelector = [
  * @see [Example: Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
-export default class Popup extends Evented {
+export default class Popup extends Evented<PopupEvents> {
     _map: Map | null | undefined;
     options: PopupOptions;
     _content: HTMLElement | null | undefined;

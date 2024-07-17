@@ -2,9 +2,9 @@ import * as DOM from '../../util/dom';
 
 import {bindAll, warnOnce} from '../../util/util';
 
-import type {Map} from '../map';
+import type {Map, IControl} from '../map';
 
-type Options = {
+export type FullscreenControlOptions = {
     container?: HTMLElement;
 };
 
@@ -21,7 +21,7 @@ type Options = {
  * @see [Example: View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
  */
 
-class FullscreenControl {
+class FullscreenControl implements IControl {
     _map: Map;
     _controlContainer: HTMLElement;
     _fullscreen: boolean;
@@ -29,7 +29,7 @@ class FullscreenControl {
     _fullscreenButton: HTMLElement;
     _container: HTMLElement;
 
-    constructor(options?: Options) {
+    constructor(options: FullscreenControlOptions = {}) {
         this._fullscreen = false;
         if (options && options.container) {
             if (options.container instanceof HTMLElement) {
