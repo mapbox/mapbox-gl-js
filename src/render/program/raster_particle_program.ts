@@ -10,7 +10,7 @@ import {
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 
-export const RASTER_PARTICLE_POS_OFFSET: number = 0.15;
+export const RASTER_PARTICLE_POS_OFFSET: number = 0.05;
 export const RASTER_PARTICLE_POS_SCALE: number = 1.0 + 2.0 * RASTER_PARTICLE_POS_OFFSET;
 
 export type RasterParticleUniformsType = {

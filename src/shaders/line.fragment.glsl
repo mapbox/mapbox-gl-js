@@ -107,7 +107,7 @@ void main() {
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
-        if (border_color.a == 0.0) {    
+        if (border_color.a == 0.0) {
             float Y = (out_color.a > 0.01) ? luminance(out_color.rgb / out_color.a) : 1.; // out_color is premultiplied
             float adjustment = (Y > 0.) ? 0.5 / Y : 0.45;
             if (out_color.a > 0.25 && Y < 0.25) {
