@@ -309,6 +309,16 @@ if (feature2.id) {
     map.setFeatureState({id: feature2.id, ...feature2}, {hide: true});
 }
 
+map.removeFeatureState({
+    id: 'featureId',
+    source: 'sourceId',
+    sourceLayer: 'sourceLayer',
+});
+
+map.removeFeatureState({
+    source: 'sourceId'
+});
+
 //
 // EasingOptions, CameraOptions, AnimationOptions
 //

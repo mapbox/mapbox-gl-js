@@ -2505,7 +2505,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    removeFeatureState(target: FeatureSelector | GeoJSONFeature, key?: string) {
+    removeFeatureState(target: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id']} | GeoJSONFeature, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
 

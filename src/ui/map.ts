@@ -3659,7 +3659,7 @@ export class Map extends Camera {
      *     }, 'hover');
      * });
      */
-    removeFeatureState(feature: FeatureSelector | GeoJSONFeature, key?: string): this {
+    removeFeatureState(feature: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id'] } | GeoJSONFeature, key?: string): this {
         if (!this._isValidId(feature.source)) {
             return this;
         }
