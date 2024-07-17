@@ -490,9 +490,7 @@ function configureRaster(
         resampling = gl.NEAREST;
 
         if (!range) {
-            // @ts-expect-error - TS2339 - Property 'rasterLayers' does not exist on type 'RasterTileSource | RasterDEMTileSource | RasterArrayTileSource | VideoSource | ImageSource | CanvasSource'.
             if (source.rasterLayers) {
-                // @ts-expect-error - TS2339 - Property 'rasterLayers' does not exist on type 'RasterTileSource | RasterDEMTileSource | RasterArrayTileSource | VideoSource | ImageSource | CanvasSource'.
                 const foundLayer = source.rasterLayers.find(({id}) => id === layer.sourceLayer);
                 if (foundLayer && foundLayer.fields && foundLayer.fields.range) {
                     range = foundLayer.fields.range;

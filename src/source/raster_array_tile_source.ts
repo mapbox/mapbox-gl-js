@@ -19,7 +19,8 @@ import type {TextureDescriptor} from './raster_array_tile';
 import type {ISource, SourceRasterLayer} from './source';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 
-class RasterArrayTileSource extends RasterTileSource implements ISource {
+class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
+    type: 'raster-array';
     map: Map;
     rasterLayers: Array<SourceRasterLayer> | undefined;
     rasterLayerIds: Array<string> | undefined;

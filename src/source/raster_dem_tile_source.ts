@@ -18,7 +18,8 @@ import type {Callback} from '../types/callback';
 import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
-class RasterDEMTileSource extends RasterTileSource implements ISource {
+class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
+    type: 'raster-dem';
     encoding: 'mapbox' | 'terrarium';
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {

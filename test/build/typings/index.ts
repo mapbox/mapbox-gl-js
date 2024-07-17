@@ -169,6 +169,46 @@ map.addSource('points', {
     }
 });
 
+
+//
+// Source narrowing
+//
+
+const source = map.getSource('id');
+
+switch (source.type) {
+    case 'geojson':
+        source satisfies mapboxgl.GeoJSONSource;
+        break;
+    case 'raster-array':
+        source satisfies mapboxgl.RasterArrayTileSource;
+        break;
+    case 'raster-dem':
+        source satisfies mapboxgl.RasterDemTileSource;
+        break;
+    case 'raster':
+        source satisfies mapboxgl.RasterTileSource;
+        break;
+    case 'vector':
+        source satisfies mapboxgl.VectorTileSource;
+        break;
+    case 'image':
+        source satisfies mapboxgl.ImageSource;
+        break;
+    case 'video':
+        source satisfies mapboxgl.VideoSource;
+        break;
+    case 'canvas':
+        source satisfies mapboxgl.CanvasSource;
+        break;
+    case 'custom':
+        source satisfies mapboxgl.CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>;
+        break;
+    case 'model':
+        source satisfies mapboxgl.ModelSource;
+        break;
+}
+
 //
 // Adding layers
 //
