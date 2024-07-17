@@ -1526,12 +1526,12 @@ describe('Marker interaction and raycast', () => {
 
         test('terrain is above horizon line', () => {
         // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
-            expect(terrainTop.y < tr.horizonLineFromTop() - 3).toBeTruthy();
+            expect(terrainTop.y < tr.horizonLineFromTop()).toBeTruthy();
         });
 
         test('Drag above clamps at horizon', () => {
         // Offset marker down, 2 pixels under terrain top above horizon.
-            const startPos = new Point(0, 2)._add(terrainTop);
+            const startPos = new Point(0, 7)._add(terrainTop);
             marker.setLngLat(tr.pointLocation3D(startPos));
             expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
             const el = marker.getElement();

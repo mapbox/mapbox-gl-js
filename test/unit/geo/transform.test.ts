@@ -505,9 +505,12 @@ describe('transform', () => {
             expect(transform.coveringTiles({tileSize: 512})).toEqual([
                 new OverscaledTileID(1, 0, 1, 0, 1),
                 new OverscaledTileID(1, 0, 1, 0, 0),
-                new OverscaledTileID(0, -1, 0, 0, 0),
+                new OverscaledTileID(1, -1, 1, 1, 1),
+                new OverscaledTileID(1, -1, 1, 1, 0),
                 new OverscaledTileID(1, 0, 1, 1, 1),
                 new OverscaledTileID(1, 0, 1, 1, 0),
+                new OverscaledTileID(1, -1, 1, 0, 1),
+                new OverscaledTileID(1, -1, 1, 0, 0),
                 new OverscaledTileID(1, 1, 1, 0, 1),
                 new OverscaledTileID(1, 1, 1, 0, 0),
                 new OverscaledTileID(0, -2, 0, 0, 0),
@@ -1143,7 +1146,7 @@ describe('transform', () => {
 
         const cover = transform.coveringTiles(options);
 
-        expect(cover.length === 43).toBeTruthy();
+        expect(cover.length === 44).toBeTruthy();
         expect(cover.find(tileID => tileID.canonical.z === 13 && tileID.canonical.x === 4270 && tileID.canonical.y === 2927)).toBeTruthy();
         expect(cover.find(tileID => tileID.canonical.z === 12 && tileID.canonical.x === 2134 && tileID.canonical.y === 1461)).toBeTruthy();
     });

@@ -714,7 +714,7 @@ describe('SourceCache#update', () => {
                     transform.center = new LngLat(0, -0.005);
                     sourceCache.update(transform);
 
-                    expect(sourceCache.getRenderableIds().length).toEqual(10);
+                    expect(sourceCache.getRenderableIds().length).toEqual(8);
                     resolve();
                 }
             });

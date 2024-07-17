@@ -1063,7 +1063,7 @@ class Transform {
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
         const square = (a: number) => a * a;
-        const cameraHeightSqr = square((cameraAltitude - this._centerAltitude) * meterToTile); // in tile coordinates.
+        const cameraHeight = (cameraAltitude - this._centerAltitude) * meterToTile; // in tile coordinates.
 
         const getAABBFromElevation = (it: RootTile) => {
             assert(this._elevation);
@@ -1088,7 +1088,7 @@ class Transform {
         // Scale distance to split for acute angles.
         // dzSqr: z component of camera to tile distance, square.
         // dSqr: 3D distance of camera to tile, square.
-        const distToSplitScale = (dzSqr: number, dSqr: number) => {
+        const distToSplitScale = (dz: number, d: number) => {
             // When the angle between camera to tile ray and tile plane is smaller
             // than acuteAngleThreshold, scale the distance to split. Scaling is adaptive: smaller
             // the angle, the scale gets lower value. Although it seems early to start at 45,
@@ -1104,8 +1104,8 @@ class Transform {
             // = dz / acuteAngleThresholdSin + dz * ((stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1)
             // or put differently, given that k is based on d and dz, tile on distance d could be used on distance scaled by:
             // 1 / acuteAngleThresholdSin + (stretchTile ^ (k + 1) - 1) / (stretchTile - 1) - 1
-            if (dSqr * square(acuteAngleThresholdSin) < dzSqr) return 1.0; // Early return, no scale.
-            const r = Math.sqrt(dSqr / dzSqr);
+            if (d * acuteAngleThresholdSin < dz) return 1.0; // Early return, no scale.
+            const r = d / dz;
             const k =  r - 1 / acuteAngleThresholdSin;
             return r / (1 / acuteAngleThresholdSin + (Math.pow(stretchTile, k + 1) - 1) / (stretchTile - 1) - 1);
         };
@@ -1121,11 +1121,11 @@ class Transform {
             }
             const dx = it.aabb.distanceX(cameraPoint);
             const dy = it.aabb.distanceY(cameraPoint);
-            let dzSqr = cameraHeightSqr;
+            let dz = cameraHeight;
 
             let tileScaleAdjustment = 1;
             if (isGlobe) {
-                dzSqr = square(it.aabb.distanceZ(cameraPoint));
+                dz = it.aabb.distanceZ(cameraPoint);
                 // Compensate physical sizes of the tiles when determining which zoom level to use.
                 // In practice tiles closer to poles should use more aggressive LOD as their
                 // physical size is already smaller than size of tiles near the equator.
@@ -1163,7 +1163,7 @@ class Transform {
             } else {
                 assert(zInMeters);
                 if (useElevationData) {
-                    dzSqr = square(it.aabb.distanceZ(cameraPoint) * meterToTile);
+                    dz = it.aabb.distanceZ(cameraPoint) * meterToTile;
                 }
                 if (this.projection.isReprojectedInTileSpace && actualZ <= 5) {
                     // In other projections, not all tiles are the same size.
@@ -1177,11 +1177,43 @@ class Transform {
                 }
             }
 
-            const distanceSqr = dx * dx + dy * dy + dzSqr;
-            const distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
-            const distToSplitSqr = square(distToSplit * distToSplitScale(Math.max(dzSqr, cameraHeightSqr), distanceSqr));
+            if (!isMercator) {
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                let distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
+                distToSplit = distToSplit * distToSplitScale(Math.max(dz, cameraHeight), distance);
+                return distance < distToSplit;
+            }
 
-            return distanceSqr < distToSplitSqr;
+            let closestDistance = Number.MAX_VALUE;
+            let closestElevation = 0.0;
+            const corners = it.aabb.getCorners();
+            const distanceXyz = [] as any;
+            for (const corner of corners) {
+                vec3.sub(distanceXyz, corner, cameraPoint as any);
+                if (!isGlobe) {
+                    if (useElevationData) {
+                        distanceXyz[2] *= meterToTile;
+                    } else {
+                        distanceXyz[2] = cameraHeight;
+                    }
+                }
+                const dist = vec3.dot(distanceXyz, this._camera.forward());
+                if (dist < closestDistance) {
+                    closestDistance = dist;
+                    closestElevation = Math.abs(distanceXyz[2]);
+                }
+            }
+
+            let distToSplit = (1 << (maxZoom - it.zoom)) * zoomSplitDistance * tileScaleAdjustment;
+            distToSplit *= distToSplitScale(Math.max(closestElevation, cameraHeight), closestDistance);
+
+            if (closestDistance < distToSplit) {
+                return true;
+            }
+            // Border case: with tilt of 85 degrees, center could be outside max zoom distance, due to scale.
+            // Ensure max zoom tiles over center.
+            const closestPointToCenter = it.aabb.closestPoint(centerPoint as any);
+            return (closestPointToCenter[0] === centerPoint[0] && closestPointToCenter[1] === centerPoint[1]);
         };
 
         if (this.renderWorldCopies) {
